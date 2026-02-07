@@ -478,7 +478,7 @@ export default function DonationsPage() {
                     </Button>
                     {canReadBeneficiaries && (
                       <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none">
-                          <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary List</Link>
+                          <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
                       </Button>
                     )}
                     {canReadDonations && (

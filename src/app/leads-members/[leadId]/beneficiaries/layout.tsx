@@ -1,8 +1,8 @@
 import type {Metadata} from 'next';
 
 export const metadata: Metadata = {
-  title: 'Beneficiaries',
-  description: 'Beneficiary list for the lead.',
+  title: 'Beneficiary Details',
+  description: 'Beneficiary details for the lead.',
 };
 
 export default function BeneficiaryLayout({

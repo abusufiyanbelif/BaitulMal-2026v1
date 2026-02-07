@@ -471,7 +471,7 @@ export default function BeneficiariesPage() {
                     </Button>
                     {canReadBeneficiaries && (
                       <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-primary text-primary shadow-none data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none" data-active="true">
-                          <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary List</Link>
+                          <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
                       </Button>
                     )}
                      {canReadDonations && (
@@ -488,7 +488,7 @@ export default function BeneficiariesPage() {
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="flex-1 space-y-1.5">
-                    <CardTitle>Beneficiary List ({areBeneficiariesLoading ? '...' : filteredAndSortedBeneficiaries.length})</CardTitle>
+                    <CardTitle>Beneficiary Details ({areBeneficiariesLoading ? '...' : filteredAndSortedBeneficiaries.length})</CardTitle>
                 </div>
                 {canCreate && (
                     <div className="flex flex-wrap gap-2 shrink-0">

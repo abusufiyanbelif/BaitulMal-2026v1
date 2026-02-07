@@ -389,7 +389,7 @@ export default function LeadDetailsPage() {
                   )}
                   {userProfile && canReadBeneficiaries && (
                     <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none">
-                        <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary List</Link>
+                        <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
                     </Button>
                   )}
                    {userProfile && canReadDonations && (
