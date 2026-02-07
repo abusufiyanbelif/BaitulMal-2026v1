@@ -113,20 +113,20 @@ export default function LeadDetailsPage() {
     // Only send the fields that are editable on this page
     const saveData: Partial<Lead> = {
         name: editableLead.name,
-        description: editableLead.description,
-        notes: editableLead.notes,
+        description: editableLead.description || '',
+        notes: editableLead.notes || '',
         startDate: editableLead.startDate,
         endDate: editableLead.endDate,
         status: editableLead.status,
         category: editableLead.category,
-        targetAmount: editableLead.targetAmount,
+        targetAmount: editableLead.targetAmount || 0,
         authenticityStatus: editableLead.authenticityStatus,
         publicVisibility: editableLead.publicVisibility,
         rationLists: editableLead.rationLists,
-        priceDate: editableLead.priceDate,
-        shopName: editableLead.shopName,
-        shopContact: editableLead.shopContact,
-        shopAddress: editableLead.shopAddress,
+        priceDate: editableLead.priceDate || '',
+        shopName: editableLead.shopName || '',
+        shopContact: editableLead.shopContact || '',
+        shopAddress: editableLead.shopAddress || '',
     };
     
     updateDoc(leadDocRef, saveData)
