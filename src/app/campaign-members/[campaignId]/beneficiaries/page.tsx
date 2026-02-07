@@ -801,12 +801,12 @@ export default function BeneficiariesPage() {
                               <CommandItem
                                 key={referral}
                                 value={referral}
-                                onSelect={() => {
-                                  const selected = referralFilter.includes(referral);
+                                onSelect={(currentValue) => {
+                                  const selected = referralFilter.includes(currentValue);
                                   if (selected) {
-                                    setReferralFilter(referralFilter.filter((r) => r !== referral));
+                                    setReferralFilter(referralFilter.filter((r) => r !== currentValue));
                                   } else {
-                                    setReferralFilter([...referralFilter, referral]);
+                                    setReferralFilter([...referralFilter, currentValue]);
                                   }
                                 }}
                               >
@@ -1081,3 +1081,5 @@ export default function BeneficiariesPage() {
     </>
   );
 }
+
+    
