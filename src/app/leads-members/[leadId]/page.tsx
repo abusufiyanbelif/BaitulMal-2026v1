@@ -542,7 +542,7 @@ export default function LeadDetailsPage() {
         </CardContent>
       </Card>
       
-      {editableLead.category === 'Ration' && (
+      {editableLead.category === 'Ration' ? (
         <div className="mt-6">
              {(sanitizedEditableRationLists.length > 0) ? (
                 <Accordion type="single" collapsible className="w-full" defaultValue={sanitizedEditableRationLists[0]?.id}>
@@ -557,7 +557,7 @@ export default function LeadDetailsPage() {
                         </div>
                         </AccordionTrigger>
                         <AccordionContent>
-                            {renderRationTable(category)}
+                           {renderRationTable(category)}
                         </AccordionContent>
                     </AccordionItem>
                     ))}
@@ -567,6 +567,12 @@ export default function LeadDetailsPage() {
                     No ration categories defined for this lead yet.
                 </div>
             )}
+        </div>
+      ) : (
+        <div className="mt-6">
+            {sanitizedEditableRationLists.find(c => c.name === 'General Item List') &&
+              renderRationTable(sanitizedEditableRationLists.find(c => c.name === 'General Item List')!)
+            }
         </div>
       )}
     </main>

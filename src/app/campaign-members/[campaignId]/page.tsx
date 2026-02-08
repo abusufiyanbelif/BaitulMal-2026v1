@@ -450,6 +450,91 @@ export default function CampaignDetailsPage() {
     }
   };
 
+    const renderRationTable = (category: RationCategory) => {
+    const total = calculateTotal(category.items);
+
+    return (
+      <Card className="animate-fade-in-zoom">
+        <CardHeader>
+            <div className="flex justify-between items-center">
+                <CardTitle>{category.name === 'General Item List' ? 'Item List' : 'Items for this category'}</CardTitle>
+                {canUpdate && editMode && (
+                    <Button onClick={() => handleAddItem(category.id)} size="sm">
+                      <Plus className="mr-2 h-4 w-4" /> Add Item
+                    </Button>
+                )}
+            </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+            <h4 className="text-lg font-bold">Total Kit Cost: <span className="font-mono">₹{total.toFixed(2)}</span></h4>
+          </div>
+          <div className="w-full overflow-x-auto">
+            <Table>
+                <TableHeader>
+                    <TableRow className="bg-muted/50">
+                        <TableHead className="w-[50px]">#</TableHead>
+                        <TableHead className="min-w-[180px]">Item Name</TableHead>
+                        <TableHead className="min-w-[100px]">Quantity</TableHead>
+                        <TableHead className="min-w-[150px]">Quantity Type</TableHead>
+                        <TableHead className="min-w-[120px]">Price per Unit (₹)</TableHead>
+                        <TableHead className="min-w-[180px]">Notes</TableHead>
+                        <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>
+                        {canUpdate && editMode && <TableHead className="w-[50px] text-center">Action</TableHead>}
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {category.items.map((item, index) => (
+                        <TableRow key={item.id}>
+                            <TableCell>{index + 1}</TableCell>
+                            <TableCell>
+                                <Input value={item.name || ''} onChange={e => handleItemChange(category.id, item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
+                            </TableCell>
+                            <TableCell>
+                                <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(category.id, item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
+                            </TableCell>
+                            <TableCell>
+                                <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(category.id, item.id, 'quantityType', value)} disabled={!editMode || !canUpdate}>
+                                    <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                                    <SelectContent>
+                                        {quantityTypes.map(type => (
+                                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </TableCell>
+                            <TableCell>
+                                <Input type="number" value={item.price || ''} onChange={e => handleItemChange(category.id, item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
+                            </TableCell>
+                            <TableCell>
+                                <Input value={item.notes || ''} onChange={e => handleItemChange(category.id, item.id, 'notes', e.target.value)} placeholder="e.g. brand, quality" disabled={!editMode || !canUpdate} />
+                            </TableCell>
+                            <TableCell className="text-right font-mono">
+                                ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
+                            </TableCell>
+                            {canUpdate && editMode && (
+                                <TableCell className="text-center">
+                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(category.id, item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                </TableCell>
+                            )}
+                        </TableRow>
+                    ))}
+                    {category.items.length === 0 && (
+                        <TableRow>
+                            <TableCell colSpan={canUpdate && editMode ? 8 : 7} className="text-center h-24 text-muted-foreground">
+                                No items added yet.
+                            </TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+
   if (isLoading || !editableCampaign) {
     return (
         <main className="container mx-auto p-4 md:p-8">
@@ -701,7 +786,7 @@ export default function CampaignDetailsPage() {
                             </div>
                           </AccordionTrigger>
                           <AccordionContent>
-                            {/* Render Table for this category */}
+                            {renderRationTable(category)}
                           </AccordionContent>
                         </AccordionItem>
                        ))}
@@ -713,9 +798,11 @@ export default function CampaignDetailsPage() {
                     </div>
                 )
             ) : (
-                <div className="mt-4">
-                  {/* Render general item list for non-ration campaigns */}
-                </div>
+              <div className="mt-4">
+                {sanitizedEditableRationLists.find(c => c.name === 'General Item List') &&
+                  renderRationTable(sanitizedEditableRationLists.find(c => c.name === 'General Item List')!)
+                }
+              </div>
             )}
           </CardContent>
         </Card>

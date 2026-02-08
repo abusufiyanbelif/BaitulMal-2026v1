@@ -97,9 +97,15 @@ export default function CreateCampaignPage() {
       shopName: '',
       shopContact: '',
       shopAddress: '',
-      rationLists: {
-        'General Item List': [],
-      },
+      rationLists: [
+        {
+          id: 'general',
+          name: 'General Item List',
+          minMembers: 0,
+          maxMembers: 0,
+          items: []
+        }
+      ],
     };
 
     addDoc(collection(firestore, 'campaigns'), newCampaignData)
