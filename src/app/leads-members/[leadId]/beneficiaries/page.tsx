@@ -86,11 +86,6 @@ export default function BeneficiariesPage() {
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   
-  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
-  const [imageToView, setImageToView] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(1);
-  const [rotation, setRotation] = useState(0);
-
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -157,13 +152,6 @@ export default function BeneficiariesPage() {
     setIsDeleteDialogOpen(true);
   };
 
-  const handleViewImage = (url: string) => {
-    setImageToView(url);
-    setZoom(1);
-    setRotation(0);
-    setIsImageViewerOpen(true);
-  };
-
   const handleDeleteConfirm = async () => {
     if (!beneficiaryToDelete || !firestore || !storage || !leadId || !canDelete || !beneficiaries) return;
 
@@ -228,61 +216,8 @@ export default function BeneficiariesPage() {
     let finalData: any;
 
     try {
-        let idProofUrl = editingBeneficiary?.idProofUrl || '';
-    
-        if (data.idProofDeleted && idProofUrl) {
-            const oldFileRef = storageRef(storage, idProofUrl);
-            await deleteObject(oldFileRef).catch(err => {
-                if (err.code !== 'storage/object-not-found') {
-                    console.warn("Failed to delete ID proof during replacement:", err)
-                }
-            });
-            idProofUrl = '';
-        }
-
-        const fileList = data.idProofFile as FileList | undefined;
-        if (fileList && fileList.length > 0) {
-            if (idProofUrl) {
-                const oldFileRef = storageRef(storage, idProofUrl);
-                await deleteObject(oldFileRef).catch(err => {
-                    if (err.code !== 'storage/object-not-found') {
-                        console.warn("Failed to delete old file during replacement:", err);
-                    }
-                });
-            }
-
-            const file = fileList[0];
-            
-            const { default: Resizer } = await import('react-image-file-resizer');
-            const resizedBlob = await new Promise<Blob>((resolve) => {
-                 Resizer.imageFileResizer(
-                    file, 1024, 1024, 'PNG', 100, 0,
-                    blob => {
-                        resolve(blob as Blob);
-                    }, 'blob'
-                );
-            });
-
-            const leadCreatedDate = lead.createdAt?.toDate ? lead.createdAt.toDate().toISOString().split('T')[0] : (lead.startDate || 'nodate');
-            const leadFolderName = `${lead.name.replace(/[\s/]/g, '_')}_${leadCreatedDate}`;
-            
-            const today = new Date().toISOString().split('T')[0];
-            const fileNameParts = [ data.name, data.phone || 'no-phone', today, 'referby', data.referralBy ];
-            const sanitizedBaseName = fileNameParts.join('_').replace(/[^a-zA-Z0-9_.-]/g, '_').replace(/_{2,}/g, '_');
-            const fileExtension = 'png';
-            const finalFileName = `${docRef.id}_${sanitizedBaseName}.${fileExtension}`;
-            const filePath = `leads/${leadFolderName}/beneficiaries/${finalFileName}`;
-            const fileRef = storageRef(storage, filePath);
-
-            const uploadResult = await uploadBytes(fileRef, resizedBlob);
-            idProofUrl = await getDownloadURL(uploadResult.ref);
-        }
-
-        const { idProofFile, idProofDeleted, ...beneficiaryData } = data;
-
         finalData = {
-            ...beneficiaryData,
-            idProofUrl,
+            ...data,
             ...(!editingBeneficiary && {
                 addedDate: new Date().toISOString().split('T')[0],
                 createdAt: serverTimestamp(),

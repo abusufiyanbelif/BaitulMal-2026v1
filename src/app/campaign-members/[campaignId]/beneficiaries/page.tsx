@@ -85,11 +85,6 @@ export default function BeneficiariesPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<string | null>(null);
   
-  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
-  const [imageToView, setImageToView] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(1);
-  const [rotation, setRotation] = useState(0);
-
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -195,13 +190,6 @@ export default function BeneficiariesPage() {
     setIsDeleteDialogOpen(true);
   };
 
-  const handleViewImage = (url: string) => {
-    setImageToView(url);
-    setZoom(1);
-    setRotation(0);
-    setIsImageViewerOpen(true);
-  };
-
   const handleDeleteConfirm = async () => {
     if (!beneficiaryToDelete || !firestore || !storage || !campaignId || !canDelete || !beneficiaries) return;
 
@@ -237,7 +225,7 @@ export default function BeneficiariesPage() {
   };
   
   const handleFormSubmit = async (data: BeneficiaryFormData) => {
-    if (!firestore || !storage || !campaignId || !userProfile || !campaign) return;
+    if (!firestore || !userProfile || !campaign) return;
     if (editingBeneficiary && !canUpdate) return;
     if (!editingBeneficiary && !canCreate) return;
 
@@ -266,61 +254,8 @@ export default function BeneficiariesPage() {
     let finalData: any;
 
     try {
-        let idProofUrl = editingBeneficiary?.idProofUrl || '';
-    
-        if (data.idProofDeleted && idProofUrl) {
-            const oldFileRef = storageRef(storage, idProofUrl);
-            await deleteObject(oldFileRef).catch(err => {
-                if (err.code !== 'storage/object-not-found') {
-                    console.warn("Failed to delete ID proof during replacement:", err)
-                }
-            });
-            idProofUrl = '';
-        }
-
-        const fileList = data.idProofFile as FileList | undefined;
-        if (fileList && fileList.length > 0) {
-            if (idProofUrl) {
-                const oldFileRef = storageRef(storage, idProofUrl);
-                await deleteObject(oldFileRef).catch(err => {
-                    if (err.code !== 'storage/object-not-found') {
-                        console.warn("Failed to delete old file during replacement:", err);
-                    }
-                });
-            }
-
-            const file = fileList[0];
-            
-            const { default: Resizer } = await import('react-image-file-resizer');
-            const resizedBlob = await new Promise<Blob>((resolve) => {
-                 Resizer.imageFileResizer(
-                    file, 1024, 1024, 'PNG', 100, 0,
-                    blob => {
-                        resolve(blob as Blob);
-                    }, 'blob'
-                );
-            });
-
-            const campaignCreatedDate = campaign.createdAt?.toDate ? campaign.createdAt.toDate().toISOString().split('T')[0] : (campaign.startDate || 'nodate');
-            const campaignFolderName = `${campaign.name.replace(/[\s/]/g, '_')}_${campaignCreatedDate}`;
-            
-            const today = new Date().toISOString().split('T')[0];
-            const fileNameParts = [ data.name, data.phone || 'no-phone', today, 'referby', data.referralBy ];
-            const sanitizedBaseName = fileNameParts.join('_').replace(/[^a-zA-Z0-9_.-]/g, '_').replace(/_{2,}/g, '_');
-            const fileExtension = 'png';
-            const finalFileName = `${docRef.id}_${sanitizedBaseName}.${fileExtension}`;
-            const filePath = `campaigns/${campaignFolderName}/beneficiaries/${finalFileName}`;
-            const fileRef = storageRef(storage, filePath);
-
-            const uploadResult = await uploadBytes(fileRef, resizedBlob);
-            idProofUrl = await getDownloadURL(uploadResult.ref);
-        }
-
-        const { idProofFile, idProofDeleted, ...beneficiaryData } = data;
-
         finalData = {
-            ...beneficiaryData,
-            idProofUrl,
+            ...data,
             ...(!editingBeneficiary && {
                 addedDate: new Date().toISOString().split('T')[0],
                 createdAt: serverTimestamp(),
@@ -586,7 +521,7 @@ export default function BeneficiariesPage() {
     } finally {
         setIsSyncing(false);
     }
-};
+  };
 
 
   const uniqueReferrals = useMemo(() => {
@@ -1120,31 +1055,6 @@ export default function BeneficiariesPage() {
             </DialogFooter>
         </DialogContent>
       </Dialog>
-      
-      <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-        <DialogContent className="max-w-4xl">
-            <DialogHeader>
-                <DialogTitle>ID Proof</DialogTitle>
-            </DialogHeader>
-            <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
-                {imageToView && (
-                    <img
-                        src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
-                        alt="ID proof"
-                        className="transition-transform duration-200 ease-out origin-center"
-                        style={{ transform: `scale(${zoom}) rotate(${rotation}deg)`}}
-                        crossOrigin="anonymous"
-                    />
-                )}
-            </div>
-            <DialogFooter className="sm:justify-center pt-4">
-                <Button variant="outline" onClick={() => setZoom(z => z * 1.2)}><ZoomIn className="mr-2"/> Zoom In</Button>
-                <Button variant="outline" onClick={() => setZoom(z => z / 1.2)}><ZoomOut className="mr-2"/> Zoom Out</Button>
-                <Button variant="outline" onClick={() => setRotation(r => r + 90)}><RotateCw className="mr-2"/> Rotate</Button>
-                <Button variant="outline" onClick={() => { setZoom(1); setRotation(0); }}><RefreshCw className="mr-2"/> Reset</Button>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
@@ -1207,6 +1117,3 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
         </TableRow>
     )
 }
-    
-
-    

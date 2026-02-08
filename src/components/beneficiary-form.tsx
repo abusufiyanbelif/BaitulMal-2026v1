@@ -1,8 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
-import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -18,15 +17,12 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { Beneficiary, RationCategory } from '@/lib/types';
-import { cn } from '@/lib/utils';
-import { Loader2, ScanLine, Trash2, Replace, FileIcon, Edit } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Loader2, Edit } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -47,9 +43,6 @@ const formSchema = z.object({
   kitAmount: z.coerce.number(),
   status: z.enum(['Given', 'Pending', 'Hold', 'Need More Details', 'Verified']),
   notes: z.string().optional(),
-  idProofFile: z.any().optional(),
-  idProofDeleted: z.boolean().optional(),
-  idProofIsPublic: z.boolean().optional(),
   isEligibleForZakat: z.boolean().optional(),
   zakatAllocation: z.coerce.number().optional(),
 });
@@ -65,8 +58,7 @@ interface BeneficiaryFormProps {
   initialReadOnly?: boolean;
 }
 
-export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, initialReadOnly = false }: BeneficiaryFormProps) {
-    const { toast } = useToast();
+export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, initialReadOnly = false }: BeneficiaryFormProps) {
     const isEditing = !!beneficiary;
 
     const form = useForm<BeneficiaryFormData>({
@@ -85,89 +77,16 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
             kitAmount: beneficiary?.kitAmount || 0,
             status: beneficiary?.status || 'Pending',
             notes: beneficiary?.notes || '',
-            idProofDeleted: false,
-            idProofIsPublic: beneficiary?.idProofIsPublic || false,
             isEligibleForZakat: beneficiary?.isEligibleForZakat || false,
             zakatAllocation: beneficiary?.zakatAllocation || 0,
         },
     });
 
-    const { watch, control, handleSubmit, setValue } = form;
+    const { control, handleSubmit, watch } = form;
     
     const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isScanning, setIsScanning] = useState(false);
-    const [preview, setPreview] = useState<string | null>(beneficiary?.idProofUrl || null);
-    const idProofFile = watch('idProofFile');
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            setValue('idProofFile', e.target.files);
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-            setValue('idProofDeleted', false);
-        }
-    };
     
-    const handleDeleteProof = () => {
-        setValue('idProofFile', null);
-        setValue('idProofDeleted', true);
-        setPreview(null);
-        toast({ title: 'Image Marked for Deletion', description: 'The ID proof will be permanently deleted when you save the changes.', variant: 'default' });
-    };
-
-    const handleScanIdProof = async () => {
-        if (!idProofFile || idProofFile.length === 0) {
-            toast({ title: "No File", description: "Please upload an ID proof document to scan.", variant: "destructive" });
-            return;
-        }
-        setIsScanning(true);
-        const file = idProofFile[0];
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const dataUri = e.target?.result as string;
-            if (!dataUri) {
-                toast({ title: "Read Error", description: "Could not read the uploaded file.", variant: "destructive" });
-                setIsScanning(false);
-                return;
-            }
-            try {
-                 const apiResponse = await fetch('/api/scan-id', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ photoDataUri: dataUri }),
-                });
-                if (!apiResponse.ok) {
-                    const errorData = await apiResponse.json();
-                    throw new Error(errorData.error || 'The server returned an error.');
-                }
-                const response = await apiResponse.json();
-                if (response) {
-                    if (response.name) setValue('name', response.name);
-                    if (response.address) setValue('address', response.address);
-                    if (response.aadhaarNumber) setValue('idNumber', response.aadhaarNumber);
-                    setValue('idProofType', 'Aadhaar');
-                    toast({ title: "Autofill Successful", description: "Beneficiary details populated.", variant: "success"});
-                } else {
-                     toast({ title: "Autofill Incomplete", description: "Could not extract all details.", variant: "default" });
-                }
-            } catch (error: any) {
-                toast({ title: "Scan Failed", description: error.message || "Could not read document.", variant: "destructive" });
-            } finally {
-                setIsScanning(false);
-            }
-        };
-        reader.onerror = () => {
-            toast({ title: "File Error", description: "Error reading the file.", variant: "destructive" });
-            setIsScanning(false);
-        };
-        reader.readAsDataURL(file);
-    };
-
     const handleFormSubmit = async (data: BeneficiaryFormData) => {
         setIsSubmitting(true);
         await onSubmit(data);
@@ -197,61 +116,6 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
                     <FormField control={control} name="female" render={({ field }) => (<FormItem><FormLabel>Female</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)} />
                 </div>
 
-                <div className="space-y-4 rounded-md border p-4">
-                    <h3 className="text-sm font-medium text-muted-foreground">ID Proof Details</h3>
-                    <Separator />
-                    <FormField
-                        control={control}
-                        name="idProofFile"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>ID Proof Document</FormLabel>
-                                <FormControl>
-                                    <Input id="id-proof-file-input" type="file" accept="image/*,application/pdf" onChange={handleFileChange} disabled={formIsDisabled} />
-                                </FormControl>
-                                <FormDescription>Optional. Upload an image or PDF of the ID proof.</FormDescription>
-                            </FormItem>
-                        )}
-                    />
-                    {preview && (
-                        <div className="relative group w-full h-48 mt-2 rounded-md overflow-hidden border">
-                            {preview.startsWith('data:application/pdf') ? (
-                                <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
-                                    <FileIcon className="w-12 h-12 mb-2" />
-                                    <p className="text-sm text-center">PDF Document Uploaded</p>
-                                </div>
-                            ) : (
-                                <img src={`/api/image-proxy?url=${encodeURIComponent(preview)}`} alt="ID Proof Preview" className="object-contain w-full h-full" crossOrigin="anonymous"/>
-                            )}
-                            {!isReadOnly && <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button type="button" size="icon" variant="outline" onClick={() => document.getElementById('id-proof-file-input')?.click()} disabled={formIsDisabled}><Replace className="h-5 w-5"/><span className="sr-only">Replace Image</span></Button>
-                                <Button type="button" size="icon" variant="destructive" onClick={handleDeleteProof} disabled={formIsDisabled}><Trash2 className="h-5 w-5"/><span className="sr-only">Delete Image</span></Button>
-                            </div>}
-                        </div>
-                    )}
-                    {!isReadOnly && idProofFile && idProofFile.length > 0 && (
-                        <Button type="button" className="w-full" onClick={handleScanIdProof} disabled={isScanning || formIsDisabled}>
-                            {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan ID Proof & Autofill
-                        </Button>
-                    )}
-                    <div className="flex flex-row items-center space-x-2 pt-2">
-                        <FormField
-                            control={control}
-                            name="idProofIsPublic"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                    <FormControl>
-                                        <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={formIsDisabled} />
-                                    </FormControl>
-                                    <div className="space-y-1 leading-none">
-                                        <FormLabel>Make ID Proof public</FormLabel>
-                                    </div>
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                </div>
-                
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField control={control} name="idProofType" render={({ field }) => (<FormItem><FormLabel>ID Proof Type</FormLabel><FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
                     <FormField control={control} name="idNumber" render={({ field }) => (<FormItem><FormLabel>ID Number</FormLabel><FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
