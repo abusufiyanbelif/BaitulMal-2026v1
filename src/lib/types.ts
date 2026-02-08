@@ -42,8 +42,12 @@ export interface RationItem {
   notes: string;
 }
 
-export interface RationList {
-  [members: string]: RationItem[];
+export interface RationCategory {
+  id: string;
+  name: string;
+  minMembers: number;
+  maxMembers: number;
+  items: RationItem[];
 }
 
 export interface Campaign extends DocumentData {
@@ -62,7 +66,7 @@ export interface Campaign extends DocumentData {
   shopContact: string;
   shopAddress: string;
   documents?: CampaignDocument[];
-  rationLists: RationList;
+  rationLists: RationCategory[];
   allowedDonationTypes?: DonationCategory[];
   createdAt?: any;
   createdById?: string;
@@ -86,7 +90,7 @@ export interface Lead extends DocumentData {
   shopContact: string;
   shopAddress: string;
   documents?: CampaignDocument[];
-  rationLists: RationList;
+  rationLists: RationCategory[];
   allowedDonationTypes?: DonationCategory[];
   createdAt?: any;
   createdById?: string;

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -9,14 +8,23 @@ import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { doc, updateDoc, DocumentReference } from 'firebase/firestore';
-import type { Lead, RationItem } from '@/lib/types';
+import type { Lead, RationItem, RationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, Copy } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save } from 'lucide-react';
 import Link from 'next/link';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +38,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
@@ -58,6 +67,11 @@ export default function LeadDetailsPage() {
 
   const [editMode, setEditMode] = useState(false);
   const [editableLead, setEditableLead] = useState<Lead | null>(null);
+
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryMin, setNewCategoryMin] = useState('');
+  const [newCategoryMax, setNewCategoryMax] = useState('');
   
   // Reset local state if edit mode is cancelled or if the base data changes while NOT in edit mode.
   useEffect(() => {
@@ -78,29 +92,40 @@ export default function LeadDetailsPage() {
     setEditableLead(prev => prev ? { ...prev, [field]: value } : null);
   };
   
-  const handleItemChange = (itemId: string, field: keyof RationItem, value: string | number) => {
-    if (!editableLead) return;
-    let newRationLists = JSON.parse(JSON.stringify(editableLead.rationLists || { 'General Item List': [] }));
-    const updatedItems = (newRationLists['General Item List'] || []).map((item: RationItem) => {
-        if (item.id !== itemId) return item;
-        return { ...item, [field]: value };
+  const handleItemChange = (categoryId: string, itemId: string, field: keyof RationItem, value: string | number) => {
+    if (!editableLead || !editableLead.rationLists) return;
+    
+    const newRationLists = editableLead.rationLists.map(cat => {
+        if (cat.id !== categoryId) return cat;
+        const updatedItems = cat.items.map(item => {
+            if (item.id !== itemId) return item;
+            return { ...item, [field]: value };
+        });
+        return { ...cat, items: updatedItems };
     });
-    newRationLists['General Item List'] = updatedItems;
     handleFieldChange('rationLists', newRationLists);
   };
 
-  const handleAddItem = () => {
-    if (!editableLead) return;
+  const handleAddItem = (categoryId: string) => {
+    if (!editableLead || !editableLead.rationLists) return;
     const newItem: RationItem = { id: `item-${Date.now()}`, name: '', quantity: 1, quantityType: 'kg', price: 0, notes: '' };
-    const newRationLists = { ...(editableLead.rationLists || { 'General Item List': [] }) };
-    newRationLists['General Item List'] = [...(newRationLists['General Item List'] || []), newItem];
+    const newRationLists = editableLead.rationLists.map(cat => {
+        if (cat.id === categoryId) {
+            return { ...cat, items: [...cat.items, newItem] };
+        }
+        return cat;
+    });
     handleFieldChange('rationLists', newRationLists);
   };
 
-  const handleDeleteItem = (itemId: string) => {
-    if (!editableLead) return;
-    const newRationLists = { ...editableLead.rationLists };
-    newRationLists['General Item List'] = (newRationLists['General Item List'] || []).filter(item => item.id !== itemId);
+  const handleDeleteItem = (categoryId: string, itemId: string) => {
+    if (!editableLead || !editableLead.rationLists) return;
+    const newRationLists = editableLead.rationLists.map(cat => {
+        if (cat.id === categoryId) {
+            return { ...cat, items: cat.items.filter(item => item.id !== itemId) };
+        }
+        return cat;
+    });
     handleFieldChange('rationLists', newRationLists);
   };
   
@@ -149,100 +174,49 @@ export default function LeadDetailsPage() {
       setEditMode(false);
       // editableLead will be reset by the useEffect
   };
-  
-  const handleDownload = async (format: 'csv' | 'excel' | 'pdf') => {
-    if (!lead) return;
+
+    const handleAddNewCategory = () => {
+    if (!editableLead) return;
+
+    const min = Number(newCategoryMin);
+    const max = Number(newCategoryMax);
+
+    if (!newCategoryName.trim()) {
+        toast({ title: 'Invalid Name', description: 'Category name cannot be empty.', variant: 'destructive' });
+        return;
+    }
+    if (isNaN(min) || isNaN(max) || min <= 0 || max <= 0 || min > max) {
+        toast({ title: 'Invalid Range', description: 'Please enter valid positive numbers for min and max members, with min being less than or equal to max.', variant: 'destructive' });
+        return;
+    }
     
-    const items = lead.rationLists?.['General Item List'] || [];
-    const { priceDate, shopName, shopContact, shopAddress } = lead;
-
-    if (items.length === 0) {
-      toast({ title: 'No Data', description: 'There is no item data to export.', variant: 'destructive' });
-      return;
-    }
-
-    if (format === 'csv' || format === 'excel') {
-        const XLSX = await import('xlsx');
-        const wb = XLSX.utils.book_new();
-        const total = calculateTotal(items);
-
-        const headers = ['#', 'Item Name', 'Quantity', 'Type', 'Notes', 'Price per Unit (₹)', 'Total Price (₹)'];
-        const body = items.map((item, index) => [
-            index + 1, item.name, item.quantity, item.quantityType, item.notes, item.price, item.price * item.quantity
-        ]);
-        const totalRow = [['', '', '', '', 'Total', '', total]];
-        
-        const sheetData = [
-            [`Lead Name:`, lead.name],
-            [`Shop Name:`, shopName],
-            [`Price Date:`, priceDate],
-            [], 
-            headers,
-            ...body,
-            ...totalRow
-        ];
-
-        const ws = XLSX.utils.aoa_to_sheet(sheetData);
-        ws['!cols'] = [{ wch: 5 }, { wch: 25 }, { wch: 10 }, { wch: 10 }, { wch: 20 }, { wch: 15 }, { wch: 15 }];
-        XLSX.utils.book_append_sheet(wb, ws, 'Item List');
-        
-        if (format === 'excel') {
-            XLSX.writeFile(wb, `lead-item-list-${leadId}.xlsx`);
-        } else {
-            const csvOutput = XLSX.utils.sheet_to_csv(ws);
-            const blob = new Blob([csvOutput], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `lead-item-list-${leadId}.csv`;
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-    } else if (format === 'pdf') {
-        const doc = new jsPDF();
-        let startY = 15;
-        doc.setTextColor(10, 41, 19);
-        
-        doc.setFontSize(14).text(`${lead.name} - Item List`, 14, startY);
-        startY += 8;
-        doc.setFontSize(10).text(`Price Date: ${priceDate || ''}`, 14, startY);
-        startY += 10;
-        
-        const total = calculateTotal(items);
-        const headers = [['#', 'Item Name', 'Qty', 'Type', 'Notes', 'Unit Price', 'Total']];
-        const body: any[] = items.map((item, index) => [
-            index + 1, item.name, item.quantity, item.quantityType || '', item.notes, `₹${(item.price || 0).toFixed(2)}`, `₹${(item.price * item.quantity).toFixed(2)}`
-        ]);
-        body.push([
-            { content: 'Total', colSpan: 6, styles: { halign: 'right', fontStyle: 'bold' } },
-            { content: `₹${total.toFixed(2)}`, styles: { halign: 'right', fontStyle: 'bold' } }
-        ]);
-
-        (doc as any).autoTable({
-            head: headers,
-            body: body,
-            startY: startY,
-            headStyles: { fillColor: [22, 163, 74], textColor: [255, 255, 255] },
-            styles: { textColor: [10, 41, 19] }
-        });
-
-        doc.save(`lead-item-list-${leadId}.pdf`);
-    }
+    const newCategory: RationCategory = {
+        id: `cat-${Date.now()}`,
+        name: newCategoryName,
+        minMembers: min,
+        maxMembers: max,
+        items: []
+    };
+    
+    const newRationLists = [...(editableLead.rationLists || []), newCategory];
+    handleFieldChange('rationLists', newRationLists);
+    
+    setNewCategoryName('');
+    setNewCategoryMin('');
+    setNewCategoryMax('');
+    setIsAddCategoryOpen(false);
   };
   
-  const renderRationTable = () => {
-    const items = editableLead?.rationLists?.['General Item List'] || [];
-    const total = calculateTotal(items);
+  const renderRationTable = (category: RationCategory) => {
+    const total = calculateTotal(category.items);
 
     return (
       <Card className="animate-fade-in-zoom">
         <CardHeader>
             <div className="flex justify-between items-center">
-                <CardTitle>Item List for Ration Kit</CardTitle>
+                <CardTitle>{category.name === 'General Item List' ? 'Item List' : 'Items for this category'}</CardTitle>
                 {canUpdate && editMode && (
-                    <Button onClick={handleAddItem} size="sm">
+                    <Button onClick={() => handleAddItem(category.id)} size="sm">
                       <Plus className="mr-2 h-4 w-4" /> Add Item
                     </Button>
                 )}
@@ -267,17 +241,17 @@ export default function LeadDetailsPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {items.map((item, index) => (
+                    {category.items.map((item, index) => (
                         <TableRow key={item.id}>
                             <TableCell>{index + 1}</TableCell>
                             <TableCell>
-                                <Input value={item.name || ''} onChange={e => handleItemChange(item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
+                                <Input value={item.name || ''} onChange={e => handleItemChange(category.id, item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
                             </TableCell>
                             <TableCell>
-                                <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
+                                <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(category.id, item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
                             </TableCell>
                             <TableCell>
-                                <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(item.id, 'quantityType', value)} disabled={!editMode || !canUpdate}>
+                                <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(category.id, item.id, 'quantityType', value)} disabled={!editMode || !canUpdate}>
                                     <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                                     <SelectContent>
                                         {quantityTypes.map(type => (
@@ -287,22 +261,22 @@ export default function LeadDetailsPage() {
                                 </Select>
                             </TableCell>
                             <TableCell>
-                                <Input type="number" value={item.price || ''} onChange={e => handleItemChange(item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
+                                <Input type="number" value={item.price || ''} onChange={e => handleItemChange(category.id, item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
                             </TableCell>
                             <TableCell>
-                                <Input value={item.notes || ''} onChange={e => handleItemChange(item.id, 'notes', e.target.value)} placeholder="e.g. brand, quality" disabled={!editMode || !canUpdate} />
+                                <Input value={item.notes || ''} onChange={e => handleItemChange(category.id, item.id, 'notes', e.target.value)} placeholder="e.g. brand, quality" disabled={!editMode || !canUpdate} />
                             </TableCell>
                             <TableCell className="text-right font-mono">
                                 ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
                             </TableCell>
                             {canUpdate && editMode && (
                                 <TableCell className="text-center">
-                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(category.id, item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                 </TableCell>
                             )}
                         </TableRow>
                     ))}
-                    {items.length === 0 && (
+                    {category.items.length === 0 && (
                         <TableRow>
                             <TableCell colSpan={canUpdate && editMode ? 8 : 7} className="text-center h-24 text-muted-foreground">
                                 No items added yet.
@@ -433,9 +407,9 @@ export default function LeadDetailsPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => handleDownload('csv')}>Download as CSV</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDownload('excel')}>Download as Excel</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDownload('pdf')}>Download as PDF</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {}}>Download as CSV</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {}}>Download as Excel</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {}}>Download as PDF</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                   )}
@@ -543,7 +517,29 @@ export default function LeadDetailsPage() {
       
       {editableLead.category === 'Ration' && (
         <div className="mt-6">
-            {renderRationTable()}
+             {(editableLead.rationLists || []).length > 0 ? (
+                <Accordion type="single" collapsible className="w-full" defaultValue={editableLead.rationLists[0]?.id}>
+                    {editableLead.rationLists.map(category => (
+                    <AccordionItem value={category.id} key={category.id}>
+                        <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                        <div className="flex items-center gap-4">
+                            <span>{category.name}</span>
+                            {category.name !== 'General Item List' && (
+                                <Badge variant="secondary">{`${category.minMembers}-${category.maxMembers} Members`}</Badge>
+                            )}
+                        </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                            {renderRationTable(category)}
+                        </AccordionContent>
+                    </AccordionItem>
+                    ))}
+                </Accordion>
+            ) : (
+                <div className="text-center text-muted-foreground py-10 border rounded-md">
+                    No ration categories defined for this lead yet.
+                </div>
+            )}
         </div>
       )}
     </main>

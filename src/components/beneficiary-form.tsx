@@ -25,7 +25,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import type { Beneficiary, RationList, RationItem } from '@/lib/types';
+import type { Beneficiary, RationCategory, RationItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Loader2, ScanLine, Trash2, Replace, FileIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -59,7 +59,7 @@ interface BeneficiaryFormProps {
   beneficiary?: Beneficiary | null;
   onSubmit: (data: BeneficiaryFormData) => void;
   onCancel: () => void;
-  rationLists: RationList;
+  rationLists: RationCategory[];
 }
 
 export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists }: BeneficiaryFormProps) {
@@ -118,17 +118,19 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists }
     const calculateTotal = (items: RationItem[]) => items.reduce((sum, item) => sum + Number(item.price || 0), 0);
     
     let total = 0;
-    if (membersValue && membersValue > 0) {
-        const memberCountStr = String(membersValue);
-        const exactMatchList = rationLists[memberCountStr];
+    if (membersValue && membersValue > 0 && rationLists) {
+        // Find the specific category that fits the member range
+        const matchingCategory = rationLists.find(
+            (cat) => membersValue >= cat.minMembers && membersValue <= cat.maxMembers && cat.name !== 'General Item List'
+        );
 
-        const generalListKey = Object.keys(rationLists).find(k => k.toLowerCase().includes('general'));
-        const generalList = generalListKey ? rationLists[generalListKey] : undefined;
-        
-        const listToUse = exactMatchList || generalList;
+        // Find the general fallback category
+        const generalCategory = rationLists.find(cat => cat.name === 'General Item List');
 
-        if (listToUse) {
-            total = calculateTotal(listToUse);
+        const categoryToUse = matchingCategory || generalCategory;
+
+        if (categoryToUse) {
+            total = calculateTotal(categoryToUse.items);
         }
     }
     setValue('kitAmount', total, { shouldValidate: true });
@@ -136,14 +138,11 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists }
   }, [membersValue, rationLists, setValue]);
   
   const isKitAmountReadOnly = useMemo(() => {
-    if (membersValue && membersValue > 0) {
-        const memberCountStr = String(membersValue);
-        const hasExactMatch = !!rationLists[memberCountStr];
-
-        const generalListKey = Object.keys(rationLists).find(k => k.toLowerCase().includes('general'));
-        const hasGeneralFallback = !!(generalListKey && rationLists[generalListKey]);
-        
-        return hasExactMatch || hasGeneralFallback;
+    if (membersValue && membersValue > 0 && rationLists) {
+        const hasMatchingCategory = rationLists.some(
+            (cat) => membersValue >= cat.minMembers && membersValue <= cat.maxMembers
+        );
+        return hasMatchingCategory;
     }
     return false;
   }, [membersValue, rationLists]);

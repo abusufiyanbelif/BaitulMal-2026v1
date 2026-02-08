@@ -7,7 +7,7 @@ import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, Firestor
 import type { SecurityRuleContext } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, setDoc, DocumentReference } from 'firebase/firestore';
-import type { Beneficiary, Campaign, RationItem } from '@/lib/types';
+import type { Beneficiary, Campaign, RationItem, RationCategory } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
@@ -460,14 +460,13 @@ export default function BeneficiariesPage() {
     setIsSyncing(true);
 
     const { rationLists } = campaign;
-    if (!rationLists || Object.keys(rationLists).length === 0) {
+    if (!rationLists || rationLists.length === 0) {
         toast({ title: 'Sync Canceled', description: 'No ration lists found for this campaign to calculate amounts.', variant: 'destructive' });
         setIsSyncing(false);
         return;
     }
     
-    const generalListKey = Object.keys(rationLists).find(k => k.toLowerCase().includes('general'));
-    const generalList = generalListKey ? rationLists[generalListKey] : undefined;
+    const generalCategory = rationLists.find(cat => cat.name === 'General Item List');
     const calculateTotal = (items: RationItem[]) => items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
     
     const batch = writeBatch(firestore);
@@ -479,11 +478,14 @@ export default function BeneficiariesPage() {
         
         if (beneficiary.status !== 'Given') {
             const members = beneficiary.members;
-            const exactMatchList = members > 0 ? rationLists[String(members)] : undefined;
-            const listToUse = exactMatchList || generalList;
+            const matchingCategory = rationLists.find(
+                cat => members >= cat.minMembers && members <= cat.maxMembers && cat.name !== 'General Item List'
+            );
+            const categoryToUse = matchingCategory || generalCategory;
+            
             let expectedAmount = 0;
-            if (listToUse) {
-                expectedAmount = calculateTotal(listToUse);
+            if (categoryToUse) {
+                expectedAmount = calculateTotal(categoryToUse.items);
             }
             
             if (beneficiary.kitAmount !== expectedAmount) {
@@ -876,11 +878,11 @@ export default function BeneficiariesPage() {
                             <SortableHeader sortKey="name">Name</SortableHeader>
                             <SortableHeader sortKey="address">Address</SortableHeader>
                             <SortableHeader sortKey="phone">Phone</SortableHeader>
-                            <SortableHeader sortKey="isEligibleForZakat">Eligible for Zakat</SortableHeader>
-                            <SortableHeader sortKey="kitAmount" className="text-right">Kit Amount (₹)</SortableHeader>
-                            <SortableHeader sortKey="referralBy">Referred By</SortableHeader>
-                            <SortableHeader sortKey="status">Status</SortableHeader>
                             <SortableHeader sortKey="addedDate">Added Date</SortableHeader>
+                            <SortableHeader sortKey="isEligibleForZakat">Eligible for Zakat</SortableHeader>
+                            <SortableHeader sortKey="referralBy">Referred By</SortableHeader>
+                            <SortableHeader sortKey="kitAmount" className="text-right">Kit Amount (₹)</SortableHeader>
+                            <SortableHeader sortKey="status">Status</SortableHeader>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -892,11 +894,11 @@ export default function BeneficiariesPage() {
                                     <TableCell><Skeleton className="h-6 w-32" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-40" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                                    <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-7 w-20" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-7 w-20 rounded-full" /></TableCell>
-                                    <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                 </TableRow>
                             ))
                         ) : sortedGroupKeys.length > 0 ? (
@@ -943,6 +945,7 @@ export default function BeneficiariesPage() {
                                         <TableCell className="font-medium">{beneficiary.name}</TableCell>
                                         <TableCell>{beneficiary.address}</TableCell>
                                         <TableCell>{beneficiary.phone}</TableCell>
+                                        <TableCell>{beneficiary.addedDate}</TableCell>
                                         <TableCell>
                                             {beneficiary.isEligibleForZakat ? (
                                                 <div className="flex flex-col items-start">
@@ -957,8 +960,8 @@ export default function BeneficiariesPage() {
                                                 <Badge variant="outline">No</Badge>
                                             )}
                                         </TableCell>
-                                        <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
                                         <TableCell>{beneficiary.referralBy}</TableCell>
+                                        <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
                                         <TableCell>
                                             <Badge variant={
                                                 beneficiary.status === 'Given' ? 'success' :
@@ -967,7 +970,6 @@ export default function BeneficiariesPage() {
                                                 beneficiary.status === 'Hold' ? 'destructive' : 'outline'
                                             }>{beneficiary.status}</Badge>
                                         </TableCell>
-                                        <TableCell>{beneficiary.addedDate}</TableCell>
                                     </TableRow>
                                     ))}
                                 </React.Fragment>
@@ -996,7 +998,7 @@ export default function BeneficiariesPage() {
                 beneficiary={editingBeneficiary}
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
-                rationLists={campaign?.rationLists || {}}
+                rationLists={campaign?.rationLists || []}
             />
         </DialogContent>
       </Dialog>
