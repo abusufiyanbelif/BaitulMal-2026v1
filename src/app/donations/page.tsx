@@ -14,12 +14,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DollarSign, CheckCircle2, Hourglass, XCircle, ChevronDown, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DollarSign, CheckCircle2, Hourglass, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -36,7 +41,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -90,6 +94,7 @@ export default function DonationsPage() {
   const [typeFilter, setTypeFilter] = useState('All');
   const [donationTypeFilter, setDonationTypeFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
+  const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   
   const canRead = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.read;
   const canCreate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.create;
@@ -99,6 +104,12 @@ export default function DonationsPage() {
   const handleAdd = () => {
     if (!canCreate) return;
     setEditingDonation(null);
+    setIsFormOpen(true);
+  };
+  
+  const handleEdit = (donation: Donation) => {
+    if (!canUpdate) return;
+    setEditingDonation(donation);
     setIsFormOpen(true);
   };
 
@@ -133,7 +144,7 @@ export default function DonationsPage() {
         const deletePromises = screenshotUrls.map(url => 
             deleteObject(storageRef(storage, url)).catch(err => {
                 if (err.code !== 'storage/object-not-found') {
-                    console.warn(`Failed to delete screenshot from storage: ${url}`, err);
+                    console.warn(`Failed to delete screenshot from storage: ${'${url}'}`, err);
                 }
             })
         );
@@ -176,7 +187,7 @@ export default function DonationsPage() {
                     const resizedBlob = await new Promise<Blob>((resolve) => {
                          Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
                     });
-                    const filePath = `donations/${docRef.id}/${transaction.id}.png`;
+                    const filePath = `donations/${'${docRef.id}'}/${'${transaction.id}'}.png`;
                     const fileRef = storageRef(storage, filePath);
                     const uploadResult = await uploadBytes(fileRef, resizedBlob);
                     screenshotUrl = await getDownloadURL(uploadResult.ref);
@@ -558,66 +569,143 @@ export default function DonationsPage() {
                             </TableRow>
                         ))
                         ) : (filteredAndSortedDonations && filteredAndSortedDonations.length > 0) ? (
-                        filteredAndSortedDonations.map((donation, index) => (
-                            <Collapsible asChild key={donation.id}>
-                                <>
-                                    <TableRow>
-                                        <TableCell className="text-center sticky left-0 bg-card z-10">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    {canDelete && (
-                                                        <DropdownMenuItem onClick={() => handleDeleteClick(donation.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
-                                                            <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                        <TableCell>{index + 1}</TableCell>
-                                        <TableCell>
-                                            <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge>
-                                        </TableCell>
-                                        <TableCell className="font-medium">{donation.donorName}</TableCell>
-                                        <TableCell>{donation.receiverName}</TableCell>
-                                        <TableCell>{donation.donorPhone}</TableCell>
-                                        <TableCell className="text-right font-medium">₹{donation.amount.toFixed(2)}</TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-wrap gap-1">
-                                                {donation.typeSplit?.map(split => (
-                                                    <Badge key={split.category} variant="secondary">
-                                                        {split.category}
-                                                    </Badge>
+                        filteredAndSortedDonations.map((donation, index) => {
+                            const donationLinks = donation.linkSplit || [];
+                            const isOpen = openRows[donation.id] || false;
+                            return (
+                                <Collapsible asChild key={donation.id} onOpenChange={(open) => setOpenRows(prev => ({...prev, [donation.id]: open}))}>
+                                    <>
+                                        <TableRow>
+                                            <TableCell className="text-center sticky left-0 bg-card z-10">
+                                                <div className="flex items-center justify-center">
+                                                     <CollapsibleTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!donation.transactions || donation.transactions.length === 0}>
+                                                            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                                            <span className="sr-only">Toggle details</span>
+                                                        </Button>
+                                                    </CollapsibleTrigger>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            {canUpdate && (
+                                                                <DropdownMenuItem onClick={() => handleEdit(donation)}>
+                                                                    <Edit className="mr-2 h-4 w-4" /> Edit
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            {donationLinks.length === 0 ? (
+                                                                <DropdownMenuItem disabled>
+                                                                    <Eye className="mr-2 h-4 w-4" /> View (Not Linked)
+                                                                </DropdownMenuItem>
+                                                            ) : donationLinks.length === 1 ? (
+                                                                <DropdownMenuItem onClick={() => router.push(`/${donationLinks[0].linkType === 'campaign' ? 'campaign-members' : 'leads-members'}/${donationLinks[0].linkId}/donations/${donation.id}`)}>
+                                                                    <Eye className="mr-2 h-4 w-4" /> View Details
+                                                                </DropdownMenuItem>
+                                                            ) : (
+                                                                <DropdownMenuSub>
+                                                                    <DropdownMenuSubTrigger>
+                                                                        <Eye className="mr-2 h-4 w-4" /> View In...
+                                                                    </DropdownMenuSubTrigger>
+                                                                    <DropdownMenuPortal>
+                                                                        <DropdownMenuSubContent>
+                                                                            {donationLinks.map(link => (
+                                                                                <DropdownMenuItem key={link.linkId} onClick={() => router.push(`/${link.linkType === 'campaign' ? 'campaign-members' : 'leads-members'}/${link.linkId}/donations/${donation.id}`)}>
+                                                                                    {link.linkName}
+                                                                                </DropdownMenuItem>
+                                                                            ))}
+                                                                        </DropdownMenuSubContent>
+                                                                    </DropdownMenuPortal>
+                                                                </DropdownMenuSub>
+                                                            )}
+
+                                                            <DropdownMenuSeparator />
+                                                            
+                                                            {canDelete && (
+                                                                <DropdownMenuItem onClick={() => handleDeleteClick(donation.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
+                                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>{index + 1}</TableCell>
+                                            <TableCell>
+                                                <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge>
+                                            </TableCell>
+                                            <TableCell className="font-medium">{donation.donorName}</TableCell>
+                                            <TableCell>{donation.receiverName}</TableCell>
+                                            <TableCell>{donation.donorPhone}</TableCell>
+                                            <TableCell className="text-right font-medium">₹{donation.amount.toFixed(2)}</TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {donation.typeSplit?.map(split => (
+                                                        <Badge key={split.category} variant="secondary">
+                                                            {split.category}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell><Badge variant="outline">{donation.donationType}</Badge></TableCell>
+                                            <TableCell>{donation.donationDate}</TableCell>
+                                            <TableCell>
+                                            {donation.linkSplit && donation.linkSplit.length > 0 ? (
+                                                <div className="flex flex-col gap-1">
+                                                {donation.linkSplit.map(link => (
+                                                    <Link 
+                                                    key={link.linkId}
+                                                    href={link.linkType === 'campaign' ? `/campaign-members/${link.linkId}` : `/leads-members/${link.linkId}`}
+                                                    className="text-primary hover:underline text-xs"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                    {link.linkName} {donation.linkSplit && donation.linkSplit.length > 1 ? `(₹${link.amount.toFixed(2)})` : ''}
+                                                    </Link>
                                                 ))}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell><Badge variant="outline">{donation.donationType}</Badge></TableCell>
-                                        <TableCell>{donation.donationDate}</TableCell>
-                                        <TableCell>
-                                        {donation.linkSplit && donation.linkSplit.length > 0 ? (
-                                            <div className="flex flex-col gap-1">
-                                            {donation.linkSplit.map(link => (
-                                                <Link 
-                                                key={link.linkId}
-                                                href={link.linkType === 'campaign' ? `/campaign-members/${link.linkId}` : `/leads-members/${link.linkId}`}
-                                                className="text-primary hover:underline text-xs"
-                                                onClick={(e) => e.stopPropagation()}
-                                                >
-                                                {link.linkName} (₹{link.amount.toFixed(2)})
-                                                </Link>
-                                            ))}
-                                            </div>
-                                        ) : "Unlinked"}
-                                        </TableCell>
-                                        <TableCell>{donation.referral}</TableCell>
-                                    </TableRow>
-                                </>
-                            </Collapsible>
-                        ))
+                                                </div>
+                                            ) : "Unlinked"}
+                                            </TableCell>
+                                            <TableCell>{donation.referral}</TableCell>
+                                        </TableRow>
+                                        <CollapsibleContent asChild>
+                                            <TableRow className="bg-muted/50 hover:bg-muted/50">
+                                                <TableCell colSpan={13} className="p-0">
+                                                    <div className="p-3">
+                                                        <h4 className="text-sm font-semibold mb-2">Transaction Details</h4>
+                                                        <Table>
+                                                            <TableHeader>
+                                                                <TableRow>
+                                                                    <TableHead>Amount</TableHead>
+                                                                    <TableHead>Transaction ID</TableHead>
+                                                                    <TableHead>Screenshot</TableHead>
+                                                                </TableRow>
+                                                            </TableHeader>
+                                                            <TableBody>
+                                                                {donation.transactions.map((tx) => (
+                                                                    <TableRow key={tx.id}>
+                                                                        <TableCell>₹{tx.amount.toFixed(2)}</TableCell>
+                                                                        <TableCell>{tx.transactionId || 'N/A'}</TableCell>
+                                                                        <TableCell>
+                                                                            {tx.screenshotUrl ? (
+                                                                                <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)}>
+                                                                                    <Eye className="mr-2 h-4 w-4"/> View
+                                                                                </Button>
+                                                                            ) : 'No'}
+                                                                        </TableCell>
+                                                                    </TableRow>
+                                                                ))}
+                                                            </TableBody>
+                                                        </Table>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        </CollapsibleContent>
+                                    </>
+                                </Collapsible>
+                            )
+                        })
                         ) : (
                         <TableRow>
                             <TableCell colSpan={13} className="text-center h-24 text-muted-foreground">
