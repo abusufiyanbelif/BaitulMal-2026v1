@@ -84,6 +84,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
   const { toast } = useToast();
   const auth = useAuth();
   const [permissions, setPermissions] = useState<UserPermissions>(user?.permissions || {});
+  const [permissionsChanged, setPermissionsChanged] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
@@ -112,7 +113,6 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
   const [preview, setPreview] = useState<string | null>(user?.idProofUrl || null);
   
   useEffect(() => {
-    // Client-side effect to generate userKey for new users to prevent hydration errors
     if (!isEditing && !getValues('userKey')) {
         setValue('userKey', `user_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`);
     }
@@ -134,6 +134,11 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
         setPermissions({});
     }
   }, [roleValue, user, isEditing]);
+
+  useEffect(() => {
+    const initialPermissions = user?.permissions || {};
+    setPermissionsChanged(JSON.stringify(permissions) !== JSON.stringify(initialPermissions));
+  }, [permissions, user?.permissions]);
 
   useEffect(() => {
     const fileList = idProofFile as FileList | undefined;
@@ -281,6 +286,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
   };
   
   const isFormDisabled = isSubmitting || isLoading || isReadOnly;
+  const isSaveDisabled = isSubmitting || (isEditing && !isDirty && !permissionsChanged);
   
   return (
     <Form {...form}>
@@ -542,7 +548,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
             {!isReadOnly && (
               <div className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={onCancel} disabled={isFormDisabled}>Cancel</Button>
-                <Button type="submit" disabled={isFormDisabled || (isEditing && !isDirty)}>
+                <Button type="submit" disabled={isSaveDisabled}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isSubmitting ? 'Saving...' : 'Save User'}
                 </Button>

@@ -314,10 +314,44 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             </TableCell>
           </TableRow>
 
+          {/* Spacer Row */}
           <TableRow>
             <TableCell colSpan={5} className="p-0 h-2 bg-background"></TableCell>
           </TableRow>
           
+          {/* Global Donations */}
+          <TableRow>
+            <TableCell className="font-medium">Donations (Global)</TableCell>
+            <TableCell className="text-center">
+              <Checkbox
+                checked={!!get(permissions, 'donations.create', false)}
+                onCheckedChange={handleCheckedChange('donations.create')}
+                disabled={isDisabled}
+              />
+            </TableCell>
+            <TableCell className="text-center">
+              <Checkbox
+                checked={!!get(permissions, 'donations.read', false)}
+                onCheckedChange={handleCheckedChange('donations.read')}
+                disabled={isDisabled}
+              />
+            </TableCell>
+            <TableCell className="text-center">
+              <Checkbox
+                checked={!!get(permissions, 'donations.update', false)}
+                onCheckedChange={handleCheckedChange('donations.update')}
+                disabled={isDisabled}
+              />
+            </TableCell>
+            <TableCell className="text-center">
+              <Checkbox
+                checked={!!get(permissions, 'donations.delete', false)}
+                onCheckedChange={handleCheckedChange('donations.delete')}
+                disabled={isDisabled}
+              />
+            </TableCell>
+          </TableRow>
+
           {/* Other Modules */}
           <TableRow>
             <TableCell className="font-medium">Extractor</TableCell>
