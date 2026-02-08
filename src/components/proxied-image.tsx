@@ -1,4 +1,3 @@
 // This component is deprecated and no longer in use.
-// The functionality has been replaced by a server-side API proxy route
-// at /api/image-proxy to provide a more robust solution for
-// handling cross-origin image requests.
+// Functionality has been moved to the /api/image-proxy route for better performance and security.
+// This file can be safely deleted.

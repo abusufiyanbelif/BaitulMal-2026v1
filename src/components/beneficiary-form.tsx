@@ -2,12 +2,11 @@
 'use client';
 
 import { z } from 'zod';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import {
-  Form,
   FormControl,
   FormDescription,
   FormField,
@@ -230,7 +229,7 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
   const formIsDisabled = isReadOnly || isSubmitting;
 
   return (
-    <Form {...form}>
+    <FormProvider {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField control={control} name="name" render={({ field }) => (
@@ -356,6 +355,8 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
             )}
         </DialogFooter>
       </form>
-    </Form>
+    </FormProvider>
   );
 }
+
+    

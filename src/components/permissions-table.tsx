@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import type { UserPermissions } from '@/lib/modules';
 import { get } from '@/lib/utils';
-import { Separator } from './ui/separator';
+import { Separator } from '@/components/ui/separator';
 
 interface PermissionsTableProps {
   permissions: UserPermissions;

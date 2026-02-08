@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import type { Donation, Campaign, Lead } from '@/lib/types';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from './ui/table';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Lightbulb, FolderKanban } from 'lucide-react';
 
 interface DonationReceiptProps {

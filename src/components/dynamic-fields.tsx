@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Dispatch, SetStateAction } from 'react';
@@ -9,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Label } from './ui/label';
+import { Label } from '@/components/ui/label';
 
 type DynamicFieldsProps = {
   isLoading: boolean;

@@ -1,2 +1,2 @@
-// This file is deprecated and has been removed to avoid confusion.
-// The provider logic has been consolidated into src/app/providers.tsx.
+// This file is deprecated and its contents have been moved to src/app/providers.tsx to align with Next.js App Router conventions.
+// This file can be safely deleted.

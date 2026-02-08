@@ -11,8 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { FileUploader } from './file-uploader';
 import { Skeleton } from './ui/skeleton';
-import { RadioGroup, RadioGroupItem } from './ui/radio-group';
-import { Label } from './ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 export function TextExtractor() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { z } from 'zod';
@@ -31,9 +30,9 @@ import type { Donation, DonationCategory, Campaign, Lead, TransactionDetail as T
 import { donationCategories } from '@/lib/modules';
 import { Loader2, ScanLine, Replace, Trash2, Plus, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from './ui/separator';
-import { Checkbox } from './ui/checkbox';
-import { Textarea } from './ui/textarea';
+import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 
 const linkSplitSchema = z.array(z.object({
     linkId: z.string(),

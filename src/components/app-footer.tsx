@@ -1,11 +1,10 @@
-
 'use client';
 import { useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Copy, Smartphone, QrCode, Mail, Phone, Download, Globe } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from './ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useBranding } from '@/hooks/use-branding';
 import { Separator } from '@/components/ui/separator';

@@ -8,8 +8,8 @@ import { Input } from '@/components/ui/input';
 import { useFirestore } from '@/firebase';
 import { collectionGroup, query, where, getDocs, limit } from 'firebase/firestore';
 import type { Beneficiary } from '@/lib/types';
-import { ScrollArea } from './ui/scroll-area';
-import { Skeleton } from './ui/skeleton';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, Search } from 'lucide-react';
 
 interface BeneficiarySearchDialogProps {
