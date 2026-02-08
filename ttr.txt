@@ -1,2 +1,18 @@
-src/app/donations/page.tsx(218,14): error TS2304: Cannot find name 'isEditing'.
-src/components/donation-form.tsx(249,51): error TS2339: Property 'campaignId' does not exist on type 'never'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(500,59): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(500,64): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(527,62): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(527,67): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/app/campaign-members/[campaignId]/donations/[donationId]/page.tsx(64,13): error TS2322: Type '{ campaignId: string; campaignName: string; status: "Verified" | "Pending" | "Canceled"; donorName: string; receiverName: string; amount: number; typeSplit: { category: "Zakat" | "Sadaqah" | "Interest" | "Lillah" | "Loan" | "Monthly Contribution"; amount: number; }[]; ... 9 more ...; suggestions?: string | undefined...' is not assignable to type 'Partial<Donation>'.
+  Types of property 'linkSplit' are incompatible.
+    Type '{ amount: number; linkId: string; }[] | undefined' is not assignable to type 'DonationLink[] | undefined'.
+      Type '{ amount: number; linkId: string; }[]' is not assignable to type 'DonationLink[]'.
+        Type '{ amount: number; linkId: string; }' is missing the following properties from type 'DonationLink': linkName, linkType
+src/app/campaign-members/page.tsx(501,30): error TS18048: 'campaign.targetAmount' is possibly 'undefined'.
+src/app/campaign-members/page.tsx(506,55): error TS18048: 'campaign.targetAmount' is possibly 'undefined'.
+src/app/leads-members/[leadId]/donations/[donationId]/page.tsx(63,13): error TS2322: Type '{ campaignId: string; campaignName: string; status: "Verified" | "Pending" | "Canceled"; donorName: string; receiverName: string; amount: number; typeSplit: { category: "Zakat" | "Sadaqah" | "Interest" | "Lillah" | "Loan" | "Monthly Contribution"; amount: number; }[]; ... 9 more ...; suggestions?: string | undefined...' is not assignable to type 'Partial<Donation>'.
+  Types of property 'linkSplit' are incompatible.
+    Type '{ amount: number; linkId: string; }[] | undefined' is not assignable to type 'DonationLink[] | undefined'.
+      Type '{ amount: number; linkId: string; }[]' is not assignable to type 'DonationLink[]'.
+        Type '{ amount: number; linkId: string; }' is missing the following properties from type 'DonationLink': linkName, linkType
+src/app/leads-members/page.tsx(481,31): error TS18048: 'lead.targetAmount' is possibly 'undefined'.
+src/app/leads-members/page.tsx(486,55): error TS18048: 'lead.targetAmount' is possibly 'undefined'.
