@@ -86,7 +86,14 @@ export default function DonationsPage() {
 
   const donations = useMemo(() => {
     if (!allDonations) return [];
-    return allDonations.filter(d => d.linkSplit?.some(link => link.linkId === campaignId));
+    return allDonations.filter(d => {
+      // Prioritize the new data structure
+      if (d.linkSplit && d.linkSplit.length > 0) {
+        return d.linkSplit.some(link => link.linkId === campaignId);
+      }
+      // Fallback for legacy data
+      return d.campaignId === campaignId;
+    });
   }, [allDonations, campaignId]);
 
   const allCampaignsCollectionRef = useMemo(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
