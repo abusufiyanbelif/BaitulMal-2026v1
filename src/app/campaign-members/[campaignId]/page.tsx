@@ -104,7 +104,20 @@ export default function CampaignDetailsPage() {
   // Reset local state if edit mode is cancelled or if the base data changes while NOT in edit mode.
   useEffect(() => {
     if (campaign && !editMode) {
-      setEditableCampaign(JSON.parse(JSON.stringify(campaign)));
+      const campaignCopy = JSON.parse(JSON.stringify(campaign));
+      // Hotfix for old data structure where rationLists might be an object
+      if (campaignCopy.rationLists && !Array.isArray(campaignCopy.rationLists)) {
+        campaignCopy.rationLists = [
+          {
+            id: 'general', // a stable id
+            name: 'General Item List',
+            minMembers: 0,
+            maxMembers: 0,
+            items: (campaignCopy.rationLists as any)['General Item List'] || []
+          }
+        ];
+      }
+      setEditableCampaign(campaignCopy);
     }
   }, [editMode, campaign])
   
