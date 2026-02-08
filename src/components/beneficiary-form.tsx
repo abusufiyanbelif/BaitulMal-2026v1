@@ -2,9 +2,27 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import Image from 'next/image';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import type { Beneficiary, RationCategory } from '@/lib/types';
+import { cn } from '@/lib/utils';
+import { Loader2, ScanLine, Trash2, Replace, FileIcon, Edit } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -14,26 +32,9 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import type { Beneficiary, RationCategory } from '@/lib/types';
-import { cn } from '@/lib/utils';
-import { Loader2, ScanLine, Trash2, Replace, FileIcon, Edit } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { Separator } from '@/components/ui/separator';
-import { Checkbox } from '@/components/ui/checkbox';
-
 
 const formSchema = z.object({
-  name: z.string().min(2, "Name is required"),
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   address: z.string().optional(),
   phone: z.string().optional(),
   members: z.coerce.number().optional(),
@@ -42,8 +43,8 @@ const formSchema = z.object({
   female: z.coerce.number().optional(),
   idProofType: z.string().optional(),
   idNumber: z.string().optional(),
-  referralBy: z.string().min(1, "Referred by is required"),
-  kitAmount: z.coerce.number().min(0),
+  referralBy: z.string().min(1, { message: 'Referral is required.' }),
+  kitAmount: z.coerce.number(),
   status: z.enum(['Given', 'Pending', 'Hold', 'Need More Details', 'Verified']),
   notes: z.string().optional(),
   idProofFile: z.any().optional(),
@@ -53,8 +54,8 @@ const formSchema = z.object({
   zakatAllocation: z.coerce.number().optional(),
 });
 
+export type BeneficiaryFormData = z.infer<typeof formSchema>;
 
-export interface BeneficiaryFormData extends z.infer<typeof formSchema> {}
 
 interface BeneficiaryFormProps {
   beneficiary?: Beneficiary | null;
@@ -65,251 +66,252 @@ interface BeneficiaryFormProps {
 }
 
 export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, initialReadOnly = false }: BeneficiaryFormProps) {
-  const { toast } = useToast();
-  const beneficiaryForm = useForm<BeneficiaryFormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: beneficiary?.name || '',
-      address: beneficiary?.address || '',
-      phone: beneficiary?.phone || '',
-      members: beneficiary?.members || 1,
-      earningMembers: beneficiary?.earningMembers || 0,
-      male: beneficiary?.male || 0,
-      female: beneficiary?.female || 0,
-      idProofType: beneficiary?.idProofType || '',
-      idNumber: beneficiary?.idNumber || '',
-      referralBy: beneficiary?.referralBy || '',
-      kitAmount: beneficiary?.kitAmount || 0,
-      status: beneficiary?.status || 'Pending',
-      notes: beneficiary?.notes || '',
-      idProofDeleted: false,
-      idProofIsPublic: beneficiary?.idProofIsPublic || false,
-      isEligibleForZakat: beneficiary?.isEligibleForZakat || false,
-      zakatAllocation: beneficiary?.zakatAllocation || 0,
-    },
-  });
+    const { toast } = useToast();
+    const isEditing = !!beneficiary;
 
-  const {
-    control,
-    watch,
-    setValue,
-    register,
-    getValues,
-    handleSubmit,
-    formState: { isSubmitting, isDirty },
-  } = beneficiaryForm;
-  
-  const isEditing = !!beneficiary;
+    const form = useForm<BeneficiaryFormData>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            name: beneficiary?.name || '',
+            address: beneficiary?.address || '',
+            phone: beneficiary?.phone || '',
+            members: beneficiary?.members || 1,
+            earningMembers: beneficiary?.earningMembers || 0,
+            male: beneficiary?.male || 0,
+            female: beneficiary?.female || 0,
+            idProofType: beneficiary?.idProofType || '',
+            idNumber: beneficiary?.idNumber || '',
+            referralBy: beneficiary?.referralBy || '',
+            kitAmount: beneficiary?.kitAmount || 0,
+            status: beneficiary?.status || 'Pending',
+            notes: beneficiary?.notes || '',
+            idProofDeleted: false,
+            idProofIsPublic: beneficiary?.idProofIsPublic || false,
+            isEligibleForZakat: beneficiary?.isEligibleForZakat || false,
+            zakatAllocation: beneficiary?.zakatAllocation || 0,
+        },
+    });
 
-  const [isScanning, setIsScanning] = useState(false);
-  const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
-  const [preview, setPreview] = useState<string | null>(beneficiary?.idProofUrl || null);
+    const { watch, control, handleSubmit, setValue } = form;
+    
+    const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isScanning, setIsScanning] = useState(false);
+    const [preview, setPreview] = useState<string | null>(beneficiary?.idProofUrl || null);
+    const idProofFile = watch('idProofFile');
 
-  const idProofFile = watch('idProofFile');
-  const isEligibleForZakat = watch('isEligibleForZakat');
-
-  useEffect(() => {
-    const fileList = idProofFile as FileList | undefined;
-    if (fileList && fileList.length > 0) {
-      const file = fileList[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-      setValue('idProofDeleted', false);
-    } else if (!watch('idProofDeleted')) {
-        setPreview(beneficiary?.idProofUrl || null);
-    } else {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setValue('idProofFile', e.target.files);
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+            setValue('idProofDeleted', false);
+        }
+    };
+    
+    const handleDeleteProof = () => {
+        setValue('idProofFile', null);
+        setValue('idProofDeleted', true);
         setPreview(null);
-    }
-  }, [idProofFile, beneficiary?.idProofUrl, watch, setValue]);
-  
-  const handleDeleteProof = () => {
-    setValue('idProofFile', null);
-    setValue('idProofDeleted', true);
-    setPreview(null);
-    toast({ title: 'Image Marked for Deletion', description: 'The ID proof will be permanently deleted when you save the changes.', variant: 'default' });
-  };
-  
-  const handleScanIdProof = async () => {
-    const fileList = getValues('idProofFile') as FileList | undefined;
-    if (!fileList || fileList.length === 0) {
-        toast({ title: "No File", description: "Please upload an ID proof document to scan.", variant: "destructive" });
-        return;
-    }
-    setIsScanning(true);
-    const file = fileList[0];
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-        const dataUri = e.target?.result as string;
-        if (!dataUri) {
-            toast({ title: "Read Error", description: "Could not read the uploaded file.", variant: "destructive" });
-            setIsScanning(false);
+        toast({ title: 'Image Marked for Deletion', description: 'The ID proof will be permanently deleted when you save the changes.', variant: 'default' });
+    };
+
+    const handleScanIdProof = async () => {
+        if (!idProofFile || idProofFile.length === 0) {
+            toast({ title: "No File", description: "Please upload an ID proof document to scan.", variant: "destructive" });
             return;
         }
-        try {
-             const apiResponse = await fetch('/api/scan-id', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ photoDataUri: dataUri }),
-            });
-            if (!apiResponse.ok) {
-                const errorData = await apiResponse.json();
-                throw new Error(errorData.error || 'The server returned an error.');
+        setIsScanning(true);
+        const file = idProofFile[0];
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const dataUri = e.target?.result as string;
+            if (!dataUri) {
+                toast({ title: "Read Error", description: "Could not read the uploaded file.", variant: "destructive" });
+                setIsScanning(false);
+                return;
             }
-            const response = await apiResponse.json();
-            if (response) {
-                if (response.name) setValue('name', response.name, { shouldValidate: true });
-                if (response.address) setValue('address', response.address, { shouldValidate: true });
-                if (response.aadhaarNumber) setValue('idNumber', response.aadhaarNumber, { shouldValidate:true });
-                setValue('idProofType', 'Aadhaar', { shouldValidate: true });
-                toast({ title: "Autofill Successful", description: "Beneficiary details populated.", variant: "success"});
-            } else {
-                 toast({ title: "Autofill Incomplete", description: "Could not extract all details.", variant: "default" });
+            try {
+                 const apiResponse = await fetch('/api/scan-id', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ photoDataUri: dataUri }),
+                });
+                if (!apiResponse.ok) {
+                    const errorData = await apiResponse.json();
+                    throw new Error(errorData.error || 'The server returned an error.');
+                }
+                const response = await apiResponse.json();
+                if (response) {
+                    if (response.name) setValue('name', response.name);
+                    if (response.address) setValue('address', response.address);
+                    if (response.aadhaarNumber) setValue('idNumber', response.aadhaarNumber);
+                    setValue('idProofType', 'Aadhaar');
+                    toast({ title: "Autofill Successful", description: "Beneficiary details populated.", variant: "success"});
+                } else {
+                     toast({ title: "Autofill Incomplete", description: "Could not extract all details.", variant: "default" });
+                }
+            } catch (error: any) {
+                toast({ title: "Scan Failed", description: error.message || "Could not read document.", variant: "destructive" });
+            } finally {
+                setIsScanning(false);
             }
-        } catch (error: any) {
-            toast({ title: "Scan Failed", description: error.message || "Could not read document.", variant: "destructive" });
-        } finally {
+        };
+        reader.onerror = () => {
+            toast({ title: "File Error", description: "Error reading the file.", variant: "destructive" });
             setIsScanning(false);
-        }
+        };
+        reader.readAsDataURL(file);
     };
-    reader.onerror = () => {
-        toast({ title: "File Error", description: "Error reading the file.", variant: "destructive" });
-        setIsScanning(false);
+
+    const handleFormSubmit = async (data: BeneficiaryFormData) => {
+        setIsSubmitting(true);
+        await onSubmit(data);
+        setIsSubmitting(false);
     };
-    reader.readAsDataURL(file);
-  };
 
-  const formIsDisabled = isReadOnly || isSubmitting;
-
-  return (
-    <Form {...beneficiaryForm}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField control={control} name="name" render={({ field }) => (
-                <FormItem><FormLabel>Full Name *</FormLabel><FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
-            )}/>
-            <FormField control={control} name="phone" render={({ field }) => (
-                <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="10-digit mobile number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
-            )}/>
-        </div>
-        <FormField control={control} name="address" render={({ field }) => (
-            <FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Full residential address" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
-        )}/>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <FormField control={control} name="members" render={({ field }) => (
-                <FormItem><FormLabel>Members</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
-            )}/>
-            <FormField control={control} name="earningMembers" render={({ field }) => (
-                <FormItem><FormLabel>Earning</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
-            )}/>
-            <FormField control={control} name="male" render={({ field }) => (
-                <FormItem><FormLabel>Male</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
-            )}/>
-             <FormField control={control} name="female" render={({ field }) => (
-                <FormItem><FormLabel>Female</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
-            )}/>
-        </div>
-
-        <div className="space-y-4 rounded-md border p-4">
-            <h3 className="text-sm font-medium text-muted-foreground">ID Proof Details</h3>
-            <Separator />
-            <FormItem>
-                <FormLabel>ID Proof Document</FormLabel>
-                <FormControl>
-                    <Input id="id-proof-file-input" type="file" accept="image/*,application/pdf" {...register('idProofFile')} disabled={formIsDisabled} />
-                </FormControl>
-                <FormDescription>Optional. Upload an image or PDF of the ID proof.</FormDescription>
-                <FormMessage />
-            </FormItem>
-            
-            {preview && (
-                <div className="relative group w-full h-48 mt-2 rounded-md overflow-hidden border">
-                    {preview.startsWith('data:application/pdf') ? (
-                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
-                            <FileIcon className="w-12 h-12 mb-2" />
-                            <p className="text-sm text-center">PDF Document Uploaded</p>
-                        </div>
-                    ) : (
-                        <img src={`/api/image-proxy?url=${encodeURIComponent(preview)}`} alt="ID Proof Preview" className="object-contain w-full h-full" crossOrigin="anonymous"/>
-                    )}
-                    {!isReadOnly && <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button type="button" size="icon" variant="outline" onClick={() => document.getElementById('id-proof-file-input')?.click()} disabled={formIsDisabled}><Replace className="h-5 w-5"/><span className="sr-only">Replace Image</span></Button>
-                        <Button type="button" size="icon" variant="destructive" onClick={handleDeleteProof} disabled={formIsDisabled}><Trash2 className="h-5 w-5"/><span className="sr-only">Delete Image</span></Button>
-                    </div>}
+    const formIsDisabled = isReadOnly || isSubmitting;
+  
+    return (
+        <Form {...form}>
+            <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField control={control} name="name" render={({ field }) => (
+                        <FormItem><FormLabel>Full Name *</FormLabel><FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                    <FormField control={control} name="phone" render={({ field }) => (
+                        <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="10-digit mobile number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+                    )}/>
                 </div>
-            )}
-            
-            {!isReadOnly && idProofFile?.length > 0 && (
-                <Button type="button" className="w-full" onClick={handleScanIdProof} disabled={isScanning || formIsDisabled}>
-                    {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan ID Proof & Autofill
-                </Button>
-            )}
-            <FormField control={control} name="idProofIsPublic" render={({ field }) => (
-                <FormItem className="flex flex-row items-center space-x-2 space-y-0 pt-2"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={formIsDisabled} /></FormControl><FormLabel className="text-sm font-normal">Make ID Proof public</FormLabel></FormItem>
-            )}/>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField control={control} name="idProofType" render={({ field }) => (
-                <FormItem><FormLabel>ID Proof Type</FormLabel><FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
-            )}/>
-            <FormField control={control} name="idNumber" render={({ field }) => (
-                <FormItem><FormLabel>ID Number</FormLabel><FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
-            )}
-        </div>
+                <FormField control={control} name="address" render={({ field }) => (
+                    <FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Full residential address" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+                )}/>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <FormField control={control} name="members" render={({ field }) => (<FormItem><FormLabel>Members</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                    <FormField control={control} name="earningMembers" render={({ field }) => (<FormItem><FormLabel>Earning</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                    <FormField control={control} name="male" render={({ field }) => (<FormItem><FormLabel>Male</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                    <FormField control={control} name="female" render={({ field }) => (<FormItem><FormLabel>Female</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <FormField control={control} name="referralBy" render={({ field }) => (
-                <FormItem><FormLabel>Referred By *</FormLabel><FormControl><Input placeholder="e.g. Local NGO" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
-            )}/>
-            <FormField control={control} name="kitAmount" render={({ field }) => (
-                <FormItem><FormLabel>Kit Amount (₹) *</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} disabled={formIsDisabled} /></FormControl><FormDescription>Enter the calculated kit amount.</FormDescription><FormMessage /></FormItem>
-            )}/>
-            <FormField control={control} name="status" render={({ field }) => (
-                <FormItem><FormLabel>Status *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled={formIsDisabled}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Hold">Hold</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-            )}/>
-        </div>
+                <div className="space-y-4 rounded-md border p-4">
+                    <h3 className="text-sm font-medium text-muted-foreground">ID Proof Details</h3>
+                    <Separator />
+                    <FormField
+                        control={control}
+                        name="idProofFile"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>ID Proof Document</FormLabel>
+                                <FormControl>
+                                    <Input id="id-proof-file-input" type="file" accept="image/*,application/pdf" onChange={handleFileChange} disabled={formIsDisabled} />
+                                </FormControl>
+                                <FormDescription>Optional. Upload an image or PDF of the ID proof.</FormDescription>
+                            </FormItem>
+                        )}
+                    />
+                    {preview && (
+                        <div className="relative group w-full h-48 mt-2 rounded-md overflow-hidden border">
+                            {preview.startsWith('data:application/pdf') ? (
+                                <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
+                                    <FileIcon className="w-12 h-12 mb-2" />
+                                    <p className="text-sm text-center">PDF Document Uploaded</p>
+                                </div>
+                            ) : (
+                                <img src={`/api/image-proxy?url=${encodeURIComponent(preview)}`} alt="ID Proof Preview" className="object-contain w-full h-full" crossOrigin="anonymous"/>
+                            )}
+                            {!isReadOnly && <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button type="button" size="icon" variant="outline" onClick={() => document.getElementById('id-proof-file-input')?.click()} disabled={formIsDisabled}><Replace className="h-5 w-5"/><span className="sr-only">Replace Image</span></Button>
+                                <Button type="button" size="icon" variant="destructive" onClick={handleDeleteProof} disabled={formIsDisabled}><Trash2 className="h-5 w-5"/><span className="sr-only">Delete Image</span></Button>
+                            </div>}
+                        </div>
+                    )}
+                    {!isReadOnly && idProofFile && idProofFile.length > 0 && (
+                        <Button type="button" className="w-full" onClick={handleScanIdProof} disabled={isScanning || formIsDisabled}>
+                            {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan ID Proof & Autofill
+                        </Button>
+                    )}
+                    <div className="flex flex-row items-center space-x-2 pt-2">
+                        <FormField
+                            control={control}
+                            name="idProofIsPublic"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                    <FormControl>
+                                        <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={formIsDisabled} />
+                                    </FormControl>
+                                    <div className="space-y-1 leading-none">
+                                        <FormLabel>Make ID Proof public</FormLabel>
+                                    </div>
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField control={control} name="idProofType" render={({ field }) => (<FormItem><FormLabel>ID Proof Type</FormLabel><FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
+                    <FormField control={control} name="idNumber" render={({ field }) => (<FormItem><FormLabel>ID Number</FormLabel><FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
+                </div>
 
-        <FormField control={control} name="notes" render={({ field }) => (
-            <FormItem><FormLabel>Notes</FormLabel><FormControl><Textarea placeholder="Any internal notes..." {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
-        )}/>
-        <Separator />
-        <FormField control={control} name="isEligibleForZakat" render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Eligible for Zakat</FormLabel><FormDescription>Can this beneficiary receive funds from Zakat?</FormDescription></div><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={formIsDisabled} /></FormControl></FormItem>
-        )}/>
-        {isEligibleForZakat && (
-            <FormField control={control} name="zakatAllocation" render={({ field }) => (
-                <FormItem className="animate-fade-in-zoom"><FormLabel>Zakat Allocation (₹)</FormLabel><FormControl><Input type="number" {...field} placeholder="Amount from Zakat" disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
-            )}
-        />
-        )}
-        
-        {isEditing && beneficiary?.createdAt && (
-             <div className="pt-4 text-xs text-muted-foreground space-y-1">
-                <p>Created by {beneficiary.createdByName || 'N/A'} on {new Date(beneficiary.createdAt.seconds * 1000).toLocaleString()}</p>
-                {beneficiary.updatedAt && <p>Last updated by {beneficiary.updatedByName || 'N/A'} on {new Date(beneficiary.updatedAt.seconds * 1000).toLocaleString()}</p>}
-             </div>
-        )}
-        
-        <div className="flex justify-end gap-2 pt-4">
-            {isReadOnly ? (
-                <>
-                    <Button type="button" variant="outline" onClick={onCancel}>Close</Button>
-                    <Button type="button" onClick={() => setIsReadOnly(false)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
-                </>
-            ) : (
-                <>
-                    <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>Cancel</Button>
-                    <Button type="submit" disabled={isSubmitting || (isEditing && !isDirty)}>
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {isSubmitting ? 'Saving...' : 'Save Beneficiary'}
-                    </Button>
-                </>
-            )}
-        </div>
-      </form>
-    </Form>
-  );
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <FormField control={control} name="referralBy" render={({ field }) => (<FormItem><FormLabel>Referred By *</FormLabel><FormControl><Input placeholder="e.g. Local NGO" {...field} disabled={formIsDisabled} /></FormControl><FormMessage/></FormItem>)}/>
+                    <FormField control={control} name="kitAmount" render={({ field }) => (<FormItem><FormLabel>Kit Amount (₹) *</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} disabled={formIsDisabled} /></FormControl><FormMessage/></FormItem>)}/>
+                    <FormField control={control} name="status" render={({ field }) => (<FormItem><FormLabel>Status *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled={formIsDisabled}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Hold">Hold</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent></Select><FormMessage/></FormItem>)}/>
+                </div>
+
+                <FormField control={control} name="notes" render={({ field }) => (<FormItem><FormLabel>Notes</FormLabel><FormControl><Textarea placeholder="Any internal notes..." {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
+                <Separator />
+                <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                        <Label htmlFor="isEligibleForZakat" className="text-base">Eligible for Zakat</Label>
+                        <p className="text-[0.8rem] text-muted-foreground">Can this beneficiary receive funds from Zakat?</p>
+                    </div>
+                    <FormField
+                        control={control}
+                        name="isEligibleForZakat"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormControl>
+                                    <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={formIsDisabled} />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                {watch('isEligibleForZakat') && (
+                    <div className="animate-fade-in-zoom">
+                        <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem><FormLabel>Zakat Allocation (₹)</FormLabel><FormControl><Input type="number" placeholder="Amount from Zakat" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
+                    </div>
+                )}
+                
+                {isEditing && beneficiary?.createdAt && (
+                    <div className="pt-4 text-xs text-muted-foreground space-y-1">
+                        <p>Created by {beneficiary.createdByName || 'N/A'} on {new Date(beneficiary.createdAt.seconds * 1000).toLocaleString()}</p>
+                        {beneficiary.updatedAt && <p>Last updated by {beneficiary.updatedByName || 'N/A'} on {new Date(beneficiary.updatedAt.seconds * 1000).toLocaleString()}</p>}
+                    </div>
+                )}
+                
+                <div className="flex justify-end gap-2 pt-4">
+                    {isReadOnly ? (
+                        <>
+                            <Button type="button" variant="outline" onClick={onCancel}>Close</Button>
+                            <Button type="button" onClick={() => setIsReadOnly(false)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>Cancel</Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                {isSubmitting ? 'Saving...' : 'Save Beneficiary'}
+                            </Button>
+                        </>
+                    )}
+                </div>
+            </form>
+        </Form>
+    );
 }
