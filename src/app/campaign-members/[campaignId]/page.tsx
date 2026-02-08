@@ -90,22 +90,30 @@ export default function CampaignDetailsPage() {
     return Object.keys(editableCampaign.rationLists).sort((a, b) => {
         const aIsGeneral = a.toLowerCase().includes('general');
         const bIsGeneral = b.toLowerCase().includes('general');
-        if (aIsGeneral) return -1;
-        if (bIsGeneral) return 1;
-        return Number(b) - Number(a);
+        if (aIsGeneral && !bIsGeneral) return -1;
+        if (!aIsGeneral && bIsGeneral) return 1;
+        if (aIsGeneral && bIsGeneral) return 0;
+        
+        const numA = Number(a);
+        const numB = Number(b);
+        
+        if (isNaN(numA)) return 1; // Put non-numeric things last
+        if (isNaN(numB)) return -1;
+
+        return numB - numA; // Descending sort
     });
   }, [editableCampaign]);
 
   useEffect(() => {
-    // If categories are loaded and either no tab is active or the active tab was deleted,
-    // default to the first available category.
-    if (memberCategories.length > 0 && (!activeTab || !memberCategories.includes(activeTab))) {
-      setActiveTab(memberCategories[0]);
-    } else if (memberCategories.length === 0) {
-      // If there are no categories, unset the active tab.
+    // If the current active tab is no longer valid, or if no tab is active, select a default.
+    if (memberCategories.length > 0) {
+      if (!memberCategories.includes(activeTab || '')) {
+        setActiveTab(memberCategories[0]);
+      }
+    } else {
       setActiveTab(undefined);
     }
-  }, [memberCategories, activeTab]);
+  }, [memberCategories]);
   
   const getCategoryLabel = (category: string | null): string => {
     if (!category) return '';
@@ -476,8 +484,7 @@ export default function CampaignDetailsPage() {
         return;
     }
     
-    const newRationLists = { ...editableCampaign.rationLists, [newCountStr]: [] };
-    handleFieldChange('rationLists', newRationLists);
+    handleFieldChange('rationLists', { ...editableCampaign.rationLists, [newCountStr]: [] });
     setActiveTab(newCountStr);
     setNewMemberCount('');
     setIsAddCategoryOpen(false);
