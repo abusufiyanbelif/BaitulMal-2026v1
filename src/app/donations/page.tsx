@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -234,7 +233,17 @@ export default function DonationsPage() {
         const { transactions, ...donationData } = data;
         
         const finalLinkSplit = data.linkSplit?.map(split => {
-            if (!split.linkId || split.linkId === 'unlinked') return null;
+            if (!split.linkId || split.linkId === 'unlinked') {
+                if (split.amount > 0) {
+                    return {
+                        linkId: 'unallocated',
+                        linkName: 'Unallocated',
+                        linkType: 'general' as const,
+                        amount: split.amount
+                    };
+                }
+                return null;
+            }
             const [type, id] = split.linkId.split('_');
             const linkType = type as 'campaign' | 'lead';
             const source = linkType === 'campaign' ? campaigns : leads;
@@ -244,9 +253,9 @@ export default function DonationsPage() {
                 linkId: id,
                 linkName: linkedItem?.name || 'Unknown Initiative',
                 linkType: linkType,
-                amount: data.isSplit ? split.amount : data.amount
+                amount: split.amount
             };
-        }).filter(Boolean) as Donation['linkSplit'] || [];
+        }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
         
         finalData = {
             ...donationData,

@@ -146,7 +146,7 @@ export interface UserProfile extends DocumentData {
 export interface DonationLink {
   linkId: string;
   linkName: string;
-  linkType: 'campaign' | 'lead';
+  linkType: 'campaign' | 'lead' | 'general';
   amount: number;
 }
 
