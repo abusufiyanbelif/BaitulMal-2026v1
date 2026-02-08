@@ -289,85 +289,6 @@ export default function DonationsPage() {
     return sortableItems;
   }, [donations, searchTerm, statusFilter, typeFilter, donationTypeFilter, sortConfig]);
 
-  const { zakatTotal, loanTotal, interestTotal, sadaqahTotal, lillahTotal, monthlyContributionTotal, grandTotal } = useMemo(() => {
-    if (!filteredAndSortedDonations) {
-        return { zakatTotal: 0, loanTotal: 0, interestTotal: 0, sadaqahTotal: 0, lillahTotal: 0, monthlyContributionTotal: 0, grandTotal: 0 };
-    }
-
-    let zakat = 0;
-    let loan = 0;
-    let interest = 0;
-    let sadaqah = 0;
-    let lillah = 0;
-    let monthlyContribution = 0;
-
-    for (const d of filteredAndSortedDonations) {
-        if (d.typeSplit && d.typeSplit.length > 0) {
-            for (const split of d.typeSplit) {
-                switch (split.category) {
-                    case 'Zakat':
-                        zakat += split.amount;
-                        break;
-                    case 'Loan':
-                        loan += split.amount;
-                        break;
-                    case 'Interest':
-                        interest += split.amount;
-                        break;
-                    case 'Sadaqah':
-                        sadaqah += split.amount;
-                        break;
-                    case 'Lillah':
-                        lillah += split.amount;
-                        break;
-                    case 'Monthly Contribution':
-                        monthlyContribution += split.amount;
-                        break;
-                }
-            }
-        }
-    }
-    const grandTotal = zakat + loan + interest + sadaqah + lillah + monthlyContribution;
-
-    return {
-        zakatTotal: zakat,
-        loanTotal: loan,
-        interestTotal: interest,
-        sadaqahTotal: sadaqah,
-        lillahTotal: lillah,
-        monthlyContributionTotal: monthlyContribution,
-        grandTotal: grandTotal,
-    };
-}, [filteredAndSortedDonations]);
-
-  const statusStats = useMemo(() => {
-    if (!filteredAndSortedDonations) {
-      return {
-        verified: { count: 0, amount: 0 },
-        pending: { count: 0, amount: 0 },
-        canceled: { count: 0, amount: 0 },
-      };
-    }
-    return filteredAndSortedDonations.reduce((acc, donation) => {
-      const status = donation.status || 'Pending';
-      if (status === 'Verified') {
-        acc.verified.count += 1;
-        acc.verified.amount += donation.amount;
-      } else if (status === 'Pending') {
-        acc.pending.count += 1;
-        acc.pending.amount += donation.amount;
-      } else if (status === 'Canceled') {
-        acc.canceled.count += 1;
-        acc.canceled.amount += donation.amount;
-      }
-      return acc;
-    }, {
-      verified: { count: 0, amount: 0 },
-      pending: { count: 0, amount: 0 },
-      canceled: { count: 0, amount: 0 },
-    });
-  }, [filteredAndSortedDonations]);
-
   const isLoading = areDonationsLoading || isProfileLoading || areCampaignsLoading || areLeadsLoading;
   
   const SortableHeader = ({ sortKey, children, className }: { sortKey: SortKey, children: React.ReactNode, className?: string }) => {
@@ -442,59 +363,6 @@ export default function DonationsPage() {
                       Add Donation
                   </Button>
               )}
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3">
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
-                    <CardContent className="p-2">
-                        <div className="text-2xl font-bold">{statusStats.verified.count}</div>
-                        <p className="text-xs text-muted-foreground">₹{statusStats.verified.amount.toLocaleString('en-IN')}</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2">
-                        <div className="text-2xl font-bold">{statusStats.pending.count}</div>
-                        <p className="text-xs text-muted-foreground">₹{statusStats.pending.amount.toLocaleString('en-IN')}</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Canceled</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
-                    <CardContent className="p-2">
-                        <div className="text-2xl font-bold">{statusStats.canceled.count}</div>
-                        <p className="text-xs text-muted-foreground">₹{statusStats.canceled.amount.toLocaleString('en-IN')}</p>
-                    </CardContent>
-                </Card>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3">
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Grand Total</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-xl font-bold">₹{grandTotal.toLocaleString('en-IN')}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Zakat</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-xl font-bold">₹{zakatTotal.toLocaleString('en-IN')}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Interest</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-xl font-bold">₹{interestTotal.toLocaleString('en-IN')}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Loan</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-xl font-bold">₹{loanTotal.toLocaleString('en-IN')}</div></CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Sadaqah</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-xl font-bold">₹{sadaqahTotal.toLocaleString('en-IN')}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Lillah</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-xl font-bold">₹{lillahTotal.toLocaleString('en-IN')}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Monthly Contribution</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-xl font-bold">₹{monthlyContributionTotal.toLocaleString('en-IN')}</div></CardContent>
-                </Card>
             </div>
             <div className="flex flex-wrap items-center gap-2 pt-4">
                 <Input
@@ -671,7 +539,7 @@ export default function DonationsPage() {
                                         </TableRow>
                                         <CollapsibleContent asChild>
                                             <TableRow className="bg-muted/50 hover:bg-muted/50">
-                                                <TableCell colSpan={13} className="p-0">
+                                                <TableCell colSpan={12} className="p-0">
                                                     <div className="p-3">
                                                         <h4 className="text-sm font-semibold mb-2">Transaction Details</h4>
                                                         <Table>
@@ -708,7 +576,7 @@ export default function DonationsPage() {
                         })
                         ) : (
                         <TableRow>
-                            <TableCell colSpan={13} className="text-center h-24 text-muted-foreground">
+                            <TableCell colSpan={12} className="text-center h-24 text-muted-foreground">
                                 No donations found.
                             </TableCell>
                         </TableRow>

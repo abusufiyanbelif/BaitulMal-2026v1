@@ -26,7 +26,7 @@ import type { Donation, DonationCategory, Beneficiary } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Wallet, CheckCircle, Hourglass, XCircle, Link as LinkIcon, Link2Off, Download, DatabaseZap, DollarSign } from 'lucide-react';
+import { ArrowLeft, Loader2, Wallet, CheckCircle, Hourglass, XCircle, Link as LinkIcon, Link2Off, Download, DatabaseZap, DollarSign, CheckCircle2 } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -237,6 +237,60 @@ export default function DonationsSummaryPage() {
             </div>
             
             <div className="space-y-6 animate-fade-in-zoom">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <Card>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
+                        <CardContent className="p-2">
+                            <div className="text-2xl font-bold">{summaryData?.countsByStatus.Verified ?? 0}</div>
+                            <p className="text-xs text-muted-foreground">₹{(summaryData?.amountsByStatus.Verified ?? 0).toLocaleString('en-IN')}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                        <CardContent className="p-2">
+                            <div className="text-2xl font-bold">{summaryData?.countsByStatus.Pending ?? 0}</div>
+                            <p className="text-xs text-muted-foreground">₹{(summaryData?.amountsByStatus.Pending ?? 0).toLocaleString('en-IN')}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Canceled</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
+                        <CardContent className="p-2">
+                            <div className="text-2xl font-bold">{summaryData?.countsByStatus.Canceled ?? 0}</div>
+                            <p className="text-xs text-muted-foreground">₹{(summaryData?.amountsByStatus.Canceled ?? 0).toLocaleString('en-IN')}</p>
+                        </CardContent>
+                    </Card>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <Card>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Grand Total</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                        <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.grandTotal ?? 0).toLocaleString('en-IN')}</div></CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Zakat</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                        <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.zakat ?? 0).toLocaleString('en-IN')}</div></CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Interest</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                        <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.interest ?? 0).toLocaleString('en-IN')}</div></CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Loan</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                        <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.loan ?? 0).toLocaleString('en-IN')}</div></CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Sadaqah</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                        <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.sadaqah ?? 0).toLocaleString('en-IN')}</div></CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Lillah</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                        <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.lillah ?? 0).toLocaleString('en-IN')}</div></CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Monthly Contribution</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                        <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.monthlyContribution ?? 0).toLocaleString('en-IN')}</div></CardContent>
+                    </Card>
+                </div>
+
                 <div className="grid gap-6 lg:grid-cols-2">
                     <Card>
                         <CardHeader>
@@ -346,38 +400,7 @@ export default function DonationsSummaryPage() {
                     </Card>
                 </div>
 
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Verified Donations</CardTitle>
-                            <CheckCircle className="h-4 w-4 text-success" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">Rupee {summaryData?.amountsByStatus.Verified.toLocaleString('en-IN') ?? '0.00'}</div>
-                            <p className="text-xs text-muted-foreground">from {summaryData?.countsByStatus.Verified ?? 0} donations</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Pending Donations</CardTitle>
-                            <Hourglass className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">Rupee {summaryData?.amountsByStatus.Pending.toLocaleString('en-IN') ?? '0.00'}</div>
-                            <p className="text-xs text-muted-foreground">from {summaryData?.countsByStatus.Pending ?? 0} donations</p>
-                        </CardContent>
-                    </Card>
-                     <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Canceled Donations</CardTitle>
-                            <XCircle className="h-4 w-4 text-destructive" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">Rupee {summaryData?.amountsByStatus.Canceled.toLocaleString('en-IN') ?? '0.00'}</div>
-                            <p className="text-xs text-muted-foreground">from {summaryData?.countsByStatus.Canceled ?? 0} donations</p>
-                        </CardContent>
-                    </Card>
-                </div>
+                
                  
             </div>
         </main>
