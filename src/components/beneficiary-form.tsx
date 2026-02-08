@@ -1,12 +1,12 @@
 
 'use client';
 
-import { z } from 'zod';
-import { useForm, FormProvider } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState, useMemo } from 'react';
-import { format } from 'date-fns';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
+  Form,
   FormControl,
   FormDescription,
   FormField,
@@ -30,19 +30,19 @@ import { Loader2, ScanLine, Trash2, Replace, FileIcon, Edit } from 'lucide-react
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
-import { DialogFooter } from '@/components/ui/dialog';
+
 
 const formSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  name: z.string().min(2, "Name is required"),
   address: z.string().optional(),
-  phone: z.string().length(10, { message: "Phone must be exactly 10 digits." }).optional().or(z.literal('')),
-  members: z.coerce.number().int().optional(),
-  earningMembers: z.coerce.number().int().optional(),
-  male: z.coerce.number().int().optional(),
-  female: z.coerce.number().int().optional(),
+  phone: z.string().optional(),
+  members: z.coerce.number().optional(),
+  earningMembers: z.coerce.number().optional(),
+  male: z.coerce.number().optional(),
+  female: z.coerce.number().optional(),
   idProofType: z.string().optional(),
   idNumber: z.string().optional(),
-  referralBy: z.string().min(2, { message: "Referral is required." }),
+  referralBy: z.string().min(1, "Referred by is required"),
   kitAmount: z.coerce.number().min(0),
   status: z.enum(['Given', 'Pending', 'Hold', 'Need More Details', 'Verified']),
   notes: z.string().optional(),
@@ -53,7 +53,8 @@ const formSchema = z.object({
   zakatAllocation: z.coerce.number().optional(),
 });
 
-export type BeneficiaryFormData = z.infer<typeof formSchema>;
+
+export interface BeneficiaryFormData extends z.infer<typeof formSchema> {}
 
 interface BeneficiaryFormProps {
   beneficiary?: Beneficiary | null;
@@ -65,7 +66,7 @@ interface BeneficiaryFormProps {
 
 export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, initialReadOnly = false }: BeneficiaryFormProps) {
   const { toast } = useToast();
-  const form = useForm<BeneficiaryFormData>({
+  const beneficiaryForm = useForm<BeneficiaryFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: beneficiary?.name || '',
@@ -96,7 +97,7 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
     getValues,
     handleSubmit,
     formState: { isSubmitting, isDirty },
-  } = form;
+  } = beneficiaryForm;
   
   const isEditing = !!beneficiary;
 
@@ -105,7 +106,6 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
   const [preview, setPreview] = useState<string | null>(beneficiary?.idProofUrl || null);
 
   const idProofFile = watch('idProofFile');
-  const membersValue = watch('members');
   const isEligibleForZakat = watch('isEligibleForZakat');
 
   useEffect(() => {
@@ -124,52 +124,7 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
         setPreview(null);
     }
   }, [idProofFile, beneficiary?.idProofUrl, watch, setValue]);
-
-  useEffect(() => {
-    if (membersValue && membersValue > 0 && rationLists && rationLists.length > 0) {
-      
-      const generalCategory = rationLists.find(cat => cat.name === 'General Item List');
-      
-      const masterPriceList = (generalCategory?.items || []).reduce((acc, item) => {
-        const itemName = (item.name || '').trim().toLowerCase();
-        if (itemName) {
-          acc[itemName] = Number(item.price) || 0;
-        }
-        return acc;
-      }, {} as Record<string, number>);
-
-      const matchingCategory = rationLists.find(
-        (cat) => membersValue >= cat.minMembers && membersValue <= cat.maxMembers && cat.name !== 'General Item List'
-      );
-      
-      const categoryToUse = matchingCategory || generalCategory;
-
-      if (categoryToUse) {
-        const total = categoryToUse.items.reduce((sum, item) => {
-          const unitPrice = masterPriceList[item.name.trim().toLowerCase()] || 0;
-          const quantity = Number(item.quantity) || 0;
-          return sum + (unitPrice * quantity);
-        }, 0);
-        
-        setValue('kitAmount', total, { shouldValidate: true });
-      } else {
-        setValue('kitAmount', 0, { shouldValidate: true });
-      }
-    } else {
-      setValue('kitAmount', 0, { shouldValidate: true });
-    }
-  }, [membersValue, rationLists, setValue]);
   
-  const isKitAmountReadOnly = useMemo(() => {
-    if (membersValue && membersValue > 0 && rationLists) {
-        const hasMatchingCategory = rationLists.some(
-            (cat) => membersValue >= cat.minMembers && membersValue <= cat.maxMembers
-        );
-        return hasMatchingCategory;
-    }
-    return false;
-  }, [membersValue, rationLists]);
-
   const handleDeleteProof = () => {
     setValue('idProofFile', null);
     setValue('idProofDeleted', true);
@@ -229,7 +184,7 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
   const formIsDisabled = isReadOnly || isSubmitting;
 
   return (
-    <FormProvider {...form}>
+    <Form {...beneficiaryForm}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField control={control} name="name" render={({ field }) => (
@@ -310,7 +265,7 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
                 <FormItem><FormLabel>Referred By *</FormLabel><FormControl><Input placeholder="e.g. Local NGO" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
             )}/>
             <FormField control={control} name="kitAmount" render={({ field }) => (
-                <FormItem><FormLabel>Kit Amount (₹) *</FormLabel><FormControl><Input type="number" placeholder="Auto-calculated" {...field} readOnly={isKitAmountReadOnly || formIsDisabled} className={cn((isKitAmountReadOnly) && "bg-muted/50 focus:ring-0 cursor-not-allowed")} /></FormControl><FormDescription>Auto-calculated if ration list exists.</FormDescription><FormMessage /></FormItem>
+                <FormItem><FormLabel>Kit Amount (₹) *</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} disabled={formIsDisabled} /></FormControl><FormDescription>Enter the calculated kit amount.</FormDescription><FormMessage /></FormItem>
             )}/>
             <FormField control={control} name="status" render={({ field }) => (
                 <FormItem><FormLabel>Status *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled={formIsDisabled}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Hold">Hold</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent></Select><FormMessage /></FormItem>
@@ -333,12 +288,12 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
         
         {isEditing && beneficiary?.createdAt && (
              <div className="pt-4 text-xs text-muted-foreground space-y-1">
-                <p>Created by {beneficiary.createdByName || 'N/A'} on {format(beneficiary.createdAt.toDate(), 'PPpp')}</p>
-                {beneficiary.updatedAt && <p>Last updated by {beneficiary.updatedByName || 'N/A'} on {format(beneficiary.updatedAt.toDate(), 'PPpp')}</p>}
+                <p>Created by {beneficiary.createdByName || 'N/A'} on {new Date(beneficiary.createdAt.seconds * 1000).toLocaleString()}</p>
+                {beneficiary.updatedAt && <p>Last updated by {beneficiary.updatedByName || 'N/A'} on {new Date(beneficiary.updatedAt.seconds * 1000).toLocaleString()}</p>}
              </div>
         )}
         
-        <DialogFooter className="pt-4">
+        <div className="flex justify-end gap-2 pt-4">
             {isReadOnly ? (
                 <>
                     <Button type="button" variant="outline" onClick={onCancel}>Close</Button>
@@ -353,10 +308,8 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
                     </Button>
                 </>
             )}
-        </DialogFooter>
+        </div>
       </form>
-    </FormProvider>
+    </Form>
   );
 }
-
-    
