@@ -499,7 +499,10 @@ export default function BeneficiariesPage() {
     const masterPriceList = generalCategory.items.reduce((acc, item) => {
         const itemName = (item.name || '').trim().toLowerCase();
         if (itemName) {
-            acc[itemName] = Number(item.price) || 0; // price in general list is unit price
+            const quantity = Number(item.quantity) || 0;
+            const price = Number(item.price) || 0;
+            const unitPrice = quantity > 0 ? price / quantity : 0;
+            acc[itemName] = unitPrice;
         }
         return acc;
     }, {} as Record<string, number>);

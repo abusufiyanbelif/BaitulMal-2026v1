@@ -173,7 +173,7 @@ export default function CampaignDetailsPage() {
         if (itemName) {
             const quantity = Number(item.quantity) || 0;
             const price = Number(item.price) || 0;
-            const unitPrice = quantity > 0 ? price / quantity : price;
+            const unitPrice = quantity > 0 ? price / quantity : 0;
 
             acc[itemName] = {
                 price: unitPrice,
@@ -283,7 +283,7 @@ export default function CampaignDetailsPage() {
         if (changedItem && searchName) {
             const quantity = Number(changedItem.quantity) || 0;
             const price = Number(changedItem.price) || 0;
-            const newMasterPrice = quantity > 0 ? price / quantity : price;
+            const newMasterPrice = quantity > 0 ? price / quantity : 0;
             const newMasterType = changedItem.quantityType || '';
 
             newRationLists.forEach(cat => {
@@ -343,9 +343,9 @@ export default function CampaignDetailsPage() {
     const isGeneral = category.name === 'General Item List';
     return category.items.reduce((sum, item) => {
         const price = Number(item.price || 0);
-        const quantity = Number(item.quantity || 0);
-        // For general list, price is per unit. For others, price is already total for the line item.
-        return sum + (isGeneral ? price * quantity : price);
+        const quantity = isGeneral ? 1 : (Number(item.quantity) || 0); // For general list, we sum unit prices.
+        const unitPrice = isGeneral ? price : (masterPriceList[item.name.trim().toLowerCase()]?.price || 0);
+        return sum + (unitPrice * quantity);
     }, 0);
   };
   
@@ -508,7 +508,10 @@ export default function CampaignDetailsPage() {
     const masterPriceList = generalCategory.items.reduce((acc, item) => {
         const itemName = (item.name || '').trim().toLowerCase();
         if (itemName) {
-            acc[itemName] = Number(item.price) || 0; // price in general list is unit price
+            const quantity = Number(item.quantity) || 0;
+            const price = Number(item.price) || 0;
+            const unitPrice = quantity > 0 ? price / quantity : 0;
+            acc[itemName] = unitPrice;
         }
         return acc;
     }, {} as Record<string, number>);
