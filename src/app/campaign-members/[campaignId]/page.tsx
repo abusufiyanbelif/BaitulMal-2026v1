@@ -184,10 +184,7 @@ export default function CampaignDetailsPage() {
     return generalCategory.items.reduce((acc, item) => {
         const itemName = (item.name || '').trim().toLowerCase();
         if (itemName) {
-            const quantity = Number(item.quantity) || 0;
-            const price = Number(item.price) || 0;
-            const unitPrice = quantity > 0 ? price / quantity : 0;
-
+            const unitPrice = Number(item.price) || 0;
             acc[itemName] = {
                 price: unitPrice,
                 quantityType: item.quantityType || '',
@@ -251,36 +248,26 @@ export default function CampaignDetailsPage() {
     if (!editableCampaign || !editableCampaign.rationLists) return;
     
     const category = sanitizedEditableRationLists.find(cat => cat.id === categoryId);
-    const isGeneral = category?.name === 'General Item List';
-    
-    let changedItemName: string | null = null;
-    let oldItemName: string | null = null;
+    const isGeneralList = category?.name === 'General Item List';
     
     const newRationLists = sanitizedEditableRationLists.map(cat => {
         if (cat.id !== categoryId) return cat;
         
         const updatedItems = cat.items.map(item => {
             if (item.id !== itemId) return item;
-            
-            if (field === 'name') {
-                oldItemName = String(item.name || '').trim().toLowerCase();
-            }
-            
+
             const newItem = { ...item, [field]: value };
             
-            if (isGeneral) {
-                changedItemName = String(newItem.name || '').trim().toLowerCase();
-            } else {
-                const itemNameLower = String(newItem.name || '').trim().toLowerCase();
-                const masterItem = masterPriceList[itemNameLower];
-
-                if (masterItem) {
-                    newItem.quantityType = masterItem.quantityType;
-                    const newPrice = masterItem.price * (Number(newItem.quantity) || 0);
-                    newItem.price = parseFloat(newPrice.toFixed(2));
-                } else if (field === 'name') {
-                    newItem.quantityType = '';
-                    newItem.price = 0;
+            if (!isGeneralList) {
+                const masterItem = masterPriceList[newItem.name.trim().toLowerCase()];
+                if (field === 'quantity' || field === 'name') {
+                    if (masterItem) {
+                        newItem.price = masterItem.price * (Number(newItem.quantity) || 0);
+                        newItem.quantityType = masterItem.quantityType;
+                    } else {
+                        newItem.price = 0;
+                        newItem.quantityType = '';
+                    }
                 }
             }
             return newItem;
@@ -289,27 +276,27 @@ export default function CampaignDetailsPage() {
         return { ...cat, items: updatedItems };
     });
 
-    if (isGeneral && (changedItemName || oldItemName)) {
+    if (isGeneralList) {
         const changedItem = newRationLists.find(c => c.id === categoryId)?.items.find(i => i.id === itemId);
-        const searchName = field === 'name' ? oldItemName : changedItemName;
-        
-        if (changedItem && searchName) {
-            const quantity = Number(changedItem.quantity) || 0;
-            const price = Number(changedItem.price) || 0;
-            const newMasterPrice = quantity > 0 ? price / quantity : 0;
-            const newMasterType = changedItem.quantityType || '';
+        const oldItem = sanitizedEditableRationLists.find(c => c.id === categoryId)?.items.find(i => i.id === itemId);
+
+        if (changedItem && oldItem) {
+            const oldName = oldItem.name.trim().toLowerCase();
+            const newName = changedItem.name.trim().toLowerCase();
+            const newUnitPrice = Number(changedItem.price) || 0;
+            const newUnitType = changedItem.quantityType || '';
 
             newRationLists.forEach(cat => {
-                if (cat.name !== 'General Item List') {
+                if (cat.id !== categoryId) {
                     cat.items = cat.items.map(item => {
-                        if (item.name.trim().toLowerCase() === searchName) {
+                        const itemNameLower = item.name.trim().toLowerCase();
+                        if (itemNameLower === oldName) {
                             const updatedItem = { ...item };
-                            if (field === 'name') {
+                            updatedItem.price = newUnitPrice * (Number(updatedItem.quantity) || 0);
+                            updatedItem.quantityType = newUnitType;
+                            if (oldName !== newName) {
                                 updatedItem.name = changedItem.name;
                             }
-                            const newPrice = newMasterPrice * (Number(updatedItem.quantity) || 0);
-                            updatedItem.quantityType = newMasterType;
-                            updatedItem.price = parseFloat(newPrice.toFixed(2));
                             return updatedItem;
                         }
                         return item;
@@ -352,8 +339,13 @@ export default function CampaignDetailsPage() {
     handleFieldChange('rationLists', newRationLists);
   };
 
-  const calculateTotal = (items: RationItem[]) => {
-    return items.reduce((sum, item) => sum + Number(item.price || 0), 0);
+  const calculateTotal = (items: RationItem[], isGeneralList: boolean) => {
+    return items.reduce((sum, item) => {
+        const itemPrice = Number(item.price || 0);
+        const itemQuantity = Number(item.quantity || 0);
+        const total = isGeneralList ? itemPrice * itemQuantity : itemPrice;
+        return sum + total;
+    }, 0);
   };
   
   const handleAddNewCategory = () => {
@@ -462,7 +454,7 @@ export default function CampaignDetailsPage() {
               const targetCategory = sanitizedEditableRationLists.find(c => c.id === targetCategoryId);
               if (!targetCategory) throw new Error("Target category not found.");
               
-              const newKitAmount = calculateTotal(targetCategory.items);
+              const newKitAmount = calculateTotal(targetCategory.items, false);
               
               for (const beneficiary of dependentBeneficiaries) {
                   const beneficiaryRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
@@ -520,9 +512,7 @@ export default function CampaignDetailsPage() {
     const masterPriceList = generalCategory.items.reduce((acc, item) => {
         const itemName = (item.name || '').trim().toLowerCase();
         if (itemName) {
-            const quantity = Number(item.quantity) || 0;
-            const price = Number(item.price) || 0;
-            const unitPrice = quantity > 0 ? price / quantity : 0;
+            const unitPrice = Number(item.price) || 0;
             acc[itemName] = unitPrice;
         }
         return acc;
@@ -660,8 +650,8 @@ export default function CampaignDetailsPage() {
   };
 
     const renderRationTable = (category: RationCategory) => {
-    const total = calculateTotal(category.items);
     const isGeneralList = category.name === 'General Item List';
+    const total = calculateTotal(category.items, isGeneralList);
 
     return (
       <Card className="animate-fade-in-zoom">
@@ -699,38 +689,50 @@ export default function CampaignDetailsPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {category.items.map((item, index) => (
-                        <TableRow key={item.id}>
-                            <TableCell>{index + 1}</TableCell>
-                            <TableCell>
-                                <Input value={item.name || ''} onChange={e => handleItemChange(category.id, item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
-                            </TableCell>
-                            <TableCell>
-                                <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(category.id, item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
-                            </TableCell>
-                            <TableCell>
-                                <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(category.id, item.id, 'quantityType', value)} disabled={!editMode || !canUpdate || !isGeneralList}>
-                                    <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                                    <SelectContent>
-                                        {quantityTypes.map(type => (
-                                            <SelectItem key={type} value={type}>{type}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </TableCell>
-                            <TableCell>
-                                <Input type="number" value={item.price || ''} onChange={e => handleItemChange(category.id, item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
-                            </TableCell>
-                            <TableCell className="text-right font-mono">
-                                ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
-                            </TableCell>
-                            {canUpdate && editMode && (
-                                <TableCell className="text-center">
-                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(category.id, item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    {category.items.map((item, index) => {
+                        const masterItem = !isGeneralList ? masterPriceList[item.name.trim().toLowerCase()] : null;
+                        const unitPrice = isGeneralList ? item.price : (masterItem?.price || 0);
+                        const totalPrice = isGeneralList ? (item.price || 0) * (item.quantity || 0) : (item.price || 0);
+
+                        return (
+                            <TableRow key={item.id}>
+                                <TableCell>{index + 1}</TableCell>
+                                <TableCell>
+                                    <Input value={item.name || ''} onChange={e => handleItemChange(category.id, item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
                                 </TableCell>
-                            )}
-                        </TableRow>
-                    ))}
+                                <TableCell>
+                                    <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(category.id, item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
+                                </TableCell>
+                                <TableCell>
+                                    <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(category.id, item.id, 'quantityType', value)} disabled={!editMode || !canUpdate || !isGeneralList}>
+                                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                                        <SelectContent>
+                                            {quantityTypes.map(type => (
+                                                <SelectItem key={type} value={type}>{type}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </TableCell>
+                                <TableCell>
+                                    <Input
+                                        type="number"
+                                        value={unitPrice || ''}
+                                        onChange={(e) => handleItemChange(category.id, item.id, 'price', parseFloat(e.target.value) || 0)}
+                                        className="text-right"
+                                        disabled={!editMode || !canUpdate || !isGeneralList}
+                                    />
+                                </TableCell>
+                                <TableCell className="text-right font-mono">
+                                    ₹{totalPrice.toFixed(2)}
+                                </TableCell>
+                                {canUpdate && editMode && (
+                                    <TableCell className="text-center">
+                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(category.id, item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                    </TableCell>
+                                )}
+                            </TableRow>
+                        )
+                    })}
                     {category.items.length === 0 && (
                         <TableRow>
                             <TableCell colSpan={canUpdate && editMode ? 7 : 6} className="text-center h-24 text-muted-foreground">
