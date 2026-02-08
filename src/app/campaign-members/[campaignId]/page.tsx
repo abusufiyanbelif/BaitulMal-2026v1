@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, Copy, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -772,26 +772,27 @@ export default function CampaignDetailsPage() {
                 </div>
              </div>
           </CardHeader>
-          <CardContent>
-             {editableCampaign.category === 'Ration' ? (
+            <CardContent>
+                {editableCampaign.category === 'Ration' ? (
                 (sanitizedEditableRationLists.length > 0) ? (
-                    <Accordion type="single" collapsible className="w-full" defaultValue={sanitizedEditableRationLists[0]?.id}>
-                       {sanitizedEditableRationLists.map(category => (
-                        <AccordionItem value={category.id} key={category.id}>
-                          <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                            <div className="flex items-center gap-4">
-                                <span>{category.name}</span>
-                                {category.name !== 'General Item List' && (
-                                    <Badge variant="secondary">{`${category.minMembers}-${category.maxMembers} Members`}</Badge>
-                                )}
-                            </div>
-                          </AccordionTrigger>
-                          <AccordionContent>
-                            {renderRationTable(category)}
-                          </AccordionContent>
-                        </AccordionItem>
-                       ))}
-                    </Accordion>
+                    <Tabs defaultValue={sanitizedEditableRationLists[0]?.id} className="w-full">
+                        <ScrollArea>
+                            <TabsList>
+                                {sanitizedEditableRationLists.map(category => (
+                                    <TabsTrigger key={category.id} value={category.id}>
+                                        {category.name}
+                                        {category.name !== 'General Item List' && ` (${category.minMembers}-${category.maxMembers} Members)`}
+                                    </TabsTrigger>
+                                ))}
+                            </TabsList>
+                            <ScrollBar orientation="horizontal" />
+                        </ScrollArea>
+                        {sanitizedEditableRationLists.map(category => (
+                            <TabsContent key={category.id} value={category.id} className="mt-4">
+                                {renderRationTable(category)}
+                            </TabsContent>
+                        ))}
+                    </Tabs>
                 ) : (
                     <div className="text-center text-muted-foreground py-10">
                         No ration categories defined for this campaign yet.
@@ -799,11 +800,11 @@ export default function CampaignDetailsPage() {
                     </div>
                 )
             ) : (
-              <div className="mt-4">
+                <div className="mt-4">
                 {sanitizedEditableRationLists.find(c => c.name === 'General Item List') &&
-                  renderRationTable(sanitizedEditableRationLists.find(c => c.name === 'General Item List')!)
+                    renderRationTable(sanitizedEditableRationLists.find(c => c.name === 'General Item List')!)
                 }
-              </div>
+                </div>
             )}
           </CardContent>
         </Card>

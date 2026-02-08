@@ -38,7 +38,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
@@ -542,39 +542,40 @@ export default function LeadDetailsPage() {
         </CardContent>
       </Card>
       
-      {editableLead.category === 'Ration' ? (
-        <div className="mt-6">
-             {(sanitizedEditableRationLists.length > 0) ? (
-                <Accordion type="single" collapsible className="w-full" defaultValue={sanitizedEditableRationLists[0]?.id}>
-                    {sanitizedEditableRationLists.map(category => (
-                    <AccordionItem value={category.id} key={category.id}>
-                        <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                        <div className="flex items-center gap-4">
-                            <span>{category.name}</span>
-                            {category.name !== 'General Item List' && (
-                                <Badge variant="secondary">{`${category.minMembers}-${category.maxMembers} Members`}</Badge>
-                            )}
-                        </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                           {renderRationTable(category)}
-                        </AccordionContent>
-                    </AccordionItem>
-                    ))}
-                </Accordion>
-            ) : (
-                <div className="text-center text-muted-foreground py-10 border rounded-md">
-                    No ration categories defined for this lead yet.
-                </div>
-            )}
-        </div>
-      ) : (
-        <div className="mt-6">
-            {sanitizedEditableRationLists.find(c => c.name === 'General Item List') &&
-              renderRationTable(sanitizedEditableRationLists.find(c => c.name === 'General Item List')!)
-            }
-        </div>
-      )}
+        {editableLead.category === 'Ration' ? (
+            <div className="mt-6">
+                {(sanitizedEditableRationLists.length > 0) ? (
+                    <Tabs defaultValue={sanitizedEditableRationLists[0]?.id} className="w-full">
+                        <ScrollArea>
+                            <TabsList>
+                                {sanitizedEditableRationLists.map(category => (
+                                    <TabsTrigger key={category.id} value={category.id}>
+                                        {category.name}
+                                        {category.name !== 'General Item List' && ` (${category.minMembers}-${category.maxMembers} Members)`}
+                                    </TabsTrigger>
+                                ))}
+                            </TabsList>
+                            <ScrollBar orientation="horizontal" />
+                        </ScrollArea>
+                        {sanitizedEditableRationLists.map(category => (
+                            <TabsContent key={category.id} value={category.id} className="mt-4">
+                                {renderRationTable(category)}
+                            </TabsContent>
+                        ))}
+                    </Tabs>
+                ) : (
+                    <div className="text-center text-muted-foreground py-10 border rounded-md">
+                        No ration categories defined for this lead yet.
+                    </div>
+                )}
+            </div>
+        ) : (
+            <div className="mt-6">
+                {sanitizedEditableRationLists.find(c => c.name === 'General Item List') &&
+                    renderRationTable(sanitizedEditableRationLists.find(c => c.name === 'General Item List')!)
+                }
+            </div>
+        )}
     </main>
   );
 }
