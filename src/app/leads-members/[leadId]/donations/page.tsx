@@ -633,7 +633,7 @@ export default function DonationsPage() {
                         filteredAndSortedDonations.map((donation, index) => {
                             const isOpen = openRows[donation.id] || false;
                             return (
-                             <Collapsible asChild key={donation.id} open={isOpen} onOpenChange={(open) => setOpenRows(prev => ({...prev, [donation.id]: open}))}>
+                             <Collapsible key={donation.id} open={isOpen} onOpenChange={(open) => setOpenRows(prev => ({...prev, [donation.id]: open}))}>
                                 <>
                                 <TableRow>
                                     <TableCell className="text-center sticky left-0 bg-card z-10">
@@ -731,7 +731,8 @@ export default function DonationsPage() {
                                 </CollapsibleContent>
                                 </>
                             </Collapsible>
-                        ))
+                        );
+                        })
                         ) : (
                         <TableRow>
                             <TableCell colSpan={12} className="text-center h-24 text-muted-foreground">

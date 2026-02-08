@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
 import {
   Form,
@@ -365,6 +365,5 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
         </div>
       </form>
     </Form>
-    </>
   );
 }

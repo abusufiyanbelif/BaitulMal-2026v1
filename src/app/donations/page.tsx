@@ -41,7 +41,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -458,7 +457,7 @@ export default function DonationsPage() {
                             const donationLinks = donation.linkSplit || [];
                             const isOpen = openRows[donation.id] || false;
                             return (
-                                <Collapsible asChild key={donation.id} open={isOpen} onOpenChange={(open) => setOpenRows(prev => ({...prev, [donation.id]: open}))}>
+                                <Collapsible key={donation.id} open={isOpen} onOpenChange={(open) => setOpenRows(prev => ({...prev, [donation.id]: open}))}>
                                     <>
                                         <TableRow>
                                             <TableCell className="text-center sticky left-0 bg-card z-10">
