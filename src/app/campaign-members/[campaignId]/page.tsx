@@ -339,8 +339,14 @@ export default function CampaignDetailsPage() {
     handleFieldChange('rationLists', newRationLists);
   };
 
-  const calculateTotal = (items: RationItem[]) => {
-    return items.reduce((sum, item) => sum + Number(item.price || 0), 0);
+  const calculateTotal = (category: RationCategory) => {
+    const isGeneral = category.name === 'General Item List';
+    return category.items.reduce((sum, item) => {
+        const price = Number(item.price || 0);
+        const quantity = Number(item.quantity || 0);
+        // For general list, price is per unit. For others, price is already total for the line item.
+        return sum + (isGeneral ? price * quantity : price);
+    }, 0);
   };
   
   const handleAddNewCategory = () => {
@@ -414,15 +420,12 @@ export default function CampaignDetailsPage() {
         const members = beneficiary.members;
         if (members === undefined || members === null) return false;
 
-        // Find the specific category this beneficiary falls into, excluding the general one first.
         const specificCategory = sanitizedEditableRationLists.find(
             cat => cat.name !== 'General Item List' && members >= cat.minMembers && members <= cat.maxMembers
         );
         
-        // The applied category is the specific one if found, otherwise it's the general one.
         const appliedCategory = specificCategory || generalCategory;
         
-        // This beneficiary is a dependent only if the category being deleted is the exact one applied to it.
         return appliedCategory?.id === categoryToDelete.id;
     });
     
@@ -445,12 +448,11 @@ export default function CampaignDetailsPage() {
       try {
           const batch = writeBatch(firestore);
 
-          // Step 1: Update beneficiaries if necessary
           if (dependentBeneficiaries.length > 0 && targetCategoryId) {
               const targetCategory = sanitizedEditableRationLists.find(c => c.id === targetCategoryId);
               if (!targetCategory) throw new Error("Target category not found.");
               
-              const newKitAmount = calculateTotal(targetCategory.items);
+              const newKitAmount = calculateTotal(targetCategory);
               
               for (const beneficiary of dependentBeneficiaries) {
                   const beneficiaryRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
@@ -458,13 +460,11 @@ export default function CampaignDetailsPage() {
               }
           }
 
-          // Step 2: Update the campaign document to remove the category
           const newRationLists = sanitizedEditableRationLists.filter(cat => cat.id !== categoryToDelete.id);
           batch.update(campaignDocRef!, { rationLists: newRationLists });
           
           await batch.commit();
 
-          // Manually update the local state to reflect the change immediately
           handleFieldChange('rationLists', newRationLists);
 
           toast({ title: 'Category Deleted', description: `Successfully deleted '${categoryToDelete.name}'.`, variant: 'success' });
@@ -489,22 +489,9 @@ export default function CampaignDetailsPage() {
         return;
     };
     setIsSyncing(true);
+    
+    const rationLists = sanitizedEditableRationLists;
 
-    let { rationLists } = campaign;
-    
-    // Sanitize rationLists if it's in the old object format
-    if (rationLists && !Array.isArray(rationLists)) {
-      rationLists = [
-        {
-          id: 'general',
-          name: 'General Item List',
-          minMembers: 0,
-          maxMembers: 0,
-          items: (rationLists as any)['General Item List'] || []
-        }
-      ];
-    }
-    
     if (!rationLists || rationLists.length === 0) {
         toast({ title: 'Sync Canceled', description: 'No ration lists found for this campaign to calculate amounts.', variant: 'destructive' });
         setIsSyncing(false);
@@ -512,7 +499,20 @@ export default function CampaignDetailsPage() {
     }
     
     const generalCategory = rationLists.find(cat => cat.name === 'General Item List');
-    const calculateTotal = (items: RationItem[]) => items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+    if (!generalCategory) {
+        toast({ title: 'Sync Canceled', description: 'A "General Item List" is required to determine unit prices.', variant: 'destructive' });
+        setIsSyncing(false);
+        return;
+    }
+
+    const masterPriceList = generalCategory.items.reduce((acc, item) => {
+        const itemName = (item.name || '').trim().toLowerCase();
+        if (itemName) {
+            acc[itemName] = Number(item.price) || 0; // price in general list is unit price
+        }
+        return acc;
+    }, {} as Record<string, number>);
+
     
     const batch = writeBatch(firestore);
     let updatesCount = 0;
@@ -530,7 +530,11 @@ export default function CampaignDetailsPage() {
             
             let expectedAmount = 0;
             if (categoryToUse) {
-                expectedAmount = calculateTotal(categoryToUse.items);
+                expectedAmount = categoryToUse.items.reduce((sum, item) => {
+                    const unitPrice = masterPriceList[item.name.trim().toLowerCase()] || 0;
+                    const quantity = Number(item.quantity) || 0;
+                    return sum + (unitPrice * quantity);
+                }, 0);
             }
             
             if (beneficiary.kitAmount !== expectedAmount) {
@@ -611,13 +615,14 @@ export default function CampaignDetailsPage() {
   };
 
     const renderRationTable = (category: RationCategory) => {
-    const total = calculateTotal(category.items);
+    const total = calculateTotal(category);
+    const isGeneralList = category.name === 'General Item List';
 
     return (
       <Card className="animate-fade-in-zoom">
         <CardHeader>
             <div className="flex justify-between items-center">
-                <CardTitle>{category.name === 'General Item List' ? 'Item List' : 'Items for this category'}</CardTitle>
+                <CardTitle>{isGeneralList ? 'Item Master List' : 'Items for this category'}</CardTitle>
                 {canUpdate && editMode && (
                     <div className="flex gap-2">
                         <Button onClick={() => handleCopyItemsClick(category)} size="sm" variant="outline">
@@ -629,6 +634,7 @@ export default function CampaignDetailsPage() {
                     </div>
                 )}
             </div>
+             {isGeneralList && <CardDescription>This list defines the unit price for all items across all categories.</CardDescription>}
         </CardHeader>
         <CardContent className="pt-6">
           <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
@@ -642,9 +648,9 @@ export default function CampaignDetailsPage() {
                         <TableHead className="min-w-[180px]">Item Name</TableHead>
                         <TableHead className="min-w-[100px]">Quantity</TableHead>
                         <TableHead className="min-w-[150px]">Quantity Type</TableHead>
-                        <TableHead className="min-w-[120px]">Price per Unit (₹)</TableHead>
+                        <TableHead className="min-w-[120px]">{isGeneralList ? 'Price per Unit (₹)' : 'Price (₹)'}</TableHead>
                         <TableHead className="min-w-[180px]">Notes</TableHead>
-                        <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>
+                        {isGeneralList && <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>}
                         {canUpdate && editMode && <TableHead className="w-[50px] text-center">Action</TableHead>}
                     </TableRow>
                 </TableHeader>
@@ -659,7 +665,7 @@ export default function CampaignDetailsPage() {
                                 <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(category.id, item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
                             </TableCell>
                             <TableCell>
-                                <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(category.id, item.id, 'quantityType', value)} disabled={!editMode || !canUpdate}>
+                                <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(category.id, item.id, 'quantityType', value)} disabled={!editMode || !canUpdate || !isGeneralList}>
                                     <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                                     <SelectContent>
                                         {quantityTypes.map(type => (
@@ -674,9 +680,11 @@ export default function CampaignDetailsPage() {
                             <TableCell>
                                 <Input value={item.notes || ''} onChange={e => handleItemChange(category.id, item.id, 'notes', e.target.value)} placeholder="e.g. brand, quality" disabled={!editMode || !canUpdate} />
                             </TableCell>
-                            <TableCell className="text-right font-mono">
-                                ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
-                            </TableCell>
+                            {isGeneralList && 
+                                <TableCell className="text-right font-mono">
+                                    ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
+                                </TableCell>
+                            }
                             {canUpdate && editMode && (
                                 <TableCell className="text-center">
                                     <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(category.id, item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
@@ -946,7 +954,7 @@ export default function CampaignDetailsPage() {
                                      <div key={category.id} className="flex items-center gap-1 p-1">
                                         <TabsTrigger value={category.id}>
                                             {category.name === 'General Item List'
-                                                ? 'General'
+                                                ? 'General Item List'
                                                 : category.minMembers === category.maxMembers
                                                     ? `${category.name} ${category.minMembers}`
                                                     : `${category.name} (${category.minMembers}-${category.maxMembers})`

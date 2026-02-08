@@ -490,7 +490,19 @@ export default function BeneficiariesPage() {
     }
     
     const generalCategory = rationLists.find(cat => cat.name === 'General Item List');
-    const calculateTotal = (items: RationItem[]) => items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+    if (!generalCategory) {
+        toast({ title: 'Sync Canceled', description: 'A "General Item List" is required to determine unit prices.', variant: 'destructive' });
+        setIsSyncing(false);
+        return;
+    }
+
+    const masterPriceList = generalCategory.items.reduce((acc, item) => {
+        const itemName = (item.name || '').trim().toLowerCase();
+        if (itemName) {
+            acc[itemName] = Number(item.price) || 0; // price in general list is unit price
+        }
+        return acc;
+    }, {} as Record<string, number>);
     
     const batch = writeBatch(firestore);
     let updatesCount = 0;
@@ -508,7 +520,11 @@ export default function BeneficiariesPage() {
             
             let expectedAmount = 0;
             if (categoryToUse) {
-                expectedAmount = calculateTotal(categoryToUse.items);
+                expectedAmount = categoryToUse.items.reduce((sum, item) => {
+                    const unitPrice = masterPriceList[item.name.trim().toLowerCase()] || 0;
+                    const quantity = Number(item.quantity) || 0;
+                    return sum + (unitPrice * quantity);
+                }, 0);
             }
             
             if (beneficiary.kitAmount !== expectedAmount) {
