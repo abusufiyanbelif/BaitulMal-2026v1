@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Upload, Download, Eye, ArrowUp, ArrowDown, RefreshCw, ZoomIn, ZoomOut, RotateCw, Check, ChevronsUpDown, X, Users, CheckCircle2, BadgeCheck, Hourglass, XCircle, Info } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Upload, Download, Eye, ArrowUp, ArrowDown, RefreshCw, ZoomIn, ZoomOut, RotateCw, Check, ChevronsUpDown, X, Users, CheckCircle2, BadgeCheck, Hourglass, XCircle, Info, ChevronRight, ChevronDown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -99,6 +99,14 @@ export default function BeneficiariesPage() {
   const [membersFilter, setMembersFilter] = useState('');
   const [kitAmountFilter, setKitAmountFilter] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+
+  const toggleGroup = (groupKey: string) => {
+    setCollapsedGroups(prev => ({
+        ...prev,
+        [groupKey]: !prev[groupKey],
+    }));
+  };
   
   const canReadSummary = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.summary?.read;
   const canReadRation = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.ration?.read;
@@ -911,73 +919,79 @@ export default function BeneficiariesPage() {
                                 </TableRow>
                             ))
                         ) : sortedGroupKeys.length > 0 ? (
-                            sortedGroupKeys.map((memberCount) => (
-                            <React.Fragment key={`group-${memberCount}`}>
-                                <TableRow className="bg-muted hover:bg-muted">
-                                    <TableCell colSpan={(canUpdate || canDelete) ? 15 : 14} className="font-bold">
-                                        Group: {memberCount} Members ({groupedBeneficiaries[memberCount].length} beneficiaries)
-                                    </TableCell>
-                                </TableRow>
-                                {groupedBeneficiaries[memberCount].map((beneficiary, index) => (
-                                <TableRow key={beneficiary.id}>
-                                    {(canUpdate || canDelete) && (
-                                    <TableCell className="sticky left-0 z-10 bg-card text-center">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                {canUpdate && (
-                                                    <DropdownMenuItem onClick={() => handleEdit(beneficiary)}>
-                                                        <Edit className="mr-2 h-4 w-4" />
-                                                        Edit
-                                                    </DropdownMenuItem>
-                                                )}
-                                                {canDelete && (
-                                                    <DropdownMenuItem onClick={() => handleDeleteClick(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
-                                                        <Trash2 className="mr-2 h-4 w-4" />
-                                                        Delete
-                                                    </DropdownMenuItem>
-                                                )}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                    )}
-                                    <TableCell>{index + 1}</TableCell>
-                                    <TableCell className="font-medium">{beneficiary.name}</TableCell>
-                                    <TableCell>{beneficiary.address}</TableCell>
-                                    <TableCell>{beneficiary.phone}</TableCell>
-                                    <TableCell className="text-center">{beneficiary.members}</TableCell>
-                                    <TableCell className="text-center">{beneficiary.earningMembers}</TableCell>
-                                    <TableCell className="text-center">{beneficiary.male}/{beneficiary.female}</TableCell>
-                                    <TableCell>{beneficiary.addedDate}</TableCell>
-                                    <TableCell>{beneficiary.idProofType}</TableCell>
-                                    <TableCell>{beneficiary.idNumber}</TableCell>
-                                    <TableCell>
-                                        {beneficiary.idProofUrl && beneficiary.idProofIsPublic && (
-                                        <Button variant="outline" size="sm" onClick={() => handleViewImage(beneficiary.idProofUrl!)}>
-                                            <Eye className="mr-2 h-4 w-4" /> View
-                                        </Button>
+                            sortedGroupKeys.map((memberCount) => {
+                                const isCollapsed = collapsedGroups[String(memberCount)];
+                                return (
+                                <React.Fragment key={`group-${memberCount}`}>
+                                    <TableRow className="bg-muted hover:bg-muted cursor-pointer" onClick={() => toggleGroup(String(memberCount))}>
+                                        <TableCell colSpan={(canUpdate || canDelete) ? 15 : 14} className="font-bold">
+                                            <div className="flex items-center gap-2">
+                                                {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                                <span>Group: {memberCount} Members ({groupedBeneficiaries[memberCount].length} beneficiaries)</span>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                    {!isCollapsed && groupedBeneficiaries[memberCount].map((beneficiary, index) => (
+                                    <TableRow key={beneficiary.id}>
+                                        {(canUpdate || canDelete) && (
+                                        <TableCell className="sticky left-0 z-10 bg-card text-center">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    {canUpdate && (
+                                                        <DropdownMenuItem onClick={() => handleEdit(beneficiary)}>
+                                                            <Edit className="mr-2 h-4 w-4" />
+                                                            Edit
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {canDelete && (
+                                                        <DropdownMenuItem onClick={() => handleDeleteClick(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
+                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
                                         )}
-                                        {beneficiary.idProofUrl && !beneficiary.idProofIsPublic && "Private"}
-                                        {!beneficiary.idProofUrl && "N/A"}
-                                    </TableCell>
-                                    <TableCell>{beneficiary.referralBy}</TableCell>
-                                    <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={
-                                            beneficiary.status === 'Given' ? 'success' :
-                                            beneficiary.status === 'Verified' ? 'success' :
-                                            beneficiary.status === 'Pending' ? 'secondary' :
-                                            beneficiary.status === 'Hold' ? 'destructive' : 'outline'
-                                        }>{beneficiary.status}</Badge>
-                                    </TableCell>
-                                </TableRow>
-                                ))}
-                            </React.Fragment>
-                            ))
+                                        <TableCell>{index + 1}</TableCell>
+                                        <TableCell className="font-medium">{beneficiary.name}</TableCell>
+                                        <TableCell>{beneficiary.address}</TableCell>
+                                        <TableCell>{beneficiary.phone}</TableCell>
+                                        <TableCell className="text-center">{beneficiary.members}</TableCell>
+                                        <TableCell className="text-center">{beneficiary.earningMembers}</TableCell>
+                                        <TableCell className="text-center">{beneficiary.male}/{beneficiary.female}</TableCell>
+                                        <TableCell>{beneficiary.addedDate}</TableCell>
+                                        <TableCell>{beneficiary.idProofType}</TableCell>
+                                        <TableCell>{beneficiary.idNumber}</TableCell>
+                                        <TableCell>
+                                            {beneficiary.idProofUrl && beneficiary.idProofIsPublic && (
+                                            <Button variant="outline" size="sm" onClick={() => handleViewImage(beneficiary.idProofUrl!)}>
+                                                <Eye className="mr-2 h-4 w-4" /> View
+                                            </Button>
+                                            )}
+                                            {beneficiary.idProofUrl && !beneficiary.idProofIsPublic && "Private"}
+                                            {!beneficiary.idProofUrl && "N/A"}
+                                        </TableCell>
+                                        <TableCell>{beneficiary.referralBy}</TableCell>
+                                        <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={
+                                                beneficiary.status === 'Given' ? 'success' :
+                                                beneficiary.status === 'Verified' ? 'success' :
+                                                beneficiary.status === 'Pending' ? 'secondary' :
+                                                beneficiary.status === 'Hold' ? 'destructive' : 'outline'
+                                            }>{beneficiary.status}</Badge>
+                                        </TableCell>
+                                    </TableRow>
+                                    ))}
+                                </React.Fragment>
+                                )
+                            })
                         ) : (
                         <TableRow>
                             <TableCell colSpan={(canUpdate || canDelete) ? 15 : 14} className="text-center h-24 text-muted-foreground">
@@ -1078,5 +1092,8 @@ export default function BeneficiariesPage() {
     </>
   );
 }
+
+    
+
 
     
