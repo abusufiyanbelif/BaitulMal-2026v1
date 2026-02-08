@@ -864,14 +864,11 @@ export default function CampaignDetailsPage() {
              {editableCampaign.category === 'Ration' ? (
                 memberCategories.length > 0 ? (
                     <Tabs value={activeTab || ''} onValueChange={setActiveTab} className="w-full">
-                        <ScrollArea className="w-full whitespace-nowrap rounded-md">
-                            <TabsList className="justify-start">
-                                {memberCategories.map(count => (
-                                    <TabsTrigger key={count} value={count}>{getCategoryLabel(count)}</TabsTrigger>
-                                ))}
-                            </TabsList>
-                            <ScrollBar orientation="horizontal" />
-                        </ScrollArea>
+                        <TabsList className="flex h-auto flex-wrap justify-start">
+                            {memberCategories.map(count => (
+                                <TabsTrigger key={count} value={count}>{getCategoryLabel(count)}</TabsTrigger>
+                            ))}
+                        </TabsList>
                         {memberCategories.map(count => (
                             <TabsContent key={count} value={count} className="mt-4">
                                 {renderRationTable(count)}
