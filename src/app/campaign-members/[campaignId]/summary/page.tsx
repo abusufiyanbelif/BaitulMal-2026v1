@@ -385,12 +385,13 @@ Your contribution, big or small, makes a huge difference.
                 const PADDING = 40;
                 const HEADER_HEIGHT = 120;
                 const FOOTER_HEIGHT = 200;
+                const COPYRIGHT_HEIGHT = 30;
                 
                 const contentCanvas = canvas;
 
                 const finalCanvas = document.createElement('canvas');
                 finalCanvas.width = contentCanvas.width + PADDING * 2;
-                finalCanvas.height = contentCanvas.height + HEADER_HEIGHT + FOOTER_HEIGHT + PADDING;
+                finalCanvas.height = contentCanvas.height + HEADER_HEIGHT + FOOTER_HEIGHT + PADDING + COPYRIGHT_HEIGHT;
                 const ctx = finalCanvas.getContext('2d')!;
                 
                 ctx.fillStyle = '#FFFFFF';
@@ -424,7 +425,7 @@ Your contribution, big or small, makes a huge difference.
                     ctx.globalAlpha = 1.0;
                 }
                 
-                const footerY = finalCanvas.height - FOOTER_HEIGHT;
+                const footerY = finalCanvas.height - FOOTER_HEIGHT - COPYRIGHT_HEIGHT;
                 if (qrImg) {
                     const qrSize = 180;
                     ctx.drawImage(qrImg, finalCanvas.width - PADDING - qrSize, footerY, qrSize, qrSize);
@@ -438,6 +439,11 @@ Your contribution, big or small, makes a huge difference.
                 if (paymentSettings?.contactPhone) { ctx.fillText(`Phone: ${paymentSettings.contactPhone}`, PADDING, textY); textY += 28; }
                 if (paymentSettings?.website) { ctx.fillText(`Website: ${paymentSettings.website}`, PADDING, textY); textY += 28; }
                 if (paymentSettings?.address) { ctx.fillText(paymentSettings.address, PADDING, textY); }
+
+                ctx.textAlign = 'center';
+                ctx.font = '14px sans-serif';
+                ctx.fillStyle = 'hsl(var(--muted-foreground))';
+                ctx.fillText(paymentSettings?.copyright || '© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved.', finalCanvas.width / 2, finalCanvas.height - 15);
 
                 const link = document.createElement('a');
                 link.download = `campaign-summary-${campaignId}.png`;
@@ -519,6 +525,15 @@ Your contribution, big or small, makes a huge difference.
                     const addressLines = pdf.splitTextToSize(paymentSettings.address, pdfWidth - 30 - 40);
                     pdf.text(addressLines, 15, textY);
                 }
+
+                pdf.setFontSize(8);
+                pdf.setTextColor(128, 128, 128); // a gray color
+                pdf.text(
+                    paymentSettings?.copyright || '© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved.',
+                    pageCenter,
+                    pageHeight - 10,
+                    { align: 'center' }
+                );
                 
                 pdf.save(`campaign-summary-${campaignId}.pdf`);
             }

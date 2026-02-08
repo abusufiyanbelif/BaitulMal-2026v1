@@ -139,13 +139,14 @@ export default function DonationDetailsPage() {
                 const PADDING = 40;
                 const HEADER_HEIGHT = 100;
                 const FOOTER_HEIGHT = 180;
+                const COPYRIGHT_HEIGHT = 30;
                 
                 const finalCanvas = document.createElement('canvas');
                 const contentWidth = canvas.width;
                 const contentHeight = canvas.height;
 
                 finalCanvas.width = 1240;
-                finalCanvas.height = contentHeight + HEADER_HEIGHT + FOOTER_HEIGHT + PADDING * 2;
+                finalCanvas.height = contentHeight + HEADER_HEIGHT + FOOTER_HEIGHT + PADDING * 2 + COPYRIGHT_HEIGHT;
                 const ctx = finalCanvas.getContext('2d')!;
                 
                 ctx.fillStyle = '#FFFFFF';
@@ -163,7 +164,7 @@ export default function DonationDetailsPage() {
 
                 ctx.drawImage(canvas, (finalCanvas.width - contentWidth) / 2, PADDING + HEADER_HEIGHT);
                 
-                const footerY = finalCanvas.height - FOOTER_HEIGHT - PADDING;
+                const footerY = finalCanvas.height - FOOTER_HEIGHT - PADDING - COPYRIGHT_HEIGHT;
                 if (qrImg) {
                     const qrSize = 200;
                     ctx.drawImage(qrImg, finalCanvas.width - PADDING - qrSize, footerY, qrSize, qrSize);
@@ -187,6 +188,11 @@ export default function DonationDetailsPage() {
                     ctx.drawImage(logoImg, (finalCanvas.width - wmWidth) / 2, (finalCanvas.height - wmHeight) / 2, wmWidth, wmHeight);
                     ctx.globalAlpha = 1.0;
                 }
+                
+                ctx.textAlign = 'center';
+                ctx.font = '14px sans-serif';
+                ctx.fillStyle = 'hsl(var(--muted-foreground))';
+                ctx.fillText(paymentSettings?.copyright || '© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved.', finalCanvas.width / 2, finalCanvas.height - 15);
 
                 const link = document.createElement('a');
                 link.download = `donation-receipt-${donationId}.png`;
@@ -272,6 +278,15 @@ export default function DonationDetailsPage() {
                     const addressLines = pdf.splitTextToSize(paymentSettings.address, pdfWidth / 2 - 30);
                     pdf.text(addressLines, 15, textY);
                 }
+                
+                pdf.setFontSize(8);
+                pdf.setTextColor(128, 128, 128); // a gray color
+                pdf.text(
+                    paymentSettings?.copyright || '© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved.',
+                    pageCenter,
+                    pageHeight - 10,
+                    { align: 'center' }
+                );
 
                 pdf.save(`donation-receipt-${donationId}.pdf`);
             }

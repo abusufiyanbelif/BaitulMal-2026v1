@@ -25,6 +25,7 @@ export interface PaymentSettings extends DocumentData {
   pan?: string;
   address?: string;
   website?: string;
+  copyright?: string;
 }
 
 export interface CampaignDocument {

@@ -36,6 +36,7 @@ interface FormDataType {
     pan: string;
     address: string;
     website: string;
+    copyright: string;
 }
 
 export default function SettingsPage() {
@@ -77,6 +78,7 @@ export default function SettingsPage() {
                 pan: paymentSettings?.pan || '',
                 address: paymentSettings?.address || '',
                 website: paymentSettings?.website || '',
+                copyright: paymentSettings?.copyright || '',
             });
         } else {
             setEditableData(null);
@@ -159,6 +161,7 @@ export default function SettingsPage() {
                 upiId: editableData.upiId, paymentMobileNumber: editableData.paymentMobileNumber, contactEmail: editableData.contactEmail,
                 contactPhone: editableData.contactPhone, regNo: editableData.regNo, pan: editableData.pan, address: editableData.address,
                 website: editableData.website,
+                copyright: editableData.copyright,
             };
             batch.set(doc(firestore, 'settings', 'payment'), paymentData, { merge: true });
 
@@ -209,6 +212,7 @@ export default function SettingsPage() {
         pan: paymentSettings?.pan || '',
         address: paymentSettings?.address || '',
         website: paymentSettings?.website || '',
+        copyright: paymentSettings?.copyright || '',
     };
 
     if (isLoading) {
@@ -407,6 +411,11 @@ export default function SettingsPage() {
                             <div className="space-y-2">
                                 <Label htmlFor="website">Website URL</Label>
                                 <Input id="website" value={displayData.website || ''} onChange={(e) => handleFieldChange('website', e.target.value)} placeholder="https://example.com" disabled={isFormDisabled} />
+                            </div>
+                            <Separator/>
+                            <div className="space-y-2">
+                                <Label htmlFor="copyright">Copyright Text</Label>
+                                <Textarea id="copyright" value={displayData.copyright || ''} onChange={(e) => handleFieldChange('copyright', e.target.value as string)} placeholder="e.g. © 2026 Your Org Name. All Rights Reserved." disabled={isFormDisabled} />
                             </div>
                         </div>
                     </CardContent>

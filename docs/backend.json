@@ -148,10 +148,17 @@
       "description": "Global settings for payment and contact information.",
       "properties": {
         "qrCodeUrl": { "type": "string", "format": "uri" },
+        "qrWidth": { "type": "number" },
+        "qrHeight": { "type": "number" },
         "upiId": { "type": "string" },
+        "paymentMobileNumber": { "type": "string" },
         "contactEmail": { "type": "string", "format": "email" },
+        "contactPhone": { "type": "string" },
         "address": { "type": "string" },
-        "website": { "type": "string", "format": "uri" }
+        "website": { "type": "string", "format": "uri" },
+        "regNo": { "type": "string" },
+        "pan": { "type": "string" },
+        "copyright": { "type": "string", "description": "Copyright notice for the footer." }
       }
     }
   },
