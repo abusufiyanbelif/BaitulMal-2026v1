@@ -314,12 +314,25 @@ export default function LeadDetailsPage() {
     setCategoryToEdit(null);
   };
 
-  const handleDeleteCategoryClick = (category: RationCategory) => {
-      if (!beneficiaries || !canUpdate || !editMode || category.name === 'General Item List') return;
+  const handleDeleteCategoryClick = (categoryToDelete: RationCategory) => {
+      if (!beneficiaries || !canUpdate || !editMode || categoryToDelete.name === 'General Item List') return;
       
-      const dependents = beneficiaries.filter(b => b.members >= category.minMembers && b.members <= category.maxMembers);
+      const generalCategory = sanitizedEditableRationLists.find(cat => cat.name === 'General Item List');
+
+      const dependents = beneficiaries.filter(beneficiary => {
+          const members = beneficiary.members;
+          if (members === undefined || members === null) return false;
+
+          // Find the category that would be applied to this beneficiary from the full list.
+          const appliedCategory = sanitizedEditableRationLists.find(
+              cat => members >= cat.minMembers && members <= cat.maxMembers && cat.name !== 'General Item List'
+          ) || generalCategory;
+          
+          // This beneficiary is a dependent if the category being deleted is the one that's applied to it.
+          return appliedCategory?.id === categoryToDelete.id;
+      });
       
-      setCategoryToDelete(category);
+      setCategoryToDelete(categoryToDelete);
       setDependentBeneficiaries(dependents);
       setTargetCategoryId(null);
       setIsDeleteCategoryDialogOpen(true);
