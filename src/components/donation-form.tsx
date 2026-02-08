@@ -44,7 +44,7 @@ const formSchema = z.object({
   donorPhone: z.string().length(10, { message: "Phone must be exactly 10 digits." }).optional().or(z.literal('')),
   receiverName: z.string().min(2, { message: "Receiver name must be at least 2 characters." }),
   referral: z.string().min(1, { message: "Referral is required." }),
-  amount: z.coerce.number(), // This will be calculated
+  amount: z.coerce.number(), // This is calculated
   typeSplit: z.array(z.object({
     category: z.enum(donationCategories),
     amount: z.coerce.number().min(0, { message: 'Amount cannot be negative.' }),
@@ -65,12 +65,6 @@ const formSchema = z.object({
   })).min(1, "At least one transaction is required."),
   isSplit: z.boolean().default(false),
   linkSplit: linkSplitSchema,
-}).refine(data => {
-    const totalTransactionAmount = data.transactions.reduce((sum, tx) => sum + tx.amount, 0);
-    return Math.abs(totalTransactionAmount - data.amount) < 0.01;
-}, {
-    message: "Total amount does not match sum of transactions.", // This should not happen if amount is calculated
-    path: ['amount'],
 }).refine(data => {
     if (data.isTypeSplit) {
         const totalSplit = data.typeSplit.reduce((sum, split) => sum + split.amount, 0);
@@ -139,7 +133,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   // Calculate total amount from transactions
   useEffect(() => {
     const total = watchTransactions.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
-    setValue('amount', total, { shouldDirty: true });
+    setValue('amount', total, { shouldValidate: true, shouldDirty: true });
   }, [watchTransactions, setValue]);
 
   const totalAmount = watch('amount');
