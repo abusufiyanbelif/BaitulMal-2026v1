@@ -29,9 +29,9 @@ import type { Beneficiary, RationCategory, RationItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Loader2, ScanLine, Trash2, Replace, FileIcon, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from './ui/separator';
-import { Checkbox } from './ui/checkbox';
-import { DialogFooter } from './ui/dialog';
+import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DialogFooter } from '@/components/ui/dialog';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -65,6 +65,7 @@ interface BeneficiaryFormProps {
 }
 
 export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, initialReadOnly = false }: BeneficiaryFormProps) {
+  const { toast } = useToast();
   const form = useForm<BeneficiaryFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -87,7 +88,7 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
       zakatAllocation: beneficiary?.zakatAllocation || 0,
     },
   });
-  
+
   const {
     control,
     watch,
@@ -97,8 +98,7 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
     handleSubmit,
     formState: { isSubmitting, isDirty },
   } = form;
-
-  const { toast } = useToast();
+  
   const isEditing = !!beneficiary;
 
   const [isScanning, setIsScanning] = useState(false);
