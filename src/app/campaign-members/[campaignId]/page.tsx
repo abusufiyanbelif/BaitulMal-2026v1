@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useFirestore, useDoc, errorEmitter, FirestorePermissionError } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
@@ -46,6 +46,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { get } from '@/lib/utils';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 
 
@@ -70,7 +72,7 @@ export default function CampaignDetailsPage() {
   const [editableCampaign, setEditableCampaign] = useState<Campaign | null>(null);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [newMemberCount, setNewMemberCount] = useState('');
-  const [activeTab, setActiveTab] = useState<string>();
+  const [activeTab, setActiveTab] = useState<string | undefined>();
 
   // Copy items state
   const [isCopyItemsOpen, setIsCopyItemsOpen] = useState(false);
@@ -104,16 +106,19 @@ export default function CampaignDetailsPage() {
     });
   }, [editableCampaign]);
 
+  const handleTabChange = useCallback((newTab: string) => {
+    setActiveTab(newTab);
+  }, []);
+
   useEffect(() => {
-    // If the current active tab is no longer valid, or if no tab is active, select a default.
     if (memberCategories.length > 0) {
-      if (!memberCategories.includes(activeTab || '')) {
+      if (!activeTab || !memberCategories.includes(activeTab)) {
         setActiveTab(memberCategories[0]);
       }
     } else {
       setActiveTab(undefined);
     }
-  }, [memberCategories]);
+  }, [memberCategories, activeTab]);
   
   const getCategoryLabel = (category: string | null): string => {
     if (!category) return '';
@@ -130,7 +135,6 @@ export default function CampaignDetailsPage() {
     const lists = editableCampaign?.rationLists;
     if (!lists) return {};
     
-    // Check for both possible keys for the general list to be robust.
     const generalListKey = Object.keys(lists).find(k => k.toLowerCase().includes('general'));
     const generalList = generalListKey ? lists[generalListKey] : undefined;
     
@@ -209,11 +213,15 @@ export default function CampaignDetailsPage() {
     let newRationLists = JSON.parse(JSON.stringify(editableCampaign.rationLists));
     const isGeneral = getCategoryLabel(memberCount) === 'General Item List';
     let changedItemName: string | null = null;
+    let oldItemName: string | null = null;
     
-    // Update the specific item that was changed
     const updatedItems = newRationLists[memberCount].map((item: RationItem) => {
         if (item.id !== itemId) return item;
 
+        if (field === 'name') {
+            oldItemName = String(item.name || '').trim().toLowerCase();
+        }
+        
         const newItem = { ...item, [field]: value };
         
         if (isGeneral) {
@@ -236,9 +244,11 @@ export default function CampaignDetailsPage() {
     newRationLists[memberCount] = updatedItems;
 
     // If a general list item's name or price changed, propagate to other lists
-    if (isGeneral && changedItemName) {
+    if (isGeneral) {
         const changedItem = updatedItems.find((item: RationItem) => item.id === itemId);
-        if (changedItem) {
+        const searchName = field === 'name' ? oldItemName : changedItemName;
+        
+        if (changedItem && searchName) {
              const quantity = Number(changedItem.quantity) || 0;
              const price = Number(changedItem.price) || 0;
              const newMasterPrice = quantity > 0 ? price / quantity : price;
@@ -247,13 +257,15 @@ export default function CampaignDetailsPage() {
             Object.keys(newRationLists).forEach(cat => {
                 if (getCategoryLabel(cat) !== 'General Item List') {
                 newRationLists[cat] = newRationLists[cat].map((item: RationItem) => {
-                    if (item.name.trim().toLowerCase() === changedItemName) {
-                    const newPrice = newMasterPrice * (Number(item.quantity) || 0);
-                    return {
-                        ...item,
-                        quantityType: newMasterType,
-                        price: parseFloat(newPrice.toFixed(2)),
-                    };
+                    if (item.name.trim().toLowerCase() === searchName) {
+                        const updatedItem = { ...item };
+                        if (field === 'name') {
+                            updatedItem.name = changedItem.name;
+                        }
+                        const newPrice = newMasterPrice * (Number(updatedItem.quantity) || 0);
+                        updatedItem.quantityType = newMasterType;
+                        updatedItem.price = parseFloat(newPrice.toFixed(2));
+                        return updatedItem;
                     }
                     return item;
                 });
@@ -302,7 +314,7 @@ export default function CampaignDetailsPage() {
     }
     
     const { rationLists, priceDate, shopName, shopContact, shopAddress } = campaign;
-    const hasData = Object.values(rationLists).some(list => list.length > 0);
+    const hasData = rationLists && Object.values(rationLists).some(list => list.length > 0);
     if (!hasData) {
       toast({
         title: 'No Data',
@@ -385,8 +397,6 @@ export default function CampaignDetailsPage() {
         }
 
     } else if (format === 'pdf') {
-        const { default: jsPDF } = await import('jspdf');
-        await import('jspdf-autotable');
         const doc = new jsPDF();
         let startY = 15;
         doc.setTextColor(10, 41, 19);
@@ -591,6 +601,7 @@ export default function CampaignDetailsPage() {
                             <TableHead className="text-right min-w-[120px]">Price per Unit (₹)</TableHead>
                         ) : (
                             <>
+                                <TableHead className="text-right min-w-[120px]">Price per Unit (₹)</TableHead>
                                 <TableHead className="min-w-[180px]">Notes</TableHead>
                                 <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>
                             </>
@@ -599,14 +610,14 @@ export default function CampaignDetailsPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {items.map((item, index) => (
-                        <TableRow key={item.id}>
-                            <TableCell>{index + 1}</TableCell>
-                            <TableCell>
-                                <Input value={item.name || ''} onChange={e => handleItemChange(memberCount, item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
-                            </TableCell>
-                            {isGeneral ? (
-                                <>
+                    {items.map((item, index) => {
+                        if (isGeneral) {
+                            return (
+                                <TableRow key={item.id}>
+                                    <TableCell>{index + 1}</TableCell>
+                                    <TableCell>
+                                        <Input value={item.name || ''} onChange={e => handleItemChange(memberCount, item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
+                                    </TableCell>
                                     <TableCell>
                                         <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(memberCount, item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
                                     </TableCell>
@@ -623,28 +634,45 @@ export default function CampaignDetailsPage() {
                                     <TableCell>
                                         <Input type="number" value={item.price || ''} onChange={e => handleItemChange(memberCount, item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
                                     </TableCell>
-                                </>
-                            ) : (
-                                <>
+                                    {canUpdate && editMode && (
+                                        <TableCell className="text-center">
+                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(memberCount, item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                        </TableCell>
+                                    )}
+                                </TableRow>
+                            );
+                        } else {
+                            const itemNameLower = String(item.name || '').trim().toLowerCase();
+                            const masterItem = masterPriceList[itemNameLower];
+                            const unitPrice = masterItem ? masterItem.price : 0;
+                            return (
+                                <TableRow key={item.id}>
+                                    <TableCell>{index + 1}</TableCell>
+                                    <TableCell>
+                                        <Input value={item.name || ''} onChange={e => handleItemChange(memberCount, item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
+                                    </TableCell>
                                     <TableCell>
                                         <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(memberCount, item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
                                     </TableCell>
                                     <TableCell>{item.quantityType || 'N/A'}</TableCell>
+                                    <TableCell className="text-right font-mono">
+                                        ₹{unitPrice.toFixed(2)}
+                                    </TableCell>
                                     <TableCell>
                                         <Input value={item.notes || ''} onChange={e => handleItemChange(memberCount, item.id, 'notes', e.target.value)} placeholder="e.g. brand, quality" disabled={!editMode || !canUpdate} />
                                     </TableCell>
                                     <TableCell>
                                         <Input type="number" value={item.price || ''} className="text-right" readOnly disabled={!editMode || !canUpdate} />
                                     </TableCell>
-                                </>
-                            )}
-                            {canUpdate && editMode && (
-                                <TableCell className="text-center">
-                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(memberCount, item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                                </TableCell>
-                            )}
-                        </TableRow>
-                    ))}
+                                    {canUpdate && editMode && (
+                                        <TableCell className="text-center">
+                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(memberCount, item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                        </TableCell>
+                                    )}
+                                </TableRow>
+                            );
+                        }
+                    })}
                 </TableBody>
             </Table>
           </div>
@@ -871,7 +899,7 @@ export default function CampaignDetailsPage() {
              {editableCampaign.category === 'Ration' ? (
                 memberCategories.length > 0 ? (
                     <Tabs value={activeTab || ''} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="flex h-auto flex-wrap justify-start">
+                         <TabsList className="flex h-auto flex-wrap justify-start">
                             {memberCategories.map(count => (
                                 <TabsTrigger key={count} value={count}>{getCategoryLabel(count)}</TabsTrigger>
                             ))}
