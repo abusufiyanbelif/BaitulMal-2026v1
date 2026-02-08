@@ -76,9 +76,36 @@ export default function LeadDetailsPage() {
   // Reset local state if edit mode is cancelled or if the base data changes while NOT in edit mode.
   useEffect(() => {
     if (lead && !editMode) {
-      setEditableLead(JSON.parse(JSON.stringify(lead)));
+      const leadCopy = JSON.parse(JSON.stringify(lead));
+       if (leadCopy.rationLists && !Array.isArray(leadCopy.rationLists)) {
+        leadCopy.rationLists = [
+          {
+            id: 'general',
+            name: 'General Item List',
+            minMembers: 0,
+            maxMembers: 0,
+            items: (leadCopy.rationLists as any)['General Item List'] || []
+          }
+        ];
+      }
+      setEditableLead(leadCopy);
     }
   }, [editMode, lead])
+  
+  const sanitizedEditableRationLists = useMemo(() => {
+    if (!editableLead?.rationLists) return [];
+    if (Array.isArray(editableLead.rationLists)) return editableLead.rationLists;
+    // Hotfix for old object format
+    return [
+      {
+        id: 'general',
+        name: 'General Item List',
+        minMembers: 0,
+        maxMembers: 0,
+        items: (editableLead.rationLists as any)['General Item List'] || []
+      }
+    ];
+  }, [editableLead?.rationLists]);
 
   const canReadSummary = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.leads-members.summary.read', false);
   const canReadBeneficiaries = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.leads-members.beneficiaries.read', false);
@@ -95,7 +122,7 @@ export default function LeadDetailsPage() {
   const handleItemChange = (categoryId: string, itemId: string, field: keyof RationItem, value: string | number) => {
     if (!editableLead || !editableLead.rationLists) return;
     
-    const newRationLists = editableLead.rationLists.map(cat => {
+    const newRationLists = sanitizedEditableRationLists.map(cat => {
         if (cat.id !== categoryId) return cat;
         const updatedItems = cat.items.map(item => {
             if (item.id !== itemId) return item;
@@ -109,7 +136,7 @@ export default function LeadDetailsPage() {
   const handleAddItem = (categoryId: string) => {
     if (!editableLead || !editableLead.rationLists) return;
     const newItem: RationItem = { id: `item-${Date.now()}`, name: '', quantity: 1, quantityType: 'kg', price: 0, notes: '' };
-    const newRationLists = editableLead.rationLists.map(cat => {
+    const newRationLists = sanitizedEditableRationLists.map(cat => {
         if (cat.id === categoryId) {
             return { ...cat, items: [...cat.items, newItem] };
         }
@@ -120,7 +147,7 @@ export default function LeadDetailsPage() {
 
   const handleDeleteItem = (categoryId: string, itemId: string) => {
     if (!editableLead || !editableLead.rationLists) return;
-    const newRationLists = editableLead.rationLists.map(cat => {
+    const newRationLists = sanitizedEditableRationLists.map(cat => {
         if (cat.id === categoryId) {
             return { ...cat, items: cat.items.filter(item => item.id !== itemId) };
         }
@@ -148,7 +175,7 @@ export default function LeadDetailsPage() {
         targetAmount: editableLead.targetAmount || 0,
         authenticityStatus: editableLead.authenticityStatus,
         publicVisibility: editableLead.publicVisibility,
-        rationLists: editableLead.rationLists,
+        rationLists: sanitizedEditableRationLists,
         priceDate: editableLead.priceDate || '',
         shopName: editableLead.shopName || '',
         shopContact: editableLead.shopContact || '',
@@ -198,7 +225,7 @@ export default function LeadDetailsPage() {
         items: []
     };
     
-    const newRationLists = [...(editableLead.rationLists || []), newCategory];
+    const newRationLists = [...sanitizedEditableRationLists, newCategory];
     handleFieldChange('rationLists', newRationLists);
     
     setNewCategoryName('');
@@ -517,9 +544,9 @@ export default function LeadDetailsPage() {
       
       {editableLead.category === 'Ration' && (
         <div className="mt-6">
-             {(editableLead.rationLists || []).length > 0 ? (
-                <Accordion type="single" collapsible className="w-full" defaultValue={editableLead.rationLists[0]?.id}>
-                    {editableLead.rationLists.map(category => (
+             {(sanitizedEditableRationLists.length > 0) ? (
+                <Accordion type="single" collapsible className="w-full" defaultValue={sanitizedEditableRationLists[0]?.id}>
+                    {sanitizedEditableRationLists.map(category => (
                     <AccordionItem value={category.id} key={category.id}>
                         <AccordionTrigger className="text-lg font-semibold hover:no-underline">
                         <div className="flex items-center gap-4">

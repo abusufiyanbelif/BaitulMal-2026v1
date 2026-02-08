@@ -104,25 +104,27 @@ export default function CampaignDetailsPage() {
   // Reset local state if edit mode is cancelled or if the base data changes while NOT in edit mode.
   useEffect(() => {
     if (campaign && !editMode) {
-      const campaignCopy = JSON.parse(JSON.stringify(campaign));
-      // Hotfix for old data structure where rationLists might be an object
-      if (campaignCopy.rationLists && !Array.isArray(campaignCopy.rationLists)) {
-        campaignCopy.rationLists = [
-          {
-            id: 'general', // a stable id
-            name: 'General Item List',
-            minMembers: 0,
-            maxMembers: 0,
-            items: (campaignCopy.rationLists as any)['General Item List'] || []
-          }
-        ];
-      }
-      setEditableCampaign(campaignCopy);
+      setEditableCampaign(JSON.parse(JSON.stringify(campaign)));
     }
   }, [editMode, campaign])
+
+  const sanitizedEditableRationLists = useMemo(() => {
+    if (!editableCampaign?.rationLists) return [];
+    if (Array.isArray(editableCampaign.rationLists)) return editableCampaign.rationLists;
+    // Hotfix for old object format
+    return [
+      {
+        id: 'general',
+        name: 'General Item List',
+        minMembers: 0,
+        maxMembers: 0,
+        items: (editableCampaign.rationLists as any)['General Item List'] || []
+      }
+    ];
+  }, [editableCampaign?.rationLists]);
   
   const masterPriceList = useMemo(() => {
-    const generalCategory = editableCampaign?.rationLists?.find(
+    const generalCategory = sanitizedEditableRationLists.find(
       cat => cat.name === 'General Item List'
     );
     if (!generalCategory?.items) {
@@ -142,7 +144,7 @@ export default function CampaignDetailsPage() {
         }
         return acc;
     }, {} as Record<string, { price: number; quantityType: string }>);
-  }, [editableCampaign?.rationLists]);
+  }, [sanitizedEditableRationLists]);
 
   const canReadSummary = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.campaigns.summary.read', false);
   const canReadRation = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.campaigns.ration.read', false);
@@ -161,7 +163,7 @@ export default function CampaignDetailsPage() {
         shopName: editableCampaign.shopName,
         shopContact: editableCampaign.shopContact,
         shopAddress: editableCampaign.shopAddress,
-        rationLists: editableCampaign.rationLists,
+        rationLists: sanitizedEditableRationLists,
     };
     
     updateDoc(campaignDocRef, saveData)
@@ -197,13 +199,13 @@ export default function CampaignDetailsPage() {
   ) => {
     if (!editableCampaign || !editableCampaign.rationLists) return;
     
-    const category = editableCampaign.rationLists.find(cat => cat.id === categoryId);
+    const category = sanitizedEditableRationLists.find(cat => cat.id === categoryId);
     const isGeneral = category?.name === 'General Item List';
     
     let changedItemName: string | null = null;
     let oldItemName: string | null = null;
     
-    const newRationLists = editableCampaign.rationLists.map(cat => {
+    const newRationLists = sanitizedEditableRationLists.map(cat => {
         if (cat.id !== categoryId) return cat;
         
         const updatedItems = cat.items.map(item => {
@@ -279,7 +281,7 @@ export default function CampaignDetailsPage() {
       price: 0,
       notes: '',
     };
-    const newRationLists = editableCampaign.rationLists.map(cat => {
+    const newRationLists = sanitizedEditableRationLists.map(cat => {
         if (cat.id === categoryId) {
             return { ...cat, items: [...cat.items, newItem] };
         }
@@ -290,7 +292,7 @@ export default function CampaignDetailsPage() {
 
   const handleDeleteItem = (categoryId: string, itemId: string) => {
     if (!editableCampaign || !editableCampaign.rationLists) return;
-    const newRationLists = editableCampaign.rationLists.map(cat => {
+    const newRationLists = sanitizedEditableRationLists.map(cat => {
         if (cat.id === categoryId) {
             return { ...cat, items: cat.items.filter(item => item.id !== itemId) };
         }
@@ -326,7 +328,7 @@ export default function CampaignDetailsPage() {
         items: []
     };
     
-    const newRationLists = [...(editableCampaign.rationLists || []), newCategory];
+    const newRationLists = [...sanitizedEditableRationLists, newCategory];
     handleFieldChange('rationLists', newRationLists);
     
     setNewCategoryName('');
@@ -343,7 +345,7 @@ export default function CampaignDetailsPage() {
   const handleDeleteCategoryConfirm = () => {
       if (!editableCampaign || !categoryToDelete) return;
 
-      const newRationLists = (editableCampaign.rationLists || []).filter(cat => cat.id !== categoryToDelete);
+      const newRationLists = sanitizedEditableRationLists.filter(cat => cat.id !== categoryToDelete);
       handleFieldChange('rationLists', newRationLists);
 
       toast({ title: 'Category Removed', description: `The category has been removed.` });
@@ -681,9 +683,9 @@ export default function CampaignDetailsPage() {
           </CardHeader>
           <CardContent>
              {editableCampaign.category === 'Ration' ? (
-                (editableCampaign.rationLists?.length || 0) > 0 ? (
-                    <Accordion type="single" collapsible className="w-full" defaultValue={editableCampaign.rationLists[0]?.id}>
-                       {editableCampaign.rationLists.map(category => (
+                (sanitizedEditableRationLists.length > 0) ? (
+                    <Accordion type="single" collapsible className="w-full" defaultValue={sanitizedEditableRationLists[0]?.id}>
+                       {sanitizedEditableRationLists.map(category => (
                         <AccordionItem value={category.id} key={category.id}>
                           <AccordionTrigger className="text-lg font-semibold hover:no-underline">
                             <div className="flex items-center gap-4">

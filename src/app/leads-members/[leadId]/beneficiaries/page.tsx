@@ -611,7 +611,7 @@ export default function BeneficiariesPage() {
                 beneficiary={editingBeneficiary}
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
-                rationLists={{}}
+                rationLists={[]}
             />
         </DialogContent>
       </Dialog>
