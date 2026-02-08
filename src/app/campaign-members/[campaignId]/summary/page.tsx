@@ -209,8 +209,8 @@ export default function CampaignSummaryPage() {
         if (!allDonations || !campaign || !beneficiaries) return null;
         
         const donations = allDonations.filter(d => {
-            if (d.linkSplit?.some(link => link.linkId === campaign.id)) {
-                return true;
+            if (d.linkSplit && d.linkSplit.length > 0) {
+                return d.linkSplit.some(link => link.linkId === campaign.id && link.linkType === 'campaign');
             }
             return d.campaignId === campaign.id;
         });
@@ -221,7 +221,7 @@ export default function CampaignSummaryPage() {
 
         verifiedDonationsList.forEach(d => {
             let amountForThisCampaign = 0;
-            const campaignLink = d.linkSplit?.find(l => l.linkId === campaign.id);
+            const campaignLink = d.linkSplit?.find(l => l.linkId === campaign.id && l.linkType === 'campaign');
             
             if (campaignLink) {
                 amountForThisCampaign = campaignLink.amount;
@@ -254,7 +254,7 @@ export default function CampaignSummaryPage() {
             .filter(d => d.status === 'Pending')
             .reduce((sum, d) => {
                 let amountForThisCampaign = 0;
-                const campaignLink = d.linkSplit?.find(l => l.linkId === campaign.id);
+                const campaignLink = d.linkSplit?.find(l => l.linkId === campaign.id && l.linkType === 'campaign');
                 if (campaignLink) {
                     amountForThisCampaign = campaignLink.amount;
                 } else if ((!d.linkSplit || d.linkSplit.length === 0) && d.campaignId === campaign.id) {

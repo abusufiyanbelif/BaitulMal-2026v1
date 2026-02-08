@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -244,7 +245,7 @@ export default function DonationsPage() {
                 linkType: linkType,
                 amount: data.isSplit ? split.amount : data.amount
             };
-        }).filter(Boolean) || [];
+        }).filter(Boolean) as Donation['linkSplit'] || [];
         
         finalData = {
             ...donationData,

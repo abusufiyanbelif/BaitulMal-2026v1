@@ -5,6 +5,7 @@ import { adminDb } from '@/lib/firebase-admin-sdk';
 import type { Donation, DonationCategory } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 import { revalidatePath } from 'next/cache';
+import * as admin from 'firebase-admin';
 
 export async function syncDonationsAction(): Promise<{ success: boolean; message: string; updatedCount: number; }> {
     if (!adminDb) {
@@ -40,6 +41,7 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
                     }
                 }
                 updatePayload.typeSplit = [{ category, amount: donation.amount }];
+                updatePayload.type = admin.firestore.FieldValue.delete(); // Mark for deletion
                 needsUpdate = true;
             } 
             else if (donation.typeSplit.some(s => (s.category as any) === 'Sadqa')) {
@@ -60,6 +62,8 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
                     linkType: 'campaign',
                     amount: donation.amount,
                 }];
+                updatePayload.campaignId = admin.firestore.FieldValue.delete();
+                updatePayload.campaignName = admin.firestore.FieldValue.delete();
                 needsUpdate = true;
             }
             
@@ -72,6 +76,9 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
                     screenshotUrl: donation.screenshotUrl || '',
                     screenshotIsPublic: donation.screenshotIsPublic || false,
                 }];
+                updatePayload.transactionId = admin.firestore.FieldValue.delete();
+                updatePayload.screenshotUrl = admin.firestore.FieldValue.delete();
+                updatePayload.screenshotIsPublic = admin.firestore.FieldValue.delete();
                 needsUpdate = true;
             }
 
