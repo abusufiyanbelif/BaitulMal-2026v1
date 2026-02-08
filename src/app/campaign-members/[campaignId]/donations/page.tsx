@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -621,21 +622,19 @@ export default function DonationsPage() {
                             <SortableHeader sortKey="donorName">Donor Name</SortableHeader>
                             <SortableHeader sortKey="receiverName">Receiver Name</SortableHeader>
                             <SortableHeader sortKey="donorPhone">Phone</SortableHeader>
-                            <SortableHeader sortKey="referral">Referral</SortableHeader>
                             <SortableHeader sortKey="amount" className="text-right">Amount (₹)</SortableHeader>
                             <TableHead className="whitespace-nowrap">Category</TableHead>
                             <SortableHeader sortKey="donationType">Donation Type</SortableHeader>
                             <SortableHeader sortKey="transactionId">Transaction ID</SortableHeader>
                             <SortableHeader sortKey="donationDate">Date</SortableHeader>
-                            <TableHead className="whitespace-nowrap">Screenshot</TableHead>
-                            <SortableHeader sortKey="uploadedBy">Uploaded By</SortableHeader>
+                            <SortableHeader sortKey="referral">Referral</SortableHeader>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {areDonationsLoading ? (
                         [...Array(3)].map((_, i) => (
                             <TableRow key={i}>
-                                <TableCell colSpan={14}><Skeleton className="h-6 w-full" /></TableCell>
+                                <TableCell colSpan={12}><Skeleton className="h-6 w-full" /></TableCell>
                             </TableRow>
                         ))
                         ) : (filteredAndSortedDonations && filteredAndSortedDonations.length > 0) ? (
@@ -672,7 +671,6 @@ export default function DonationsPage() {
                                 <TableCell className="font-medium">{donation.donorName}</TableCell>
                                 <TableCell>{donation.receiverName}</TableCell>
                                 <TableCell>{donation.donorPhone}</TableCell>
-                                <TableCell>{donation.referral}</TableCell>
                                 <TableCell className="text-right font-medium">
                                     <div className="flex flex-col items-end">
                                         <span>₹{donation.amount.toFixed(2)}</span>
@@ -693,21 +691,12 @@ export default function DonationsPage() {
                                 <TableCell><Badge variant="outline">{donation.donationType}</Badge></TableCell>
                                 <TableCell>{donation.transactionId || 'N/A'}</TableCell>
                                 <TableCell>{donation.donationDate}</TableCell>
-                                <TableCell>
-                                    {donation.screenshotUrl && donation.screenshotIsPublic && (
-                                    <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); donation.screenshotUrl && handleViewImage(donation.screenshotUrl); }}>
-                                        <Eye className="mr-2 h-4 w-4" /> View
-                                    </Button>
-                                    )}
-                                     {donation.screenshotUrl && !donation.screenshotIsPublic && "Private"}
-                                     {!donation.screenshotUrl && "N/A"}
-                                </TableCell>
-                                <TableCell>{donation.uploadedBy}</TableCell>
+                                <TableCell>{donation.referral}</TableCell>
                             </TableRow>
                         ))
                         ) : (
                         <TableRow>
-                            <TableCell colSpan={14} className="text-center h-24 text-muted-foreground">
+                            <TableCell colSpan={12} className="text-center h-24 text-muted-foreground">
                                 No donations found matching your criteria.
                             </TableCell>
                         </TableRow>

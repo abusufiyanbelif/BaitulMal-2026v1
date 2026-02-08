@@ -550,22 +550,20 @@ export default function DonationsPage() {
                             <SortableHeader sortKey="donorName">Donor Name</SortableHeader>
                             <SortableHeader sortKey="receiverName">Receiver Name</SortableHeader>
                             <SortableHeader sortKey="donorPhone">Phone</SortableHeader>
-                            <SortableHeader sortKey="referral">Referral</SortableHeader>
                             <SortableHeader sortKey="amount" className="text-right">Amount (₹)</SortableHeader>
                             <TableHead>Category</TableHead>
                             <SortableHeader sortKey="donationType">Donation Type</SortableHeader>
                             <SortableHeader sortKey="transactionId">Transaction ID</SortableHeader>
                             <SortableHeader sortKey="donationDate">Date</SortableHeader>
-                            <TableHead>Screenshot</TableHead>
                             <SortableHeader sortKey="campaignName">Linked To</SortableHeader>
-                            <SortableHeader sortKey="uploadedBy">Uploaded By</SortableHeader>
+                            <SortableHeader sortKey="referral">Referral</SortableHeader>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {isLoading ? (
                         [...Array(5)].map((_, i) => (
                             <TableRow key={i}>
-                                <TableCell colSpan={15}><Skeleton className="h-6 w-full" /></TableCell>
+                                <TableCell colSpan={13}><Skeleton className="h-6 w-full" /></TableCell>
                             </TableRow>
                         ))
                         ) : (filteredAndSortedDonations && filteredAndSortedDonations.length > 0) ? (
@@ -594,7 +592,6 @@ export default function DonationsPage() {
                                 <TableCell className="font-medium">{donation.donorName}</TableCell>
                                 <TableCell>{donation.receiverName}</TableCell>
                                 <TableCell>{donation.donorPhone}</TableCell>
-                                <TableCell>{donation.referral}</TableCell>
                                 <TableCell className="text-right font-medium">₹{donation.amount.toFixed(2)}</TableCell>
                                 <TableCell>
                                     <div className="flex flex-wrap gap-1">
@@ -609,15 +606,6 @@ export default function DonationsPage() {
                                 <TableCell>{donation.transactionId || 'N/A'}</TableCell>
                                 <TableCell>{donation.donationDate}</TableCell>
                                 <TableCell>
-                                    {donation.screenshotUrl && donation.screenshotIsPublic && (
-                                    <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); donation.screenshotUrl && handleViewImage(donation.screenshotUrl); }}>
-                                        <Eye className="mr-2 h-4 w-4" /> View
-                                    </Button>
-                                    )}
-                                     {donation.screenshotUrl && !donation.screenshotIsPublic && "Private"}
-                                     {!donation.screenshotUrl && "N/A"}
-                                </TableCell>
-                                <TableCell>
                                   {donation.linkSplit && donation.linkSplit.length > 0 ? (
                                     <div className="flex flex-col gap-1">
                                       {donation.linkSplit.map(link => (
@@ -627,18 +615,18 @@ export default function DonationsPage() {
                                           className="text-primary hover:underline text-xs"
                                           onClick={(e) => e.stopPropagation()}
                                         >
-                                          {link.linkName}
+                                          {link.linkName} (₹{link.amount.toFixed(2)})
                                         </Link>
                                       ))}
                                     </div>
                                   ) : "Unlinked"}
                                 </TableCell>
-                                <TableCell>{donation.uploadedBy}</TableCell>
+                                <TableCell>{donation.referral}</TableCell>
                             </TableRow>
                         ))
                         ) : (
                         <TableRow>
-                            <TableCell colSpan={15} className="text-center h-24 text-muted-foreground">
+                            <TableCell colSpan={13} className="text-center h-24 text-muted-foreground">
                                 No donations found.
                             </TableCell>
                         </TableRow>
