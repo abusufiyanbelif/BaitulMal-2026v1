@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -195,13 +196,15 @@ export default function DonationsSummaryPage() {
 
             <div className="border-b mb-4">
                 <ScrollArea className="w-full whitespace-nowrap">
-                    <div className="flex w-max space-x-4">
-                        <Button variant="ghost" asChild className={cn("shrink-0 rounded-b-none border-b-2 pb-3 pt-2", pathname === '/donations' ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
-                            <Link href="/donations">All Donations</Link>
-                        </Button>
-                        <Button variant="ghost" asChild className={cn("shrink-0 rounded-b-none border-b-2 pb-3 pt-2", pathname === '/donations/summary' ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")} data-active="true">
-                            <Link href="/donations/summary">Summary</Link>
-                        </Button>
+                    <div className="flex w-max space-x-2">
+                        <Link href="/donations" className={cn(
+                            "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            pathname === '/donations' ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                        )}>All Donations</Link>
+                        <Link href="/donations/summary" className={cn(
+                            "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            pathname === '/donations/summary' ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                        )}>Summary</Link>
                     </div>
                     <ScrollBar orientation="horizontal" />
                 </ScrollArea>

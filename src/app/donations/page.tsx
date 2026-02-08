@@ -2,11 +2,11 @@
 
 'use client';
 import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, setDoc, deleteField } from 'firebase/firestore';
 import type { Donation, Campaign, Lead, TransactionDetail } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -68,6 +68,7 @@ export default function DonationsPage() {
   const firestore = useFirestore();
   const storage = useStorage();
   const { toast } = useToast();
+  const pathname = usePathname();
   const { userProfile, isLoading: isProfileLoading } = useSession();
   
   const donationsCollectionRef = useMemo(() => {
@@ -257,6 +258,11 @@ export default function DonationsPage() {
             ...(!editingDonation && { createdAt: serverTimestamp() }),
         };
         
+        if (editingDonation) {
+            finalData.campaignId = deleteField();
+            finalData.campaignName = deleteField();
+        }
+
         await setDoc(docRef, finalData, { merge: true });
 
         toast({ title: 'Success', description: `Donation ${editingDonation ? 'updated' : 'added'}.`, variant: 'success' });
@@ -381,13 +387,15 @@ export default function DonationsPage() {
 
         <div className="border-b mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex w-max space-x-4">
-                    <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-primary text-primary shadow-none" data-active="true">
-                        <Link href="/donations">All Donations</Link>
-                    </Button>
-                    <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-transparent pb-3 pt-2 text-muted-foreground hover:text-foreground">
-                        <Link href="/donations/summary">Summary</Link>
-                    </Button>
+                <div className="flex w-max space-x-2">
+                    <Link href="/donations" className={cn(
+                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        pathname === '/donations' ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                    )}>All Donations</Link>
+                    <Link href="/donations/summary" className={cn(
+                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        pathname === '/donations/summary' ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                    )}>Summary</Link>
                 </div>
                 <ScrollBar orientation="horizontal" />
             </ScrollArea>
