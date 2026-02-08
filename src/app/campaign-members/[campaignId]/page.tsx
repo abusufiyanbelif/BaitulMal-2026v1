@@ -102,8 +102,7 @@ export default function CampaignDetailsPage() {
   // Copy items state
   const [isCopyItemsOpen, setIsCopyItemsOpen] = useState(false);
   const [copyTargetCategory, setCopyTargetCategory] = useState<RationCategory | null>(null);
-  const [copySourceCategory, setCopySourceCategory] = useState<RationCategory | null>(null);
-  const [itemsToCopy, setItemsToCopy] = useState<RationItem[]>([]);
+  const [copySourceCategoryId, setCopySourceCategoryId] = useState<string | null>(null);
 
   // Reset local state if edit mode is cancelled or if the base data changes while NOT in edit mode.
   useEffect(() => {
@@ -527,6 +526,39 @@ export default function CampaignDetailsPage() {
     }
   };
 
+  const handleCopyItemsClick = (category: RationCategory) => {
+    setCopyTargetCategory(category);
+    setCopySourceCategoryId(null);
+    setIsCopyItemsOpen(true);
+  };
+
+  const handleCopyItemsConfirm = () => {
+    if (!editableCampaign || !copyTargetCategory || !copySourceCategoryId) return;
+
+    const sourceCategory = sanitizedEditableRationLists.find(c => c.id === copySourceCategoryId);
+    if (!sourceCategory) {
+        toast({ title: "Error", description: "Source category not found.", variant: "destructive" });
+        return;
+    }
+
+    const itemsToAppend = sourceCategory.items.map(item => ({
+        ...item,
+        id: `${copyTargetCategory.id}-item-${Date.now()}-${Math.random()}`
+    }));
+    
+    const newRationLists = sanitizedEditableRationLists.map(cat => {
+        if (cat.id === copyTargetCategory.id) {
+            return { ...cat, items: [...cat.items, ...itemsToAppend] };
+        }
+        return cat;
+    });
+
+    handleFieldChange('rationLists', newRationLists);
+    
+    toast({ title: 'Success', description: `Copied ${itemsToAppend.length} items to '${copyTargetCategory.name}'.` });
+    setIsCopyItemsOpen(false);
+  };
+
     const renderRationTable = (category: RationCategory) => {
     const total = calculateTotal(category.items);
 
@@ -536,9 +568,14 @@ export default function CampaignDetailsPage() {
             <div className="flex justify-between items-center">
                 <CardTitle>{category.name === 'General Item List' ? 'Item List' : 'Items for this category'}</CardTitle>
                 {canUpdate && editMode && (
-                    <Button onClick={() => handleAddItem(category.id)} size="sm">
-                      <Plus className="mr-2 h-4 w-4" /> Add Item
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button onClick={() => handleCopyItemsClick(category)} size="sm" variant="outline">
+                          <Copy className="mr-2 h-4 w-4" /> Copy Items
+                        </Button>
+                        <Button onClick={() => handleAddItem(category.id)} size="sm">
+                          <Plus className="mr-2 h-4 w-4" /> Add Item
+                        </Button>
+                    </div>
                 )}
             </div>
         </CardHeader>
@@ -946,6 +983,38 @@ export default function CampaignDetailsPage() {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+        <Dialog open={isCopyItemsOpen} onOpenChange={setIsCopyItemsOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Copy Items to '{copyTargetCategory?.name}'</DialogTitle>
+                    <DialogDescription>
+                        Select a source category to copy all of its items into the current category.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="py-4 space-y-4">
+                    <Label htmlFor="source-category-copy">Copy items from</Label>
+                    <Select onValueChange={setCopySourceCategoryId} value={copySourceCategoryId || ''}>
+                        <SelectTrigger id="source-category-copy">
+                            <SelectValue placeholder="Select a source category..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {sanitizedEditableRationLists.filter(cat => cat.id !== copyTargetCategory?.id).map(cat => (
+                                <SelectItem key={cat.id} value={cat.id}>
+                                    {cat.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsCopyItemsOpen(false)}>Cancel</Button>
+                    <Button onClick={handleCopyItemsConfirm} disabled={!copySourceCategoryId}>
+                        <Copy className="mr-2 h-4 w-4" /> Copy Items
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </>
   );
 }
