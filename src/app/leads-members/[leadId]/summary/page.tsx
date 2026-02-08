@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -111,14 +112,15 @@ export default function LeadSummaryPage() {
     // Data fetching
     const leadDocRef = useMemo(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
     const beneficiariesCollectionRef = useMemo(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
-    const donationsCollectionRef = useMemo(() => {
-        if (!firestore || !leadId) return null;
-        return query(collection(firestore, 'donations'), where('campaignId', '==', leadId));
-    }, [firestore, leadId]);
+    
+    const allDonationsCollectionRef = useMemo(() => {
+        if (!firestore) return null;
+        return collection(firestore, 'donations');
+    }, [firestore]);
 
     const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
     const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
-    const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
+    const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
     
     // Set editable lead data when not in edit mode
     useEffect(() => {
@@ -199,13 +201,21 @@ export default function LeadSummaryPage() {
 
     // Memoized calculations
     const summaryData = useMemo(() => {
-        if (!beneficiaries || !donations || !lead) return null;
+        if (!beneficiaries || !allDonations || !lead) return null;
+        
+        const donations = allDonations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id));
 
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
 
         verifiedDonationsList.forEach(d => {
+            const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id);
+            if (!leadAllocation) return;
+
+            const totalDonationAmount = d.amount > 0 ? d.amount : 1;
+            const allocationProportion = leadAllocation.amount / totalDonationAmount;
+
             const splits = d.typeSplit && d.typeSplit.length > 0
                 ? d.typeSplit
                 : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
@@ -213,7 +223,7 @@ export default function LeadSummaryPage() {
             splits.forEach(split => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
                 if (amountsByCategory.hasOwnProperty(category)) {
-                    amountsByCategory[category as DonationCategory] += split.amount;
+                    amountsByCategory[category as DonationCategory] += split.amount * allocationProportion;
                 }
             });
         });
@@ -227,7 +237,10 @@ export default function LeadSummaryPage() {
 
         const pendingDonations = donations
             .filter(d => d.status === 'Pending')
-            .reduce((acc, d) => acc + d.amount, 0);
+            .reduce((sum, d) => {
+                const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id);
+                return sum + (leadAllocation?.amount || 0);
+            }, 0);
 
         const paymentTypeData = donations.reduce((acc, d) => {
             const key = d.donationType || 'Other';
@@ -281,7 +294,7 @@ export default function LeadSummaryPage() {
                 grandTotal: grandTotal,
             }
         };
-    }, [beneficiaries, donations, lead]);
+    }, [beneficiaries, allDonations, lead]);
     
     const chartData = useMemo(() => {
         if (!summaryData?.amountsByCategory) return [];

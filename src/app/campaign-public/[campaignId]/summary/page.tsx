@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useMemo, useState, useRef } from 'react';
@@ -84,23 +85,31 @@ export default function PublicCampaignSummaryPage() {
     // Data fetching
     const campaignDocRef = useMemo(() => (firestore && campaignId) ? doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign> : null, [firestore, campaignId]);
     const beneficiariesCollectionRef = useMemo(() => (firestore && campaignId) ? collection(firestore, `campaigns/${campaignId}/beneficiaries`) : null, [firestore, campaignId]);
-    const donationsCollectionRef = useMemo(() => {
-        if (!firestore || !campaignId) return null;
-        return query(collection(firestore, 'donations'), where('campaignId', '==', campaignId));
-    }, [firestore, campaignId]);
+    
+    const allDonationsCollectionRef = useMemo(() => {
+        if (!firestore) return null;
+        return collection(firestore, 'donations');
+    }, [firestore]);
 
     const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
     const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
-    const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
+    const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
     
     const fundingData = useMemo(() => {
-        if (!donations || !campaign) return null;
+        if (!allDonations || !campaign) return null;
 
+        const donations = allDonations.filter(d => d.linkSplit?.some(link => link.linkId === campaign.id));
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
 
         verifiedDonationsList.forEach(d => {
+            const campaignAllocation = d.linkSplit?.find(link => link.linkId === campaign.id);
+            if (!campaignAllocation) return;
+
+            const totalDonationAmount = d.amount > 0 ? d.amount : 1;
+            const allocationProportion = campaignAllocation.amount / totalDonationAmount;
+
             const splits = d.typeSplit && d.typeSplit.length > 0
                 ? d.typeSplit
                 : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
@@ -108,7 +117,7 @@ export default function PublicCampaignSummaryPage() {
             splits.forEach(split => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
                 if (amountsByCategory.hasOwnProperty(category)) {
-                    amountsByCategory[category as DonationCategory] += split.amount;
+                    amountsByCategory[category as DonationCategory] += split.amount * allocationProportion;
                 }
             });
         });
@@ -127,7 +136,7 @@ export default function PublicCampaignSummaryPage() {
             remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal),
             amountsByCategory,
         };
-    }, [donations, campaign]);
+    }, [allDonations, campaign]);
 
     const beneficiaryData = useMemo(() => {
         if (!beneficiaries) return null;

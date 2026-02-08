@@ -78,11 +78,16 @@ export default function DonationsPage() {
   }, [firestore, campaignId]);
   const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
   
-  const donationsCollectionRef = useMemo(() => {
-    if (!firestore || !campaignId) return null;
-    return query(collection(firestore, 'donations'), where('linkSplit.linkId', 'array-contains', campaignId));
-  }, [firestore, campaignId]);
-  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
+  const allDonationsCollectionRef = useMemo(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'donations');
+  }, [firestore]);
+  const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
+
+  const donations = useMemo(() => {
+    if (!allDonations) return [];
+    return allDonations.filter(d => d.linkSplit?.some(link => link.linkId === campaignId));
+  }, [allDonations, campaignId]);
 
   const allCampaignsCollectionRef = useMemo(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
   const { data: allCampaigns, isLoading: areAllCampaignsLoading } = useCollection<Campaign>(allCampaignsCollectionRef);

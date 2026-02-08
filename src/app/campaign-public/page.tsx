@@ -1,11 +1,12 @@
 
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useCollection, useFirestore } from '@/firebase';
-import type { Campaign, Donation } from '@/lib/types';
+import type { Campaign, Donation, DonationCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -42,18 +43,32 @@ export default function PublicCampaignPage() {
     if (!campaigns || !donations) return [];
 
     return campaigns.map(campaign => {
-      const campaignDonations = donations.filter(d => d.campaignId === campaign.id);
-      
-      const collected = campaignDonations.reduce((sum, donation) => {
-        const splits = donation.typeSplit && donation.typeSplit.length > 0 ? donation.typeSplit : [];
-        const applicableAmount = splits.reduce((splitSum, split) => {
-            if (campaign.allowedDonationTypes?.includes(split.category)) {
-                return splitSum + split.amount;
+      const collected = donations.reduce((sum, donation) => {
+            const campaignLink = donation.linkSplit?.find(l => l.linkId === campaign.id);
+            if (!campaignLink) {
+                return sum;
             }
-            return splitSum;
+            
+            const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
+            
+            const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
+                ? donation.typeSplit
+                : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
+
+
+            const applicableTypeTotal = typeSplits.reduce((acc, split) => {
+                const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
+                if (campaign.allowedDonationTypes?.includes(category)) {
+                    return acc + split.amount;
+                }
+                return acc;
+            }, 0);
+            
+            const proportionOfApplicableTypes = applicableTypeTotal / totalDonationAmount;
+            const finalAmountForGoal = campaignLink.amount * proportionOfApplicableTypes;
+
+            return sum + finalAmountForGoal;
         }, 0);
-        return sum + applicableAmount;
-      }, 0);
 
       const progress = campaign.targetAmount && campaign.targetAmount > 0 ? (collected / campaign.targetAmount) * 100 : 0;
       

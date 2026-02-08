@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -124,14 +125,15 @@ export default function CampaignSummaryPage() {
     // Data fetching
     const campaignDocRef = useMemo(() => (firestore && campaignId) ? doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign> : null, [firestore, campaignId]);
     const beneficiariesCollectionRef = useMemo(() => (firestore && campaignId) ? collection(firestore, `campaigns/${campaignId}/beneficiaries`) : null, [firestore, campaignId]);
-    const donationsCollectionRef = useMemo(() => {
-        if (!firestore || !campaignId) return null;
-        return query(collection(firestore, 'donations'), where('campaignId', '==', campaignId));
-    }, [firestore, campaignId]);
+    
+    const allDonationsCollectionRef = useMemo(() => {
+        if (!firestore) return null;
+        return collection(firestore, 'donations');
+    }, [firestore]);
 
     const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
     const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
-    const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
+    const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
     
     // Set editable campaign data when not in edit mode
     useEffect(() => {
@@ -213,13 +215,21 @@ export default function CampaignSummaryPage() {
 
     // Memoized calculations
     const summaryData = useMemo(() => {
-        if (!donations || !campaign || !beneficiaries) return null;
+        if (!allDonations || !campaign || !beneficiaries) return null;
+        
+        const donations = allDonations.filter(d => d.linkSplit?.some(link => link.linkId === campaign.id));
 
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
 
         verifiedDonationsList.forEach(d => {
+            const campaignAllocation = d.linkSplit?.find(link => link.linkId === campaign.id);
+            if (!campaignAllocation) return;
+
+            const totalDonationAmount = d.amount > 0 ? d.amount : 1;
+            const allocationProportion = campaignAllocation.amount / totalDonationAmount;
+
             const splits = d.typeSplit && d.typeSplit.length > 0
                 ? d.typeSplit
                 : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
@@ -227,7 +237,7 @@ export default function CampaignSummaryPage() {
             splits.forEach(split => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
                 if (amountsByCategory.hasOwnProperty(category)) {
-                    amountsByCategory[category as DonationCategory] += split.amount;
+                    amountsByCategory[category as DonationCategory] += split.amount * allocationProportion;
                 }
             });
         });
@@ -238,7 +248,10 @@ export default function CampaignSummaryPage() {
 
         const pendingDonations = donations
             .filter(d => d.status === 'Pending')
-            .reduce((acc, d) => acc + d.amount, 0);
+            .reduce((sum, d) => {
+                const campaignAllocation = d.linkSplit?.find(link => link.linkId === campaign.id);
+                return sum + (campaignAllocation?.amount || 0);
+            }, 0);
 
         const fundingGoal = campaign.targetAmount || 0;
         const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
@@ -300,7 +313,7 @@ export default function CampaignSummaryPage() {
                 grandTotal: grandTotal,
             }
         };
-    }, [donations, campaign, beneficiaries]);
+    }, [allDonations, campaign, beneficiaries]);
     
     const isLoading = isCampaignLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
     
@@ -509,7 +522,7 @@ Your contribution, big or small, makes a huge difference.
                 pdf.setLineWidth(0.2);
                 pdf.line(15, position, pdfWidth - 15, position);
                 position += 8;
-
+                
                 pdf.setFontSize(12);
                 pdf.text('For Donations & Contact', 15, position);
                 let textY = position + 6;

@@ -1,11 +1,12 @@
 
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useCollection, useFirestore } from '@/firebase';
-import type { Lead, Donation } from '@/lib/types';
+import type { Lead, Donation, DonationCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -42,17 +43,31 @@ export default function PublicLeadPage() {
   const leadData = useMemo(() => {
     if (!leads || !donations) return [];
     return leads.map(lead => {
-        const leadDonations = donations.filter(d => d.campaignId === lead.id);
-        
-        const collected = leadDonations.reduce((sum, donation) => {
-            const splits = donation.typeSplit && donation.typeSplit.length > 0 ? donation.typeSplit : [];
-            const applicableAmount = splits.reduce((splitSum, split) => {
-                if (lead.allowedDonationTypes?.includes(split.category)) {
-                    return splitSum + split.amount;
+        const collected = donations.reduce((sum, donation) => {
+            const leadLink = donation.linkSplit?.find(l => l.linkId === lead.id);
+            if (!leadLink) {
+                return sum;
+            }
+
+            const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
+            
+            const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
+                ? donation.typeSplit
+                : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
+
+
+            const applicableTypeTotal = typeSplits.reduce((acc, split) => {
+                const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
+                if (lead.allowedDonationTypes?.includes(category)) {
+                    return acc + split.amount;
                 }
-                return splitSum;
+                return acc;
             }, 0);
-            return sum + applicableAmount;
+            
+            const proportionOfApplicableTypes = applicableTypeTotal / totalDonationAmount;
+            const finalAmountForGoal = leadLink.amount * proportionOfApplicableTypes;
+
+            return sum + finalAmountForGoal;
         }, 0);
 
         const progress = lead.targetAmount && lead.targetAmount > 0 ? (collected / lead.targetAmount) * 100 : 0;

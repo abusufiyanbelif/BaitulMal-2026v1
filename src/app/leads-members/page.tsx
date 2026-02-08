@@ -1,4 +1,5 @@
 
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -7,7 +8,7 @@ import Link from 'next/link';
 import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, Lightbulb } from 'lucide-react';
 import { useCollection, useFirestore, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import type { Lead, Beneficiary, Donation } from '@/lib/types';
+import type { Lead, Beneficiary, Donation, DonationCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
 import { collection, query, where, getDocs, writeBatch, doc, updateDoc } from 'firebase/firestore';
@@ -43,6 +44,7 @@ import { Badge } from '@/components/ui/badge';
 import { CopyLeadDialog } from '@/components/copy-lead-dialog';
 import { copyLeadAction } from './actions';
 import { get } from '@/lib/utils';
+import { donationCategories } from '@/lib/modules';
 
 
 export default function LeadPage() {
@@ -92,8 +94,13 @@ export default function LeadPage() {
             
             const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
 
-            const applicableTypeTotal = donation.typeSplit.reduce((acc, split) => {
-                if (lead.allowedDonationTypes?.includes(split.category)) {
+            const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
+                ? donation.typeSplit
+                : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
+
+            const applicableTypeTotal = typeSplits.reduce((acc, split) => {
+                const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
+                if (lead.allowedDonationTypes?.includes(category)) {
                     return acc + split.amount;
                 }
                 return acc;
