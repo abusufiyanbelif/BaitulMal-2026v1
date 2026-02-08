@@ -54,6 +54,8 @@ export default function CampaignPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
+  const [authenticityFilter, setAuthenticityFilter] = useState('All');
+  const [visibilityFilter, setVisibilityFilter] = useState('All');
   const [isDeleting, setIsDeleting] = useState(false);
   
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -83,18 +85,26 @@ export default function CampaignPage() {
     if (!campaigns || !donations) return [];
 
     return campaigns.map(campaign => {
-      const campaignDonations = donations.filter(d => d.campaignId === campaign.id);
-      
-      const collected = campaignDonations.reduce((sum, donation) => {
-        const splits = donation.typeSplit && donation.typeSplit.length > 0 ? donation.typeSplit : [];
-        const applicableAmount = splits.reduce((splitSum, split) => {
-            if (campaign.allowedDonationTypes?.includes(split.category)) {
-                return splitSum + split.amount;
+      const collected = donations.reduce((sum, donation) => {
+            const campaignLink = donation.linkSplit?.find(l => l.linkId === campaign.id);
+            if (!campaignLink) {
+                return sum;
             }
-            return splitSum;
+            
+            const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
+
+            const applicableTypeTotal = donation.typeSplit.reduce((acc, split) => {
+                if (campaign.allowedDonationTypes?.includes(split.category)) {
+                    return acc + split.amount;
+                }
+                return acc;
+            }, 0);
+            
+            const proportionOfApplicableTypes = applicableTypeTotal / totalDonationAmount;
+            const finalAmountForGoal = campaignLink.amount * proportionOfApplicableTypes;
+
+            return sum + finalAmountForGoal;
         }, 0);
-        return sum + applicableAmount;
-      }, 0);
 
       const progress = campaign.targetAmount && campaign.targetAmount > 0 ? (collected / campaign.targetAmount) * 100 : 0;
       
@@ -229,12 +239,17 @@ export default function CampaignPage() {
     if (!campaignData) return [];
     let sortableItems = [...campaignData];
     
-    // Filtering
     if (statusFilter !== 'All') {
         sortableItems = sortableItems.filter(c => c.status === statusFilter);
     }
     if (categoryFilter !== 'All') {
         sortableItems = sortableItems.filter(c => c.category === categoryFilter);
+    }
+    if (authenticityFilter !== 'All') {
+        sortableItems = sortableItems.filter(c => (c.authenticityStatus || 'Pending Verification') === authenticityFilter);
+    }
+    if (visibilityFilter !== 'All') {
+        sortableItems = sortableItems.filter(c => (c.publicVisibility || 'Hold') === visibilityFilter);
     }
     if (searchTerm) {
         const lowercasedTerm = searchTerm.toLowerCase();
@@ -243,7 +258,6 @@ export default function CampaignPage() {
         );
     }
 
-    // Sorting
     const statusOrder: { [key: string]: number } = {
         'Active': 1,
         'Upcoming': 2,
@@ -260,7 +274,7 @@ export default function CampaignPage() {
     });
     
     return sortableItems;
-  }, [campaignData, searchTerm, statusFilter, categoryFilter]);
+  }, [campaignData, searchTerm, statusFilter, categoryFilter, authenticityFilter, visibilityFilter]);
 
   const totalPages = Math.ceil(filteredAndSortedCampaigns.length / itemsPerPage);
   const paginatedCampaigns = useMemo(() => {
@@ -294,7 +308,7 @@ export default function CampaignPage() {
 
   return (
     <>
-      <main className="container mx-auto p-4 md:p-8">
+      <main className="container mx-auto p-2 sm:p-4">
         <div className="mb-4">
           <Button variant="outline" asChild>
             <Link href="/">
@@ -312,12 +326,12 @@ export default function CampaignPage() {
                         placeholder="Search by name..."
                         value={searchTerm}
                         onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                        className="max-w-sm"
+                        className="max-w-xs"
                         disabled={isLoading}
                     />
                      <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }} disabled={isLoading}>
-                        <SelectTrigger className="w-auto md:w-[180px]">
-                            <SelectValue placeholder="Filter by status" />
+                        <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
+                            <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="All">All Statuses</SelectItem>
@@ -327,14 +341,37 @@ export default function CampaignPage() {
                         </SelectContent>
                     </Select>
                      <Select value={categoryFilter} onValueChange={(value) => { setCategoryFilter(value); setCurrentPage(1); }} disabled={isLoading}>
-                        <SelectTrigger className="w-auto md:w-[180px]">
-                            <SelectValue placeholder="Filter by category" />
+                        <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
+                            <SelectValue placeholder="Category" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="All">All Categories</SelectItem>
                             <SelectItem value="Ration">Ration</SelectItem>
                             <SelectItem value="Relief">Relief</SelectItem>
                             <SelectItem value="General">General</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Select value={authenticityFilter} onValueChange={(value) => { setAuthenticityFilter(value); setCurrentPage(1); }} disabled={isLoading}>
+                        <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
+                            <SelectValue placeholder="Authenticity" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="All">All Authenticity</SelectItem>
+                            <SelectItem value="Pending Verification">Pending</SelectItem>
+                            <SelectItem value="Verified">Verified</SelectItem>
+                            <SelectItem value="On Hold">On Hold</SelectItem>
+                            <SelectItem value="Rejected">Rejected</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Select value={visibilityFilter} onValueChange={(value) => { setVisibilityFilter(value); setCurrentPage(1); }} disabled={isLoading}>
+                        <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
+                            <SelectValue placeholder="Visibility" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="All">All Visibilities</SelectItem>
+                            <SelectItem value="Hold">Hold</SelectItem>
+                            <SelectItem value="Ready to Publish">Ready</SelectItem>
+                            <SelectItem value="Published">Published</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -350,7 +387,7 @@ export default function CampaignPage() {
             )}
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {isLoading && (
                     [...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)
                 )}
@@ -359,7 +396,7 @@ export default function CampaignPage() {
                     <Card key={campaign.id} className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-zoom" style={{ animationDelay: `${100 * index}ms` }} onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}>
                         <CardHeader>
                             <div className="flex justify-between items-start gap-2">
-                                <CardTitle className="w-full break-words">{campaign.name}</CardTitle>
+                                <CardTitle className="w-full break-words text-base">{campaign.name}</CardTitle>
                                  <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -427,32 +464,32 @@ export default function CampaignPage() {
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
-                            <CardDescription>{campaign.startDate} to {campaign.endDate}</CardDescription>
+                            <CardDescription className="text-xs">{campaign.startDate} to {campaign.endDate}</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex-grow space-y-4">
-                             <div className="flex justify-between text-sm text-muted-foreground">
+                        <CardContent className="flex-grow space-y-2">
+                             <div className="flex justify-between text-xs text-muted-foreground">
                                 <Badge variant="outline">{campaign.category}</Badge>
                                 <Badge variant={
                                     campaign.status === 'Active' ? 'success' :
                                     campaign.status === 'Completed' ? 'secondary' : 'outline'
                                 }>{campaign.status}</Badge>
                             </div>
-                            <div className="flex justify-between text-sm text-muted-foreground">
+                            <div className="flex justify-between text-xs text-muted-foreground">
                                 <Badge variant="outline">{campaign.authenticityStatus || 'N/A'}</Badge>
                                 <Badge variant="outline">{campaign.publicVisibility || 'N/A'}</Badge>
                             </div>
-                            {campaign.targetAmount && campaign.targetAmount > 0 && (
-                                <div className="space-y-2 pt-2">
-                                    <Progress value={campaign.progress} />
+                            {campaign.targetAmount > 0 && (
+                                <div className="space-y-1 pt-1">
+                                    <Progress value={campaign.progress} className="h-2" />
                                     <div className="flex justify-between text-xs text-muted-foreground">
-                                        <span>₹{campaign.collected.toLocaleString('en-IN')} raised</span>
+                                        <span>₹{campaign.collected.toLocaleString('en-IN')}</span>
                                         <span>Goal: ₹{campaign.targetAmount.toLocaleString('en-IN')}</span>
                                     </div>
                                 </div>
                             )}
                         </CardContent>
-                        <CardFooter>
-                            <Button asChild className="w-full">
+                        <CardFooter className="p-2">
+                            <Button asChild className="w-full" size="sm">
                                 <Link href={`/campaign-members/${campaign.id}/summary`}>
                                     View Details
                                 </Link>
@@ -475,13 +512,12 @@ export default function CampaignPage() {
             )}
           </CardContent>
            {totalPages > 1 && (
-            <CardFooter className="flex items-center justify-between pt-6">
+            <CardFooter className="flex items-center justify-between pt-4">
                 <p className="text-sm text-muted-foreground">
-                    Showing {paginatedCampaigns.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredAndSortedCampaigns.length)} of {filteredAndSortedCampaigns.length} campaigns
+                    Page {currentPage} of {totalPages}
                 </p>
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
-                    <span className="text-sm">{currentPage} / {totalPages}</span>
                     <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
                 </div>
             </CardFooter>
