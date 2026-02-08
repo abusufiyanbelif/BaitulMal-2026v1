@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DollarSign, CheckCircle2, Hourglass, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DollarSign, CheckCircle2, Hourglass, XCircle, ChevronDown, ChevronUp, DatabaseZap } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,6 +58,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert } from 'lucide-react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { syncDonationsAction } from './actions';
 
 type SortKey = keyof Donation | 'srNo';
 
@@ -96,11 +97,34 @@ export default function DonationsPage() {
   const [donationTypeFilter, setDonationTypeFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
+  const [isSyncing, setIsSyncing] = useState(false);
   
   const canRead = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.read;
   const canCreate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.create;
   const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.update;
   const canDelete = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.delete;
+
+  const handleSync = async () => {
+    if (!canUpdate) {
+        toast({ title: "Permission Denied", description: "You don't have permission to sync data.", variant: "destructive"});
+        return;
+    }
+    setIsSyncing(true);
+    toast({ title: 'Syncing Donations...', description: 'Please wait while old donation records are updated to the new format.' });
+
+    try {
+        const result = await syncDonationsAction();
+        if (result.success) {
+            toast({ title: 'Sync Complete', description: result.message, variant: 'success' });
+        } else {
+            toast({ title: 'Sync Failed', description: result.message, variant: 'destructive' });
+        }
+    } catch (error: any) {
+         toast({ title: 'Sync Error', description: 'An unexpected client-side error occurred.', variant: 'destructive' });
+    }
+
+    setIsSyncing(false);
+  };
 
   const handleAdd = () => {
     if (!canCreate) return;
@@ -374,12 +398,20 @@ export default function DonationsPage() {
               <div className="flex-1 space-y-1.5">
                 <CardTitle>All Donations ({filteredAndSortedDonations.length})</CardTitle>
               </div>
-              {canCreate && (
-                  <Button onClick={handleAdd}>
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      Add Donation
-                  </Button>
-              )}
+              <div className="flex flex-wrap gap-2">
+                {canUpdate && (
+                    <Button onClick={handleSync} disabled={isSyncing} variant="secondary">
+                        {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <DatabaseZap className="mr-2 h-4 w-4" />}
+                        Sync Data
+                    </Button>
+                )}
+                {canCreate && (
+                    <Button onClick={handleAdd}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Donation
+                    </Button>
+                )}
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 pt-4">
                 <Input

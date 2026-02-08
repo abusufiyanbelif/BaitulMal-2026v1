@@ -208,18 +208,31 @@ export default function CampaignSummaryPage() {
     const summaryData = useMemo(() => {
         if (!allDonations || !campaign || !beneficiaries) return null;
         
-        const donations = allDonations.filter(d => d.linkSplit?.some(link => link.linkId === campaign.id));
+        const donations = allDonations.filter(d => {
+            if (d.linkSplit?.some(link => link.linkId === campaign.id)) {
+                return true;
+            }
+            return d.campaignId === campaign.id;
+        });
 
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
 
         verifiedDonationsList.forEach(d => {
-            const campaignAllocation = d.linkSplit?.find(link => link.linkId === campaign.id);
-            if (!campaignAllocation) return;
+            let amountForThisCampaign = 0;
+            const campaignLink = d.linkSplit?.find(l => l.linkId === campaign.id);
+            
+            if (campaignLink) {
+                amountForThisCampaign = campaignLink.amount;
+            } else if ((!d.linkSplit || d.linkSplit.length === 0) && d.campaignId === campaign.id) {
+                amountForThisCampaign = d.amount;
+            } else {
+                return; // Skip this donation if not related
+            }
 
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
-            const allocationProportion = campaignAllocation.amount / totalDonationAmount;
+            const proportionForThisCampaign = amountForThisCampaign / totalDonationAmount;
 
             const splits = d.typeSplit && d.typeSplit.length > 0
                 ? d.typeSplit
@@ -228,7 +241,7 @@ export default function CampaignSummaryPage() {
             splits.forEach(split => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
                 if (amountsByCategory.hasOwnProperty(category)) {
-                    amountsByCategory[category as DonationCategory] += split.amount * allocationProportion;
+                    amountsByCategory[category as DonationCategory] += split.amount * proportionForThisCampaign;
                 }
             });
         });
@@ -240,8 +253,14 @@ export default function CampaignSummaryPage() {
         const pendingDonations = donations
             .filter(d => d.status === 'Pending')
             .reduce((sum, d) => {
-                const campaignAllocation = d.linkSplit?.find(link => link.linkId === campaign.id);
-                return sum + (campaignAllocation?.amount || 0);
+                let amountForThisCampaign = 0;
+                const campaignLink = d.linkSplit?.find(l => l.linkId === campaign.id);
+                if (campaignLink) {
+                    amountForThisCampaign = campaignLink.amount;
+                } else if ((!d.linkSplit || d.linkSplit.length === 0) && d.campaignId === campaign.id) {
+                    amountForThisCampaign = d.amount;
+                }
+                return sum + amountForThisCampaign;
             }, 0);
 
         const fundingGoal = campaign.targetAmount || 0;
@@ -365,7 +384,7 @@ Your contribution, big or small, makes a huge difference.
                 backgroundColor: null,
             });
 
-            const fetchAsDataURL = async (url: string | null): Promise<string | null> => {
+            const fetchAsDataURL = async (url: string | null | undefined): Promise<string | null> => {
                 if (!url) return null;
                 try {
                     const response = await fetch(`/api/image-proxy?url=${encodeURIComponent(url)}`);
@@ -384,8 +403,8 @@ Your contribution, big or small, makes a huge difference.
             };
             
             const [logoDataUrl, qrDataUrl] = await Promise.all([
-                fetchAsDataURL(brandingSettings?.logoUrl || null),
-                fetchAsDataURL(paymentSettings?.qrCodeUrl || null)
+                fetchAsDataURL(brandingSettings?.logoUrl),
+                fetchAsDataURL(paymentSettings?.qrCodeUrl)
             ]);
 
             const logoImg = logoDataUrl ? await new Promise<HTMLImageElement>(res => { const i = new Image(); i.onload = () => res(i); i.src = logoDataUrl; }) : null;
@@ -518,7 +537,7 @@ Your contribution, big or small, makes a huge difference.
                 pdf.text('For Donations & Contact', 15, position);
                 let textY = position + 6;
                 pdf.setFontSize(9);
-                
+
                 if (qrImg && qrDataUrl) {
                     const qrSize = 30;
                     const qrX = pdfWidth - 15 - qrSize;

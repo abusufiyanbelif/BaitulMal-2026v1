@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -45,7 +43,6 @@ import type { ChartConfig } from '@/components/ui/chart';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert } from 'lucide-react';
-import { syncDonationsAction } from '../actions';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
@@ -77,7 +74,6 @@ export default function DonationsSummaryPage() {
     const pathname = usePathname();
     const { userProfile, isLoading: isProfileLoading } = useSession();
     const { toast } = useToast();
-    const [isSyncing, setIsSyncing] = useState(false);
 
     const donationsCollectionRef = useMemo(() => {
         if (!firestore) return null;
@@ -92,25 +88,6 @@ export default function DonationsSummaryPage() {
     const { data: allBeneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionGroup);
 
     const canRead = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.read;
-    const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.update;
-
-    const handleSync = async () => {
-        setIsSyncing(true);
-        toast({ title: 'Syncing Donations...', description: 'Please wait while old donation records are updated to the new format.' });
-
-        try {
-            const result = await syncDonationsAction();
-            if (result.success) {
-                toast({ title: 'Sync Complete', description: result.message, variant: 'success' });
-            } else {
-                toast({ title: 'Sync Failed', description: result.message, variant: 'destructive' });
-            }
-        } catch (error: any) {
-             toast({ title: 'Sync Error', description: 'An unexpected client-side error occurred.', variant: 'destructive' });
-        }
-
-        setIsSyncing(false);
-    };
 
     const summaryData = useMemo(() => {
         if (!donations || !allBeneficiaries) return null;
@@ -214,12 +191,6 @@ export default function DonationsSummaryPage() {
 
             <div className="flex items-center justify-between mb-4">
                 <h1 className="text-3xl font-bold">Donations Summary</h1>
-                {canUpdate && (
-                    <Button onClick={handleSync} disabled={isSyncing}>
-                        {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <DatabaseZap className="mr-2 h-4 w-4" />}
-                        Sync Donation Data
-                    </Button>
-                )}
             </div>
 
             <div className="border-b mb-4">
