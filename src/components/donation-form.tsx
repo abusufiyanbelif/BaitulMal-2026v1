@@ -126,7 +126,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     },
   });
 
-  const { control, watch, setValue, getValues, formState: { isDirty, errors, isSubmitting } } = form;
+  const { control, watch, setValue, getValues, register, formState: { isDirty, errors, isSubmitting } } = form;
 
   const { fields: transactionFields, append: appendTransaction, remove: removeTransaction } = useFieldArray({ control, name: "transactions" });
   const { fields: typeSplitFields, append: appendTypeSplit, remove: removeTypeSplit, replace: replaceTypeSplit } = useFieldArray({ control, name: "typeSplit" });
@@ -184,6 +184,80 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                   </FormItem>
               )}
           />
+
+        <div className="space-y-4 rounded-md border p-4">
+            <h3 className="text-base font-semibold">Transactions</h3>
+            <FormDescription>
+                Add one or more transactions that make up the total donation amount.
+            </FormDescription>
+            <div className="space-y-4">
+                {transactionFields.map((field, index) => (
+                    <div key={field.id} className="space-y-4 rounded-md border bg-muted/50 p-3 relative">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-1 right-1 h-7 w-7"
+                            onClick={() => removeTransaction(index)}
+                            disabled={transactionFields.length <= 1}
+                        >
+                            <Trash2 className="h-4 w-4 text-destructive"/>
+                            <span className="sr-only">Remove Transaction</span>
+                        </Button>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField
+                                control={control}
+                                name={`transactions.${index}.amount`}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Amount (₹)</FormLabel>
+                                        <FormControl><Input type="number" placeholder="0.00" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={control}
+                                name={`transactions.${index}.transactionId`}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Transaction ID</FormLabel>
+                                        <FormControl><Input placeholder="UPI ID, Check No., etc." {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <FormField
+                            control={control}
+                            name={`transactions.${index}.screenshotFile`}
+                            render={() => (
+                                <FormItem>
+                                    <FormLabel>Screenshot</FormLabel>
+                                    <FormControl>
+                                        <Input type="file" accept="image/*" {...register(`transactions.${index}.screenshotFile`)} />
+                                    </FormControl>
+                                    {getValues(`transactions.${index}.screenshotUrl`) && (
+                                        <FormDescription>
+                                            A screenshot is already attached. Uploading a new one will replace it.
+                                        </FormDescription>
+                                    )}
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                ))}
+            </div>
+            <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => appendTransaction({ id: `tx_${Date.now()}`, amount: 0, transactionId: '', screenshotUrl: '' })}
+            >
+                <Plus className="mr-2 h-4 w-4"/> Add another transaction
+            </Button>
+        </div>
         
         <Separator />
         
@@ -281,6 +355,30 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                 )}
             />
         </div>
+        <FormField
+            control={control}
+            name="donationType"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Donation Type *</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                        <SelectItem value="Online Payment">Online Payment</SelectItem>
+                        <SelectItem value="Cash">Cash</SelectItem>
+                        <SelectItem value="Check">Check</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                </Select>
+                <FormMessage />
+                </FormItem>
+            )}
+        />
+
 
         {/* Category Split */}
         <div className="space-y-3 rounded-md border p-4">
@@ -356,6 +454,35 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
           )}
         </div>
 
+        <div className="space-y-4">
+            <FormField
+                control={control}
+                name="comments"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Comments</FormLabel>
+                    <FormControl>
+                        <Textarea placeholder="Any comments from the donor or staff..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <FormField
+                control={control}
+                name="suggestions"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Suggestions</FormLabel>
+                    <FormControl>
+                        <Textarea placeholder="Any suggestions for improvement..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+        </div>
+
         <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>Cancel</Button>
             <Button type="submit" disabled={isSubmitting || (isEditing && !isDirty)}>
@@ -367,3 +494,5 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     </Form>
   );
 }
+
+    
