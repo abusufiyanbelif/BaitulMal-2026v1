@@ -497,7 +497,7 @@ export default function BeneficiariesPage() {
         return;
     }
 
-    const masterPriceList = generalCategory.items.reduce((acc, item) => {
+    const masterPriceList = generalCategory.items.reduce((acc: Record<string, number>, item: RationItem) => {
         const itemName = (item.name || '').trim().toLowerCase();
         if (itemName) {
             const quantity = Number(item.quantity) || 0;
@@ -524,7 +524,7 @@ export default function BeneficiariesPage() {
             
             let expectedAmount = 0;
             if (categoryToUse) {
-                expectedAmount = categoryToUse.items.reduce((sum, item) => {
+                expectedAmount = categoryToUse.items.reduce((sum: number, item: RationItem) => {
                     const unitPrice = masterPriceList[item.name.trim().toLowerCase()] || 0;
                     const quantity = Number(item.quantity) || 0;
                     return sum + (unitPrice * quantity);

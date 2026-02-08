@@ -4,18 +4,20 @@
 
 import { useMemo, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
-import { doc, DocumentReference, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, DocumentReference, setDoc, serverTimestamp, collection, deleteField } from 'firebase/firestore';
 import Link from 'next/link';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useStorage } from '@/firebase';
 
 import { useToast } from '@/hooks/use-toast';
 
-import type { Donation, Campaign, BrandingSettings, PaymentSettings } from '@/lib/types';
+import type { Donation, Campaign, BrandingSettings, PaymentSettings, Lead } from '@/lib/types';
 
 import { DonationReceipt } from '@/components/donation-receipt';
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
@@ -36,6 +38,7 @@ export default function DonationDetailsPage() {
     const donationId = params.donationId as string;
     
     const firestore = useFirestore();
+    const storage = useStorage();
     const { toast } = useToast();
     const receiptRef = useRef<HTMLDivElement>(null);
 
@@ -52,26 +55,78 @@ export default function DonationDetailsPage() {
     const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
     const { data: donation, isLoading: isDonationLoading } = useDoc<Donation>(donationDocRef);
 
+    const allCampaignsCollectionRef = useMemo(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
+    const { data: allCampaigns, isLoading: areAllCampaignsLoading } = useCollection<Campaign>(allCampaignsCollectionRef);
+
+    const allLeadsCollectionRef = useMemo(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
+    const { data: allLeads, isLoading: areAllLeadsLoading } = useCollection<Lead>(allLeadsCollectionRef);
+
     const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.donations?.update;
 
     const handleFormSubmit = async (data: DonationFormData) => {
-        if (!firestore || !campaignId || !campaign || !userProfile || !canUpdate || !donation) return;
+        if (!firestore || !storage || !userProfile || !canUpdate || !donation || !allCampaigns || !allLeads) return;
 
         setIsFormOpen(false);
 
         const docRef = doc(firestore, 'donations', donation.id);
         
-        let finalData: Partial<Donation> = {
-            ...data,
-            campaignId: campaignId,
-            campaignName: campaign.name,
-        };
-        // Don't handle files here, as this is an edit on an existing item. The donation form should handle file updates.
-        delete (finalData as any).screenshotFile;
-        delete (finalData as any).screenshotDeleted;
-        delete (finalData as any).isTransactionIdRequired;
+        let finalData: any;
 
         try {
+            const transactionPromises = data.transactions.map(async (transaction) => {
+                let screenshotUrl = transaction.screenshotUrl || '';
+                // @ts-ignore
+                if (transaction.screenshotFile) {
+                    const file = (transaction.screenshotFile as FileList)[0];
+                    if(file) {
+                        const { default: Resizer } = await import('react-image-file-resizer');
+                        const resizedBlob = await new Promise<Blob>((resolve) => {
+                            Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
+                        });
+                        const filePath = `donations/${docRef.id}/${transaction.id}.png`;
+                        const fileRef = storageRef(storage, filePath);
+                        const uploadResult = await uploadBytes(fileRef, resizedBlob);
+                        screenshotUrl = await getDownloadURL(uploadResult.ref);
+                    }
+                }
+                return {
+                    id: transaction.id,
+                    amount: transaction.amount,
+                    transactionId: transaction.transactionId || '',
+                    screenshotUrl: screenshotUrl,
+                    screenshotIsPublic: transaction.screenshotIsPublic || false,
+                };
+            });
+
+            const finalTransactions = await Promise.all(transactionPromises);
+            const { transactions, ...donationData } = data;
+
+            const finalLinkSplit = data.linkSplit?.map(split => {
+                if (!split.linkId || split.linkId === 'unlinked') return null;
+                const [type, id] = split.linkId.split('_');
+                const linkType = type as 'campaign' | 'lead';
+                const source = linkType === 'campaign' ? allCampaigns : allLeads;
+                const linkedItem = source?.find(item => item.id === id);
+
+                return {
+                    linkId: id,
+                    linkName: linkedItem?.name || 'Unknown Initiative',
+                    linkType: linkType,
+                    amount: data.isSplit ? split.amount : data.amount
+                };
+            }).filter(Boolean) as Donation['linkSplit'] || [];
+
+            finalData = {
+                ...donationData,
+                transactions: finalTransactions,
+                amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0),
+                linkSplit: finalLinkSplit,
+                uploadedBy: userProfile.name,
+                uploadedById: userProfile.id,
+                campaignId: deleteField(), // Ensure legacy fields are removed
+                campaignName: deleteField(),
+            };
+
             await setDoc(docRef, finalData, { merge: true });
             toast({ title: 'Success', description: `Donation updated.`, variant: 'success' });
         } catch (error: any) {
@@ -296,7 +351,7 @@ export default function DonationDetailsPage() {
         }
     };
 
-    const isLoading = isProfileLoading || isBrandingLoading || isPaymentLoading || isCampaignLoading || isDonationLoading;
+    const isLoading = isProfileLoading || isBrandingLoading || isPaymentLoading || isCampaignLoading || isDonationLoading || areAllCampaignsLoading || areAllLeadsLoading;
 
     if (isLoading) {
         return (
@@ -409,7 +464,7 @@ export default function DonationDetailsPage() {
 
 
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Edit Donation</DialogTitle>
                     </DialogHeader>
@@ -417,6 +472,8 @@ export default function DonationDetailsPage() {
                         donation={donation}
                         onSubmit={handleFormSubmit}
                         onCancel={() => setIsFormOpen(false)}
+                        campaigns={allCampaigns || []}
+                        leads={allLeads || []}
                     />
                 </DialogContent>
             </Dialog>

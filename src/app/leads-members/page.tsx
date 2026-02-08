@@ -112,7 +112,8 @@ export default function LeadPage() {
             return sum + finalAmountForGoal;
         }, 0);
 
-        const progress = lead.targetAmount && lead.targetAmount > 0 ? (collected / lead.targetAmount) * 100 : 0;
+        const targetAmount = lead.targetAmount || 0;
+        const progress = targetAmount > 0 ? (collected / targetAmount) * 100 : 0;
         
         return {
             ...lead,
@@ -478,12 +479,12 @@ export default function LeadPage() {
                                 <Badge variant="outline">{lead.authenticityStatus || 'N/A'}</Badge>
                                 <Badge variant="outline">{lead.publicVisibility || 'N/A'}</Badge>
                             </div>
-                             {lead.targetAmount > 0 && (
+                             {(lead.targetAmount || 0) > 0 && (
                                 <div className="space-y-1 pt-1">
                                     <Progress value={lead.progress} className="h-2" />
                                     <div className="flex justify-between text-xs text-muted-foreground">
                                         <span>₹{lead.collected.toLocaleString('en-IN')}</span>
-                                        <span>Goal: ₹{lead.targetAmount.toLocaleString('en-IN')}</span>
+                                        <span>Goal: ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</span>
                                     </div>
                                 </div>
                             )}

@@ -126,7 +126,8 @@ export default function CampaignPage() {
             return sum + finalAmountForGoal;
         }, 0);
 
-      const progress = campaign.targetAmount && campaign.targetAmount > 0 ? (collected / campaign.targetAmount) * 100 : 0;
+      const targetAmount = campaign.targetAmount || 0;
+      const progress = targetAmount > 0 ? (collected / targetAmount) * 100 : 0;
       
       return {
         ...campaign,
@@ -498,12 +499,12 @@ export default function CampaignPage() {
                                 <Badge variant="outline">{campaign.authenticityStatus || 'N/A'}</Badge>
                                 <Badge variant="outline">{campaign.publicVisibility || 'N/A'}</Badge>
                             </div>
-                            {campaign.targetAmount > 0 && (
+                            {(campaign.targetAmount || 0) > 0 && (
                                 <div className="space-y-1 pt-1">
                                     <Progress value={campaign.progress} className="h-2" />
                                     <div className="flex justify-between text-xs text-muted-foreground">
                                         <span>₹{campaign.collected.toLocaleString('en-IN')}</span>
-                                        <span>Goal: ₹{campaign.targetAmount.toLocaleString('en-IN')}</span>
+                                        <span>Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</span>
                                     </div>
                                 </div>
                             )}
