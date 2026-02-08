@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -211,7 +212,7 @@ export default function LeadDetailsPage() {
         
         const total = calculateTotal(items);
         const headers = [['#', 'Item Name', 'Qty', 'Type', 'Notes', 'Unit Price', 'Total']];
-        const body: (string | number)[][] = items.map((item, index) => [
+        const body: any[] = items.map((item, index) => [
             index + 1, item.name, item.quantity, item.quantityType || '', item.notes, `₹${(item.price || 0).toFixed(2)}`, `₹${(item.price * item.quantity).toFixed(2)}`
         ]);
         body.push([
@@ -221,7 +222,7 @@ export default function LeadDetailsPage() {
 
         (doc as any).autoTable({
             head: headers,
-            body: body as any,
+            body: body,
             startY: startY,
             headStyles: { fillColor: [22, 163, 74], textColor: [255, 255, 255] },
             styles: { textColor: [10, 41, 19] }

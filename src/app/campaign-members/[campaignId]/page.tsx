@@ -396,14 +396,14 @@ export default function CampaignDetailsPage() {
                     ? [['#', 'Item Name', 'Quantity', 'Quantity Type', 'Price per Unit']]
                     : [['#', 'Item Name', 'Qty', 'Type', 'Notes', 'Total Price']];
 
-                const body: (string | number)[][] = items.map((item, index) => isGeneral ? [
+                const body: any[] = items.map((item, index) => isGeneral ? [
                     index + 1, item.name, item.quantity, item.quantityType || '', `₹${(item.price || 0).toFixed(2)}`
                 ] : [
                     index + 1, item.name, item.quantity, item.quantityType || '', item.notes, `₹${(item.price || 0).toFixed(2)}`
                 ]);
                 
                 if (!isGeneral) {
-                    (body as any).push([
+                    body.push([
                         { content: 'Total', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold' } },
                         { content: `₹${total.toFixed(2)}`, styles: { halign: 'right', fontStyle: 'bold' } }
                     ]);
@@ -419,7 +419,7 @@ export default function CampaignDetailsPage() {
 
                 (doc as any).autoTable({
                     head: headers,
-                    body: body as any,
+                    body: body,
                     startY: startY,
                     headStyles: { fillColor: [22, 163, 74], textColor: [255, 255, 255] },
                     styles: { textColor: [10, 41, 19] }
