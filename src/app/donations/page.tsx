@@ -207,10 +207,26 @@ export default function DonationsPage() {
 
         const { transactions, ...donationData } = data;
         
+        const finalLinkSplit = data.linkSplit?.map(split => {
+            if (!split.linkId || split.linkId === 'unlinked') return null;
+            const [type, id] = split.linkId.split('_');
+            const linkType = type as 'campaign' | 'lead';
+            const source = linkType === 'campaign' ? campaigns : leads;
+            const linkedItem = source?.find(item => item.id === id);
+
+            return {
+                linkId: id,
+                linkName: linkedItem?.name || 'Unknown Initiative',
+                linkType: linkType,
+                amount: data.isSplit ? split.amount : data.amount
+            };
+        }).filter(Boolean) || [];
+        
         finalData = {
             ...donationData,
             transactions: finalTransactions,
             amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0),
+            linkSplit: finalLinkSplit,
             uploadedBy: userProfile.name,
             uploadedById: userProfile.id,
             ...(!editingDonation && { createdAt: serverTimestamp() }),
@@ -262,7 +278,7 @@ export default function DonationsPage() {
         (d.donorName || '').toLowerCase().includes(lowercasedTerm) ||
         (d.receiverName || '').toLowerCase().includes(lowercasedTerm) ||
         (d.donorPhone || '').toLowerCase().includes(lowercasedTerm) ||
-        d.transactions.some(t => t.transactionId?.toLowerCase().includes(lowercasedTerm))
+        (d.transactions || []).some(t => t.transactionId?.toLowerCase().includes(lowercasedTerm))
       );
     }
 
@@ -650,7 +666,3 @@ export default function DonationsPage() {
     </>
   );
 }
-
-    
-
-    

@@ -8,7 +8,7 @@ import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, Firestor
 import type { SecurityRuleContext } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, where, setDoc, DocumentReference } from 'firebase/firestore';
-import type { Donation, Campaign } from '@/lib/types';
+import type { Donation, Campaign, Lead, TransactionDetail } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
@@ -16,12 +16,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, RefreshCw, ZoomIn, ZoomOut, RotateCw, DollarSign, CheckCircle2, Hourglass, XCircle, DatabaseZap } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, RefreshCw, ZoomIn, ZoomOut, RotateCw, DollarSign, CheckCircle2, Hourglass, XCircle, DatabaseZap, ChevronUp, ChevronDown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -54,6 +58,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
 import { syncDonationsAction } from '@/app/donations/actions';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 type SortKey = keyof Donation | 'srNo';
 
@@ -79,6 +84,12 @@ export default function DonationsPage() {
   }, [firestore, campaignId]);
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
 
+  const allCampaignsCollectionRef = useMemo(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
+  const { data: allCampaigns, isLoading: areAllCampaignsLoading } = useCollection<Campaign>(allCampaignsCollectionRef);
+
+  const allLeadsCollectionRef = useMemo(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
+  const { data: allLeads, isLoading: areAllLeadsLoading } = useCollection<Lead>(allLeadsCollectionRef);
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -95,6 +106,7 @@ export default function DonationsPage() {
   const [donationTypeFilter, setDonationTypeFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [isSyncing, setIsSyncing] = useState(false);
+  const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   
   const canReadSummary = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.summary?.read;
   const canReadRation = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.ration?.read;
@@ -159,50 +171,37 @@ export default function DonationsPage() {
     if (!donationData) return;
 
     const docRef = doc(firestore, 'donations', donationToDelete);
-    const screenshotUrl = donationData.screenshotUrl;
+    const screenshotUrls = (donationData.transactions || []).map(t => t.screenshotUrl).filter(Boolean) as string[];
     
     setIsDeleteDialogOpen(false);
 
-    const deleteDocument = () => {
-        deleteDoc(docRef)
-            .catch(async (serverError) => {
-                const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'delete' });
-                errorEmitter.emit('permission-error', permissionError);
+    if (screenshotUrls.length > 0) {
+        const deletePromises = screenshotUrls.map(url => 
+            deleteObject(storageRef(storage, url)).catch(err => {
+                if (err.code !== 'storage/object-not-found') {
+                    console.warn(`Failed to delete screenshot from storage: ${url}`, err);
+                }
             })
-            .finally(() => {
-                toast({ title: 'Success', description: 'Donation deleted successfully.', variant: 'success' });
-                setDonationToDelete(null);
-            });
-    };
-
-    if (screenshotUrl) {
-        await deleteObject(storageRef(storage, screenshotUrl)).catch(err => {
-            if (err.code !== 'storage/object-not-found') {
-                console.warn("Failed to delete screenshot from storage:", err);
-            }
-        });
+        );
+        await Promise.all(deletePromises);
     }
     
-    deleteDocument();
+    deleteDoc(docRef)
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'delete' });
+            errorEmitter.emit('permission-error', permissionError);
+        })
+        .finally(() => {
+            toast({ title: 'Success', description: 'Donation deleted successfully.', variant: 'success' });
+            setDonationToDelete(null);
+        });
   };
   
   const handleFormSubmit = async (data: DonationFormData) => {
-    if (!firestore || !storage || !campaignId || !campaign || !userProfile) return;
+    if (!firestore || !storage || !userProfile || !allCampaigns || !allLeads) return;
     
     if (editingDonation && !canUpdate) return;
     if (!editingDonation && !canCreate) return;
-
-    if (data.isTransactionIdRequired && data.transactionId && !editingDonation) {
-        const isDuplicate = donations && donations.some(d => d.transactionId === data.transactionId && d.campaignId === campaignId);
-        if (isDuplicate) {
-            toast({
-                title: 'Duplicate Transaction ID',
-                description: 'A donation with this transaction ID already exists in this campaign.',
-                variant: 'destructive',
-            });
-            return;
-        }
-    }
 
     setIsFormOpen(false);
     setEditingDonation(null);
@@ -214,60 +213,55 @@ export default function DonationsPage() {
     let finalData: any;
 
     try {
-        let screenshotUrl = editingDonation?.screenshotUrl || '';
-    
-        if (data.screenshotDeleted && screenshotUrl) {
-            await deleteObject(storageRef(storage, screenshotUrl)).catch(err => {
-                if (err.code !== 'storage/object-not-found') {
-                    console.warn("Failed to delete old screenshot:", err);
+        const transactionPromises = data.transactions.map(async (transaction) => {
+            let screenshotUrl = transaction.screenshotUrl || '';
+            // @ts-ignore
+            if (transaction.screenshotFile) {
+                const file = (transaction.screenshotFile as FileList)[0];
+                if(file) {
+                    const { default: Resizer } = await import('react-image-file-resizer');
+                    const resizedBlob = await new Promise<Blob>((resolve) => {
+                         Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
+                    });
+                    const filePath = `donations/${docRef.id}/${transaction.id}.png`;
+                    const fileRef = storageRef(storage, filePath);
+                    const uploadResult = await uploadBytes(fileRef, resizedBlob);
+                    screenshotUrl = await getDownloadURL(uploadResult.ref);
                 }
-            });
-            screenshotUrl = '';
-        }
-        
-        const fileList = data.screenshotFile as FileList | undefined;
-        if (fileList && fileList.length > 0) {
-            if (screenshotUrl) {
-                 await deleteObject(storageRef(storage, screenshotUrl)).catch(err => {
-                    if (err.code !== 'storage/object-not-found') {
-                        console.warn("Failed to delete old screenshot during replacement:", err);
-                    }
-                });
             }
-            const file = fileList[0];
-            
-            const { default: Resizer } = await import('react-image-file-resizer');
-            const resizedBlob = await new Promise<Blob>((resolve) => {
-                 Resizer.imageFileResizer(
-                    file, 1024, 1024, 'PNG', 100, 0,
-                    blob => {
-                        resolve(blob as Blob);
-                    }, 'blob'
-                );
-            });
-            
-            const campaignCreatedDate = campaign.createdAt?.toDate ? campaign.createdAt.toDate().toISOString().split('T')[0] : (campaign.startDate || 'nodate');
-            const campaignFolderName = `${campaign.name.replace(/[\s/]/g, '_')}_${campaignCreatedDate}`;
+            return {
+                id: transaction.id,
+                amount: transaction.amount,
+                transactionId: transaction.transactionId || '',
+                screenshotUrl: screenshotUrl,
+                screenshotIsPublic: transaction.screenshotIsPublic || false,
+            };
+        });
 
-            const transactionIdPart = data.transactionId || 'NULL';
-            const fileNameParts = [ data.donorName, data.donorPhone, data.donationDate, transactionIdPart, 'referby', userProfile.name ];
-            const sanitizedBaseName = fileNameParts.join('_').replace(/[^a-zA-Z0-9_.-]/g, '_').replace(/_{2,}/g, '_');
-            const fileExtension = 'png';
-            const finalFileName = `${docRef.id}_${sanitizedBaseName}.${fileExtension}`;
-            const filePath = `campaigns/${campaignFolderName}/donations/${finalFileName}`;
-            const fileRef = storageRef(storage, filePath);
+        const finalTransactions = await Promise.all(transactionPromises);
 
-            const uploadResult = await uploadBytes(fileRef, resizedBlob);
-            screenshotUrl = await getDownloadURL(uploadResult.ref);
-        }
+        const { transactions, ...donationData } = data;
+        
+        const finalLinkSplit = data.linkSplit?.map(split => {
+            if (!split.linkId || split.linkId === 'unlinked') return null;
+            const [type, id] = split.linkId.split('_');
+            const linkType = type as 'campaign' | 'lead';
+            const source = linkType === 'campaign' ? allCampaigns : allLeads;
+            const linkedItem = source?.find(item => item.id === id);
 
-        const { screenshotFile, screenshotDeleted, isTransactionIdRequired, ...donationData } = data;
+            return {
+                linkId: id,
+                linkName: linkedItem?.name || 'Unknown Initiative',
+                linkType: linkType,
+                amount: data.isSplit ? split.amount : data.amount
+            };
+        }).filter(Boolean) || [];
         
         finalData = {
             ...donationData,
-            screenshotUrl,
-            campaignId: campaignId,
-            campaignName: campaign.name,
+            transactions: finalTransactions,
+            amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0),
+            linkSplit: finalLinkSplit,
             uploadedBy: userProfile.name,
             uploadedById: userProfile.id,
             ...(!editingDonation && { createdAt: serverTimestamp() }),
@@ -321,7 +315,7 @@ export default function DonationsPage() {
         (d.receiverName || '').toLowerCase().includes(lowercasedTerm) ||
         (d.donorPhone || '').toLowerCase().includes(lowercasedTerm) ||
         (d.referral || '').toLowerCase().includes(lowercasedTerm) ||
-        (d.transactionId || '').toLowerCase().includes(lowercasedTerm)
+        (d.transactions || []).some(t => t.transactionId?.toLowerCase().includes(lowercasedTerm))
       );
     }
 
@@ -429,7 +423,7 @@ export default function DonationsPage() {
     });
   }, [filteredAndSortedDonations]);
 
-  const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading;
+  const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading || areAllCampaignsLoading || areAllLeadsLoading;
   
   const SortableHeader = ({ sortKey, children, className }: { sortKey: SortKey, children: React.ReactNode, className?: string }) => {
     const isSorted = sortConfig?.key === sortKey;
@@ -625,7 +619,6 @@ export default function DonationsPage() {
                             <SortableHeader sortKey="amount" className="text-right">Amount (₹)</SortableHeader>
                             <TableHead className="whitespace-nowrap">Category</TableHead>
                             <SortableHeader sortKey="donationType">Donation Type</SortableHeader>
-                            <SortableHeader sortKey="transactionId">Transaction ID</SortableHeader>
                             <SortableHeader sortKey="donationDate">Date</SortableHeader>
                             <SortableHeader sortKey="referral">Referral</SortableHeader>
                         </TableRow>
@@ -638,61 +631,107 @@ export default function DonationsPage() {
                             </TableRow>
                         ))
                         ) : (filteredAndSortedDonations && filteredAndSortedDonations.length > 0) ? (
-                        filteredAndSortedDonations.map((donation, index) => (
-                            <TableRow key={donation.id} className="cursor-pointer" onClick={() => router.push(`/campaign-members/${campaignId}/donations/${donation.id}`)}>
-                                <TableCell className="text-center sticky left-0 bg-card z-10">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                            <Button variant="ghost" size="icon">
-                                                <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/campaign-members/${campaignId}/donations/${donation.id}`); }}>
-                                                <Eye className="mr-2 h-4 w-4" /> View Details
-                                            </DropdownMenuItem>
-                                            {canUpdate && (
-                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(donation); }}>
-                                                    <Edit className="mr-2 h-4 w-4" /> Edit
-                                                </DropdownMenuItem>
+                        filteredAndSortedDonations.map((donation, index) => {
+                            const isOpen = openRows[donation.id] || false;
+                            return (
+                             <Collapsible asChild key={donation.id} open={isOpen} onOpenChange={(open) => setOpenRows(prev => ({...prev, [donation.id]: open}))}>
+                                <>
+                                <TableRow>
+                                    <TableCell className="text-center sticky left-0 bg-card z-10">
+                                         <div className="flex items-center justify-center">
+                                            <CollapsibleTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!donation.transactions || donation.transactions.length === 0}>
+                                                    {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                                    <span className="sr-only">Toggle details</span>
+                                                </Button>
+                                            </CollapsibleTrigger>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/campaign-members/${campaignId}/donations/${donation.id}`); }}>
+                                                        <Eye className="mr-2 h-4 w-4" /> View Details
+                                                    </DropdownMenuItem>
+                                                    {canUpdate && (
+                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(donation); }}>
+                                                            <Edit className="mr-2 h-4 w-4" /> Edit
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {canDelete && (
+                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
+                                                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>{index + 1}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge>
+                                    </TableCell>
+                                    <TableCell className="font-medium">{donation.donorName}</TableCell>
+                                    <TableCell>{donation.receiverName}</TableCell>
+                                    <TableCell>{donation.donorPhone}</TableCell>
+                                    <TableCell className="text-right font-medium">
+                                        <div className="flex flex-col items-end">
+                                            <span>₹{donation.amount.toFixed(2)}</span>
+                                            {donation.linkSplit && donation.linkSplit.length > 1 && (
+                                            <span className="text-xs text-muted-foreground">(Split)</span>
                                             )}
-                                            {canDelete && (
-                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
-                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                </DropdownMenuItem>
-                                            )}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                                <TableCell>{index + 1}</TableCell>
-                                <TableCell>
-                                    <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge>
-                                </TableCell>
-                                <TableCell className="font-medium">{donation.donorName}</TableCell>
-                                <TableCell>{donation.receiverName}</TableCell>
-                                <TableCell>{donation.donorPhone}</TableCell>
-                                <TableCell className="text-right font-medium">
-                                    <div className="flex flex-col items-end">
-                                        <span>₹{donation.amount.toFixed(2)}</span>
-                                        {donation.linkSplit && donation.linkSplit.length > 1 && (
-                                        <span className="text-xs text-muted-foreground">(Split)</span>
-                                        )}
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex flex-wrap gap-1">
-                                        {donation.typeSplit?.map(split => (
-                                            <Badge key={split.category} variant="secondary">
-                                                {split.category}
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                </TableCell>
-                                <TableCell><Badge variant="outline">{donation.donationType}</Badge></TableCell>
-                                <TableCell>{donation.transactionId || 'N/A'}</TableCell>
-                                <TableCell>{donation.donationDate}</TableCell>
-                                <TableCell>{donation.referral}</TableCell>
-                            </TableRow>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-wrap gap-1">
+                                            {donation.typeSplit?.map(split => (
+                                                <Badge key={split.category} variant="secondary">
+                                                    {split.category}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell><Badge variant="outline">{donation.donationType}</Badge></TableCell>
+                                    <TableCell>{donation.donationDate}</TableCell>
+                                    <TableCell>{donation.referral}</TableCell>
+                                </TableRow>
+                                <CollapsibleContent asChild>
+                                    <TableRow className="bg-muted/50 hover:bg-muted/50">
+                                        <TableCell colSpan={11} className="p-0">
+                                            <div className="p-3">
+                                                <h4 className="text-sm font-semibold mb-2">Transaction Details</h4>
+                                                <Table>
+                                                    <TableHeader>
+                                                        <TableRow>
+                                                            <TableHead>Amount</TableHead>
+                                                            <TableHead>Transaction ID</TableHead>
+                                                            <TableHead>Screenshot</TableHead>
+                                                        </TableRow>
+                                                    </TableHeader>
+                                                    <TableBody>
+                                                        {(donation.transactions || []).map((tx) => (
+                                                            <TableRow key={tx.id}>
+                                                                <TableCell>₹{tx.amount.toFixed(2)}</TableCell>
+                                                                <TableCell>{tx.transactionId || 'N/A'}</TableCell>
+                                                                <TableCell>
+                                                                    {tx.screenshotUrl ? (
+                                                                        <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)}>
+                                                                            <Eye className="mr-2 h-4 w-4"/> View
+                                                                        </Button>
+                                                                    ) : 'No'}
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
+                                                </Table>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                </CollapsibleContent>
+                                </>
+                            </Collapsible>
                         ))
                         ) : (
                         <TableRow>
@@ -709,7 +748,7 @@ export default function DonationsPage() {
       </main>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
                 <DialogTitle>{editingDonation ? 'Edit' : 'Add'} Donation</DialogTitle>
             </DialogHeader>
@@ -717,6 +756,9 @@ export default function DonationsPage() {
                 donation={editingDonation}
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
+                campaigns={allCampaigns || []}
+                leads={allLeads || []}
+                defaultLinkId={`campaign_${campaignId}`}
             />
         </DialogContent>
       </Dialog>
@@ -745,8 +787,8 @@ export default function DonationsPage() {
             <DialogHeader>
                 <DialogTitle>Donation Screenshot</DialogTitle>
             </DialogHeader>
-            <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
-                {imageToView && (
+            {imageToView && (
+                <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
                     <img
                         src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
                         alt="Donation screenshot"
@@ -754,8 +796,8 @@ export default function DonationsPage() {
                         style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
                         crossOrigin="anonymous"
                     />
-                )}
-            </div>
+                </div>
+            )}
              <DialogFooter className="sm:justify-center pt-4">
                 <Button variant="outline" onClick={() => setZoom(z => z * 1.2)}><ZoomIn className="mr-2"/> Zoom In</Button>
                 <Button variant="outline" onClick={() => setZoom(z => z / 1.2)}><ZoomOut className="mr-2"/> Zoom Out</Button>
