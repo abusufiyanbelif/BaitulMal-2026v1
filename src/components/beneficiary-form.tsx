@@ -25,7 +25,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import type { Beneficiary, RationCategory, RationItem } from '@/lib/types';
+import type { Beneficiary, RationCategory } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Loader2, ScanLine, Trash2, Replace, FileIcon, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
