@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, ShieldAlert, Copy } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, ShieldAlert, Copy, Info } from 'lucide-react';
 import Link from 'next/link';
 import {
   Dialog,
@@ -52,7 +52,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import { get } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -100,6 +102,7 @@ export default function LeadDetailsPage() {
   const [isCopyItemsOpen, setIsCopyItemsOpen] = useState(false);
   const [copyTargetCategory, setCopyTargetCategory] = useState<RationCategory | null>(null);
   const [copySourceCategoryId, setCopySourceCategoryId] = useState<string | null>(null);
+  const [selectedItemsToCopy, setSelectedItemsToCopy] = useState<string[]>([]);
   
   const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
   const [categoryToEdit, setCategoryToEdit] = useState<RationCategory | null>(null);
@@ -122,6 +125,13 @@ export default function LeadDetailsPage() {
       setEditableLead(leadCopy);
     }
   }, [editMode, lead])
+
+  useEffect(() => {
+    if (!isCopyItemsOpen) {
+        setCopySourceCategoryId(null);
+        setSelectedItemsToCopy([]);
+    }
+  }, [isCopyItemsOpen]);
   
   const sanitizedEditableRationLists = useMemo(() => {
     if (!editableLead?.rationLists) return [];
@@ -156,6 +166,11 @@ export default function LeadDetailsPage() {
         return a.name.localeCompare(b.name);
     });
   }, [editableLead?.rationLists]);
+
+    const sourceCategoryForCopy = useMemo(() => {
+    if (!copySourceCategoryId) return null;
+    return sanitizedEditableRationLists.find(c => c.id === copySourceCategoryId);
+  }, [copySourceCategoryId, sanitizedEditableRationLists]);
 
   const canReadSummary = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.leads-members.summary.read', false);
   const canReadBeneficiaries = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.leads-members.beneficiaries.read', false);
@@ -262,8 +277,8 @@ export default function LeadDetailsPage() {
         toast({ title: 'Invalid Name', description: 'Category name cannot be empty.', variant: 'destructive' });
         return;
     }
-    if (isNaN(min) || isNaN(max) || min < 1 || min > max) {
-        toast({ title: 'Invalid Range', description: 'Please enter valid positive numbers for min and max members, with min being less than or equal to max.', variant: 'destructive' });
+    if (isNaN(min) || min < 1 || isNaN(max) || max < min) {
+        toast({ title: 'Invalid Range', description: 'Please enter valid positive numbers for min/max members, with min <= max.', variant: 'destructive' });
         return;
     }
     
@@ -300,8 +315,8 @@ export default function LeadDetailsPage() {
         toast({ title: 'Invalid Name', description: 'Category name cannot be empty.', variant: 'destructive' });
         return;
     }
-    if (isNaN(min) || isNaN(max) || min < 1 || min > max) {
-        toast({ title: 'Invalid Range', description: 'Please enter valid positive numbers for min and max members, with min being less than or equal to max.', variant: 'destructive' });
+    if (isNaN(min) || min < 1 || isNaN(max) || max < min) {
+        toast({ title: 'Invalid Range', description: 'Please enter valid positive numbers for min/max members, with min <= max.', variant: 'destructive' });
         return;
     }
 
@@ -395,29 +410,57 @@ export default function LeadDetailsPage() {
   };
 
   const handleCopyItemsConfirm = () => {
-    if (!editableLead || !copyTargetCategory || !copySourceCategoryId) return;
-
-    const sourceCategory = sanitizedEditableRationLists.find(c => c.id === copySourceCategoryId);
-    if (!sourceCategory) {
-        toast({ title: "Error", description: "Source category not found.", variant: "destructive" });
+    if (!editableLead || !copyTargetCategory || selectedItemsToCopy.length === 0) {
+        toast({ title: "Nothing Selected", description: "Please select items to copy.", variant: "destructive" });
         return;
     }
 
-    const itemsToAppend = sourceCategory.items.map(item => ({
-        ...item,
-        id: `${copyTargetCategory.id}-item-${Date.now()}-${Math.random()}`
-    }));
+    const sourceCategory = sanitizedEditableRationLists.find(c => c.id === copySourceCategoryId);
+    if (!sourceCategory) return;
+
+    const itemsToProcess = sourceCategory.items.filter(item => selectedItemsToCopy.includes(item.id));
+    
+    const targetItems = [...(copyTargetCategory.items || [])];
+    
+    let updatedCount = 0;
+    let addedCount = 0;
+
+    itemsToProcess.forEach(sourceItem => {
+        const existingItemIndex = targetItems.findIndex(
+            targetItem => targetItem.name.trim().toLowerCase() === sourceItem.name.trim().toLowerCase()
+        );
+
+        if (existingItemIndex > -1) {
+            targetItems[existingItemIndex] = {
+                ...targetItems[existingItemIndex],
+                quantity: sourceItem.quantity,
+                quantityType: sourceItem.quantityType,
+                price: sourceItem.price,
+                notes: sourceItem.notes,
+            };
+            updatedCount++;
+        } else {
+            targetItems.push({
+                ...sourceItem,
+                id: `${copyTargetCategory.id}-item-${Date.now()}-${Math.random()}`
+            });
+            addedCount++;
+        }
+    });
     
     const newRationLists = sanitizedEditableRationLists.map(cat => {
         if (cat.id === copyTargetCategory.id) {
-            return { ...cat, items: [...cat.items, ...itemsToAppend] };
+            return { ...cat, items: targetItems };
         }
         return cat;
     });
 
     handleFieldChange('rationLists', newRationLists);
     
-    toast({ title: 'Success', description: `Copied ${itemsToAppend.length} items to '${copyTargetCategory.name}'.` });
+    toast({ 
+        title: 'Items Copied', 
+        description: `${addedCount} items added and ${updatedCount} items updated in '${copyTargetCategory.name}'.` 
+    });
     setIsCopyItemsOpen(false);
   };
 
@@ -741,41 +784,41 @@ export default function LeadDetailsPage() {
                     <Tabs defaultValue={sanitizedEditableRationLists[0]?.id} className="w-full">
                         <ScrollArea>
                             <TabsList>
-                                {sanitizedEditableRationLists.map(category => (
-                                    <div key={category.id} className="flex items-center gap-1 p-1">
-                                        <TabsTrigger value={category.id}>
-                                            {category.name === 'General Item List'
-                                                ? 'General Item List'
-                                                : category.minMembers === category.maxMembers
-                                                    ? `${category.name} ${category.minMembers}`
-                                                    : `${category.name} (${category.minMembers}-${category.maxMembers})`
-                                            }
-                                        </TabsTrigger>
-                                        {editMode && canUpdate && category.name !== 'General Item List' && (
-                                            <div className="flex items-center">
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
-                                                    className="h-6 w-6 shrink-0"
-                                                    onClick={() => handleEditCategoryClick(category)}
-                                                    title="Edit category"
-                                                >
-                                                    <Edit className="h-3.5 w-3.5" />
-                                                </Button>
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
-                                                    className="h-6 w-6 shrink-0"
-                                                    onClick={() => handleDeleteCategoryClick(category)}
-                                                    disabled={isDeletingCategory}
-                                                    title="Delete category"
-                                                >
-                                                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                {sanitizedEditableRationLists.map(category => {
+                                    const categoryName = category.name === 'General Item List'
+                                    ? 'General Item List'
+                                    : category.minMembers === category.maxMembers
+                                        ? `${category.name} ${category.minMembers}`
+                                        : `${category.name} (${category.minMembers}-${category.maxMembers})`;
+                                    return (
+                                        <div key={category.id} className="flex items-center gap-1 p-1">
+                                            <TabsTrigger value={category.id}>{categoryName}</TabsTrigger>
+                                            {editMode && canUpdate && category.name !== 'General Item List' && (
+                                                <div className="flex items-center">
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="h-6 w-6 shrink-0"
+                                                        onClick={() => handleEditCategoryClick(category)}
+                                                        title="Edit category"
+                                                    >
+                                                        <Edit className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="h-6 w-6 shrink-0"
+                                                        onClick={() => handleDeleteCategoryClick(category)}
+                                                        disabled={isDeletingCategory}
+                                                        title="Delete category"
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )
+                                })}
                             </TabsList>
                             <ScrollBar orientation="horizontal" />
                         </ScrollArea>
@@ -852,33 +895,73 @@ export default function LeadDetailsPage() {
                 <DialogHeader>
                     <DialogTitle>Copy Items to '{copyTargetCategory?.name}'</DialogTitle>
                     <DialogDescription>
-                        Select a source category to copy all of its items into the current category.
+                        Select items from a source category to copy or replace in the current category.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="py-4 space-y-4">
-                    <Label htmlFor="source-category-copy-lead">Copy items from</Label>
-                    <Select onValueChange={setCopySourceCategoryId} value={copySourceCategoryId || ''}>
-                        <SelectTrigger id="source-category-copy-lead">
-                            <SelectValue placeholder="Select a source category..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {sanitizedEditableRationLists.filter(cat => cat.id !== copyTargetCategory?.id).map(cat => (
-                                <SelectItem key={cat.id} value={cat.id}>
-                                     {cat.name === 'General Item List'
-                                        ? 'General Item List'
-                                        : cat.minMembers === cat.maxMembers
-                                            ? `${cat.name} ${cat.minMembers}`
-                                            : `${cat.name} (${cat.minMembers}-${cat.maxMembers})`
-                                    }
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <div className="space-y-2">
+                        <Label htmlFor="source-category-copy-lead">Copy items from</Label>
+                        <Select onValueChange={id => { setCopySourceCategoryId(id); setSelectedItemsToCopy([]); }} value={copySourceCategoryId || ''}>
+                            <SelectTrigger id="source-category-copy-lead">
+                                <SelectValue placeholder="Select a source category..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {sanitizedEditableRationLists.filter(cat => cat.id !== copyTargetCategory?.id).map(cat => {
+                                    const categoryName = cat.name === 'General Item List'
+                                    ? 'General Item List'
+                                    : cat.minMembers === cat.maxMembers
+                                        ? `${cat.name} ${cat.minMembers}`
+                                        : `${cat.name} (${cat.minMembers}-${cat.maxMembers})`;
+                                    return <SelectItem key={cat.id} value={cat.id}>{categoryName}</SelectItem>
+                                })}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     {sourceCategoryForCopy && (
+                        <div className="space-y-2 pt-2">
+                             <h4 className="font-medium text-sm">Select Items to Copy/Replace</h4>
+                            <ScrollArea className="h-64 border rounded-md p-2">
+                               <div className="p-2">
+                                     <div className="flex items-center space-x-2 mb-2 p-2">
+                                        <Checkbox
+                                            id="select-all-copy-lead"
+                                            checked={sourceCategoryForCopy.items.length > 0 && selectedItemsToCopy.length === sourceCategoryForCopy.items.length}
+                                            onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                    setSelectedItemsToCopy(sourceCategoryForCopy.items.map(item => item.id));
+                                                } else {
+                                                    setSelectedItemsToCopy([]);
+                                                }
+                                            }}
+                                        />
+                                        <Label htmlFor="select-all-copy-lead" className="font-semibold">Select All</Label>
+                                    </div>
+                                    <Separator />
+                               </div>
+                                <div className="space-y-1 p-2">
+                                {sourceCategoryForCopy.items.length > 0 ? sourceCategoryForCopy.items.map(item => (
+                                    <div key={item.id} className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id={`copy-item-lead-${item.id}`}
+                                            checked={selectedItemsToCopy.includes(item.id)}
+                                            onCheckedChange={(checked) => {
+                                                setSelectedItemsToCopy(prev => 
+                                                    checked ? [...prev, item.id] : prev.filter(id => id !== item.id)
+                                                );
+                                            }}
+                                        />
+                                        <Label htmlFor={`copy-item-lead-${item.id}`} className="font-normal flex-1 cursor-pointer">{item.name}</Label>
+                                    </div>
+                                )) : <p className="text-sm text-muted-foreground text-center">No items in this category.</p>}
+                                </div>
+                            </ScrollArea>
+                        </div>
+                    )}
                 </div>
                 <DialogFooter>
                     <Button variant="outline" onClick={() => setIsCopyItemsOpen(false)}>Cancel</Button>
-                    <Button onClick={handleCopyItemsConfirm} disabled={!copySourceCategoryId}>
-                        <Copy className="mr-2 h-4 w-4" /> Copy Items
+                    <Button onClick={handleCopyItemsConfirm} disabled={!copySourceCategoryId || selectedItemsToCopy.length === 0}>
+                        <Copy className="mr-2 h-4 w-4" /> Copy ({selectedItemsToCopy.length}) Items
                     </Button>
                 </DialogFooter>
             </DialogContent>
