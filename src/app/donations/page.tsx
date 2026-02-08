@@ -144,7 +144,7 @@ export default function DonationsPage() {
         const deletePromises = screenshotUrls.map(url => 
             deleteObject(storageRef(storage, url)).catch(err => {
                 if (err.code !== 'storage/object-not-found') {
-                    console.warn(`Failed to delete screenshot from storage: ${'${url}'}`, err);
+                    console.warn(`Failed to delete screenshot from storage: ${url}`, err);
                 }
             })
         );
@@ -187,7 +187,7 @@ export default function DonationsPage() {
                     const resizedBlob = await new Promise<Blob>((resolve) => {
                          Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
                     });
-                    const filePath = `donations/${'${docRef.id}'}/${'${transaction.id}'}.png`;
+                    const filePath = `donations/${docRef.id}/${transaction.id}.png`;
                     const fileRef = storageRef(storage, filePath);
                     const uploadResult = await uploadBytes(fileRef, resizedBlob);
                     screenshotUrl = await getDownloadURL(uploadResult.ref);
@@ -441,7 +441,7 @@ export default function DonationsPage() {
                             const donationLinks = donation.linkSplit || [];
                             const isOpen = openRows[donation.id] || false;
                             return (
-                                <Collapsible asChild key={donation.id} onOpenChange={(open) => setOpenRows(prev => ({...prev, [donation.id]: open}))}>
+                                <Collapsible asChild key={donation.id} open={isOpen} onOpenChange={(open) => setOpenRows(prev => ({...prev, [donation.id]: open}))}>
                                     <>
                                         <TableRow>
                                             <TableCell className="text-center sticky left-0 bg-card z-10">
@@ -551,7 +551,7 @@ export default function DonationsPage() {
                                                                 </TableRow>
                                                             </TableHeader>
                                                             <TableBody>
-                                                                {donation.transactions.map((tx) => (
+                                                                {(donation.transactions || []).map((tx) => (
                                                                     <TableRow key={tx.id}>
                                                                         <TableCell>₹{tx.amount.toFixed(2)}</TableCell>
                                                                         <TableCell>{tx.transactionId || 'N/A'}</TableCell>
@@ -649,3 +649,5 @@ export default function DonationsPage() {
     </>
   );
 }
+
+    
