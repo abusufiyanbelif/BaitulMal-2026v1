@@ -66,8 +66,6 @@ interface BeneficiaryFormProps {
 
 export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, initialReadOnly = false }: BeneficiaryFormProps) {
   const { toast } = useToast();
-  const [isScanning, setIsScanning] = useState(false);
-  const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
   const isEditing = !!beneficiary;
 
   const form = useForm<BeneficiaryFormData>({
@@ -93,10 +91,21 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
     },
   });
 
-  const { formState: { isSubmitting, isDirty }, watch, setValue, register, getValues } = form;
+  const {
+    control,
+    watch,
+    setValue,
+    register,
+    getValues,
+    handleSubmit,
+    formState: { isSubmitting, isDirty },
+  } = form;
+  
+  const [isScanning, setIsScanning] = useState(false);
+  const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
   const [preview, setPreview] = useState<string | null>(beneficiary?.idProofUrl || null);
-  const idProofFile = watch('idProofFile');
 
+  const idProofFile = watch('idProofFile');
   const membersValue = watch('members');
   const isEligibleForZakat = watch('isEligibleForZakat');
 
@@ -205,29 +214,29 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField control={form.control} name="name" render={({ field }) => (
+            <FormField control={control} name="name" render={({ field }) => (
                 <FormItem><FormLabel>Full Name *</FormLabel><FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
             )}/>
-            <FormField control={form.control} name="phone" render={({ field }) => (
+            <FormField control={control} name="phone" render={({ field }) => (
                 <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="10-digit mobile number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
             )}/>
         </div>
-        <FormField control={form.control} name="address" render={({ field }) => (
+        <FormField control={control} name="address" render={({ field }) => (
             <FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Full residential address" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
         )}/>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <FormField control={form.control} name="members" render={({ field }) => (
+            <FormField control={control} name="members" render={({ field }) => (
                 <FormItem><FormLabel>Members</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
             )}/>
-            <FormField control={form.control} name="earningMembers" render={({ field }) => (
+            <FormField control={control} name="earningMembers" render={({ field }) => (
                 <FormItem><FormLabel>Earning</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
             )}/>
-            <FormField control={form.control} name="male" render={({ field }) => (
+            <FormField control={control} name="male" render={({ field }) => (
                 <FormItem><FormLabel>Male</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
             )}/>
-             <FormField control={form.control} name="female" render={({ field }) => (
+             <FormField control={control} name="female" render={({ field }) => (
                 <FormItem><FormLabel>Female</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
             )}/>
         </div>
@@ -266,41 +275,41 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
                     {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan ID Proof & Autofill
                 </Button>
             )}
-            <FormField control={form.control} name="idProofIsPublic" render={({ field }) => (
+            <FormField control={control} name="idProofIsPublic" render={({ field }) => (
                 <FormItem className="flex flex-row items-center space-x-2 space-y-0 pt-2"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={formIsDisabled} /></FormControl><FormLabel className="text-sm font-normal">Make ID Proof public</FormLabel></FormItem>
             )}/>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField control={form.control} name="idProofType" render={({ field }) => (
+            <FormField control={control} name="idProofType" render={({ field }) => (
                 <FormItem><FormLabel>ID Proof Type</FormLabel><FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
             )}/>
-            <FormField control={form.control} name="idNumber" render={({ field }) => (
+            <FormField control={control} name="idNumber" render={({ field }) => (
                 <FormItem><FormLabel>ID Number</FormLabel><FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
             )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <FormField control={form.control} name="referralBy" render={({ field }) => (
+            <FormField control={control} name="referralBy" render={({ field }) => (
                 <FormItem><FormLabel>Referred By *</FormLabel><FormControl><Input placeholder="e.g. Local NGO" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
             )}/>
-            <FormField control={form.control} name="kitAmount" render={({ field }) => (
+            <FormField control={control} name="kitAmount" render={({ field }) => (
                 <FormItem><FormLabel>Kit Amount (₹) *</FormLabel><FormControl><Input type="number" placeholder="Auto-calculated" {...field} readOnly={isKitAmountReadOnly || formIsDisabled} className={cn((isKitAmountReadOnly) && "bg-muted/50 focus:ring-0 cursor-not-allowed")} /></FormControl><FormDescription>Auto-calculated if ration list exists.</FormDescription><FormMessage /></FormItem>
             )}/>
-            <FormField control={form.control} name="status" render={({ field }) => (
+            <FormField control={control} name="status" render={({ field }) => (
                 <FormItem><FormLabel>Status *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled={formIsDisabled}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Hold">Hold</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent></Select><FormMessage /></FormItem>
             )}/>
         </div>
 
-        <FormField control={form.control} name="notes" render={({ field }) => (
+        <FormField control={control} name="notes" render={({ field }) => (
             <FormItem><FormLabel>Notes</FormLabel><FormControl><Textarea placeholder="Any internal notes..." {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
         )}/>
         <Separator />
-        <FormField control={form.control} name="isEligibleForZakat" render={({ field }) => (
+        <FormField control={control} name="isEligibleForZakat" render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Eligible for Zakat</FormLabel><FormDescription>Can this beneficiary receive funds from Zakat?</FormDescription></div><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={formIsDisabled} /></FormControl></FormItem>
         )}/>
         {isEligibleForZakat && (
-            <FormField control={form.control} name="zakatAllocation" render={({ field }) => (
+            <FormField control={control} name="zakatAllocation" render={({ field }) => (
                 <FormItem className="animate-fade-in-zoom"><FormLabel>Zakat Allocation (₹)</FormLabel><FormControl><Input type="number" {...field} placeholder="Amount from Zakat" disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
             )}
         />
