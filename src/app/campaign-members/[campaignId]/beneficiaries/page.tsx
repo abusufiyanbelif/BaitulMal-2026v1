@@ -482,7 +482,7 @@ export default function BeneficiariesPage() {
     };
     setIsSyncing(true);
 
-    const { rationLists } = campaign;
+    const rationLists = sanitizedRationLists;
     if (!rationLists || rationLists.length === 0) {
         toast({ title: 'Sync Canceled', description: 'No ration lists found for this campaign to calculate amounts.', variant: 'destructive' });
         setIsSyncing(false);
@@ -1161,3 +1161,5 @@ export default function BeneficiariesPage() {
     </>
   );
 }
+
+    
