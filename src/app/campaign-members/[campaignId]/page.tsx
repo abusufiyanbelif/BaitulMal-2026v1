@@ -104,23 +104,26 @@ export default function CampaignDetailsPage() {
   // Reset local state if edit mode is cancelled or if the base data changes while NOT in edit mode.
   useEffect(() => {
     if (campaign && !editMode) {
-      setEditableCampaign(JSON.parse(JSON.stringify(campaign)));
+        const campaignCopy = JSON.parse(JSON.stringify(campaign));
+        // Sanitize rationLists on load
+        if (campaignCopy.rationLists && !Array.isArray(campaignCopy.rationLists)) {
+            campaignCopy.rationLists = [
+                {
+                    id: 'general',
+                    name: 'General Item List',
+                    minMembers: 0,
+                    maxMembers: 0,
+                    items: (campaignCopy.rationLists as any)['General Item List'] || []
+                }
+            ];
+        }
+        setEditableCampaign(campaignCopy);
     }
   }, [editMode, campaign])
 
   const sanitizedEditableRationLists = useMemo(() => {
-    if (!editableCampaign?.rationLists) return [];
-    if (Array.isArray(editableCampaign.rationLists)) return editableCampaign.rationLists;
-    // Hotfix for old object format
-    return [
-      {
-        id: 'general',
-        name: 'General Item List',
-        minMembers: 0,
-        maxMembers: 0,
-        items: (editableCampaign.rationLists as any)['General Item List'] || []
-      }
-    ];
+    if (!editableCampaign?.rationLists || !Array.isArray(editableCampaign.rationLists)) return [];
+    return editableCampaign.rationLists;
   }, [editableCampaign?.rationLists]);
   
   const masterPriceList = useMemo(() => {
@@ -360,7 +363,9 @@ export default function CampaignDetailsPage() {
     };
     setIsSyncing(true);
 
-    let rationLists = campaign.rationLists;
+    let { rationLists } = campaign;
+    
+    // Sanitize rationLists if it's in the old object format
     if (rationLists && !Array.isArray(rationLists)) {
       rationLists = [
         {

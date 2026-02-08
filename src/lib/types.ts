@@ -66,7 +66,7 @@ export interface Campaign extends DocumentData {
   shopContact: string;
   shopAddress: string;
   documents?: CampaignDocument[];
-  rationLists: RationCategory[];
+  rationLists: RationCategory[] | Record<string, RationItem[]>; // Supports both old and new
   allowedDonationTypes?: DonationCategory[];
   createdAt?: any;
   createdById?: string;
@@ -90,7 +90,7 @@ export interface Lead extends DocumentData {
   shopContact: string;
   shopAddress: string;
   documents?: CampaignDocument[];
-  rationLists: RationCategory[];
+  rationLists: RationCategory[] | Record<string, RationItem[]>; // Supports both old and new
   allowedDonationTypes?: DonationCategory[];
   createdAt?: any;
   createdById?: string;
@@ -160,7 +160,7 @@ export interface Donation extends DocumentData {
   donorName: string;
   donorPhone: string;
   receiverName: string;
-  amount: number; // This is the SUM of all transactions
+  amount: number;
   typeSplit: { category: DonationCategory; amount: number }[];
   linkSplit?: DonationLink[];
   donationType: 'Cash' | 'Online Payment' | 'Check' | 'Other';
@@ -172,5 +172,11 @@ export interface Donation extends DocumentData {
   uploadedBy: string;
   uploadedById: string;
   createdAt?: any;
-  transactions: TransactionDetail[];
+  transactions?: TransactionDetail[];
+  
+  // Legacy fields for migration
+  type?: string; 
+  campaignId?: string;
+  campaignName?: string;
+  transactionId?: string;
 }
