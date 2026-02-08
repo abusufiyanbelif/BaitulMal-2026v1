@@ -10,7 +10,7 @@ import { useBranding } from '@/hooks/use-branding';
 import { doc, updateDoc, DocumentReference, collection, writeBatch } from 'firebase/firestore';
 import type { Campaign, RationItem, Beneficiary, RationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
