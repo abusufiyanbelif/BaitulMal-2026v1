@@ -91,9 +91,16 @@
         "address": { "type": "string" },
         "phone": { "type": "string" },
         "members": { "type": "number" },
+        "earningMembers": { "type": "number" },
+        "male": { "type": "number" },
+        "female": { "type": "number" },
+        "idProofType": { "type": "string" },
+        "idNumber": { "type": "string" },
         "status": { "type": "string", "enum": ["Given", "Pending", "Hold", "Need More Details", "Verified"] },
         "kitAmount": { "type": "number" },
-        "notes": { "type": "string", "description": "Internal notes or comments about the beneficiary." }
+        "notes": { "type": "string", "description": "Internal notes or comments about the beneficiary." },
+        "isEligibleForZakat": { "type": "boolean", "description": "Indicates if the beneficiary is eligible to receive Zakat funds." },
+        "zakatAllocation": { "type": "number", "description": "The amount of Zakat funds allocated to this beneficiary." }
       },
       "required": ["name", "status"]
     },

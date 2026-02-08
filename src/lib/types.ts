@@ -112,6 +112,8 @@ export interface Beneficiary extends DocumentData {
     idProofUrl?: string;
     idProofIsPublic?: boolean;
     notes?: string;
+    isEligibleForZakat?: boolean;
+    zakatAllocation?: number;
     createdAt?: any;
     createdById?: string;
     createdByName?: string;

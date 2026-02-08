@@ -98,7 +98,6 @@ export default function BeneficiariesPage() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [referralFilter, setReferralFilter] = useState<string[]>([]);
   const [openReferralPopover, setOpenReferralPopover] = useState(false);
-  const [membersFilter, setMembersFilter] = useState('');
   const [kitAmountFilter, setKitAmountFilter] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
@@ -549,9 +548,6 @@ export default function BeneficiariesPage() {
     if (referralFilter.length > 0) {
         sortableItems = sortableItems.filter(b => b.referralBy && referralFilter.includes(b.referralBy));
     }
-    if (membersFilter) {
-        sortableItems = sortableItems.filter(b => String(b.members) === membersFilter);
-    }
     if (kitAmountFilter) {
         sortableItems = sortableItems.filter(b => String(b.kitAmount) === kitAmountFilter);
     }
@@ -588,7 +584,7 @@ export default function BeneficiariesPage() {
     }
 
     return sortableItems;
-  }, [beneficiaries, searchTerm, statusFilter, referralFilter, membersFilter, kitAmountFilter, sortConfig]);
+  }, [beneficiaries, searchTerm, statusFilter, referralFilter, kitAmountFilter, sortConfig]);
 
   const groupedBeneficiaries = useMemo(() => {
     if (!filteredAndSortedBeneficiaries) return {};
@@ -832,13 +828,6 @@ export default function BeneficiariesPage() {
                     </PopoverContent>
                   </Popover>
                   <Input
-                      placeholder="Filter by members"
-                      type="number"
-                      value={membersFilter}
-                      onChange={(e) => setMembersFilter(e.target.value)}
-                      className="w-auto md:w-[160px]"
-                  />
-                  <Input
                       placeholder="Filter by kit amount"
                       type="number"
                       value={kitAmountFilter}
@@ -887,16 +876,11 @@ export default function BeneficiariesPage() {
                             <SortableHeader sortKey="name">Name</SortableHeader>
                             <SortableHeader sortKey="address">Address</SortableHeader>
                             <SortableHeader sortKey="phone">Phone</SortableHeader>
-                            <SortableHeader sortKey="members" className="text-center">Members</SortableHeader>
-                            <SortableHeader sortKey="earningMembers" className="text-center">Earning</SortableHeader>
-                            <SortableHeader sortKey="male" className="text-center">M/F</SortableHeader>
                             <SortableHeader sortKey="addedDate">Added Date</SortableHeader>
-                            <TableHead className="whitespace-nowrap">ID Proof Type</TableHead>
-                            <TableHead className="whitespace-nowrap">ID Number</TableHead>
-                            <TableHead className="whitespace-nowrap">ID Proof</TableHead>
                             <SortableHeader sortKey="referralBy">Referred By</SortableHeader>
                             <SortableHeader sortKey="kitAmount" className="text-right">Kit Amount (₹)</SortableHeader>
                             <SortableHeader sortKey="status">Status</SortableHeader>
+                            <TableHead>Eligible for Zakat</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -908,16 +892,11 @@ export default function BeneficiariesPage() {
                                     <TableCell><Skeleton className="h-6 w-32" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-40" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                                    <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                                    <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                                    <TableCell><Skeleton className="h-6 w-12" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                                    <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                                    <TableCell><Skeleton className="h-6 w-28" /></TableCell>
-                                    <TableCell><Skeleton className="h-9 w-20" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-7 w-20 rounded-full" /></TableCell>
+                                    <TableCell><Skeleton className="h-7 w-20" /></TableCell>
                                 </TableRow>
                             ))
                         ) : sortedGroupKeys.length > 0 ? (
@@ -926,7 +905,7 @@ export default function BeneficiariesPage() {
                                 return (
                                 <React.Fragment key={`group-${memberCount}`}>
                                     <TableRow className="bg-muted hover:bg-muted cursor-pointer" onClick={() => toggleGroup(String(memberCount))}>
-                                        <TableCell colSpan={(canUpdate || canDelete) ? 15 : 14} className="font-bold">
+                                        <TableCell colSpan={(canUpdate || canDelete) ? 10 : 9} className="font-bold">
                                             <div className="flex items-center gap-2">
                                                 {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                                 <span>Group: {memberCount} Members ({groupedBeneficiaries[memberCount].length} beneficiaries)</span>
@@ -964,21 +943,7 @@ export default function BeneficiariesPage() {
                                         <TableCell className="font-medium">{beneficiary.name}</TableCell>
                                         <TableCell>{beneficiary.address}</TableCell>
                                         <TableCell>{beneficiary.phone}</TableCell>
-                                        <TableCell className="text-center">{beneficiary.members}</TableCell>
-                                        <TableCell className="text-center">{beneficiary.earningMembers}</TableCell>
-                                        <TableCell className="text-center">{beneficiary.male}/{beneficiary.female}</TableCell>
                                         <TableCell>{beneficiary.addedDate}</TableCell>
-                                        <TableCell>{beneficiary.idProofType}</TableCell>
-                                        <TableCell>{beneficiary.idNumber}</TableCell>
-                                        <TableCell>
-                                            {beneficiary.idProofUrl && beneficiary.idProofIsPublic && (
-                                            <Button variant="outline" size="sm" onClick={() => handleViewImage(beneficiary.idProofUrl!)}>
-                                                <Eye className="mr-2 h-4 w-4" /> View
-                                            </Button>
-                                            )}
-                                            {beneficiary.idProofUrl && !beneficiary.idProofIsPublic && "Private"}
-                                            {!beneficiary.idProofUrl && "N/A"}
-                                        </TableCell>
                                         <TableCell>{beneficiary.referralBy}</TableCell>
                                         <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
                                         <TableCell>
@@ -989,6 +954,20 @@ export default function BeneficiariesPage() {
                                                 beneficiary.status === 'Hold' ? 'destructive' : 'outline'
                                             }>{beneficiary.status}</Badge>
                                         </TableCell>
+                                        <TableCell>
+                                            {beneficiary.isEligibleForZakat ? (
+                                                <div className="flex flex-col items-start">
+                                                    <Badge variant="success">Yes</Badge>
+                                                    {beneficiary.zakatAllocation && beneficiary.zakatAllocation > 0 && (
+                                                        <span className="text-xs text-muted-foreground mt-1">
+                                                            ₹{beneficiary.zakatAllocation.toFixed(2)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <Badge variant="outline">No</Badge>
+                                            )}
+                                        </TableCell>
                                     </TableRow>
                                     ))}
                                 </React.Fragment>
@@ -996,7 +975,7 @@ export default function BeneficiariesPage() {
                             })
                         ) : (
                         <TableRow>
-                            <TableCell colSpan={(canUpdate || canDelete) ? 15 : 14} className="text-center h-24 text-muted-foreground">
+                            <TableCell colSpan={(canUpdate || canDelete) ? 10 : 9} className="text-center h-24 text-muted-foreground">
                                 No beneficiaries found matching your criteria.
                             </TableCell>
                         </TableRow>
@@ -1099,3 +1078,4 @@ export default function BeneficiariesPage() {
 
 
     
+
