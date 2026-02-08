@@ -57,6 +57,7 @@ import { Separator } from '@/components/ui/separator';
 import { get, cn } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { Badge } from '@/components/ui/badge';
 
 
 
@@ -825,3 +826,5 @@ export default function CampaignDetailsPage() {
     </>
   );
 }
+
+    
