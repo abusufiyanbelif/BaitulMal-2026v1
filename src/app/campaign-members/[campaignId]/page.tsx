@@ -414,12 +414,15 @@ export default function CampaignDetailsPage() {
         const members = beneficiary.members;
         if (members === undefined || members === null) return false;
 
-        // Find the category that would be applied to this beneficiary from the full list.
-        const appliedCategory = sanitizedEditableRationLists.find(
-            cat => members >= cat.minMembers && members <= cat.maxMembers && cat.name !== 'General Item List'
-        ) || generalCategory;
+        // Find the specific category this beneficiary falls into, excluding the general one first.
+        const specificCategory = sanitizedEditableRationLists.find(
+            cat => cat.name !== 'General Item List' && members >= cat.minMembers && members <= cat.maxMembers
+        );
         
-        // This beneficiary is a dependent if the category being deleted is the one that's applied to it.
+        // The applied category is the specific one if found, otherwise it's the general one.
+        const appliedCategory = specificCategory || generalCategory;
+        
+        // This beneficiary is a dependent only if the category being deleted is the exact one applied to it.
         return appliedCategory?.id === categoryToDelete.id;
     });
     
@@ -461,9 +464,11 @@ export default function CampaignDetailsPage() {
           
           await batch.commit();
 
-          toast({ title: 'Category Deleted', description: `Successfully deleted '${categoryToDelete.name}'. The page will now reflect this change.`, variant: 'success' });
+          // Manually update the local state to reflect the change immediately
+          handleFieldChange('rationLists', newRationLists);
+
+          toast({ title: 'Category Deleted', description: `Successfully deleted '${categoryToDelete.name}'.`, variant: 'success' });
           
-          // Close dialog and reset state. The useDoc hook will trigger a re-render with the latest campaign data.
           setIsDeleteCategoryDialogOpen(false);
           setCategoryToDelete(null);
 
@@ -940,8 +945,12 @@ export default function CampaignDetailsPage() {
                                 {sanitizedEditableRationLists.map(category => (
                                      <div key={category.id} className="flex items-center gap-1 p-1">
                                         <TabsTrigger value={category.id}>
-                                            {category.name === 'General Item List' ? 'General' : category.name}
-                                            {category.name !== 'General Item List' && ` (${category.minMembers}-${category.maxMembers} Members)`}
+                                            {category.name === 'General Item List'
+                                                ? 'General'
+                                                : category.minMembers === category.maxMembers
+                                                    ? `${category.name} ${category.minMembers}`
+                                                    : `${category.name} (${category.minMembers}-${category.maxMembers})`
+                                            }
                                         </TabsTrigger>
                                         {editMode && canUpdate && category.name !== 'General Item List' && (
                                             <div className="flex items-center">

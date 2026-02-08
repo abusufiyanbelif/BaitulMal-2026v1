@@ -323,12 +323,12 @@ export default function LeadDetailsPage() {
           const members = beneficiary.members;
           if (members === undefined || members === null) return false;
 
-          // Find the category that would be applied to this beneficiary from the full list.
-          const appliedCategory = sanitizedEditableRationLists.find(
-              cat => members >= cat.minMembers && members <= cat.maxMembers && cat.name !== 'General Item List'
-          ) || generalCategory;
+          const specificCategory = sanitizedEditableRationLists.find(
+            cat => cat.name !== 'General Item List' && members >= cat.minMembers && members <= cat.maxMembers
+          );
           
-          // This beneficiary is a dependent if the category being deleted is the one that's applied to it.
+          const appliedCategory = specificCategory || generalCategory;
+          
           return appliedCategory?.id === categoryToDelete.id;
       });
       
@@ -367,6 +367,8 @@ export default function LeadDetailsPage() {
         batch.update(leadDocRef!, { rationLists: newRationLists });
         
         await batch.commit();
+
+        handleFieldChange('rationLists', newRationLists);
 
         toast({ title: 'Category Deleted', description: `Successfully deleted '${categoryToDelete.name}'.`, variant: 'success' });
         
@@ -740,8 +742,12 @@ export default function LeadDetailsPage() {
                                 {sanitizedEditableRationLists.map(category => (
                                     <div key={category.id} className="flex items-center gap-1 p-1">
                                         <TabsTrigger value={category.id}>
-                                            {category.name === 'General Item List' ? 'General' : category.name}
-                                            {category.name !== 'General Item List' && ` (${category.minMembers}-${category.maxMembers} Members)`}
+                                            {category.name === 'General Item List'
+                                                ? 'General'
+                                                : category.minMembers === category.maxMembers
+                                                    ? `${category.name} ${category.minMembers}`
+                                                    : `${category.name} (${category.minMembers}-${category.maxMembers})`
+                                            }
                                         </TabsTrigger>
                                         {editMode && canUpdate && category.name !== 'General Item List' && (
                                             <div className="flex items-center">
