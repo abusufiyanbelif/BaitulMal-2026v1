@@ -982,6 +982,7 @@ export default function BeneficiariesPage() {
                                 const categoryIsCollapsed = collapsedGroups[categoryId];
                                 const totalBeneficiariesInCategory = Object.values(beneficiariesByMemberCount).reduce((sum, benList) => sum + benList.length, 0);
 
+                                const isRangedCategory = category.minMembers !== category.maxMembers && category.name !== 'General Item List';
                                 const categoryName = category.name === 'General Item List'
                                     ? category.name
                                     : category.minMembers === category.maxMembers
@@ -999,7 +1000,7 @@ export default function BeneficiariesPage() {
                                             </TableCell>
                                         </TableRow>
                                         
-                                        {!categoryIsCollapsed && Object.keys(beneficiariesByMemberCount).sort((a, b) => Number(a) - Number(b)).map(memberCountStr => {
+                                        {!categoryIsCollapsed && isRangedCategory && Object.keys(beneficiariesByMemberCount).sort((a, b) => Number(a) - Number(b)).map(memberCountStr => {
                                             const memberCount = Number(memberCountStr);
                                             const beneficiariesInSubGroup = beneficiariesByMemberCount[memberCount];
                                             const subGroupKey = `${categoryId}-${memberCount}`;
@@ -1017,66 +1018,16 @@ export default function BeneficiariesPage() {
                                                     </TableRow>
 
                                                     {!subGroupIsCollapsed && beneficiariesInSubGroup.map((beneficiary, index) => (
-                                                        <TableRow key={beneficiary.id} className="bg-background hover:bg-accent/50">
-                                                            {(canUpdate || canDelete) && (
-                                                            <TableCell className="sticky left-0 z-10 bg-card text-center">
-                                                                <DropdownMenu>
-                                                                    <DropdownMenuTrigger asChild>
-                                                                        <Button variant="ghost" size="icon">
-                                                                            <MoreHorizontal className="h-4 w-4" />
-                                                                        </Button>
-                                                                    </DropdownMenuTrigger>
-                                                                    <DropdownMenuContent align="end">
-                                                                        {canUpdate && (
-                                                                            <DropdownMenuItem onClick={() => handleEdit(beneficiary)}>
-                                                                                <Edit className="mr-2 h-4 w-4" />
-                                                                                Edit
-                                                                            </DropdownMenuItem>
-                                                                        )}
-                                                                        {canDelete && (
-                                                                            <DropdownMenuItem onClick={() => handleDeleteClick(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
-                                                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                                                Delete
-                                                                            </DropdownMenuItem>
-                                                                        )}
-                                                                    </DropdownMenuContent>
-                                                                </DropdownMenu>
-                                                            </TableCell>
-                                                            )}
-                                                            <TableCell className="pl-12">{index + 1}</TableCell>
-                                                            <TableCell className="font-medium">{beneficiary.name}</TableCell>
-                                                            <TableCell>{beneficiary.address}</TableCell>
-                                                            <TableCell>{beneficiary.phone}</TableCell>
-                                                            <TableCell>{beneficiary.addedDate}</TableCell>
-                                                            <TableCell>
-                                                                {beneficiary.isEligibleForZakat ? (
-                                                                    <div className="flex flex-col items-start">
-                                                                        <Badge variant="success">Yes</Badge>
-                                                                        {beneficiary.zakatAllocation && beneficiary.zakatAllocation > 0 && (
-                                                                            <span className="text-xs text-muted-foreground mt-1">
-                                                                                ₹{beneficiary.zakatAllocation.toFixed(2)}
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
-                                                                ) : (
-                                                                    <Badge variant="outline">No</Badge>
-                                                                )}
-                                                            </TableCell>
-                                                            <TableCell>{beneficiary.referralBy}</TableCell>
-                                                            <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
-                                                            <TableCell>
-                                                                <Badge variant={
-                                                                    beneficiary.status === 'Given' ? 'success' :
-                                                                    beneficiary.status === 'Verified' ? 'success' :
-                                                                    beneficiary.status === 'Pending' ? 'secondary' :
-                                                                    beneficiary.status === 'Hold' ? 'destructive' : 'outline'
-                                                                }>{beneficiary.status}</Badge>
-                                                            </TableCell>
-                                                        </TableRow>
+                                                        <BeneficiaryRow beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onEdit={handleEdit} onDelete={handleDeleteClick} isSubRow={true} />
                                                     ))}
                                                 </React.Fragment>
                                             );
                                         })}
+                                        {!categoryIsCollapsed && !isRangedCategory && (
+                                            Object.values(beneficiariesByMemberCount).flat().map((beneficiary, index) => (
+                                                 <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onEdit={handleEdit} onDelete={handleDeleteClick} isSubRow={true} />
+                                            ))
+                                        )}
                                     </React.Fragment>
                                 );
                             })
@@ -1181,4 +1132,60 @@ export default function BeneficiariesPage() {
   );
 }
 
+interface BeneficiaryRowProps {
+    beneficiary: Beneficiary;
+    index: number;
+    canUpdate?: boolean;
+    canDelete?: boolean;
+    onEdit: (beneficiary: Beneficiary) => void;
+    onDelete: (id: string) => void;
+    isSubRow?: boolean;
+}
+
+const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onEdit, onDelete, isSubRow = false }) => {
+    return (
+        <TableRow className="bg-background hover:bg-accent/50">
+            {(canUpdate || canDelete) && (
+                <TableCell className="sticky left-0 z-10 bg-card text-center">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            {canUpdate && <DropdownMenuItem onClick={() => onEdit(beneficiary)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
+                            {canDelete && <DropdownMenuItem onClick={() => onDelete(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </TableCell>
+            )}
+            <TableCell className={cn(isSubRow && "pl-12")}>{index}</TableCell>
+            <TableCell className="font-medium">{beneficiary.name}</TableCell>
+            <TableCell>{beneficiary.address}</TableCell>
+            <TableCell>{beneficiary.phone}</TableCell>
+            <TableCell>{beneficiary.addedDate}</TableCell>
+            <TableCell>
+                {beneficiary.isEligibleForZakat ? (
+                    <div className="flex flex-col items-start">
+                        <Badge variant="success">Yes</Badge>
+                        {beneficiary.zakatAllocation && beneficiary.zakatAllocation > 0 && (
+                            <span className="text-xs text-muted-foreground mt-1">
+                                ₹{beneficiary.zakatAllocation.toFixed(2)}
+                            </span>
+                        )}
+                    </div>
+                ) : <Badge variant="outline">No</Badge>}
+            </TableCell>
+            <TableCell>{beneficiary.referralBy}</TableCell>
+            <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
+            <TableCell>
+                <Badge variant={
+                    beneficiary.status === 'Given' ? 'success' :
+                    beneficiary.status === 'Verified' ? 'success' :
+                    beneficiary.status === 'Pending' ? 'secondary' :
+                    beneficiary.status === 'Hold' ? 'destructive' : 'outline'
+                }>{beneficiary.status}</Badge>
+            </TableCell>
+        </TableRow>
+    )
+}
     

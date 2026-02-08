@@ -423,16 +423,19 @@ export default function CampaignDetailsPage() {
     
     const generalCategory = sanitizedEditableRationLists.find(cat => cat.name === 'General Item List');
 
+    // More precise dependency check
     const dependents = beneficiaries.filter(beneficiary => {
         const members = beneficiary.members;
         if (members === undefined || members === null) return false;
         
+        // Find the specific category this beneficiary uses for kit amount calculation
         const matchingCategory = sanitizedEditableRationLists.find(
             cat => cat.name !== 'General Item List' && members >= cat.minMembers && members <= cat.maxMembers
         );
         
         const appliedCategory = matchingCategory || generalCategory;
         
+        // The beneficiary is dependent *only* if their applied category is the one being deleted.
         return appliedCategory?.id === categoryToDelete.id;
     });
     
@@ -1203,7 +1206,14 @@ export default function CampaignDetailsPage() {
                                                 );
                                             }}
                                         />
-                                        <Label htmlFor={`copy-item-${item.id}`} className="font-normal flex-1 cursor-pointer">{item.name}</Label>
+                                        <Label htmlFor={`copy-item-${item.id}`} className="font-normal flex-1 cursor-pointer">
+                                            <div className="flex justify-between items-center">
+                                                <span>{item.name}</span>
+                                                <span className="text-xs text-muted-foreground font-mono">
+                                                    {item.quantity} {item.quantityType} @ ₹{item.price.toFixed(2)}
+                                                </span>
+                                            </div>
+                                        </Label>
                                     </div>
                                 )) : <p className="text-sm text-muted-foreground text-center">No items in this category.</p>}
                                 </div>

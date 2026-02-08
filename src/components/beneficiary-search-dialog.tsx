@@ -1,12 +1,12 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useFirestore, useCollection } from '@/firebase';
-import { collectionGroup, query, where, limit } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
+import { collectionGroup, query, where, getDocs, limit } from 'firebase/firestore';
 import type { Beneficiary } from '@/lib/types';
 import { ScrollArea } from './ui/scroll-area';
 import { Skeleton } from './ui/skeleton';
@@ -25,7 +25,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<Beneficiary[]>([]);
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!firestore || !searchTerm.trim()) {
       setSearchResults([]);
       return;
@@ -34,48 +34,33 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
     
     const lowerCaseTerm = searchTerm.toLowerCase();
 
-    // Note: This requires a composite index in Firestore. 
-    // The console will provide a link to create it if it's missing.
-    const beneficiariesRef = collectionGroup(firestore, 'beneficiaries');
-    const q = query(
-        beneficiariesRef, 
-        // Firestore doesn't support OR queries on different fields, so we search by name for now.
-        // A more advanced search would use a dedicated search service like Algolia.
-        where('name', '>=', searchTerm),
-        where('name', '<=', searchTerm + '\uf8ff'),
-        limit(20)
-    );
-    
     try {
-      const { data, error } = await new Promise<any>((resolve) => {
-        const { data, error } = useCollection(q);
-        // This is not a hook, so we need to handle the loading state differently.
-        // For simplicity, we just use a timeout to wait for the data.
-        setTimeout(() => resolve({data, error}), 1000);
-      });
-
-      // A simple client-side re-query simulation using a hook would be better.
-      // This is a temporary solution for the demo.
       const beneficiariesQuery = query(collectionGroup(firestore, 'beneficiaries'));
-      const querySnapshot = await require('firebase/firestore').getDocs(beneficiariesQuery);
+      const querySnapshot = await getDocs(beneficiariesQuery);
       const allBeneficiaries: Beneficiary[] = [];
-      querySnapshot.forEach((doc: any) => {
+      querySnapshot.forEach((doc) => {
           allBeneficiaries.push({ id: doc.id, ...doc.data() } as Beneficiary);
       });
 
-      const filtered = allBeneficiaries.filter(b => 
+      const uniqueBeneficiaries = allBeneficiaries.reduce((acc, current) => {
+        if (!acc.find(item => item.name === current.name && item.phone === current.phone)) {
+          acc.push(current);
+        }
+        return acc;
+      }, [] as Beneficiary[]);
+
+      const filtered = uniqueBeneficiaries.filter(b => 
         b.name.toLowerCase().includes(lowerCaseTerm) || 
         (b.phone && b.phone.includes(searchTerm))
       ).slice(0, 20);
 
       setSearchResults(filtered);
-
     } catch (e) {
       console.error("Beneficiary search failed:", e);
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [firestore, searchTerm]);
 
   const handleSelect = (beneficiary: Beneficiary) => {
     const { id, ...beneficiaryData } = beneficiary;
@@ -122,7 +107,11 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
                         <div key={beneficiary.id} className="flex justify-between items-center p-2 rounded-md hover:bg-accent">
                             <div>
                                 <p className="font-medium">{beneficiary.name}</p>
-                                <p className="text-sm text-muted-foreground">{beneficiary.phone} - {beneficiary.address}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {beneficiary.phone || 'No Phone'}
+                                    {beneficiary.address && ` - ${beneficiary.address}`}
+                                    {beneficiary.kitAmount > 0 && <span className="font-mono text-xs"> - ₹{beneficiary.kitAmount}</span>}
+                                </p>
                             </div>
                             <Button size="sm" onClick={() => handleSelect(beneficiary)}>Select</Button>
                         </div>

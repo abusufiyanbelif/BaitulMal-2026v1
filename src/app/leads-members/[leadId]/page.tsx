@@ -950,7 +950,14 @@ export default function LeadDetailsPage() {
                                                 );
                                             }}
                                         />
-                                        <Label htmlFor={`copy-item-lead-${item.id}`} className="font-normal flex-1 cursor-pointer">{item.name}</Label>
+                                        <Label htmlFor={`copy-item-lead-${item.id}`} className="font-normal flex-1 cursor-pointer">
+                                            <div className="flex justify-between items-center">
+                                                <span>{item.name}</span>
+                                                <span className="text-xs text-muted-foreground font-mono">
+                                                    {item.quantity} {item.quantityType} @ ₹{item.price.toFixed(2)}
+                                                </span>
+                                            </div>
+                                        </Label>
                                     </div>
                                 )) : <p className="text-sm text-muted-foreground text-center">No items in this category.</p>}
                                 </div>
