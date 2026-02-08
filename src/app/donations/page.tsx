@@ -396,7 +396,7 @@ export default function DonationsPage() {
   
   if (isLoading && !donations) {
     return (
-        <main className="container mx-auto p-4 md:p-8">
+        <main className="container mx-auto p-4">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </main>
     );
@@ -404,7 +404,7 @@ export default function DonationsPage() {
 
   if (!canRead) {
     return (
-        <main className="container mx-auto p-4 md:p-8">
+        <main className="container mx-auto p-4">
             <Alert variant="destructive">
                 <ShieldAlert className="h-4 w-4" />
                 <AlertTitle>Access Denied</AlertTitle>
@@ -418,7 +418,7 @@ export default function DonationsPage() {
 
   return (
     <>
-      <main className="container mx-auto p-4 md:p-8">
+      <main className="container mx-auto p-4">
         <div className="mb-4">
             <Button variant="outline" asChild>
                 <Link href="/">
@@ -444,7 +444,7 @@ export default function DonationsPage() {
         
         <Card className="animate-fade-in-zoom">
           <CardHeader>
-            <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-3">
               <div className="flex-1 space-y-1.5">
                 <CardTitle>All Donations ({filteredAndSortedDonations.length})</CardTitle>
               </div>
@@ -455,7 +455,7 @@ export default function DonationsPage() {
                   </Button>
               )}
             </div>
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3">
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
                     <CardContent className="p-2">
@@ -478,34 +478,34 @@ export default function DonationsPage() {
                     </CardContent>
                 </Card>
             </div>
-             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3">
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Grand Total</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">₹{grandTotal.toLocaleString('en-IN')}</div></CardContent>
+                    <CardContent className="p-2"><div className="text-xl font-bold">₹{grandTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Zakat</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">₹{zakatTotal.toLocaleString('en-IN')}</div></CardContent>
+                    <CardContent className="p-2"><div className="text-xl font-bold">₹{zakatTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Interest</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">₹{interestTotal.toLocaleString('en-IN')}</div></CardContent>
+                    <CardContent className="p-2"><div className="text-xl font-bold">₹{interestTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Loan</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">₹{loanTotal.toLocaleString('en-IN')}</div></CardContent>
+                    <CardContent className="p-2"><div className="text-xl font-bold">₹{loanTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
                  <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Sadaqah</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">₹{sadaqahTotal.toLocaleString('en-IN')}</div></CardContent>
+                    <CardContent className="p-2"><div className="text-xl font-bold">₹{sadaqahTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Lillah</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">₹{lillahTotal.toLocaleString('en-IN')}</div></CardContent>
+                    <CardContent className="p-2"><div className="text-xl font-bold">₹{lillahTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Monthly Contribution</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">₹{monthlyContributionTotal.toLocaleString('en-IN')}</div></CardContent>
+                    <CardContent className="p-2"><div className="text-xl font-bold">₹{monthlyContributionTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
             </div>
             <div className="flex flex-wrap items-center gap-2 pt-4">
@@ -572,7 +572,7 @@ export default function DonationsPage() {
                             <SortableHeader sortKey="transactionId">Transaction ID</SortableHeader>
                             <SortableHeader sortKey="donationDate">Date</SortableHeader>
                             <TableHead>Screenshot</TableHead>
-                            <SortableHeader sortKey="campaignName">Linked Campaign</SortableHeader>
+                            <SortableHeader sortKey="campaignName">Linked To</SortableHeader>
                             <SortableHeader sortKey="uploadedBy">Uploaded By</SortableHeader>
                         </TableRow>
                     </TableHeader>
@@ -594,13 +594,6 @@ export default function DonationsPage() {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            {donation.campaignId && (
-                                              <DropdownMenuItem asChild className="cursor-pointer">
-                                                  <Link href={`/campaign-members/${donation.campaignId}/donations/${donation.id}`}>
-                                                      <Eye className="mr-2 h-4 w-4" /> View Details
-                                                  </Link>
-                                              </DropdownMenuItem>
-                                            )}
                                             {canDelete && (
                                                 <DropdownMenuItem onClick={() => handleDeleteClick(donation.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
                                                     <Trash2 className="mr-2 h-4 w-4" /> Delete
@@ -639,7 +632,17 @@ export default function DonationsPage() {
                                      {donation.screenshotUrl && !donation.screenshotIsPublic && "Private"}
                                      {!donation.screenshotUrl && "N/A"}
                                 </TableCell>
-                                <TableCell>{donation.campaignName || "Unlinked"}</TableCell>
+                                <TableCell>
+                                  {donation.campaignId ? (
+                                    <Link 
+                                      href={`/campaign-members/${donation.campaignId}`} 
+                                      className="text-primary hover:underline"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      {donation.campaignName}
+                                    </Link>
+                                  ) : "Unlinked"}
+                                </TableCell>
                                 <TableCell>{donation.uploadedBy}</TableCell>
                             </TableRow>
                         ))

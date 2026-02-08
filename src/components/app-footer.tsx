@@ -72,41 +72,41 @@ export function AppFooter() {
   }
 
   return (
-    <footer className="bg-card border-t mt-auto p-4 md:p-6 text-card-foreground">
+    <footer className="bg-card border-t mt-auto p-4 text-card-foreground">
       <div className="container mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
             {/* Org & Contact Info */}
-            <div className="flex flex-col items-center text-center md:items-start md:text-left gap-3 transition-transform duration-300 ease-in-out hover:scale-105 animate-slide-in-from-bottom" style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}>
-            {isLoading ? <Skeleton className="h-7 w-2/3" /> : <h3 className="font-semibold text-lg">{brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}</h3>}
-            {isLoading ? <Skeleton className="h-4 w-full" /> : paymentSettings?.address && <p className="text-sm text-muted-foreground">{paymentSettings.address}</p>}
-            <div className="text-sm text-muted-foreground space-y-1">
+            <div className="flex flex-col items-center text-center md:items-start md:text-left gap-2 transition-transform duration-300 ease-in-out hover:scale-105 animate-slide-in-from-bottom" style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}>
+            {isLoading ? <Skeleton className="h-6 w-2/3" /> : <h3 className="font-semibold text-base">{brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}</h3>}
+            {isLoading ? <Skeleton className="h-4 w-full" /> : paymentSettings?.address && <p className="text-xs text-muted-foreground">{paymentSettings.address}</p>}
+            <div className="text-xs text-muted-foreground space-y-1">
                     {isLoading ? <Skeleton className="h-4 w-3/4" /> : paymentSettings?.regNo && <p>Reg. No.: {paymentSettings.regNo}</p>}
                     {isLoading ? <Skeleton className="h-4 w-1/2" /> : paymentSettings?.pan && <p>PAN: {paymentSettings.pan}</p>}
                 </div>
                 <Separator className="my-2"/>
-            {isLoading ? <Skeleton className="h-5 w-4/5" /> : paymentSettings?.contactEmail && (
-                <div className="flex items-center gap-2 text-sm transition-all hover:text-primary">
-                <Mail className="h-4 w-4" />
+            {isLoading ? <Skeleton className="h-4 w-4/5" /> : paymentSettings?.contactEmail && (
+                <div className="flex items-center gap-2 text-xs transition-all hover:text-primary">
+                <Mail className="h-3 w-3" />
                 <span className="break-all">{paymentSettings.contactEmail}</span>
                 </div>
             )}
-            {isLoading ? <Skeleton className="h-5 w-3/5" /> : paymentSettings?.contactPhone && (
-                <div className="flex items-center gap-2 text-sm transition-all hover:text-primary">
-                <Phone className="h-4 w-4" />
+            {isLoading ? <Skeleton className="h-4 w-3/5" /> : paymentSettings?.contactPhone && (
+                <div className="flex items-center gap-2 text-xs transition-all hover:text-primary">
+                <Phone className="h-3 w-3" />
                 <span>{paymentSettings.contactPhone}</span>
                 </div>
             )}
-            {isLoading ? <Skeleton className="h-5 w-4/5" /> : paymentSettings?.website && (
-                <div className="flex items-center gap-2 text-sm transition-all hover:text-primary">
-                <Globe className="h-4 w-4" />
+            {isLoading ? <Skeleton className="h-4 w-4/5" /> : paymentSettings?.website && (
+                <div className="flex items-center gap-2 text-xs transition-all hover:text-primary">
+                <Globe className="h-3 w-3" />
                 <a href={paymentSettings.website} target="_blank" rel="noopener noreferrer" className="hover:underline break-all">{paymentSettings.website}</a>
                 </div>
             )}
             </div>
 
             {/* Payment Info */}
-            <div className="flex flex-col items-center gap-3 transition-transform duration-300 ease-in-out hover:scale-105 animate-slide-in-from-bottom" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
-                {isLoading ? <Skeleton className="h-7 w-1/2" /> : <h3 className="font-semibold text-lg">For Donations</h3>}
+            <div className="flex flex-col items-center gap-2 transition-transform duration-300 ease-in-out hover:scale-105 animate-slide-in-from-bottom" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
+                {isLoading ? <Skeleton className="h-6 w-1/2" /> : <h3 className="font-semibold text-base">For Donations</h3>}
                 {isLoading ? <Skeleton className="h-5 w-4/5" /> : paymentSettings?.upiId && (
                     <div className="flex items-center gap-2 transition-all hover:text-primary">
                     <QrCode className="h-4 w-4" />
@@ -134,7 +134,7 @@ export function AppFooter() {
             {/* QR Code */}
             <div className="flex justify-center md:justify-end animate-slide-in-from-bottom" style={{ animationDelay: '0.4s', animationFillMode: 'backwards' }}>
             {isLoading ? (
-                <Skeleton className="h-32 w-32 rounded-lg" />
+                <Skeleton className="h-28 w-28 rounded-lg" />
             ) : (
                 validQrCodeUrl && (
                     <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
@@ -143,8 +143,8 @@ export function AppFooter() {
                                 <img
                                     src={`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`}
                                     alt="UPI QR Code"
-                                    width={paymentSettings?.qrWidth || 128}
-                                    height={paymentSettings?.qrHeight || 128}
+                                    width={paymentSettings?.qrWidth || 112}
+                                    height={paymentSettings?.qrHeight || 112}
                                     className="object-contain border-4 border-primary rounded-lg p-1 bg-white"
                                 />
                             </button>
@@ -177,7 +177,7 @@ export function AppFooter() {
             )}
             </div>
         </div>
-        <Separator className="my-4" />
+        <Separator className="my-3" />
         <div className="text-center text-xs text-muted-foreground">
             {isLoading ? (
                 <Skeleton className="h-4 w-1/2 mx-auto" />

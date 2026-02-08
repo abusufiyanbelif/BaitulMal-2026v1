@@ -251,7 +251,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   return (
     <>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 pt-3">
            {isGlobalCreate && (
                 <FormField
                     control={control}
@@ -282,7 +282,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                 />
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField
                   control={form.control}
                   name="donorName"
@@ -311,7 +311,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
               />
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField
                   control={form.control}
                   name="receiverName"
@@ -374,7 +374,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
           />
           
           {isSplit ? (
-            <div className="space-y-4 rounded-md border p-4">
+            <div className="space-y-3 rounded-md border p-3">
                 {fields.map((field, index) => (
                     <div key={field.id} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
                         <FormField
@@ -460,7 +460,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
           />
 
           {donationTypeValue === 'Online Payment' && (
-              <div className="space-y-4 rounded-md border p-4">
+              <div className="space-y-3 rounded-md border p-3">
                   <h3 className="text-sm font-medium text-muted-foreground">Online Payment Details</h3>
                   <Separator />
                   <FormField
@@ -568,7 +568,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
               </div>
           )}
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
               <FormField
                   control={form.control}
                   name="donationDate"

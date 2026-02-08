@@ -14,13 +14,13 @@ function DashboardCard({ title, description, href, icon: Icon, isVisible, animat
   return (
     <div className="animate-fade-in-zoom" style={{ animationDelay }}>
         <Link href={href} className="block group">
-            <Card className="h-full p-6 transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:-translate-y-1 group-hover:border-primary active:scale-95">
+            <Card className="h-full p-4 transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:-translate-y-1 group-hover:border-primary active:scale-95">
                 <div className="flex justify-between items-start">
                     <div className="space-y-1">
-                        <CardTitle className="text-lg">{title}</CardTitle>
+                        <CardTitle className="text-base">{title}</CardTitle>
                         <CardDescription className="text-xs">{description}</CardDescription>
                     </div>
-                    <Icon className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
+                    <Icon className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-primary" />
                 </div>
             </Card>
         </Link>
@@ -54,20 +54,20 @@ export default function DashboardPage() {
   const visibleCards = cards.filter(card => card.isVisible);
 
   return (
-    <main className="container mx-auto p-4 md:p-8">
-      <div className="space-y-4">
-        <h1 className="text-3xl font-bold animate-fade-in-zoom" style={{ animationDelay: '300ms' }}>Dashboard</h1>
+    <main className="container mx-auto p-4">
+      <div className="space-y-3">
+        <h1 className="text-2xl font-bold animate-fade-in-zoom" style={{ animationDelay: '300ms' }}>Dashboard</h1>
         <p className="text-muted-foreground animate-fade-in-zoom" style={{ animationDelay: '400ms' }}>
             {isLoading ? <Skeleton className="h-5 w-48" /> : `Welcome back, ${userProfile?.name}. Here's an overview of your application modules.`}
         </p>
         {isLoading ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {[...Array(8)].map((_, i) => (
-                    <Skeleton key={i} className="h-28 rounded-lg" />
+                    <Skeleton key={i} className="h-24 rounded-lg" />
                 ))}
             </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {visibleCards.map((card, index) => (
               <DashboardCard
                 key={card.title}

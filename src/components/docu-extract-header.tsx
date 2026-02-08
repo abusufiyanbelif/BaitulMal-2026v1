@@ -54,7 +54,7 @@ export function DocuExtractHeader() {
   
   const logoStyle: React.CSSProperties = {
     objectFit: 'contain',
-    maxHeight: '4.5rem', // 72px
+    maxHeight: '3.5rem', // 56px
   };
 
   if (brandingSettings?.logoWidth) {
@@ -69,10 +69,10 @@ export function DocuExtractHeader() {
   }
 
   return (
-    <header className="bg-card border-b p-2 shadow-sm">
+    <header className="bg-card border-b p-1 shadow-sm">
       <div className="container mx-auto flex justify-between items-center">
-        <Link href={homeHref} className="flex items-center gap-3 w-fit group transition-transform duration-300 ease-in-out hover:scale-105 animate-slide-in-from-top" style={{ animationDelay: '0.1s', animationFillMode: 'backwards' }}>
-          <div className="relative flex items-center justify-center" style={{ minHeight: '4.5rem' }}>
+        <Link href={homeHref} className="flex items-center gap-2 w-fit group transition-transform duration-300 ease-in-out hover:scale-105 animate-slide-in-from-top" style={{ animationDelay: '0.1s', animationFillMode: 'backwards' }}>
+          <div className="relative flex items-center justify-center" style={{ minHeight: '3.5rem' }}>
             {isLoading ? (
                 <Skeleton className="h-12 w-24" />
             ) : (
@@ -85,7 +85,7 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-lg sm:text-xl md:text-2xl font-bold font-headline text-foreground animate-fade-in-zoom" style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}>
+          <h1 className="text-lg sm:text-xl font-bold font-headline text-foreground animate-fade-in-zoom" style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}>
             {isBrandingLoading ? <Skeleton className="h-8 w-80" /> : (brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur')}
           </h1>
         </Link>
