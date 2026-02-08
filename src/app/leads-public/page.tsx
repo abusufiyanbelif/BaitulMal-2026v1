@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useCollection, useFirestore } from '@/firebase';
-import type { Lead } from '@/lib/types';
+import type { Lead, Donation } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { collection, query, where } from 'firebase/firestore';
+import { Progress } from '@/components/ui/progress';
 
 export default function PublicLeadPage() {
   const firestore = useFirestore();
@@ -32,16 +33,50 @@ export default function PublicLeadPage() {
 
   const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
   
-  const filteredLeads = useMemo(() => {
+  const donationsCollectionRef = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
+  }, [firestore]);
+  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
+  
+  const leadData = useMemo(() => {
     if (!leads) return [];
-    return leads.filter(l => 
+    return leads.map(lead => {
+        const leadDonations = donations?.filter(d => d.campaignId === lead.id) || [];
+        
+        const collected = leadDonations.reduce((sum, donation) => {
+            if (lead.allowedDonationTypes?.length) {
+                const applicableAmount = (donation.typeSplit || []).reduce((splitSum, split) => {
+                    if (lead.allowedDonationTypes?.includes(split.category)) {
+                        return splitSum + split.amount;
+                    }
+                    return splitSum;
+                }, 0);
+                return sum + applicableAmount;
+            }
+            return sum + donation.amount;
+        }, 0);
+
+        const progress = lead.targetAmount && lead.targetAmount > 0 ? (collected / lead.targetAmount) * 100 : 0;
+        
+        return {
+            ...lead,
+            collected,
+            progress
+        };
+    });
+  }, [leads, donations]);
+  
+  const filteredLeads = useMemo(() => {
+    if (!leadData) return [];
+    return leadData.filter(l => 
         (statusFilter === 'All' || l.status === statusFilter) &&
         (categoryFilter === 'All' || l.category === categoryFilter) &&
         (l.name.toLowerCase().includes(searchTerm.toLowerCase()))
     ).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-  }, [leads, searchTerm, statusFilter, categoryFilter]);
+  }, [leadData, searchTerm, statusFilter, categoryFilter]);
   
-  const isLoading = areLeadsLoading;
+  const isLoading = areLeadsLoading || areDonationsLoading;
 
   return (
     <main className="container mx-auto p-4 md:p-8">
@@ -91,7 +126,7 @@ export default function PublicLeadPage() {
 
       {isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-56 w-full" />)}
+          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
         </div>
       )}
       
@@ -109,12 +144,21 @@ export default function PublicLeadPage() {
                           </div>
                           <CardDescription>{lead.startDate} to {lead.endDate}</CardDescription>
                       </CardHeader>
-                      <CardContent className="flex flex-col flex-grow">
+                      <CardContent className="flex flex-col flex-grow space-y-4">
                           <p className="text-sm text-muted-foreground line-clamp-3 flex-grow">{lead.description || "No description provided."}</p>
                            <div className="flex justify-between text-sm text-muted-foreground pt-2">
                               <Badge variant="outline">{lead.authenticityStatus}</Badge>
                               <Badge variant="outline">{lead.publicVisibility}</Badge>
                           </div>
+                          {lead.targetAmount && lead.targetAmount > 0 && (
+                            <div className="space-y-2 pt-2">
+                                <Progress value={lead.progress} />
+                                <div className="flex justify-between text-xs text-muted-foreground">
+                                    <span>₹{lead.collected.toLocaleString('en-IN')} raised</span>
+                                    <span>Goal: ₹{lead.targetAmount.toLocaleString('en-IN')}</span>
+                                </div>
+                            </div>
+                          )}
                       </CardContent>
                        <CardFooter>
                           <Button className="w-full" tabIndex={-1}>

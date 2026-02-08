@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useCollection, useFirestore } from '@/firebase';
-import type { Campaign } from '@/lib/types';
+import type { Campaign, Donation } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { collection, query, where } from 'firebase/firestore';
+import { Progress } from '@/components/ui/progress';
 
 export default function PublicCampaignPage() {
   const firestore = useFirestore();
@@ -29,19 +30,54 @@ export default function PublicCampaignPage() {
         where('publicVisibility', '==', 'Published')
     );
   }, [firestore]);
-
   const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
 
-  const filteredCampaigns = useMemo(() => {
+  const donationsCollectionRef = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
+  }, [firestore]);
+  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
+
+  const campaignData = useMemo(() => {
     if (!campaigns) return [];
-    return campaigns.filter(c => 
+
+    return campaigns.map(campaign => {
+      const campaignDonations = donations?.filter(d => d.campaignId === campaign.id) || [];
+      
+      const collected = campaignDonations.reduce((sum, donation) => {
+        if (campaign.allowedDonationTypes?.length) {
+            const applicableAmount = (donation.typeSplit || []).reduce((splitSum, split) => {
+                if (campaign.allowedDonationTypes?.includes(split.category)) {
+                    return splitSum + split.amount;
+                }
+                return splitSum;
+            }, 0);
+            return sum + applicableAmount;
+        }
+        return sum + donation.amount;
+      }, 0);
+
+      const progress = campaign.targetAmount && campaign.targetAmount > 0 ? (collected / campaign.targetAmount) * 100 : 0;
+      
+      return {
+        ...campaign,
+        collected,
+        progress
+      };
+    });
+  }, [campaigns, donations]);
+
+
+  const filteredCampaigns = useMemo(() => {
+    if (!campaignData) return [];
+    return campaignData.filter(c => 
         (statusFilter === 'All' || c.status === statusFilter) &&
         (categoryFilter === 'All' || c.category === categoryFilter) &&
         (c.name.toLowerCase().includes(searchTerm.toLowerCase()))
     ).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-  }, [campaigns, searchTerm, statusFilter, categoryFilter]);
+  }, [campaignData, searchTerm, statusFilter, categoryFilter]);
   
-  const isLoading = areCampaignsLoading;
+  const isLoading = areCampaignsLoading || areDonationsLoading;
 
   return (
     <main className="container mx-auto p-4 md:p-8">
@@ -91,7 +127,7 @@ export default function PublicCampaignPage() {
 
       {isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-56 w-full" />)}
+          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
         </div>
       )}
       
@@ -111,6 +147,15 @@ export default function PublicCampaignPage() {
                       </CardHeader>
                       <CardContent className="flex flex-col flex-grow space-y-4">
                           <p className="text-sm text-muted-foreground line-clamp-3 flex-grow">{campaign.description || "No description provided."}</p>
+                           {campaign.targetAmount && campaign.targetAmount > 0 && (
+                            <div className="space-y-2 pt-2">
+                                <Progress value={campaign.progress} />
+                                <div className="flex justify-between text-xs text-muted-foreground">
+                                    <span>₹{campaign.collected.toLocaleString('en-IN')} raised</span>
+                                    <span>Goal: ₹{campaign.targetAmount.toLocaleString('en-IN')}</span>
+                                </div>
+                            </div>
+                           )}
                       </CardContent>
                       <CardFooter>
                           <Button className="w-full" tabIndex={-1}>
