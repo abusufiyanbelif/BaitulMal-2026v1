@@ -4,18 +4,18 @@
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
-import { doc, updateDoc, DocumentReference } from 'firebase/firestore';
-import type { Campaign, RationItem } from '@/lib/types';
+import { doc, updateDoc, DocumentReference, collection, writeBatch } from 'firebase/firestore';
+import type { Campaign, RationItem, Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, Copy } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, Copy, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import {
   Dialog,
@@ -26,6 +26,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,12 +78,21 @@ export default function CampaignDetailsPage() {
   }, [firestore, campaignId]);
 
   const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
+  
+  const beneficiariesCollectionRef = useMemo(() => {
+    if (!firestore || !campaignId) return null;
+    return collection(firestore, `campaigns/${campaignId}/beneficiaries`);
+  }, [firestore, campaignId]);
+  const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
 
   const [editMode, setEditMode] = useState(false);
   const [editableCampaign, setEditableCampaign] = useState<Campaign | null>(null);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [newMemberCount, setNewMemberCount] = useState('');
   const [activeTab, setActiveTab] = useState<string | undefined>();
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isDeleteCategoryDialogOpen, setIsDeleteCategoryDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
 
   // Copy items state
   const [isCopyItemsOpen, setIsCopyItemsOpen] = useState(false);
@@ -164,7 +183,7 @@ export default function CampaignDetailsPage() {
   const canReadDonations = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.campaigns.donations.read', false);
   const canUpdate = userProfile?.role === 'Admin' || get(userProfile, 'permissions.campaigns.update', false) || get(userProfile, 'permissions.campaigns.ration.update', false);
 
-  const isLoading = isCampaignLoading || isProfileLoading;
+  const isLoading = isCampaignLoading || isProfileLoading || areBeneficiariesLoading;
 
   const handleSave = () => {
     if (!campaignDocRef || !editableCampaign || !canUpdate) return;
@@ -346,17 +365,21 @@ export default function CampaignDetailsPage() {
 
                 const headers = isGeneral
                     ? ['#', 'Item Name', 'Quantity', 'Quantity Type', 'Price per Unit (₹)', 'Notes']
-                    : ['#', 'Item Name', 'Quantity', 'Type', 'Total Price (₹)'];
+                    : ['#', 'Item Name', 'Quantity', 'Type', 'Price per Unit (₹)', 'Total Price (₹)'];
 
-                const body = items.map((item, index) => isGeneral ? [
-                    index + 1, item.name, item.quantity, item.quantityType, item.price, item.notes
-                ] : [
-                    index + 1, item.name, item.quantity, item.quantityType, item.price
-                ]);
+                const body = items.map((item, index) => {
+                    const masterItem = masterPriceList[String(item.name || '').trim().toLowerCase()];
+                    const unitPrice = masterItem ? masterItem.price : (isGeneral ? item.price : 0);
+                    return isGeneral ? [
+                        index + 1, item.name, item.quantity, item.quantityType, item.price, item.notes
+                    ] : [
+                        index + 1, item.name, item.quantity, item.quantityType, unitPrice, item.price
+                    ];
+                });
 
                 const totalRow = isGeneral
                     ? []
-                    : [['', '', '', 'Total', total]];
+                    : [['', '', '', '', 'Total', total]];
                 
                 const sheetData = [
                     [`Shop Name:`, shopName],
@@ -374,7 +397,7 @@ export default function CampaignDetailsPage() {
                 const ws = XLSX.utils.aoa_to_sheet(sheetData);
                 ws['!cols'] = isGeneral
                     ? [{ wch: 5 }, { wch: 25 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 20 }]
-                    : [{ wch: 5 }, { wch: 25 }, { wch: 10 }, { wch: 10 }, { wch: 15 }];
+                    : [{ wch: 5 }, { wch: 25 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 15 }];
                 XLSX.utils.book_append_sheet(wb, ws, categoryTitle.slice(0, 31));
             }
         });
@@ -436,17 +459,21 @@ export default function CampaignDetailsPage() {
                 
                 const headers = isGeneral
                     ? [['#', 'Item Name', 'Quantity', 'Quantity Type', 'Price per Unit', 'Notes']]
-                    : [['#', 'Item Name', 'Qty', 'Type', 'Total Price']];
+                    : [['#', 'Item Name', 'Qty', 'Type', 'Unit Price', 'Total']];
 
-                const body: any[] = items.map((item, index) => isGeneral ? [
-                    index + 1, item.name, item.quantity, item.quantityType || '', `₹${(item.price || 0).toFixed(2)}`, item.notes
-                ] : [
-                    index + 1, item.name, item.quantity, item.quantityType || '', `₹${(item.price || 0).toFixed(2)}`
-                ]);
+                const body: any[] = items.map((item, index) => {
+                     const masterItem = masterPriceList[String(item.name || '').trim().toLowerCase()];
+                     const unitPrice = masterItem ? masterItem.price : (isGeneral ? item.price : 0);
+                     return isGeneral ? [
+                        index + 1, item.name, item.quantity, item.quantityType || '', `₹${(item.price || 0).toFixed(2)}`, item.notes
+                    ] : [
+                        index + 1, item.name, item.quantity, item.quantityType || '', `₹${unitPrice.toFixed(2)}`, `₹${(item.price || 0).toFixed(2)}`
+                    ]
+                });
                 
                 if (!isGeneral) {
                     body.push([
-                        { content: 'Total', colSpan: 4, styles: { halign: 'right', fontStyle: 'bold' } },
+                        { content: 'Total', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold' } },
                         { content: `₹${total.toFixed(2)}`, styles: { halign: 'right', fontStyle: 'bold' } }
                     ]);
                 }
@@ -499,6 +526,33 @@ export default function CampaignDetailsPage() {
     setActiveTab(newCountStr);
     setNewMemberCount('');
     setIsAddCategoryOpen(false);
+  };
+
+  const handleDeleteCategory = (category: string) => {
+    setCategoryToDelete(category);
+    setIsDeleteCategoryDialogOpen(true);
+  };
+
+  const handleDeleteCategoryConfirm = () => {
+      if (!editableCampaign || !categoryToDelete) return;
+
+      const newRationLists = { ...editableCampaign.rationLists };
+      delete newRationLists[categoryToDelete];
+      
+      handleFieldChange('rationLists', newRationLists);
+
+      if (activeTab === categoryToDelete) {
+          const remainingCategories = Object.keys(newRationLists).sort((a, b) => {
+              const aIsGeneral = a.toLowerCase().includes('general');
+              if (aIsGeneral) return -1;
+              return Number(b) - Number(a);
+          });
+          handleTabChange(remainingCategories.length > 0 ? remainingCategories[0] : '');
+      }
+
+      toast({ title: 'Category Removed', description: `The category for ${categoryToDelete} members has been removed.` });
+      setIsDeleteCategoryDialogOpen(false);
+      setCategoryToDelete(null);
   };
   
   const sourceCategoriesForCopy = useMemo(() => {
@@ -556,6 +610,84 @@ export default function CampaignDetailsPage() {
     setCopyTargetCategory(null);
     setCopySourceCategory(null);
     setItemsToCopy([]);
+  };
+
+  const handleSyncKitAmounts = async () => {
+    if (!firestore || !campaign || !beneficiaries || !canUpdate) {
+        toast({ title: 'Error', description: 'Cannot sync. Data is missing or you lack permissions.', variant: 'destructive'});
+        return;
+    };
+    setIsSyncing(true);
+
+    const { rationLists } = campaign;
+    if (!rationLists || Object.keys(rationLists).length === 0) {
+        toast({ title: 'Sync Canceled', description: 'No ration lists found for this campaign to calculate amounts.', variant: 'destructive' });
+        setIsSyncing(false);
+        return;
+    }
+    
+    const generalListKey = Object.keys(rationLists).find(k => k.toLowerCase().includes('general'));
+    const generalList = generalListKey ? rationLists[generalListKey] : undefined;
+    const calculateTotal = (items: RationItem[]) => items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+    
+    const batch = writeBatch(firestore);
+    let updatesCount = 0;
+    let totalRequiredAmount = 0;
+
+    for (const beneficiary of beneficiaries) {
+        let finalKitAmount = beneficiary.kitAmount || 0;
+        
+        if (beneficiary.status !== 'Given') {
+            const members = beneficiary.members;
+            const exactMatchList = members > 0 ? rationLists[String(members)] : undefined;
+            const listToUse = exactMatchList || generalList;
+            let expectedAmount = 0;
+            if (listToUse) {
+                expectedAmount = calculateTotal(listToUse);
+            }
+            
+            if (beneficiary.kitAmount !== expectedAmount) {
+                const docRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
+                batch.update(docRef, { kitAmount: expectedAmount });
+                updatesCount++;
+            }
+            finalKitAmount = expectedAmount;
+        }
+        
+        totalRequiredAmount += finalKitAmount;
+    }
+
+    const campaignTargetUpdated = campaign.targetAmount !== totalRequiredAmount;
+    if (campaignTargetUpdated) {
+        const campaignDocRef = doc(firestore, 'campaigns', campaignId);
+        batch.update(campaignDocRef, { targetAmount: totalRequiredAmount });
+    }
+
+    if (updatesCount === 0 && !campaignTargetUpdated) {
+        toast({ title: 'No Updates Needed', description: 'All amounts are already up to date.' });
+        setIsSyncing(false);
+        return;
+    }
+
+    try {
+        await batch.commit();
+        let description = '';
+        if (updatesCount > 0) {
+            description += `${updatesCount} beneficiary kit amounts were updated. `;
+        }
+        if (campaignTargetUpdated) {
+            description += `Campaign target synced to ₹${totalRequiredAmount.toFixed(2)}.`;
+        }
+        toast({ title: 'Sync Complete', description: description.trim(), variant: 'success' });
+    } catch (serverError: any) {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: `campaigns/${campaignId}`,
+            operation: 'update',
+            requestResourceData: { note: `Batch update for sync kit amounts` }
+        }));
+    } finally {
+        setIsSyncing(false);
+    }
   };
 
   const renderRationTable = (memberCount: string) => {
@@ -643,7 +775,7 @@ export default function CampaignDetailsPage() {
                                             <Input type="number" value={item.price || ''} onChange={e => handleItemChange(memberCount, item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
                                         </TableCell>
                                         <TableCell>
-                                            <Input value={item.notes || ''} onChange={e => handleItemChange(memberCount, item.id, 'notes', e.target.value)} placeholder="Notes" disabled={!editMode || !canUpdate} />
+                                            <Input value={item.notes || ''} onChange={e => handleItemChange(memberCount, item.id, 'notes', e.target.value)} placeholder="Notes" readOnly={!editMode || !canUpdate} />
                                         </TableCell>
                                     </>
                                 ) : (
@@ -833,6 +965,10 @@ export default function CampaignDetailsPage() {
                             </div>
                         )
                     )}
+                     <Button onClick={handleSyncKitAmounts} disabled={isSyncing} variant="secondary">
+                        {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                        Sync Kit Amounts
+                    </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline">
@@ -890,9 +1026,22 @@ export default function CampaignDetailsPage() {
              {editableCampaign.category === 'Ration' ? (
                 memberCategories.length > 0 ? (
                     <Tabs value={activeTab || ''} onValueChange={handleTabChange} className="w-full">
-                        <TabsList className="w-full h-auto flex-wrap">
+                        <TabsList className="w-full h-auto flex-wrap justify-start">
                             {memberCategories.map(count => (
-                                <TabsTrigger key={count} value={count}>{getCategoryLabel(count)}</TabsTrigger>
+                                <div key={count} className="relative group/tab">
+                                    <TabsTrigger value={count}>{getCategoryLabel(count)}</TabsTrigger>
+                                    {editMode && canUpdate && getCategoryLabel(count) !== 'General Item List' && (
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-background hover:bg-destructive hover:text-destructive-foreground opacity-0 group-hover/tab:opacity-100 transition-opacity"
+                                            onClick={() => handleDeleteCategory(count)}
+                                        >
+                                            <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                    )}
+                                </div>
                             ))}
                         </TabsList>
                         {memberCategories.map(count => (
@@ -1031,6 +1180,22 @@ export default function CampaignDetailsPage() {
             )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isDeleteCategoryDialogOpen} onOpenChange={setIsDeleteCategoryDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+                This will permanently delete the "{getCategoryLabel(categoryToDelete)}" category and all of its items. This action cannot be undone.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setCategoryToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteCategoryConfirm} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
+
