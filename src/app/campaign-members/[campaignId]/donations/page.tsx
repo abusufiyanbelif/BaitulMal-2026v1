@@ -74,7 +74,7 @@ export default function DonationsPage() {
   
   const donationsCollectionRef = useMemo(() => {
     if (!firestore || !campaignId) return null;
-    return query(collection(firestore, 'donations'), where('campaignId', '==', campaignId));
+    return query(collection(firestore, 'donations'), where('linkSplit.linkId', 'array-contains', campaignId));
   }, [firestore, campaignId]);
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
 
@@ -483,7 +483,7 @@ export default function DonationsPage() {
                   </Button>
                 )}
                 {canReadDonations && (
-                  <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}/donations` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
+                  <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}/donations` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")} data-active="true">
                       <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
                   </Button>
                 )}
@@ -673,7 +673,14 @@ export default function DonationsPage() {
                                 <TableCell>{donation.receiverName}</TableCell>
                                 <TableCell>{donation.donorPhone}</TableCell>
                                 <TableCell>{donation.referral}</TableCell>
-                                <TableCell className="text-right font-medium">₹{donation.amount.toFixed(2)}</TableCell>
+                                <TableCell className="text-right font-medium">
+                                    <div className="flex flex-col items-end">
+                                        <span>₹{donation.amount.toFixed(2)}</span>
+                                        {donation.linkSplit && donation.linkSplit.length > 1 && (
+                                        <span className="text-xs text-muted-foreground">(Split)</span>
+                                        )}
+                                    </div>
+                                </TableCell>
                                 <TableCell>
                                     <div className="flex flex-wrap gap-1">
                                         {donation.typeSplit?.map(split => (

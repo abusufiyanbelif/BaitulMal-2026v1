@@ -200,7 +200,7 @@ export default function DonationsPage() {
             screenshotUrl = await getDownloadURL(uploadResult.ref);
         }
 
-        const { screenshotFile, screenshotDeleted, isTransactionIdRequired, linkId, ...donationData } = data;
+        const { screenshotFile, screenshotDeleted, isTransactionIdRequired, ...donationData } = data;
         
         finalData = {
             ...donationData,
@@ -210,21 +210,6 @@ export default function DonationsPage() {
             ...(!editingDonation && { createdAt: serverTimestamp() }),
         };
         
-        if (editingDonation) {
-            finalData.campaignId = editingDonation.campaignId;
-            finalData.campaignName = editingDonation.campaignName;
-        }
-
-        if (!isEditing && linkId && linkId !== 'unlinked') {
-            const [type, id] = linkId.split('_');
-            const sourceData = type === 'campaign' ? campaigns : leads;
-            const linkedItem = sourceData?.find(item => item.id === id);
-            if (linkedItem) {
-                finalData.campaignId = linkedItem.id;
-                finalData.campaignName = linkedItem.name;
-            }
-        }
-
         await setDoc(docRef, finalData, { merge: true });
 
         toast({ title: 'Success', description: `Donation ${editingDonation ? 'updated' : 'added'}.`, variant: 'success' });
@@ -633,14 +618,19 @@ export default function DonationsPage() {
                                      {!donation.screenshotUrl && "N/A"}
                                 </TableCell>
                                 <TableCell>
-                                  {donation.campaignId ? (
-                                    <Link 
-                                      href={`/campaign-members/${donation.campaignId}`} 
-                                      className="text-primary hover:underline"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      {donation.campaignName}
-                                    </Link>
+                                  {donation.linkSplit && donation.linkSplit.length > 0 ? (
+                                    <div className="flex flex-col gap-1">
+                                      {donation.linkSplit.map(link => (
+                                        <Link 
+                                          key={link.linkId}
+                                          href={link.linkType === 'campaign' ? `/campaign-members/${link.linkId}` : `/leads-members/${link.linkId}`}
+                                          className="text-primary hover:underline text-xs"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          {link.linkName}
+                                        </Link>
+                                      ))}
+                                    </div>
                                   ) : "Unlinked"}
                                 </TableCell>
                                 <TableCell>{donation.uploadedBy}</TableCell>

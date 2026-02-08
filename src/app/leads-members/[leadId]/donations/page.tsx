@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
@@ -74,7 +74,7 @@ export default function DonationsPage() {
   
   const donationsCollectionRef = useMemo(() => {
     if (!firestore || !leadId) return null;
-    return query(collection(firestore, 'donations'), where('campaignId', '==', leadId));
+    return query(collection(firestore, 'donations'), where('linkSplit.linkId', 'array-contains', leadId));
   }, [firestore, leadId]);
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
 
@@ -467,20 +467,20 @@ export default function DonationsPage() {
         <div className="border-b mb-4">
             <div className="flex flex-wrap items-center gap-x-4">
                  {canReadSummary && (
-                  <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none">
+                  <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/leads-members/${leadId}/summary` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                       <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
                   </Button>
                 )}
-                <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none">
+                <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/leads-members/${leadId}` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                     <Link href={`/leads-members/${leadId}`}>Item List</Link>
                 </Button>
                 {canReadBeneficiaries && (
-                  <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none">
+                  <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                       <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
                   </Button>
                 )}
                 {canReadDonations && (
-                  <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-primary text-primary shadow-none data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none" data-active="true">
+                  <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/leads-members/${leadId}/donations` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")} data-active="true">
                       <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
                   </Button>
                 )}
@@ -670,7 +670,14 @@ export default function DonationsPage() {
                                 <TableCell>{donation.receiverName}</TableCell>
                                 <TableCell>{donation.donorPhone}</TableCell>
                                 <TableCell>{donation.referral}</TableCell>
-                                <TableCell className="text-right font-medium">₹{donation.amount.toFixed(2)}</TableCell>
+                                <TableCell className="text-right font-medium">
+                                    <div className="flex flex-col items-end">
+                                        <span>₹{donation.amount.toFixed(2)}</span>
+                                        {donation.linkSplit && donation.linkSplit.length > 1 && (
+                                        <span className="text-xs text-muted-foreground">(Split)</span>
+                                        )}
+                                    </div>
+                                </TableCell>
                                 <TableCell>
                                     <div className="flex flex-wrap gap-1">
                                         {donation.typeSplit?.map(split => (
