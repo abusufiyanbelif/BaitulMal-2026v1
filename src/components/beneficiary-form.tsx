@@ -65,9 +65,6 @@ interface BeneficiaryFormProps {
 }
 
 export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, initialReadOnly = false }: BeneficiaryFormProps) {
-  const { toast } = useToast();
-  const isEditing = !!beneficiary;
-
   const form = useForm<BeneficiaryFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -90,7 +87,7 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
       zakatAllocation: beneficiary?.zakatAllocation || 0,
     },
   });
-
+  
   const {
     control,
     watch,
@@ -100,7 +97,10 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
     handleSubmit,
     formState: { isSubmitting, isDirty },
   } = form;
-  
+
+  const { toast } = useToast();
+  const isEditing = !!beneficiary;
+
   const [isScanning, setIsScanning] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
   const [preview, setPreview] = useState<string | null>(beneficiary?.idProofUrl || null);
@@ -127,21 +127,38 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
   }, [idProofFile, beneficiary?.idProofUrl, watch, setValue]);
 
   useEffect(() => {
-    const calculateTotal = (items: RationItem[]) => items.reduce((sum, item) => sum + Number(item.price || 0), 0);
-    
-    let total = 0;
-    if (membersValue && membersValue > 0 && rationLists) {
-        const matchingCategory = rationLists.find(
-            (cat) => membersValue >= cat.minMembers && membersValue <= cat.maxMembers && cat.name !== 'General Item List'
-        );
-        const generalCategory = rationLists.find(cat => cat.name === 'General Item List');
-        const categoryToUse = matchingCategory || generalCategory;
-        if (categoryToUse) {
-            total = calculateTotal(categoryToUse.items);
+    if (membersValue && membersValue > 0 && rationLists && rationLists.length > 0) {
+      
+      const generalCategory = rationLists.find(cat => cat.name === 'General Item List');
+      
+      const masterPriceList = (generalCategory?.items || []).reduce((acc, item) => {
+        const itemName = (item.name || '').trim().toLowerCase();
+        if (itemName) {
+          acc[itemName] = Number(item.price) || 0;
         }
+        return acc;
+      }, {} as Record<string, number>);
+
+      const matchingCategory = rationLists.find(
+        (cat) => membersValue >= cat.minMembers && membersValue <= cat.maxMembers && cat.name !== 'General Item List'
+      );
+      
+      const categoryToUse = matchingCategory || generalCategory;
+
+      if (categoryToUse) {
+        const total = categoryToUse.items.reduce((sum, item) => {
+          const unitPrice = masterPriceList[item.name.trim().toLowerCase()] || 0;
+          const quantity = Number(item.quantity) || 0;
+          return sum + (unitPrice * quantity);
+        }, 0);
+        
+        setValue('kitAmount', total, { shouldValidate: true });
+      } else {
+        setValue('kitAmount', 0, { shouldValidate: true });
+      }
+    } else {
+      setValue('kitAmount', 0, { shouldValidate: true });
     }
-    setValue('kitAmount', total, { shouldValidate: true });
-    
   }, [membersValue, rationLists, setValue]);
   
   const isKitAmountReadOnly = useMemo(() => {
@@ -315,14 +332,10 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
         />
         )}
         
-        {isEditing && (
+        {isEditing && beneficiary?.createdAt && (
              <div className="pt-4 text-xs text-muted-foreground space-y-1">
-                {beneficiary.createdAt && 
-                    <p>Created by {beneficiary.createdByName || 'N/A'} on {format(beneficiary.createdAt.toDate(), 'PPpp')}</p>
-                }
-                 {beneficiary.updatedAt && 
-                    <p>Last updated by {beneficiary.updatedByName || 'N/A'} on {format(beneficiary.updatedAt.toDate(), 'PPpp')}</p>
-                }
+                <p>Created by {beneficiary.createdByName || 'N/A'} on {format(beneficiary.createdAt.toDate(), 'PPpp')}</p>
+                {beneficiary.updatedAt && <p>Last updated by {beneficiary.updatedByName || 'N/A'} on {format(beneficiary.updatedAt.toDate(), 'PPpp')}</p>}
              </div>
         )}
         
