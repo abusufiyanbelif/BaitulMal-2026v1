@@ -950,11 +950,11 @@ export default function BeneficiariesPage() {
                             {(canUpdate || canDelete) && <TableHead className="sticky left-0 z-10 bg-card text-center w-[100px] whitespace-nowrap">Actions</TableHead>}
                             <SortableHeader sortKey="srNo" className="w-[50px]">#</SortableHeader>
                             <SortableHeader sortKey="name">Name</SortableHeader>
+                            <SortableHeader sortKey="isEligibleForZakat">Eligible for Zakat</SortableHeader>
+                            <SortableHeader sortKey="kitAmount" className="text-right">Kit Amount (₹)</SortableHeader>
                             <SortableHeader sortKey="address">Address</SortableHeader>
                             <SortableHeader sortKey="phone">Phone</SortableHeader>
-                            <SortableHeader sortKey="isEligibleForZakat">Eligible for Zakat</SortableHeader>
                             <SortableHeader sortKey="referralBy">Referred By</SortableHeader>
-                            <SortableHeader sortKey="kitAmount" className="text-right">Kit Amount (₹)</SortableHeader>
                             <SortableHeader sortKey="status">Status</SortableHeader>
                             <SortableHeader sortKey="addedDate">Added Date</SortableHeader>
                         </TableRow>
@@ -966,9 +966,9 @@ export default function BeneficiariesPage() {
                                     {(canUpdate || canDelete) && <TableCell className="sticky left-0 z-10 bg-card text-center"><Skeleton className="h-6 w-12 mx-auto" /></TableCell>}
                                     <TableCell><Skeleton className="h-6 w-8" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-32" /></TableCell>
-                                    <TableCell><Skeleton className="h-6 w-40" /></TableCell>
-                                    <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-7 w-20" /></TableCell>
+                                    <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                                    <TableCell><Skeleton className="h-6 w-40" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-7 w-20 rounded-full" /></TableCell>
@@ -984,6 +984,8 @@ export default function BeneficiariesPage() {
                                 const totalBeneficiariesInCategory = Object.values(beneficiariesByMemberCount).reduce((sum, benList) => sum + benList.length, 0);
 
                                 const isRangedCategory = category.minMembers !== category.maxMembers && category.name !== 'General Item List';
+                                const categoryIsEffectivelyRanged = isRangedCategory && Object.keys(beneficiariesByMemberCount).length > 1;
+
                                 const categoryName = category.name === 'General Item List'
                                     ? category.name
                                     : category.minMembers === category.maxMembers
@@ -1001,7 +1003,7 @@ export default function BeneficiariesPage() {
                                             </TableCell>
                                         </TableRow>
                                         
-                                        {!categoryIsCollapsed && isRangedCategory && Object.keys(beneficiariesByMemberCount).sort((a, b) => Number(a) - Number(b)).map(memberCountStr => {
+                                        {!categoryIsCollapsed && categoryIsEffectivelyRanged && Object.keys(beneficiariesByMemberCount).sort((a, b) => Number(a) - Number(b)).map(memberCountStr => {
                                             const memberCount = Number(memberCountStr);
                                             const beneficiariesInSubGroup = beneficiariesByMemberCount[memberCount];
                                             const subGroupKey = `${categoryId}-${memberCount}`;
@@ -1024,7 +1026,7 @@ export default function BeneficiariesPage() {
                                                 </React.Fragment>
                                             );
                                         })}
-                                        {!categoryIsCollapsed && !isRangedCategory && (
+                                        {!categoryIsCollapsed && !categoryIsEffectivelyRanged && (
                                             Object.values(beneficiariesByMemberCount).flat().map((beneficiary, index) => (
                                                  <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onEdit={handleEdit} onDelete={handleDeleteClick} isSubRow={true} />
                                             ))
@@ -1161,8 +1163,6 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
             )}
             <TableCell className={cn(isSubRow && "pl-12")}>{index}</TableCell>
             <TableCell className="font-medium">{beneficiary.name}</TableCell>
-            <TableCell>{beneficiary.address}</TableCell>
-            <TableCell>{beneficiary.phone}</TableCell>
             <TableCell>
                 {beneficiary.isEligibleForZakat ? (
                     <div className="flex flex-col items-start">
@@ -1175,8 +1175,10 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                     </div>
                 ) : <Badge variant="outline">No</Badge>}
             </TableCell>
-            <TableCell>{beneficiary.referralBy}</TableCell>
             <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
+            <TableCell>{beneficiary.address}</TableCell>
+            <TableCell>{beneficiary.phone}</TableCell>
+            <TableCell>{beneficiary.referralBy}</TableCell>
             <TableCell>
                 <Badge variant={
                     beneficiary.status === 'Given' ? 'success' :
@@ -1189,4 +1191,6 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
         </TableRow>
     )
 }
+    
+
     

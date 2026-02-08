@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
@@ -161,11 +162,11 @@ export default function CampaignDetailsPage() {
         ];
     }
     
-    // Sort to put "General Item List" first
+    // Sort to put "General Item List" first, then by min members
     return lists.sort((a, b) => {
         if (a.name === 'General Item List') return -1;
         if (b.name === 'General Item List') return 1;
-        return a.name.localeCompare(b.name);
+        return a.minMembers - b.minMembers;
     });
   }, [editableCampaign?.rationLists]);
 
@@ -912,7 +913,7 @@ export default function CampaignDetailsPage() {
                     )}
                      <Button onClick={handleSyncKitAmounts} disabled={isSyncing} variant="secondary">
                         {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                        Sync Kit Amounts
+                        Sync Ration Kit Categories Amounts
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -1230,3 +1231,5 @@ export default function CampaignDetailsPage() {
     </>
   );
 }
+
+    
