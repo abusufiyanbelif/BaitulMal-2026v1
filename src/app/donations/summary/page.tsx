@@ -6,7 +6,7 @@ import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useFirestore, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { collection } from 'firebase/firestore';
+import { collection, collectionGroup, query } from 'firebase/firestore';
 import Link from 'next/link';
 import {
   BarChart,
@@ -22,7 +22,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-import type { Donation, DonationCategory } from '@/lib/types';
+import type { Donation, DonationCategory, Beneficiary } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -83,8 +83,14 @@ export default function DonationsSummaryPage() {
         if (!firestore) return null;
         return collection(firestore, 'donations');
     }, [firestore]);
-
     const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
+
+    const beneficiariesCollectionGroup = useMemo(() => {
+        if (!firestore) return null;
+        return query(collectionGroup(firestore, 'beneficiaries'));
+    }, [firestore]);
+    const { data: allBeneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionGroup);
+
     const canRead = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.read;
     const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.update;
 
@@ -107,7 +113,7 @@ export default function DonationsSummaryPage() {
     };
 
     const summaryData = useMemo(() => {
-        if (!donations) return null;
+        if (!donations || !allBeneficiaries) return null;
         
         const allocatedCount = donations.filter(d => d.campaignId).length;
         const unallocatedCount = donations.length - allocatedCount;
@@ -146,6 +152,10 @@ export default function DonationsSummaryPage() {
         const monthlyContributionTotal = amountsByCategory['Monthly Contribution'] || 0;
         const grandTotal = zakatTotal + loanTotal + interestTotal + sadaqahTotal + lillahTotal + monthlyContributionTotal;
 
+        const zakatAllocated = allBeneficiaries
+            .filter(b => b.isEligibleForZakat && b.zakatAllocation)
+            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
+
         return {
             allocatedCount,
             unallocatedCount,
@@ -154,6 +164,7 @@ export default function DonationsSummaryPage() {
             amountsByStatus,
             countsByStatus,
             donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
+            zakatAllocated,
             fundTotals: {
                 zakat: zakatTotal,
                 loan: loanTotal,
@@ -164,9 +175,9 @@ export default function DonationsSummaryPage() {
                 grandTotal: grandTotal,
             }
         };
-    }, [donations]);
+    }, [donations, allBeneficiaries]);
     
-    const isLoading = areDonationsLoading || isProfileLoading;
+    const isLoading = areDonationsLoading || isProfileLoading || areBeneficiariesLoading;
 
     if (isLoading) {
         return (
@@ -267,23 +278,23 @@ export default function DonationsSummaryPage() {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Allocation Status</CardTitle>
-                            <CardDescription>Number of donations linked to a campaign vs. unlinked.</CardDescription>
+                            <CardTitle>Zakat Utilization</CardTitle>
+                            <CardDescription>Overall tracking of Zakat funds collected vs. allocated.</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex flex-col items-center justify-center h-[300px] gap-4">
-                            <div className="flex items-center gap-4 text-lg">
-                                <div className="flex items-center gap-2">
-                                    <LinkIcon className="h-5 w-5 text-primary"/>
-                                    <span className="font-bold text-2xl">{summaryData?.allocatedCount}</span>
-                                    <span>Allocated</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Link2Off className="h-5 w-5 text-muted-foreground"/>
-                                    <span className="font-bold text-2xl">{summaryData?.unallocatedCount}</span>
-                                    <span>Unallocated</span>
-                                </div>
+                        <CardContent className="space-y-4">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">Total Zakat Collected</span>
+                                <span className="font-semibold">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
                             </div>
-                            <p className="text-sm text-muted-foreground text-center">Unallocated donations can be linked to any campaign from the main "All Donations" table.</p>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">Total Zakat Allocated</span>
+                                <span className="font-semibold">₹{summaryData?.zakatAllocated.toLocaleString('en-IN') ?? '0.00'}</span>
+                            </div>
+                            <Separator/>
+                            <div className="flex justify-between items-center text-lg">
+                                <span className="font-semibold">Zakat Balance</span>
+                                <span className="font-bold text-primary">₹{((summaryData?.fundTotals.zakat || 0) - (summaryData?.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>

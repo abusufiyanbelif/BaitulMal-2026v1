@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
-import type { Donation } from '@/lib/types';
+import type { Donation, Campaign, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
@@ -68,6 +68,12 @@ export default function DonationsPage() {
     return collection(firestore, 'donations');
   }, [firestore]);
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
+
+  const campaignsCollectionRef = useMemo(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
+  const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
+
+  const leadsCollectionRef = useMemo(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
+  const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
@@ -194,7 +200,7 @@ export default function DonationsPage() {
             screenshotUrl = await getDownloadURL(uploadResult.ref);
         }
 
-        const { screenshotFile, screenshotDeleted, isTransactionIdRequired, ...donationData } = data;
+        const { screenshotFile, screenshotDeleted, isTransactionIdRequired, linkId, ...donationData } = data;
         
         finalData = {
             ...donationData,
@@ -205,9 +211,18 @@ export default function DonationsPage() {
         };
         
         if (editingDonation) {
-            // Ensure campaignId is not overwritten if it exists
             finalData.campaignId = editingDonation.campaignId;
             finalData.campaignName = editingDonation.campaignName;
+        }
+
+        if (!isEditing && linkId && linkId !== 'unlinked') {
+            const [type, id] = linkId.split('_');
+            const sourceData = type === 'campaign' ? campaigns : leads;
+            const linkedItem = sourceData?.find(item => item.id === id);
+            if (linkedItem) {
+                finalData.campaignId = linkedItem.id;
+                finalData.campaignName = linkedItem.name;
+            }
         }
 
         await setDoc(docRef, finalData, { merge: true });
@@ -365,7 +380,7 @@ export default function DonationsPage() {
     });
   }, [filteredAndSortedDonations]);
 
-  const isLoading = areDonationsLoading || isProfileLoading;
+  const isLoading = areDonationsLoading || isProfileLoading || areCampaignsLoading || areLeadsLoading;
   
   const SortableHeader = ({ sortKey, children, className }: { sortKey: SortKey, children: React.ReactNode, className?: string }) => {
     const isSorted = sortConfig?.key === sortKey;
@@ -416,10 +431,10 @@ export default function DonationsPage() {
         <div className="border-b mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-4">
-                    <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-primary text-primary shadow-none data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none" data-active="true">
+                    <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-primary text-primary shadow-none" data-active="true">
                         <Link href="/donations">All Donations</Link>
                     </Button>
-                    <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none">
+                    <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-transparent pb-3 pt-2 text-muted-foreground hover:text-foreground">
                         <Link href="/donations/summary">Summary</Link>
                     </Button>
                 </div>
@@ -651,6 +666,8 @@ export default function DonationsPage() {
                 donation={editingDonation}
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
+                campaigns={campaigns || []}
+                leads={leads || []}
             />
         </DialogContent>
       </Dialog>

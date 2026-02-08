@@ -271,6 +271,10 @@ export default function CampaignSummaryPage() {
 
         const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
         const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
+        
+        const zakatAllocated = beneficiaries
+            .filter(b => b.isEligibleForZakat && b.zakatAllocation)
+            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
 
         return {
             totalCollectedForGoal,
@@ -285,6 +289,7 @@ export default function CampaignSummaryPage() {
             beneficiariesByCategory,
             sortedBeneficiaryCategories,
             donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
+            zakatAllocated,
             fundTotals: {
                 zakat: zakatTotal,
                 loan: loanTotal,
@@ -650,7 +655,7 @@ Your contribution, big or small, makes a huge difference.
             <div className="border-b mb-4">
                 <div className="flex flex-wrap items-center gap-x-4">
                     {userProfile && canReadSummary && (
-                        <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2 data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none", pathname === `/campaign-members/${campaignId}/summary` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
+                        <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}/summary` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                             <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
                         </Button>
                     )}
@@ -926,6 +931,28 @@ Your contribution, big or small, makes a huge difference.
                         </CardContent>
                     </Card>
                 
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>Zakat Utilization</CardTitle>
+                            <CardDescription>Tracking of Zakat funds collected and allocated within this campaign.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">Total Zakat Collected</span>
+                                <span className="font-semibold">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">Total Zakat Allocated</span>
+                                <span className="font-semibold">₹{summaryData?.zakatAllocated.toLocaleString('en-IN') ?? '0.00'}</span>
+                            </div>
+                            <Separator/>
+                            <div className="flex justify-between items-center text-lg">
+                                <span className="font-semibold">Zakat Balance</span>
+                                <span className="font-bold text-primary">₹{((summaryData?.fundTotals.zakat || 0) - (summaryData?.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     {summaryData && summaryData.sortedBeneficiaryCategories.length > 0 && (
                         <Card>
                             <CardHeader>

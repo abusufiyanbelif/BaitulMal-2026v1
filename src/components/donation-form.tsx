@@ -20,11 +20,13 @@ import { Button } from '@/components/ui/button';
 import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
+    SelectLabel,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import type { Donation, DonationCategory } from '@/lib/types';
+import type { Donation, DonationCategory, Campaign, Lead } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 import { Loader2, ScanLine, Replace, Trash2, Plus, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -53,6 +55,7 @@ const formSchema = z.object({
   comments: z.string().optional(),
   suggestions: z.string().optional(),
   isSplit: z.boolean().default(false),
+  linkId: z.string().optional(),
 }).refine(data => {
     if (data.donationType === 'Online Payment' && data.isTransactionIdRequired) {
         return data.transactionId && data.transactionId.trim().length > 0;
@@ -78,9 +81,11 @@ interface DonationFormProps {
   donation?: Donation | null;
   onSubmit: (data: DonationFormData) => void;
   onCancel: () => void;
+  campaigns?: Campaign[];
+  leads?: Lead[];
 }
 
-export function DonationForm({ donation, onSubmit, onCancel }: DonationFormProps) {
+export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], leads = [] }: DonationFormProps) {
   const { toast } = useToast();
   const [isScanning, setIsScanning] = useState(false);
   const isEditing = !!donation;
@@ -104,6 +109,7 @@ export function DonationForm({ donation, onSubmit, onCancel }: DonationFormProps
       suggestions: donation?.suggestions || '',
       isSplit: donation?.typeSplit ? donation.typeSplit.length > 1 : false,
       typeSplit: donation?.typeSplit && donation.typeSplit.length > 0 ? donation.typeSplit : [{ category: 'Sadaqah', amount: donation?.amount || 0 }],
+      linkId: donation?.campaignId ? `campaign_${donation.campaignId}` : '',
     },
   });
 
@@ -239,11 +245,43 @@ export function DonationForm({ donation, onSubmit, onCancel }: DonationFormProps
     };
     reader.readAsDataURL(file);
   };
+  
+  const isGlobalCreate = !isEditing && !donation?.campaignId;
 
   return (
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+           {isGlobalCreate && (
+                <FormField
+                    control={control}
+                    name="linkId"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Link to Campaign/Lead (Optional)</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger><SelectValue placeholder="Select a campaign or lead..." /></SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="unlinked">-- Do not link --</SelectItem>
+                                <SelectGroup>
+                                    <SelectLabel>Campaigns</SelectLabel>
+                                    {campaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`}>{c.name}</SelectItem>)}
+                                </SelectGroup>
+                                <SelectGroup>
+                                    <SelectLabel>Leads</SelectLabel>
+                                    {leads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`}>{l.name}</SelectItem>)}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        <FormDescription>Link this donation to a specific initiative.</FormDescription>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                   control={form.control}
