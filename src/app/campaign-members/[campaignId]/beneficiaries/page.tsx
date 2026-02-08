@@ -951,11 +951,11 @@ export default function BeneficiariesPage() {
                             <SortableHeader sortKey="name">Name</SortableHeader>
                             <SortableHeader sortKey="address">Address</SortableHeader>
                             <SortableHeader sortKey="phone">Phone</SortableHeader>
-                            <SortableHeader sortKey="addedDate">Added Date</SortableHeader>
                             <SortableHeader sortKey="isEligibleForZakat">Eligible for Zakat</SortableHeader>
                             <SortableHeader sortKey="referralBy">Referred By</SortableHeader>
                             <SortableHeader sortKey="kitAmount" className="text-right">Kit Amount (₹)</SortableHeader>
                             <SortableHeader sortKey="status">Status</SortableHeader>
+                            <SortableHeader sortKey="addedDate">Added Date</SortableHeader>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -967,11 +967,11 @@ export default function BeneficiariesPage() {
                                     <TableCell><Skeleton className="h-6 w-32" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-40" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                                    <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-7 w-20" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-7 w-20 rounded-full" /></TableCell>
+                                    <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                 </TableRow>
                             ))
                         ) : sortedGroupKeys.length > 0 ? (
@@ -1162,7 +1162,6 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
             <TableCell className="font-medium">{beneficiary.name}</TableCell>
             <TableCell>{beneficiary.address}</TableCell>
             <TableCell>{beneficiary.phone}</TableCell>
-            <TableCell>{beneficiary.addedDate}</TableCell>
             <TableCell>
                 {beneficiary.isEligibleForZakat ? (
                     <div className="flex flex-col items-start">
@@ -1185,6 +1184,7 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                     beneficiary.status === 'Hold' ? 'destructive' : 'outline'
                 }>{beneficiary.status}</Badge>
             </TableCell>
+             <TableCell>{beneficiary.addedDate}</TableCell>
         </TableRow>
     )
 }

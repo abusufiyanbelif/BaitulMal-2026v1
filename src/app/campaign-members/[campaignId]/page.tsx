@@ -694,7 +694,6 @@ export default function CampaignDetailsPage() {
                         <TableHead className="min-w-[100px]">Quantity</TableHead>
                         <TableHead className="min-w-[150px]">Quantity Type</TableHead>
                         <TableHead className="min-w-[120px]">Price per Unit (₹)</TableHead>
-                        <TableHead className="min-w-[180px]">Notes</TableHead>
                         <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>
                         {canUpdate && editMode && <TableHead className="w-[50px] text-center">Action</TableHead>}
                     </TableRow>
@@ -722,9 +721,6 @@ export default function CampaignDetailsPage() {
                             <TableCell>
                                 <Input type="number" value={item.price || ''} onChange={e => handleItemChange(category.id, item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
                             </TableCell>
-                            <TableCell>
-                                <Input value={item.notes || ''} onChange={e => handleItemChange(category.id, item.id, 'notes', e.target.value)} placeholder="e.g. brand, quality" disabled={!editMode || !canUpdate} />
-                            </TableCell>
                             <TableCell className="text-right font-mono">
                                 ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
                             </TableCell>
@@ -737,7 +733,7 @@ export default function CampaignDetailsPage() {
                     ))}
                     {category.items.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={canUpdate && editMode ? 8 : 7} className="text-center h-24 text-muted-foreground">
+                            <TableCell colSpan={canUpdate && editMode ? 7 : 6} className="text-center h-24 text-muted-foreground">
                                 No items added yet.
                             </TableCell>
                         </TableRow>
@@ -1150,7 +1146,7 @@ export default function CampaignDetailsPage() {
                 <DialogHeader>
                     <DialogTitle>Copy Items to '{copyTargetCategory?.name}'</DialogTitle>
                     <DialogDescription>
-                        Select items from a source category to copy/replace in the current category.
+                        Select items from a source category to copy or replace in the current category.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="py-4 space-y-4">
