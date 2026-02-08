@@ -126,7 +126,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     },
   });
 
-  const { control, watch, setValue, getValues, formState: { isDirty, errors } } = form;
+  const { control, watch, setValue, getValues, formState: { isDirty, errors, isSubmitting } } = form;
 
   const { fields: transactionFields, append: appendTransaction, remove: removeTransaction } = useFieldArray({ control, name: "transactions" });
   const { fields: typeSplitFields, append: appendTypeSplit, remove: removeTypeSplit, replace: replaceTypeSplit } = useFieldArray({ control, name: "typeSplit" });
