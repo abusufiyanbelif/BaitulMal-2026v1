@@ -237,7 +237,7 @@ export default function LeadDetailsPage() {
     const total = calculateTotal(items);
 
     return (
-      <Card>
+      <Card className="animate-fade-in-zoom">
         <CardHeader>
             <div className="flex justify-between items-center">
                 <CardTitle>Item List for Ration Kit</CardTitle>

@@ -481,7 +481,7 @@ export default function BeneficiariesPage() {
             </div>
         </div>
 
-        <Card>
+        <Card className="animate-fade-in-zoom">
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="flex-1 space-y-1.5">

@@ -171,7 +171,7 @@ export default function CreateLeadPage() {
           </Link>
         </Button>
       </div>
-      <Card className="max-w-2xl mx-auto">
+      <Card className="max-w-2xl mx-auto animate-fade-in-zoom">
         <CardHeader>
           <CardTitle>Create New Lead</CardTitle>
         </CardHeader>
@@ -421,5 +421,3 @@ export default function CreateLeadPage() {
     </main>
   );
 }
-
-    

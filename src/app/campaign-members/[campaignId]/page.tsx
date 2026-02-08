@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, Copy } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -344,11 +344,11 @@ export default function CampaignDetailsPage() {
                 const total = calculateTotal(items);
 
                 const headers = isGeneral
-                    ? ['#', 'Item Name', 'Quantity', 'Quantity Type', 'Price per Unit (₹)']
+                    ? ['#', 'Item Name', 'Quantity', 'Quantity Type', 'Price per Unit (₹)', 'Notes']
                     : ['#', 'Item Name', 'Quantity', 'Type', 'Total Price (₹)'];
 
                 const body = items.map((item, index) => isGeneral ? [
-                    index + 1, item.name, item.quantity, item.quantityType, item.price
+                    index + 1, item.name, item.quantity, item.quantityType, item.price, item.notes
                 ] : [
                     index + 1, item.name, item.quantity, item.quantityType, item.price
                 ]);
@@ -372,7 +372,7 @@ export default function CampaignDetailsPage() {
 
                 const ws = XLSX.utils.aoa_to_sheet(sheetData);
                 ws['!cols'] = isGeneral
-                    ? [{ wch: 5 }, { wch: 25 }, { wch: 10 }, { wch: 15 }, { wch: 15 }]
+                    ? [{ wch: 5 }, { wch: 25 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 20 }]
                     : [{ wch: 5 }, { wch: 25 }, { wch: 10 }, { wch: 10 }, { wch: 15 }];
                 XLSX.utils.book_append_sheet(wb, ws, categoryTitle.slice(0, 31));
             }
@@ -434,11 +434,11 @@ export default function CampaignDetailsPage() {
                 const categoryTitle = getCategoryLabel(memberCount);
                 
                 const headers = isGeneral
-                    ? [['#', 'Item Name', 'Quantity', 'Quantity Type', 'Price per Unit']]
+                    ? [['#', 'Item Name', 'Quantity', 'Quantity Type', 'Price per Unit', 'Notes']]
                     : [['#', 'Item Name', 'Qty', 'Type', 'Total Price']];
 
                 const body: any[] = items.map((item, index) => isGeneral ? [
-                    index + 1, item.name, item.quantity, item.quantityType || '', `₹${(item.price || 0).toFixed(2)}`
+                    index + 1, item.name, item.quantity, item.quantityType || '', `₹${(item.price || 0).toFixed(2)}`, item.notes
                 ] : [
                     index + 1, item.name, item.quantity, item.quantityType || '', `₹${(item.price || 0).toFixed(2)}`
                 ]);
@@ -563,7 +563,7 @@ export default function CampaignDetailsPage() {
     const isGeneral = getCategoryLabel(memberCount) === 'General Item List';
 
     return (
-      <Card>
+      <Card className="animate-fade-in-zoom">
         <CardContent className="pt-6">
           <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
             {!isGeneral && <h4 className="text-lg font-bold">Total: <span className="font-mono">₹{total.toFixed(2)}</span></h4>}
@@ -598,7 +598,10 @@ export default function CampaignDetailsPage() {
                         <TableHead className="min-w-[100px]">Quantity</TableHead>
                         <TableHead className="min-w-[150px]">Quantity Type</TableHead>
                         {isGeneral ? (
+                           <>
                             <TableHead className="text-right min-w-[120px]">Price per Unit (₹)</TableHead>
+                            <TableHead className="min-w-[180px]">Notes</TableHead>
+                           </>
                         ) : (
                             <>
                                 <TableHead className="text-right min-w-[120px]">Price per Unit (₹)</TableHead>
@@ -610,64 +613,55 @@ export default function CampaignDetailsPage() {
                 </TableHeader>
                 <TableBody>
                     {items.map((item, index) => {
-                        if (isGeneral) {
-                            return (
-                                <TableRow key={item.id}>
-                                    <TableCell>{index + 1}</TableCell>
-                                    <TableCell>
-                                        <Input value={item.name || ''} onChange={e => handleItemChange(memberCount, item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(memberCount, item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(memberCount, item.id, 'quantityType', value)} disabled={!editMode || !canUpdate}>
-                                            <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                                            <SelectContent>
-                                                {quantityTypes.map(type => (
-                                                    <SelectItem key={type} value={type}>{type}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Input type="number" value={item.price || ''} onChange={e => handleItemChange(memberCount, item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
-                                    </TableCell>
-                                    {canUpdate && editMode && (
-                                        <TableCell className="text-center">
-                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(memberCount, item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        const unitPrice = isGeneral
+                            ? Number(item.price || 0)
+                            : masterPriceList[String(item.name || '').trim().toLowerCase()]?.price || 0;
+
+                        return (
+                            <TableRow key={item.id}>
+                                <TableCell>{index + 1}</TableCell>
+                                <TableCell>
+                                    <Input value={item.name || ''} onChange={e => handleItemChange(memberCount, item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
+                                </TableCell>
+                                <TableCell>
+                                    <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(memberCount, item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
+                                </TableCell>
+                                <TableCell>
+                                    <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(memberCount, item.id, 'quantityType', value)} disabled={!editMode || !canUpdate || !isGeneral}>
+                                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                                        <SelectContent>
+                                            {quantityTypes.map(type => (
+                                                <SelectItem key={type} value={type}>{type}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </TableCell>
+                                {isGeneral ? (
+                                    <>
+                                        <TableCell>
+                                            <Input type="number" value={item.price || ''} onChange={e => handleItemChange(memberCount, item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
                                         </TableCell>
-                                    )}
-                                </TableRow>
-                            );
-                        } else {
-                            const itemNameLower = String(item.name || '').trim().toLowerCase();
-                            const masterItem = masterPriceList[itemNameLower];
-                            const unitPrice = masterItem ? masterItem.price : 0;
-                            return (
-                                <TableRow key={item.id}>
-                                    <TableCell>{index + 1}</TableCell>
-                                    <TableCell>
-                                        <Input value={item.name || ''} onChange={e => handleItemChange(memberCount, item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(memberCount, item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
-                                    </TableCell>
-                                    <TableCell>{item.quantityType || 'N/A'}</TableCell>
-                                    <TableCell className="text-right font-mono">
-                                        ₹{unitPrice.toFixed(2)}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Input type="number" value={item.price || ''} className="text-right" readOnly disabled={!editMode || !canUpdate} />
-                                    </TableCell>
-                                    {canUpdate && editMode && (
-                                        <TableCell className="text-center">
-                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(memberCount, item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                        <TableCell>
+                                            <Input value={item.notes || ''} onChange={e => handleItemChange(memberCount, item.id, 'notes', e.target.value)} placeholder="Notes" disabled={!editMode || !canUpdate} />
                                         </TableCell>
-                                    )}
-                                </TableRow>
-                            );
-                        }
+                                    </>
+                                ) : (
+                                    <>
+                                        <TableCell className="text-right font-mono">
+                                            ₹{unitPrice.toFixed(2)}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Input type="number" value={item.price || ''} className="text-right" readOnly disabled={!editMode || !canUpdate} />
+                                        </TableCell>
+                                    </>
+                                )}
+                                {canUpdate && editMode && (
+                                    <TableCell className="text-center">
+                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(memberCount, item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                    </TableCell>
+                                )}
+                            </TableRow>
+                        );
                     })}
                 </TableBody>
             </Table>
@@ -771,7 +765,7 @@ export default function CampaignDetailsPage() {
             </ScrollArea>
         </div>
 
-        <Card>
+        <Card className="animate-fade-in-zoom">
           <CardHeader>
              <div className="flex justify-between items-start flex-wrap gap-4">
                 <div>
@@ -895,7 +889,7 @@ export default function CampaignDetailsPage() {
              {editableCampaign.category === 'Ration' ? (
                 memberCategories.length > 0 ? (
                     <Tabs value={activeTab || ''} onValueChange={handleTabChange} className="w-full">
-                        <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-4 h-auto">
+                        <TabsList className="w-full h-auto">
                             {memberCategories.map(count => (
                                 <TabsTrigger key={count} value={count}>{getCategoryLabel(count)}</TabsTrigger>
                             ))}
