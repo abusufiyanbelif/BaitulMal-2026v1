@@ -1,5 +1,4 @@
 
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -82,6 +81,7 @@ export default function BeneficiariesPage() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBeneficiary, setEditingBeneficiary] = useState<Beneficiary | null>(null);
+  const [formMode, setFormMode] = useState<'add' | 'edit' | 'view'>('add');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<string | null>(null);
   
@@ -172,12 +172,20 @@ export default function BeneficiariesPage() {
   const handleAdd = () => {
     if (!canCreate) return;
     setEditingBeneficiary(null);
+    setFormMode('add');
+    setIsFormOpen(true);
+  };
+
+  const handleView = (beneficiary: Beneficiary) => {
+    setEditingBeneficiary(beneficiary);
+    setFormMode('view');
     setIsFormOpen(true);
   };
 
   const handleEdit = (beneficiary: Beneficiary) => {
     if (!canUpdate) return;
     setEditingBeneficiary(beneficiary);
+    setFormMode('edit');
     setIsFormOpen(true);
   };
 
@@ -318,6 +326,11 @@ export default function BeneficiariesPage() {
                 createdAt: serverTimestamp(),
                 createdById: userProfile.id,
                 createdByName: userProfile.name,
+            }),
+            ...(editingBeneficiary && {
+                updatedAt: serverTimestamp(),
+                updatedById: userProfile.id,
+                updatedByName: userProfile.name,
             }),
         };
         
@@ -789,7 +802,7 @@ export default function BeneficiariesPage() {
                         {canUpdate && (
                             <Button onClick={handleSyncKitAmounts} disabled={isSyncing} variant="secondary">
                                 {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                                Sync Kit Amounts
+                                Sync Beneficiary Kit Amounts
                             </Button>
                         )}
                         <Button variant="outline" onClick={handleDownloadTemplate}>
@@ -952,8 +965,8 @@ export default function BeneficiariesPage() {
                             <SortableHeader sortKey="name">Name</SortableHeader>
                             <SortableHeader sortKey="isEligibleForZakat">Eligible for Zakat</SortableHeader>
                             <SortableHeader sortKey="kitAmount" className="text-right">Kit Amount (₹)</SortableHeader>
-                            <SortableHeader sortKey="address">Address</SortableHeader>
                             <SortableHeader sortKey="phone">Phone</SortableHeader>
+                            <SortableHeader sortKey="address">Address</SortableHeader>
                             <SortableHeader sortKey="referralBy">Referred By</SortableHeader>
                             <SortableHeader sortKey="status">Status</SortableHeader>
                             <SortableHeader sortKey="addedDate">Added Date</SortableHeader>
@@ -968,8 +981,8 @@ export default function BeneficiariesPage() {
                                     <TableCell><Skeleton className="h-6 w-32" /></TableCell>
                                     <TableCell><Skeleton className="h-7 w-20" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                                    <TableCell><Skeleton className="h-6 w-40" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                                    <TableCell><Skeleton className="h-6 w-40" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-7 w-20 rounded-full" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
@@ -1021,14 +1034,14 @@ export default function BeneficiariesPage() {
                                                     </TableRow>
 
                                                     {!subGroupIsCollapsed && beneficiariesInSubGroup.map((beneficiary, index) => (
-                                                        <BeneficiaryRow beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onEdit={handleEdit} onDelete={handleDeleteClick} isSubRow={true} />
+                                                        <BeneficiaryRow beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} isSubRow={true} />
                                                     ))}
                                                 </React.Fragment>
                                             );
                                         })}
                                         {!categoryIsCollapsed && !categoryIsEffectivelyRanged && (
                                             Object.values(beneficiariesByMemberCount).flat().map((beneficiary, index) => (
-                                                 <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onEdit={handleEdit} onDelete={handleDeleteClick} isSubRow={true} />
+                                                 <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} isSubRow={true} />
                                             ))
                                         )}
                                     </React.Fragment>
@@ -1051,13 +1064,14 @@ export default function BeneficiariesPage() {
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="sm:max-w-[625px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-                <DialogTitle>{editingBeneficiary ? 'Edit' : 'Add'} Beneficiary</DialogTitle>
+                <DialogTitle>{formMode === 'add' ? 'Add' : formMode === 'view' ? 'View' : 'Edit'} Beneficiary</DialogTitle>
             </DialogHeader>
             <BeneficiaryForm
                 beneficiary={editingBeneficiary}
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
                 rationLists={sanitizedRationLists}
+                initialReadOnly={formMode === 'view'}
             />
         </DialogContent>
       </Dialog>
@@ -1140,12 +1154,13 @@ interface BeneficiaryRowProps {
     index: number;
     canUpdate?: boolean;
     canDelete?: boolean;
+    onView: (beneficiary: Beneficiary) => void;
     onEdit: (beneficiary: Beneficiary) => void;
     onDelete: (id: string) => void;
     isSubRow?: boolean;
 }
 
-const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onEdit, onDelete, isSubRow = false }) => {
+const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, isSubRow = false }) => {
     return (
         <TableRow className="bg-background hover:bg-accent/50">
             {(canUpdate || canDelete) && (
@@ -1155,6 +1170,7 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                             <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onView(beneficiary)}><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
                             {canUpdate && <DropdownMenuItem onClick={() => onEdit(beneficiary)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
                             {canDelete && <DropdownMenuItem onClick={() => onDelete(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
                         </DropdownMenuContent>
@@ -1176,8 +1192,8 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                 ) : <Badge variant="outline">No</Badge>}
             </TableCell>
             <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
-            <TableCell>{beneficiary.address}</TableCell>
             <TableCell>{beneficiary.phone}</TableCell>
+            <TableCell>{beneficiary.address}</TableCell>
             <TableCell>{beneficiary.referralBy}</TableCell>
             <TableCell>
                 <Badge variant={

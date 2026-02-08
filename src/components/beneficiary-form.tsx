@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState, useMemo } from 'react';
-import Image from 'next/image';
+import { format } from 'date-fns';
 import {
   Form,
   FormControl,
@@ -27,10 +27,11 @@ import {
 } from "@/components/ui/select";
 import type { Beneficiary, RationCategory, RationItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { Loader2, ScanLine, Trash2, Replace, FileIcon } from 'lucide-react';
+import { Loader2, ScanLine, Trash2, Replace, FileIcon, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { Checkbox } from './ui/checkbox';
+import { DialogFooter } from './ui/dialog';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -60,11 +61,13 @@ interface BeneficiaryFormProps {
   onSubmit: (data: BeneficiaryFormData) => void;
   onCancel: () => void;
   rationLists: RationCategory[];
+  initialReadOnly?: boolean;
 }
 
-export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists }: BeneficiaryFormProps) {
+export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, initialReadOnly = false }: BeneficiaryFormProps) {
   const { toast } = useToast();
   const [isScanning, setIsScanning] = useState(false);
+  const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
   const isEditing = !!beneficiary;
 
   const form = useForm<BeneficiaryFormData>({
@@ -119,16 +122,11 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists }
     
     let total = 0;
     if (membersValue && membersValue > 0 && rationLists) {
-        // Find the specific category that fits the member range
         const matchingCategory = rationLists.find(
             (cat) => membersValue >= cat.minMembers && membersValue <= cat.maxMembers && cat.name !== 'General Item List'
         );
-
-        // Find the general fallback category
         const generalCategory = rationLists.find(cat => cat.name === 'General Item List');
-
         const categoryToUse = matchingCategory || generalCategory;
-
         if (categoryToUse) {
             total = calculateTotal(categoryToUse.items);
         }
@@ -156,17 +154,13 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists }
   
   const handleScanIdProof = async () => {
     const fileList = getValues('idProofFile') as FileList | undefined;
-
     if (!fileList || fileList.length === 0) {
         toast({ title: "No File", description: "Please upload an ID proof document to scan.", variant: "destructive" });
         return;
     }
-    
     setIsScanning(true);
-
     const file = fileList[0];
     const reader = new FileReader();
-
     reader.onload = async (e) => {
         const dataUri = e.target?.result as string;
         if (!dataUri) {
@@ -174,157 +168,68 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists }
             setIsScanning(false);
             return;
         }
-
         try {
              const apiResponse = await fetch('/api/scan-id', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ photoDataUri: dataUri }),
             });
-
             if (!apiResponse.ok) {
                 const errorData = await apiResponse.json();
                 throw new Error(errorData.error || 'The server returned an error.');
             }
-
             const response = await apiResponse.json();
-
             if (response) {
                 if (response.name) setValue('name', response.name, { shouldValidate: true });
                 if (response.address) setValue('address', response.address, { shouldValidate: true });
                 if (response.aadhaarNumber) setValue('idNumber', response.aadhaarNumber, { shouldValidate:true });
                 setValue('idProofType', 'Aadhaar', { shouldValidate: true });
-                
-                toast({
-                    title: "Autofill Successful",
-                    description: "Beneficiary details have been populated from the scanned document.",
-                    variant: "success",
-                });
+                toast({ title: "Autofill Successful", description: "Beneficiary details populated.", variant: "success"});
             } else {
-                 toast({
-                    title: "Autofill Incomplete",
-                    description: "Could not extract all details from the document. Please fill them manually.",
-                    variant: "default",
-                });
+                 toast({ title: "Autofill Incomplete", description: "Could not extract all details.", variant: "default" });
             }
         } catch (error: any) {
-            console.warn("ID Proof scan failed:", error);
-            toast({
-                title: "Scan Failed",
-                description: error.message || "Could not automatically read the document.",
-                variant: "destructive",
-            });
+            toast({ title: "Scan Failed", description: error.message || "Could not read document.", variant: "destructive" });
         } finally {
             setIsScanning(false);
         }
     };
     reader.onerror = () => {
-        toast({ title: "File Error", description: "An error occurred while reading the file.", variant: "destructive" });
+        toast({ title: "File Error", description: "Error reading the file.", variant: "destructive" });
         setIsScanning(false);
     };
     reader.readAsDataURL(file);
   };
 
+  const formIsDisabled = isReadOnly || isSubmitting;
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Full Name *</FormLabel>
-                <FormControl>
-                    <Input placeholder="e.g. Saleem Khan" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-            <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Phone Number</FormLabel>
-                <FormControl>
-                    <Input placeholder="10-digit mobile number" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
+            <FormField control={form.control} name="name" render={({ field }) => (
+                <FormItem><FormLabel>Full Name *</FormLabel><FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+            )}/>
+            <FormField control={form.control} name="phone" render={({ field }) => (
+                <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="10-digit mobile number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+            )}/>
         </div>
-
-        <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Address</FormLabel>
-                <FormControl>
-                    <Input placeholder="Full residential address" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-        />
-        
+        <FormField control={form.control} name="address" render={({ field }) => (
+            <FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Full residential address" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+        )}/>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <FormField
-            control={form.control}
-            name="members"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Members</FormLabel>
-                <FormControl>
-                    <Input type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-            <FormField
-            control={form.control}
-            name="earningMembers"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Earning</FormLabel>
-                <FormControl>
-                    <Input type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-            <FormField
-            control={form.control}
-            name="male"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Male</FormLabel>
-                <FormControl>
-                    <Input type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-             <FormField
-            control={form.control}
-            name="female"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Female</FormLabel>
-                <FormControl>
-                    <Input type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
+            <FormField control={form.control} name="members" render={({ field }) => (
+                <FormItem><FormLabel>Members</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+            )}/>
+            <FormField control={form.control} name="earningMembers" render={({ field }) => (
+                <FormItem><FormLabel>Earning</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+            )}/>
+            <FormField control={form.control} name="male" render={({ field }) => (
+                <FormItem><FormLabel>Male</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+            )}/>
+             <FormField control={form.control} name="female" render={({ field }) => (
+                <FormItem><FormLabel>Female</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+            )}/>
         </div>
 
         <div className="space-y-4 rounded-md border p-4">
@@ -333,7 +238,7 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists }
             <FormItem>
                 <FormLabel>ID Proof Document</FormLabel>
                 <FormControl>
-                    <Input id="id-proof-file-input" type="file" accept="image/*,application/pdf" {...register('idProofFile')} />
+                    <Input id="id-proof-file-input" type="file" accept="image/*,application/pdf" {...register('idProofFile')} disabled={formIsDisabled} />
                 </FormControl>
                 <FormDescription>Optional. Upload an image or PDF of the ID proof.</FormDescription>
                 <FormMessage />
@@ -347,207 +252,87 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists }
                             <p className="text-sm text-center">PDF Document Uploaded</p>
                         </div>
                     ) : (
-                        <img src={preview} alt="ID Proof Preview" className="object-contain w-full h-full" />
+                        <img src={`/api/image-proxy?url=${encodeURIComponent(preview)}`} alt="ID Proof Preview" className="object-contain w-full h-full" crossOrigin="anonymous"/>
                     )}
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button type="button" size="icon" variant="outline" onClick={() => document.getElementById('id-proof-file-input')?.click()}>
-                            <Replace className="h-5 w-5"/>
-                            <span className="sr-only">Replace Image</span>
-                        </Button>
-                        <Button type="button" size="icon" variant="destructive" onClick={handleDeleteProof}>
-                            <Trash2 className="h-5 w-5"/>
-                            <span className="sr-only">Delete Image</span>
-                        </Button>
-                    </div>
+                    {!isReadOnly && <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button type="button" size="icon" variant="outline" onClick={() => document.getElementById('id-proof-file-input')?.click()} disabled={formIsDisabled}><Replace className="h-5 w-5"/><span className="sr-only">Replace Image</span></Button>
+                        <Button type="button" size="icon" variant="destructive" onClick={handleDeleteProof} disabled={formIsDisabled}><Trash2 className="h-5 w-5"/><span className="sr-only">Delete Image</span></Button>
+                    </div>}
                 </div>
             )}
             
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                {idProofFile?.length > 0 && (
-                <Button 
-                    type="button" 
-                    className="flex-1"
-                    onClick={handleScanIdProof} 
-                    disabled={isScanning}
-                >
-                    {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />}
-                    Scan ID Proof & Autofill
+            {!isReadOnly && idProofFile?.length > 0 && (
+                <Button type="button" className="w-full" onClick={handleScanIdProof} disabled={isScanning || formIsDisabled}>
+                    {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan ID Proof & Autofill
                 </Button>
-                )}
-                 <FormField
-                    control={form.control}
-                    name="idProofIsPublic"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-                            <FormControl>
-                                <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                />
-                            </FormControl>
-                            <FormLabel className="text-sm font-normal">
-                                Make ID Proof public
-                            </FormLabel>
-                        </FormItem>
-                    )}
-                />
-            </div>
+            )}
+            <FormField control={form.control} name="idProofIsPublic" render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-2 space-y-0 pt-2"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={formIsDisabled} /></FormControl><FormLabel className="text-sm font-normal">Make ID Proof public</FormLabel></FormItem>
+            )}/>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField
-            control={form.control}
-            name="idProofType"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>ID Proof Type</FormLabel>
-                <FormControl>
-                    <Input placeholder="Aadhaar, PAN, etc." {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
+            <FormField control={form.control} name="idProofType" render={({ field }) => (
+                <FormItem><FormLabel>ID Proof Type</FormLabel><FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+            )}/>
+            <FormField control={form.control} name="idNumber" render={({ field }) => (
+                <FormItem><FormLabel>ID Number</FormLabel><FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
             )}
-            />
-            <FormField
-            control={form.control}
-            name="idNumber"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>ID Number</FormLabel>
-                <FormControl>
-                    <Input placeholder="e.g. XXXX XXXX 1234" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <FormField
-            control={form.control}
-            name="referralBy"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Referred By *</FormLabel>
-                <FormControl>
-                    <Input placeholder="e.g. Local NGO" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-            <FormField
-                control={form.control}
-                name="kitAmount"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Kit Amount (₹) *</FormLabel>
-                    <FormControl>
-                        <Input
-                            type="number"
-                            placeholder="Auto-calculated or enter manually"
-                            {...field}
-                            readOnly={isKitAmountReadOnly}
-                            className={cn(isKitAmountReadOnly && "bg-muted/50 focus:ring-0 cursor-not-allowed")}
-                         />
-                    </FormControl>
-                     <FormDescription>
-                        This is auto-calculated if a ration list exists for the number of members.
-                    </FormDescription>
-                    <FormMessage />
-                    </FormItem>
-                )}
-            />
-            <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Status *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select a status" />
-                    </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="Given">Given</SelectItem>
-                    <SelectItem value="Verified">Verified</SelectItem>
-                    <SelectItem value="Hold">Hold</SelectItem>
-                    <SelectItem value="Need More Details">Need More Details</SelectItem>
-                    </SelectContent>
-                </Select>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
+            <FormField control={form.control} name="referralBy" render={({ field }) => (
+                <FormItem><FormLabel>Referred By *</FormLabel><FormControl><Input placeholder="e.g. Local NGO" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+            )}/>
+            <FormField control={form.control} name="kitAmount" render={({ field }) => (
+                <FormItem><FormLabel>Kit Amount (₹) *</FormLabel><FormControl><Input type="number" placeholder="Auto-calculated" {...field} readOnly={isKitAmountReadOnly || formIsDisabled} className={cn((isKitAmountReadOnly) && "bg-muted/50 focus:ring-0 cursor-not-allowed")} /></FormControl><FormDescription>Auto-calculated if ration list exists.</FormDescription><FormMessage /></FormItem>
+            )}/>
+            <FormField control={form.control} name="status" render={({ field }) => (
+                <FormItem><FormLabel>Status *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled={formIsDisabled}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Hold">Hold</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+            )}/>
         </div>
 
-        <FormField
-            control={form.control}
-            name="notes"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Notes</FormLabel>
-                <FormControl>
-                    <Textarea placeholder="Any internal notes about the beneficiary..." {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-        />
-        
+        <FormField control={form.control} name="notes" render={({ field }) => (
+            <FormItem><FormLabel>Notes</FormLabel><FormControl><Textarea placeholder="Any internal notes..." {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+        )}/>
         <Separator />
-        
-        <FormField
-            control={form.control}
-            name="isEligibleForZakat"
-            render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                        <FormLabel className="text-base">
-                            Eligible for Zakat
-                        </FormLabel>
-                        <FormDescription>
-                            Can this beneficiary receive funds from Zakat?
-                        </FormDescription>
-                    </div>
-                    <FormControl>
-                        <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                        />
-                    </FormControl>
-                </FormItem>
+        <FormField control={form.control} name="isEligibleForZakat" render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Eligible for Zakat</FormLabel><FormDescription>Can this beneficiary receive funds from Zakat?</FormDescription></div><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={formIsDisabled} /></FormControl></FormItem>
+        )}/>
+        {isEligibleForZakat && (
+            <FormField control={form.control} name="zakatAllocation" render={({ field }) => (
+                <FormItem className="animate-fade-in-zoom"><FormLabel>Zakat Allocation (₹)</FormLabel><FormControl><Input type="number" {...field} placeholder="Amount from Zakat" disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
             )}
         />
-        
-        {isEligibleForZakat && (
-            <FormField
-                control={form.control}
-                name="zakatAllocation"
-                render={({ field }) => (
-                    <FormItem className="animate-fade-in-zoom">
-                    <FormLabel>Zakat Allocation (₹)</FormLabel>
-                    <FormControl>
-                        <Input type="number" {...field} placeholder="Amount from Zakat" />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-            />
         )}
-
-
-        <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>Cancel</Button>
-            <Button type="submit" disabled={isSubmitting || (isEditing && !isDirty)}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isSubmitting ? 'Saving...' : 'Save Beneficiary'}
-            </Button>
-        </div>
+        
+        {isEditing && (
+             <div className="pt-4 text-xs text-muted-foreground space-y-1">
+                {beneficiary.createdAt && 
+                    <p>Created by {beneficiary.createdByName || 'N/A'} on {format(beneficiary.createdAt.toDate(), 'PPpp')}</p>
+                }
+                 {beneficiary.updatedAt && 
+                    <p>Last updated by {beneficiary.updatedByName || 'N/A'} on {format(beneficiary.updatedAt.toDate(), 'PPpp')}</p>
+                }
+             </div>
+        )}
+        
+        <DialogFooter className="pt-4">
+            {isReadOnly ? (
+                <>
+                    <Button type="button" variant="outline" onClick={onCancel}>Close</Button>
+                    <Button type="button" onClick={() => setIsReadOnly(false)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
+                </>
+            ) : (
+                <>
+                    <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>Cancel</Button>
+                    <Button type="submit" disabled={isSubmitting || (isEditing && !isDirty)}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isSubmitting ? 'Saving...' : 'Save Beneficiary'}
+                    </Button>
+                </>
+            )}
+        </DialogFooter>
       </form>
     </Form>
   );

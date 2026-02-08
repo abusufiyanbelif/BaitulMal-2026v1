@@ -120,6 +120,9 @@ export interface Beneficiary extends DocumentData {
     createdAt?: any;
     createdById?: string;
     createdByName?: string;
+    updatedAt?: any;
+    updatedById?: string;
+    updatedByName?: string;
 }
 
 export interface UserProfile extends DocumentData {
