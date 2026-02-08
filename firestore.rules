@@ -12,13 +12,15 @@
  *    - To support rich public summary pages, `donations` and the `beneficiaries`
  *      of public campaigns are also listable by anyone.
  *
- * 2. Authenticated Writes:
- *    - ALL write operations (create, update, delete) on ANY collection require the
- *      user to be signed in.
+ * 2. Authenticated & Authorized Writes:
+ *    - All write operations are restricted. Most management tasks (campaigns, leads, settings)
+ *      require administrator privileges.
+ *    - Donations can be created by any signed-in user, but can only be modified or
+ *      deleted by the original creator or an admin.
  *
  * 3. Role-Based Access:
- *    - Administrative actions (like managing users or lookups) are protected by the
- *      `isUserAdmin()` function, which checks for an 'Admin' role.
+ *    - Administrative actions are protected by the `isUserAdmin()` function, which
+ *      checks for an 'Admin' role on the user's profile.
  *
  * 4. User-Private Data:
  *    - A user's own profile document at `/users/{userId}` is readable only by that user
@@ -55,21 +57,23 @@ service cloud.firestore {
     /**
      * @description Public app settings.
      * @allow (read) Anyone can read settings.
-     * @allow (write) Only authenticated users (UI restricts to admins).
+     * @allow (write) Only admins can modify settings.
      */
     match /settings/{docId} {
         allow read: if true;
-        allow write: if isSignedIn();
+        allow write: if isUserAdmin();
     }
     
     /**
      * @description Individual donation records.
-     * @allow (get, list) Publicly readable for receipts and summary pages.
-     * @allow (write) Only authenticated users can manage donations.
+     * @allow (read) Publicly readable for receipts and summary pages.
+     * @allow (create) Any authenticated user can create a donation.
+     * @allow (update, delete) Only the creator or an admin can manage the donation.
      */
     match /donations/{donationId} {
       allow read: if true;
-      allow write: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isUserAdmin() || (isSignedIn() && resource.data.uploadedById == request.auth.uid);
     }
 
     /**
@@ -80,8 +84,8 @@ service cloud.firestore {
       allow get: if (resource.data.authenticityStatus == 'Verified' && resource.data.publicVisibility == 'Published') || isSignedIn();
       // Allow LIST for anyone; client query is responsible for filtering public/private campaigns.
       allow list: if true;
-      // Allow WRITE only for signed-in users.
-      allow write: if isSignedIn();
+      // Allow WRITE only for admins.
+      allow write: if isUserAdmin();
 
       /**
        * @description Beneficiaries of a campaign.
@@ -89,7 +93,8 @@ service cloud.firestore {
       match /beneficiaries/{beneficiaryId} {
           // Public can read beneficiaries of a public campaign, writes are protected.
           allow read: if get(/databases/$(database)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published' || isSignedIn();
-          allow write: if isSignedIn();
+          // Only Admins can manage beneficiaries.
+          allow write: if isUserAdmin();
       }
     }
     
@@ -100,13 +105,16 @@ service cloud.firestore {
       // Same logic as campaigns.
       allow get: if (resource.data.authenticityStatus == 'Verified' && resource.data.publicVisibility == 'Published') || isSignedIn();
       allow list: if true;
-      allow write: if isSignedIn();
+      allow write: if isUserAdmin();
       
       /**
        * @description Beneficiaries are considered internal data for leads.
        */
       match /beneficiaries/{beneficiaryId} {
-        allow read, write: if isSignedIn();
+        // Read access for any signed-in user.
+        allow read: if isSignedIn();
+        // Write access only for admins.
+        allow write: if isUserAdmin();
       }
     }
 
