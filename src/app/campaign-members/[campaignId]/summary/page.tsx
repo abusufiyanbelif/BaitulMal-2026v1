@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -28,7 +27,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/types';
+import type { Campaign, Beneficiary, Donation, DonationCategory, RationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -143,6 +142,21 @@ export default function CampaignSummaryPage() {
             });
         }
     }, [campaign, editMode]);
+
+    const sanitizedRationLists = useMemo(() => {
+        if (!campaign?.rationLists) return [];
+        if (Array.isArray(campaign.rationLists)) return campaign.rationLists;
+        // Hotfix for old object format
+        return [
+          {
+            id: 'general',
+            name: 'General Item List',
+            minMembers: 0,
+            maxMembers: 0,
+            items: (campaign.rationLists as any)['General Item List'] || []
+          }
+        ];
+    }, [campaign?.rationLists]);
     
     const canReadSummary = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.summary?.read;
     const canReadRation = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.ration?.read;
@@ -206,7 +220,7 @@ export default function CampaignSummaryPage() {
 
     // Memoized calculations
     const summaryData = useMemo(() => {
-        if (!allDonations || !campaign || !beneficiaries) return null;
+        if (!allDonations || !campaign || !beneficiaries || !sanitizedRationLists) return null;
         
         const donations = allDonations.filter(d => {
             if (d.linkSplit && d.linkSplit.length > 0) {
@@ -267,16 +281,36 @@ export default function CampaignSummaryPage() {
         const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
         
         const beneficiariesByCategory = beneficiaries.reduce((acc, ben) => {
-            const key = ben.members || 0;
-            if (!acc[key]) {
-                acc[key] = { beneficiaries: [], totalAmount: 0 };
-            }
-            acc[key].beneficiaries.push(ben);
-            acc[key].totalAmount += ben.kitAmount || 0;
-            return acc;
-        }, {} as Record<number, { beneficiaries: Beneficiary[], totalAmount: number }>);
+            const members = ben.members || 0;
+            const generalCategory = sanitizedRationLists.find(cat => cat.name === 'General Item List');
+            const specificCategory = sanitizedRationLists.find(cat => cat.name !== 'General Item List' && members >= cat.minMembers && members <= cat.maxMembers);
+            
+            const appliedCategory = specificCategory || generalCategory;
+            
+            let categoryName = 'Uncategorized';
+            let categoryKey = 'uncategorized';
 
-        const sortedBeneficiaryCategories = Object.keys(beneficiariesByCategory).map(Number).sort((a, b) => b - a);
+            if (appliedCategory) {
+              categoryName = appliedCategory.name === 'General Item List'
+                  ? 'General'
+                  : appliedCategory.minMembers === appliedCategory.maxMembers
+                      ? `${appliedCategory.name} (${appliedCategory.minMembers} Members)`
+                      : `${appliedCategory.name} (${appliedCategory.minMembers}-${appliedCategory.maxMembers} Members)`;
+              categoryKey = appliedCategory.id;
+            }
+
+            if (!acc[categoryKey]) {
+              acc[categoryKey] = { categoryName, beneficiaries: [], totalAmount: 0, kitAmount: 0, minMembers: appliedCategory?.minMembers ?? 0 };
+            }
+            acc[categoryKey].beneficiaries.push(ben);
+            acc[categoryKey].totalAmount += ben.kitAmount || 0;
+            acc[categoryKey].kitAmount = ben.kitAmount || 0; // Assuming kitAmount is consistent per category
+            return acc;
+        }, {} as Record<string, { categoryName: string, beneficiaries: Beneficiary[], totalAmount: number, kitAmount: number, minMembers: number }>);
+
+        const sortedBeneficiaryCategoryKeys = Object.keys(beneficiariesByCategory).sort((a, b) => {
+          return beneficiariesByCategory[a].minMembers - beneficiariesByCategory[b].minMembers;
+        });
 
         const paymentTypeData = donations.reduce((acc, d) => {
             const key = d.donationType || 'Other';
@@ -310,7 +344,7 @@ export default function CampaignSummaryPage() {
             beneficiariesGiven,
             beneficiariesPending,
             beneficiariesByCategory,
-            sortedBeneficiaryCategories,
+            sortedBeneficiaryCategoryKeys,
             donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
             zakatAllocated,
             fundTotals: {
@@ -323,7 +357,7 @@ export default function CampaignSummaryPage() {
                 grandTotal: grandTotal,
             }
         };
-    }, [allDonations, campaign, beneficiaries]);
+    }, [allDonations, campaign, beneficiaries, sanitizedRationLists]);
     
     const isLoading = isCampaignLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
     
@@ -976,12 +1010,12 @@ Your contribution, big or small, makes a huge difference.
                         </CardContent>
                     </Card>
 
-                    {summaryData && summaryData.sortedBeneficiaryCategories.length > 0 && (
+                    {summaryData && summaryData.sortedBeneficiaryCategoryKeys.length > 0 && (
                         <Card>
                             <CardHeader>
                                 <CardTitle>Beneficiaries by Category</CardTitle>
                                 <CardDescription>
-                                    Summary of beneficiaries grouped by family size.
+                                    Summary of beneficiaries grouped by family size categories.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -994,13 +1028,13 @@ Your contribution, big or small, makes a huge difference.
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {summaryData.sortedBeneficiaryCategories.map(memberCount => {
-                                            const group = summaryData.beneficiariesByCategory[memberCount];
+                                        {summaryData.sortedBeneficiaryCategoryKeys.map(categoryKey => {
+                                            const group = summaryData.beneficiariesByCategory[categoryKey];
                                             const count = group.beneficiaries.length;
-                                            const kitAmount = group.beneficiaries[0]?.kitAmount || 0;
+                                            const kitAmount = group.kitAmount;
                                             return (
-                                                <TableRow key={memberCount}>
-                                                    <TableCell className="font-medium">{memberCount} Members</TableCell>
+                                                <TableRow key={categoryKey}>
+                                                    <TableCell className="font-medium">{group.categoryName}</TableCell>
                                                     <TableCell className="text-center">{count}</TableCell>
                                                     <TableCell className="text-right font-mono">₹{kitAmount.toFixed(2)}</TableCell>
                                                 </TableRow>
@@ -1076,3 +1110,5 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+
+    
