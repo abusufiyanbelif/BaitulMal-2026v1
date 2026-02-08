@@ -70,6 +70,7 @@ export default function CampaignDetailsPage() {
   const [editableCampaign, setEditableCampaign] = useState<Campaign | null>(null);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [newMemberCount, setNewMemberCount] = useState('');
+  const [activeTab, setActiveTab] = useState<string>();
 
   // Copy items state
   const [isCopyItemsOpen, setIsCopyItemsOpen] = useState(false);
@@ -83,6 +84,28 @@ export default function CampaignDetailsPage() {
       setEditableCampaign(JSON.parse(JSON.stringify(campaign)));
     }
   }, [editMode, campaign])
+
+  const memberCategories = useMemo(() => {
+    if (!editableCampaign?.rationLists) return [];
+    return Object.keys(editableCampaign.rationLists).sort((a, b) => {
+        const aIsGeneral = a.toLowerCase().includes('general');
+        const bIsGeneral = b.toLowerCase().includes('general');
+        if (aIsGeneral) return -1;
+        if (bIsGeneral) return 1;
+        return Number(b) - Number(a);
+    });
+  }, [editableCampaign]);
+
+  useEffect(() => {
+    // If categories are loaded and either no tab is active or the active tab was deleted,
+    // default to the first available category.
+    if (memberCategories.length > 0 && (!activeTab || !memberCategories.includes(activeTab))) {
+      setActiveTab(memberCategories[0]);
+    } else if (memberCategories.length === 0) {
+      // If there are no categories, unset the active tab.
+      setActiveTab(undefined);
+    }
+  }, [memberCategories, activeTab]);
   
   const getCategoryLabel = (category: string | null): string => {
     if (!category) return '';
@@ -455,20 +478,10 @@ export default function CampaignDetailsPage() {
     
     const newRationLists = { ...editableCampaign.rationLists, [newCountStr]: [] };
     handleFieldChange('rationLists', newRationLists);
+    setActiveTab(newCountStr);
     setNewMemberCount('');
     setIsAddCategoryOpen(false);
   };
-  
-  const memberCategories = useMemo(() => {
-    if (!editableCampaign?.rationLists) return [];
-    return Object.keys(editableCampaign.rationLists).sort((a, b) => {
-        const aIsGeneral = a.toLowerCase().includes('general');
-        const bIsGeneral = b.toLowerCase().includes('general');
-        if (aIsGeneral) return -1;
-        if (bIsGeneral) return 1;
-        return Number(b) - Number(a);
-    });
-  }, [editableCampaign]);
   
   const sourceCategoriesForCopy = useMemo(() => {
     if (!editableCampaign || !copyTargetCategory) return [];
@@ -850,7 +863,7 @@ export default function CampaignDetailsPage() {
           <CardContent>
              {editableCampaign.category === 'Ration' ? (
                 memberCategories.length > 0 ? (
-                    <Tabs defaultValue={memberCategories[0]} className="w-full">
+                    <Tabs value={activeTab || ''} onValueChange={setActiveTab} className="w-full">
                         <ScrollArea className="w-full whitespace-nowrap rounded-md">
                             <TabsList className="justify-start">
                                 {memberCategories.map(count => (
