@@ -27,7 +27,7 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
         for (const doc of snapshot.docs) {
             const donation = doc.data() as Donation;
             let needsUpdate = false;
-            let newTypeSplit = donation.typeSplit;
+            const updatePayload: any = {};
 
             // Logic to migrate from old 'type' field to 'typeSplit'
             if (!donation.typeSplit || donation.typeSplit.length === 0) {
@@ -41,7 +41,7 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
                     }
                 }
                 
-                newTypeSplit = [{
+                updatePayload.typeSplit = [{
                     category: category,
                     amount: donation.amount
                 }];
@@ -49,7 +49,7 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
             } 
             // Logic to update existing 'Sadqa' entries in typeSplit
             else if (donation.typeSplit.some(s => (s.category as any) === 'Sadqa')) {
-                 newTypeSplit = donation.typeSplit.map(split => {
+                 updatePayload.typeSplit = donation.typeSplit.map(split => {
                     if ((split.category as any) === 'Sadqa') {
                         return { ...split, category: 'Sadaqah' };
                     }
@@ -58,8 +58,19 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
                 needsUpdate = true;
             }
 
+            // Logic to migrate from old campaignId to new linkSplit
+            if (donation.campaignId && (!donation.linkSplit || donation.linkSplit.length === 0)) {
+                updatePayload.linkSplit = [{
+                    linkId: donation.campaignId,
+                    linkName: donation.campaignName || 'Unknown',
+                    linkType: 'campaign', // Assume old links were to campaigns
+                    amount: donation.amount,
+                }];
+                needsUpdate = true;
+            }
+
             if (needsUpdate) {
-                batch.update(doc.ref, { typeSplit: newTypeSplit });
+                batch.update(doc.ref, updatePayload);
                 updatedCount++;
             }
         }
@@ -67,10 +78,10 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
         if (updatedCount > 0) {
             await batch.commit();
             // Revalidate paths to ensure data freshness
-            revalidatePath('/donations/summary');
-            revalidatePath('/donations');
+            revalidatePath('/donations', 'layout');
             revalidatePath('/campaign-members', 'layout');
-            return { success: true, message: `Successfully synced ${updatedCount} donation records.`, updatedCount };
+            revalidatePath('/leads-members', 'layout');
+            return { success: true, message: `Successfully synced ${updatedCount} donation records to the new data format.`, updatedCount };
         }
 
         return { success: true, message: 'All donation records are already up to date.', updatedCount: 0 };
