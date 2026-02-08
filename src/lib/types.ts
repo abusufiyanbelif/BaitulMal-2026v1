@@ -142,27 +142,31 @@ export interface DonationLink {
   linkType: 'campaign' | 'lead';
   amount: number;
 }
+
+export interface TransactionDetail {
+  id: string; // For react-hook-form key
+  amount: number;
+  transactionId?: string;
+  screenshotUrl?: string;
+  screenshotIsPublic?: boolean;
+}
+
 export interface Donation extends DocumentData {
   id: string;
   donorName: string;
   donorPhone: string;
   receiverName: string;
-  amount: number;
-  type?: DonationCategory | 'General'; // Legacy field for old data
+  amount: number; // This is the SUM of all transactions
   typeSplit: { category: DonationCategory; amount: number }[];
   linkSplit?: DonationLink[];
   donationType: 'Cash' | 'Online Payment' | 'Check' | 'Other';
   referral: string;
   donationDate: string;
   status: 'Verified' | 'Pending' | 'Canceled';
-  transactionId?: string;
-  screenshotUrl?: string;
-  screenshotIsPublic?: boolean;
   comments?: string;
   suggestions?: string;
   uploadedBy: string;
   uploadedById: string;
-  campaignId?: string; // Legacy: for migration
-  campaignName?: string; // Legacy: for migration
   createdAt?: any;
+  transactions: TransactionDetail[];
 }
