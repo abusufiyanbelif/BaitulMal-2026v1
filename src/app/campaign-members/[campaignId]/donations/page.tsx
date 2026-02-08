@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
@@ -59,6 +59,7 @@ type SortKey = keyof Donation | 'srNo';
 export default function DonationsPage() {
   const params = useParams();
   const router = useRouter();
+  const pathname = usePathname();
   const campaignId = params.campaignId as string;
   const firestore = useFirestore();
   const storage = useStorage();
@@ -467,22 +468,22 @@ export default function DonationsPage() {
         <div className="border-b mb-4">
             <div className="flex flex-wrap items-center gap-x-4">
                  {canReadSummary && (
-                  <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none">
+                  <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}/summary` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                       <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
                   </Button>
                 )}
                 {canReadRation && (
-                  <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none">
+                  <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                       <Link href={`/campaign-members/${campaignId}`}>{campaign?.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
                   </Button>
                 )}
                 {canReadBeneficiaries && (
-                  <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none">
+                  <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                       <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
                   </Button>
                 )}
                 {canReadDonations && (
-                  <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-primary text-primary shadow-none data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none" data-active="true">
+                  <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}/donations` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                       <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
                   </Button>
                 )}

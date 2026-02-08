@@ -3,6 +3,7 @@
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { useFirestore, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection } from 'firebase/firestore';
@@ -47,6 +48,7 @@ import { ShieldAlert } from 'lucide-react';
 import { syncDonationsAction } from '../actions';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const donationCategoryChartConfig = {
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
@@ -72,6 +74,7 @@ const donationStatusChartConfig = {
 
 export default function DonationsSummaryPage() {
     const firestore = useFirestore();
+    const pathname = usePathname();
     const { userProfile, isLoading: isProfileLoading } = useSession();
     const { toast } = useToast();
     const [isSyncing, setIsSyncing] = useState(false);
@@ -211,10 +214,10 @@ export default function DonationsSummaryPage() {
             <div className="border-b mb-4">
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex w-max space-x-4">
-                        <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none">
+                        <Button variant="ghost" asChild className={cn("shrink-0 rounded-b-none border-b-2 pb-3 pt-2", pathname === '/donations' ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                             <Link href="/donations">All Donations</Link>
                         </Button>
-                        <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-primary text-primary shadow-none data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none" data-active="true">
+                        <Button variant="ghost" asChild className={cn("shrink-0 rounded-b-none border-b-2 pb-3 pt-2", pathname === '/donations/summary' ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                             <Link href="/donations/summary">Summary</Link>
                         </Button>
                     </div>

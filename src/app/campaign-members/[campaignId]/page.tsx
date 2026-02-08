@@ -3,7 +3,7 @@
 'use client';
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import { useFirestore, useDoc, errorEmitter, FirestorePermissionError } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
@@ -45,7 +45,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { get } from '@/lib/utils';
+import { get, cn } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -55,6 +55,7 @@ const quantityTypes = ['kg', 'litre', 'gram', 'ml', 'piece', 'packet', 'dozen'];
 
 export default function CampaignDetailsPage() {
   const params = useParams();
+  const pathname = usePathname();
   const campaignId = params.campaignId as string;
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -741,22 +742,22 @@ export default function CampaignDetailsPage() {
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-4">
                     {canReadSummary && (
-                      <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none">
+                      <Button variant="ghost" asChild className={cn("shrink-0 rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}/summary` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                           <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
                       </Button>
                     )}
                     {canReadRation && (
-                      <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-primary text-primary shadow-none data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none" data-active="true">
+                      <Button variant="ghost" asChild className={cn("shrink-0 rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                           <Link href={`/campaign-members/${campaignId}`}>{editableCampaign.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
                       </Button>
                     )}
                     {canReadBeneficiaries && (
-                      <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none">
+                      <Button variant="ghost" asChild className={cn("shrink-0 rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                           <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
                       </Button>
                     )}
                      {canReadDonations && (
-                      <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none">
+                      <Button variant="ghost" asChild className={cn("shrink-0 rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}/donations` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                           <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
                       </Button>
                     )}
@@ -889,7 +890,7 @@ export default function CampaignDetailsPage() {
              {editableCampaign.category === 'Ration' ? (
                 memberCategories.length > 0 ? (
                     <Tabs value={activeTab || ''} onValueChange={handleTabChange} className="w-full">
-                        <TabsList className="w-full h-auto">
+                        <TabsList className="w-full h-auto flex-wrap">
                             {memberCategories.map(count => (
                                 <TabsTrigger key={count} value={count}>{getCategoryLabel(count)}</TabsTrigger>
                             ))}

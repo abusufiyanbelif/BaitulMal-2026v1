@@ -1,2 +1,0 @@
-src/app/leads-members/[leadId]/page.tsx(218,13): error TS2322: Type '{ content: string; colSpan: number; styles: { halign: string; fontStyle: string; }; }' is not assignable to type 'string | number'.
-src/app/leads-members/[leadId]/page.tsx(219,13): error TS2322: Type '{ content: string; styles: { halign: string; fontStyle: string; }; }' is not assignable to type 'string | number'.

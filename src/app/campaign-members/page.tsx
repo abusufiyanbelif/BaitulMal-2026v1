@@ -72,6 +72,39 @@ export default function CampaignPage() {
     return collection(firestore, 'campaigns');
   }, [firestore]);
   const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
+
+  const donationsCollectionRef = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
+  }, [firestore]);
+  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
+
+  const campaignData = useMemo(() => {
+    if (!campaigns || !donations) return [];
+
+    return campaigns.map(campaign => {
+      const campaignDonations = donations.filter(d => d.campaignId === campaign.id);
+      
+      const collected = campaignDonations.reduce((sum, donation) => {
+        const splits = donation.typeSplit && donation.typeSplit.length > 0 ? donation.typeSplit : [];
+        const applicableAmount = splits.reduce((splitSum, split) => {
+            if (campaign.allowedDonationTypes?.includes(split.category)) {
+                return splitSum + split.amount;
+            }
+            return splitSum;
+        }, 0);
+        return sum + applicableAmount;
+      }, 0);
+
+      const progress = campaign.targetAmount && campaign.targetAmount > 0 ? (collected / campaign.targetAmount) * 100 : 0;
+      
+      return {
+        ...campaign,
+        collected,
+        progress
+      };
+    });
+  }, [campaigns, donations]);
   
   const canCreate = userProfile?.role === 'Admin' || get(userProfile, 'permissions.campaigns.create', false);
   const canUpdate = userProfile?.role === 'Admin' || get(userProfile, 'permissions.campaigns.update', false);
@@ -193,8 +226,8 @@ export default function CampaignPage() {
   };
   
   const filteredAndSortedCampaigns = useMemo(() => {
-    if (!campaigns) return [];
-    let sortableItems = [...campaigns];
+    if (!campaignData) return [];
+    let sortableItems = [...campaignData];
     
     // Filtering
     if (statusFilter !== 'All') {
@@ -227,7 +260,7 @@ export default function CampaignPage() {
     });
     
     return sortableItems;
-  }, [campaigns, searchTerm, statusFilter, categoryFilter]);
+  }, [campaignData, searchTerm, statusFilter, categoryFilter]);
 
   const totalPages = Math.ceil(filteredAndSortedCampaigns.length / itemsPerPage);
   const paginatedCampaigns = useMemo(() => {
@@ -235,7 +268,7 @@ export default function CampaignPage() {
     return filteredAndSortedCampaigns.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredAndSortedCampaigns, currentPage, itemsPerPage]);
 
-  const isLoading = areCampaignsLoading || isProfileLoading || isDeleting;
+  const isLoading = areCampaignsLoading || isProfileLoading || isDeleting || areDonationsLoading;
   
   if (!isLoading && userProfile && !canViewCampaigns) {
     return (
@@ -408,6 +441,15 @@ export default function CampaignPage() {
                                 <Badge variant="outline">{campaign.authenticityStatus || 'N/A'}</Badge>
                                 <Badge variant="outline">{campaign.publicVisibility || 'N/A'}</Badge>
                             </div>
+                            {campaign.targetAmount && campaign.targetAmount > 0 && (
+                                <div className="space-y-2 pt-2">
+                                    <Progress value={campaign.progress} />
+                                    <div className="flex justify-between text-xs text-muted-foreground">
+                                        <span>₹{campaign.collected.toLocaleString('en-IN')} raised</span>
+                                        <span>Goal: ₹{campaign.targetAmount.toLocaleString('en-IN')}</span>
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                         <CardFooter>
                             <Button asChild className="w-full">

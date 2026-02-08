@@ -39,22 +39,20 @@ export default function PublicCampaignPage() {
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
 
   const campaignData = useMemo(() => {
-    if (!campaigns) return [];
+    if (!campaigns || !donations) return [];
 
     return campaigns.map(campaign => {
-      const campaignDonations = donations?.filter(d => d.campaignId === campaign.id) || [];
+      const campaignDonations = donations.filter(d => d.campaignId === campaign.id);
       
       const collected = campaignDonations.reduce((sum, donation) => {
-        if (campaign.allowedDonationTypes?.length) {
-            const applicableAmount = (donation.typeSplit || []).reduce((splitSum, split) => {
-                if (campaign.allowedDonationTypes?.includes(split.category)) {
-                    return splitSum + split.amount;
-                }
-                return splitSum;
-            }, 0);
-            return sum + applicableAmount;
-        }
-        return sum + donation.amount;
+        const splits = donation.typeSplit && donation.typeSplit.length > 0 ? donation.typeSplit : [];
+        const applicableAmount = splits.reduce((splitSum, split) => {
+            if (campaign.allowedDonationTypes?.includes(split.category)) {
+                return splitSum + split.amount;
+            }
+            return splitSum;
+        }, 0);
+        return sum + applicableAmount;
       }, 0);
 
       const progress = campaign.targetAmount && campaign.targetAmount > 0 ? (collected / campaign.targetAmount) * 100 : 0;
@@ -122,7 +120,7 @@ export default function PublicCampaignPage() {
                       <SelectItem value="General">General</SelectItem>
                   </SelectContent>
               </Select>
-          </div>
+        </div>
       </div>
 
       {isLoading && (

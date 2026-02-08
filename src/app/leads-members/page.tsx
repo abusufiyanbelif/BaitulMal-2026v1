@@ -71,8 +71,39 @@ export default function LeadPage() {
     if (!firestore) return null;
     return collection(firestore, 'leads');
   }, [firestore]);
-
   const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
+
+  const donationsCollectionRef = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
+  }, [firestore]);
+  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
+
+  const leadData = useMemo(() => {
+    if (!leads || !donations) return [];
+    return leads.map(lead => {
+        const leadDonations = donations.filter(d => d.campaignId === lead.id);
+        
+        const collected = leadDonations.reduce((sum, donation) => {
+            const splits = donation.typeSplit && donation.typeSplit.length > 0 ? donation.typeSplit : [];
+            const applicableAmount = splits.reduce((splitSum, split) => {
+                if (lead.allowedDonationTypes?.includes(split.category)) {
+                    return splitSum + split.amount;
+                }
+                return splitSum;
+            }, 0);
+            return sum + applicableAmount;
+        }, 0);
+
+        const progress = lead.targetAmount && lead.targetAmount > 0 ? (collected / lead.targetAmount) * 100 : 0;
+        
+        return {
+            ...lead,
+            collected,
+            progress
+        };
+    });
+  }, [leads, donations]);
 
   const canCreate = userProfile?.role === 'Admin' || get(userProfile, 'permissions.leads-members.create', false);
   const canUpdate = userProfile?.role === 'Admin' || get(userProfile, 'permissions.leads-members.update', false);
@@ -185,8 +216,8 @@ export default function LeadPage() {
   };
 
   const filteredAndSortedLeads = useMemo(() => {
-    if (!leads) return [];
-    let sortableItems = [...leads];
+    if (!leadData) return [];
+    let sortableItems = [...leadData];
     
     if (statusFilter !== 'All') {
         sortableItems = sortableItems.filter(c => c.status === statusFilter);
@@ -217,7 +248,7 @@ export default function LeadPage() {
     });
 
     return sortableItems;
-  }, [leads, searchTerm, statusFilter, categoryFilter]);
+  }, [leadData, searchTerm, statusFilter, categoryFilter]);
 
   const totalPages = Math.ceil(filteredAndSortedLeads.length / itemsPerPage);
   const paginatedLeads = useMemo(() => {
@@ -225,7 +256,7 @@ export default function LeadPage() {
     return filteredAndSortedLeads.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredAndSortedLeads, currentPage, itemsPerPage]);
 
-  const isLoading = areLeadsLoading || isProfileLoading || isDeleting;
+  const isLoading = areLeadsLoading || isProfileLoading || isDeleting || areDonationsLoading;
   
   if (!isLoading && userProfile && !canViewLeads) {
     return (
@@ -401,6 +432,15 @@ export default function LeadPage() {
                                 <Badge variant="outline">{lead.authenticityStatus || 'N/A'}</Badge>
                                 <Badge variant="outline">{lead.publicVisibility || 'N/A'}</Badge>
                             </div>
+                             {lead.targetAmount && lead.targetAmount > 0 && (
+                                <div className="space-y-2 pt-2">
+                                    <Progress value={lead.progress} />
+                                    <div className="flex justify-between text-xs text-muted-foreground">
+                                        <span>₹{lead.collected.toLocaleString('en-IN')} raised</span>
+                                        <span>Goal: ₹{lead.targetAmount.toLocaleString('en-IN')}</span>
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                         <CardFooter>
                             <Button asChild className="w-full">

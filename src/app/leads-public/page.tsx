@@ -40,21 +40,19 @@ export default function PublicLeadPage() {
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
   
   const leadData = useMemo(() => {
-    if (!leads) return [];
+    if (!leads || !donations) return [];
     return leads.map(lead => {
-        const leadDonations = donations?.filter(d => d.campaignId === lead.id) || [];
+        const leadDonations = donations.filter(d => d.campaignId === lead.id);
         
         const collected = leadDonations.reduce((sum, donation) => {
-            if (lead.allowedDonationTypes?.length) {
-                const applicableAmount = (donation.typeSplit || []).reduce((splitSum, split) => {
-                    if (lead.allowedDonationTypes?.includes(split.category)) {
-                        return splitSum + split.amount;
-                    }
-                    return splitSum;
-                }, 0);
-                return sum + applicableAmount;
-            }
-            return sum + donation.amount;
+            const splits = donation.typeSplit && donation.typeSplit.length > 0 ? donation.typeSplit : [];
+            const applicableAmount = splits.reduce((splitSum, split) => {
+                if (lead.allowedDonationTypes?.includes(split.category)) {
+                    return splitSum + split.amount;
+                }
+                return splitSum;
+            }, 0);
+            return sum + applicableAmount;
         }, 0);
 
         const progress = lead.targetAmount && lead.targetAmount > 0 ? (collected / lead.targetAmount) * 100 : 0;

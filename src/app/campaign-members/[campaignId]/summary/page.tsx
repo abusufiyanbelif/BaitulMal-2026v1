@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import { useFirestore, useDoc, useCollection, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
@@ -59,7 +59,7 @@ import {
 
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
-import { get } from '@/lib/utils';
+import { get, cn } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ShareDialog } from '@/components/share-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -104,6 +104,7 @@ const donationTypeChartConfig = {
 
 export default function CampaignSummaryPage() {
     const params = useParams();
+    const pathname = usePathname();
     const campaignId = params.campaignId as string;
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -525,7 +526,7 @@ Your contribution, big or small, makes a huge difference.
                     const addressLines = pdf.splitTextToSize(paymentSettings.address, pdfWidth - 30 - 40);
                     pdf.text(addressLines, 15, textY);
                 }
-
+                
                 pdf.setFontSize(8);
                 pdf.setTextColor(128, 128, 128); // a gray color
                 pdf.text(
@@ -649,22 +650,22 @@ Your contribution, big or small, makes a huge difference.
             <div className="border-b mb-4">
                 <div className="flex flex-wrap items-center gap-x-4">
                     {userProfile && canReadSummary && (
-                        <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-primary text-primary shadow-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none" data-active="true">
+                        <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2 data-[active=true]:border-primary data-[active=true]:text-primary data-[active=true]:shadow-none", pathname === `/campaign-members/${campaignId}/summary` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                             <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
                         </Button>
                     )}
                     {userProfile && canReadRation && (
-                        <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none">
+                        <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                             <Link href={`/campaign-members/${campaignId}`}>{campaign.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
                         </Button>
                     )}
                     {userProfile && canReadBeneficiaries && (
-                        <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none">
+                        <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                             <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
                         </Button>
                     )}
                     {userProfile && canReadDonations && (
-                        <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none">
+                        <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}/donations` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
                             <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
                         </Button>
                     )}
