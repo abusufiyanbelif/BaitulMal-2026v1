@@ -94,15 +94,6 @@ const donationPaymentTypeChartConfig = {
 } satisfies ChartConfig;
 
 
-const donationTypeChartConfig = {
-    Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
-    Sadqa: { label: "Sadqa", color: "hsl(var(--chart-2))" },
-    Interest: { label: "Interest", color: "hsl(var(--chart-3))" },
-    Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
-    'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-5))" },
-} satisfies ChartConfig;
-
-
 export default function CampaignSummaryPage() {
     const params = useParams();
     const pathname = usePathname();
