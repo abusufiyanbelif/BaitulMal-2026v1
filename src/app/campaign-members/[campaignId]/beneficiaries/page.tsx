@@ -101,11 +101,19 @@ export default function BeneficiariesPage() {
   const [kitAmountFilter, setKitAmountFilter] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  const [collapsedSubGroups, setCollapsedSubGroups] = useState<Record<string, boolean>>({});
 
   const toggleGroup = (groupKey: string) => {
     setCollapsedGroups(prev => ({
         ...prev,
         [groupKey]: !prev[groupKey],
+    }));
+  };
+
+  const toggleSubGroup = (subGroupKey: string) => {
+    setCollapsedSubGroups(prev => ({
+        ...prev,
+        [subGroupKey]: !prev[subGroupKey],
     }));
   };
   
@@ -604,19 +612,50 @@ export default function BeneficiariesPage() {
   }, [beneficiaries, searchTerm, statusFilter, referralFilter, kitAmountFilter, sortConfig]);
 
   const groupedBeneficiaries = useMemo(() => {
-    if (!filteredAndSortedBeneficiaries) return {};
-    return filteredAndSortedBeneficiaries.reduce((acc, beneficiary) => {
-      const groupKey = beneficiary.members || 0;
-      if (!acc[groupKey]) {
-        acc[groupKey] = [];
+    if (!filteredAndSortedBeneficiaries || !sanitizedRationLists || sanitizedRationLists.length === 0) return {};
+
+    const generalCategory = sanitizedRationLists.find(cat => cat.name === 'General Item List');
+
+    const byCategory = filteredAndSortedBeneficiaries.reduce((acc, beneficiary) => {
+      const members = beneficiary.members || 0;
+      
+      const specificCategory = sanitizedRationLists.find(
+        cat => cat.name !== 'General Item List' && members >= cat.minMembers && members <= cat.maxMembers
+      );
+      
+      const appliedCategory = specificCategory || generalCategory;
+
+      if (appliedCategory) {
+        const categoryId = appliedCategory.id;
+        if (!acc[categoryId]) {
+          acc[categoryId] = {
+            category: appliedCategory,
+            beneficiariesByMemberCount: {},
+          };
+        }
+
+        const memberCount = beneficiary.members || 0;
+        if (!acc[categoryId].beneficiariesByMemberCount[memberCount]) {
+          acc[categoryId].beneficiariesByMemberCount[memberCount] = [];
+        }
+        acc[categoryId].beneficiariesByMemberCount[memberCount].push(beneficiary);
       }
-      acc[groupKey].push(beneficiary);
+      
       return acc;
-    }, {} as Record<number, Beneficiary[]>);
-  }, [filteredAndSortedBeneficiaries]);
+    }, {} as Record<string, { category: RationCategory, beneficiariesByMemberCount: Record<number, Beneficiary[]> }>);
+
+    return byCategory;
+
+  }, [filteredAndSortedBeneficiaries, sanitizedRationLists]);
 
   const sortedGroupKeys = useMemo(() => {
-    return Object.keys(groupedBeneficiaries).map(Number).sort((a, b) => a - b);
+    return Object.keys(groupedBeneficiaries).sort((a, b) => {
+        const catA = groupedBeneficiaries[a].category;
+        const catB = groupedBeneficiaries[b].category;
+        if (catA.name === 'General Item List') return -1;
+        if (catB.name === 'General Item List') return 1;
+        return catA.minMembers - catB.minMembers;
+    });
   }, [groupedBeneficiaries]);
 
   const totalKitAmount = useMemo(() => {
@@ -917,78 +956,110 @@ export default function BeneficiariesPage() {
                                 </TableRow>
                             ))
                         ) : sortedGroupKeys.length > 0 ? (
-                            sortedGroupKeys.map((memberCount) => {
-                                const isCollapsed = collapsedGroups[String(memberCount)];
+                            sortedGroupKeys.map((categoryId) => {
+                                const group = groupedBeneficiaries[categoryId];
+                                if (!group) return null;
+                                const { category, beneficiariesByMemberCount } = group;
+                                const categoryIsCollapsed = collapsedGroups[categoryId];
+                                const totalBeneficiariesInCategory = Object.values(beneficiariesByMemberCount).reduce((sum, benList) => sum + benList.length, 0);
+
+                                const categoryName = category.name === 'General Item List'
+                                    ? category.name
+                                    : category.minMembers === category.maxMembers
+                                        ? `${category.name} ${category.minMembers}`
+                                        : `${category.name} (${category.minMembers}-${category.maxMembers})`;
+
                                 return (
-                                <React.Fragment key={`group-${memberCount}`}>
-                                    <TableRow className="bg-muted hover:bg-muted cursor-pointer" onClick={() => toggleGroup(String(memberCount))}>
-                                        <TableCell colSpan={(canUpdate || canDelete) ? 10 : 9} className="font-bold">
-                                            <div className="flex items-center gap-2">
-                                                {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                                <span>Group: {memberCount} Members ({groupedBeneficiaries[memberCount].length} beneficiaries)</span>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                    {!isCollapsed && groupedBeneficiaries[memberCount].map((beneficiary, index) => (
-                                    <TableRow key={beneficiary.id}>
-                                        {(canUpdate || canDelete) && (
-                                        <TableCell className="sticky left-0 z-10 bg-card text-center">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    {canUpdate && (
-                                                        <DropdownMenuItem onClick={() => handleEdit(beneficiary)}>
-                                                            <Edit className="mr-2 h-4 w-4" />
-                                                            Edit
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    {canDelete && (
-                                                        <DropdownMenuItem onClick={() => handleDeleteClick(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
-                                                            <Trash2 className="mr-2 h-4 w-4" />
-                                                            Delete
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                        )}
-                                        <TableCell>{index + 1}</TableCell>
-                                        <TableCell className="font-medium">{beneficiary.name}</TableCell>
-                                        <TableCell>{beneficiary.address}</TableCell>
-                                        <TableCell>{beneficiary.phone}</TableCell>
-                                        <TableCell>{beneficiary.addedDate}</TableCell>
-                                        <TableCell>
-                                            {beneficiary.isEligibleForZakat ? (
-                                                <div className="flex flex-col items-start">
-                                                    <Badge variant="success">Yes</Badge>
-                                                    {beneficiary.zakatAllocation && beneficiary.zakatAllocation > 0 && (
-                                                        <span className="text-xs text-muted-foreground mt-1">
-                                                            ₹{beneficiary.zakatAllocation.toFixed(2)}
-                                                        </span>
-                                                    )}
+                                    <React.Fragment key={categoryId}>
+                                        <TableRow className="bg-muted hover:bg-muted cursor-pointer" onClick={() => toggleGroup(categoryId)}>
+                                            <TableCell colSpan={(canUpdate || canDelete) ? 10 : 9} className="font-bold">
+                                                <div className="flex items-center gap-2">
+                                                    {categoryIsCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                                    <span>{categoryName} ({totalBeneficiariesInCategory} beneficiaries)</span>
                                                 </div>
-                                            ) : (
-                                                <Badge variant="outline">No</Badge>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>{beneficiary.referralBy}</TableCell>
-                                        <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
-                                        <TableCell>
-                                            <Badge variant={
-                                                beneficiary.status === 'Given' ? 'success' :
-                                                beneficiary.status === 'Verified' ? 'success' :
-                                                beneficiary.status === 'Pending' ? 'secondary' :
-                                                beneficiary.status === 'Hold' ? 'destructive' : 'outline'
-                                            }>{beneficiary.status}</Badge>
-                                        </TableCell>
-                                    </TableRow>
-                                    ))}
-                                </React.Fragment>
-                                )
+                                            </TableCell>
+                                        </TableRow>
+                                        
+                                        {!categoryIsCollapsed && Object.keys(beneficiariesByMemberCount).sort((a, b) => Number(a) - Number(b)).map(memberCountStr => {
+                                            const memberCount = Number(memberCountStr);
+                                            const beneficiariesInSubGroup = beneficiariesByMemberCount[memberCount];
+                                            const subGroupKey = `${categoryId}-${memberCount}`;
+                                            const subGroupIsCollapsed = collapsedSubGroups[subGroupKey];
+                                            
+                                            return (
+                                                <React.Fragment key={subGroupKey}>
+                                                    <TableRow className="bg-muted/50 hover:bg-muted/50 cursor-pointer" onClick={() => toggleSubGroup(subGroupKey)}>
+                                                        <TableCell colSpan={(canUpdate || canDelete) ? 10 : 9} className="font-medium">
+                                                            <div className="flex items-center gap-2 pl-6">
+                                                                {subGroupIsCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                                                <span>{memberCount} Members ({beneficiariesInSubGroup.length} beneficiaries)</span>
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+
+                                                    {!subGroupIsCollapsed && beneficiariesInSubGroup.map((beneficiary, index) => (
+                                                        <TableRow key={beneficiary.id} className="bg-background hover:bg-accent/50">
+                                                            {(canUpdate || canDelete) && (
+                                                            <TableCell className="sticky left-0 z-10 bg-card text-center">
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <Button variant="ghost" size="icon">
+                                                                            <MoreHorizontal className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent align="end">
+                                                                        {canUpdate && (
+                                                                            <DropdownMenuItem onClick={() => handleEdit(beneficiary)}>
+                                                                                <Edit className="mr-2 h-4 w-4" />
+                                                                                Edit
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                        {canDelete && (
+                                                                            <DropdownMenuItem onClick={() => handleDeleteClick(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
+                                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                                Delete
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                            </TableCell>
+                                                            )}
+                                                            <TableCell className="pl-12">{index + 1}</TableCell>
+                                                            <TableCell className="font-medium">{beneficiary.name}</TableCell>
+                                                            <TableCell>{beneficiary.address}</TableCell>
+                                                            <TableCell>{beneficiary.phone}</TableCell>
+                                                            <TableCell>{beneficiary.addedDate}</TableCell>
+                                                            <TableCell>
+                                                                {beneficiary.isEligibleForZakat ? (
+                                                                    <div className="flex flex-col items-start">
+                                                                        <Badge variant="success">Yes</Badge>
+                                                                        {beneficiary.zakatAllocation && beneficiary.zakatAllocation > 0 && (
+                                                                            <span className="text-xs text-muted-foreground mt-1">
+                                                                                ₹{beneficiary.zakatAllocation.toFixed(2)}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                ) : (
+                                                                    <Badge variant="outline">No</Badge>
+                                                                )}
+                                                            </TableCell>
+                                                            <TableCell>{beneficiary.referralBy}</TableCell>
+                                                            <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
+                                                            <TableCell>
+                                                                <Badge variant={
+                                                                    beneficiary.status === 'Given' ? 'success' :
+                                                                    beneficiary.status === 'Verified' ? 'success' :
+                                                                    beneficiary.status === 'Pending' ? 'secondary' :
+                                                                    beneficiary.status === 'Hold' ? 'destructive' : 'outline'
+                                                                }>{beneficiary.status}</Badge>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </React.Fragment>
+                                            );
+                                        })}
+                                    </React.Fragment>
+                                );
                             })
                         ) : (
                         <TableRow>
