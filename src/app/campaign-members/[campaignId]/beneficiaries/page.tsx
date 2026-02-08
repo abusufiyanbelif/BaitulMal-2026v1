@@ -118,6 +118,21 @@ export default function BeneficiariesPage() {
   const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.beneficiaries?.update;
   const canDelete = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.beneficiaries?.delete;
 
+    const sanitizedRationLists = useMemo(() => {
+    if (!campaign?.rationLists) return [];
+    if (Array.isArray(campaign.rationLists)) return campaign.rationLists;
+    // Hotfix for old object format
+    return [
+      {
+        id: 'general',
+        name: 'General Item List',
+        minMembers: 0,
+        maxMembers: 0,
+        items: (campaign.rationLists as any)['General Item List'] || []
+      }
+    ];
+  }, [campaign?.rationLists]);
+
   const statusCounts = useMemo(() => {
     if (!beneficiaries) {
       return {
@@ -998,7 +1013,7 @@ export default function BeneficiariesPage() {
                 beneficiary={editingBeneficiary}
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
-                rationLists={campaign?.rationLists || []}
+                rationLists={sanitizedRationLists}
             />
         </DialogContent>
       </Dialog>

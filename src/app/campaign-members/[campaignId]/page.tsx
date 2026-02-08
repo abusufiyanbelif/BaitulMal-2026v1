@@ -358,7 +358,19 @@ export default function CampaignDetailsPage() {
     };
     setIsSyncing(true);
 
-    const { rationLists } = campaign;
+    let rationLists = campaign.rationLists;
+    if (rationLists && !Array.isArray(rationLists)) {
+      rationLists = [
+        {
+          id: 'general',
+          name: 'General Item List',
+          minMembers: 0,
+          maxMembers: 0,
+          items: (rationLists as any)['General Item List'] || []
+        }
+      ];
+    }
+    
     if (!rationLists || rationLists.length === 0) {
         toast({ title: 'Sync Canceled', description: 'No ration lists found for this campaign to calculate amounts.', variant: 'destructive' });
         setIsSyncing(false);
