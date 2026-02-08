@@ -123,8 +123,37 @@ export default function CampaignDetailsPage() {
   }, [editMode, campaign])
 
   const sanitizedEditableRationLists = useMemo(() => {
-    if (!editableCampaign?.rationLists || !Array.isArray(editableCampaign.rationLists)) return [];
-    return editableCampaign.rationLists;
+    if (!editableCampaign?.rationLists) return [];
+    
+    let lists: RationCategory[];
+
+    if (Array.isArray(editableCampaign.rationLists)) {
+        lists = editableCampaign.rationLists.map(cat => {
+            // Rename "General" to "General Item List" for consistent display logic
+            if (cat.name === 'General') {
+                return { ...cat, name: 'General Item List' };
+            }
+            return cat;
+        });
+    } else {
+        // Hotfix for old object format
+        lists = [
+            {
+                id: 'general',
+                name: 'General Item List',
+                minMembers: 0,
+                maxMembers: 0,
+                items: (editableCampaign.rationLists as any)['General Item List'] || []
+            }
+        ];
+    }
+    
+    // Sort to put "General Item List" first
+    return lists.sort((a, b) => {
+        if (a.name === 'General Item List') return -1;
+        if (b.name === 'General Item List') return 1;
+        return a.name.localeCompare(b.name);
+    });
   }, [editableCampaign?.rationLists]);
   
   const masterPriceList = useMemo(() => {

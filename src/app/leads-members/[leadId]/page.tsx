@@ -94,17 +94,36 @@ export default function LeadDetailsPage() {
   
   const sanitizedEditableRationLists = useMemo(() => {
     if (!editableLead?.rationLists) return [];
-    if (Array.isArray(editableLead.rationLists)) return editableLead.rationLists;
-    // Hotfix for old object format
-    return [
-      {
-        id: 'general',
-        name: 'General Item List',
-        minMembers: 0,
-        maxMembers: 0,
-        items: (editableLead.rationLists as any)['General Item List'] || []
-      }
-    ];
+    
+    let lists: RationCategory[];
+
+    if (Array.isArray(editableLead.rationLists)) {
+        lists = editableLead.rationLists.map(cat => {
+            // Rename "General" to "General Item List" for consistent display logic
+            if (cat.name === 'General') {
+                return { ...cat, name: 'General Item List' };
+            }
+            return cat;
+        });
+    } else {
+        // Hotfix for old object format
+        lists = [
+            {
+                id: 'general',
+                name: 'General Item List',
+                minMembers: 0,
+                maxMembers: 0,
+                items: (editableLead.rationLists as any)['General Item List'] || []
+            }
+        ];
+    }
+    
+    // Sort to put "General Item List" first
+    return lists.sort((a, b) => {
+        if (a.name === 'General Item List') return -1;
+        if (b.name === 'General Item List') return 1;
+        return a.name.localeCompare(b.name);
+    });
   }, [editableLead?.rationLists]);
 
   const canReadSummary = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.leads-members.summary.read', false);
