@@ -339,14 +339,8 @@ export default function CampaignDetailsPage() {
     handleFieldChange('rationLists', newRationLists);
   };
 
-  const calculateTotal = (category: RationCategory) => {
-    const isGeneral = category.name === 'General Item List';
-    return category.items.reduce((sum, item) => {
-        const price = Number(item.price || 0);
-        const quantity = isGeneral ? 1 : (Number(item.quantity) || 0); // For general list, we sum unit prices.
-        const unitPrice = isGeneral ? price : (masterPriceList[item.name.trim().toLowerCase()]?.price || 0);
-        return sum + (unitPrice * quantity);
-    }, 0);
+  const calculateTotal = (items: RationItem[]) => {
+    return items.reduce((sum, item) => sum + Number(item.price || 0), 0);
   };
   
   const handleAddNewCategory = () => {
@@ -419,7 +413,7 @@ export default function CampaignDetailsPage() {
     const dependents = beneficiaries.filter(beneficiary => {
         const members = beneficiary.members;
         if (members === undefined || members === null) return false;
-
+        
         const specificCategory = sanitizedEditableRationLists.find(
             cat => cat.name !== 'General Item List' && members >= cat.minMembers && members <= cat.maxMembers
         );
@@ -452,7 +446,7 @@ export default function CampaignDetailsPage() {
               const targetCategory = sanitizedEditableRationLists.find(c => c.id === targetCategoryId);
               if (!targetCategory) throw new Error("Target category not found.");
               
-              const newKitAmount = calculateTotal(targetCategory);
+              const newKitAmount = calculateTotal(targetCategory.items);
               
               for (const beneficiary of dependentBeneficiaries) {
                   const beneficiaryRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
@@ -461,11 +455,13 @@ export default function CampaignDetailsPage() {
           }
 
           const newRationLists = sanitizedEditableRationLists.filter(cat => cat.id !== categoryToDelete.id);
-          batch.update(campaignDocRef!, { rationLists: newRationLists });
           
-          await batch.commit();
+          if(campaignDocRef) {
+              batch.update(campaignDocRef, { rationLists: newRationLists });
+              await batch.commit();
+              handleFieldChange('rationLists', newRationLists);
+          }
 
-          handleFieldChange('rationLists', newRationLists);
 
           toast({ title: 'Category Deleted', description: `Successfully deleted '${categoryToDelete.name}'.`, variant: 'success' });
           
@@ -618,7 +614,7 @@ export default function CampaignDetailsPage() {
   };
 
     const renderRationTable = (category: RationCategory) => {
-    const total = calculateTotal(category);
+    const total = calculateTotal(category.items);
     const isGeneralList = category.name === 'General Item List';
 
     return (
@@ -651,9 +647,9 @@ export default function CampaignDetailsPage() {
                         <TableHead className="min-w-[180px]">Item Name</TableHead>
                         <TableHead className="min-w-[100px]">Quantity</TableHead>
                         <TableHead className="min-w-[150px]">Quantity Type</TableHead>
-                        <TableHead className="min-w-[120px]">{isGeneralList ? 'Price per Unit (₹)' : 'Price (₹)'}</TableHead>
+                        <TableHead className="min-w-[120px]">Price per Unit (₹)</TableHead>
                         <TableHead className="min-w-[180px]">Notes</TableHead>
-                        {isGeneralList && <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>}
+                        <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>
                         {canUpdate && editMode && <TableHead className="w-[50px] text-center">Action</TableHead>}
                     </TableRow>
                 </TableHeader>
@@ -683,11 +679,9 @@ export default function CampaignDetailsPage() {
                             <TableCell>
                                 <Input value={item.notes || ''} onChange={e => handleItemChange(category.id, item.id, 'notes', e.target.value)} placeholder="e.g. brand, quality" disabled={!editMode || !canUpdate} />
                             </TableCell>
-                            {isGeneralList && 
-                                <TableCell className="text-right font-mono">
-                                    ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
-                                </TableCell>
-                            }
+                            <TableCell className="text-right font-mono">
+                                ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
+                            </TableCell>
                             {canUpdate && editMode && (
                                 <TableCell className="text-center">
                                     <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(category.id, item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
@@ -1122,7 +1116,12 @@ export default function CampaignDetailsPage() {
                         <SelectContent>
                             {sanitizedEditableRationLists.filter(cat => cat.id !== copyTargetCategory?.id).map(cat => (
                                 <SelectItem key={cat.id} value={cat.id}>
-                                    {cat.name}
+                                    {cat.name === 'General Item List'
+                                        ? 'General Item List'
+                                        : cat.minMembers === cat.maxMembers
+                                            ? `${cat.name} ${cat.minMembers}`
+                                            : `${cat.name} (${cat.minMembers}-${cat.maxMembers})`
+                                    }
                                 </SelectItem>
                             ))}
                         </SelectContent>

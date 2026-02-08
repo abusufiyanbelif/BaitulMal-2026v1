@@ -364,7 +364,9 @@ export default function LeadDetailsPage() {
         }
 
         const newRationLists = sanitizedEditableRationLists.filter(cat => cat.id !== categoryToDelete.id);
-        batch.update(leadDocRef!, { rationLists: newRationLists });
+        if(leadDocRef) {
+          batch.update(leadDocRef, { rationLists: newRationLists });
+        }
         
         await batch.commit();
 
@@ -743,7 +745,7 @@ export default function LeadDetailsPage() {
                                     <div key={category.id} className="flex items-center gap-1 p-1">
                                         <TabsTrigger value={category.id}>
                                             {category.name === 'General Item List'
-                                                ? 'General'
+                                                ? 'General Item List'
                                                 : category.minMembers === category.maxMembers
                                                     ? `${category.name} ${category.minMembers}`
                                                     : `${category.name} (${category.minMembers}-${category.maxMembers})`
@@ -862,7 +864,12 @@ export default function LeadDetailsPage() {
                         <SelectContent>
                             {sanitizedEditableRationLists.filter(cat => cat.id !== copyTargetCategory?.id).map(cat => (
                                 <SelectItem key={cat.id} value={cat.id}>
-                                    {cat.name}
+                                     {cat.name === 'General Item List'
+                                        ? 'General Item List'
+                                        : cat.minMembers === cat.maxMembers
+                                            ? `${cat.name} ${cat.minMembers}`
+                                            : `${cat.name} (${cat.minMembers}-${cat.maxMembers})`
+                                    }
                                 </SelectItem>
                             ))}
                         </SelectContent>
