@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, Copy, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, Copy, RefreshCw, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import {
   Dialog,
@@ -57,7 +57,7 @@ import { Separator } from '@/components/ui/separator';
 import { get, cn } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { Badge } from '@/components/ui/badge';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 
 
@@ -94,7 +94,10 @@ export default function CampaignDetailsPage() {
   
   const [isSyncing, setIsSyncing] = useState(false);
   const [isDeleteCategoryDialogOpen, setIsDeleteCategoryDialogOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<RationCategory | null>(null);
+  const [dependentBeneficiaries, setDependentBeneficiaries] = useState<Beneficiary[]>([]);
+  const [targetCategoryId, setTargetCategoryId] = useState<string | null>(null);
+  const [isDeletingCategory, setIsDeletingCategory] = useState(false);
 
   // Copy items state
   const [isCopyItemsOpen, setIsCopyItemsOpen] = useState(false);
@@ -370,20 +373,64 @@ export default function CampaignDetailsPage() {
     setIsAddCategoryOpen(false);
   };
 
-  const handleDeleteCategory = (categoryId: string) => {
-    setCategoryToDelete(categoryId);
+  const handleDeleteCategoryClick = (category: RationCategory) => {
+    if (!beneficiaries || !canUpdate || !editMode || category.name === 'General Item List') return;
+    
+    const dependents = beneficiaries.filter(b => b.members >= category.minMembers && b.members <= category.maxMembers);
+    
+    setCategoryToDelete(category);
+    setDependentBeneficiaries(dependents);
+    setTargetCategoryId(null);
     setIsDeleteCategoryDialogOpen(true);
   };
 
-  const handleDeleteCategoryConfirm = () => {
-      if (!editableCampaign || !categoryToDelete) return;
+  const handleDeleteCategoryConfirm = async () => {
+      if (!firestore || !canUpdate || !categoryToDelete || !editableCampaign) return;
 
-      const newRationLists = sanitizedEditableRationLists.filter(cat => cat.id !== categoryToDelete);
-      handleFieldChange('rationLists', newRationLists);
+      if (dependentBeneficiaries.length > 0 && !targetCategoryId) {
+          toast({ title: 'Error', description: 'Please select a category to move beneficiaries to.', variant: 'destructive'});
+          return;
+      }
 
-      toast({ title: 'Category Removed', description: `The category has been removed.` });
-      setIsDeleteCategoryDialogOpen(false);
-      setCategoryToDelete(null);
+      setIsDeletingCategory(true);
+      
+      try {
+          const batch = writeBatch(firestore);
+
+          // Step 1: Update beneficiaries if necessary
+          if (dependentBeneficiaries.length > 0 && targetCategoryId) {
+              const targetCategory = sanitizedEditableRationLists.find(c => c.id === targetCategoryId);
+              if (!targetCategory) throw new Error("Target category not found.");
+              
+              const newKitAmount = calculateTotal(targetCategory.items);
+              
+              for (const beneficiary of dependentBeneficiaries) {
+                  const beneficiaryRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
+                  batch.update(beneficiaryRef, { kitAmount: newKitAmount });
+              }
+          }
+
+          // Step 2: Update the campaign document to remove the category
+          const newRationLists = sanitizedEditableRationLists.filter(cat => cat.id !== categoryToDelete.id);
+          batch.update(campaignDocRef!, { rationLists: newRationLists });
+          
+          await batch.commit();
+
+          toast({ title: 'Category Deleted', description: `Successfully deleted '${categoryToDelete.name}'. The page will now reflect this change.`, variant: 'success' });
+          
+          // Close dialog and reset state. The useDoc hook will trigger a re-render with the latest campaign data.
+          setIsDeleteCategoryDialogOpen(false);
+          setCategoryToDelete(null);
+
+      } catch (error: any) {
+           errorEmitter.emit('permission-error', new FirestorePermissionError({
+              path: `campaigns/${campaignId}`,
+              operation: 'write',
+              requestResourceData: { note: `Batch delete category operation for ${categoryToDelete.name}` }
+          }));
+      } finally {
+          setIsDeletingCategory(false);
+      }
   };
   
   const handleSyncKitAmounts = async () => {
@@ -808,10 +855,23 @@ export default function CampaignDetailsPage() {
                         <ScrollArea>
                             <TabsList>
                                 {sanitizedEditableRationLists.map(category => (
-                                    <TabsTrigger key={category.id} value={category.id}>
-                                        {category.name}
-                                        {category.name !== 'General Item List' && ` (${category.minMembers}-${category.maxMembers} Members)`}
-                                    </TabsTrigger>
+                                     <div key={category.id} className="flex items-center gap-1 p-1">
+                                        <TabsTrigger value={category.id}>
+                                            {category.name === 'General Item List' ? 'General' : category.name}
+                                            {category.name !== 'General Item List' && ` (${category.minMembers}-${category.maxMembers} Members)`}
+                                        </TabsTrigger>
+                                        {editMode && canUpdate && category.name !== 'General Item List' && (
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className="h-6 w-6 shrink-0"
+                                                onClick={() => handleDeleteCategoryClick(category)}
+                                                disabled={isDeletingCategory}
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                                            </Button>
+                                        )}
+                                    </div>
                                 ))}
                             </TabsList>
                             <ScrollBar orientation="horizontal" />
@@ -842,19 +902,50 @@ export default function CampaignDetailsPage() {
       <AlertDialog open={isDeleteCategoryDialogOpen} onOpenChange={setIsDeleteCategoryDialogOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-                This will permanently delete this category and all of its items. This action cannot be undone.
-            </AlertDialogDescription>
+            <AlertDialogTitle>Delete Category: {categoryToDelete?.name}?</AlertDialogTitle>
+                {dependentBeneficiaries.length === 0 ? (
+                    <AlertDialogDescription>
+                        Are you sure you want to permanently delete this category and all of its items? This action cannot be undone.
+                    </AlertDialogDescription>
+                ) : (
+                    <AlertDialogDescription>
+                        <Alert variant="destructive" className="mb-4">
+                            <ShieldAlert className="h-4 w-4" />
+                            <AlertTitle>Warning: {dependentBeneficiaries.length} Beneficiaries Found</AlertTitle>
+                            <AlertDescription>
+                                These beneficiaries are linked to this category. You must move them to another category before deleting this one. Their kit amounts will be automatically recalculated.
+                            </AlertDescription>
+                        </Alert>
+                        <div className="pt-4 space-y-2">
+                             <Label htmlFor="target-category">Move Beneficiaries To</Label>
+                             <Select onValueChange={setTargetCategoryId} value={targetCategoryId || ''}>
+                                 <SelectTrigger id="target-category">
+                                     <SelectValue placeholder="Select a new category..." />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                     {sanitizedEditableRationLists.filter(cat => cat.id !== categoryToDelete?.id).map(cat => (
+                                         <SelectItem key={cat.id} value={cat.id}>
+                                             {cat.name}
+                                             {cat.name !== 'General Item List' && ` (${cat.minMembers}-${cat.maxMembers} Members)`}
+                                        </SelectItem>
+                                     ))}
+                                 </SelectContent>
+                             </Select>
+                        </div>
+                    </AlertDialogDescription>
+                )}
             </AlertDialogHeader>
             <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setCategoryToDelete(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteCategoryConfirm} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete</AlertDialogAction>
+            <AlertDialogAction 
+                onClick={handleDeleteCategoryConfirm} 
+                disabled={isDeletingCategory || (dependentBeneficiaries.length > 0 && !targetCategoryId)}
+                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                    {isDeletingCategory ? <Loader2 className="animate-spin" /> : 'Delete'}
+                </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
   );
 }
-
-    
