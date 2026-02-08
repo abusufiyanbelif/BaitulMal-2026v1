@@ -345,17 +345,17 @@ export default function CampaignDetailsPage() {
 
                 const headers = isGeneral
                     ? ['#', 'Item Name', 'Quantity', 'Quantity Type', 'Price per Unit (₹)']
-                    : ['#', 'Item Name', 'Quantity', 'Type', 'Notes', 'Total Price (₹)'];
+                    : ['#', 'Item Name', 'Quantity', 'Type', 'Total Price (₹)'];
 
                 const body = items.map((item, index) => isGeneral ? [
                     index + 1, item.name, item.quantity, item.quantityType, item.price
                 ] : [
-                    index + 1, item.name, item.quantity, item.quantityType, item.notes, item.price
+                    index + 1, item.name, item.quantity, item.quantityType, item.price
                 ]);
 
                 const totalRow = isGeneral
                     ? []
-                    : [['', '', '', '', 'Total', total]];
+                    : [['', '', '', 'Total', total]];
                 
                 const sheetData = [
                     [`Shop Name:`, shopName],
@@ -373,7 +373,7 @@ export default function CampaignDetailsPage() {
                 const ws = XLSX.utils.aoa_to_sheet(sheetData);
                 ws['!cols'] = isGeneral
                     ? [{ wch: 5 }, { wch: 25 }, { wch: 10 }, { wch: 15 }, { wch: 15 }]
-                    : [{ wch: 5 }, { wch: 25 }, { wch: 10 }, { wch: 10 }, { wch: 20 }, { wch: 15 }];
+                    : [{ wch: 5 }, { wch: 25 }, { wch: 10 }, { wch: 10 }, { wch: 15 }];
                 XLSX.utils.book_append_sheet(wb, ws, categoryTitle.slice(0, 31));
             }
         });
@@ -435,17 +435,17 @@ export default function CampaignDetailsPage() {
                 
                 const headers = isGeneral
                     ? [['#', 'Item Name', 'Quantity', 'Quantity Type', 'Price per Unit']]
-                    : [['#', 'Item Name', 'Qty', 'Type', 'Notes', 'Total Price']];
+                    : [['#', 'Item Name', 'Qty', 'Type', 'Total Price']];
 
                 const body: any[] = items.map((item, index) => isGeneral ? [
                     index + 1, item.name, item.quantity, item.quantityType || '', `₹${(item.price || 0).toFixed(2)}`
                 ] : [
-                    index + 1, item.name, item.quantity, item.quantityType || '', item.notes, `₹${(item.price || 0).toFixed(2)}`
+                    index + 1, item.name, item.quantity, item.quantityType || '', `₹${(item.price || 0).toFixed(2)}`
                 ]);
                 
                 if (!isGeneral) {
                     body.push([
-                        { content: 'Total', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold' } },
+                        { content: 'Total', colSpan: 4, styles: { halign: 'right', fontStyle: 'bold' } },
                         { content: `₹${total.toFixed(2)}`, styles: { halign: 'right', fontStyle: 'bold' } }
                     ]);
                 }
@@ -602,7 +602,6 @@ export default function CampaignDetailsPage() {
                         ) : (
                             <>
                                 <TableHead className="text-right min-w-[120px]">Price per Unit (₹)</TableHead>
-                                <TableHead className="min-w-[180px]">Notes</TableHead>
                                 <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>
                             </>
                         )}
@@ -657,9 +656,6 @@ export default function CampaignDetailsPage() {
                                     <TableCell>{item.quantityType || 'N/A'}</TableCell>
                                     <TableCell className="text-right font-mono">
                                         ₹{unitPrice.toFixed(2)}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Input value={item.notes || ''} onChange={e => handleItemChange(memberCount, item.id, 'notes', e.target.value)} placeholder="e.g. brand, quality" disabled={!editMode || !canUpdate} />
                                     </TableCell>
                                     <TableCell>
                                         <Input type="number" value={item.price || ''} className="text-right" readOnly disabled={!editMode || !canUpdate} />
@@ -898,8 +894,8 @@ export default function CampaignDetailsPage() {
           <CardContent>
              {editableCampaign.category === 'Ration' ? (
                 memberCategories.length > 0 ? (
-                    <Tabs value={activeTab || ''} onValueChange={setActiveTab} className="w-full">
-                         <TabsList className="flex h-auto flex-wrap justify-start">
+                    <Tabs value={activeTab || ''} onValueChange={handleTabChange} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-4 h-auto">
                             {memberCategories.map(count => (
                                 <TabsTrigger key={count} value={count}>{getCategoryLabel(count)}</TabsTrigger>
                             ))}
