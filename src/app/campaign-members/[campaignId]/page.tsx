@@ -103,6 +103,9 @@ export default function CampaignDetailsPage() {
   const [isCopyItemsOpen, setIsCopyItemsOpen] = useState(false);
   const [copyTargetCategory, setCopyTargetCategory] = useState<RationCategory | null>(null);
   const [copySourceCategoryId, setCopySourceCategoryId] = useState<string | null>(null);
+  
+  const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
+  const [categoryToEdit, setCategoryToEdit] = useState<RationCategory | null>(null);
 
   // Reset local state if edit mode is cancelled or if the base data changes while NOT in edit mode.
   useEffect(() => {
@@ -350,7 +353,7 @@ export default function CampaignDetailsPage() {
         toast({ title: 'Invalid Name', description: 'Category name cannot be empty.', variant: 'destructive' });
         return;
     }
-    if (isNaN(min) || isNaN(max) || min <= 0 || max <= 0 || min > max) {
+    if (isNaN(min) || isNaN(max) || min < 1 || min > max) {
         toast({ title: 'Invalid Range', description: 'Please enter valid positive numbers for min and max members, with min being less than or equal to max.', variant: 'destructive' });
         return;
     }
@@ -370,6 +373,36 @@ export default function CampaignDetailsPage() {
     setNewCategoryMin('');
     setNewCategoryMax('');
     setIsAddCategoryOpen(false);
+  };
+
+  const handleEditCategoryClick = (category: RationCategory) => {
+    if (!canUpdate || !editMode || category.name === 'General Item List') return;
+    setCategoryToEdit(JSON.parse(JSON.stringify(category))); // Deep copy
+    setIsEditCategoryOpen(true);
+  };
+
+  const handleUpdateCategory = () => {
+    if (!editableCampaign || !categoryToEdit) return;
+
+    const min = Number(categoryToEdit.minMembers);
+    const max = Number(categoryToEdit.maxMembers);
+
+    if (!categoryToEdit.name.trim()) {
+        toast({ title: 'Invalid Name', description: 'Category name cannot be empty.', variant: 'destructive' });
+        return;
+    }
+    if (isNaN(min) || isNaN(max) || min < 1 || min > max) {
+        toast({ title: 'Invalid Range', description: 'Please enter valid positive numbers for min and max members, with min being less than or equal to max.', variant: 'destructive' });
+        return;
+    }
+
+    const newRationLists = sanitizedEditableRationLists.map(cat => 
+        cat.id === categoryToEdit.id ? categoryToEdit : cat
+    );
+    handleFieldChange('rationLists', newRationLists);
+    
+    setIsEditCategoryOpen(false);
+    setCategoryToEdit(null);
   };
 
   const handleDeleteCategoryClick = (category: RationCategory) => {
@@ -898,15 +931,27 @@ export default function CampaignDetailsPage() {
                                             {category.name !== 'General Item List' && ` (${category.minMembers}-${category.maxMembers} Members)`}
                                         </TabsTrigger>
                                         {editMode && canUpdate && category.name !== 'General Item List' && (
-                                            <Button 
-                                                variant="ghost" 
-                                                size="icon" 
-                                                className="h-6 w-6 shrink-0"
-                                                onClick={() => handleDeleteCategoryClick(category)}
-                                                disabled={isDeletingCategory}
-                                            >
-                                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                                            </Button>
+                                            <div className="flex items-center">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    className="h-6 w-6 shrink-0"
+                                                    onClick={() => handleEditCategoryClick(category)}
+                                                    title="Edit category"
+                                                >
+                                                    <Edit className="h-3.5 w-3.5" />
+                                                </Button>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    className="h-6 w-6 shrink-0"
+                                                    onClick={() => handleDeleteCategoryClick(category)}
+                                                    disabled={isDeletingCategory}
+                                                    title="Delete category"
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                                                </Button>
+                                            </div>
                                         )}
                                     </div>
                                 ))}
@@ -935,6 +980,49 @@ export default function CampaignDetailsPage() {
           </CardContent>
         </Card>
       </main>
+
+      <Dialog open={isEditCategoryOpen} onOpenChange={setIsEditCategoryOpen}>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Edit Category: {categoryToEdit?.name}</DialogTitle>
+                <DialogDescription>Update the category name and member range.</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="space-y-2">
+                    <Label htmlFor="edit-cat-name">Category Name</Label>
+                    <Input
+                        id="edit-cat-name"
+                        value={categoryToEdit?.name || ''}
+                        onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, name: e.target.value} : null)}
+                    />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="edit-min-members">Min Members</Label>
+                        <Input
+                            id="edit-min-members"
+                            type="number"
+                            value={categoryToEdit?.minMembers || ''}
+                             onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, minMembers: Number(e.target.value) || 0} : null)}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="edit-max-members">Max Members</Label>
+                        <Input
+                            id="edit-max-members"
+                            type="number"
+                            value={categoryToEdit?.maxMembers || ''}
+                            onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, maxMembers: Number(e.target.value) || 0} : null)}
+                        />
+                    </div>
+                </div>
+            </div>
+            <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsEditCategoryOpen(false)}>Cancel</Button>
+                <Button type="submit" onClick={handleUpdateCategory}>Save Changes</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={isDeleteCategoryDialogOpen} onOpenChange={setIsDeleteCategoryDialogOpen}>
         <AlertDialogContent>

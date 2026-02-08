@@ -100,6 +100,9 @@ export default function LeadDetailsPage() {
   const [isCopyItemsOpen, setIsCopyItemsOpen] = useState(false);
   const [copyTargetCategory, setCopyTargetCategory] = useState<RationCategory | null>(null);
   const [copySourceCategoryId, setCopySourceCategoryId] = useState<string | null>(null);
+  
+  const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
+  const [categoryToEdit, setCategoryToEdit] = useState<RationCategory | null>(null);
 
   // Reset local state if edit mode is cancelled or if the base data changes while NOT in edit mode.
   useEffect(() => {
@@ -249,7 +252,7 @@ export default function LeadDetailsPage() {
       // editableLead will be reset by the useEffect
   };
 
-    const handleAddNewCategory = () => {
+  const handleAddNewCategory = () => {
     if (!editableLead) return;
 
     const min = Number(newCategoryMin);
@@ -259,7 +262,7 @@ export default function LeadDetailsPage() {
         toast({ title: 'Invalid Name', description: 'Category name cannot be empty.', variant: 'destructive' });
         return;
     }
-    if (isNaN(min) || isNaN(max) || min <= 0 || max <= 0 || min > max) {
+    if (isNaN(min) || isNaN(max) || min < 1 || min > max) {
         toast({ title: 'Invalid Range', description: 'Please enter valid positive numbers for min and max members, with min being less than or equal to max.', variant: 'destructive' });
         return;
     }
@@ -281,61 +284,91 @@ export default function LeadDetailsPage() {
     setIsAddCategoryOpen(false);
   };
   
-    const handleDeleteCategoryClick = (category: RationCategory) => {
-        if (!beneficiaries || !canUpdate || !editMode || category.name === 'General Item List') return;
-        
-        const dependents = beneficiaries.filter(b => b.members >= category.minMembers && b.members <= category.maxMembers);
-        
-        setCategoryToDelete(category);
-        setDependentBeneficiaries(dependents);
-        setTargetCategoryId(null);
-        setIsDeleteCategoryDialogOpen(true);
-    };
+  const handleEditCategoryClick = (category: RationCategory) => {
+    if (!canUpdate || !editMode || category.name === 'General Item List') return;
+    setCategoryToEdit(JSON.parse(JSON.stringify(category))); // Deep copy
+    setIsEditCategoryOpen(true);
+  };
 
-    const handleDeleteCategoryConfirm = async () => {
-      if (!firestore || !canUpdate || !categoryToDelete || !editableLead) return;
+  const handleUpdateCategory = () => {
+    if (!editableLead || !categoryToEdit) return;
 
-      if (dependentBeneficiaries.length > 0 && !targetCategoryId) {
-          toast({ title: 'Error', description: 'Please select a category to move beneficiaries to.', variant: 'destructive'});
-          return;
-      }
+    const min = Number(categoryToEdit.minMembers);
+    const max = Number(categoryToEdit.maxMembers);
 
-      setIsDeletingCategory(true);
+    if (!categoryToEdit.name.trim()) {
+        toast({ title: 'Invalid Name', description: 'Category name cannot be empty.', variant: 'destructive' });
+        return;
+    }
+    if (isNaN(min) || isNaN(max) || min < 1 || min > max) {
+        toast({ title: 'Invalid Range', description: 'Please enter valid positive numbers for min and max members, with min being less than or equal to max.', variant: 'destructive' });
+        return;
+    }
+
+    const newRationLists = sanitizedEditableRationLists.map(cat => 
+        cat.id === categoryToEdit.id ? categoryToEdit : cat
+    );
+    handleFieldChange('rationLists', newRationLists);
+    
+    setIsEditCategoryOpen(false);
+    setCategoryToEdit(null);
+  };
+
+  const handleDeleteCategoryClick = (category: RationCategory) => {
+      if (!beneficiaries || !canUpdate || !editMode || category.name === 'General Item List') return;
       
-      try {
-          const batch = writeBatch(firestore);
+      const dependents = beneficiaries.filter(b => b.members >= category.minMembers && b.members <= category.maxMembers);
+      
+      setCategoryToDelete(category);
+      setDependentBeneficiaries(dependents);
+      setTargetCategoryId(null);
+      setIsDeleteCategoryDialogOpen(true);
+  };
 
-          if (dependentBeneficiaries.length > 0 && targetCategoryId) {
-              const targetCategory = sanitizedEditableRationLists.find(c => c.id === targetCategoryId);
-              if (!targetCategory) throw new Error("Target category not found.");
-              
-              const newKitAmount = calculateTotal(targetCategory.items);
-              
-              for (const beneficiary of dependentBeneficiaries) {
-                  const beneficiaryRef = doc(firestore, `leads/${leadId}/beneficiaries`, beneficiary.id);
-                  batch.update(beneficiaryRef, { kitAmount: newKitAmount });
-              }
-          }
+  const handleDeleteCategoryConfirm = async () => {
+    if (!firestore || !canUpdate || !categoryToDelete || !editableLead) return;
 
-          const newRationLists = sanitizedEditableRationLists.filter(cat => cat.id !== categoryToDelete.id);
-          batch.update(leadDocRef!, { rationLists: newRationLists });
-          
-          await batch.commit();
+    if (dependentBeneficiaries.length > 0 && !targetCategoryId) {
+        toast({ title: 'Error', description: 'Please select a category to move beneficiaries to.', variant: 'destructive'});
+        return;
+    }
 
-          toast({ title: 'Category Deleted', description: `Successfully deleted '${categoryToDelete.name}'.`, variant: 'success' });
-          
-          setIsDeleteCategoryDialogOpen(false);
-          setCategoryToDelete(null);
+    setIsDeletingCategory(true);
+    
+    try {
+        const batch = writeBatch(firestore);
 
-      } catch (error: any) {
-           errorEmitter.emit('permission-error', new FirestorePermissionError({
-              path: `leads/${leadId}`,
-              operation: 'write',
-              requestResourceData: { note: `Batch delete category operation for ${categoryToDelete.name}` }
-          }));
-      } finally {
-          setIsDeletingCategory(false);
-      }
+        if (dependentBeneficiaries.length > 0 && targetCategoryId) {
+            const targetCategory = sanitizedEditableRationLists.find(c => c.id === targetCategoryId);
+            if (!targetCategory) throw new Error("Target category not found.");
+            
+            const newKitAmount = calculateTotal(targetCategory.items);
+            
+            for (const beneficiary of dependentBeneficiaries) {
+                const beneficiaryRef = doc(firestore, `leads/${leadId}/beneficiaries`, beneficiary.id);
+                batch.update(beneficiaryRef, { kitAmount: newKitAmount });
+            }
+        }
+
+        const newRationLists = sanitizedEditableRationLists.filter(cat => cat.id !== categoryToDelete.id);
+        batch.update(leadDocRef!, { rationLists: newRationLists });
+        
+        await batch.commit();
+
+        toast({ title: 'Category Deleted', description: `Successfully deleted '${categoryToDelete.name}'.`, variant: 'success' });
+        
+        setIsDeleteCategoryDialogOpen(false);
+        setCategoryToDelete(null);
+
+    } catch (error: any) {
+         errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: `leads/${leadId}`,
+            operation: 'write',
+            requestResourceData: { note: `Batch delete category operation for ${categoryToDelete.name}` }
+        }));
+    } finally {
+        setIsDeletingCategory(false);
+    }
   };
 
   const handleCopyItemsClick = (category: RationCategory) => {
@@ -698,15 +731,27 @@ export default function LeadDetailsPage() {
                                             {category.name !== 'General Item List' && ` (${category.minMembers}-${category.maxMembers} Members)`}
                                         </TabsTrigger>
                                         {editMode && canUpdate && category.name !== 'General Item List' && (
-                                            <Button 
-                                                variant="ghost" 
-                                                size="icon" 
-                                                className="h-6 w-6 shrink-0"
-                                                onClick={() => handleDeleteCategoryClick(category)}
-                                                disabled={isDeletingCategory}
-                                            >
-                                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                                            </Button>
+                                            <div className="flex items-center">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    className="h-6 w-6 shrink-0"
+                                                    onClick={() => handleEditCategoryClick(category)}
+                                                    title="Edit category"
+                                                >
+                                                    <Edit className="h-3.5 w-3.5" />
+                                                </Button>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    className="h-6 w-6 shrink-0"
+                                                    onClick={() => handleDeleteCategoryClick(category)}
+                                                    disabled={isDeletingCategory}
+                                                    title="Delete category"
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                                                </Button>
+                                            </div>
                                         )}
                                     </div>
                                 ))}
@@ -809,6 +854,49 @@ export default function LeadDetailsPage() {
                     <Button onClick={handleCopyItemsConfirm} disabled={!copySourceCategoryId}>
                         <Copy className="mr-2 h-4 w-4" /> Copy Items
                     </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+        
+        <Dialog open={isEditCategoryOpen} onOpenChange={setIsEditCategoryOpen}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Edit Category: {categoryToEdit?.name}</DialogTitle>
+                    <DialogDescription>Update the category name and member range.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="edit-cat-name-lead">Category Name</Label>
+                        <Input
+                            id="edit-cat-name-lead"
+                            value={categoryToEdit?.name || ''}
+                            onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, name: e.target.value} : null)}
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-min-members-lead">Min Members</Label>
+                            <Input
+                                id="edit-min-members-lead"
+                                type="number"
+                                value={categoryToEdit?.minMembers || ''}
+                                onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, minMembers: Number(e.target.value) || 0} : null)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-max-members-lead">Max Members</Label>
+                            <Input
+                                id="edit-max-members-lead"
+                                type="number"
+                                value={categoryToEdit?.maxMembers || ''}
+                                onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, maxMembers: Number(e.target.value) || 0} : null)}
+                            />
+                        </div>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => setIsEditCategoryOpen(false)}>Cancel</Button>
+                    <Button type="submit" onClick={handleUpdateCategory}>Save Changes</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
