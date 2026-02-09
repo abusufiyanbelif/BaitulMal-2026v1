@@ -37,23 +37,26 @@ function Watermark() {
 
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const noHeaderFooterRoutes = ['/login'];
-  const showLayout = !noHeaderFooterRoutes.includes(pathname);
+  const isLoginPage = pathname === '/login';
 
   return (
     <FirebaseClientProvider>
       <AuthProvider>
         <FirebaseContentWrapper>
-          <div className="relative">
-            <div className="relative z-10 flex min-h-screen flex-col">
-              {showLayout && <DocuExtractHeader />}
-              <main className="flex-grow animate-slide-in-from-bottom" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
-                {children}
-              </main>
-              {showLayout && <AppFooter />}
+          {isLoginPage ? (
+            <main className="flex min-h-screen flex-col">{children}</main>
+          ) : (
+            <div className="relative">
+              <div className="relative z-10 flex min-h-screen flex-col">
+                <DocuExtractHeader />
+                <main className="flex-grow animate-slide-in-from-bottom" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
+                  {children}
+                </main>
+                <AppFooter />
+              </div>
+              <Watermark />
             </div>
-            {showLayout && <Watermark />}
-          </div>
+          )}
           <Toaster />
         </FirebaseContentWrapper>
       </AuthProvider>
