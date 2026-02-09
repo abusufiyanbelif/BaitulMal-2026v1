@@ -129,122 +129,132 @@ export default function LoginPage() {
   const authUrl = `https://console.firebase.google.com/project/${firebaseProjectId}/authentication/sign-in-method`;
 
   return (
-    <div className="flex items-center justify-center p-4">
-      <div className="w-full max-w-sm animate-fade-in-zoom" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
-            <Card>
-                <CardHeader className="text-center">
-                    <div className="flex justify-center items-center gap-3 mb-4">
-                        <h1 className="text-3xl font-bold font-headline text-foreground">
-                        Baitulmal Samajik Sanstha Solapur
-                        </h1>
-                    </div>
-                <CardTitle>Welcome Back!</CardTitle>
-                <CardDescription>Enter your credentials to access your account.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                        control={form.control}
-                        name="loginId"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Login ID or Phone Number</FormLabel>
-                            <FormControl>
-                            <Input 
-                                placeholder="e.g. your_login_id or 0000000000" 
-                                {...field}
-                            />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                            <Input 
-                                type="password" 
-                                placeholder="••••••••" 
-                                {...field} 
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Sign In
-                    </Button>
-                    </form>
-                </Form>
-                </CardContent>
-                <CardFooter className="justify-center pt-4">
-                    <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant="link" className="p-0 h-auto text-sm font-normal">Forgot Password?</Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
-                            <DialogHeader>
-                                <DialogTitle>Reset Password</DialogTitle>
-                                <DialogDescription>
-                                    Enter your email address and we'll send you a link to reset your password.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div className="py-4 space-y-2">
-                                <Label htmlFor="reset-email">Email Address</Label>
-                                <Input
-                                    id="reset-email"
-                                    type="email"
-                                    placeholder="user@example.com"
-                                    value={resetEmail}
-                                    onChange={(e) => setResetEmail(e.target.value)}
-                                    disabled={isSendingReset}
-                                />
-                            </div>
-                            <DialogFooter>
-                                <Button type="button" variant="outline" onClick={() => setIsResetDialogOpen(false)} disabled={isSendingReset}>Cancel</Button>
-                                <Button type="submit" onClick={handlePasswordReset} disabled={isSendingReset}>
-                                    {isSendingReset && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Send Reset Link
-                                </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-                </CardFooter>
-            </Card>
-            
-            {loginError && (
-                <Alert variant="destructive" className="mt-4">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Login Failed</AlertTitle>
-                    <AlertDescription>
-                        {loginError}
-                    </AlertDescription>
-                </Alert>
-            )}
-
-            {setupError && (
-                <Alert variant="destructive" className="mt-4">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Action Required: Enable Sign-In Method</AlertTitle>
-                    <AlertDescription className="space-y-3">
-                        <p>For the one-time initial setup, you must enable the 'Email/Password' provider in your Firebase project. This allows the app to create the first admin user.</p>
-                        <Button asChild variant="secondary" size="sm" className="mt-3 w-full">
-                            <Link href={authUrl} target="_blank">
-                                Go to Firebase Console to Enable
-                                <ExternalLink className="ml-2 h-4 w-4" />
-                            </Link>
-                        </Button>
-                    </AlertDescription>
-                </Alert>
-            )}
+    <div className="container mx-auto p-4 md:p-8">
+        <div className="mb-4">
+            <Button variant="outline" asChild>
+                <Link href="/">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Home
+                </Link>
+            </Button>
         </div>
+        <div className="flex items-center justify-center p-4">
+        <div className="w-full max-w-sm animate-fade-in-zoom" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
+              <Card>
+                  <CardHeader className="text-center">
+                      <div className="flex justify-center items-center gap-3 mb-4">
+                          <h1 className="text-3xl font-bold font-headline text-foreground">
+                          Baitulmal Samajik Sanstha Solapur
+                          </h1>
+                      </div>
+                  <CardTitle>Welcome Back!</CardTitle>
+                  <CardDescription>Enter your credentials to access your account.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                  <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <FormField
+                          control={form.control}
+                          name="loginId"
+                          render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Login ID or Phone Number</FormLabel>
+                              <FormControl>
+                              <Input 
+                                  placeholder="e.g. your_login_id or 0000000000" 
+                                  {...field}
+                              />
+                              </FormControl>
+                              <FormMessage />
+                          </FormItem>
+                          )}
+                      />
+                      <FormField
+                          control={form.control}
+                          name="password"
+                          render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Password</FormLabel>
+                              <FormControl>
+                              <Input 
+                                  type="password" 
+                                  placeholder="••••••••" 
+                                  {...field} 
+                                  />
+                              </FormControl>
+                              <FormMessage />
+                          </FormItem>
+                          )}
+                      />
+                      <Button type="submit" className="w-full" disabled={isLoading}>
+                          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          Sign In
+                      </Button>
+                      </form>
+                  </Form>
+                  </CardContent>
+                  <CardFooter className="justify-center pt-4">
+                      <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+                          <DialogTrigger asChild>
+                              <Button variant="link" className="p-0 h-auto text-sm font-normal">Forgot Password?</Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[425px]">
+                              <DialogHeader>
+                                  <DialogTitle>Reset Password</DialogTitle>
+                                  <DialogDescription>
+                                      Enter your email address and we'll send you a link to reset your password.
+                                  </DialogDescription>
+                              </DialogHeader>
+                              <div className="py-4 space-y-2">
+                                  <Label htmlFor="reset-email">Email Address</Label>
+                                  <Input
+                                      id="reset-email"
+                                      type="email"
+                                      placeholder="user@example.com"
+                                      value={resetEmail}
+                                      onChange={(e) => setResetEmail(e.target.value)}
+                                      disabled={isSendingReset}
+                                  />
+                              </div>
+                              <DialogFooter>
+                                  <Button type="button" variant="outline" onClick={() => setIsResetDialogOpen(false)} disabled={isSendingReset}>Cancel</Button>
+                                  <Button type="submit" onClick={handlePasswordReset} disabled={isSendingReset}>
+                                      {isSendingReset && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                      Send Reset Link
+                                  </Button>
+                              </DialogFooter>
+                          </DialogContent>
+                      </Dialog>
+                  </CardFooter>
+              </Card>
+              
+              {loginError && (
+                  <Alert variant="destructive" className="mt-4">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>Login Failed</AlertTitle>
+                      <AlertDescription>
+                          {loginError}
+                      </AlertDescription>
+                  </Alert>
+              )}
+
+              {setupError && (
+                  <Alert variant="destructive" className="mt-4">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>Action Required: Enable Sign-In Method</AlertTitle>
+                      <AlertDescription className="space-y-3">
+                          <p>For the one-time initial setup, you must enable the 'Email/Password' provider in your Firebase project. This allows the app to create the first admin user.</p>
+                          <Button asChild variant="secondary" size="sm" className="mt-3 w-full">
+                              <Link href={authUrl} target="_blank">
+                                  Go to Firebase Console to Enable
+                                  <ExternalLink className="ml-2 h-4 w-4" />
+                              </Link>
+                          </Button>
+                      </AlertDescription>
+                  </Alert>
+              )}
+          </div>
+      </div>
     </div>
   );
 }

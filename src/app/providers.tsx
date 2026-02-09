@@ -37,28 +37,21 @@ function Watermark() {
 
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const isLoginPage = pathname === '/login';
-
+  
   return (
     <FirebaseClientProvider>
       <AuthProvider>
         <FirebaseContentWrapper>
-          {isLoginPage ? (
-            <main className="flex min-h-screen flex-col justify-center">
-                {children}
-            </main>
-          ) : (
-            <div className="relative">
-                <div className="relative z-10 flex min-h-screen flex-col">
-                    <DocuExtractHeader />
-                    <main className="flex-grow animate-slide-in-from-bottom" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
-                        {children}
-                    </main>
-                    <AppFooter />
-                </div>
-                <Watermark />
-            </div>
-          )}
+          <div className="relative">
+              <div className="relative z-10 flex min-h-screen flex-col">
+                  <DocuExtractHeader />
+                  <main className="flex-grow animate-slide-in-from-bottom" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
+                      {children}
+                  </main>
+                  <AppFooter />
+              </div>
+              <Watermark />
+          </div>
           <Toaster />
         </FirebaseContentWrapper>
       </AuthProvider>
