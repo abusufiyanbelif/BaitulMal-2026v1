@@ -1,1 +1,0 @@
-src/app/leads-members/[leadId]/page.tsx(108,42): error TS7006: Parameter 'item' implicitly has an 'any' type.

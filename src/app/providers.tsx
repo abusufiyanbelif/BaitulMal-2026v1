@@ -23,7 +23,7 @@ function Watermark() {
     const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
 
     return (
-        <div className="fixed inset-0 z-[-1] flex items-center justify-center pointer-events-none opacity-[0.05]">
+        <div className="fixed inset-0 flex items-center justify-center pointer-events-none opacity-[0.05]">
             {validLogoUrl ? (
                 <img
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
@@ -47,8 +47,7 @@ function MainLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="app-root relative">
-      <Watermark />
-      <div className="relative z-10">
+      <div className="relative">
         {showLayout ? (
           <div className="relative flex flex-col min-h-screen">
             <DocuExtractHeader />
@@ -61,6 +60,7 @@ function MainLayout({ children }: { children: ReactNode }) {
           children
         )}
       </div>
+      <Watermark />
     </div>
   );
 }
