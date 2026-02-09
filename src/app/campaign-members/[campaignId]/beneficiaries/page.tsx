@@ -564,6 +564,9 @@ export default function BeneficiariesPage() {
             if (typeof aValue === 'number' && typeof bValue === 'number') {
                 return sortConfig.direction === 'ascending' ? aValue - bValue : bValue - aValue;
             }
+            if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
+                 return sortConfig.direction === 'ascending' ? (aValue === bValue ? 0 : aValue ? -1 : 1) : (aValue === bValue ? 0 : aValue ? 1 : -1);
+            }
             if (typeof aValue === 'string' && typeof bValue === 'string') {
                  if (aValue < bValue) {
                     return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -901,6 +904,7 @@ export default function BeneficiariesPage() {
                             <SortableHeader sortKey="srNo" className="w-[120px]">#</SortableHeader>
                             <SortableHeader sortKey="name">Name & Phone</SortableHeader>
                             <SortableHeader sortKey="status">Status</SortableHeader>
+                            <SortableHeader sortKey="isEligibleForZakat">Zakat</SortableHeader>
                             <SortableHeader sortKey="kitAmount" className="text-right">Kit Amount (₹)</SortableHeader>
                             <SortableHeader sortKey="referralBy">Referred By</SortableHeader>
                             {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right">Actions</TableHead>}
@@ -912,6 +916,7 @@ export default function BeneficiariesPage() {
                                 <TableRow key={`skeleton-${i}`}>
                                     <TableCell><Skeleton className="h-6 w-12" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-32" /></TableCell>
+                                    <TableCell><Skeleton className="h-7 w-20" /></TableCell>
                                     <TableCell><Skeleton className="h-7 w-20" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
@@ -938,7 +943,7 @@ export default function BeneficiariesPage() {
                                 return (
                                     <React.Fragment key={categoryId}>
                                         <TableRow className="bg-muted hover:bg-muted cursor-pointer" onClick={() => toggleGroup(categoryId)}>
-                                            <TableCell colSpan={(canUpdate || canDelete) ? 6 : 5} className="font-bold">
+                                            <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="font-bold">
                                                 <div className="flex items-center gap-2">
                                                     {categoryIsCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                                     <span>{categoryName} ({totalBeneficiariesInCategory} beneficiaries)</span>
@@ -955,7 +960,7 @@ export default function BeneficiariesPage() {
                                             return (
                                                 <React.Fragment key={subGroupKey}>
                                                     <TableRow className="bg-muted/50 hover:bg-muted/50 cursor-pointer" onClick={(e) => { e.stopPropagation(); toggleSubGroup(subGroupKey);}}>
-                                                        <TableCell colSpan={(canUpdate || canDelete) ? 6 : 5} className="font-medium">
+                                                        <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="font-medium">
                                                             <div className="flex items-center gap-2 pl-6">
                                                                 {subGroupIsCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                                                 <span>{memberCount} Members ({beneficiariesInSubGroup.length} beneficiaries)</span>
@@ -979,7 +984,7 @@ export default function BeneficiariesPage() {
                             })
                         ) : (
                         <TableRow>
-                            <TableCell colSpan={(canUpdate || canDelete) ? 6 : 5} className="text-center h-24 text-muted-foreground">
+                            <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="text-center h-24 text-muted-foreground">
                                 No beneficiaries found matching your criteria.
                             </TableCell>
                         </TableRow>
@@ -1098,6 +1103,9 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                         beneficiary.status === 'Hold' ? 'destructive' : 'outline'
                     }>{beneficiary.status}</Badge>
                 </TableCell>
+                <TableCell>
+                    <Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'}>{beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}</Badge>
+                </TableCell>
                 <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
                 <TableCell>{beneficiary.referralBy}</TableCell>
 
@@ -1118,22 +1126,15 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
             </TableRow>
             {isOpen && (
                  <TableRow className="bg-muted/20 hover:bg-muted/30">
-                    <TableCell colSpan={(canUpdate || canDelete) ? 6 : 5} className="p-0">
+                    <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="p-0">
                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-6 p-4">
                             <DetailItem label="Address" value={beneficiary.address} />
                             <DetailItem label="Family" value={`Total: ${beneficiary.members}, Earning: ${beneficiary.earningMembers}, M: ${beneficiary.male}, F: ${beneficiary.female}`} />
                             <DetailItem label="ID Proof" value={`${beneficiary.idProofType || 'N/A'} - ${beneficiary.idNumber || 'N/A'}`} />
                             <DetailItem label="Date Added" value={beneficiary.addedDate} />
-                             <DetailItem label="Zakat" value={
-                                <div className="flex items-center gap-2">
-                                    <Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'}>{beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}</Badge>
-                                    {beneficiary.isEligibleForZakat && beneficiary.zakatAllocation && (
-                                        <span className="text-sm font-medium">
-                                            (₹{beneficiary.zakatAllocation.toFixed(2)})
-                                        </span>
-                                    )}
-                                </div>
-                            } />
+                             {beneficiary.isEligibleForZakat && (
+                                <DetailItem label="Zakat Allocation" value={`₹${(beneficiary.zakatAllocation || 0).toFixed(2)}`} />
+                             )}
                             {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-4"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
                         </div>
                     </TableCell>
@@ -1142,3 +1143,4 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
         </>
     );
 }
+

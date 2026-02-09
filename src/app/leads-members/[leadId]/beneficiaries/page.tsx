@@ -205,6 +205,8 @@ export default function BeneficiariesPage() {
         kitAmount: beneficiaryData.kitAmount,
         status: 'Pending',
         notes: beneficiaryData.notes,
+        isEligibleForZakat: beneficiaryData.isEligibleForZakat,
+        zakatAllocation: beneficiaryData.zakatAllocation,
     };
     handleFormSubmit(dataToSubmit);
   };
@@ -241,6 +243,9 @@ export default function BeneficiariesPage() {
             
             if (typeof aValue === 'number' && typeof bValue === 'number') {
                 return sortConfig.direction === 'ascending' ? aValue - bValue : bValue - aValue;
+            }
+            if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
+                 return sortConfig.direction === 'ascending' ? (aValue === bValue ? 0 : aValue ? -1 : 1) : (aValue === bValue ? 0 : aValue ? 1 : -1);
             }
             if (typeof aValue === 'string' && typeof bValue === 'string') {
                  if (aValue < bValue) {
@@ -383,6 +388,7 @@ export default function BeneficiariesPage() {
                             <SortableHeader sortKey="srNo" className="w-[80px]">#</SortableHeader>
                             <SortableHeader sortKey="name">Name & Phone</SortableHeader>
                             <SortableHeader sortKey="status">Status</SortableHeader>
+                            <SortableHeader sortKey="isEligibleForZakat">Zakat</SortableHeader>
                             <SortableHeader sortKey="kitAmount" className="text-right">Kit Amount (₹)</SortableHeader>
                             <SortableHeader sortKey="referralBy">Referred By</SortableHeader>
                             {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right">Actions</TableHead>}
@@ -394,7 +400,8 @@ export default function BeneficiariesPage() {
                                 <TableRow key={`skeleton-${i}`}>
                                     <TableCell><Skeleton className="h-6 w-8" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-32" /></TableCell>
-                                    <TableCell><Skeleton className="h-7 w-20 rounded-full" /></TableCell>
+                                    <TableCell><Skeleton className="h-7 w-20" /></TableCell>
+                                    <TableCell><Skeleton className="h-7 w-20" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     {(canUpdate || canDelete) && <TableCell className="text-right"><Skeleton className="h-6 w-12 ml-auto" /></TableCell>}
@@ -414,7 +421,7 @@ export default function BeneficiariesPage() {
                             ))
                         ) : (
                         <TableRow>
-                            <TableCell colSpan={(canUpdate || canDelete) ? 6 : 5} className="text-center h-24 text-muted-foreground">
+                            <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="text-center h-24 text-muted-foreground">
                                 No beneficiaries found for this lead.
                             </TableCell>
                         </TableRow>
@@ -427,7 +434,7 @@ export default function BeneficiariesPage() {
       </main>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-[625px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
                 <DialogTitle>{editingBeneficiary ? 'Edit' : 'Add'} Beneficiary</DialogTitle>
             </DialogHeader>
@@ -511,6 +518,9 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                         beneficiary.status === 'Hold' ? 'destructive' : 'outline'
                     }>{beneficiary.status}</Badge>
                 </TableCell>
+                <TableCell>
+                    <Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'}>{beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}</Badge>
+                </TableCell>
                 <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
                 <TableCell>{beneficiary.referralBy}</TableCell>
                 {(canUpdate || canDelete) && (
@@ -529,22 +539,15 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
             </TableRow>
             {isOpen && (
                  <TableRow className="bg-muted/20 hover:bg-muted/30">
-                    <TableCell colSpan={(canUpdate || canDelete) ? 6 : 5} className="p-0">
+                    <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="p-0">
                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-6 p-4">
                             <DetailItem label="Address" value={beneficiary.address} />
                             <DetailItem label="Family" value={`Total: ${beneficiary.members}, Earning: ${beneficiary.earningMembers}, M: ${beneficiary.male}, F: ${beneficiary.female}`} />
                             <DetailItem label="ID Proof" value={`${beneficiary.idProofType || 'N/A'} - ${beneficiary.idNumber || 'N/A'}`} />
                             <DetailItem label="Date Added" value={beneficiary.addedDate} />
-                             <DetailItem label="Zakat" value={
-                                <div className="flex items-center gap-2">
-                                    <Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'}>{beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}</Badge>
-                                    {beneficiary.isEligibleForZakat && beneficiary.zakatAllocation && (
-                                        <span className="text-sm font-medium">
-                                            (₹{beneficiary.zakatAllocation.toFixed(2)})
-                                        </span>
-                                    )}
-                                </div>
-                            } />
+                             {beneficiary.isEligibleForZakat && beneficiary.zakatAllocation != null && (
+                                <DetailItem label="Zakat Allocation" value={`₹${(beneficiary.zakatAllocation || 0).toFixed(2)}`} />
+                             )}
                             {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-4"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
                         </div>
                     </TableCell>
@@ -553,3 +556,4 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
         </>
     );
 };
+
