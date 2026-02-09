@@ -450,27 +450,41 @@ export default function CampaignDetailsPage() {
       
       try {
           const batch = writeBatch(firestore);
+          const targetCategory = sanitizedEditableRationLists.find(c => c.id === targetCategoryId);
+          const newKitAmountForDependents = (dependentBeneficiaries.length > 0 && targetCategory)
+            ? calculateTotal(targetCategory.items, false)
+            : 0;
 
           if (dependentBeneficiaries.length > 0 && targetCategoryId) {
-              const targetCategory = sanitizedEditableRationLists.find(c => c.id === targetCategoryId);
               if (!targetCategory) throw new Error("Target category not found.");
-              
-              const newKitAmount = calculateTotal(targetCategory.items, false);
               
               for (const beneficiary of dependentBeneficiaries) {
                   const beneficiaryRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
-                  batch.update(beneficiaryRef, { kitAmount: newKitAmount });
+                  batch.update(beneficiaryRef, { kitAmount: newKitAmountForDependents });
               }
           }
 
           const newRationLists = sanitizedEditableRationLists.filter(cat => cat.id !== categoryToDelete.id);
           
-          if(campaignDocRef) {
-              batch.update(campaignDocRef, { rationLists: newRationLists });
-              await batch.commit();
-              handleFieldChange('rationLists', newRationLists);
+          let newTotalRequiredAmount = 0;
+          if (beneficiaries) {
+              const dependentIds = new Set(dependentBeneficiaries.map(b => b.id));
+              newTotalRequiredAmount = beneficiaries.reduce((sum, beneficiary) => {
+                  if (dependentIds.has(beneficiary.id)) {
+                      return sum + newKitAmountForDependents;
+                  }
+                  return sum + (beneficiary.kitAmount || 0);
+              }, 0);
           }
-
+          
+          if(campaignDocRef) {
+              batch.update(campaignDocRef, { 
+                rationLists: newRationLists,
+                targetAmount: newTotalRequiredAmount
+              });
+          }
+        
+          await batch.commit();
 
           toast({ title: 'Category Deleted', description: `Successfully deleted '${categoryToDelete.name}'.`, variant: 'success' });
           
