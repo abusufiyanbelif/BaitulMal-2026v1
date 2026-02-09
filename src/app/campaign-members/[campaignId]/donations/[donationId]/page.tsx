@@ -256,7 +256,7 @@ export default function DonationDetailsPage() {
                 </Alert>
             )}
             
-            <div ref={summaryRef} className="space-y-6 p-4 bg-background animate-fade-in-zoom">
+            <div ref={summaryRef} className="space-y-6 p-4 bg-background">
                 <div className="grid gap-6 lg:grid-cols-2">
                     <Card>
                         <CardHeader><CardTitle>Donation Summary</CardTitle></CardHeader>

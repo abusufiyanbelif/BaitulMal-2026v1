@@ -540,7 +540,7 @@ Your contribution, big or small, makes a huge difference.
                 </ScrollArea>
             </div>
 
-            <div className="space-y-6 p-4 bg-background animate-fade-in-zoom" ref={summaryRef}>
+            <div className="space-y-6 p-4 bg-background" ref={summaryRef}>
                 <Card>
                     <CardHeader>
                         <CardTitle>Campaign Details</CardTitle>

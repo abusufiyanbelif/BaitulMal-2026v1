@@ -83,7 +83,7 @@ export function useDownloadAs() {
                 ctx.drawImage(logoImg, PADDING, PADDING / 2, logoWidth, logoHeight);
                 headerTextX = PADDING + logoWidth + 30;
             }
-            ctx.fillStyle = 'hsl(var(--foreground))';
+            ctx.fillStyle = 'hsl(142, 70%, 25%)'; // Use concrete color
             ctx.font = 'bold 32px sans-serif';
             ctx.textBaseline = 'middle';
             ctx.fillText(brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur', headerTextX, (PADDING / 2) + 45);
@@ -112,7 +112,7 @@ export function useDownloadAs() {
                 const qrSize = 150;
                 ctx.drawImage(qrImg, finalCanvas.width - PADDING - qrSize, footerY + 15, qrSize, qrSize);
             }
-            ctx.fillStyle = 'hsl(var(--foreground))';
+            ctx.fillStyle = 'hsl(142, 70%, 25%)'; // Use concrete color
             ctx.font = 'bold 22px sans-serif';
             ctx.fillText('For Donations & Contact', PADDING, footerY + 30);
             ctx.font = '18px sans-serif';
@@ -125,7 +125,7 @@ export function useDownloadAs() {
             // Copyright
             ctx.textAlign = 'center';
             ctx.font = '14px sans-serif';
-            ctx.fillStyle = 'hsl(var(--muted-foreground))';
+            ctx.fillStyle = 'hsl(142, 25%, 40%)'; // Use concrete color
             ctx.fillText(paymentSettings?.copyright || '© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved.', finalCanvas.width / 2, finalCanvas.height - 20);
 
             const link = document.createElement('a');
