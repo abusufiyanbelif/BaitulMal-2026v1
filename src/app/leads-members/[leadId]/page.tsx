@@ -7,7 +7,7 @@ import { useFirestore, useDoc, errorEmitter, FirestorePermissionError } from '@/
 import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc, DocumentReference } from 'firebase/firestore';
-import type { Lead, RationItem } from '@/lib/types';
+import type { Lead, RationItem, RationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -86,7 +86,7 @@ export default function LeadDetailsPage() {
     );
 
     const newRationLists = Array.isArray(editableLead.rationLists) 
-      ? editableLead.rationLists.map(cat => cat.name === 'General Item List' ? {...cat, items: updatedItems} : cat)
+      ? editableLead.rationLists.map((cat: RationCategory) => cat.name === 'General Item List' ? {...cat, items: updatedItems} : cat)
       : { 'General Item List': updatedItems };
 
     handleFieldChange('rationLists', newRationLists);
@@ -97,7 +97,7 @@ export default function LeadDetailsPage() {
     const newItem: RationItem = { id: `item-${Date.now()}`, name: '', quantity: 1, quantityType: 'kg', price: 0, notes: '' };
     const updatedItems = [...itemList, newItem];
     const newRationLists = Array.isArray(editableLead.rationLists) 
-      ? editableLead.rationLists.map(cat => cat.name === 'General Item List' ? {...cat, items: updatedItems} : cat)
+      ? editableLead.rationLists.map((cat: RationCategory) => cat.name === 'General Item List' ? {...cat, items: updatedItems} : cat)
       : { 'General Item List': updatedItems };
 
     handleFieldChange('rationLists', newRationLists);
@@ -105,9 +105,9 @@ export default function LeadDetailsPage() {
 
   const handleDeleteItem = (itemId: string) => {
     if (!editableLead) return;
-    const updatedItems = itemList.filter(item => item.id !== itemId);
+    const updatedItems = itemList.filter((item: RationItem) => item.id !== itemId);
     const newRationLists = Array.isArray(editableLead.rationLists) 
-      ? editableLead.rationLists.map(cat => cat.name === 'General Item List' ? {...cat, items: updatedItems} : cat)
+      ? editableLead.rationLists.map((cat: RationCategory) => cat.name === 'General Item List' ? {...cat, items: updatedItems} : cat)
       : { 'General Item List': updatedItems };
 
     handleFieldChange('rationLists', newRationLists);
