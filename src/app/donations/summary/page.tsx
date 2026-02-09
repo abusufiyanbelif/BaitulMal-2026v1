@@ -81,17 +81,11 @@ export default function DonationsSummaryPage() {
         return collection(firestore, 'donations');
     }, [firestore]);
     const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
-
-    const beneficiariesCollectionGroup = useMemo(() => {
-        if (!firestore) return null;
-        return query(collectionGroup(firestore, 'beneficiaries'));
-    }, [firestore]);
-    const { data: allBeneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionGroup);
-
+    
     const canRead = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.read;
 
     const summaryData = useMemo(() => {
-        if (!donations || !allBeneficiaries) return null;
+        if (!donations) return null;
         
         const allocatedCount = donations.filter(d => d.linkSplit && d.linkSplit.length > 0).length;
         const unallocatedCount = donations.length - allocatedCount;
@@ -130,10 +124,6 @@ export default function DonationsSummaryPage() {
         const monthlyContributionTotal = amountsByCategory['Monthly Contribution'] || 0;
         const grandTotal = zakatTotal + loanTotal + interestTotal + sadaqahTotal + lillahTotal + monthlyContributionTotal;
 
-        const zakatAllocated = allBeneficiaries
-            .filter(b => b.isEligibleForZakat && b.zakatAllocation)
-            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
-
         return {
             allocatedCount,
             unallocatedCount,
@@ -142,7 +132,6 @@ export default function DonationsSummaryPage() {
             amountsByStatus,
             countsByStatus,
             donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
-            zakatAllocated,
             fundTotals: {
                 zakat: zakatTotal,
                 loan: loanTotal,
@@ -153,9 +142,9 @@ export default function DonationsSummaryPage() {
                 grandTotal: grandTotal,
             }
         };
-    }, [donations, allBeneficiaries]);
+    }, [donations]);
     
-    const isLoading = areDonationsLoading || isProfileLoading || areBeneficiariesLoading;
+    const isLoading = areDonationsLoading || isProfileLoading;
 
     if (isLoading) {
         return (
@@ -336,22 +325,16 @@ export default function DonationsSummaryPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Zakat Utilization</CardTitle>
-                            <CardDescription>Overall tracking of Zakat funds collected vs. allocated.</CardDescription>
+                            <CardDescription>Overall tracking of Zakat funds collected across all initiatives.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Total Zakat Collected</span>
-                                <span className="font-semibold">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Total Zakat Allocated</span>
-                                <span className="font-semibold">₹{summaryData?.zakatAllocated.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <Separator/>
                             <div className="flex justify-between items-center text-lg">
-                                <span className="font-semibold">Zakat Balance</span>
-                                <span className="font-bold text-primary">₹{((summaryData?.fundTotals.zakat || 0) - (summaryData?.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
+                                <span className="font-semibold">Total Zakat Collected</span>
+                                <span className="font-bold text-primary">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
                             </div>
+                            <p className="text-xs text-muted-foreground">
+                                To see how Zakat is allocated, please view the summary page for each individual campaign and lead.
+                            </p>
                         </CardContent>
                     </Card>
                 </div>
@@ -402,9 +385,6 @@ export default function DonationsSummaryPage() {
                         </CardContent>
                     </Card>
                 </div>
-
-                
-                 
             </div>
         </main>
     );

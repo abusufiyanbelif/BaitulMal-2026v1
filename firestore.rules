@@ -1,3 +1,4 @@
+
 /**
  * Core Philosophy: This ruleset uses a mixed-privacy model. User-specific data is private and
  * protected under the `/users/{userId}` path. Public-facing data, such as campaigns and settings,
@@ -102,15 +103,8 @@ service cloud.firestore {
     // ----------------------------------------------------------------------
     // Collection Group Rules
     // ----------------------------------------------------------------------
-    
-    /**
-     * @description Allows reading from the 'beneficiaries' collection group.
-     * This is required for summary pages that aggregate beneficiary data across
-     * all campaigns and leads. Access is restricted to authenticated users.
-     */
-    match /{path=**}/beneficiaries/{beneficiaryId} {
-      allow read: if isSignedIn();
-    }
+    // No collection group rules are currently needed.
+
 
     // ----------------------------------------------------------------------
     // Publicly Readable Collections
@@ -135,7 +129,6 @@ service cloud.firestore {
      */
     match /campaigns/{campaignId}/beneficiaries/{beneficiaryId} {
         // Beneficiaries should only be readable/writable by signed-in users.
-        // `read` is implicitly covered by the collection group rule, but we keep it here for clarity.
         allow read, write: if isSignedIn();
     }
 
@@ -174,7 +167,6 @@ service cloud.firestore {
       allow write: if isSignedIn();
       
       match /beneficiaries/{beneficiaryId} {
-        // `read` is implicitly covered by the collection group rule, but we keep it here for clarity.
         allow read, write: if isSignedIn();
       }
     }
