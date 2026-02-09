@@ -157,10 +157,10 @@ export default function CampaignSummaryPage() {
         ];
     }, [campaign?.rationLists]);
     
-    const canReadSummary = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.summary?.read;
-    const canReadRation = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.ration?.read;
-    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.beneficiaries?.read;
-    const canReadDonations = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.donations?.read;
+    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
+    const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
+    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
+    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
     const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.update', false) || getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
 
     const handleSave = () => {
@@ -517,22 +517,22 @@ Your contribution, big or small, makes a huge difference.
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex w-max space-x-2">
                         {canReadSummary && (
-                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground")}>
+                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                                 <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
                             </Button>
                         )}
                         {canReadRation && (
-                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground")}>
+                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                                 <Link href={`/campaign-members/${campaignId}`}>{campaign.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
                             </Button>
                         )}
                         {canReadBeneficiaries && (
-                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground")}>
+                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                                 <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
                             </Button>
                         )}
                         {canReadDonations && (
-                            <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground")}>
+                            <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                                 <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
                             </Button>
                         )}
@@ -540,371 +540,373 @@ Your contribution, big or small, makes a huge difference.
                 </ScrollArea>
             </div>
 
-            <div className="space-y-6 p-4 bg-background" ref={summaryRef}>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Campaign Details</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div>
-                            <Label htmlFor="description" className="text-sm font-medium text-muted-foreground">Description</Label>
-                            {editMode && canUpdate ? (
-                                <Textarea
-                                    id="description"
-                                    value={editableCampaign.description}
-                                    onChange={(e) => setEditableCampaign(p => ({...p, description: e.target.value}))}
-                                    className="mt-1"
-                                    rows={4}
-                                />
-                            ) : (
-                                <p className="mt-1 text-sm">{campaign.description || 'No description provided.'}</p>
-                            )}
-                        </div>
-                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className="space-y-1">
-                                <Label htmlFor="targetAmount" className="text-sm font-medium text-muted-foreground">Fundraising Goal (Target)</Label>
+            <div className="space-y-6">
+                 <div ref={summaryRef} className="space-y-6 p-4 bg-background">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Campaign Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div>
+                                <Label htmlFor="description" className="text-sm font-medium text-muted-foreground">Description</Label>
                                 {editMode && canUpdate ? (
-                                    <Input
-                                        id="targetAmount"
-                                        type="number"
-                                        value={editableCampaign.targetAmount}
-                                        onChange={(e) => setEditableCampaign(p => ({...p, targetAmount: Number(e.target.value) || 0}))}
+                                    <Textarea
+                                        id="description"
+                                        value={editableCampaign.description}
+                                        onChange={(e) => setEditableCampaign(p => ({...p, description: e.target.value}))}
                                         className="mt-1"
+                                        rows={4}
                                     />
                                 ) : (
-                                    <p className="mt-1 text-lg font-semibold">₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</p>
+                                    <p className="mt-1 text-sm">{campaign.description || 'No description provided.'}</p>
                                 )}
                             </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="category" className="text-sm font-medium text-muted-foreground">Category</Label>
-                                {editMode && canUpdate ? (
-                                    <Select
-                                        value={editableCampaign.category}
-                                        onValueChange={(value) => setEditableCampaign(p => ({...p, category: value as any}))}
-                                    >
-                                        <SelectTrigger id="category" className="mt-1">
-                                            <SelectValue placeholder="Select a category" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Ration">Ration</SelectItem>
-                                            <SelectItem value="Relief">Relief</SelectItem>
-                                            <SelectItem value="General">General</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                ) : (
-                                    <p className="mt-1 text-lg font-semibold">{campaign.category}</p>
-                                )}
-                            </div>
-                             <div className="space-y-1">
-                                <Label htmlFor="startDate" className="text-sm font-medium text-muted-foreground">Start Date</Label>
-                                {editMode && canUpdate ? (
-                                    <Input
-                                        id="startDate"
-                                        type="date"
-                                        value={editableCampaign.startDate}
-                                        onChange={(e) => setEditableCampaign(p => ({...p, startDate: e.target.value}))}
-                                        className="mt-1"
-                                    />
-                                ) : (
-                                    <p className="mt-1 text-lg font-semibold">{campaign.startDate}</p>
-                                )}
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="endDate" className="text-sm font-medium text-muted-foreground">End Date</Label>
-                                {editMode && canUpdate ? (
-                                    <Input
-                                        id="endDate"
-                                        type="date"
-                                        value={editableCampaign.endDate}
-                                        onChange={(e) => setEditableCampaign(p => ({...p, endDate: e.target.value}))}
-                                        className="mt-1"
-                                    />
-                                ) : (
-                                    <p className="mt-1 text-lg font-semibold">{campaign.endDate}</p>
-                                )}
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="authenticityStatus" className="text-sm font-medium text-muted-foreground">Authenticity Status</Label>
-                                {editMode && canUpdate ? (
-                                    <Select
-                                        value={editableCampaign.authenticityStatus}
-                                        onValueChange={(value) => setEditableCampaign(p => ({...p, authenticityStatus: value as any}))}
-                                    >
-                                        <SelectTrigger id="authenticityStatus" className="mt-1">
-                                            <SelectValue placeholder="Select a status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Pending Verification">Pending Verification</SelectItem>
-                                            <SelectItem value="Verified">Verified</SelectItem>
-                                            <SelectItem value="On Hold">On Hold</SelectItem>
-                                            <SelectItem value="Rejected">Rejected</SelectItem>
-                                            <SelectItem value="Need More Details">Need More Details</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                ) : (
-                                    <p className="mt-1 text-lg font-semibold">{campaign.authenticityStatus || 'N/A'}</p>
-                                )}
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="publicVisibility" className="text-sm font-medium text-muted-foreground">Public Visibility</Label>
-                                {editMode && canUpdate ? (
-                                    <Select
-                                        value={editableCampaign.publicVisibility}
-                                        onValueChange={(value) => setEditableCampaign(p => ({...p, publicVisibility: value as any}))}
-                                    >
-                                        <SelectTrigger id="publicVisibility" className="mt-1">
-                                            <SelectValue placeholder="Select visibility" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Hold">Hold (Private)</SelectItem>
-                                            <SelectItem value="Ready to Publish">Ready to Publish</SelectItem>
-                                            <SelectItem value="Published">Published</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                ) : (
-                                    <p className="mt-1 text-lg font-semibold">{campaign.publicVisibility || 'N/A'}</p>
-                                )}
-                            </div>
-                        </div>
-                        <div className="space-y-2 pt-4">
-                            <Label className="text-sm font-medium text-muted-foreground">Allowed Donation Types for Goal</Label>
-                            {editMode && canUpdate ? (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-md">
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox 
-                                        id="select-all"
-                                        checked={editableCampaign.allowedDonationTypes?.length === donationCategories.length}
-                                        onCheckedChange={(checked) => {
-                                            setEditableCampaign(p => ({...p, allowedDonationTypes: checked ? [...donationCategories] : []}));
-                                        }}
-                                    />
-                                    <Label htmlFor="select-all" className="font-bold">Any</Label>
-                                </div>
-                                {donationCategories.map(type => (
-                                    <div key={type} className="flex items-center space-x-2">
-                                    <Checkbox 
-                                        id={`type-${type}`}
-                                        checked={editableCampaign.allowedDonationTypes?.includes(type)}
-                                        onCheckedChange={(checked) => {
-                                        const currentTypes = editableCampaign.allowedDonationTypes || [];
-                                        const newTypes = checked ? [...currentTypes, type] : currentTypes.filter(t => t !== type);
-                                        setEditableCampaign(p => ({...p, allowedDonationTypes: newTypes}));
-                                        }}
-                                    />
-                                    <Label htmlFor={`type-${type}`}>{type}</Label>
-                                    </div>
-                                ))}
-                                </div>
-                            ) : (
-                                <div className="flex flex-wrap gap-2">
-                                    {(campaign.allowedDonationTypes && campaign.allowedDonationTypes.length > 0) ? (
-                                        campaign.allowedDonationTypes.map(type => (
-                                            <Badge key={type} variant="secondary">{type}</Badge>
-                                        ))
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="space-y-1">
+                                    <Label htmlFor="targetAmount" className="text-sm font-medium text-muted-foreground">Fundraising Goal (Target)</Label>
+                                    {editMode && canUpdate ? (
+                                        <Input
+                                            id="targetAmount"
+                                            type="number"
+                                            value={editableCampaign.targetAmount}
+                                            onChange={(e) => setEditableCampaign(p => ({...p, targetAmount: Number(e.target.value) || 0}))}
+                                            className="mt-1"
+                                        />
                                     ) : (
-                                        <p className="text-sm text-muted-foreground">Not specified.</p>
+                                        <p className="mt-1 text-lg font-semibold">₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</p>
                                     )}
                                 </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+                                <div className="space-y-1">
+                                    <Label htmlFor="category" className="text-sm font-medium text-muted-foreground">Category</Label>
+                                    {editMode && canUpdate ? (
+                                        <Select
+                                            value={editableCampaign.category}
+                                            onValueChange={(value) => setEditableCampaign(p => ({...p, category: value as any}))}
+                                        >
+                                            <SelectTrigger id="category" className="mt-1">
+                                                <SelectValue placeholder="Select a category" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Ration">Ration</SelectItem>
+                                                <SelectItem value="Relief">Relief</SelectItem>
+                                                <SelectItem value="General">General</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    ) : (
+                                        <p className="mt-1 text-lg font-semibold">{campaign.category}</p>
+                                    )}
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="startDate" className="text-sm font-medium text-muted-foreground">Start Date</Label>
+                                    {editMode && canUpdate ? (
+                                        <Input
+                                            id="startDate"
+                                            type="date"
+                                            value={editableCampaign.startDate}
+                                            onChange={(e) => setEditableCampaign(p => ({...p, startDate: e.target.value}))}
+                                            className="mt-1"
+                                        />
+                                    ) : (
+                                        <p className="mt-1 text-lg font-semibold">{campaign.startDate}</p>
+                                    )}
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="endDate" className="text-sm font-medium text-muted-foreground">End Date</Label>
+                                    {editMode && canUpdate ? (
+                                        <Input
+                                            id="endDate"
+                                            type="date"
+                                            value={editableCampaign.endDate}
+                                            onChange={(e) => setEditableCampaign(p => ({...p, endDate: e.target.value}))}
+                                            className="mt-1"
+                                        />
+                                    ) : (
+                                        <p className="mt-1 text-lg font-semibold">{campaign.endDate}</p>
+                                    )}
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="authenticityStatus" className="text-sm font-medium text-muted-foreground">Authenticity Status</Label>
+                                    {editMode && canUpdate ? (
+                                        <Select
+                                            value={editableCampaign.authenticityStatus}
+                                            onValueChange={(value) => setEditableCampaign(p => ({...p, authenticityStatus: value as any}))}
+                                        >
+                                            <SelectTrigger id="authenticityStatus" className="mt-1">
+                                                <SelectValue placeholder="Select a status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Pending Verification">Pending Verification</SelectItem>
+                                                <SelectItem value="Verified">Verified</SelectItem>
+                                                <SelectItem value="On Hold">On Hold</SelectItem>
+                                                <SelectItem value="Rejected">Rejected</SelectItem>
+                                                <SelectItem value="Need More Details">Need More Details</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    ) : (
+                                        <p className="mt-1 text-lg font-semibold">{campaign.authenticityStatus || 'N/A'}</p>
+                                    )}
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="publicVisibility" className="text-sm font-medium text-muted-foreground">Public Visibility</Label>
+                                    {editMode && canUpdate ? (
+                                        <Select
+                                            value={editableCampaign.publicVisibility}
+                                            onValueChange={(value) => setEditableCampaign(p => ({...p, publicVisibility: value as any}))}
+                                        >
+                                            <SelectTrigger id="publicVisibility" className="mt-1">
+                                                <SelectValue placeholder="Select visibility" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Hold">Hold (Private)</SelectItem>
+                                                <SelectItem value="Ready to Publish">Ready to Publish</SelectItem>
+                                                <SelectItem value="Published">Published</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    ) : (
+                                        <p className="mt-1 text-lg font-semibold">{campaign.publicVisibility || 'N/A'}</p>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="space-y-2 pt-4">
+                                <Label className="text-sm font-medium text-muted-foreground">Allowed Donation Types for Goal</Label>
+                                {editMode && canUpdate ? (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-md">
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox 
+                                            id="select-all"
+                                            checked={editableCampaign.allowedDonationTypes?.length === donationCategories.length}
+                                            onCheckedChange={(checked) => {
+                                                setEditableCampaign(p => ({...p, allowedDonationTypes: checked ? [...donationCategories] : []}));
+                                            }}
+                                        />
+                                        <Label htmlFor="select-all" className="font-bold">Any</Label>
+                                    </div>
+                                    {donationCategories.map(type => (
+                                        <div key={type} className="flex items-center space-x-2">
+                                        <Checkbox 
+                                            id={`type-${type}`}
+                                            checked={editableCampaign.allowedDonationTypes?.includes(type)}
+                                            onCheckedChange={(checked) => {
+                                            const currentTypes = editableCampaign.allowedDonationTypes || [];
+                                            const newTypes = checked ? [...currentTypes, type] : currentTypes.filter(t => t !== type);
+                                            setEditableCampaign(p => ({...p, allowedDonationTypes: newTypes}));
+                                            }}
+                                        />
+                                        <Label htmlFor={`type-${type}`}>{type}</Label>
+                                        </div>
+                                    ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-wrap gap-2">
+                                        {(campaign.allowedDonationTypes && campaign.allowedDonationTypes.length > 0) ? (
+                                            campaign.allowedDonationTypes.map(type => (
+                                                <Badge key={type} variant="secondary">{type}</Badge>
+                                            ))
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">Not specified.</p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
                 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Funding Progress</CardTitle>
-                        <CardDescription>
-                            ₹{summaryData?.totalCollectedForGoal.toLocaleString('en-IN') ?? 0} of ₹{(summaryData?.targetAmount ?? 0).toLocaleString('en-IN')} funded.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Progress value={summaryData?.fundingProgress || 0} />
-                         <div className="mt-2 text-xs text-muted-foreground">
-                            {summaryData && summaryData.pendingDonations > 0 && <span>(+ ₹{summaryData.pendingDonations.toLocaleString('en-IN')} pending verification)</span>}
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <div className="grid gap-6 sm:grid-cols-3">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle>
-                            <Users className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{summaryData?.totalBeneficiaries ?? 0}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Kits Given</CardTitle>
-                            <Gift className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{summaryData?.beneficiariesGiven ?? 0}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Kits Pending</CardTitle>
-                            <Hourglass className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{summaryData?.beneficiariesPending ?? 0}</div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <div className="grid gap-6 lg:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Fund Totals by Type</CardTitle>
-                            <CardDescription>A breakdown of funds collected for this campaign by their purpose.</CardDescription>
+                            <CardTitle>Funding Progress</CardTitle>
+                            <CardDescription>
+                                ₹{summaryData?.totalCollectedForGoal.toLocaleString('en-IN') ?? 0} of ₹{(summaryData?.targetAmount ?? 0).toLocaleString('en-IN')} funded.
+                            </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Zakat</span>
-                                <span className="font-semibold">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Sadaqah</span>
-                                <span className="font-semibold">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Lillah</span>
-                                <span className="font-semibold">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Monthly Contribution</span>
-                                <span className="font-semibold">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Interest (for disposal)</span>
-                                <span className="font-semibold">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Loan (Qard-e-Hasana)</span>
-                                <span className="font-semibold">₹{summaryData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <Separator />
-                            <div className="flex justify-between items-center text-lg">
-                                <span className="font-semibold">Grand Total</span>
-                                <span className="font-bold text-primary">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                
-                     <Card>
-                        <CardHeader>
-                            <CardTitle>Zakat Utilization</CardTitle>
-                            <CardDescription>Tracking of Zakat funds collected and allocated within this campaign.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Total Zakat Collected</span>
-                                <span className="font-semibold">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Total Zakat Allocated</span>
-                                <span className="font-semibold">₹{summaryData?.zakatAllocated.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <Separator/>
-                            <div className="flex justify-between items-center text-lg">
-                                <span className="font-semibold">Zakat Balance</span>
-                                <span className="font-bold text-primary">₹{((summaryData?.fundTotals.zakat || 0) - (summaryData?.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
+                        <CardContent>
+                            <Progress value={summaryData?.fundingProgress || 0} />
+                            <div className="mt-2 text-xs text-muted-foreground">
+                                {summaryData && summaryData.pendingDonations > 0 && <span>(+ ₹{summaryData.pendingDonations.toLocaleString('en-IN')} pending verification)</span>}
                             </div>
                         </CardContent>
                     </Card>
 
-                    {summaryData && summaryData.sortedBeneficiaryCategoryKeys.length > 0 && (
+                    <div className="grid gap-6 sm:grid-cols-3">
                         <Card>
-                            <CardHeader>
-                                <CardTitle>Beneficiaries by Category</CardTitle>
-                                <CardDescription>
-                                    Summary of beneficiaries grouped by family size categories.
-                                </CardDescription>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle>
+                                <Users className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="whitespace-nowrap">Category Name</TableHead>
-                                            <TableHead className="text-center whitespace-nowrap">Total Beneficiaries</TableHead>
-                                            <TableHead className="text-right whitespace-nowrap">Kit Amount (per kit)</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {summaryData.sortedBeneficiaryCategoryKeys.map(categoryKey => {
-                                            const group = summaryData.beneficiariesByCategory[categoryKey];
-                                            const count = group.beneficiaries.length;
-                                            const kitAmount = group.kitAmount;
-                                            return (
-                                                <TableRow key={categoryKey}>
-                                                    <TableCell className="font-medium">{group.categoryName}</TableCell>
-                                                    <TableCell className="text-center">{count}</TableCell>
-                                                    <TableCell className="text-right font-mono">₹{kitAmount.toFixed(2)}</TableCell>
-                                                </TableRow>
-                                            )
-                                        })}
-                                    </TableBody>
-                                    <TableFooter>
-                                        <TableRow>
-                                            <TableCell className="font-bold">Total</TableCell>
-                                            <TableCell className="text-center font-bold">{summaryData.totalBeneficiaries}</TableCell>
-                                            <TableCell></TableCell>
-                                        </TableRow>
-                                    </TableFooter>
-                                </Table>
+                                <div className="text-2xl font-bold">{summaryData?.totalBeneficiaries ?? 0}</div>
                             </CardContent>
                         </Card>
-                    )}
-                </div>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Kits Given</CardTitle>
+                                <Gift className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{summaryData?.beneficiariesGiven ?? 0}</div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Kits Pending</CardTitle>
+                                <Hourglass className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{summaryData?.beneficiariesPending ?? 0}</div>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                <div className="grid gap-6 lg:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>All Donations by Category</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                <BarChart data={Object.entries(summaryData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))}>
-                                    <CartesianGrid vertical={false} />
-                                    <XAxis
-                                        dataKey="name"
-                                        tickLine={false}
-                                        tickMargin={10}
-                                        axisLine={false}
-                                    />
-                                    <YAxis tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
-                                    <ChartTooltip content={<ChartTooltipContent />} />
-                                    <Bar dataKey="value" radius={4}>
-                                        {Object.entries(summaryData?.amountsByCategory || {}).map(([name,]) => (
-                                            <Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ChartContainer>
-                        </CardContent>
-                    </Card>
+                    <div className="grid gap-6 lg:grid-cols-2">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Fund Totals by Type</CardTitle>
+                                <CardDescription>A breakdown of funds collected for this campaign by their purpose.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Zakat</span>
+                                    <span className="font-semibold">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Sadaqah</span>
+                                    <span className="font-semibold">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Lillah</span>
+                                    <span className="font-semibold">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Monthly Contribution</span>
+                                    <span className="font-semibold">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Interest (for disposal)</span>
+                                    <span className="font-semibold">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Loan (Qard-e-Hasana)</span>
+                                    <span className="font-semibold">₹{summaryData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span>
+                                </div>
+                                <Separator />
+                                <div className="flex justify-between items-center text-lg">
+                                    <span className="font-semibold">Grand Total</span>
+                                    <span className="font-bold text-primary">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span>
+                                </div>
+                            </CardContent>
+                        </Card>
                     
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Donations by Payment Type</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
-                                <PieChart>
-                                    <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                    <Pie data={summaryData?.donationPaymentTypeChartData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5}>
-                                        {summaryData?.donationPaymentTypeChartData?.map((entry) => (
-                                            <Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />
-                                        ))}
-                                    </Pie>
-                                    <ChartLegend content={<ChartLegendContent />} />
-                                </PieChart>
-                            </ChartContainer>
-                        </CardContent>
-                    </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Zakat Utilization</CardTitle>
+                                <CardDescription>Tracking of Zakat funds collected and allocated within this campaign.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Total Zakat Collected</span>
+                                    <span className="font-semibold">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Total Zakat Allocated</span>
+                                    <span className="font-semibold">₹{summaryData?.zakatAllocated.toLocaleString('en-IN') ?? '0.00'}</span>
+                                </div>
+                                <Separator/>
+                                <div className="flex justify-between items-center text-lg">
+                                    <span className="font-semibold">Zakat Balance</span>
+                                    <span className="font-bold text-primary">₹{((summaryData?.fundTotals.zakat || 0) - (summaryData?.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {summaryData && summaryData.sortedBeneficiaryCategoryKeys.length > 0 && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Beneficiaries by Category</CardTitle>
+                                    <CardDescription>
+                                        Summary of beneficiaries grouped by family size categories.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="whitespace-nowrap">Category Name</TableHead>
+                                                <TableHead className="text-center whitespace-nowrap">Total Beneficiaries</TableHead>
+                                                <TableHead className="text-right whitespace-nowrap">Kit Amount (per kit)</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {summaryData.sortedBeneficiaryCategoryKeys.map(categoryKey => {
+                                                const group = summaryData.beneficiariesByCategory[categoryKey];
+                                                const count = group.beneficiaries.length;
+                                                const kitAmount = group.kitAmount;
+                                                return (
+                                                    <TableRow key={categoryKey}>
+                                                        <TableCell className="font-medium">{group.categoryName}</TableCell>
+                                                        <TableCell className="text-center">{count}</TableCell>
+                                                        <TableCell className="text-right font-mono">₹{kitAmount.toFixed(2)}</TableCell>
+                                                    </TableRow>
+                                                )
+                                            })}
+                                        </TableBody>
+                                        <TableFooter>
+                                            <TableRow>
+                                                <TableCell className="font-bold">Total</TableCell>
+                                                <TableCell className="text-center font-bold">{summaryData.totalBeneficiaries}</TableCell>
+                                                <TableCell></TableCell>
+                                            </TableRow>
+                                        </TableFooter>
+                                    </Table>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+
+                    <div className="grid gap-6 lg:grid-cols-2">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>All Donations by Category</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
+                                    <BarChart data={Object.entries(summaryData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))}>
+                                        <CartesianGrid vertical={false} />
+                                        <XAxis
+                                            dataKey="name"
+                                            tickLine={false}
+                                            tickMargin={10}
+                                            axisLine={false}
+                                        />
+                                        <YAxis tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
+                                        <ChartTooltip content={<ChartTooltipContent />} />
+                                        <Bar dataKey="value" radius={4}>
+                                            {Object.entries(summaryData?.amountsByCategory || {}).map(([name,]) => (
+                                                <Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ChartContainer>
+                            </CardContent>
+                        </Card>
+                        
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Donations by Payment Type</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
+                                    <PieChart>
+                                        <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                        <Pie data={summaryData?.donationPaymentTypeChartData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5}>
+                                            {summaryData?.donationPaymentTypeChartData?.map((entry) => (
+                                                <Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />
+                                            ))}
+                                        </Pie>
+                                        <ChartLegend content={<ChartLegendContent />} />
+                                    </PieChart>
+                                </ChartContainer>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </div>
 
