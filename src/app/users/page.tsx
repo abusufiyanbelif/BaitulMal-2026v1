@@ -37,6 +37,7 @@ import { deleteUserAction } from './actions';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { getNestedValue } from '@/lib/utils';
 
 type SortKey = keyof UserProfile | 'srNo';
 
@@ -56,18 +57,21 @@ export default function UsersPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const usersCollectionRef = useMemo(() => {
-    if (!firestore || !userProfile) return null;
+    if (!firestore || !userProfile || userProfile.role !== 'Admin') {
+      return null;
+    }
     return collection(firestore, 'users');
-  }, [firestore, userProfile?.id]);
+  }, [firestore, userProfile]);
   
   const { data: users, isLoading: areUsersLoading } = useCollection<UserProfile>(usersCollectionRef);
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
   
-  const canCreate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.users?.create;
-  const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.users?.update;
-  const canDelete = userProfile?.role === 'Admin' || !!userProfile?.permissions?.users?.delete;
+  const canCreate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.users.create', false);
+  const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.users.update', false);
+  const canDelete = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.users.delete', false);
+  const canRead = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.users.read', false);
 
   const handleAdd = () => {
     if (!canCreate) return;
@@ -237,7 +241,7 @@ export default function UsersPage() {
     )
   }
   
-  if (userProfile?.role !== 'Admin' && !userProfile?.permissions?.users?.read) {
+  if (!canRead) {
     return (
         <main className="container mx-auto p-4 md:p-8">
             <div className="mb-4">
@@ -339,7 +343,7 @@ export default function UsersPage() {
                       </TableRow>
                   </TableHeader>
                   <TableBody>
-                      {isLoading ? (
+                      {areUsersLoading ? (
                           [...Array(5)].map((_, i) => (
                               <TableRow key={`skeleton-${i}`}>
                                   <TableCell><Skeleton className="h-5 w-5" /></TableCell>
@@ -418,16 +422,18 @@ export default function UsersPage() {
               </Table>
           </div>
         </CardContent>
-        <CardFooter className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-              Showing {paginatedUsers.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredAndSortedUsers.length)} of {filteredAndSortedUsers.length} users
-          </p>
-          <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
-              <span className="text-sm">{currentPage} / {totalPages}</span>
-              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
-          </div>
-        </CardFooter>
+        {totalPages > 1 && (
+            <CardFooter className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                  Showing {paginatedUsers.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredAndSortedUsers.length)} of {filteredAndSortedUsers.length} users
+              </p>
+              <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
+                  <span className="text-sm">{currentPage} / {totalPages}</span>
+                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
+              </div>
+            </CardFooter>
+        )}
       </Card>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
