@@ -636,7 +636,7 @@ export default function DonationsPage() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="w-full overflow-x-auto">
-              <Table>
+              <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
                       <SortableHeader sortKey="srNo" className="w-[50px] pl-4">#</SortableHeader>
@@ -712,7 +712,7 @@ export default function DonationsPage() {
                                                   </DropdownMenuItem>
                                               )}
                                               {canDelete && (
-                                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
+                                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
                                                       <Trash2 className="mr-2 h-4 w-4" /> Delete
                                                   </DropdownMenuItem>
                                               )}

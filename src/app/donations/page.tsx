@@ -609,7 +609,7 @@ export default function DonationsPage() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="w-full overflow-x-auto">
-              <Table>
+              <Table className="table-fixed">
                   <TableHeader>
                       <TableRow>
                           <SortableHeader sortKey="srNo" className="w-[50px] pl-4">#</SortableHeader>
