@@ -2,7 +2,7 @@
 'use client';
 
 import { z } from 'zod';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
@@ -108,15 +108,18 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   const { fields: typeSplitFields, append: appendTypeSplit, remove: removeTypeSplit, replace: replaceTypeSplit } = useFieldArray({ control, name: "typeSplit" });
   const { fields: linkSplitFields, append: appendLinkSplit, remove: removeLinkSplit, replace: replaceLinkSplit } = useFieldArray({ control, name: "linkSplit" });
 
-  const watchTransactions = watch('transactions');
+  const watchedTransactions = useWatch({
+    control,
+    name: 'transactions',
+  });
   const isTypeSplit = watch('isTypeSplit');
   const isLinkSplit = watch('isSplit');
 
   // Calculate total amount from transactions
   useEffect(() => {
-    const total = watchTransactions.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+    const total = watchedTransactions.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
     setValue('amount', total, { shouldValidate: true, shouldDirty: true });
-  }, [watchTransactions, setValue]);
+  }, [watchedTransactions, setValue]);
 
   const totalAmount = watch('amount');
 
