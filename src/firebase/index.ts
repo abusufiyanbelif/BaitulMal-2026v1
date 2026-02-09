@@ -1,3 +1,4 @@
+'use client';
 export {
   FirebaseProvider,
   useFirebase,

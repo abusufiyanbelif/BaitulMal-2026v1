@@ -58,7 +58,7 @@ import {
 } from "@/components/ui/table"
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
-import { get } from '@/lib/utils';
+import { getNestedValue } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ShareDialog } from '@/components/share-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -154,10 +154,10 @@ export default function LeadSummaryPage() {
         ];
     }, [lead?.rationLists]);
     
-    const canReadSummary = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.leads-members.summary.read', false);
-    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.leads-members.beneficiaries.read', false);
-    const canReadDonations = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.leads-members.donations.read', false);
-    const canUpdate = userProfile?.role === 'Admin' || get(userProfile, 'permissions.leads-members.update', false) || get(userProfile, 'permissions.leads-members.summary.update', false);
+    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
+    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
+    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
+    const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.update', false) || getNestedValue(userProfile, 'permissions.leads-members.summary.update', false);
 
     const handleSave = () => {
         if (!leadDocRef || !userProfile || !canUpdate) return;
@@ -1075,7 +1075,3 @@ Your support and feedback are valuable.
         </main>
     );
 }
-
-    
-
-    

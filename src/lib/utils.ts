@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function get(obj: any, path: string, defaultValue: any = undefined) {
+export function getNestedValue(obj: any, path: string, defaultValue: any = undefined) {
     if (typeof path !== 'string') {
         console.warn('get: path must be a string');
         return defaultValue;

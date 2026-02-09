@@ -1,9 +1,8 @@
 
-
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
@@ -56,7 +55,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { get } from '@/lib/utils';
+import { cn, getNestedValue } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -66,6 +65,7 @@ const quantityTypes = ['kg', 'litre', 'gram', 'ml', 'piece', 'packet', 'dozen'];
 
 export default function LeadDetailsPage() {
   const params = useParams();
+  const pathname = usePathname();
   const leadId = params.leadId as string;
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -173,10 +173,10 @@ export default function LeadDetailsPage() {
     return sanitizedEditableRationLists.find(c => c.id === copySourceCategoryId);
   }, [copySourceCategoryId, sanitizedEditableRationLists]);
 
-  const canReadSummary = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.leads-members.summary.read', false);
-  const canReadBeneficiaries = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.leads-members.beneficiaries.read', false);
-  const canReadDonations = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.leads-members.donations.read', false);
-  const canUpdate = userProfile?.role === 'Admin' || get(userProfile, 'permissions.leads-members.update', false);
+  const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
+  const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
+  const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
+  const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.update', false);
 
   const isLoading = isLeadLoading || isProfileLoading || areBeneficiariesLoading;
 
@@ -628,31 +628,31 @@ export default function LeadDetailsPage() {
       </div>
 
       <div className="border-b mb-4">
-          <ScrollArea className="w-full whitespace-nowrap">
-              <div className="flex w-max space-x-4">
-                  {userProfile && canReadSummary && (
-                    <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none">
+        <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex w-max space-x-2">
+                {userProfile && canReadSummary && (
+                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                         <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
                     </Button>
-                  )}
-                  {userProfile && (
-                    <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-primary text-primary shadow-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none" data-active="true">
+                )}
+                {userProfile && (
+                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                         <Link href={`/leads-members/${leadId}`}>Item List</Link>
                     </Button>
-                  )}
-                  {userProfile && canReadBeneficiaries && (
-                    <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none">
+                )}
+                {userProfile && canReadBeneficiaries && (
+                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                         <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
                     </Button>
-                  )}
-                   {userProfile && canReadDonations && (
-                    <Button variant="ghost" asChild className="shrink-0 rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none">
+                )}
+                {userProfile && canReadDonations && (
+                    <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                         <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
                     </Button>
-                  )}
-              </div>
-              <ScrollBar orientation="horizontal" />
-          </ScrollArea>
+                )}
+            </div>
+            <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </div>
       
       <Card className="animate-fade-in-zoom">

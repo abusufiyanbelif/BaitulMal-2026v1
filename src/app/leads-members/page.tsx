@@ -43,7 +43,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { CopyLeadDialog } from '@/components/copy-lead-dialog';
 import { copyLeadAction } from './actions';
-import { get } from '@/lib/utils';
+import { getNestedValue } from '@/lib/utils';
 import { donationCategories } from '@/lib/modules';
 
 
@@ -123,10 +123,10 @@ export default function LeadPage() {
     });
   }, [leads, donations]);
 
-  const canCreate = userProfile?.role === 'Admin' || get(userProfile, 'permissions.leads-members.create', false);
-  const canUpdate = userProfile?.role === 'Admin' || get(userProfile, 'permissions.leads-members.update', false);
-  const canDelete = userProfile?.role === 'Admin' || get(userProfile, 'permissions.leads-members.delete', false);
-  const canViewLeads = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.leads-members', false);
+  const canCreate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.create', false);
+  const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.update', false);
+  const canDelete = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.delete', false);
+  const canViewLeads = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members', false);
 
 
   const handleDeleteClick = (lead: Lead) => {

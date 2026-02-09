@@ -4,27 +4,28 @@ import { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { useFirestore, useCollection, useDoc } from '@/firebase';
 import { collection, query, where, DocumentReference, doc } from 'firebase/firestore';
-import type { Donation, Campaign, Lead } from '@/lib/types';
+import type { Donation, Lead } from '@/lib/types';
 import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, DollarSign, CheckCircle2, Hourglass, XCircle } from 'lucide-react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { cn, getNestedValue } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { getNestedValue } from '@/lib/utils';
 
 export default function DonationsSummaryPage() {
   const params = useParams();
   const pathname = usePathname();
-  const campaignId = params.campaignId as string;
+  const leadId = params.leadId as string;
   const firestore = useFirestore();
   const { userProfile, isLoading: isProfileLoading } = useSession();
   
-  const campaignDocRef = useMemo(() => {
-    if (!firestore || !campaignId) return null;
-    return doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign>;
-  }, [firestore, campaignId]);
-  const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
+  const leadDocRef = useMemo(() => {
+    if (!firestore || !leadId) return null;
+    return doc(firestore, 'leads', leadId) as DocumentReference<Lead>;
+  }, [firestore, leadId]);
+  const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
   
   const allDonationsCollectionRef = useMemo(() => {
     if (!firestore) return null;
@@ -34,18 +35,12 @@ export default function DonationsSummaryPage() {
 
   const donations = useMemo(() => {
     if (!allDonations) return [];
-    return allDonations.filter(d => {
-      if (d.linkSplit && d.linkSplit.length > 0) {
-        return d.linkSplit.some(link => link.linkId === campaignId);
-      }
-      return d.campaignId === campaignId;
-    });
-  }, [allDonations, campaignId]);
+    return allDonations.filter(d => d.linkSplit?.some(link => link.linkId === leadId));
+  }, [allDonations, leadId]);
   
-  const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
-  const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
-  const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
-  const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
+  const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
+  const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
+  const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
 
   const { zakatTotal, loanTotal, interestTotal, sadaqahTotal, lillahTotal, monthlyContributionTotal, grandTotal } = useMemo(() => {
     if (!donations) {
@@ -126,7 +121,7 @@ export default function DonationsSummaryPage() {
     });
   }, [donations]);
 
-  const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading;
+  const isLoading = isLeadLoading || areDonationsLoading || isProfileLoading;
 
   if (isLoading) {
     return (
@@ -141,37 +136,35 @@ export default function DonationsSummaryPage() {
       <main className="container mx-auto p-4 md:p-8">
         <div className="mb-4">
             <Button variant="outline" asChild>
-                <Link href="/campaign-members">
+                <Link href="/leads-members">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Campaigns
+                    Back to Leads
                 </Link>
             </Button>
         </div>
         <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold">{campaign?.name}</h1>
+            <h1 className="text-3xl font-bold">{lead?.name}</h1>
         </div>
         
         <div className="border-b mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-2">
                     {canReadSummary && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                            <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
                         </Button>
                     )}
-                    {canReadRation && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/campaign-members/${campaignId}`}>{campaign?.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
-                        </Button>
-                    )}
+                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/leads-members/${leadId}`}>Item List</Link>
+                    </Button>
                     {canReadBeneficiaries && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                            <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
                         </Button>
                     )}
                     {canReadDonations && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                            <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
                         </Button>
                     )}
                 </div>
@@ -183,13 +176,13 @@ export default function DonationsSummaryPage() {
             <div className="border-b mb-4">
               <ScrollArea className="w-full whitespace-nowrap">
                   <div className="flex w-max space-x-2">
-                      <Link href={`/campaign-members/${campaignId}/donations`} className={cn(
+                      <Link href={`/leads-members/${leadId}/donations`} className={cn(
                           "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                          pathname === `/leads-members/${leadId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
                       )}>List</Link>
-                      <Link href={`/campaign-members/${campaignId}/donations/summary`} className={cn(
+                      <Link href={`/leads-members/${leadId}/donations/summary`} className={cn(
                           "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          pathname === `/campaign-members/${campaignId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                          pathname === `/leads-members/${leadId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
                       )}>Summary</Link>
                   </div>
                   <ScrollBar orientation="horizontal" />

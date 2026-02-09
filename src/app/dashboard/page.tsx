@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 import Link from 'next/link';
 import { useSession } from '@/hooks/use-session';
 import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, Database, FlaskConical, LifeBuoy } from 'lucide-react';
-import { get } from '@/lib/utils';
+import { getNestedValue } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function DashboardCard({ title, description, href, icon: Icon, isVisible, animationDelay }: { title: string, description: string, href: string, icon: React.ComponentType<{ className?: string }>, isVisible: boolean, animationDelay: string }) {
@@ -31,14 +31,14 @@ function DashboardCard({ title, description, href, icon: Icon, isVisible, animat
 export default function DashboardPage() {
   const { userProfile, isLoading } = useSession();
   
-  const canViewCampaigns = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.campaigns', false);
-  const canViewLeads = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.leads-members', false);
-  const canViewDonations = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.donations', false);
-  const canViewExtractor = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.extractor', false);
-  const canViewStoryCreator = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.storyCreator', false);
-  const canViewUsers = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.users', false);
-  const canViewSettings = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.settings', false);
-  const canViewDiagnostics = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.diagnostics', false);
+  const canViewCampaigns = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns', false);
+  const canViewLeads = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members', false);
+  const canViewDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations', false);
+  const canViewExtractor = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.extractor', false);
+  const canViewStoryCreator = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.storyCreator', false);
+  const canViewUsers = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.users', false);
+  const canViewSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings', false);
+  const canViewDiagnostics = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.diagnostics', false);
 
   const cards = [
     { title: "Campaigns", description: "Manage ration, relief, and general campaigns.", href: "/campaign-members", icon: FolderKanban, isVisible: canViewCampaigns },

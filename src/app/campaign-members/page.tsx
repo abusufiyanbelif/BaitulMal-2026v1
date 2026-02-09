@@ -43,7 +43,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { CopyCampaignDialog } from '@/components/copy-campaign-dialog';
 import { copyCampaignAction } from './actions';
-import { get } from '@/lib/utils';
+import { getNestedValue } from '@/lib/utils';
 import { donationCategories } from '@/lib/modules';
 
 
@@ -137,10 +137,10 @@ export default function CampaignPage() {
     });
   }, [campaigns, donations]);
   
-  const canCreate = userProfile?.role === 'Admin' || get(userProfile, 'permissions.campaigns.create', false);
-  const canUpdate = userProfile?.role === 'Admin' || get(userProfile, 'permissions.campaigns.update', false);
-  const canDelete = userProfile?.role === 'Admin' || get(userProfile, 'permissions.campaigns.delete', false);
-  const canViewCampaigns = userProfile?.role === 'Admin' || canCreate || canUpdate || canDelete || Object.values(get(userProfile, 'permissions.campaigns', {})).some((perm: any) => perm?.read);
+  const canCreate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.create', false);
+  const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.update', false);
+  const canDelete = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.delete', false);
+  const canViewCampaigns = userProfile?.role === 'Admin' || canCreate || canUpdate || canDelete || Object.values(getNestedValue(userProfile, 'permissions.campaigns', {})).some((perm: any) => perm?.read);
 
   const handleDeleteClick = (campaign: Campaign) => {
     if (!canDelete) return;

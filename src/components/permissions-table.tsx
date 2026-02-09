@@ -4,7 +4,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { UserPermissions } from '@/lib/modules';
-import { get } from '@/lib/utils';
+import { getNestedValue } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 
 interface PermissionsTableProps {
@@ -42,28 +42,28 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell className="font-medium">User Management</TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'users.create', false)}
+                checked={!!getNestedValue(permissions, 'users.create', false)}
                 onCheckedChange={handleCheckedChange('users.create')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'users.read', false)}
+                checked={!!getNestedValue(permissions, 'users.read', false)}
                 onCheckedChange={handleCheckedChange('users.read')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'users.update', false)}
+                checked={!!getNestedValue(permissions, 'users.update', false)}
                 onCheckedChange={handleCheckedChange('users.update')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'users.delete', false)}
+                checked={!!getNestedValue(permissions, 'users.delete', false)}
                 onCheckedChange={handleCheckedChange('users.delete')}
                 disabled={isDisabled}
               />
@@ -75,7 +75,7 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell className="font-medium">Campaigns</TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'campaigns.create', false)}
+                checked={!!getNestedValue(permissions, 'campaigns.create', false)}
                 onCheckedChange={handleCheckedChange('campaigns.create')}
                 disabled={isDisabled}
               />
@@ -83,14 +83,14 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell className="text-center text-muted-foreground">--</TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'campaigns.update', false)}
+                checked={!!getNestedValue(permissions, 'campaigns.update', false)}
                 onCheckedChange={handleCheckedChange('campaigns.update')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'campaigns.delete', false)}
+                checked={!!getNestedValue(permissions, 'campaigns.delete', false)}
                 onCheckedChange={handleCheckedChange('campaigns.delete')}
                 disabled={isDisabled}
               />
@@ -103,14 +103,14 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell />
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'campaigns.summary.read', false)}
+                checked={!!getNestedValue(permissions, 'campaigns.summary.read', false)}
                 onCheckedChange={handleCheckedChange('campaigns.summary.read')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'campaigns.summary.update', false)}
+                checked={!!getNestedValue(permissions, 'campaigns.summary.update', false)}
                 onCheckedChange={handleCheckedChange('campaigns.summary.update')}
                 disabled={isDisabled}
               />
@@ -122,14 +122,14 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell />
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'campaigns.ration.read', false)}
+                checked={!!getNestedValue(permissions, 'campaigns.ration.read', false)}
                 onCheckedChange={handleCheckedChange('campaigns.ration.read')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'campaigns.ration.update', false)}
+                checked={!!getNestedValue(permissions, 'campaigns.ration.update', false)}
                 onCheckedChange={handleCheckedChange('campaigns.ration.update')}
                 disabled={isDisabled}
               />
@@ -140,28 +140,28 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell className="pl-12 text-muted-foreground">Beneficiary List</TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'campaigns.beneficiaries.create', false)}
+                checked={!!getNestedValue(permissions, 'campaigns.beneficiaries.create', false)}
                 onCheckedChange={handleCheckedChange('campaigns.beneficiaries.create')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'campaigns.beneficiaries.read', false)}
+                checked={!!getNestedValue(permissions, 'campaigns.beneficiaries.read', false)}
                 onCheckedChange={handleCheckedChange('campaigns.beneficiaries.read')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'campaigns.beneficiaries.update', false)}
+                checked={!!getNestedValue(permissions, 'campaigns.beneficiaries.update', false)}
                 onCheckedChange={handleCheckedChange('campaigns.beneficiaries.update')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'campaigns.beneficiaries.delete', false)}
+                checked={!!getNestedValue(permissions, 'campaigns.beneficiaries.delete', false)}
                 onCheckedChange={handleCheckedChange('campaigns.beneficiaries.delete')}
                 disabled={isDisabled}
               />
@@ -171,28 +171,28 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell className="pl-12 text-muted-foreground">Donations</TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'campaigns.donations.create', false)}
+                checked={!!getNestedValue(permissions, 'campaigns.donations.create', false)}
                 onCheckedChange={handleCheckedChange('campaigns.donations.create')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'campaigns.donations.read', false)}
+                checked={!!getNestedValue(permissions, 'campaigns.donations.read', false)}
                 onCheckedChange={handleCheckedChange('campaigns.donations.read')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'campaigns.donations.update', false)}
+                checked={!!getNestedValue(permissions, 'campaigns.donations.update', false)}
                 onCheckedChange={handleCheckedChange('campaigns.donations.update')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'campaigns.donations.delete', false)}
+                checked={!!getNestedValue(permissions, 'campaigns.donations.delete', false)}
                 onCheckedChange={handleCheckedChange('campaigns.donations.delete')}
                 disabled={isDisabled}
               />
@@ -209,7 +209,7 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell className="font-medium">Leads</TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'leads-members.create', false)}
+                checked={!!getNestedValue(permissions, 'leads-members.create', false)}
                 onCheckedChange={handleCheckedChange('leads-members.create')}
                 disabled={isDisabled}
               />
@@ -217,14 +217,14 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell className="text-center text-muted-foreground">--</TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'leads-members.update', false)}
+                checked={!!getNestedValue(permissions, 'leads-members.update', false)}
                 onCheckedChange={handleCheckedChange('leads-members.update')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'leads-members.delete', false)}
+                checked={!!getNestedValue(permissions, 'leads-members.delete', false)}
                 onCheckedChange={handleCheckedChange('leads-members.delete')}
                 disabled={isDisabled}
               />
@@ -237,14 +237,14 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell />
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'leads-members.summary.read', false)}
+                checked={!!getNestedValue(permissions, 'leads-members.summary.read', false)}
                 onCheckedChange={handleCheckedChange('leads-members.summary.read')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'leads-members.summary.update', false)}
+                checked={!!getNestedValue(permissions, 'leads-members.summary.update', false)}
                 onCheckedChange={handleCheckedChange('leads-members.summary.update')}
                 disabled={isDisabled}
               />
@@ -255,28 +255,28 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell className="pl-12 text-muted-foreground">Beneficiary List</TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'leads-members.beneficiaries.create', false)}
+                checked={!!getNestedValue(permissions, 'leads-members.beneficiaries.create', false)}
                 onCheckedChange={handleCheckedChange('leads-members.beneficiaries.create')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'leads-members.beneficiaries.read', false)}
+                checked={!!getNestedValue(permissions, 'leads-members.beneficiaries.read', false)}
                 onCheckedChange={handleCheckedChange('leads-members.beneficiaries.read')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'leads-members.beneficiaries.update', false)}
+                checked={!!getNestedValue(permissions, 'leads-members.beneficiaries.update', false)}
                 onCheckedChange={handleCheckedChange('leads-members.beneficiaries.update')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'leads-members.beneficiaries.delete', false)}
+                checked={!!getNestedValue(permissions, 'leads-members.beneficiaries.delete', false)}
                 onCheckedChange={handleCheckedChange('leads-members.beneficiaries.delete')}
                 disabled={isDisabled}
               />
@@ -286,28 +286,28 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell className="pl-12 text-muted-foreground">Donations</TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'leads-members.donations.create', false)}
+                checked={!!getNestedValue(permissions, 'leads-members.donations.create', false)}
                 onCheckedChange={handleCheckedChange('leads-members.donations.create')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'leads-members.donations.read', false)}
+                checked={!!getNestedValue(permissions, 'leads-members.donations.read', false)}
                 onCheckedChange={handleCheckedChange('leads-members.donations.read')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'leads-members.donations.update', false)}
+                checked={!!getNestedValue(permissions, 'leads-members.donations.update', false)}
                 onCheckedChange={handleCheckedChange('leads-members.donations.update')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'leads-members.donations.delete', false)}
+                checked={!!getNestedValue(permissions, 'leads-members.donations.delete', false)}
                 onCheckedChange={handleCheckedChange('leads-members.donations.delete')}
                 disabled={isDisabled}
               />
@@ -324,28 +324,28 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell className="font-medium">Donations (Global)</TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'donations.create', false)}
+                checked={!!getNestedValue(permissions, 'donations.create', false)}
                 onCheckedChange={handleCheckedChange('donations.create')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'donations.read', false)}
+                checked={!!getNestedValue(permissions, 'donations.read', false)}
                 onCheckedChange={handleCheckedChange('donations.read')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'donations.update', false)}
+                checked={!!getNestedValue(permissions, 'donations.update', false)}
                 onCheckedChange={handleCheckedChange('donations.update')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'donations.delete', false)}
+                checked={!!getNestedValue(permissions, 'donations.delete', false)}
                 onCheckedChange={handleCheckedChange('donations.delete')}
                 disabled={isDisabled}
               />
@@ -358,7 +358,7 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell />
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'extractor.read', false)}
+                checked={!!getNestedValue(permissions, 'extractor.read', false)}
                 onCheckedChange={handleCheckedChange('extractor.read')}
                 disabled={isDisabled}
               />
@@ -371,7 +371,7 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell />
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'storyCreator.read', false)}
+                checked={!!getNestedValue(permissions, 'storyCreator.read', false)}
                 onCheckedChange={handleCheckedChange('storyCreator.read')}
                 disabled={isDisabled}
               />
@@ -384,7 +384,7 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell />
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'diagnostics.read', false)}
+                checked={!!getNestedValue(permissions, 'diagnostics.read', false)}
                 onCheckedChange={handleCheckedChange('diagnostics.read')}
                 disabled={isDisabled}
               />
@@ -397,14 +397,14 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell />
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'settings.read', false)}
+                checked={!!getNestedValue(permissions, 'settings.read', false)}
                 onCheckedChange={handleCheckedChange('settings.read')}
                 disabled={isDisabled}
               />
             </TableCell>
             <TableCell className="text-center">
               <Checkbox
-                checked={!!get(permissions, 'settings.update', false)}
+                checked={!!getNestedValue(permissions, 'settings.update', false)}
                 onCheckedChange={handleCheckedChange('settings.update')}
                 disabled={isDisabled}
               />
