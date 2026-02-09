@@ -320,7 +320,7 @@ export default function DonationsPage() {
     if (linkFilter.length > 0) {
       sortableItems = sortableItems.filter(d => {
         const links = d.linkSplit || [];
-        const isUnlinked = links.length === 0 || links.every(l => l.linkId === 'unallocated');
+        const isUnlinked = links.length === 0 || links.every(l => l.linkType === 'general');
         
         return linkFilter.some(filterValue => {
           if (filterValue === 'unlinked') {
@@ -636,6 +636,7 @@ export default function DonationsPage() {
                         ) : (filteredAndSortedDonations && filteredAndSortedDonations.length > 0) ? (
                         filteredAndSortedDonations.map((donation, index) => {
                             const donationLinks = donation.linkSplit || [];
+                            const linkedInitiatives = donationLinks.filter(l => l.linkType !== 'general');
                             const isOpen = openRows[donation.id] || false;
                             return (
                                 <Collapsible key={donation.id} open={isOpen} onOpenChange={(open) => setOpenRows(prev => ({...prev, [donation.id]: open}))}>
@@ -650,24 +651,25 @@ export default function DonationsPage() {
                                                         </Button>
                                                     </CollapsibleTrigger>
                                                     <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
+                                                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                                                             <Button variant="ghost" size="icon" className="h-8 w-8">
                                                                 <MoreHorizontal className="h-4 w-4" />
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
                                                             {canUpdate && (
-                                                                <DropdownMenuItem onClick={() => handleEdit(donation)}>
+                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(donation); }}>
                                                                     <Edit className="mr-2 h-4 w-4" /> Edit
                                                                 </DropdownMenuItem>
                                                             )}
-                                                            {donationLinks.length === 0 ? (
-                                                                <DropdownMenuItem disabled>
-                                                                    <Eye className="mr-2 h-4 w-4" /> View (Not Linked)
-                                                                </DropdownMenuItem>
-                                                            ) : donationLinks.length === 1 ? (
-                                                                <DropdownMenuItem onClick={() => router.push(`/${donationLinks[0].linkType === 'campaign' ? 'campaign-members' : 'leads-members'}/${donationLinks[0].linkId}/donations/${donation.id}`)}>
+
+                                                            {linkedInitiatives.length === 0 ? (
+                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/donations/${donation.id}`); }}>
                                                                     <Eye className="mr-2 h-4 w-4" /> View Details
+                                                                </DropdownMenuItem>
+                                                            ) : linkedInitiatives.length === 1 ? (
+                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/${linkedInitiatives[0].linkType === 'campaign' ? 'campaign-members' : 'leads-members'}/${linkedInitiatives[0].linkId}/donations/${donation.id}`); }}>
+                                                                    <Eye className="mr-2 h-4 w-4" /> View in "{linkedInitiatives[0].linkName}"
                                                                 </DropdownMenuItem>
                                                             ) : (
                                                                 <DropdownMenuSub>
@@ -676,8 +678,8 @@ export default function DonationsPage() {
                                                                     </DropdownMenuSubTrigger>
                                                                     <DropdownMenuPortal>
                                                                         <DropdownMenuSubContent>
-                                                                            {donationLinks.map(link => (
-                                                                                <DropdownMenuItem key={link.linkId} onClick={() => router.push(`/${link.linkType === 'campaign' ? 'campaign-members' : 'leads-members'}/${link.linkId}/donations/${donation.id}`)}>
+                                                                            {linkedInitiatives.map(link => (
+                                                                                <DropdownMenuItem key={link.linkId} onClick={(e) => { e.stopPropagation(); router.push(`/${link.linkType === 'campaign' ? 'campaign-members' : 'leads-members'}/${link.linkId}/donations/${donation.id}`); }}>
                                                                                     {link.linkName}
                                                                                 </DropdownMenuItem>
                                                                             ))}
@@ -685,11 +687,9 @@ export default function DonationsPage() {
                                                                     </DropdownMenuPortal>
                                                                 </DropdownMenuSub>
                                                             )}
-
-                                                            <DropdownMenuSeparator />
-                                                            
+                                                            {canDelete && <DropdownMenuSeparator />}
                                                             {canDelete && (
-                                                                <DropdownMenuItem onClick={() => handleDeleteClick(donation.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
+                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
                                                                     <Trash2 className="mr-2 h-4 w-4" /> Delete
                                                                 </DropdownMenuItem>
                                                             )}
@@ -722,8 +722,8 @@ export default function DonationsPage() {
                                                 {donation.linkSplit.map(link => (
                                                     <Link 
                                                     key={link.linkId}
-                                                    href={link.linkType === 'campaign' ? `/campaign-members/${link.linkId}` : `/leads-members/${link.linkId}`}
-                                                    className="text-primary hover:underline text-xs"
+                                                    href={link.linkType === 'campaign' ? `/campaign-members/${link.linkId}` : link.linkType === 'lead' ? `/leads-members/${link.linkId}` : '#'}
+                                                    className={cn("text-primary hover:underline text-xs", link.linkType === 'general' && "text-muted-foreground no-underline cursor-default")}
                                                     onClick={(e) => e.stopPropagation()}
                                                     >
                                                     {link.linkName} {donation.linkSplit && donation.linkSplit.length > 1 ? `(₹${link.amount.toFixed(2)})` : ''}

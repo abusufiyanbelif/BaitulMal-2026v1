@@ -1,0 +1,8 @@
+src/app/campaign-members/[campaignId]/donations/[donationId]/page.tsx(565,45): error TS2322: Type '{ icon: Element; label: string; value: string; }' is not assignable to type 'IntrinsicAttributes & { label: string; value: ReactNode; isMono?: boolean | undefined; }'.
+  Property 'icon' does not exist on type 'IntrinsicAttributes & { label: string; value: ReactNode; isMono?: boolean | undefined; }'.
+src/app/campaign-members/[campaignId]/donations/[donationId]/page.tsx(568,45): error TS2322: Type '{ icon: Element; label: string; value: string; }' is not assignable to type 'IntrinsicAttributes & { label: string; value: ReactNode; isMono?: boolean | undefined; }'.
+  Property 'icon' does not exist on type 'IntrinsicAttributes & { label: string; value: ReactNode; isMono?: boolean | undefined; }'.
+src/app/leads-members/[leadId]/donations/[donationId]/page.tsx(561,45): error TS2322: Type '{ icon: Element; label: string; value: string; }' is not assignable to type 'IntrinsicAttributes & { label: string; value: ReactNode; isMono?: boolean | undefined; }'.
+  Property 'icon' does not exist on type 'IntrinsicAttributes & { label: string; value: ReactNode; isMono?: boolean | undefined; }'.
+src/app/leads-members/[leadId]/donations/[donationId]/page.tsx(564,45): error TS2322: Type '{ icon: Element; label: string; value: string; }' is not assignable to type 'IntrinsicAttributes & { label: string; value: ReactNode; isMono?: boolean | undefined; }'.
+  Property 'icon' does not exist on type 'IntrinsicAttributes & { label: string; value: ReactNode; isMono?: boolean | undefined; }'.
