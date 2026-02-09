@@ -624,12 +624,12 @@ export default function DonationsPage() {
                 <TableHeader>
                   <TableRow>
                       <SortableHeader sortKey="srNo" className="w-[50px] pl-4">#</SortableHeader>
-                      <SortableHeader sortKey="donorName" className="min-w-[200px]">Donor</SortableHeader>
-                      <SortableHeader sortKey="receiverName" className="min-w-[200px]">Receiver</SortableHeader>
-                      <SortableHeader sortKey="amount" className="min-w-[150px] text-right">Amount & Date</SortableHeader>
-                      <TableHead className="min-w-[180px]">Category & Type</TableHead>
-                      <SortableHeader sortKey="status" className="min-w-[120px]">Status</SortableHeader>
-                      <TableHead className="text-right w-[100px] pr-4">Actions</TableHead>
+                      <SortableHeader sortKey="donorName" className="w-[200px]">Donor</SortableHeader>
+                      <SortableHeader sortKey="receiverName" className="w-[200px]">Receiver</SortableHeader>
+                      <SortableHeader sortKey="amount" className="w-[150px] text-right">Amount & Date</SortableHeader>
+                      <TableHead className="w-[200px]">Category & Type</TableHead>
+                      <SortableHeader sortKey="status" className="w-[120px]">Status</SortableHeader>
+                      <TableHead className="w-[100px] text-right pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
