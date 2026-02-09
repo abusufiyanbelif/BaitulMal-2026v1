@@ -68,7 +68,7 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
             }
             
             // 3. Migrate single transaction fields to `transactions` array
-            if (!donation.transactions || donation.transactions.length === 0) {
+            if ((!donation.transactions || donation.transactions.length === 0) && 'transactionId' in donation) {
                 updatePayload.transactions = [{
                     id: `tx_${Date.now()}`,
                     amount: donation.amount,
@@ -76,9 +76,9 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
                     screenshotUrl: donation.screenshotUrl || '',
                     screenshotIsPublic: donation.screenshotIsPublic || false,
                 }];
-                updatePayload.transactionId = admin.firestore.FieldValue.delete();
-                updatePayload.screenshotUrl = admin.firestore.FieldValue.delete();
-                updatePayload.screenshotIsPublic = admin.firestore.FieldValue.delete();
+                if ('transactionId' in donation) updatePayload.transactionId = admin.firestore.FieldValue.delete();
+                if ('screenshotUrl' in donation) updatePayload.screenshotUrl = admin.firestore.FieldValue.delete();
+                if ('screenshotIsPublic' in donation) updatePayload.screenshotIsPublic = admin.firestore.FieldValue.delete();
                 needsUpdate = true;
             }
 

@@ -375,18 +375,6 @@ export default function DonationsPage() {
 
   const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading || areAllCampaignsLoading || areAllLeadsLoading;
   
-  const SortableHeader = ({ sortKey, children, className }: { sortKey: SortKey, children: React.ReactNode, className?: string }) => {
-    const isSorted = sortConfig?.key === sortKey;
-    return (
-        <TableHead className={cn("cursor-pointer hover:bg-muted/50", className)} onClick={() => handleSort(sortKey)}>
-            <div className="flex items-center gap-2 whitespace-nowrap">
-                {children}
-                {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
-            </div>
-        </TableHead>
-    );
-  };
-
   if (isLoading) {
     return (
         <main className="container mx-auto p-4 md:p-8">
@@ -613,35 +601,33 @@ export default function DonationsPage() {
                           </TableRow>
                           <CollapsibleContent asChild>
                               <TableRow className="bg-muted/50 hover:bg-muted/50">
-                                  <TableCell colSpan={7} className="p-0">
-                                      <div className="p-1.5 md:p-2">
-                                          <h4 className="text-sm font-semibold mb-2">Transaction Details</h4>
-                                          <div className="border rounded-md bg-background">
-                                            <Table>
-                                                <TableHeader>
-                                                    <TableRow>
-                                                        <TableHead>Amount</TableHead>
-                                                        <TableHead>Transaction ID</TableHead>
-                                                        <TableHead>Screenshot</TableHead>
+                                  <TableCell colSpan={7} className="p-2">
+                                      <h4 className="text-sm font-semibold mb-2">Transaction Details</h4>
+                                      <div className="border rounded-md bg-background">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Amount</TableHead>
+                                                    <TableHead>Transaction ID</TableHead>
+                                                    <TableHead>Screenshot</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {(donation.transactions || []).map((tx) => (
+                                                    <TableRow key={tx.id}>
+                                                        <TableCell>₹{tx.amount.toFixed(2)}</TableCell>
+                                                        <TableCell>{tx.transactionId || 'N/A'}</TableCell>
+                                                        <TableCell>
+                                                            {tx.screenshotUrl ? (
+                                                                <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)}>
+                                                                    <Eye className="mr-2 h-4 w-4"/> View
+                                                                </Button>
+                                                            ) : 'No'}
+                                                        </TableCell>
                                                     </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {(donation.transactions || []).map((tx) => (
-                                                        <TableRow key={tx.id}>
-                                                            <TableCell>₹{tx.amount.toFixed(2)}</TableCell>
-                                                            <TableCell>{tx.transactionId || 'N/A'}</TableCell>
-                                                            <TableCell>
-                                                                {tx.screenshotUrl ? (
-                                                                    <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)}>
-                                                                        <Eye className="mr-2 h-4 w-4"/> View
-                                                                    </Button>
-                                                                ) : 'No'}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                            </Table>
-                                          </div>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
                                       </div>
                                   </TableCell>
                               </TableRow>

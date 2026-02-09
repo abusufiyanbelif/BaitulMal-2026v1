@@ -1,5 +1,5 @@
 
-import { get, set } from "./utils";
+import { getNestedValue, set } from "./utils";
 
 export const crudPermissions = ['create', 'read', 'update', 'delete'] as const;
 export const readUpdatePermissions = ['read', 'update'] as const;

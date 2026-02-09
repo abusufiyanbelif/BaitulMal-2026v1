@@ -4,6 +4,34 @@
 import { adminAuth, adminDb, adminStorage } from '@/lib/firebase-admin-sdk';
 import type { UserProfile } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
+import type { UserFormData } from '@/components/user-form';
+
+export async function createUserAuthAction(data: UserFormData): Promise<{ success: boolean; message: string; uid?: string; }> {
+  if (!adminAuth) {
+    return { success: false, message: 'Firebase Admin SDK is not initialized.' };
+  }
+  try {
+    const userRecord = await adminAuth.createUser({
+      email: data.email,
+      emailVerified: true,
+      password: data.password,
+      displayName: data.name,
+      phoneNumber: data.phone ? `+91${data.phone}` : undefined,
+    });
+    return { success: true, message: 'User created in Firebase Auth.', uid: userRecord.uid };
+  } catch (error: any) {
+    let message = 'An unexpected error occurred during user creation.';
+    if (error.code === 'auth/email-already-exists') {
+      message = 'This email address is already in use by another account.';
+    } else if (error.code === 'auth/phone-number-already-exists') {
+      message = 'This phone number is already in use by another account.';
+    } else if (error.code === 'auth/invalid-password') {
+      message = 'The password must be a string with at least six characters.';
+    }
+    console.error('createUserAuthAction Error:', error);
+    return { success: false, message };
+  }
+}
 
 export async function deleteUserAction(uidToDelete: string): Promise<{ success: boolean; message: string }> {
   if (!adminAuth || !adminDb || !adminStorage) {

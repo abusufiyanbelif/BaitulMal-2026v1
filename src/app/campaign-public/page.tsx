@@ -43,44 +43,41 @@ export default function PublicCampaignPage() {
     if (!campaigns || !donations) return [];
 
     return campaigns.map(campaign => {
-      const collected = donations.reduce((sum, donation) => {
-            let amountForThisCampaign = 0;
+      const relevantDonations = donations.filter(d => {
+        if (d.linkSplit && d.linkSplit.length > 0) {
+            return d.linkSplit.some(link => link.linkId === campaign.id);
+        }
+        return d.campaignId === campaign.id;
+      });
 
-            const campaignLink = donation.linkSplit?.find(l => l.linkId === campaign.id && l.linkType === 'campaign');
-            
-            if (campaignLink) {
-                amountForThisCampaign = campaignLink.amount;
-            } else if ((!donation.linkSplit || donation.linkSplit.length === 0) && donation.campaignId === campaign.id) {
-                // This is a legacy donation for this campaign
-                amountForThisCampaign = donation.amount;
-            } else {
-                // This donation is not for this campaign
-                return sum;
+      const collected = relevantDonations.reduce((sum, donation) => {
+        let amountForThisCampaign = 0;
+        if (donation.linkSplit && donation.linkSplit.length > 0) {
+            const campaignLink = donation.linkSplit.find(l => l.linkId === campaign.id);
+            amountForThisCampaign = campaignLink?.amount || 0;
+        } else {
+            amountForThisCampaign = donation.amount;
+        }
+        
+        if (amountForThisCampaign === 0) return sum;
+
+        const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
+        const proportionForThisCampaign = amountForThisCampaign / totalDonationAmount;
+
+        const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
+            ? donation.typeSplit
+            : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
+        
+        const totalApplicableAmountInDonation = typeSplits.reduce((acc, split) => {
+            const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
+            if (campaign.allowedDonationTypes?.includes(category)) {
+                return acc + split.amount;
             }
-            
-            if (amountForThisCampaign === 0) {
-                return sum;
-            }
-
-            const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
-            
-            const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
-                ? donation.typeSplit
-                : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
-
-            const applicableTypeTotal = typeSplits.reduce((acc, split) => {
-                const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                if (campaign.allowedDonationTypes?.includes(category)) {
-                    return acc + split.amount;
-                }
-                return acc;
-            }, 0);
-            
-            const proportionOfApplicableTypes = applicableTypeTotal / totalDonationAmount;
-            const finalAmountForGoal = amountForThisCampaign * proportionOfApplicableTypes;
-
-            return sum + finalAmountForGoal;
+            return acc;
         }, 0);
+
+        return sum + (totalApplicableAmountInDonation * proportionForThisCampaign);
+      }, 0);
 
       const progress = campaign.targetAmount && campaign.targetAmount > 0 ? (collected / campaign.targetAmount) * 100 : 0;
       

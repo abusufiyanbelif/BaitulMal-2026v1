@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { useSession } from '@/hooks/use-session';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -38,8 +38,7 @@ export default function ProfilePage() {
     const [phone, setPhone] = useState('');
     
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isDirty, setIsDirty] = useState(false);
-
+    
     const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
     const [imageToView, setImageToView] = useState<string | null>(null);
     const [zoom, setZoom] = useState(1);
@@ -48,16 +47,13 @@ export default function ProfilePage() {
     useEffect(() => {
         if (userProfile) {
             setName(userProfile.name);
-            setPhone(userProfile.phone);
+            setPhone(userProfile.phone || '');
         }
     }, [userProfile]);
 
-    useEffect(() => {
-        if (isEditMode && userProfile) {
-            setIsDirty(name !== userProfile.name || phone !== userProfile.phone);
-        } else {
-            setIsDirty(false);
-        }
+    const isDirty = useMemo(() => {
+        if (!isEditMode || !userProfile) return false;
+        return name !== userProfile.name || phone !== (userProfile.phone || '');
     }, [name, phone, userProfile, isEditMode]);
 
 
@@ -71,7 +67,7 @@ export default function ProfilePage() {
     const handleEdit = () => {
         if (userProfile) {
             setName(userProfile.name);
-            setPhone(userProfile.phone);
+            setPhone(userProfile.phone || '');
             setIsEditMode(true);
         }
     };
@@ -79,7 +75,7 @@ export default function ProfilePage() {
     const handleCancel = () => {
         if (userProfile) {
             setName(userProfile.name);
-            setPhone(userProfile.phone);
+            setPhone(userProfile.phone || '');
         }
         setIsEditMode(false);
     };
@@ -96,11 +92,11 @@ export default function ProfilePage() {
 
         const updateData: {name?: string, phone?: string } = {};
         if (name !== userProfile.name) updateData.name = name;
-        if (phone !== userProfile.phone) updateData.phone = phone;
+        if (phone !== (userProfile.phone || '')) updateData.phone = phone;
 
         batch.update(userDocRef, updateData);
 
-        if (userProfile.phone !== phone) {
+        if ((userProfile.phone || '') !== phone) {
             if (userProfile.phone) {
                 const oldLookupRef = doc(firestore, 'user_lookups', userProfile.phone);
                 batch.delete(oldLookupRef);

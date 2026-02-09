@@ -43,20 +43,19 @@ export default function PublicLeadPage() {
   const leadData = useMemo(() => {
     if (!leads || !donations) return [];
     return leads.map(lead => {
-        const collected = donations.reduce((sum, donation) => {
+        const relevantDonations = donations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id));
+        const collected = relevantDonations.reduce((sum, donation) => {
             const leadLink = donation.linkSplit?.find(l => l.linkId === lead.id);
-            if (!leadLink) {
-                return sum;
-            }
+            if (!leadLink) return sum;
 
             const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
-            
+            const proportionForThisLead = leadLink.amount / totalDonationAmount;
+
             const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
                 ? donation.typeSplit
                 : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
 
-
-            const applicableTypeTotal = typeSplits.reduce((acc, split) => {
+            const totalApplicableAmountInDonation = typeSplits.reduce((acc, split) => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
                 if (lead.allowedDonationTypes?.includes(category)) {
                     return acc + split.amount;
@@ -64,10 +63,7 @@ export default function PublicLeadPage() {
                 return acc;
             }, 0);
             
-            const proportionOfApplicableTypes = applicableTypeTotal / totalDonationAmount;
-            const finalAmountForGoal = leadLink.amount * proportionOfApplicableTypes;
-
-            return sum + finalAmountForGoal;
+            return sum + (totalApplicableAmountInDonation * proportionForThisLead);
         }, 0);
 
         const progress = lead.targetAmount && lead.targetAmount > 0 ? (collected / lead.targetAmount) * 100 : 0;
