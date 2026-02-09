@@ -87,7 +87,7 @@ export default function DonationDetailsPage() {
                 if (transaction.screenshotFile) {
                     const file = (transaction.screenshotFile as FileList)[0];
                     if(file) {
-                        const { default: Resizer } = await import('react-image-file-resizer');
+                        const Resizer = (await import('react-image-file-resizer')).default;
                         const resizedBlob = await new Promise<Blob>((resolve) => {
                             Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
                         });
@@ -211,49 +211,37 @@ export default function DonationDetailsPage() {
 
             if (format === 'png') {
                 const PADDING = 40;
-                const HEADER_HEIGHT = 100;
-                const FOOTER_HEIGHT = 180;
+                const HEADER_HEIGHT = 120;
+                const FOOTER_HEIGHT = 200;
                 const COPYRIGHT_HEIGHT = 30;
                 
-                const finalCanvas = document.createElement('canvas');
-                const contentWidth = canvas.width;
-                const contentHeight = canvas.height;
+                const contentCanvas = canvas;
 
+                const finalCanvas = document.createElement('canvas');
                 finalCanvas.width = 1240;
-                finalCanvas.height = contentHeight + HEADER_HEIGHT + FOOTER_HEIGHT + PADDING * 2 + COPYRIGHT_HEIGHT;
+                finalCanvas.height = contentCanvas.height + HEADER_HEIGHT + FOOTER_HEIGHT + PADDING + COPYRIGHT_HEIGHT;
                 const ctx = finalCanvas.getContext('2d')!;
                 
                 ctx.fillStyle = '#FFFFFF';
                 ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
+                let headerTextX = PADDING;
                 if (logoImg) {
                     const logoHeight = 80;
                     const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
-                    ctx.drawImage(logoImg, PADDING, PADDING, logoWidth, logoHeight);
+                    ctx.drawImage(logoImg, PADDING, PADDING / 2, logoWidth, logoHeight);
+                    headerTextX = PADDING + logoWidth + 20;
                 }
-                
-                ctx.fillStyle = 'rgb(19, 106, 51)';
-                ctx.font = 'bold 22px sans-serif';
-                ctx.fillText(brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur', PADDING + (logoImg ? 90 : 0), PADDING + 50);
 
-                ctx.drawImage(canvas, (finalCanvas.width - contentWidth) / 2, PADDING + HEADER_HEIGHT);
-                
-                const footerY = finalCanvas.height - FOOTER_HEIGHT - PADDING - COPYRIGHT_HEIGHT;
-                if (qrImg) {
-                    const qrSize = 200;
-                    ctx.drawImage(qrImg, finalCanvas.width - PADDING - qrSize, footerY, qrSize, qrSize);
-                }
-                ctx.fillStyle = 'rgb(19, 106, 51)';
-                ctx.font = 'bold 18px sans-serif';
-                ctx.fillText('For Donations & Contact', PADDING, footerY + 25);
-                ctx.font = '16px sans-serif';
-                let textY = footerY + 50;
-                if (paymentSettings?.upiId) { ctx.fillText(`UPI: ${paymentSettings.upiId}`, PADDING, textY); textY += 24; }
-                if (paymentSettings?.paymentMobileNumber) { ctx.fillText(`Phone: ${paymentSettings.paymentMobileNumber}`, PADDING, textY); textY += 24; }
-                if (paymentSettings?.contactEmail) { ctx.fillText(`Email: ${paymentSettings.contactEmail}`, PADDING, textY); textY += 24; }
-                if (paymentSettings?.website) { ctx.fillText(`Website: ${paymentSettings.website}`, PADDING, textY); textY += 24; }
-                if (paymentSettings?.address) { ctx.fillText(paymentSettings.address, PADDING, textY); }
+                ctx.fillStyle = 'hsl(142 70% 25%)';
+                ctx.font = 'bold 28px sans-serif';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur', headerTextX, (PADDING / 2) + 40);
 
+                ctx.font = 'bold 24px sans-serif';
+                ctx.textBaseline = 'alphabetic';
+                ctx.fillText('Donation Receipt', PADDING, HEADER_HEIGHT);
+                
                 if (logoImg) {
                     const wmScale = 0.8;
                     const wmWidth = finalCanvas.width * wmScale;
@@ -262,7 +250,24 @@ export default function DonationDetailsPage() {
                     ctx.drawImage(logoImg, (finalCanvas.width - wmWidth) / 2, (finalCanvas.height - wmHeight) / 2, wmWidth, wmHeight);
                     ctx.globalAlpha = 1.0;
                 }
+
+                ctx.drawImage(contentCanvas, PADDING, HEADER_HEIGHT + (PADDING/2));
                 
+                const footerY = finalCanvas.height - FOOTER_HEIGHT - COPYRIGHT_HEIGHT;
+                if (qrImg) {
+                    const qrSize = 180;
+                    ctx.drawImage(qrImg, finalCanvas.width - PADDING - qrSize, footerY, qrSize, qrSize);
+                }
+                ctx.fillStyle = 'hsl(142 70% 25%)';
+                ctx.font = 'bold 20px sans-serif';
+                ctx.fillText('For Donations & Contact', PADDING, footerY + 25);
+                ctx.font = '18px sans-serif';
+                let textY = footerY + 55;
+                if (paymentSettings?.upiId) { ctx.fillText(`UPI: ${paymentSettings.upiId}`, PADDING, textY); textY += 28; }
+                if (paymentSettings?.contactPhone) { ctx.fillText(`Phone: ${paymentSettings.contactPhone}`, PADDING, textY); textY += 28; }
+                if (paymentSettings?.website) { ctx.fillText(`Website: ${paymentSettings.website}`, PADDING, textY); textY += 28; }
+                if (paymentSettings?.address) { ctx.fillText(paymentSettings.address, PADDING, textY); }
+
                 ctx.textAlign = 'center';
                 ctx.font = '14px sans-serif';
                 ctx.fillStyle = 'hsl(var(--muted-foreground))';
@@ -277,17 +282,16 @@ export default function DonationDetailsPage() {
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pageHeight = pdf.internal.pageSize.getHeight();
                 const pageCenter = pdfWidth / 2;
+                const footerHeight = 75;
                 let position = 15;
 
                 pdf.setTextColor(19, 106, 51);
 
-                // Header with Logo and Org Name
                 if (logoImg && logoDataUrl) {
                     const logoHeight = 20;
                     const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
                     pdf.addImage(logoDataUrl, 'PNG', 15, position, logoWidth, logoHeight);
                     pdf.setFontSize(14);
-                    // Vertically center the text with the logo
                     const textY = position + (logoHeight / 2) + 3;
                     pdf.text(brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur', 15 + logoWidth + 5, textY);
                     position += logoHeight + 10;
@@ -297,14 +301,12 @@ export default function DonationDetailsPage() {
                     position += 15;
                 }
                 
-                // Document Title
                 pdf.setFontSize(16).text('Donation Receipt', pageCenter, position, { align: 'center' });
                 position += 15;
 
                 const imgData = canvas.toDataURL('image/png');
                 const imgProps = pdf.getImageProperties(imgData);
 
-                const footerHeight = 75;
                 const availableHeight = pageHeight - position - footerHeight;
 
                 let imgWidth = pdfWidth - 30;
@@ -344,10 +346,10 @@ export default function DonationDetailsPage() {
                     pdf.addImage(qrDataUrl!, 'PNG', qrX, position, qrSize, qrSize);
                 }
                 
-                if (paymentSettings?.upiId) { pdf.text(`UPI: ${paymentSettings.upiId}`, 15, textY); textY += 7; }
-                if (paymentSettings?.paymentMobileNumber) { pdf.text(`Phone: ${paymentSettings.paymentMobileNumber}`, 15, textY); textY += 7; }
-                if (paymentSettings?.contactEmail) { pdf.text(`Email: ${paymentSettings.contactEmail}`, 15, textY); textY += 7; }
-                if (paymentSettings?.website) { pdf.text(`Website: ${paymentSettings.website}`, 15, textY); textY += 7; }
+                if (paymentSettings?.upiId) { pdf.text(`UPI: ${paymentSettings.upiId}`, 15, textY); textY += 6; }
+                if (paymentSettings?.paymentMobileNumber) { pdf.text(`Phone: ${paymentSettings.paymentMobileNumber}`, 15, textY); textY += 6; }
+                if (paymentSettings?.contactEmail) { pdf.text(`Email: ${paymentSettings.contactEmail}`, 15, textY); textY += 6; }
+                if (paymentSettings?.website) { pdf.text(`Website: ${paymentSettings.website}`, 15, textY); textY += 6; }
                 if (paymentSettings?.address) {
                     const addressLines = pdf.splitTextToSize(paymentSettings.address, pdfWidth / 2 - 30);
                     pdf.text(addressLines, 15, textY);
@@ -449,7 +451,7 @@ export default function DonationDetailsPage() {
                 </Alert>
             )}
             
-            <div ref={summaryRef} className="space-y-6 animate-fade-in-zoom">
+            <div ref={summaryRef} className="space-y-6 p-4 bg-background animate-fade-in-zoom">
                 <div className="grid gap-6 lg:grid-cols-2">
                     <Card>
                         <CardHeader><CardTitle>Donation Summary</CardTitle></CardHeader>
