@@ -1,3 +1,4 @@
+
 'use client';
 import { useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -71,7 +72,7 @@ export function AppFooter() {
   }
 
   return (
-    <footer className="bg-card border-t mt-auto p-4 text-card-foreground">
+    <footer className="bg-card border-t mt-auto p-3 text-card-foreground">
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
             {/* Org & Contact Info */}

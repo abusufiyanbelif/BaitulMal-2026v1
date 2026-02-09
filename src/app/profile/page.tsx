@@ -169,7 +169,7 @@ export default function ProfilePage() {
                          )}
                     </div>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-4">
                     {userProfile ? (
                         <>
                             <ProfileDetail icon={<User />} label="Full Name" value={userProfile.name} isEditing={isEditMode}>

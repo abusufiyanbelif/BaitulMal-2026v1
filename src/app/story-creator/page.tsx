@@ -29,10 +29,10 @@ export default function StoryCreatorPage() {
             Education
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="medical" className="mt-6">
+        <TabsContent value="medical" className="mt-4">
           <MedicalExtractor enableStoryCreator={true} />
         </TabsContent>
-         <TabsContent value="education" className="mt-6">
+         <TabsContent value="education" className="mt-4">
           <EducationExtractor enableStoryCreator={true} />
          </TabsContent>
       </Tabs>

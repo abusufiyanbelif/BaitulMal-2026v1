@@ -312,7 +312,7 @@ export default function DiagnosticsPage() {
                     <CardTitle>System Diagnostics</CardTitle>
                     <p className="text-muted-foreground">Run tests to check the connectivity and configuration of required application resources.</p>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-4">
                     <Button onClick={runAllChecks} disabled={isAllRunning}>
                         {isAllRunning ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

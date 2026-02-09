@@ -1,212 +1,158 @@
 
-
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirestore, errorEmitter, FirestorePermissionError, useStorage, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { collection, doc, serverTimestamp, writeBatch } from 'firebase/firestore';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { initializeApp, deleteApp } from 'firebase/app';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { firebaseConfig } from '@/firebase/config';
-import { modules, createAdminPermissions } from '@/lib/modules';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
-import { ArrowLeft, Loader2, ShieldAlert } from 'lucide-react';
-import { UserForm, type UserFormData } from '@/components/user-form';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import type { UserProfile } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Loader2, ShieldAlert } from 'lucide-react';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import type { UserProfile, DonationCategory } from '@/lib/types';
+import { donationCategories } from '@/lib/modules';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
+const formSchema = z.object({
+  name: z.string().min(3, 'Campaign name must be at least 3 characters.'),
+  category: z.enum(['Ration', 'Relief', 'General']),
+  status: z.enum(['Upcoming', 'Active', 'Completed']),
+  authenticityStatus: z.enum(['Pending Verification', 'Verified', 'Rejected', 'On Hold', 'Need More Details']),
+  publicVisibility: z.enum(['Hold', 'Ready to Publish', 'Published']),
+  startDate: z.string().min(1, 'Start date is required.'),
+  endDate: z.string().min(1, 'End date is required.'),
+  targetAmount: z.coerce.number().min(0, 'Target amount must be a positive number.').optional(),
+  allowedDonationTypes: z.array(z.string()).optional(),
+}).refine(data => new Date(data.startDate) <= new Date(data.endDate), {
+    message: "End date cannot be before the start date.",
+    path: ["endDate"],
+});
 
-export default function CreateUserPage() {
+type CampaignFormValues = z.infer<typeof formSchema>;
+
+export default function CreateCampaignPage() {
   const router = useRouter();
   const firestore = useFirestore();
-  const storage = useStorage();
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
+  const [isLoading, setIsLoading] = useState(false);
   const { userProfile, isLoading: isProfileLoading } = useSession();
-
-  const usersCollectionRef = useMemo(() => {
-    if (!firestore || !userProfile) return null;
-    return collection(firestore, 'users');
-  }, [firestore, userProfile?.id]);
-  const { data: users, isLoading: areUsersLoading } = useCollection<UserProfile>(usersCollectionRef);
   
-  const canCreate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.users?.create;
+  const [isDuplicateAlertOpen, setIsDuplicateAlertOpen] = useState(false);
+  const [campaignDataToCreate, setCampaignDataToCreate] = useState<CampaignFormValues | null>(null);
 
-  const handleSave = async (data: UserFormData) => {
-    if (!firestore || !storage || !canCreate || !userProfile) {
-        toast({ title: 'Error', description: 'You do not have permission or services are unavailable.', variant: 'destructive' });
-        return;
+  const campaignsCollectionRef = useMemo(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'campaigns');
+  }, [firestore]);
+  const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<UserProfile>(campaignsCollectionRef);
+
+  const canCreate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.create;
+
+  const form = useForm<CampaignFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      category: 'Ration',
+      status: 'Upcoming',
+      authenticityStatus: 'Pending Verification',
+      publicVisibility: 'Hold',
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split('T')[0],
+      targetAmount: 0,
+      allowedDonationTypes: [...donationCategories],
+    },
+  });
+
+  const handleCreateCampaign = (data: CampaignFormValues) => {
+    if (!firestore || !canCreate || !userProfile) return;
+    setIsLoading(true);
+
+    const newCampaignData = {
+      ...data,
+      targetAmount: data.targetAmount || 0,
+      description: '',
+      createdAt: serverTimestamp(),
+      createdById: userProfile.id,
+      createdByName: userProfile.name,
+      priceDate: new Date().toISOString().split('T')[0],
+      shopName: '',
+      shopContact: '',
+      shopAddress: '',
+      rationLists: [
+        {
+          id: 'general',
+          name: 'General Item List',
+          minMembers: 0,
+          maxMembers: 0,
+          items: []
+        }
+      ],
     };
-    setIsSubmitting(true);
-    
-    let email = data.email;
-    if (!email && data.phone) {
-        email = `+${data.phone}@docdataextract.app`;
-    }
 
-    if (!email) {
-        toast({ title: 'Validation Error', description: 'Either an email or phone number is required to create a user.', variant: 'destructive' });
-        setIsSubmitting(false);
-        return;
-    }
-    
-    if (users && users.some(u => u.loginId === data.loginId || u.userKey === data.userKey || u.email === email)) {
-        toast({
-            title: 'ID Exists',
-            description: 'This Login ID, User Key, or Email/Phone is already taken. Please choose another one.',
-            variant: 'destructive',
+    addDoc(collection(firestore, 'campaigns'), newCampaignData)
+      .then((docRef) => {
+        toast({ title: 'Success', description: 'Campaign created successfully.', variant: 'success' });
+        router.push(`/campaign-members`);
+      })
+      .catch((serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: 'campaigns',
+            operation: 'create',
+            requestResourceData: newCampaignData,
         });
-        setIsSubmitting(false);
-        return;
-    }
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => {
+        setIsLoading(false);
+        setCampaignDataToCreate(null);
+        setIsDuplicateAlertOpen(false);
+      });
+  }
 
-    const newPassword = data.password!;
-
-    const tempAppName = `temp-user-creation-${Date.now()}`;
-    const tempApp = initializeApp(firebaseConfig, tempAppName);
-    const tempAuth = getAuth(tempApp);
-
-    try {
-        const userCredential = await createUserWithEmailAndPassword(tempAuth, email, newPassword);
-        const newUid = userCredential.user.uid;
-        
-        let idProofUrl = '';
-        try {
-            const fileList = data.idProofFile as FileList | undefined;
-            if (fileList && fileList.length > 0) {
-                const file = fileList[0];
-                toast({
-                    title: "Uploading ID Proof...",
-                    description: `Please wait while '${file.name}' is uploaded.`,
-                });
-                
-                const { default: Resizer } = await import('react-image-file-resizer');
-                const resizedBlob = await new Promise<Blob>((resolve) => {
-                    Resizer.imageFileResizer(
-                        file, 1024, 1024, 'PNG', 100, 0,
-                        blob => {
-                            resolve(blob as Blob);
-                        }, 'blob'
-                    );
-                });
-                
-                const fileExtension = 'png';
-                const dateString = new Date().toISOString().split('T')[0];
-                const finalFileName = `${newUid}_id_proof_${dateString}.${fileExtension}`;
-                const filePath = `users/${newUid}/${finalFileName}`;
-                const fileRef = storageRef(storage, filePath);
-
-                const uploadResult = await uploadBytes(fileRef, resizedBlob);
-                idProofUrl = await getDownloadURL(uploadResult.ref);
-            }
-        } catch (uploadError: any) {
-             throw new Error(`File upload failed: ${uploadError.message}. User creation has been cancelled. The temporary authentication account will be removed, but if that fails, manual cleanup may be required.`);
-        }
-        
-        const permissionsToSave = data.role === 'Admin' ? createAdminPermissions() : data.permissions;
-        const dataToSave: Omit<UserProfile, 'id'> & { createdAt: any } = {
-            name: data.name,
-            email: email, // Use real or synthetic email
-            phone: data.phone,
-            loginId: data.loginId,
-            userKey: data.userKey,
-            role: data.role,
-            status: data.status,
-            permissions: permissionsToSave,
-            idProofType: data.idProofType,
-            idNumber: data.idNumber,
-            idProofUrl,
-            createdAt: serverTimestamp(),
-            createdById: userProfile.id,
-            createdByName: userProfile.name,
-        };
-
-        const batch = writeBatch(firestore);
-        const docRef = doc(firestore, 'users', newUid);
-        batch.set(docRef, dataToSave);
-
-        const loginIdLookupRef = doc(firestore, 'user_lookups', data.loginId);
-        batch.set(loginIdLookupRef, { email: email, userKey: data.userKey });
-
-        if (data.phone) {
-            const phoneLookupRef = doc(firestore, 'user_lookups', data.phone);
-            batch.set(phoneLookupRef, { email: email, userKey: data.userKey });
-        }
-        
-        if (data.userKey) {
-            const userKeyLookupRef = doc(firestore, 'user_lookups', data.userKey);
-            batch.set(userKeyLookupRef, { email: email, userKey: data.userKey });
-        }
-        
-        await batch.commit();
-
-        toast({ title: 'Success', description: `User '${data.name}' created successfully.`, variant: 'success' });
-        router.push('/users');
-
-    } catch (error: any) {
-        let errorMessage = "An unexpected error occurred during user creation.";
-        if (error.code) {
-            switch (error.code) {
-                case 'auth/email-already-in-use':
-                    errorMessage = "This email is already in use. Each user must have a unique email address.";
-                    break;
-                case 'auth/weak-password':
-                    errorMessage = "The password is too weak. Please use at least 6 characters.";
-                    break;
-                default:
-                    errorMessage = error.message;
-                    break;
-            }
-        } else {
-             errorMessage = error.message;
-        }
-
-        if (error.name === 'FirestorePermissionError' || error.code === 'permission-denied') {
-             const permissionError = new FirestorePermissionError({
-                path: 'users collection and user_lookups',
-                operation: 'create',
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            errorMessage = 'User could not be saved to the database due to permissions. The auth account was created but is orphaned. Manual cleanup may be required.';
-        }
-
-
-        toast({ title: 'User Creation Failed', description: errorMessage, variant: 'destructive', duration: 10000 });
-    } finally {
-        await deleteApp(tempApp);
-        setIsSubmitting(false);
+  const onSubmit = (data: CampaignFormValues) => {
+    if (campaigns && campaigns.some(c => c.name.trim().toLowerCase() === data.name.trim().toLowerCase())) {
+        setCampaignDataToCreate(data);
+        setIsDuplicateAlertOpen(true);
+    } else {
+        handleCreateCampaign(data);
     }
   };
 
-  const handleCancel = () => {
-    router.push('/users');
-  };
-
-  const isLoading = areUsersLoading || isProfileLoading;
-  
-  if (isLoading) {
+  if (isProfileLoading || areCampaignsLoading) {
     return (
-        <main className="container mx-auto p-4 md:p-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </main>
+      <main className="container mx-auto p-4 md:p-8">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </main>
     );
   }
 
   if (!canCreate) {
-      return (
+    return (
         <main className="container mx-auto p-4 md:p-8">
             <div className="mb-4">
                 <Button variant="outline" asChild>
-                    <Link href="/users">
+                    <Link href="/campaign-members">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Users
+                        Back to Campaigns
                     </Link>
                 </Button>
             </div>
@@ -214,7 +160,7 @@ export default function CreateUserPage() {
                 <ShieldAlert className="h-4 w-4" />
                 <AlertTitle>Access Denied</AlertTitle>
                 <AlertDescription>
-                    You do not have the required permissions to create a new user.
+                You do not have the required permissions to create a new campaign.
                 </AlertDescription>
             </Alert>
         </main>
@@ -222,30 +168,264 @@ export default function CreateUserPage() {
   }
 
   return (
-    <main className="container mx-auto p-4 md:p-8">
-      <div className="mb-4">
-        <Button variant="outline" asChild>
-          <Link href="/users">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Users
-          </Link>
-        </Button>
-      </div>
+    <>
+      <main className="container mx-auto p-4 md:p-8">
+        <div className="mb-4">
+          <Button variant="outline" asChild>
+            <Link href="/campaign-members">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Campaigns
+            </Link>
+          </Button>
+        </div>
+        <Card className="max-w-2xl mx-auto animate-fade-in-zoom">
+          <CardHeader>
+            <CardTitle>Create New Campaign</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Campaign Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. Ration Kit Distribution Ramza 2027" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Campaign Category</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Ration">Ration</SelectItem>
+                          <SelectItem value="Relief">Relief</SelectItem>
+                          <SelectItem value="General">General</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="targetAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Target Amount (₹)</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="e.g. 100000" {...field} />
+                      </FormControl>
+                      <CardDescription>The fundraising goal for the campaign. This can be edited later.</CardDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-      <Card className="max-w-4xl mx-auto animate-fade-in-zoom">
-        <CardHeader>
-          <CardTitle>Create New User</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <UserForm
-              onSubmit={handleSave}
-              onCancel={handleCancel}
-              isSubmitting={isSubmitting}
-              isLoading={isLoading}
-              isReadOnly={false}
-          />
-        </CardContent>
-      </Card>
-    </main>
+                <FormField
+                  control={form.control}
+                  name="allowedDonationTypes"
+                  render={() => (
+                    <FormItem>
+                      <div className="mb-4">
+                        <FormLabel className="text-base">Donation Types for Fundraising</FormLabel>
+                        <FormDescription>
+                          Select which donation types should be counted towards the fundraising goal.
+                        </FormDescription>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-md">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="select-all-types"
+                            checked={form.watch('allowedDonationTypes')?.length === donationCategories.length}
+                            onCheckedChange={(checked) => {
+                              form.setValue('allowedDonationTypes', checked ? [...donationCategories] : []);
+                            }}
+                          />
+                          <Label htmlFor="select-all-types" className="font-bold">Any</Label>
+                        </div>
+                        {donationCategories.map((type) => (
+                          <FormField
+                            key={type}
+                            control={form.control}
+                            name="allowedDonationTypes"
+                            render={({ field }) => {
+                              return (
+                                <FormItem
+                                  key={type}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(type)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...(field.value || []), type])
+                                          : field.onChange(
+                                              (field.value || []).filter(
+                                                (value) => value !== type
+                                              )
+                                            )
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal">
+                                    {type}
+                                  </FormLabel>
+                                </FormItem>
+                              )
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                    control={form.control}
+                    name="startDate"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Start Date</FormLabel>
+                        <FormControl>
+                            <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="endDate"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>End Date</FormLabel>
+                        <FormControl>
+                            <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </div>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a status" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            <SelectItem value="Upcoming">Upcoming</SelectItem>
+                            <SelectItem value="Active">Active</SelectItem>
+                            <SelectItem value="Completed">Completed</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="authenticityStatus"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Authenticity</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select authenticity" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="Pending Verification">Pending Verification</SelectItem>
+                                <SelectItem value="Verified">Verified</SelectItem>
+                                <SelectItem value="On Hold">On Hold</SelectItem>
+                                <SelectItem value="Rejected">Rejected</SelectItem>
+                                <SelectItem value="Need More Details">Need More Details</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="publicVisibility"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Public Visibility</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select visibility" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Hold">Hold (Private)</SelectItem>
+                          <SelectItem value="Ready to Publish">Ready to Publish</SelectItem>
+                          <SelectItem value="Published">Published</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex justify-end">
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Create Campaign
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </main>
+
+       <AlertDialog open={isDuplicateAlertOpen} onOpenChange={setIsDuplicateAlertOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Duplicate Campaign Name</AlertDialogTitle>
+                <AlertDialogDescription>
+                    A campaign with this name already exists. Are you sure you want to create another one?
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setCampaignDataToCreate(null)}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => {
+                    if (campaignDataToCreate) {
+                        handleCreateCampaign(campaignDataToCreate);
+                    }
+                }}>
+                    Create Anyway
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

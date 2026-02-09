@@ -407,7 +407,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
             
             <Separator />
 
-             <div className="space-y-4 rounded-md border p-4">
+             <div className="space-y-4 rounded-md border p-3">
                 <h3 className="text-sm font-medium text-muted-foreground">ID Proof Details</h3>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField

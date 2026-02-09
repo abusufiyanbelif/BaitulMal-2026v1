@@ -55,7 +55,7 @@ export default function DashboardPage() {
 
   return (
     <main className="container mx-auto p-4">
-      <div className="space-y-3">
+      <div className="space-y-4">
         <h1 className="text-2xl font-bold animate-fade-in-zoom" style={{ animationDelay: '300ms' }}>Dashboard</h1>
         <p className="text-muted-foreground animate-fade-in-zoom" style={{ animationDelay: '400ms' }}>
             {isLoading ? <Skeleton className="h-5 w-48" /> : `Welcome back, ${userProfile?.name}. Here's an overview of your application modules.`}

@@ -50,22 +50,22 @@ export default function ExtractorPage() {
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="text" className="mt-6">
+        <TabsContent value="text" className="mt-4">
           <TextExtractor />
         </TabsContent>
-        <TabsContent value="identity" className="mt-6">
+        <TabsContent value="identity" className="mt-4">
           <IdentityExtractor />
         </TabsContent>
-        <TabsContent value="billing" className="mt-6">
+        <TabsContent value="billing" className="mt-4">
           <BillingExtractor />
         </TabsContent>
-        <TabsContent value="medical" className="mt-6">
+        <TabsContent value="medical" className="mt-4">
           <MedicalExtractor />
         </TabsContent>
-        <TabsContent value="education" className="mt-6">
+        <TabsContent value="education" className="mt-4">
           <EducationExtractor />
         </TabsContent>
-        <TabsContent value="dynamic" className="mt-6">
+        <TabsContent value="dynamic" className="mt-4">
           <DynamicExtractor />
         </TabsContent>
       </Tabs>

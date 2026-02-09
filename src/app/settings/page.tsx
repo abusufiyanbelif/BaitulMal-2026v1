@@ -222,7 +222,7 @@ export default function SettingsPage() {
                     <Skeleton className="h-10 w-44" />
                 </div>
                 <Skeleton className="h-9 w-64 mb-4" />
-                <div className="grid gap-8 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
                     <Card>
                         <CardHeader><Skeleton className="h-8 w-48" /></CardHeader>
                         <CardContent><Skeleton className="h-64 w-full" /></CardContent>
@@ -276,13 +276,13 @@ export default function SettingsPage() {
                 )}
             </div>
 
-            <div className="grid gap-8 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
                 <Card className="animate-fade-in-zoom" style={{ animationDelay: '400ms'}}>
                     <CardHeader>
                         <CardTitle>Branding Settings</CardTitle>
                         <CardDescription>Manage the application logo and watermark.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <h3 className="text-lg font-medium">Application Logo</h3>
                             <p className="text-sm text-muted-foreground">
@@ -335,7 +335,7 @@ export default function SettingsPage() {
                         <CardTitle>Organization, Payment &amp; Contact Settings</CardTitle>
                         <CardDescription>Configure QR code, UPI, and contact details for receipts and the footer.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-4">
                          <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="regNo">Registration No.</Label>
