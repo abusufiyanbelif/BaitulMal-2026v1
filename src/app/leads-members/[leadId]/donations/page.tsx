@@ -476,26 +476,28 @@ export default function DonationsPage() {
         </div>
         
         <div className="border-b mb-4">
-            <div className="flex flex-wrap items-center gap-x-4">
-                 {canReadSummary && (
-                  <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/leads-members/${leadId}/summary` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
-                      <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
-                  </Button>
-                )}
-                <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/leads-members/${leadId}` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
-                    <Link href={`/leads-members/${leadId}`}>Item List</Link>
-                </Button>
-                {canReadBeneficiaries && (
-                  <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
-                      <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
-                  </Button>
-                )}
-                {canReadDonations && (
-                  <Button variant="ghost" asChild className={cn("rounded-b-none border-b-2 pb-3 pt-2", pathname === `/leads-members/${leadId}/donations` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")} data-active="true">
-                      <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
-                  </Button>
-                )}
-            </div>
+            <ScrollArea className="w-full whitespace-nowrap">
+                <div className="flex w-max space-x-2">
+                    {canReadSummary && (
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                            <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
+                        </Button>
+                    )}
+                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/leads-members/${leadId}`}>Item List</Link>
+                    </Button>
+                    {canReadBeneficiaries && (
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                            <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
+                        </Button>
+                    )}
+                    {canReadDonations && (
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/donations` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                            <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
+                        </Button>
+                    )}
+                </div>
+            </ScrollArea>
         </div>
 
         <Card className="animate-fade-in-zoom">
@@ -623,12 +625,12 @@ export default function DonationsPage() {
               <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
-                      <SortableHeader sortKey="srNo" className="w-[50px] pl-4">#</SortableHeader>
-                      <SortableHeader sortKey="donorName" className="w-[200px]">Donor</SortableHeader>
-                      <SortableHeader sortKey="receiverName" className="w-[200px]">Receiver</SortableHeader>
-                      <SortableHeader sortKey="amount" className="w-[150px] text-right">Amount & Date</SortableHeader>
+                      <TableHead className="w-[50px] pl-4">#</TableHead>
+                      <TableHead className="w-[200px]">Donor</TableHead>
+                      <TableHead className="w-[200px]">Receiver</TableHead>
+                      <TableHead className="w-[150px] text-right">Amount & Date</TableHead>
                       <TableHead className="w-[200px]">Category & Type</TableHead>
-                      <SortableHeader sortKey="status" className="w-[120px]">Status</SortableHeader>
+                      <TableHead className="w-[120px]">Status</TableHead>
                       <TableHead className="w-[100px] text-right pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -636,16 +638,16 @@ export default function DonationsPage() {
                   {areDonationsLoading ? (
                   [...Array(3)].map((_, i) => (
                       <TableRow key={i}>
-                          <TableCell colSpan={7}><Skeleton className="h-6 w-full" /></TableCell>
+                          <TableCell colSpan={7}><Skeleton className="h-12 w-full" /></TableCell>
                       </TableRow>
                   ))
                   ) : (filteredAndSortedDonations && filteredAndSortedDonations.length > 0) ? (
                   filteredAndSortedDonations.map((donation, index) => {
                       const isOpen = openRows[donation.id] || false;
                       return (
-                      <Collapsible key={donation.id} open={isOpen} onOpenChange={(open) => setOpenRows(prev => ({...prev, [donation.id]: open}))}>
+                      <Collapsible key={donation.id} asChild>
                           <>
-                          <TableRow>
+                          <TableRow className="bg-background hover:bg-accent/50" data-state={isOpen ? 'open' : 'closed'}>
                               <TableCell className="pl-4">{index + 1}</TableCell>
                               <TableCell>
                                 <div className="font-medium">{donation.donorName}</div>
@@ -674,7 +676,7 @@ export default function DonationsPage() {
                               </TableCell>
                               <TableCell className="text-right pr-4">
                                   <div className="flex items-center justify-end">
-                                      <CollapsibleTrigger asChild>
+                                      <CollapsibleTrigger asChild onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
                                           <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!donation.transactions || donation.transactions.length === 0}>
                                               {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                               <span className="sr-only">Toggle details</span>
@@ -708,32 +710,34 @@ export default function DonationsPage() {
                           <CollapsibleContent asChild>
                               <TableRow className="bg-muted/50 hover:bg-muted/50">
                                   <TableCell colSpan={7} className="p-0">
-                                      <div className="p-3">
+                                      <div className="p-4">
                                           <h4 className="text-sm font-semibold mb-2">Transaction Details</h4>
-                                          <Table>
-                                              <TableHeader>
-                                                  <TableRow>
-                                                      <TableHead>Amount</TableHead>
-                                                      <TableHead>Transaction ID</TableHead>
-                                                      <TableHead>Screenshot</TableHead>
-                                                  </TableRow>
-                                              </TableHeader>
-                                              <TableBody>
-                                                  {(donation.transactions || []).map((tx) => (
-                                                      <TableRow key={tx.id}>
-                                                          <TableCell>₹{tx.amount.toFixed(2)}</TableCell>
-                                                          <TableCell>{tx.transactionId || 'N/A'}</TableCell>
-                                                          <TableCell>
-                                                              {tx.screenshotUrl ? (
-                                                                  <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)}>
-                                                                      <Eye className="mr-2 h-4 w-4"/> View
-                                                                  </Button>
-                                                              ) : 'No'}
-                                                          </TableCell>
-                                                      </TableRow>
-                                                  ))}
-                                              </TableBody>
-                                          </Table>
+                                          <div className="border rounded-md bg-background">
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead>Amount</TableHead>
+                                                        <TableHead>Transaction ID</TableHead>
+                                                        <TableHead>Screenshot</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {(donation.transactions || []).map((tx) => (
+                                                        <TableRow key={tx.id}>
+                                                            <TableCell>₹{tx.amount.toFixed(2)}</TableCell>
+                                                            <TableCell>{tx.transactionId || 'N/A'}</TableCell>
+                                                            <TableCell>
+                                                                {tx.screenshotUrl ? (
+                                                                    <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)}>
+                                                                        <Eye className="mr-2 h-4 w-4"/> View
+                                                                    </Button>
+                                                                ) : 'No'}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                          </div>
                                       </div>
                                   </TableCell>
                               </TableRow>
@@ -818,3 +822,4 @@ export default function DonationsPage() {
     </>
   );
 }
+
