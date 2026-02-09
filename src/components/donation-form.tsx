@@ -65,24 +65,6 @@ const formSchema = z.object({
   })).min(1, "At least one transaction is required."),
   isSplit: z.boolean().default(false),
   linkSplit: linkSplitSchema,
-}).refine(data => {
-    if (data.isTypeSplit) {
-        const totalSplit = data.typeSplit.reduce((sum, split) => sum + split.amount, 0);
-        return Math.abs(totalSplit - data.amount) < 0.01;
-    }
-    return true;
-}, {
-    message: "The sum of category split amounts must equal the total donation amount.",
-    path: ['typeSplit'],
-}).refine(data => {
-    if (data.isSplit && data.linkSplit) {
-        const totalAllocation = data.linkSplit.reduce((sum, link) => sum + link.amount, 0);
-        return Math.abs(totalAllocation - data.amount) < 0.01;
-    }
-    return true;
-}, {
-    message: "The sum of allocated amounts must equal the total donation amount.",
-    path: ['linkSplit'],
 });
 
 export type DonationFormData = z.infer<typeof formSchema>;
@@ -488,5 +470,3 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     </Form>
   );
 }
-
-    
