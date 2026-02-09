@@ -380,15 +380,15 @@ export default function DonationsPage() {
   
   if (isLoading && !donations) {
     return (
-        <main className="container mx-auto p-4">
+        <div className="container mx-auto p-4">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </main>
+        </div>
     );
   }
 
   if (!canRead) {
     return (
-        <main className="container mx-auto p-4">
+        <div className="container mx-auto p-4">
             <Alert variant="destructive">
                 <ShieldAlert className="h-4 w-4" />
                 <AlertTitle>Access Denied</AlertTitle>
@@ -396,18 +396,18 @@ export default function DonationsPage() {
                     You do not have permission to view this page.
                 </AlertDescription>
             </Alert>
-        </main>
+        </div>
     );
   }
 
   return (
     <>
-      <main className="container mx-auto p-4">
+      <div className="container mx-auto p-4">
         <div className="mb-4">
             <Button variant="outline" asChild>
-                <Link href="/">
+                <Link href="/dashboard">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Home
+                    Back to Dashboard
                 </Link>
             </Button>
         </div>
@@ -787,7 +787,7 @@ export default function DonationsPage() {
             </div>
           </CardContent>
         </Card>
-      </main>
+      </div>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

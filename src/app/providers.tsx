@@ -46,19 +46,13 @@ export function Providers({ children }: { children: ReactNode }) {
         <FirebaseContentWrapper>
           <div className="relative">
             <div className="relative z-10 flex min-h-screen flex-col">
-              {showLayout ? (
-                <>
-                  <DocuExtractHeader />
-                  <main className="flex-grow animate-slide-in-from-bottom" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
-                    {children}
-                  </main>
-                  <AppFooter />
-                </>
-              ) : (
-                children
-              )}
+              {showLayout && <DocuExtractHeader />}
+              <main className="flex-grow animate-slide-in-from-bottom" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
+                {children}
+              </main>
+              {showLayout && <AppFooter />}
             </div>
-            <Watermark />
+            {showLayout && <Watermark />}
           </div>
           <Toaster />
         </FirebaseContentWrapper>

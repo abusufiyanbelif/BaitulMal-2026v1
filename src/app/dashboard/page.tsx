@@ -55,7 +55,7 @@ export default function DashboardPage() {
   const visibleCards = cards.filter(card => card.isVisible);
 
   return (
-    <main className="container mx-auto p-4">
+    <div className="container mx-auto p-4">
       <div className="space-y-4">
         <h1 className="text-2xl font-bold animate-fade-in-zoom" style={{ animationDelay: '300ms' }}>Dashboard</h1>
         <p className="text-muted-foreground animate-fade-in-zoom" style={{ animationDelay: '400ms' }}>
@@ -79,6 +79,6 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

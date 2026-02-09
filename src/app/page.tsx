@@ -76,7 +76,7 @@ export default function Home() {
     const visibleCards = allCards.filter(card => card.isVisible);
 
     return (
-        <main className="container mx-auto p-4 md:p-8 flex-grow">
+        <div className="container mx-auto p-4 md:p-8">
             {isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[...Array(3)].map((_, i) => (
@@ -124,6 +124,6 @@ export default function Home() {
                     </CardContent>
                 </Card>
             )}
-        </main>
+        </div>
     );
 }

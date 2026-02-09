@@ -13,12 +13,12 @@ import Link from 'next/link';
 
 export default function ExtractorPage() {
   return (
-    <main className="container mx-auto p-4 md:p-8">
+    <div className="container mx-auto p-4 md:p-8">
       <div className="mb-4">
         <Button variant="outline" asChild>
-          <Link href="/">
+          <Link href="/dashboard">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Home
+            Back to Dashboard
           </Link>
         </Button>
       </div>
@@ -69,6 +69,6 @@ export default function ExtractorPage() {
           <DynamicExtractor />
         </TabsContent>
       </Tabs>
-    </main>
+    </div>
   );
 }

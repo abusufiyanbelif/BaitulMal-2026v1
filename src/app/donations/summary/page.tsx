@@ -148,15 +148,15 @@ export default function DonationsSummaryPage() {
 
     if (isLoading) {
         return (
-            <main className="container mx-auto p-4 md:p-8">
+            <div className="container mx-auto p-4 md:p-8">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </main>
+            </div>
         );
     }
     
      if (!canRead) {
         return (
-            <main className="container mx-auto p-4 md:p-8">
+            <div className="container mx-auto p-4 md:p-8">
                 <Alert variant="destructive">
                     <ShieldAlert className="h-4 w-4" />
                     <AlertTitle>Access Denied</AlertTitle>
@@ -164,17 +164,17 @@ export default function DonationsSummaryPage() {
                         You do not have permission to view this page.
                     </AlertDescription>
                 </Alert>
-            </main>
+            </div>
         );
     }
     
     return (
-        <main className="container mx-auto p-4 md:p-8">
+        <div className="container mx-auto p-4 md:p-8">
             <div className="mb-4">
                 <Button variant="outline" asChild>
-                    <Link href="/">
+                    <Link href="/dashboard">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Home
+                        Back to Dashboard
                     </Link>
                 </Button>
             </div>
@@ -386,6 +386,6 @@ export default function DonationsSummaryPage() {
                     </Card>
                 </div>
             </div>
-        </main>
+        </div>
     );
 }
