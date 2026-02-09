@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Upload, Download, Eye, ArrowUp, ArrowDown, RefreshCw, ZoomIn, ZoomOut, RotateCw, Check, ChevronsUpDown, X, Users, CheckCircle2, BadgeCheck, Hourglass, XCircle, Info, ChevronRight, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Upload, Download, Eye, ArrowUp, ArrowDown, RefreshCw, ZoomIn, ZoomOut, RotateCw, Check, ChevronsUpDown, X, Users, CheckCircle2, BadgeCheck, Hourglass, XCircle, Info, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -758,7 +758,7 @@ export default function BeneficiariesPage() {
                     </div>
                 )}
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 pt-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Total</CardTitle><Users className="h-4 w-4 text-muted-foreground"/></CardHeader>
                     <CardContent className="p-2"><div className="text-2xl font-bold">{statusCounts.Total}</div></CardContent>
@@ -898,32 +898,24 @@ export default function BeneficiariesPage() {
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-muted/50">
-                            {(canUpdate || canDelete) && <TableHead className="sticky left-0 z-10 bg-card text-center w-[100px] whitespace-nowrap">Actions</TableHead>}
-                            <SortableHeader sortKey="srNo" className="w-[50px]">#</SortableHeader>
-                            <SortableHeader sortKey="name">Name</SortableHeader>
-                            <SortableHeader sortKey="isEligibleForZakat">Eligible for Zakat</SortableHeader>
-                            <SortableHeader sortKey="kitAmount" className="text-right">Kit Amount (₹)</SortableHeader>
-                            <SortableHeader sortKey="phone">Phone</SortableHeader>
-                            <SortableHeader sortKey="address">Address</SortableHeader>
-                            <SortableHeader sortKey="referralBy">Referred By</SortableHeader>
+                            <SortableHeader sortKey="srNo" className="w-[120px]">#</SortableHeader>
+                            <SortableHeader sortKey="name">Name & Phone</SortableHeader>
                             <SortableHeader sortKey="status">Status</SortableHeader>
-                            <SortableHeader sortKey="addedDate">Added Date</SortableHeader>
+                            <SortableHeader sortKey="kitAmount" className="text-right">Kit Amount (₹)</SortableHeader>
+                            <SortableHeader sortKey="referralBy">Referred By</SortableHeader>
+                            {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right">Actions</TableHead>}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {areBeneficiariesLoading ? (
                             [...Array(5)].map((_, i) => (
                                 <TableRow key={`skeleton-${i}`}>
-                                    {(canUpdate || canDelete) && <TableCell className="sticky left-0 z-10 bg-card text-center"><Skeleton className="h-6 w-12 mx-auto" /></TableCell>}
-                                    <TableCell><Skeleton className="h-6 w-8" /></TableCell>
+                                    <TableCell><Skeleton className="h-6 w-12" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-32" /></TableCell>
                                     <TableCell><Skeleton className="h-7 w-20" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                                    <TableCell><Skeleton className="h-6 w-40" /></TableCell>
-                                    <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                                    <TableCell><Skeleton className="h-7 w-20 rounded-full" /></TableCell>
-                                    <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                                    {(canUpdate || canDelete) && <TableCell><Skeleton className="h-6 w-12 mx-auto" /></TableCell>}
                                 </TableRow>
                             ))
                         ) : sortedGroupKeys.length > 0 ? (
@@ -946,7 +938,7 @@ export default function BeneficiariesPage() {
                                 return (
                                     <React.Fragment key={categoryId}>
                                         <TableRow className="bg-muted hover:bg-muted cursor-pointer" onClick={() => toggleGroup(categoryId)}>
-                                            <TableCell colSpan={(canUpdate || canDelete) ? 10 : 9} className="font-bold">
+                                            <TableCell colSpan={(canUpdate || canDelete) ? 6 : 5} className="font-bold">
                                                 <div className="flex items-center gap-2">
                                                     {categoryIsCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                                     <span>{categoryName} ({totalBeneficiariesInCategory} beneficiaries)</span>
@@ -962,8 +954,8 @@ export default function BeneficiariesPage() {
                                             
                                             return (
                                                 <React.Fragment key={subGroupKey}>
-                                                    <TableRow className="bg-muted/50 hover:bg-muted/50 cursor-pointer" onClick={() => toggleSubGroup(subGroupKey)}>
-                                                        <TableCell colSpan={(canUpdate || canDelete) ? 10 : 9} className="font-medium">
+                                                    <TableRow className="bg-muted/50 hover:bg-muted/50 cursor-pointer" onClick={(e) => { e.stopPropagation(); toggleSubGroup(subGroupKey);}}>
+                                                        <TableCell colSpan={(canUpdate || canDelete) ? 6 : 5} className="font-medium">
                                                             <div className="flex items-center gap-2 pl-6">
                                                                 {subGroupIsCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                                                 <span>{memberCount} Members ({beneficiariesInSubGroup.length} beneficiaries)</span>
@@ -987,7 +979,7 @@ export default function BeneficiariesPage() {
                             })
                         ) : (
                         <TableRow>
-                            <TableCell colSpan={(canUpdate || canDelete) ? 10 : 9} className="text-center h-24 text-muted-foreground">
+                            <TableCell colSpan={(canUpdate || canDelete) ? 6 : 5} className="text-center h-24 text-muted-foreground">
                                 No beneficiaries found matching your criteria.
                             </TableCell>
                         </TableRow>
@@ -1000,7 +992,7 @@ export default function BeneficiariesPage() {
       </main>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-[625px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
                 <DialogTitle>{formMode === 'add' ? 'Add' : formMode === 'view' ? 'View' : 'Edit'} Beneficiary</DialogTitle>
             </DialogHeader>
@@ -1074,10 +1066,43 @@ interface BeneficiaryRowProps {
 }
 
 const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, isSubRow = false }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
+        <div>
+            <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">{label}</p>
+            <p className="text-sm font-medium pt-1">{value || 'N/A'}</p>
+        </div>
+    );
+    
     return (
-        <TableRow className="bg-background hover:bg-accent/50">
-            {(canUpdate || canDelete) && (
-                <TableCell className="sticky left-0 z-10 bg-card text-center">
+        <>
+            <TableRow className="bg-background hover:bg-accent/50 data-[state=open]:bg-accent/50 cursor-pointer" onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? 'open' : 'closed'}>
+                <TableCell className="w-[120px]">
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 data-[state=open]:bg-accent" data-state={isOpen ? 'open' : 'closed'}>
+                            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
+                        <span className={cn(isSubRow && "pl-8")}>{index}</span>
+                    </div>
+                </TableCell>
+                <TableCell className="font-medium">
+                    <div>{beneficiary.name}</div>
+                    <div className="text-xs text-muted-foreground font-mono">{beneficiary.phone}</div>
+                </TableCell>
+                <TableCell>
+                    <Badge variant={
+                        beneficiary.status === 'Given' ? 'success' :
+                        beneficiary.status === 'Verified' ? 'success' :
+                        beneficiary.status === 'Pending' ? 'secondary' :
+                        beneficiary.status === 'Hold' ? 'destructive' : 'outline'
+                    }>{beneficiary.status}</Badge>
+                </TableCell>
+                <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
+                <TableCell>{beneficiary.referralBy}</TableCell>
+
+                {(canUpdate || canDelete) && (
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
@@ -1090,33 +1115,31 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                     </DropdownMenu>
                 </TableCell>
             )}
-            <TableCell className={cn(isSubRow && "pl-12")}>{index}</TableCell>
-            <TableCell className="font-medium">{beneficiary.name}</TableCell>
-            <TableCell>
-                {beneficiary.isEligibleForZakat ? (
-                    <div className="flex flex-col items-start">
-                        <Badge variant="success">Yes</Badge>
-                        {beneficiary.zakatAllocation && beneficiary.zakatAllocation > 0 && (
-                            <span className="text-xs text-muted-foreground mt-1">
-                                ₹{beneficiary.zakatAllocation.toFixed(2)}
-                            </span>
-                        )}
-                    </div>
-                ) : <Badge variant="outline">No</Badge>}
-            </TableCell>
-            <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
-            <TableCell>{beneficiary.phone}</TableCell>
-            <TableCell>{beneficiary.address}</TableCell>
-            <TableCell>{beneficiary.referralBy}</TableCell>
-            <TableCell>
-                <Badge variant={
-                    beneficiary.status === 'Given' ? 'success' :
-                    beneficiary.status === 'Verified' ? 'success' :
-                    beneficiary.status === 'Pending' ? 'secondary' :
-                    beneficiary.status === 'Hold' ? 'destructive' : 'outline'
-                }>{beneficiary.status}</Badge>
-            </TableCell>
-             <TableCell>{beneficiary.addedDate}</TableCell>
-        </TableRow>
-    )
+            </TableRow>
+            {isOpen && (
+                 <TableRow className="bg-muted/20 hover:bg-muted/30">
+                    <TableCell colSpan={(canUpdate || canDelete) ? 6 : 5} className="p-0">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-6 p-4">
+                            <DetailItem label="Address" value={beneficiary.address} />
+                            <DetailItem label="Family" value={`Total: ${beneficiary.members}, Earning: ${beneficiary.earningMembers}, M: ${beneficiary.male}, F: ${beneficiary.female}`} />
+                            <DetailItem label="ID Proof" value={`${beneficiary.idProofType || 'N/A'} - ${beneficiary.idNumber || 'N/A'}`} />
+                            <DetailItem label="Date Added" value={beneficiary.addedDate} />
+                             <DetailItem label="Zakat" value={
+                                <div className="flex items-center gap-2">
+                                    <Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'}>{beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}</Badge>
+                                    {beneficiary.isEligibleForZakat && beneficiary.zakatAllocation && (
+                                        <span className="text-sm font-medium">
+                                            (₹{beneficiary.zakatAllocation.toFixed(2)})
+                                        </span>
+                                    )}
+                                </div>
+                            } />
+                            {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-4"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
+                        </div>
+                    </TableCell>
+                </TableRow>
+            )}
+        </>
+    );
 }
+
