@@ -32,9 +32,11 @@ export async function extractAndCorrectText(input: ExtractAndCorrectTextInput): 
 const extractTextPrompt = ai.definePrompt({
   name: 'extractTextPrompt',
   model: 'googleai/gemini-1.5-flash-latest',
+  input: { schema: ExtractAndCorrectTextInputSchema },
+  output: { schema: ExtractAndCorrectTextOutputSchema },
   prompt: `You are an OCR (Optical Character Recognition) expert.
 
-  Extract all text from the following image. Return only the raw text content.
+  Extract all text from the following image.
 
   Image: {{media url=photoDataUri}}
   `,
@@ -47,12 +49,11 @@ const extractAndCorrectTextFlow = ai.defineFlow(
     outputSchema: ExtractAndCorrectTextOutputSchema,
   },
   async (input) => {
-    const response = await extractTextPrompt(input);
-    const extractedText = response.text.trim();
+    const { output } = await extractTextPrompt(input);
 
-    if (!extractedText) {
+    if (!output || !output.extractedText) {
         throw new Error('The AI model failed to extract any text. The document might be empty or unreadable.');
     }
-    return { extractedText };
+    return output;
   }
 );
