@@ -721,7 +721,13 @@ Your contribution, big or small, makes a huge difference.
                         <CardContent>
                             <Progress value={summaryData?.fundingProgress || 0} />
                             <div className="mt-2 text-xs text-muted-foreground">
-                                {summaryData && summaryData.pendingDonations > 0 && <span>(+ ₹{summaryData.pendingDonations.toLocaleString('en-IN')} pending verification)</span>}
+                                {summaryData && summaryData.targetAmount === 0 ? (
+                                    'Set a Target Amount or sync beneficiary kit amounts from the "Ration Details" tab to see progress.'
+                                ) : summaryData && summaryData.pendingDonations > 0 ? (
+                                    <span>(+ ₹{summaryData.pendingDonations.toLocaleString('en-IN')} pending verification)</span>
+                                ) : (
+                                    <span>&nbsp;</span>
+                                )}
                             </div>
                         </CardContent>
                     </Card>

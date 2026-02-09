@@ -689,7 +689,13 @@ Your support and feedback are valuable.
                     <CardContent>
                         <Progress value={summaryData?.fundingProgress || 0} />
                          <div className="mt-2 text-xs text-muted-foreground">
-                            {summaryData && summaryData.pendingDonations > 0 && <span>(+ ₹{summaryData.pendingDonations.toLocaleString('en-IN')} pending verification)</span>}
+                            {summaryData && summaryData.targetAmount === 0 ? (
+                                'Set a Target Amount to see progress.'
+                            ) : summaryData && summaryData.pendingDonations > 0 ? (
+                                <span>(+ ₹{summaryData.pendingDonations.toLocaleString('en-IN')} pending verification)</span>
+                            ) : (
+                                <span>&nbsp;</span>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
