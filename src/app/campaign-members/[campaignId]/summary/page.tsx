@@ -294,8 +294,8 @@ export default function CampaignSummaryPage() {
               categoryName = appliedCategory.name === 'General Item List'
                   ? 'General'
                   : appliedCategory.minMembers === appliedCategory.maxMembers
-                      ? `${appliedCategory.name} (${appliedCategory.minMembers} Members)`
-                      : `${appliedCategory.name} (${appliedCategory.minMembers}-${appliedCategory.maxMembers} Members)`;
+                      ? `${appliedCategory.name} (${appliedCategory.minMembers})`
+                      : `${appliedCategory.name} (${appliedCategory.minMembers}-${appliedCategory.maxMembers})`;
               categoryKey = appliedCategory.id;
             }
 
@@ -1121,5 +1121,7 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+
+    
 
     

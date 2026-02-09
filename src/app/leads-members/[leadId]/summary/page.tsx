@@ -276,8 +276,8 @@ export default function LeadSummaryPage() {
               categoryName = appliedCategory.name === 'General Item List'
                   ? 'General'
                   : appliedCategory.minMembers === appliedCategory.maxMembers
-                      ? `${appliedCategory.name} (${appliedCategory.minMembers} Members)`
-                      : `${appliedCategory.name} (${appliedCategory.minMembers}-${appliedCategory.maxMembers} Members)`;
+                      ? `${appliedCategory.name} (${appliedCategory.minMembers})`
+                      : `${appliedCategory.name} (${appliedCategory.minMembers}-${appliedCategory.maxMembers})`;
               categoryKey = appliedCategory.id;
             }
 
@@ -1075,5 +1075,7 @@ Your support and feedback are valuable.
         </main>
     );
 }
+
+    
 
     
