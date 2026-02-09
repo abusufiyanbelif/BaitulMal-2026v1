@@ -18,17 +18,26 @@ import { useToast } from '@/hooks/use-toast';
 
 import type { Donation, Campaign, BrandingSettings, PaymentSettings, Lead } from '@/lib/types';
 
-import { DonationReceipt } from '@/components/donation-receipt';
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Edit, Download, Loader2, Image as ImageIcon, FileText, MessageSquare, StickyNote, Share2 } from 'lucide-react';
+import { ArrowLeft, Edit, Download, Loader2, Image as ImageIcon, FileText, MessageSquare, StickyNote, Share2, FolderKanban, Lightbulb } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert } from 'lucide-react';
 import { ShareDialog } from '@/components/share-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
+const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
+    <div className="space-y-1">
+        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <div className={`text-base font-semibold ${isMono ? 'font-mono' : ''}`}>{value || 'N/A'}</div>
+    </div>
+);
 
 export default function DonationDetailsPage() {
     const params = useParams();
@@ -39,7 +48,7 @@ export default function DonationDetailsPage() {
     const firestore = useFirestore();
     const storage = useStorage();
     const { toast } = useToast();
-    const receiptRef = useRef<HTMLDivElement>(null);
+    const summaryRef = useRef<HTMLDivElement>(null);
 
     const { userProfile, isLoading: isProfileLoading } = useSession();
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
@@ -160,7 +169,7 @@ export default function DonationDetailsPage() {
     };
 
     const handleDownload = async (format: 'png' | 'pdf') => {
-        const element = receiptRef.current;
+        const element = summaryRef.current;
         if (!element) {
             toast({ title: 'Error', description: 'Cannot generate download, content is missing.', variant: 'destructive' });
             return;
@@ -384,6 +393,11 @@ export default function DonationDetailsPage() {
         );
     }
 
+    const typeSplit = donation.typeSplit && donation.typeSplit.length > 0
+      ? donation.typeSplit
+      : (donation.type ? [{ category: donation.type, amount: donation.amount }] : []);
+
+
     return (
         <main className="container mx-auto p-4 md:p-8">
             <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
@@ -433,11 +447,122 @@ export default function DonationDetailsPage() {
                 </Alert>
             )}
             
-            <DonationReceipt 
-                ref={receiptRef}
-                donation={donation} 
-                campaign={campaign} 
-            />
+            <div ref={summaryRef} className="space-y-6 animate-fade-in-zoom">
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <Card>
+                        <CardHeader><CardTitle>Donation Summary</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                            <DetailItem label="Total Amount" value={`₹${donation.amount.toFixed(2)}`} isMono />
+                            <DetailItem label="Donation Date" value={donation.donationDate} />
+                            <DetailItem label="Status" value={<Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'secondary'}>{donation.status}</Badge>} />
+                            <DetailItem label="Payment Type" value={<Badge variant="outline">{donation.donationType}</Badge>} />
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader><CardTitle>Donor &amp; Receiver</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                            <DetailItem label="Donor Name" value={donation.donorName} />
+                            <DetailItem label="Donor Phone" value={donation.donorPhone} isMono />
+                            <DetailItem label="Receiver Name" value={donation.receiverName} />
+                            <DetailItem label="Referred By" value={donation.referral} />
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <Card>
+                    <CardHeader><CardTitle>Financial Breakdown</CardTitle></CardHeader>
+                    <CardContent className="grid gap-6 md:grid-cols-2">
+                        <div className="space-y-2">
+                            <h3 className="font-semibold">Category Breakdown</h3>
+                            <div className="border rounded-lg overflow-hidden">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow><TableHead>Category</TableHead><TableHead className="text-right">Amount</TableHead></TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {typeSplit.map((s) => (
+                                            <TableRow key={s.category}><TableCell>{s.category}</TableCell><TableCell className="text-right font-mono">₹{s.amount.toFixed(2)}</TableCell></TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </div>
+                         {donation.linkSplit && donation.linkSplit.length > 0 && (
+                            <div className="space-y-2">
+                                <h3 className="font-semibold">Initiative Allocation</h3>
+                                <div className="border rounded-lg overflow-hidden">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow><TableHead>Initiative</TableHead><TableHead className="text-right">Amount</TableHead></TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {donation.linkSplit.map((link) => (
+                                                <TableRow key={link.linkId}>
+                                                    <TableCell className="flex items-center gap-2">
+                                                        {link.linkType === 'campaign' ? <FolderKanban className="h-4 w-4 text-muted-foreground" /> : <Lightbulb className="h-4 w-4 text-muted-foreground" />}
+                                                        {link.linkName}
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-mono">₹{link.amount.toFixed(2)}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {donation.transactions && donation.transactions.length > 0 && (
+                     <Card>
+                        <CardHeader><CardTitle>Transaction Details</CardTitle></CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Amount</TableHead>
+                                        <TableHead>Transaction ID</TableHead>
+                                        <TableHead>Screenshot</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {donation.transactions.map((tx) => (
+                                        <TableRow key={tx.id}>
+                                            <TableCell className="font-mono">₹{tx.amount.toFixed(2)}</TableCell>
+                                            <TableCell>{tx.transactionId || 'N/A'}</TableCell>
+                                            <TableCell>
+                                                {tx.screenshotUrl ? (
+                                                     <Button variant="outline" size="sm" asChild>
+                                                        <a href={tx.screenshotUrl} target="_blank" rel="noopener noreferrer">
+                                                            <ImageIcon className="mr-2"/> View
+                                                        </a>
+                                                    </Button>
+                                                ) : 'No'}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                )}
+
+                 {(donation.comments || donation.suggestions) && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Additional Information</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {donation.comments && (
+                                <DetailItem icon={<MessageSquare/>} label="Comments" value={donation.comments} />
+                            )}
+                            {donation.suggestions && (
+                                <DetailItem icon={<StickyNote/>} label="Suggestions" value={donation.suggestions} />
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
             
             <ShareDialog 
                 open={isShareDialogOpen} 
@@ -448,29 +573,6 @@ export default function DonationDetailsPage() {
                     url: `${window.location.origin}/campaign-public/${campaignId}/summary`
                 }} 
             />
-
-            {(donation.comments || donation.suggestions) && (
-                <Card className="mt-6">
-                    <CardHeader>
-                        <CardTitle>Additional Information</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {donation.comments && (
-                            <div className="space-y-1">
-                                <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground"><MessageSquare/>Comments</h3>
-                                <p className="pl-6">{donation.comments}</p>
-                            </div>
-                        )}
-                         {donation.suggestions && (
-                            <div className="space-y-1">
-                                <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground"><StickyNote/>Suggestions</h3>
-                                <p className="pl-6">{donation.suggestions}</p>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            )}
-
 
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
