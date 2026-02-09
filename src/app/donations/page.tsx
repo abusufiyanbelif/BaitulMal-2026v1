@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DollarSign, CheckCircle2, Hourglass, XCircle, ChevronDown, ChevronUp, DatabaseZap } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DollarSign, CheckCircle2, Hourglass, XCircle, ChevronDown, ChevronUp, DatabaseZap, Check, ChevronsUpDown, X } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,6 +59,8 @@ import { ShieldAlert } from 'lucide-react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { syncDonationsAction } from './actions';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 type SortKey = keyof Donation | 'srNo';
 
@@ -96,6 +98,8 @@ export default function DonationsPage() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
   const [donationTypeFilter, setDonationTypeFilter] = useState('All');
+  const [linkFilter, setLinkFilter] = useState<string[]>([]);
+  const [openLinkFilter, setOpenLinkFilter] = useState(false);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   const [isSyncing, setIsSyncing] = useState(false);
@@ -303,6 +307,7 @@ export default function DonationsPage() {
     if (!donations) return [];
     let sortableItems = [...donations];
 
+    // Filtering logic
     if (statusFilter !== 'All') {
         sortableItems = sortableItems.filter(d => d.status === statusFilter);
     }
@@ -311,6 +316,19 @@ export default function DonationsPage() {
     }
     if (donationTypeFilter !== 'All') {
         sortableItems = sortableItems.filter(d => d.donationType === donationTypeFilter);
+    }
+    if (linkFilter.length > 0) {
+      sortableItems = sortableItems.filter(d => {
+        const links = d.linkSplit || [];
+        const isUnlinked = links.length === 0 || links.every(l => l.linkId === 'unallocated');
+        
+        return linkFilter.some(filterValue => {
+          if (filterValue === 'unlinked') {
+            return isUnlinked;
+          }
+          return links.some(link => `${link.linkType}_${link.linkId}` === filterValue);
+        });
+      });
     }
     if (searchTerm) {
       const lowercasedTerm = searchTerm.toLowerCase();
@@ -344,7 +362,7 @@ export default function DonationsPage() {
     }
     
     return sortableItems;
-  }, [donations, searchTerm, statusFilter, typeFilter, donationTypeFilter, sortConfig]);
+  }, [donations, searchTerm, statusFilter, typeFilter, donationTypeFilter, linkFilter, sortConfig]);
 
   const isLoading = areDonationsLoading || isProfileLoading || areCampaignsLoading || areLeadsLoading;
   
@@ -431,50 +449,162 @@ export default function DonationsPage() {
                 )}
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2 pt-4">
-                <Input
-                    placeholder="Search donations..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="max-w-sm"
-                />
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-auto md:w-[180px]">
-                        <SelectValue placeholder="Filter by status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="All">All Statuses</SelectItem>
-                        <SelectItem value="Verified">Verified</SelectItem>
-                        <SelectItem value="Pending">Pending</SelectItem>
-                        <SelectItem value="Canceled">Canceled</SelectItem>
-                    </SelectContent>
-                </Select>
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                    <SelectTrigger className="w-auto md:w-[180px]">
-                        <SelectValue placeholder="Filter by category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="All">All Categories</SelectItem>
-                        <SelectItem value="Zakat">Zakat</SelectItem>
-                        <SelectItem value="Sadaqah">Sadaqah</SelectItem>
-                        <SelectItem value="Interest">Interest</SelectItem>
-                        <SelectItem value="Lillah">Lillah</SelectItem>
-                        <SelectItem value="Loan">Loan</SelectItem>
-                        <SelectItem value="Monthly Contribution">Monthly Contribution</SelectItem>
-                    </SelectContent>
-                </Select>
-                <Select value={donationTypeFilter} onValueChange={setDonationTypeFilter}>
-                     <SelectTrigger className="w-auto md:w-[180px]">
-                        <SelectValue placeholder="Filter by donation type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="All">All Donation Types</SelectItem>
-                        <SelectItem value="Cash">Cash</SelectItem>
-                        <SelectItem value="Online Payment">Online Payment</SelectItem>
-                        <SelectItem value="Check">Check</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                </Select>
+            <div className="flex flex-col gap-2 pt-4">
+              <div className="flex flex-wrap items-center gap-2">
+                  <Input
+                      placeholder="Search donations..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="max-w-sm"
+                  />
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-auto md:w-[180px]">
+                          <SelectValue placeholder="Filter by status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="All">All Statuses</SelectItem>
+                          <SelectItem value="Verified">Verified</SelectItem>
+                          <SelectItem value="Pending">Pending</SelectItem>
+                          <SelectItem value="Canceled">Canceled</SelectItem>
+                      </SelectContent>
+                  </Select>
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                      <SelectTrigger className="w-auto md:w-[180px]">
+                          <SelectValue placeholder="Filter by category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="All">All Categories</SelectItem>
+                          <SelectItem value="Zakat">Zakat</SelectItem>
+                          <SelectItem value="Sadaqah">Sadaqah</SelectItem>
+                          <SelectItem value="Interest">Interest</SelectItem>
+                          <SelectItem value="Lillah">Lillah</SelectItem>
+                          <SelectItem value="Loan">Loan</SelectItem>
+                          <SelectItem value="Monthly Contribution">Monthly Contribution</SelectItem>
+                      </SelectContent>
+                  </Select>
+                  <Select value={donationTypeFilter} onValueChange={setDonationTypeFilter}>
+                      <SelectTrigger className="w-auto md:w-[180px]">
+                          <SelectValue placeholder="Filter by donation type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="All">All Donation Types</SelectItem>
+                          <SelectItem value="Cash">Cash</SelectItem>
+                          <SelectItem value="Online Payment">Online Payment</SelectItem>
+                          <SelectItem value="Check">Check</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                  </Select>
+                   <Popover open={openLinkFilter} onOpenChange={setOpenLinkFilter}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={openLinkFilter}
+                          className="w-auto md:w-[250px] justify-between"
+                        >
+                          <span className="truncate">
+                            {linkFilter.length > 0
+                              ? `${linkFilter.length} linked initiative(s)`
+                              : "Filter by linked initiative..."}
+                          </span>
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[300px] p-0">
+                        <Command>
+                          <CommandInput placeholder="Search initiative..." />
+                          <CommandList>
+                            <CommandEmpty>No initiative found.</CommandEmpty>
+                            <CommandGroup heading="Status">
+                                <CommandItem
+                                    key="unlinked"
+                                    value="Unlinked Donations"
+                                    onSelect={() => {
+                                      const selected = linkFilter.includes('unlinked');
+                                      setLinkFilter(selected ? linkFilter.filter((l) => l !== 'unlinked') : [...linkFilter, 'unlinked']);
+                                    }}
+                                >
+                                    <Check className={cn("mr-2 h-4 w-4", linkFilter.includes('unlinked') ? "opacity-100" : "opacity-0")} />
+                                    Unlinked Donations
+                                </CommandItem>
+                            </CommandGroup>
+                            <CommandGroup heading="Campaigns">
+                              {campaigns?.map((campaign) => (
+                                <CommandItem
+                                  key={campaign.id}
+                                  value={campaign.name}
+                                  onSelect={() => {
+                                    const filterId = `campaign_${campaign.id}`;
+                                    const selected = linkFilter.includes(filterId);
+                                    setLinkFilter(selected ? linkFilter.filter((l) => l !== filterId) : [...linkFilter, filterId]);
+                                  }}
+                                >
+                                  <Check className={cn("mr-2 h-4 w-4", linkFilter.includes(`campaign_${campaign.id}`) ? "opacity-100" : "opacity-0")} />
+                                  {campaign.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                            <CommandGroup heading="Leads">
+                              {leads?.map((lead) => (
+                                <CommandItem
+                                  key={lead.id}
+                                  value={lead.name}
+                                  onSelect={() => {
+                                    const filterId = `lead_${lead.id}`;
+                                    const selected = linkFilter.includes(filterId);
+                                    setLinkFilter(selected ? linkFilter.filter((l) => l !== filterId) : [...linkFilter, filterId]);
+                                  }}
+                                >
+                                  <Check className={cn("mr-2 h-4 w-4", linkFilter.includes(`lead_${lead.id}`) ? "opacity-100" : "opacity-0")} />
+                                  {lead.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                  </Popover>
+              </div>
+              {linkFilter.length > 0 && (
+                <div className="pt-2 flex flex-wrap gap-1 items-center">
+                    {linkFilter.map((filter) => {
+                        let label = 'Unknown';
+                        if (filter === 'unlinked') {
+                            label = 'Unlinked Donations';
+                        } else {
+                            const [type, id] = filter.split('_');
+                            const source = type === 'campaign' ? campaigns : leads;
+                            const item = source?.find(i => i.id === id);
+                            if(item) label = item.name;
+                        }
+                        return (
+                            <Badge
+                                key={filter}
+                                variant="secondary"
+                                className="flex items-center gap-1"
+                            >
+                                {label}
+                                <button
+                                    type="button"
+                                    aria-label={`Remove ${label} filter`}
+                                    onClick={() => setLinkFilter(linkFilter.filter((l) => l !== filter))}
+                                    className="ml-1 rounded-full p-0.5 hover:bg-background/50 focus:outline-none focus:ring-1 focus:ring-ring"
+                                >
+                                    <X className="h-3 w-3" />
+                                </button>
+                            </Badge>
+                        );
+                    })}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto py-0.5 px-1 text-xs text-muted-foreground hover:bg-transparent"
+                        onClick={() => setLinkFilter([])}
+                    >
+                        Clear all
+                    </Button>
+                </div>
+              )}
             </div>
           </CardHeader>
           <CardContent>
