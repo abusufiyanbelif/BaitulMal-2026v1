@@ -33,7 +33,7 @@ import type { UserProfile } from '@/lib/types';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { Loader2, Send, Replace, Trash2, FileIcon, ScanLine } from 'lucide-react';
 import { PermissionsTable } from './permissions-table';
-import { get, set } from '@/lib/utils';
+import { set } from '@/lib/utils';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 
 const formSchema = z.object({

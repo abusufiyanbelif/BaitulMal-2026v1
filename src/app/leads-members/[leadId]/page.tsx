@@ -22,7 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { Label } from '@/components/ui/label';
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -81,7 +81,7 @@ export default function LeadDetailsPage() {
   const handleItemChange = (itemId: string, field: keyof RationItem, value: string | number) => {
     if (!editableLead) return;
     
-    const updatedItems = itemList.map(item => 
+    const updatedItems = itemList.map((item: RationItem) => 
         item.id === itemId ? { ...item, [field]: value } : item
     );
 
@@ -114,7 +114,7 @@ export default function LeadDetailsPage() {
   };
   
   const calculateTotal = (items: RationItem[]) => {
-    return items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0);
+    return items.reduce((sum, item: RationItem) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0);
   };
 
   const handleSave = () => {
@@ -312,7 +312,7 @@ export default function LeadDetailsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {itemList.map((item, index) => (
+                {itemList.map((item: RationItem, index: number) => (
                   <TableRow key={item.id}>
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>
