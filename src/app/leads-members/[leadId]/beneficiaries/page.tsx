@@ -2,12 +2,10 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
-import Image from 'next/image';
 import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
-import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, setDoc, DocumentReference } from 'firebase/firestore';
-import type { Beneficiary, Lead, RationItem } from '@/lib/types';
+import { collection, addDoc, deleteDoc, doc, serverTimestamp, setDoc, DocumentReference } from 'firebase/firestore';
+import type { Beneficiary, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
@@ -15,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Upload, Download, Eye, ArrowUp, ArrowDown, RefreshCw, ZoomIn, ZoomOut, RotateCw, Check, ChevronsUpDown, X, Users, CheckCircle2, BadgeCheck, Hourglass, XCircle, Info } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Upload, Download, Eye, ArrowUp, ArrowDown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,8 +33,6 @@ import {
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
@@ -47,8 +43,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -60,7 +54,6 @@ type SortKey = keyof Beneficiary | 'srNo';
 
 export default function BeneficiariesPage() {
   const params = useParams();
-  const router = useRouter();
   const pathname = usePathname();
   const leadId = params.leadId as string;
   const firestore = useFirestore();
@@ -86,18 +79,9 @@ export default function BeneficiariesPage() {
   const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<string | null>(null);
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  
-  const [isImportOpen, setIsImportOpen] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isSyncing, setIsSyncing] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [referralFilter, setReferralFilter] = useState<string[]>([]);
-  const [openReferralPopover, setOpenReferralPopover] = useState(false);
-  const [membersFilter, setMembersFilter] = useState('');
-  const [kitAmountFilter, setKitAmountFilter] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
   
   const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
@@ -107,33 +91,6 @@ export default function BeneficiariesPage() {
   const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.create', false);
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.update', false);
   const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.delete', false);
-
-  const statusCounts = useMemo(() => {
-    if (!beneficiaries) {
-      return {
-        Total: 0,
-        Given: 0,
-        Verified: 0,
-        Pending: 0,
-        Hold: 0,
-        'Need More Details': 0,
-      };
-    }
-    const counts = beneficiaries.reduce((acc, b) => {
-      const status = b.status || 'Pending';
-      acc[status] = (acc[status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return {
-      Total: beneficiaries.length,
-      Given: counts.Given || 0,
-      Verified: counts.Verified || 0,
-      Pending: counts.Pending || 0,
-      Hold: counts.Hold || 0,
-      'Need More Details': counts['Need More Details'] || 0,
-    };
-  }, [beneficiaries]);
   
   const handleAdd = () => {
     if (!canCreate) return;
@@ -160,31 +117,18 @@ export default function BeneficiariesPage() {
     if (!beneficiaryData) return;
     
     const docRef = doc(firestore, `leads/${leadId}/beneficiaries`, beneficiaryToDelete);
-    const idProofUrl = beneficiaryData.idProofUrl;
-
+    
     setIsDeleteDialogOpen(false);
 
-    const deleteDocument = () => {
-        deleteDoc(docRef)
-            .catch(async (serverError) => {
-                const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'delete' });
-                errorEmitter.emit('permission-error', permissionError);
-            })
-            .finally(() => {
-                toast({ title: 'Success', description: 'Beneficiary deleted successfully.', variant: 'success' });
-                setBeneficiaryToDelete(null);
-            });
-    };
-
-    if (idProofUrl) {
-        const fileRef = storageRef(storage, idProofUrl);
-        await deleteObject(fileRef).catch(err => {
-            if (err.code !== 'storage/object-not-found') {
-                console.warn("Failed to delete ID proof from storage:", err);
-            }
+    deleteDoc(docRef)
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'delete' });
+            errorEmitter.emit('permission-error', permissionError);
+        })
+        .finally(() => {
+            toast({ title: 'Success', description: 'Beneficiary deleted successfully.', variant: 'success' });
+            setBeneficiaryToDelete(null);
         });
-    }
-    deleteDocument();
   };
   
   const handleFormSubmit = async (data: BeneficiaryFormData) => {
@@ -247,7 +191,6 @@ export default function BeneficiariesPage() {
   };
 
   const handleSelectExisting = (beneficiaryData: Omit<Beneficiary, 'id'>) => {
-    // This is a simplified version of handleFormSubmit for existing beneficiaries
     const dataToSubmit: BeneficiaryFormData = {
         name: beneficiaryData.name,
         address: beneficiaryData.address,
@@ -260,7 +203,7 @@ export default function BeneficiariesPage() {
         idNumber: beneficiaryData.idNumber,
         referralBy: beneficiaryData.referralBy,
         kitAmount: beneficiaryData.kitAmount,
-        status: 'Pending', // New entries from existing should be pending
+        status: 'Pending',
         notes: beneficiaryData.notes,
     };
     handleFormSubmit(dataToSubmit);
@@ -278,30 +221,18 @@ export default function BeneficiariesPage() {
     if (!beneficiaries) return [];
     let sortableItems = [...beneficiaries];
     
-    // Filtering
     if (statusFilter !== 'All') {
         sortableItems = sortableItems.filter(b => b.status === statusFilter);
-    }
-    if (referralFilter.length > 0) {
-        sortableItems = sortableItems.filter(b => b.referralBy && referralFilter.includes(b.referralBy));
-    }
-    if (membersFilter) {
-        sortableItems = sortableItems.filter(b => String(b.members) === membersFilter);
-    }
-    if (kitAmountFilter) {
-        sortableItems = sortableItems.filter(b => String(b.kitAmount) === kitAmountFilter);
     }
     if (searchTerm) {
         const lowercasedTerm = searchTerm.toLowerCase();
         sortableItems = sortableItems.filter(b => 
             (b.name || '').toLowerCase().includes(lowercasedTerm) ||
             (b.phone || '').toLowerCase().includes(lowercasedTerm) ||
-            (b.address || '').toLowerCase().includes(lowercasedTerm) ||
-            (b.referralBy || '').toLowerCase().includes(lowercasedTerm)
+            (b.address || '').toLowerCase().includes(lowercasedTerm)
         );
     }
 
-    // Sorting
     if (sortConfig !== null) {
         sortableItems.sort((a, b) => {
             if (sortConfig.key === 'srNo') return 0; // Keep original order for srNo
@@ -324,7 +255,7 @@ export default function BeneficiariesPage() {
     }
 
     return sortableItems;
-  }, [beneficiaries, searchTerm, statusFilter, referralFilter, membersFilter, kitAmountFilter, sortConfig]);
+  }, [beneficiaries, searchTerm, statusFilter, sortConfig]);
 
   const isLoading = isLeadLoading || areBeneficiariesLoading || isProfileLoading;
   
@@ -343,24 +274,7 @@ export default function BeneficiariesPage() {
   if (isLoading && !lead) {
     return (
         <main className="container mx-auto p-4 md:p-8">
-            <div className="mb-4">
-                <Skeleton className="h-10 w-44" />
-            </div>
-            <Skeleton className="h-9 w-64 mb-4" />
-             <div className="flex w-max space-x-4 border-b mb-4">
-                <Skeleton className="h-10 w-24" />
-                <Skeleton className="h-10 w-32" />
-                <Skeleton className="h-10 w-36" />
-            </div>
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-8 w-1/2" />
-                    <Skeleton className="h-5 w-1/3" />
-                </CardHeader>
-                <CardContent>
-                    <Skeleton className="h-64 w-full" />
-                </CardContent>
-            </Card>
+            <Loader2 className="w-8 h-8 animate-spin" />
         </main>
     );
   }
@@ -439,59 +353,73 @@ export default function BeneficiariesPage() {
                     </div>
                 )}
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 pt-4">
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Total</CardTitle><Users className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">{statusCounts.Total}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Given</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">{statusCounts.Given}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified</CardTitle><BadgeCheck className="h-4 w-4 text-primary"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">{statusCounts.Verified}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">{statusCounts.Pending}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Hold</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">{statusCounts.Hold}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Need Details</CardTitle><Info className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">{statusCounts['Need More Details']}</div></CardContent>
-                </Card>
+            <div className="flex flex-wrap items-center gap-2 pt-4">
+                <Input 
+                    placeholder="Search by name, phone, address..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="max-w-sm"
+                />
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-auto md:w-[180px]">
+                        <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">All Statuses</SelectItem>
+                        <SelectItem value="Given">Given</SelectItem>
+                        <SelectItem value="Verified">Verified</SelectItem>
+                        <SelectItem value="Pending">Pending</SelectItem>
+                        <SelectItem value="Hold">Hold</SelectItem>
+                        <SelectItem value="Need More Details">Need More Details</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
           </CardHeader>
           <CardContent>
             <div className="w-full overflow-x-auto">
                 <Table>
                     <TableHeader>
-                        <TableRow className="bg-muted/50">
-                            {(canUpdate || canDelete) && <TableHead className="sticky left-0 z-10 bg-card text-center w-[100px]">Actions</TableHead>}
+                        <TableRow>
                             <SortableHeader sortKey="srNo" className="w-[50px]">#</SortableHeader>
                             <SortableHeader sortKey="name">Name</SortableHeader>
+                            <SortableHeader sortKey="phone">Phone</SortableHeader>
+                            <SortableHeader sortKey="address">Address</SortableHeader>
+                            <SortableHeader sortKey="members">Members</SortableHeader>
                             <SortableHeader sortKey="status">Status</SortableHeader>
+                            {(canUpdate || canDelete) && <TableHead className="text-right w-[100px]">Actions</TableHead>}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {areBeneficiariesLoading ? (
                             [...Array(5)].map((_, i) => (
                                 <TableRow key={`skeleton-${i}`}>
-                                    {(canUpdate || canDelete) && <TableCell className="sticky left-0 z-10 bg-card text-center"><Skeleton className="h-6 w-12 mx-auto" /></TableCell>}
                                     <TableCell><Skeleton className="h-6 w-8" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-32" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                                    <TableCell><Skeleton className="h-6 w-40" /></TableCell>
+                                    <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                                    <TableCell><Skeleton className="h-7 w-20 rounded-full" /></TableCell>
+                                    {(canUpdate || canDelete) && <TableCell className="text-right"><Skeleton className="h-6 w-12 ml-auto" /></TableCell>}
                                 </TableRow>
                             ))
                         ) : filteredAndSortedBeneficiaries.length > 0 ? (
                             filteredAndSortedBeneficiaries.map((beneficiary, index) => (
                                 <TableRow key={beneficiary.id}>
+                                    <TableCell>{index + 1}</TableCell>
+                                    <TableCell className="font-medium">{beneficiary.name}</TableCell>
+                                    <TableCell>{beneficiary.phone}</TableCell>
+                                    <TableCell>{beneficiary.address}</TableCell>
+                                    <TableCell>{beneficiary.members}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={
+                                            beneficiary.status === 'Given' ? 'success' :
+                                            beneficiary.status === 'Verified' ? 'success' :
+                                            beneficiary.status === 'Pending' ? 'secondary' :
+                                            beneficiary.status === 'Hold' ? 'destructive' : 'outline'
+                                        }>{beneficiary.status}</Badge>
+                                    </TableCell>
                                     {(canUpdate || canDelete) && (
-                                    <TableCell className="sticky left-0 z-10 bg-card text-center">
+                                    <TableCell className="text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="ghost" size="icon">
@@ -515,21 +443,11 @@ export default function BeneficiariesPage() {
                                         </DropdownMenu>
                                     </TableCell>
                                     )}
-                                    <TableCell>{index + 1}</TableCell>
-                                    <TableCell className="font-medium">{beneficiary.name}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={
-                                            beneficiary.status === 'Given' ? 'success' :
-                                            beneficiary.status === 'Verified' ? 'success' :
-                                            beneficiary.status === 'Pending' ? 'secondary' :
-                                            beneficiary.status === 'Hold' ? 'destructive' : 'outline'
-                                        }>{beneficiary.status}</Badge>
-                                    </TableCell>
                                 </TableRow>
                                 ))
                         ) : (
                         <TableRow>
-                            <TableCell colSpan={(canUpdate || canDelete) ? 4 : 3} className="text-center h-24 text-muted-foreground">
+                            <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="text-center h-24 text-muted-foreground">
                                 No beneficiaries found for this lead.
                             </TableCell>
                         </TableRow>

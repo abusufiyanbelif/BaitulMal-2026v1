@@ -53,7 +53,7 @@ import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/benefici
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
+import { cn, getNestedValue } from '@/lib/utils';
 
 type SortKey = keyof Beneficiary | 'srNo';
 
@@ -113,14 +113,14 @@ export default function BeneficiariesPage() {
     }));
   };
   
-  const canReadSummary = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.summary?.read;
-  const canReadRation = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.ration?.read;
-  const canReadBeneficiaries = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.beneficiaries?.read;
-  const canReadDonations = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.donations?.read;
+  const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
+  const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
+  const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
+  const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
 
-  const canCreate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.beneficiaries?.create;
-  const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.beneficiaries?.update;
-  const canDelete = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.beneficiaries?.delete;
+  const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.create', false);
+  const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.update', false);
+  const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.delete', false);
 
     const sanitizedRationLists = useMemo(() => {
     if (!campaign?.rationLists) return [];
@@ -717,7 +717,7 @@ export default function BeneficiariesPage() {
                         </Button>
                     )}
                     {canReadDonations && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/donations` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                             <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
                         </Button>
                     )}
@@ -940,7 +940,7 @@ export default function BeneficiariesPage() {
                                 const categoryName = category.name === 'General Item List'
                                     ? category.name
                                     : category.minMembers === category.maxMembers
-                                        ? `${category.name} ${category.minMembers}`
+                                        ? `${category.name} (${category.minMembers})`
                                         : `${category.name} (${category.minMembers}-${category.maxMembers})`;
 
                                 return (

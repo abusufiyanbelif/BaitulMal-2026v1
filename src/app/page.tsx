@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useSession } from '@/hooks/use-session';
 import { Skeleton } from '@/components/ui/skeleton';
-import { get } from '@/lib/utils';
+import { getNestedValue } from '@/lib/utils';
 import React from 'react';
 import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, LifeBuoy, FlaskConical } from 'lucide-react';
 
@@ -20,56 +20,56 @@ export default function Home() {
             description: "Manage ration, relief, and general campaigns.",
             href: "/campaign-members",
             icon: <FolderKanban />,
-            isVisible: userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.campaigns', false),
+            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns', false),
         },
         {
             title: "Leads",
             description: "Track and convert new initiatives and opportunities.",
             href: "/leads-members",
             icon: <Lightbulb />,
-            isVisible: userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.leads-members', false),
+            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members', false),
         },
         {
             title: "Donations",
             description: "View and manage all incoming donations.",
             href: "/donations",
             icon: <LifeBuoy />,
-            isVisible: userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.donations', false),
+            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations', false),
         },
         {
             title: "Extractor",
             description: "Scan & extract data from various documents.",
             href: "/extractor",
             icon: <ScanSearch />,
-            isVisible: userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.extractor', false),
+            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.extractor', false),
         },
         {
             title: "Story Creator",
             description: "Generate narratives from documents.",
             href: "/story-creator",
             icon: <MessageSquare />,
-            isVisible: userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.storyCreator', false),
+            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.storyCreator', false),
         },
         {
             title: "User Management",
             description: "Manage user accounts and permissions.",
             href: "/users",
             icon: <Users />,
-            isVisible: userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.users', false),
+            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.users', false),
         },
         {
             title: "Settings",
             description: "Configure application branding and payments.",
             href: "/settings",
             icon: <Settings />,
-            isVisible: userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.settings', false),
+            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings', false),
         },
         {
             title: "Diagnostics",
             description: "Check system health and configurations.",
             href: "/diagnostics",
             icon: <FlaskConical />,
-            isVisible: userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.diagnostics', false),
+            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.diagnostics', false),
         },
     ];
 

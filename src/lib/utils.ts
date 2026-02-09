@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getNestedValue(obj: any, path: string, defaultValue: any = undefined) {
     if (typeof path !== 'string') {
-        console.warn('get: path must be a string');
+        console.warn('getNestedValue: path must be a string');
         return defaultValue;
     }
     const keys = path.split('.');

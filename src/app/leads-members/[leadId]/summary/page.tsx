@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import { useFirestore, useDoc, useCollection, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
@@ -58,7 +58,7 @@ import {
 } from "@/components/ui/table"
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
-import { getNestedValue } from '@/lib/utils';
+import { cn, getNestedValue } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ShareDialog } from '@/components/share-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -92,6 +92,7 @@ const donationPaymentTypeChartConfig = {
 
 export default function LeadSummaryPage() {
     const params = useParams();
+    const pathname = usePathname();
     const leadId = params.leadId as string;
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -697,28 +698,28 @@ Your support and feedback are valuable.
             </div>
 
             <div className="border-b mb-4">
-                <div className="flex flex-wrap items-center gap-x-4">
-                    {userProfile && canReadSummary && (
-                        <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-primary text-primary shadow-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none" data-active="true">
-                            <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
-                        </Button>
-                    )}
-                    {userProfile && (
-                        <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none">
+                <ScrollArea className="w-full whitespace-nowrap">
+                    <div className="flex w-max space-x-2">
+                        {canReadSummary && (
+                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                                <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
+                            </Button>
+                        )}
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                             <Link href={`/leads-members/${leadId}`}>Item List</Link>
                         </Button>
-                    )}
-                    {userProfile && canReadBeneficiaries && (
-                        <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none">
-                            <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
-                        </Button>
-                    )}
-                    {userProfile && canReadDonations && (
-                        <Button variant="ghost" asChild className="rounded-b-none border-b-2 border-transparent pb-3 pt-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none">
-                            <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
-                        </Button>
-                    )}
-                </div>
+                        {canReadBeneficiaries && (
+                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                                <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
+                            </Button>
+                        )}
+                        {canReadDonations && (
+                            <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                                <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
+                            </Button>
+                        )}
+                    </div>
+                </ScrollArea>
             </div>
 
             <div className="space-y-6 p-4 bg-background animate-fade-in-zoom" ref={summaryRef}>
@@ -1075,3 +1076,4 @@ Your support and feedback are valuable.
         </main>
     );
 }
+

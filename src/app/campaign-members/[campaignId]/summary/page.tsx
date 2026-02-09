@@ -723,25 +723,25 @@ Your contribution, big or small, makes a huge difference.
             <div className="border-b mb-4">
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex w-max space-x-2">
-                        {userProfile && canReadSummary && (
-                            <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground")}>
-                                Summary
-                            </Link>
+                        {canReadSummary && (
+                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                                <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
+                            </Button>
                         )}
-                        {userProfile && canReadRation && (
-                            <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground")}>
-                                {campaign.category === 'Ration' ? 'Ration Details' : 'Item List'}
-                            </Link>
+                        {canReadRation && (
+                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                                <Link href={`/campaign-members/${campaignId}`}>{campaign.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
+                            </Button>
                         )}
-                        {userProfile && canReadBeneficiaries && (
-                            <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground")}>
-                                Beneficiary List
-                            </Link>
+                        {canReadBeneficiaries && (
+                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                                <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
+                            </Button>
                         )}
-                        {userProfile && canReadDonations && (
-                            <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground")}>
-                                Donations
-                            </Link>
+                        {canReadDonations && (
+                            <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                                <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
+                            </Button>
                         )}
                     </div>
                 </ScrollArea>
@@ -1127,3 +1127,4 @@ Your contribution, big or small, makes a huge difference.
     
 
     
+

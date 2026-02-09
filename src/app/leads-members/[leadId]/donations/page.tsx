@@ -57,7 +57,6 @@ import {
 } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
 import { getNestedValue } from '@/lib/utils';
-import { syncDonationsAction } from '@/app/donations/actions';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 type SortKey = keyof Donation | 'srNo';
@@ -111,7 +110,6 @@ export default function DonationsPage() {
   const [typeFilter, setTypeFilter] = useState('All');
   const [donationTypeFilter, setDonationTypeFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
-  const [isSyncing, setIsSyncing] = useState(false);
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   
   const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
@@ -121,28 +119,6 @@ export default function DonationsPage() {
   const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.create', false);
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.update', false);
   const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.delete', false);
-
-  const handleSync = async () => {
-    if (!canUpdate) {
-        toast({ title: "Permission Denied", description: "You don't have permission to sync data.", variant: "destructive"});
-        return;
-    }
-    setIsSyncing(true);
-    toast({ title: 'Syncing Donations...', description: 'Please wait while old donation records are updated to the new format.' });
-
-    try {
-        const result = await syncDonationsAction();
-        if (result.success) {
-            toast({ title: 'Sync Complete', description: result.message, variant: 'success' });
-        } else {
-            toast({ title: 'Sync Failed', description: result.message, variant: 'destructive' });
-        }
-    } catch (error: any) {
-         toast({ title: 'Sync Error', description: 'An unexpected client-side error occurred.', variant: 'destructive' });
-    }
-
-    setIsSyncing(false);
-  };
 
   const handleAdd = () => {
     if (!canCreate) return;
@@ -414,14 +390,14 @@ export default function DonationsPage() {
             <div className="border-b mb-4">
               <ScrollArea className="w-full whitespace-nowrap">
                   <div className="flex w-max space-x-2">
-                      <Link href={`/leads-members/${leadId}/donations`} className={cn(
-                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          pathname === `/leads-members/${leadId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                      )}>List</Link>
                       <Link href={`/leads-members/${leadId}/donations/summary`} className={cn(
                           "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                           pathname === `/leads-members/${leadId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                      )}>Summary</Link>
+                      )}>Donation Summary</Link>
+                      <Link href={`/leads-members/${leadId}/donations`} className={cn(
+                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          pathname === `/leads-members/${leadId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                      )}>Donation List</Link>
                   </div>
                   <ScrollBar orientation="horizontal" />
               </ScrollArea>
@@ -435,12 +411,6 @@ export default function DonationsPage() {
                 <CardTitle>Donation List ({filteredAndSortedDonations.length})</CardTitle>
               </div>
                <div className="flex flex-wrap gap-2">
-                    {canUpdate && (
-                        <Button onClick={handleSync} disabled={isSyncing} variant="secondary">
-                            {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <DatabaseZap className="mr-2 h-4 w-4" />}
-                            Sync Data
-                        </Button>
-                    )}
                     {canCreate && (
                         <Button onClick={handleAdd}>
                             <PlusCircle className="mr-2 h-4 w-4" />

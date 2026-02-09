@@ -3,44 +3,18 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection } from '@/firebase';
+import { useFirestore, useDoc, errorEmitter, FirestorePermissionError } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { useBranding } from '@/hooks/use-branding';
-import { doc, updateDoc, DocumentReference, collection, writeBatch } from 'firebase/firestore';
-import type { Lead, RationItem, RationCategory, Beneficiary } from '@/lib/types';
+import { doc, updateDoc, DocumentReference } from 'firebase/firestore';
+import type { Lead, RationItem } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, ShieldAlert, Copy, Info } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Download, Edit, Save, ShieldAlert, Info } from 'lucide-react';
 import Link from 'next/link';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
     Select,
     SelectContent,
@@ -48,18 +22,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
-import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { cn, getNestedValue } from '@/lib/utils';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-
 
 const quantityTypes = ['kg', 'litre', 'gram', 'ml', 'piece', 'packet', 'dozen'];
 
@@ -70,7 +38,6 @@ export default function LeadDetailsPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const { userProfile, isLoading: isProfileLoading } = useSession();
-  const { brandingSettings } = useBranding();
   
   const leadDocRef = useMemo(() => {
     if (!firestore || !leadId) return null;
@@ -79,146 +46,70 @@ export default function LeadDetailsPage() {
 
   const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
 
-  const beneficiariesCollectionRef = useMemo(() => {
-    if (!firestore || !leadId) return null;
-    return collection(firestore, `leads/${leadId}/beneficiaries`);
-  }, [firestore, leadId]);
-  const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
-
   const [editMode, setEditMode] = useState(false);
   const [editableLead, setEditableLead] = useState<Lead | null>(null);
-
-  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [newCategoryMin, setNewCategoryMin] = useState('');
-  const [newCategoryMax, setNewCategoryMax] = useState('');
   
-  const [isDeleteCategoryDialogOpen, setIsDeleteCategoryDialogOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<RationCategory | null>(null);
-  const [dependentBeneficiaries, setDependentBeneficiaries] = useState<Beneficiary[]>([]);
-  const [targetCategoryId, setTargetCategoryId] = useState<string | null>(null);
-  const [isDeletingCategory, setIsDeletingCategory] = useState(false);
-
-  // Copy items state
-  const [isCopyItemsOpen, setIsCopyItemsOpen] = useState(false);
-  const [copyTargetCategory, setCopyTargetCategory] = useState<RationCategory | null>(null);
-  const [copySourceCategoryId, setCopySourceCategoryId] = useState<string | null>(null);
-  const [selectedItemsToCopy, setSelectedItemsToCopy] = useState<string[]>([]);
-  
-  const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
-  const [categoryToEdit, setCategoryToEdit] = useState<RationCategory | null>(null);
-
-  // Reset local state if edit mode is cancelled or if the base data changes while NOT in edit mode.
   useEffect(() => {
     if (lead && !editMode) {
-      const leadCopy = JSON.parse(JSON.stringify(lead));
-       if (leadCopy.rationLists && !Array.isArray(leadCopy.rationLists)) {
-        leadCopy.rationLists = [
-          {
-            id: 'general',
-            name: 'General Item List',
-            minMembers: 0,
-            maxMembers: 0,
-            items: (leadCopy.rationLists as any)['General Item List'] || []
-          }
-        ];
-      }
-      setEditableLead(leadCopy);
+      setEditableLead(JSON.parse(JSON.stringify(lead)));
     }
-  }, [editMode, lead])
+  }, [editMode, lead]);
 
-  useEffect(() => {
-    if (!isCopyItemsOpen) {
-        setCopySourceCategoryId(null);
-        setSelectedItemsToCopy([]);
-    }
-  }, [isCopyItemsOpen]);
-  
-  const sanitizedEditableRationLists = useMemo(() => {
-    if (!editableLead?.rationLists) return [];
-    
-    let lists: RationCategory[];
-
+  const itemList = useMemo(() => {
+    if (!editableLead) return [];
     if (Array.isArray(editableLead.rationLists)) {
-        lists = editableLead.rationLists.map(cat => {
-            // Rename "General" to "General Item List" for consistent display logic
-            if (cat.name === 'General') {
-                return { ...cat, name: 'General Item List' };
-            }
-            return cat;
-        });
-    } else {
-        // Hotfix for old object format
-        lists = [
-            {
-                id: 'general',
-                name: 'General Item List',
-                minMembers: 0,
-                maxMembers: 0,
-                items: (editableLead.rationLists as any)['General Item List'] || []
-            }
-        ];
+        const generalList = editableLead.rationLists.find(c => c.name === 'General Item List');
+        return generalList?.items || [];
     }
-    
-    // Sort to put "General Item List" first
-    return lists.sort((a, b) => {
-        if (a.name === 'General Item List') return -1;
-        if (b.name === 'General Item List') return 1;
-        return a.name.localeCompare(b.name);
-    });
-  }, [editableLead?.rationLists]);
+    // Handle old object format
+    return (editableLead.rationLists as any)['General Item List'] || [];
+  }, [editableLead]);
 
-    const sourceCategoryForCopy = useMemo(() => {
-    if (!copySourceCategoryId) return null;
-    return sanitizedEditableRationLists.find(c => c.id === copySourceCategoryId);
-  }, [copySourceCategoryId, sanitizedEditableRationLists]);
 
   const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
   const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
   const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
   const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.update', false);
 
-  const isLoading = isLeadLoading || isProfileLoading || areBeneficiariesLoading;
+  const isLoading = isLeadLoading || isProfileLoading;
 
   const handleFieldChange = (field: keyof Lead, value: any) => {
     if (!editableLead) return;
     setEditableLead(prev => prev ? { ...prev, [field]: value } : null);
   };
   
-  const handleItemChange = (categoryId: string, itemId: string, field: keyof RationItem, value: string | number) => {
-    if (!editableLead || !editableLead.rationLists) return;
+  const handleItemChange = (itemId: string, field: keyof RationItem, value: string | number) => {
+    if (!editableLead) return;
     
-    const newRationLists = sanitizedEditableRationLists.map(cat => {
-        if (cat.id !== categoryId) return cat;
-        const updatedItems = cat.items.map(item => {
-            if (item.id !== itemId) return item;
-            return { ...item, [field]: value };
-        });
-        return { ...cat, items: updatedItems };
-    });
+    const updatedItems = itemList.map(item => 
+        item.id === itemId ? { ...item, [field]: value } : item
+    );
+
+    const newRationLists = Array.isArray(editableLead.rationLists) 
+      ? editableLead.rationLists.map(cat => cat.name === 'General Item List' ? {...cat, items: updatedItems} : cat)
+      : { 'General Item List': updatedItems };
+
     handleFieldChange('rationLists', newRationLists);
   };
 
-  const handleAddItem = (categoryId: string) => {
-    if (!editableLead || !editableLead.rationLists) return;
+  const handleAddItem = () => {
+    if (!editableLead) return;
     const newItem: RationItem = { id: `item-${Date.now()}`, name: '', quantity: 1, quantityType: 'kg', price: 0, notes: '' };
-    const newRationLists = sanitizedEditableRationLists.map(cat => {
-        if (cat.id === categoryId) {
-            return { ...cat, items: [...cat.items, newItem] };
-        }
-        return cat;
-    });
+    const updatedItems = [...itemList, newItem];
+    const newRationLists = Array.isArray(editableLead.rationLists) 
+      ? editableLead.rationLists.map(cat => cat.name === 'General Item List' ? {...cat, items: updatedItems} : cat)
+      : { 'General Item List': updatedItems };
+
     handleFieldChange('rationLists', newRationLists);
   };
 
-  const handleDeleteItem = (categoryId: string, itemId: string) => {
-    if (!editableLead || !editableLead.rationLists) return;
-    const newRationLists = sanitizedEditableRationLists.map(cat => {
-        if (cat.id === categoryId) {
-            return { ...cat, items: cat.items.filter(item => item.id !== itemId) };
-        }
-        return cat;
-    });
+  const handleDeleteItem = (itemId: string) => {
+    if (!editableLead) return;
+    const updatedItems = itemList.filter(item => item.id !== itemId);
+    const newRationLists = Array.isArray(editableLead.rationLists) 
+      ? editableLead.rationLists.map(cat => cat.name === 'General Item List' ? {...cat, items: updatedItems} : cat)
+      : { 'General Item List': updatedItems };
+
     handleFieldChange('rationLists', newRationLists);
   };
   
@@ -228,8 +119,7 @@ export default function LeadDetailsPage() {
 
   const handleSave = () => {
     if (!leadDocRef || !editableLead || !canUpdate) return;
-
-    // Only send the fields that are editable on this page
+    
     const saveData: Partial<Lead> = {
         name: editableLead.name,
         description: editableLead.description || '',
@@ -241,7 +131,7 @@ export default function LeadDetailsPage() {
         targetAmount: editableLead.targetAmount || 0,
         authenticityStatus: editableLead.authenticityStatus,
         publicVisibility: editableLead.publicVisibility,
-        rationLists: sanitizedEditableRationLists,
+        rationLists: editableLead.rationLists,
         priceDate: editableLead.priceDate || '',
         shopName: editableLead.shopName || '',
         shopContact: editableLead.shopContact || '',
@@ -265,308 +155,12 @@ export default function LeadDetailsPage() {
 
   const handleCancel = () => {
       setEditMode(false);
-      // editableLead will be reset by the useEffect
+      if(lead) {
+        setEditableLead(JSON.parse(JSON.stringify(lead)));
+      }
   };
 
-  const handleAddNewCategory = () => {
-    if (!editableLead) return;
-
-    const min = Number(newCategoryMin);
-    const max = Number(newCategoryMax);
-
-    if (!newCategoryName.trim()) {
-        toast({ title: 'Invalid Name', description: 'Category name cannot be empty.', variant: 'destructive' });
-        return;
-    }
-    if (isNaN(min) || min < 1 || isNaN(max) || max < min) {
-        toast({ title: 'Invalid Range', description: 'Please enter valid positive numbers for min/max members, with min <= max.', variant: 'destructive' });
-        return;
-    }
-    
-    const newCategory: RationCategory = {
-        id: `cat-${Date.now()}`,
-        name: newCategoryName,
-        minMembers: min,
-        maxMembers: max,
-        items: []
-    };
-    
-    const newRationLists = [...sanitizedEditableRationLists, newCategory];
-    handleFieldChange('rationLists', newRationLists);
-    
-    setNewCategoryName('');
-    setNewCategoryMin('');
-    setNewCategoryMax('');
-    setIsAddCategoryOpen(false);
-  };
-  
-  const handleEditCategoryClick = (category: RationCategory) => {
-    if (!canUpdate || !editMode || category.name === 'General Item List') return;
-    setCategoryToEdit(JSON.parse(JSON.stringify(category))); // Deep copy
-    setIsEditCategoryOpen(true);
-  };
-
-  const handleUpdateCategory = () => {
-    if (!editableLead || !categoryToEdit) return;
-
-    const min = Number(categoryToEdit.minMembers);
-    const max = Number(categoryToEdit.maxMembers);
-
-    if (!categoryToEdit.name.trim()) {
-        toast({ title: 'Invalid Name', description: 'Category name cannot be empty.', variant: 'destructive' });
-        return;
-    }
-    if (isNaN(min) || min < 1 || isNaN(max) || max < min) {
-        toast({ title: 'Invalid Range', description: 'Please enter valid positive numbers for min/max members, with min <= max.', variant: 'destructive' });
-        return;
-    }
-
-    const newRationLists = sanitizedEditableRationLists.map(cat => 
-        cat.id === categoryToEdit.id ? categoryToEdit : cat
-    );
-    handleFieldChange('rationLists', newRationLists);
-    
-    setIsEditCategoryOpen(false);
-    setCategoryToEdit(null);
-  };
-
-  const handleDeleteCategoryClick = (categoryToDelete: RationCategory) => {
-      if (!beneficiaries || !canUpdate || !editMode || categoryToDelete.name === 'General Item List') return;
-      
-      const generalCategory = sanitizedEditableRationLists.find(cat => cat.name === 'General Item List');
-
-      const dependents = beneficiaries.filter(beneficiary => {
-          const members = beneficiary.members;
-          if (members === undefined || members === null) return false;
-
-          const specificCategory = sanitizedEditableRationLists.find(
-            cat => cat.name !== 'General Item List' && members >= cat.minMembers && members <= cat.maxMembers
-          );
-          
-          const appliedCategory = specificCategory || generalCategory;
-          
-          return appliedCategory?.id === categoryToDelete.id;
-      });
-      
-      setCategoryToDelete(categoryToDelete);
-      setDependentBeneficiaries(dependents);
-      setTargetCategoryId(null);
-      setIsDeleteCategoryDialogOpen(true);
-  };
-
-  const handleDeleteCategoryConfirm = async () => {
-    if (!firestore || !canUpdate || !categoryToDelete || !editableLead) return;
-
-    if (dependentBeneficiaries.length > 0 && !targetCategoryId) {
-        toast({ title: 'Error', description: 'Please select a category to move beneficiaries to.', variant: 'destructive'});
-        return;
-    }
-
-    setIsDeletingCategory(true);
-    
-    try {
-        const batch = writeBatch(firestore);
-        const targetCategory = sanitizedEditableRationLists.find(c => c.id === targetCategoryId);
-        const newKitAmountForDependents = (dependentBeneficiaries.length > 0 && targetCategory)
-          ? calculateTotal(targetCategory.items)
-          : 0;
-
-        if (dependentBeneficiaries.length > 0 && targetCategoryId) {
-            if (!targetCategory) throw new Error("Target category not found.");
-            
-            for (const beneficiary of dependentBeneficiaries) {
-                const beneficiaryRef = doc(firestore, `leads/${leadId}/beneficiaries`, beneficiary.id);
-                batch.update(beneficiaryRef, { kitAmount: newKitAmountForDependents });
-            }
-        }
-
-        const newRationLists = sanitizedEditableRationLists.filter(cat => cat.id !== categoryToDelete.id);
-        
-        let newTotalRequiredAmount = 0;
-        if (beneficiaries) {
-            const dependentIds = new Set(dependentBeneficiaries.map(b => b.id));
-            newTotalRequiredAmount = beneficiaries.reduce((sum, beneficiary) => {
-                if (dependentIds.has(beneficiary.id)) {
-                    return sum + newKitAmountForDependents;
-                }
-                return sum + (beneficiary.kitAmount || 0);
-            }, 0);
-        }
-
-        if(leadDocRef) {
-          batch.update(leadDocRef, { 
-              rationLists: newRationLists,
-              targetAmount: newTotalRequiredAmount
-          });
-        }
-      
-        await batch.commit();
-
-        toast({ title: 'Category Deleted', description: `Successfully deleted '${categoryToDelete.name}'.`, variant: 'success' });
-        
-        setIsDeleteCategoryDialogOpen(false);
-        setCategoryToDelete(null);
-
-    } catch (error: any) {
-         errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: `leads/${leadId}`,
-            operation: 'write',
-            requestResourceData: { note: `Batch delete category operation for ${categoryToDelete.name}` }
-        }));
-    } finally {
-        setIsDeletingCategory(false);
-    }
-  };
-
-  const handleCopyItemsClick = (category: RationCategory) => {
-    setCopyTargetCategory(category);
-    setCopySourceCategoryId(null);
-    setIsCopyItemsOpen(true);
-  };
-
-  const handleCopyItemsConfirm = () => {
-    if (!editableLead || !copyTargetCategory || selectedItemsToCopy.length === 0) {
-        toast({ title: "Nothing Selected", description: "Please select items to copy.", variant: "destructive" });
-        return;
-    }
-
-    const sourceCategory = sanitizedEditableRationLists.find(c => c.id === copySourceCategoryId);
-    if (!sourceCategory) return;
-
-    const itemsToProcess = sourceCategory.items.filter(item => selectedItemsToCopy.includes(item.id));
-    
-    const targetItems = [...(copyTargetCategory.items || [])];
-    
-    let updatedCount = 0;
-    let addedCount = 0;
-
-    itemsToProcess.forEach(sourceItem => {
-        const existingItemIndex = targetItems.findIndex(
-            targetItem => targetItem.name.trim().toLowerCase() === sourceItem.name.trim().toLowerCase()
-        );
-
-        if (existingItemIndex > -1) {
-            targetItems[existingItemIndex] = {
-                ...targetItems[existingItemIndex],
-                quantity: sourceItem.quantity,
-                quantityType: sourceItem.quantityType,
-                price: sourceItem.price,
-                notes: sourceItem.notes,
-            };
-            updatedCount++;
-        } else {
-            targetItems.push({
-                ...sourceItem,
-                id: `${copyTargetCategory.id}-item-${Date.now()}-${Math.random()}`
-            });
-            addedCount++;
-        }
-    });
-    
-    const newRationLists = sanitizedEditableRationLists.map(cat => {
-        if (cat.id === copyTargetCategory.id) {
-            return { ...cat, items: targetItems };
-        }
-        return cat;
-    });
-
-    handleFieldChange('rationLists', newRationLists);
-    
-    toast({ 
-        title: 'Items Copied', 
-        description: `${addedCount} items added and ${updatedCount} items updated in '${copyTargetCategory.name}'.` 
-    });
-    setIsCopyItemsOpen(false);
-  };
-
-  const renderRationTable = (category: RationCategory) => {
-    const total = calculateTotal(category.items);
-
-    return (
-      <Card className="animate-fade-in-zoom">
-        <CardHeader>
-            <div className="flex justify-between items-center">
-                <CardTitle>{category.name === 'General Item List' ? 'Item List' : 'Items for this category'}</CardTitle>
-                {canUpdate && editMode && (
-                    <div className="flex gap-2">
-                        <Button onClick={() => handleCopyItemsClick(category)} size="sm" variant="outline">
-                          <Copy className="mr-2 h-4 w-4" /> Copy Items
-                        </Button>
-                        <Button onClick={() => handleAddItem(category.id)} size="sm">
-                          <Plus className="mr-2 h-4 w-4" /> Add Item
-                        </Button>
-                    </div>
-                )}
-            </div>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
-            <h4 className="text-lg font-bold">Total Kit Cost: <span className="font-mono">₹{total.toFixed(2)}</span></h4>
-          </div>
-          <div className="w-full overflow-x-auto">
-            <Table>
-                <TableHeader>
-                    <TableRow className="bg-muted/50">
-                        <TableHead className="w-[50px]">#</TableHead>
-                        <TableHead className="min-w-[180px]">Item Name</TableHead>
-                        <TableHead className="min-w-[100px]">Quantity</TableHead>
-                        <TableHead className="min-w-[150px]">Quantity Type</TableHead>
-                        <TableHead className="min-w-[120px]">Price per Unit (₹)</TableHead>
-                        <TableHead className="min-w-[180px]">Notes</TableHead>
-                        <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>
-                        {canUpdate && editMode && <TableHead className="w-[50px] text-center">Action</TableHead>}
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {category.items.map((item, index) => (
-                        <TableRow key={item.id}>
-                            <TableCell>{index + 1}</TableCell>
-                            <TableCell>
-                                <Input value={item.name || ''} onChange={e => handleItemChange(category.id, item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
-                            </TableCell>
-                            <TableCell>
-                                <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(category.id, item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
-                            </TableCell>
-                            <TableCell>
-                                <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(category.id, item.id, 'quantityType', value)} disabled={!editMode || !canUpdate}>
-                                    <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                                    <SelectContent>
-                                        {quantityTypes.map(type => (
-                                            <SelectItem key={type} value={type}>{type}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </TableCell>
-                            <TableCell>
-                                <Input type="number" value={item.price || ''} onChange={e => handleItemChange(category.id, item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
-                            </TableCell>
-                            <TableCell>
-                                <Input value={item.notes || ''} onChange={e => handleItemChange(category.id, item.id, 'notes', e.target.value)} placeholder="e.g. brand, quality" disabled={!editMode || !canUpdate} />
-                            </TableCell>
-                            <TableCell className="text-right font-mono">
-                                ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
-                            </TableCell>
-                            {canUpdate && editMode && (
-                                <TableCell className="text-center">
-                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(category.id, item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                                </TableCell>
-                            )}
-                        </TableRow>
-                    ))}
-                    {category.items.length === 0 && (
-                        <TableRow>
-                            <TableCell colSpan={canUpdate && editMode ? 8 : 7} className="text-center h-24 text-muted-foreground">
-                                No items added yet.
-                            </TableCell>
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
+  const totalKitCost = useMemo(() => calculateTotal(itemList), [itemList]);
 
   if (isLoading || !editableLead) {
     return (
@@ -630,22 +224,20 @@ export default function LeadDetailsPage() {
       <div className="border-b mb-4">
         <ScrollArea className="w-full whitespace-nowrap">
             <div className="flex w-max space-x-2">
-                {userProfile && canReadSummary && (
+                {canReadSummary && (
                     <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                         <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
                     </Button>
                 )}
-                {userProfile && (
-                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/leads-members/${leadId}`}>Item List</Link>
-                    </Button>
-                )}
-                {userProfile && canReadBeneficiaries && (
+                <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                    <Link href={`/leads-members/${leadId}`}>Item List</Link>
+                </Button>
+                {canReadBeneficiaries && (
                     <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                         <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
                     </Button>
                 )}
-                {userProfile && canReadDonations && (
+                {canReadDonations && (
                     <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                         <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
                     </Button>
@@ -655,7 +247,7 @@ export default function LeadDetailsPage() {
         </ScrollArea>
       </div>
       
-      <Card className="animate-fade-in-zoom">
+      <Card className="animate-fade-in-zoom mb-6">
         <CardHeader>
            <div className="flex justify-between items-start flex-wrap gap-4">
               <div className="flex-1">
@@ -676,112 +268,10 @@ export default function LeadDetailsPage() {
                           </div>
                       )
                   )}
-                  {editableLead.category === 'Ration' && (
-                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline">
-                                <Download className="mr-2 h-4 w-4" />
-                                Download List
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => {}}>Download as CSV</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {}}>Download as Excel</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {}}>Download as PDF</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
               </div>
            </div>
         </CardHeader>
         <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div className="space-y-1">
-                      <Label htmlFor="leadName">Lead Name</Label>
-                      <Input id="leadName" value={editableLead.name} onChange={(e) => handleFieldChange('name', e.target.value)} disabled={!editMode || !canUpdate} />
-                  </div>
-                   <div className="space-y-1">
-                      <Label htmlFor="category">Category</Label>
-                      <Select value={editableLead.category} onValueChange={(value) => handleFieldChange('category', value)} disabled={!editMode || !canUpdate}>
-                          <SelectTrigger id="category"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                              <SelectItem value="Ration">Ration</SelectItem>
-                              <SelectItem value="Relief">Relief</SelectItem>
-                              <SelectItem value="General">General</SelectItem>
-                          </SelectContent>
-                      </Select>
-                  </div>
-                   <div className="space-y-1">
-                      <Label htmlFor="status">Status</Label>
-                      <Select value={editableLead.status} onValueChange={(value) => handleFieldChange('status', value)} disabled={!editMode || !canUpdate}>
-                          <SelectTrigger id="status"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                              <SelectItem value="Upcoming">Upcoming</SelectItem>
-                              <SelectItem value="Active">Active</SelectItem>
-                              <SelectItem value="Completed">Completed</SelectItem>
-                          </SelectContent>
-                      </Select>
-                  </div>
-                   <div className="space-y-1">
-                      <Label htmlFor="startDate">Start Date</Label>
-                      <Input id="startDate" type="date" value={editableLead.startDate} onChange={(e) => handleFieldChange('startDate', e.target.value)} disabled={!editMode || !canUpdate} />
-                  </div>
-                  <div className="space-y-1">
-                      <Label htmlFor="endDate">End Date</Label>
-                      <Input id="endDate" type="date" value={editableLead.endDate} onChange={(e) => handleFieldChange('endDate', e.target.value)} disabled={!editMode || !canUpdate} />
-                  </div>
-                  <div className="space-y-1">
-                      <Label htmlFor="targetAmount">Target Amount</Label>
-                      <Input id="targetAmount" type="number" value={editableLead.targetAmount} onChange={(e) => handleFieldChange('targetAmount', Number(e.target.value))} disabled={!editMode || !canUpdate} />
-                  </div>
-                  {editableLead.category === 'Ration' && (
-                    <>
-                       <div className="space-y-1">
-                            <Label htmlFor="priceDate">Price Date</Label>
-                            <Input id="priceDate" type="date" value={editableLead.priceDate || ''} onChange={(e) => handleFieldChange('priceDate', e.target.value)} disabled={!editMode || !canUpdate} />
-                        </div>
-                        <div className="space-y-1">
-                            <Label htmlFor="shopName">Shop Name</Label>
-                            <Input id="shopName" value={editableLead.shopName || ''} onChange={(e) => handleFieldChange('shopName', e.target.value)} disabled={!editMode || !canUpdate} />
-                        </div>
-                        <div className="space-y-1">
-                            <Label htmlFor="shopContact">Shop Contact</Label>
-                            <Input id="shopContact" value={editableLead.shopContact || ''} onChange={(e) => handleFieldChange('shopContact', e.target.value)} disabled={!editMode || !canUpdate} />
-                        </div>
-                        <div className="space-y-1 col-span-1 md:col-span-2 lg:col-span-3">
-                            <Label htmlFor="shopAddress">Shop Address</Label>
-                            <Input id="shopAddress" value={editableLead.shopAddress || ''} onChange={(e) => handleFieldChange('shopAddress', e.target.value)} disabled={!editMode || !canUpdate} />
-                        </div>
-                    </>
-                  )}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="space-y-1">
-                      <Label htmlFor="authenticityStatus">Authenticity Status</Label>
-                      <Select value={editableLead.authenticityStatus || 'Pending Verification'} onValueChange={(value) => handleFieldChange('authenticityStatus', value)} disabled={!editMode || !canUpdate}>
-                          <SelectTrigger id="authenticityStatus"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                              <SelectItem value="Pending Verification">Pending Verification</SelectItem>
-                              <SelectItem value="Verified">Verified</SelectItem>
-                              <SelectItem value="On Hold">On Hold</SelectItem>
-                              <SelectItem value="Rejected">Rejected</SelectItem>
-                              <SelectItem value="Need More Details">Need More Details</SelectItem>
-                          </SelectContent>
-                      </Select>
-                  </div>
-                  <div className="space-y-1">
-                      <Label htmlFor="publicVisibility">Public Visibility</Label>
-                      <Select value={editableLead.publicVisibility || 'Hold'} onValueChange={(value) => handleFieldChange('publicVisibility', value)} disabled={!editMode || !canUpdate}>
-                          <SelectTrigger id="publicVisibility"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                              <SelectItem value="Hold">Hold (Private)</SelectItem>
-                              <SelectItem value="Ready to Publish">Ready to Publish</SelectItem>
-                              <SelectItem value="Published">Published</SelectItem>
-                          </SelectContent>
-                      </Select>
-                  </div>
-              </div>
               <div className="space-y-1">
                   <Label htmlFor="description">Description</Label>
                   <Textarea id="description" value={editableLead.description || ''} onChange={(e) => handleFieldChange('description', e.target.value)} disabled={!editMode || !canUpdate} placeholder="A brief description of the lead..." />
@@ -793,246 +283,80 @@ export default function LeadDetailsPage() {
         </CardContent>
       </Card>
       
-        {editableLead.category === 'Ration' ? (
-            <div className="mt-6">
-                {(sanitizedEditableRationLists.length > 0) ? (
-                    <Tabs defaultValue={sanitizedEditableRationLists[0]?.id} className="w-full">
-                        <ScrollArea>
-                            <TabsList>
-                                {sanitizedEditableRationLists.map(category => {
-                                    const categoryName = category.name === 'General Item List'
-                                    ? 'General Item List'
-                                    : category.minMembers === category.maxMembers
-                                        ? `${category.name} ${category.minMembers}`
-                                        : `${category.name} (${category.minMembers}-${category.maxMembers})`;
-                                    return (
-                                        <div key={category.id} className="flex items-center gap-1 p-1">
-                                            <TabsTrigger value={category.id}>{categoryName}</TabsTrigger>
-                                            {editMode && canUpdate && category.name !== 'General Item List' && (
-                                                <div className="flex items-center">
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="icon" 
-                                                        className="h-6 w-6 shrink-0"
-                                                        onClick={() => handleEditCategoryClick(category)}
-                                                        title="Edit category"
-                                                    >
-                                                        <Edit className="h-3.5 w-3.5" />
-                                                    </Button>
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="icon" 
-                                                        className="h-6 w-6 shrink-0"
-                                                        onClick={() => handleDeleteCategoryClick(category)}
-                                                        disabled={isDeletingCategory}
-                                                        title="Delete category"
-                                                    >
-                                                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )
-                                })}
-                            </TabsList>
-                            <ScrollBar orientation="horizontal" />
-                        </ScrollArea>
-                        {sanitizedEditableRationLists.map(category => (
-                            <TabsContent key={category.id} value={category.id} className="mt-4">
-                                {renderRationTable(category)}
-                            </TabsContent>
-                        ))}
-                    </Tabs>
-                ) : (
-                    <div className="text-center text-muted-foreground py-10 border rounded-md">
-                        No ration categories defined for this lead yet.
-                    </div>
+      <Card className="animate-fade-in-zoom">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Item List</CardTitle>
+            {canUpdate && editMode && (
+              <Button onClick={handleAddItem} size="sm">
+                <Plus className="mr-2 h-4 w-4" /> Add Item
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+            <h4 className="text-lg font-bold">Total Kit Cost: <span className="font-mono">₹{totalKitCost.toFixed(2)}</span></h4>
+          </div>
+          <div className="w-full overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]">#</TableHead>
+                  <TableHead className="min-w-[180px]">Item Name</TableHead>
+                  <TableHead className="min-w-[100px]">Quantity</TableHead>
+                  <TableHead className="min-w-[150px]">Quantity Type</TableHead>
+                  <TableHead className="min-w-[120px]">Price per Unit (₹)</TableHead>
+                  <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>
+                  {canUpdate && editMode && <TableHead className="w-[50px] text-center">Action</TableHead>}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {itemList.map((item, index) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>
+                      <Input value={item.name || ''} onChange={e => handleItemChange(item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
+                    </TableCell>
+                    <TableCell>
+                      <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
+                    </TableCell>
+                    <TableCell>
+                      <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(item.id, 'quantityType', value)} disabled={!editMode || !canUpdate}>
+                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                        <SelectContent>
+                          {quantityTypes.map(type => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Input type="number" value={item.price || ''} onChange={e => handleItemChange(item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
+                    </TableCell>
+                    <TableCell className="text-right font-mono">
+                      ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
+                    </TableCell>
+                    {canUpdate && editMode && (
+                      <TableCell className="text-center">
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+                {itemList.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={canUpdate && editMode ? 7 : 6} className="text-center h-24 text-muted-foreground">
+                      No items added yet.
+                    </TableCell>
+                  </TableRow>
                 )}
-            </div>
-        ) : (
-            <div className="mt-6">
-                {sanitizedEditableRationLists.find(c => c.name === 'General Item List') &&
-                    renderRationTable(sanitizedEditableRationLists.find(c => c.name === 'General Item List')!)
-                }
-            </div>
-        )}
-
-        <AlertDialog open={isDeleteCategoryDialogOpen} onOpenChange={setIsDeleteCategoryDialogOpen}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                <AlertDialogTitle>Delete Category: {categoryToDelete?.name}?</AlertDialogTitle>
-                    {dependentBeneficiaries.length === 0 ? (
-                        <AlertDialogDescription>
-                            Are you sure you want to permanently delete this category and all of its items? This action cannot be undone.
-                        </AlertDialogDescription>
-                    ) : (
-                        <AlertDialogDescription>
-                            <Alert variant="destructive" className="mb-4">
-                                <ShieldAlert className="h-4 w-4" />
-                                <AlertTitle>Warning: {dependentBeneficiaries.length} Beneficiaries Found</AlertTitle>
-                                <AlertDescription>
-                                    These beneficiaries are linked to this category. You must move them to another category before deleting this one. Their kit amounts will be automatically recalculated.
-                                </AlertDescription>
-                            </Alert>
-                            <div className="pt-4 space-y-2">
-                                <Label htmlFor="target-category-lead">Move Beneficiaries To</Label>
-                                <Select onValueChange={setTargetCategoryId} value={targetCategoryId || ''}>
-                                    <SelectTrigger id="target-category-lead">
-                                        <SelectValue placeholder="Select a new category..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {sanitizedEditableRationLists.filter(cat => cat.id !== categoryToDelete?.id).map(cat => (
-                                            <SelectItem key={cat.id} value={cat.id}>
-                                                {cat.name}
-                                                {cat.name !== 'General Item List' && ` (${cat.minMembers}-${cat.maxMembers} Members)`}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </AlertDialogDescription>
-                    )}
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setCategoryToDelete(null)}>Cancel</AlertDialogCancel>
-                <AlertDialogAction 
-                    onClick={handleDeleteCategoryConfirm} 
-                    disabled={isDeletingCategory || (dependentBeneficiaries.length > 0 && !targetCategoryId)}
-                    className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                        {isDeletingCategory ? <Loader2 className="animate-spin" /> : 'Delete'}
-                </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-      </AlertDialog>
-
-       <Dialog open={isCopyItemsOpen} onOpenChange={setIsCopyItemsOpen}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Copy Items to '{copyTargetCategory?.name}'</DialogTitle>
-                    <DialogDescription>
-                        Select items from a source category to copy or replace in the current category.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="py-4 space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="source-category-copy-lead">Copy items from</Label>
-                        <Select onValueChange={id => { setCopySourceCategoryId(id); setSelectedItemsToCopy([]); }} value={copySourceCategoryId || ''}>
-                            <SelectTrigger id="source-category-copy-lead">
-                                <SelectValue placeholder="Select a source category..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {sanitizedEditableRationLists.filter(cat => cat.id !== copyTargetCategory?.id).map(cat => {
-                                    const categoryName = cat.name === 'General Item List'
-                                    ? 'General Item List'
-                                    : cat.minMembers === cat.maxMembers
-                                        ? `${cat.name} ${cat.minMembers}`
-                                        : `${cat.name} (${cat.minMembers}-${cat.maxMembers})`;
-                                    return <SelectItem key={cat.id} value={cat.id}>{categoryName}</SelectItem>
-                                })}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                     {sourceCategoryForCopy && (
-                        <div className="space-y-2 pt-2">
-                             <h4 className="font-medium text-sm">Select Items to Copy/Replace</h4>
-                            <ScrollArea className="h-64 border rounded-md p-2">
-                               <div className="p-2">
-                                     <div className="flex items-center space-x-2 mb-2 p-2">
-                                        <Checkbox
-                                            id="select-all-copy-lead"
-                                            checked={sourceCategoryForCopy.items.length > 0 && selectedItemsToCopy.length === sourceCategoryForCopy.items.length}
-                                            onCheckedChange={(checked) => {
-                                                if (checked) {
-                                                    setSelectedItemsToCopy(sourceCategoryForCopy.items.map(item => item.id));
-                                                } else {
-                                                    setSelectedItemsToCopy([]);
-                                                }
-                                            }}
-                                        />
-                                        <Label htmlFor="select-all-copy-lead" className="font-semibold">Select All</Label>
-                                    </div>
-                                    <Separator />
-                               </div>
-                                <div className="space-y-1 p-2">
-                                {sourceCategoryForCopy.items.length > 0 ? sourceCategoryForCopy.items.map(item => (
-                                    <div key={item.id} className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id={`copy-item-lead-${item.id}`}
-                                            checked={selectedItemsToCopy.includes(item.id)}
-                                            onCheckedChange={(checked) => {
-                                                setSelectedItemsToCopy(prev => 
-                                                    checked ? [...prev, item.id] : prev.filter(id => id !== item.id)
-                                                );
-                                            }}
-                                        />
-                                        <Label htmlFor={`copy-item-lead-${item.id}`} className="font-normal flex-1 cursor-pointer">
-                                            <div className="flex justify-between items-center">
-                                                <span>{item.name}</span>
-                                                <span className="text-xs text-muted-foreground font-mono">
-                                                    {item.quantity} {item.quantityType} @ ₹{item.price.toFixed(2)}
-                                                </span>
-                                            </div>
-                                        </Label>
-                                    </div>
-                                )) : <p className="text-sm text-muted-foreground text-center">No items in this category.</p>}
-                                </div>
-                            </ScrollArea>
-                        </div>
-                    )}
-                </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsCopyItemsOpen(false)}>Cancel</Button>
-                    <Button onClick={handleCopyItemsConfirm} disabled={!copySourceCategoryId || selectedItemsToCopy.length === 0}>
-                        <Copy className="mr-2 h-4 w-4" /> Copy ({selectedItemsToCopy.length}) Items
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-        
-        <Dialog open={isEditCategoryOpen} onOpenChange={setIsEditCategoryOpen}>
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Edit Category: {categoryToEdit?.name}</DialogTitle>
-                    <DialogDescription>Update the category name and member range.</DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="edit-cat-name-lead">Category Name</Label>
-                        <Input
-                            id="edit-cat-name-lead"
-                            value={categoryToEdit?.name || ''}
-                            onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, name: e.target.value} : null)}
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-min-members-lead">Min Members</Label>
-                            <Input
-                                id="edit-min-members-lead"
-                                type="number"
-                                value={categoryToEdit?.minMembers || ''}
-                                onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, minMembers: Number(e.target.value) || 0} : null)}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-max-members-lead">Max Members</Label>
-                            <Input
-                                id="edit-max-members-lead"
-                                type="number"
-                                value={categoryToEdit?.maxMembers || ''}
-                                onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, maxMembers: Number(e.target.value) || 0} : null)}
-                            />
-                        </div>
-                    </div>
-                </div>
-                <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => setIsEditCategoryOpen(false)}>Cancel</Button>
-                    <Button type="submit" onClick={handleUpdateCategory}>Save Changes</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </main>
     </>
   );
 }
-

@@ -183,14 +183,14 @@ export default function DonationsSummaryPage() {
             <div className="border-b mb-4">
               <ScrollArea className="w-full whitespace-nowrap">
                   <div className="flex w-max space-x-2">
-                      <Link href={`/campaign-members/${campaignId}/donations`} className={cn(
-                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                      )}>List</Link>
                       <Link href={`/campaign-members/${campaignId}/donations/summary`} className={cn(
                           "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                           pathname === `/campaign-members/${campaignId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                      )}>Summary</Link>
+                      )}>Donation Summary</Link>
+                      <Link href={`/campaign-members/${campaignId}/donations`} className={cn(
+                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                      )}>Donation List</Link>
                   </div>
                   <ScrollBar orientation="horizontal" />
               </ScrollArea>

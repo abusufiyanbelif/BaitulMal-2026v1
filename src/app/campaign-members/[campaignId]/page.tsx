@@ -55,7 +55,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { get, cn } from '@/lib/utils';
+import { cn, getNestedValue } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -195,11 +195,11 @@ export default function CampaignDetailsPage() {
     }, {} as Record<string, { price: number; quantityType: string }>);
   }, [sanitizedEditableRationLists]);
 
-  const canReadSummary = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.campaigns.summary.read', false);
-  const canReadRation = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.campaigns.ration.read', false);
-  const canReadBeneficiaries = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.campaigns.beneficiaries.read', false);
-  const canReadDonations = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.campaigns.donations.read', false);
-  const canUpdate = userProfile?.role === 'Admin' || get(userProfile, 'permissions.campaigns.update', false) || get(userProfile, 'permissions.campaigns.ration.update', false);
+  const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
+  const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
+  const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
+  const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
+  const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.update', false) || getNestedValue(userProfile, 'permissions.campaigns.ration.update', false);
 
   const isLoading = isCampaignLoading || isProfileLoading || areBeneficiariesLoading;
 
@@ -834,24 +834,24 @@ export default function CampaignDetailsPage() {
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-2">
                     {canReadSummary && (
-                      <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                          <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
-                      </Button>
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                            <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
+                        </Button>
                     )}
                     {canReadRation && (
-                      <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                          <Link href={`/campaign-members/${campaignId}`}>{editableCampaign.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
-                      </Button>
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                            <Link href={`/campaign-members/${campaignId}`}>{editableCampaign.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
+                        </Button>
                     )}
                     {canReadBeneficiaries && (
-                      <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                          <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
-                      </Button>
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                            <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
+                        </Button>
                     )}
                      {canReadDonations && (
-                      <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/donations` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                          <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
-                      </Button>
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                            <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
+                        </Button>
                     )}
                 </div>
                 <ScrollBar orientation="horizontal" />
@@ -1010,7 +1010,7 @@ export default function CampaignDetailsPage() {
                                     const categoryName = category.name === 'General Item List'
                                     ? 'General Item List'
                                     : category.minMembers === category.maxMembers
-                                        ? `${category.name} ${category.minMembers}`
+                                        ? `${category.name} (${category.minMembers})`
                                         : `${category.name} (${category.minMembers}-${category.maxMembers})`;
                                     return (
                                         <div key={category.id} className="flex items-center gap-1 p-1">
@@ -1137,7 +1137,7 @@ export default function CampaignDetailsPage() {
                                      {sanitizedEditableRationLists.filter(cat => cat.id !== categoryToDelete?.id).map(cat => (
                                          <SelectItem key={cat.id} value={cat.id}>
                                              {cat.name}
-                                             {cat.name !== 'General Item List' && ` (${cat.minMembers}-${cat.maxMembers} Members)`}
+                                             {cat.name !== 'General Item List' && ` (${cat.minMembers}-${cat.maxMembers})`}
                                         </SelectItem>
                                      ))}
                                  </SelectContent>
@@ -1247,3 +1247,4 @@ export default function CampaignDetailsPage() {
 }
 
     
+
