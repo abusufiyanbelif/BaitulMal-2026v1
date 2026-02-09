@@ -832,24 +832,24 @@ export default function CampaignDetailsPage() {
         
         <div className="border-b mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex w-max space-x-4">
+                <div className="flex w-max space-x-2">
                     {canReadSummary && (
-                      <Button variant="ghost" asChild className={cn("shrink-0 rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}/summary` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
+                      <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                           <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
                       </Button>
                     )}
                     {canReadRation && (
-                      <Button variant="ghost" asChild className={cn("shrink-0 rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
+                      <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                           <Link href={`/campaign-members/${campaignId}`}>{editableCampaign.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
                       </Button>
                     )}
                     {canReadBeneficiaries && (
-                      <Button variant="ghost" asChild className={cn("shrink-0 rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
+                      <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                           <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
                       </Button>
                     )}
                      {canReadDonations && (
-                      <Button variant="ghost" asChild className={cn("shrink-0 rounded-b-none border-b-2 pb-3 pt-2", pathname === `/campaign-members/${campaignId}/donations` ? "border-primary text-primary shadow-none" : "border-transparent text-muted-foreground hover:text-foreground")}>
+                      <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/donations` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                           <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
                       </Button>
                     )}
