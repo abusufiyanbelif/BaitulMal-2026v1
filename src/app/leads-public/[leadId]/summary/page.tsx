@@ -40,6 +40,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
+import jsPDF from 'jspdf';
 
 
 const donationCategoryChartConfig = {

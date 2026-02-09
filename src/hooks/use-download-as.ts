@@ -162,7 +162,7 @@ export function useDownloadAs() {
             // Watermark
             if (logoImg && logoDataUrl) {
                 pdf.saveGraphicsState();
-                pdf.setGState(new jsPDF().GState({ opacity: 0.08 }));
+                pdf.setGState(new (jsPDF as any).GState({ opacity: 0.08 }));
                 const wmWidth = pdfWidth * 0.75;
                 const wmHeight = (logoImg.height / logoImg.width) * wmWidth;
                 pdf.addImage(logoDataUrl, 'PNG', (pdfWidth - wmWidth) / 2, (pdfHeight - wmHeight) / 2, wmWidth, wmHeight);

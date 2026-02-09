@@ -291,7 +291,7 @@ Your contribution, big or small, makes a huge difference.
                     ctx.drawImage(logoImg, PADDING, PADDING / 2, logoWidth, logoHeight);
                     headerTextX = PADDING + logoWidth + 30;
                 }
-                ctx.fillStyle = 'hsl(var(--foreground))';
+                ctx.fillStyle = 'hsl(142, 70%, 25%)';
                 ctx.font = 'bold 32px sans-serif';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur', headerTextX, (PADDING / 2) + 45);
@@ -320,7 +320,7 @@ Your contribution, big or small, makes a huge difference.
                     const qrSize = 150;
                     ctx.drawImage(qrImg, finalCanvas.width - PADDING - qrSize, footerY + 15, qrSize, qrSize);
                 }
-                ctx.fillStyle = 'hsl(var(--foreground))';
+                ctx.fillStyle = 'hsl(142, 70%, 25%)';
                 ctx.font = 'bold 22px sans-serif';
                 ctx.fillText('For Donations & Contact', PADDING, footerY + 30);
                 ctx.font = '18px sans-serif';
@@ -333,7 +333,7 @@ Your contribution, big or small, makes a huge difference.
                 // Copyright
                 ctx.textAlign = 'center';
                 ctx.font = '14px sans-serif';
-                ctx.fillStyle = 'hsl(var(--muted-foreground))';
+                ctx.fillStyle = 'hsl(142, 25%, 40%)';
                 ctx.fillText(paymentSettings?.copyright || '© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved.', finalCanvas.width / 2, finalCanvas.height - 20);
     
                 const link = document.createElement('a');
@@ -370,7 +370,7 @@ Your contribution, big or small, makes a huge difference.
                 // Watermark
                 if (logoImg && logoDataUrl) {
                     pdf.saveGraphicsState();
-                    pdf.setGState(new pdf.GState({ opacity: 0.08 }));
+                    pdf.setGState(new (jsPDF as any).GState({ opacity: 0.08 }));
                     const wmWidth = pdfWidth * 0.75;
                     const wmHeight = (logoImg.height / logoImg.width) * wmWidth;
                     pdf.addImage(logoDataUrl, 'PNG', (pdfWidth - wmWidth) / 2, (pdfHeight - wmHeight) / 2, wmWidth, wmHeight);

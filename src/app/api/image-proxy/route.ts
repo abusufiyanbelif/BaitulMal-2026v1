@@ -10,15 +10,22 @@ export async function GET(req: NextRequest) {
 
   try {
     const response = await fetch(imageUrl);
+
     if (!response.ok) {
       return new NextResponse(`Failed to fetch image: ${response.statusText}`, { status: response.status });
     }
 
-    const imageBlob = await response.blob();
-    const headers = new Headers();
-    headers.set('Content-Type', imageBlob.type || 'image/png');
+    const contentType = response.headers.get('content-type') || 'image/png';
     
-    return new NextResponse(imageBlob, { status: 200, headers });
+    // Create new headers and forward the content type
+    const headers = new Headers();
+    headers.set('Content-Type', contentType);
+
+    // Stream the body back to the client
+    return new NextResponse(response.body, {
+      status: 200,
+      headers: headers,
+    });
 
   } catch (error) {
     console.error('Image proxy error:', error);
