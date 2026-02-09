@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, RefreshCw, ZoomIn, ZoomOut, RotateCw, DollarSign, CheckCircle2, Hourglass, XCircle, DatabaseZap, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, ChevronDown, ChevronUp, DatabaseZap, Check, ChevronsUpDown, X } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,8 +56,11 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
+import { get } from '@/lib/utils';
 import { syncDonationsAction } from '@/app/donations/actions';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 type SortKey = keyof Donation | 'srNo';
 
@@ -119,10 +122,10 @@ export default function DonationsPage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   
-  const canReadSummary = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.summary?.read;
-  const canReadRation = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.ration?.read;
-  const canReadBeneficiaries = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.beneficiaries?.read;
-  const canReadDonations = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.donations?.read;
+  const canReadSummary = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.campaigns.summary.read', false);
+  const canReadRation = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.campaigns.ration.read', false);
+  const canReadBeneficiaries = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.campaigns.beneficiaries.read', false);
+  const canReadDonations = userProfile?.role === 'Admin' || !!get(userProfile, 'permissions.campaigns.donations.read', false);
 
   const canCreate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.donations?.create;
   const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.donations?.update;
@@ -370,85 +373,6 @@ export default function DonationsPage() {
     return sortableItems;
   }, [donations, searchTerm, statusFilter, typeFilter, donationTypeFilter, sortConfig]);
 
-  const { zakatTotal, loanTotal, interestTotal, sadaqahTotal, lillahTotal, monthlyContributionTotal, grandTotal } = useMemo(() => {
-    if (!filteredAndSortedDonations) {
-        return { zakatTotal: 0, loanTotal: 0, interestTotal: 0, sadaqahTotal: 0, lillahTotal: 0, monthlyContributionTotal: 0, grandTotal: 0 };
-    }
-
-    let zakat = 0;
-    let loan = 0;
-    let interest = 0;
-    let sadaqah = 0;
-    let lillah = 0;
-    let monthlyContribution = 0;
-
-    for (const d of filteredAndSortedDonations) {
-        if (d.typeSplit && d.typeSplit.length > 0) {
-            for (const split of d.typeSplit) {
-                switch (split.category) {
-                    case 'Zakat':
-                        zakat += split.amount;
-                        break;
-                    case 'Loan':
-                        loan += split.amount;
-                        break;
-                    case 'Interest':
-                        interest += split.amount;
-                        break;
-                    case 'Sadaqah':
-                        sadaqah += split.amount;
-                        break;
-                    case 'Lillah':
-                        lillah += split.amount;
-                        break;
-                    case 'Monthly Contribution':
-                        monthlyContribution += split.amount;
-                        break;
-                }
-            }
-        }
-    }
-    const grandTotal = zakat + loan + interest + sadaqah + lillah + monthlyContribution;
-
-    return {
-        zakatTotal: zakat,
-        loanTotal: loan,
-        interestTotal: interest,
-        sadaqahTotal: sadaqah,
-        lillahTotal: lillah,
-        monthlyContributionTotal: monthlyContribution,
-        grandTotal: grandTotal,
-    };
-}, [filteredAndSortedDonations]);
-
-  const statusStats = useMemo(() => {
-    if (!filteredAndSortedDonations) {
-      return {
-        verified: { count: 0, amount: 0 },
-        pending: { count: 0, amount: 0 },
-        canceled: { count: 0, amount: 0 },
-      };
-    }
-    return filteredAndSortedDonations.reduce((acc, donation) => {
-      const status = donation.status || 'Pending';
-      if (status === 'Verified') {
-        acc.verified.count += 1;
-        acc.verified.amount += donation.amount;
-      } else if (status === 'Pending') {
-        acc.pending.count += 1;
-        acc.pending.amount += donation.amount;
-      } else if (status === 'Canceled') {
-        acc.canceled.count += 1;
-        acc.canceled.amount += donation.amount;
-      }
-      return acc;
-    }, {
-      verified: { count: 0, amount: 0 },
-      pending: { count: 0, amount: 0 },
-      canceled: { count: 0, amount: 0 },
-    });
-  }, [filteredAndSortedDonations]);
-
   const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading || areAllCampaignsLoading || areAllLeadsLoading;
   
   const SortableHeader = ({ sortKey, children, className }: { sortKey: SortKey, children: React.ReactNode, className?: string }) => {
@@ -505,7 +429,7 @@ export default function DonationsPage() {
                         </Button>
                     )}
                     {canReadDonations && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/donations` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                             <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
                         </Button>
                     )}
@@ -513,6 +437,24 @@ export default function DonationsPage() {
                 <ScrollBar orientation="horizontal" />
             </ScrollArea>
         </div>
+
+        {canReadDonations && (
+            <div className="border-b mb-4">
+              <ScrollArea className="w-full whitespace-nowrap">
+                  <div className="flex w-max space-x-2">
+                      <Link href={`/campaign-members/${campaignId}/donations`} className={cn(
+                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                      )}>List</Link>
+                      <Link href={`/campaign-members/${campaignId}/donations/summary`} className={cn(
+                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          pathname === `/campaign-members/${campaignId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                      )}>Summary</Link>
+                  </div>
+                  <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+            </div>
+        )}
 
         <Card>
           <CardHeader>
@@ -535,59 +477,7 @@ export default function DonationsPage() {
                 )}
               </div>
             </div>
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
-                    <CardContent className="p-2">
-                        <div className="text-2xl font-bold">{statusStats.verified.count}</div>
-                        <p className="text-xs text-muted-foreground">₹{statusStats.verified.amount.toLocaleString('en-IN')}</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2">
-                        <div className="text-2xl font-bold">{statusStats.pending.count}</div>
-                        <p className="text-xs text-muted-foreground">₹{statusStats.pending.amount.toLocaleString('en-IN')}</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Canceled</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
-                    <CardContent className="p-2">
-                        <div className="text-2xl font-bold">{statusStats.canceled.count}</div>
-                        <p className="text-xs text-muted-foreground">₹{statusStats.canceled.amount.toLocaleString('en-IN')}</p>
-                    </CardContent>
-                </Card>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Grand Total</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">₹{grandTotal.toLocaleString('en-IN')}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Zakat</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">₹{zakatTotal.toLocaleString('en-IN')}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Interest</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">₹{interestTotal.toLocaleString('en-IN')}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Loan</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">₹{loanTotal.toLocaleString('en-IN')}</div></CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Sadaqah</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">₹{sadaqahTotal.toLocaleString('en-IN')}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Lillah</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">₹{lillahTotal.toLocaleString('en-IN')}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Monthly Contribution</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">₹{monthlyContributionTotal.toLocaleString('en-IN')}</div></CardContent>
-                </Card>
-            </div>
+            
             <div className="flex flex-wrap items-center gap-2 pt-4">
                 <Input
                     placeholder="Search donor, receiver, phone, etc."
@@ -836,4 +726,3 @@ export default function DonationsPage() {
     </>
   );
 }
-
