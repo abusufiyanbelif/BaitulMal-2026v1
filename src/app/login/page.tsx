@@ -129,7 +129,7 @@ export default function LoginPage() {
   const authUrl = `https://console.firebase.google.com/project/${firebaseProjectId}/authentication/sign-in-method`;
 
   return (
-    <div className="flex flex-col items-center justify-center flex-grow p-4">
+    <div className="flex items-center justify-center p-4">
       <div className="w-full max-w-sm animate-fade-in-zoom" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
             <Card>
                 <CardHeader className="text-center">
