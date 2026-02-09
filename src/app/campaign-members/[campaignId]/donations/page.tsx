@@ -155,7 +155,7 @@ export default function DonationsPage() {
     setEditingDonation(null);
     setIsFormOpen(true);
   };
-
+  
   const handleEdit = (donation: Donation) => {
     if (!canUpdate) return;
     setEditingDonation(donation);
@@ -634,28 +634,28 @@ export default function DonationsPage() {
                 </Select>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50">
-                    <TableHead className="w-[100px] text-center sticky left-0 bg-card z-10 whitespace-nowrap">Actions</TableHead>
-                    <SortableHeader sortKey="srNo">#</SortableHeader>
-                    <SortableHeader sortKey="status">Status</SortableHeader>
-                    <SortableHeader sortKey="donorName">Donor Name</SortableHeader>
-                    <SortableHeader sortKey="receiverName">Receiver Name</SortableHeader>
-                    <SortableHeader sortKey="donorPhone">Phone</SortableHeader>
-                    <SortableHeader sortKey="amount" className="text-right">Amount (₹)</SortableHeader>
-                    <TableHead className="whitespace-nowrap">Category</TableHead>
-                    <SortableHeader sortKey="donationType">Donation Type</SortableHeader>
-                    <SortableHeader sortKey="donationDate">Date</SortableHeader>
-                    <SortableHeader sortKey="referral">Referral</SortableHeader>
+                <TableRow>
+                    <SortableHeader sortKey="srNo" className="w-[60px] pl-4">#</SortableHeader>
+                    <SortableHeader sortKey="status" className="min-w-[120px]">Status</SortableHeader>
+                    <SortableHeader sortKey="donorName" className="min-w-[180px]">Donor Name</SortableHeader>
+                    <SortableHeader sortKey="receiverName" className="min-w-[180px]">Receiver Name</SortableHeader>
+                    <SortableHeader sortKey="donorPhone" className="min-w-[130px]">Phone</SortableHeader>
+                    <SortableHeader sortKey="amount" className="min-w-[140px] text-right">Amount (₹)</SortableHeader>
+                    <TableHead className="min-w-[200px] whitespace-nowrap">Category</TableHead>
+                    <SortableHeader sortKey="donationType" className="min-w-[140px]">Donation Type</SortableHeader>
+                    <SortableHeader sortKey="donationDate" className="min-w-[120px]">Date</SortableHeader>
+                    <SortableHeader sortKey="referral" className="min-w-[150px]">Referral</SortableHeader>
+                    <TableHead className="text-right w-[100px] pr-4">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {areDonationsLoading ? (
                 [...Array(3)].map((_, i) => (
                     <TableRow key={i}>
-                        <TableCell colSpan={12}><Skeleton className="h-6 w-full" /></TableCell>
+                        <TableCell colSpan={11}><Skeleton className="h-6 w-full" /></TableCell>
                     </TableRow>
                 ))
                 ) : (filteredAndSortedDonations && filteredAndSortedDonations.length > 0) ? (
@@ -665,8 +665,35 @@ export default function DonationsPage() {
                       <Collapsible key={donation.id} open={isOpen} onOpenChange={(open) => setOpenRows(prev => ({...prev, [donation.id]: open}))}>
                         <>
                         <TableRow>
-                            <TableCell className="text-center sticky left-0 bg-card z-10">
-                                  <div className="flex items-center justify-center">
+                            <TableCell className="pl-4">{index + 1}</TableCell>
+                            <TableCell>
+                                <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge>
+                            </TableCell>
+                            <TableCell className="font-medium">{donation.donorName}</TableCell>
+                            <TableCell>{donation.receiverName}</TableCell>
+                            <TableCell>{donation.donorPhone}</TableCell>
+                            <TableCell className="text-right font-medium">
+                                <div className="flex flex-col items-end">
+                                    <span>₹{donation.amount.toFixed(2)}</span>
+                                    {donation.linkSplit && donation.linkSplit.length > 1 && (
+                                    <span className="text-xs text-muted-foreground">(Split)</span>
+                                    )}
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                <div className="flex flex-wrap gap-1">
+                                    {donation.typeSplit?.map(split => (
+                                        <Badge key={split.category} variant="secondary">
+                                            {split.category}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </TableCell>
+                            <TableCell><Badge variant="outline">{donation.donationType}</Badge></TableCell>
+                            <TableCell>{donation.donationDate}</TableCell>
+                            <TableCell>{donation.referral}</TableCell>
+                            <TableCell className="text-right pr-4">
+                                  <div className="flex items-center justify-end">
                                     <CollapsibleTrigger asChild>
                                         <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!donation.transactions || donation.transactions.length === 0}>
                                             {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -697,33 +724,6 @@ export default function DonationsPage() {
                                     </DropdownMenu>
                                 </div>
                             </TableCell>
-                            <TableCell>{index + 1}</TableCell>
-                            <TableCell>
-                                <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge>
-                            </TableCell>
-                            <TableCell className="font-medium">{donation.donorName}</TableCell>
-                            <TableCell>{donation.receiverName}</TableCell>
-                            <TableCell>{donation.donorPhone}</TableCell>
-                            <TableCell className="text-right font-medium">
-                                <div className="flex flex-col items-end">
-                                    <span>₹{donation.amount.toFixed(2)}</span>
-                                    {donation.linkSplit && donation.linkSplit.length > 1 && (
-                                    <span className="text-xs text-muted-foreground">(Split)</span>
-                                    )}
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                <div className="flex flex-wrap gap-1">
-                                    {donation.typeSplit?.map(split => (
-                                        <Badge key={split.category} variant="secondary">
-                                            {split.category}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            </TableCell>
-                            <TableCell><Badge variant="outline">{donation.donationType}</Badge></TableCell>
-                            <TableCell>{donation.donationDate}</TableCell>
-                            <TableCell>{donation.referral}</TableCell>
                         </TableRow>
                         <CollapsibleContent asChild>
                             <TableRow className="bg-muted/50 hover:bg-muted/50">
@@ -764,7 +764,7 @@ export default function DonationsPage() {
             })
                 ) : (
                 <TableRow>
-                    <TableCell colSpan={12} className="text-center h-24 text-muted-foreground">
+                    <TableCell colSpan={11} className="text-center h-24 text-muted-foreground">
                         No donations found matching your criteria.
                     </TableCell>
                 </TableRow>

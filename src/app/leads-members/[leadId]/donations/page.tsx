@@ -444,7 +444,7 @@ export default function DonationsPage() {
     const isSorted = sortConfig?.key === sortKey;
     return (
         <TableHead className={cn("cursor-pointer hover:bg-muted/50", className)} onClick={() => handleSort(sortKey)}>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 whitespace-nowrap">
                 {children}
                 {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
             </div>
@@ -618,145 +618,143 @@ export default function DonationsPage() {
                 </Select>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="w-full overflow-x-auto">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="bg-muted/50">
-                            <TableHead className="w-[100px] text-center sticky left-0 bg-card z-10">Actions</TableHead>
-                            <SortableHeader sortKey="srNo">#</SortableHeader>
-                            <SortableHeader sortKey="status">Status</SortableHeader>
-                            <SortableHeader sortKey="donorName">Donor Name</SortableHeader>
-                            <SortableHeader sortKey="receiverName">Receiver Name</SortableHeader>
-                            <SortableHeader sortKey="donorPhone">Phone</SortableHeader>
-                            <SortableHeader sortKey="amount" className="text-right">Amount (₹)</SortableHeader>
-                            <TableHead>Category</TableHead>
-                            <SortableHeader sortKey="donationType">Donation Type</SortableHeader>
-                            <SortableHeader sortKey="donationDate">Date</SortableHeader>
-                            <SortableHeader sortKey="referral">Referral</SortableHeader>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {areDonationsLoading ? (
-                        [...Array(3)].map((_, i) => (
-                            <TableRow key={i}>
-                                <TableCell colSpan={12}><Skeleton className="h-6 w-full" /></TableCell>
-                            </TableRow>
-                        ))
-                        ) : (filteredAndSortedDonations && filteredAndSortedDonations.length > 0) ? (
-                        filteredAndSortedDonations.map((donation, index) => {
-                            const isOpen = openRows[donation.id] || false;
-                            return (
-                             <Collapsible key={donation.id} open={isOpen} onOpenChange={(open) => setOpenRows(prev => ({...prev, [donation.id]: open}))}>
-                                <>
-                                <TableRow>
-                                    <TableCell className="text-center sticky left-0 bg-card z-10">
-                                        <div className="flex items-center justify-center">
-                                            <CollapsibleTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!donation.transactions || donation.transactions.length === 0}>
-                                                    {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                                    <span className="sr-only">Toggle details</span>
-                                                </Button>
-                                            </CollapsibleTrigger>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/leads-members/${leadId}/donations/${donation.id}`); }}>
-                                                        <Eye className="mr-2 h-4 w-4" /> View Details
-                                                    </DropdownMenuItem>
-                                                    {canUpdate && (
-                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(donation); }}>
-                                                            <Edit className="mr-2 h-4 w-4" /> Edit
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    {canDelete && (
-                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
-                                                            <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>{index + 1}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge>
-                                    </TableCell>
-                                    <TableCell className="font-medium">{donation.donorName}</TableCell>
-                                    <TableCell>{donation.receiverName}</TableCell>
-                                    <TableCell>{donation.donorPhone}</TableCell>
-                                    <TableCell className="text-right font-medium">
-                                        <div className="flex flex-col items-end">
-                                            <span>₹{donation.amount.toFixed(2)}</span>
-                                            {donation.linkSplit && donation.linkSplit.length > 1 && (
-                                            <span className="text-xs text-muted-foreground">(Split)</span>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-wrap gap-1">
-                                            {donation.typeSplit?.map(split => (
-                                                <Badge key={split.category} variant="secondary">
-                                                    {split.category}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell><Badge variant="outline">{donation.donationType}</Badge></TableCell>
-                                    <TableCell>{donation.donationDate}</TableCell>
-                                    <TableCell>{donation.referral}</TableCell>
-                                </TableRow>
-                                <CollapsibleContent asChild>
-                                    <TableRow className="bg-muted/50 hover:bg-muted/50">
-                                        <TableCell colSpan={11} className="p-0">
-                                            <div className="p-3">
-                                                <h4 className="text-sm font-semibold mb-2">Transaction Details</h4>
-                                                <Table>
-                                                    <TableHeader>
-                                                        <TableRow>
-                                                            <TableHead>Amount</TableHead>
-                                                            <TableHead>Transaction ID</TableHead>
-                                                            <TableHead>Screenshot</TableHead>
-                                                        </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {(donation.transactions || []).map((tx) => (
-                                                            <TableRow key={tx.id}>
-                                                                <TableCell>₹{tx.amount.toFixed(2)}</TableCell>
-                                                                <TableCell>{tx.transactionId || 'N/A'}</TableCell>
-                                                                <TableCell>
-                                                                    {tx.screenshotUrl ? (
-                                                                        <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)}>
-                                                                            <Eye className="mr-2 h-4 w-4"/> View
-                                                                        </Button>
-                                                                    ) : 'No'}
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        ))}
-                                                    </TableBody>
-                                                </Table>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                </CollapsibleContent>
-                                </>
-                            </Collapsible>
-                        );
-                        })
-                        ) : (
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                    <SortableHeader sortKey="srNo" className="w-[60px] pl-4">#</SortableHeader>
+                    <SortableHeader sortKey="status" className="min-w-[120px]">Status</SortableHeader>
+                    <SortableHeader sortKey="donorName" className="min-w-[180px]">Donor Name</SortableHeader>
+                    <SortableHeader sortKey="receiverName" className="min-w-[180px]">Receiver Name</SortableHeader>
+                    <SortableHeader sortKey="donorPhone" className="min-w-[130px]">Phone</SortableHeader>
+                    <SortableHeader sortKey="amount" className="min-w-[140px] text-right">Amount (₹)</SortableHeader>
+                    <TableHead className="min-w-[200px] whitespace-nowrap">Category</TableHead>
+                    <SortableHeader sortKey="donationType" className="min-w-[140px]">Donation Type</SortableHeader>
+                    <SortableHeader sortKey="donationDate" className="min-w-[120px]">Date</SortableHeader>
+                    <SortableHeader sortKey="referral" className="min-w-[150px]">Referral</SortableHeader>
+                    <TableHead className="text-right w-[100px] pr-4">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {areDonationsLoading ? (
+                [...Array(3)].map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell colSpan={11}><Skeleton className="h-6 w-full" /></TableCell>
+                    </TableRow>
+                ))
+                ) : (filteredAndSortedDonations && filteredAndSortedDonations.length > 0) ? (
+                filteredAndSortedDonations.map((donation, index) => {
+                    const isOpen = openRows[donation.id] || false;
+                    return (
+                     <Collapsible key={donation.id} open={isOpen} onOpenChange={(open) => setOpenRows(prev => ({...prev, [donation.id]: open}))}>
+                        <>
                         <TableRow>
-                            <TableCell colSpan={12} className="text-center h-24 text-muted-foreground">
-                                No donations found matching your criteria.
+                            <TableCell className="pl-4">{index + 1}</TableCell>
+                            <TableCell>
+                                <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge>
+                            </TableCell>
+                            <TableCell className="font-medium">{donation.donorName}</TableCell>
+                            <TableCell>{donation.receiverName}</TableCell>
+                            <TableCell>{donation.donorPhone}</TableCell>
+                            <TableCell className="text-right font-medium">
+                                <div className="flex flex-col items-end">
+                                    <span>₹{donation.amount.toFixed(2)}</span>
+                                    {donation.linkSplit && donation.linkSplit.length > 1 && (
+                                    <span className="text-xs text-muted-foreground">(Split)</span>
+                                    )}
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                <div className="flex flex-wrap gap-1">
+                                    {donation.typeSplit?.map(split => (
+                                        <Badge key={split.category} variant="secondary">
+                                            {split.category}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </TableCell>
+                            <TableCell><Badge variant="outline">{donation.donationType}</Badge></TableCell>
+                            <TableCell>{donation.donationDate}</TableCell>
+                            <TableCell>{donation.referral}</TableCell>
+                            <TableCell className="text-right pr-4">
+                                <div className="flex items-center justify-end">
+                                    <CollapsibleTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!donation.transactions || donation.transactions.length === 0}>
+                                            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                            <span className="sr-only">Toggle details</span>
+                                        </Button>
+                                    </CollapsibleTrigger>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/leads-members/${leadId}/donations/${donation.id}`); }}>
+                                                <Eye className="mr-2 h-4 w-4" /> View Details
+                                            </DropdownMenuItem>
+                                            {canUpdate && (
+                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(donation); }}>
+                                                    <Edit className="mr-2 h-4 w-4" /> Edit
+                                                </DropdownMenuItem>
+                                            )}
+                                            {canDelete && (
+                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
+                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                </DropdownMenuItem>
+                                            )}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
                             </TableCell>
                         </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+                        <CollapsibleContent asChild>
+                            <TableRow className="bg-muted/50 hover:bg-muted/50">
+                                <TableCell colSpan={11} className="p-0">
+                                    <div className="p-3">
+                                        <h4 className="text-sm font-semibold mb-2">Transaction Details</h4>
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Amount</TableHead>
+                                                    <TableHead>Transaction ID</TableHead>
+                                                    <TableHead>Screenshot</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {(donation.transactions || []).map((tx) => (
+                                                    <TableRow key={tx.id}>
+                                                        <TableCell>₹{tx.amount.toFixed(2)}</TableCell>
+                                                        <TableCell>{tx.transactionId || 'N/A'}</TableCell>
+                                                        <TableCell>
+                                                            {tx.screenshotUrl ? (
+                                                                <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)}>
+                                                                    <Eye className="mr-2 h-4 w-4"/> View
+                                                                </Button>
+                                                            ) : 'No'}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        </CollapsibleContent>
+                        </>
+                    </Collapsible>
+                );
+            })
+                ) : (
+                <TableRow>
+                    <TableCell colSpan={11} className="text-center h-24 text-muted-foreground">
+                        No donations found matching your criteria.
+                    </TableCell>
+                </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </main>
