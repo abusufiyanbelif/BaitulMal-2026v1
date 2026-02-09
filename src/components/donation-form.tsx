@@ -165,7 +165,30 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
           />
 
         <div className="space-y-4 rounded-md border p-4">
-            <h3 className="text-base font-semibold">Transactions</h3>
+            <h3 className="text-base font-semibold">Transaction Details</h3>
+            <FormField
+                control={control}
+                name="donationType"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Payment Method *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select payment method" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="Online Payment">Online Payment</SelectItem>
+                            <SelectItem value="Cash">Cash</SelectItem>
+                            <SelectItem value="Check">Check</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
             <FormDescription>
                 Add one or more transactions that make up the total donation amount.
             </FormDescription>
@@ -334,31 +357,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                 )}
             />
         </div>
-        <FormField
-            control={control}
-            name="donationType"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Donation Type *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                        <SelectItem value="Online Payment">Online Payment</SelectItem>
-                        <SelectItem value="Cash">Cash</SelectItem>
-                        <SelectItem value="Check">Check</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                </Select>
-                <FormMessage />
-                </FormItem>
-            )}
-        />
-
-
+        
         {/* Category Split */}
         <div className="space-y-3 rounded-md border p-4">
              <FormField
