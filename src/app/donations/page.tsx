@@ -739,7 +739,7 @@ export default function DonationsPage() {
                                       <CollapsibleContent asChild>
                                           <TableRow className="bg-muted/50 hover:bg-muted/50">
                                               <TableCell colSpan={8} className="p-0">
-                                                  <div className="p-4">
+                                                  <div className="p-2">
                                                       <h4 className="text-sm font-semibold mb-2">Transaction Details</h4>
                                                       <div className="border rounded-md bg-background">
                                                         <Table>
@@ -850,5 +850,3 @@ export default function DonationsPage() {
     </>
   );
 }
-
-
