@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, DollarSign, CheckCircle2, Hourglass, XCircle } from 'lucide-react';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 
 export default function DonationsSummaryPage() {
@@ -152,48 +152,42 @@ export default function DonationsSummaryPage() {
         </div>
         
         <div className="border-b mb-4">
-            <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex w-max space-x-2">
-                    {canReadSummary && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
-                        </Button>
-                    )}
-                    {canReadRation && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/campaign-members/${campaignId}`}>{campaign?.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
-                        </Button>
-                    )}
-                    {canReadBeneficiaries && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
-                        </Button>
-                    )}
-                    {canReadDonations && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
-                        </Button>
-                    )}
-                </div>
-                <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+            <div className="flex flex-wrap items-center">
+                {canReadSummary && (
+                    <Button variant="ghost" asChild className={cn(pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
+                    </Button>
+                )}
+                {canReadRation && (
+                    <Button variant="ghost" asChild className={cn(pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/campaign-members/${campaignId}`}>{campaign?.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
+                    </Button>
+                )}
+                {canReadBeneficiaries && (
+                    <Button variant="ghost" asChild className={cn(pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
+                    </Button>
+                )}
+                {canReadDonations && (
+                    <Button variant="ghost" asChild className={cn(pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
+                    </Button>
+                )}
+            </div>
         </div>
 
         {canReadDonations && (
             <div className="border-b mb-4">
-              <ScrollArea className="w-full whitespace-nowrap">
-                  <div className="flex w-max space-x-2">
-                      <Link href={`/campaign-members/${campaignId}/donations/summary`} className={cn(
-                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          pathname === `/campaign-members/${campaignId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                      )}>Donation Summary</Link>
-                      <Link href={`/campaign-members/${campaignId}/donations`} className={cn(
-                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                      )}>Donation List</Link>
-                  </div>
-                  <ScrollBar orientation="horizontal" />
-              </ScrollArea>
+              <div className="flex flex-wrap items-center">
+                  <Link href={`/campaign-members/${campaignId}/donations/summary`} className={cn(
+                      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      pathname === `/campaign-members/${campaignId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                  )}>Donation Summary</Link>
+                  <Link href={`/campaign-members/${campaignId}/donations`} className={cn(
+                      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                  )}>Donation List</Link>
+              </div>
             </div>
         )}
 
@@ -227,31 +221,31 @@ export default function DonationsSummaryPage() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
                 <Card>
-                    <CardHeader className="pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Grand Total</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Grand Total</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
                     <CardContent><div className="text-2xl font-bold">₹{grandTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
                 <Card>
-                    <CardHeader className="pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Zakat</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Zakat</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
                     <CardContent><div className="text-2xl font-bold">₹{zakatTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
                 <Card>
-                    <CardHeader className="pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Interest</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Interest</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
                     <CardContent><div className="text-2xl font-bold">₹{interestTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
                 <Card>
-                    <CardHeader className="pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Loan</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Loan</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
                     <CardContent><div className="text-2xl font-bold">₹{loanTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
                  <Card>
-                    <CardHeader className="pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Sadaqah</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Sadaqah</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
                     <CardContent><div className="text-2xl font-bold">₹{sadaqahTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
                 <Card>
-                    <CardHeader className="pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Lillah</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Lillah</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
                     <CardContent><div className="text-2xl font-bold">₹{lillahTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
                 <Card>
-                    <CardHeader className="pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Monthly Contribution</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Monthly Contribution</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
                     <CardContent><div className="text-2xl font-bold">₹{monthlyContributionTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
             </div>

@@ -46,7 +46,7 @@ import {
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -361,46 +361,40 @@ export default function DonationsPage() {
         </div>
         
         <div className="border-b mb-4">
-            <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex w-max space-x-2">
-                    {canReadSummary && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
-                        </Button>
-                    )}
-                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/leads-members/${leadId}`}>Item List</Link>
+            <div className="flex flex-wrap items-center">
+                {canReadSummary && (
+                    <Button variant="ghost" asChild className={cn(pathname === `/leads-members/${leadId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
                     </Button>
-                    {canReadBeneficiaries && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
-                        </Button>
-                    )}
-                    {canReadDonations && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
-                        </Button>
-                    )}
-                </div>
-                <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+                )}
+                <Button variant="ghost" asChild className={cn(pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                    <Link href={`/leads-members/${leadId}`}>Item List</Link>
+                </Button>
+                {canReadBeneficiaries && (
+                    <Button variant="ghost" asChild className={cn(pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
+                    </Button>
+                )}
+                {canReadDonations && (
+                    <Button variant="ghost" asChild className={cn(pathname.startsWith(`/leads-members/${leadId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
+                    </Button>
+                )}
+            </div>
         </div>
 
         {canReadDonations && (
             <div className="border-b mb-4">
-              <ScrollArea className="w-full whitespace-nowrap">
-                  <div className="flex w-max space-x-2">
-                      <Link href={`/leads-members/${leadId}/donations/summary`} className={cn(
-                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          pathname === `/leads-members/${leadId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                      )}>Donation Summary</Link>
-                      <Link href={`/leads-members/${leadId}/donations`} className={cn(
-                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          pathname === `/leads-members/${leadId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                      )}>Donation List</Link>
-                  </div>
-                  <ScrollBar orientation="horizontal" />
-              </ScrollArea>
+              <div className="flex flex-wrap items-center">
+                  <Link href={`/leads-members/${leadId}/donations/summary`} className={cn(
+                      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      pathname === `/leads-members/${leadId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                  )}>Donation Summary</Link>
+                  <Link href={`/leads-members/${leadId}/donations`} className={cn(
+                      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      pathname === `/leads-members/${leadId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                  )}>Donation List</Link>
+              </div>
             </div>
         )}
 
