@@ -21,6 +21,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -650,6 +657,49 @@ export default function BeneficiariesPage() {
         </TableHead>
     );
   };
+  
+  const handleStatusChange = async (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => {
+    if (!firestore || !campaignId || !canUpdate) return;
+    
+    const beneficiaryDocRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
+    
+    try {
+      await updateDoc(beneficiaryDocRef, { status: newStatus });
+      toast({
+        title: 'Status Updated',
+        description: `${beneficiary.name}'s status has been set to ${newStatus}.`,
+        variant: 'success',
+      });
+    } catch (serverError) {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: beneficiaryDocRef.path,
+        operation: 'update',
+        requestResourceData: { status: newStatus },
+      }));
+    }
+  };
+
+  const handleZakatToggle = async (beneficiary: Beneficiary) => {
+    if (!firestore || !campaignId || !canUpdate) return;
+
+    const beneficiaryDocRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
+    const newZakatStatus = !beneficiary.isEligibleForZakat;
+
+    try {
+      await updateDoc(beneficiaryDocRef, { isEligibleForZakat: newZakatStatus });
+      toast({
+        title: 'Zakat Status Updated',
+        description: `${beneficiary.name} is now ${newZakatStatus ? 'Eligible' : 'Not Eligible'} for Zakat.`,
+        variant: 'success',
+      });
+    } catch (serverError) {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: beneficiaryDocRef.path,
+        operation: 'update',
+        requestResourceData: { isEligibleForZakat: newZakatStatus },
+      }));
+    }
+  };
 
   if (isLoading && !campaign) {
     return (
@@ -976,14 +1026,14 @@ export default function BeneficiariesPage() {
                                                     </TableRow>
 
                                                     {!subGroupIsCollapsed && beneficiariesInSubGroup.map((beneficiary, index) => (
-                                                        <BeneficiaryRow beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} isSubRow={true} />
+                                                        <BeneficiaryRow beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} isSubRow={true} />
                                                     ))}
                                                 </React.Fragment>
                                             );
                                         })}
                                         {!categoryIsCollapsed && !categoryIsEffectivelyRanged && (
                                             Object.values(beneficiariesByMemberCount).flat().map((beneficiary, index) => (
-                                                 <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} isSubRow={true} />
+                                                 <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} isSubRow={true} />
                                             ))
                                         )}
                                     </React.Fragment>
@@ -1082,10 +1132,12 @@ interface BeneficiaryRowProps {
     onView: (beneficiary: Beneficiary) => void;
     onEdit: (beneficiary: Beneficiary) => void;
     onDelete: (id: string) => void;
+    onStatusChange: (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => void;
+    onZakatToggle: (beneficiary: Beneficiary) => void;
     isSubRow?: boolean;
 }
 
-const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, isSubRow = false }) => {
+const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, onStatusChange, onZakatToggle, isSubRow = false }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
@@ -1133,6 +1185,39 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => onView(beneficiary)}><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
                             {canUpdate && <DropdownMenuItem onClick={() => onEdit(beneficiary)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
+                            
+                            {canUpdate && <DropdownMenuSeparator />}
+                            {canUpdate && (
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger>
+                                        <ChevronsUpDown className="mr-2 h-4 w-4" />
+                                        <span>Change Status</span>
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuRadioGroup
+                                                value={beneficiary.status}
+                                                onValueChange={(newStatus) => onStatusChange(beneficiary, newStatus as BeneficiaryStatus)}
+                                            >
+                                                <DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Hold">Hold</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
+                                </DropdownMenuSub>
+                            )}
+
+                            {canUpdate && (
+                                <DropdownMenuItem onClick={() => onZakatToggle(beneficiary)}>
+                                    {beneficiary.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                                    <span>{beneficiary.isEligibleForZakat ? 'Mark as Not Eligible' : 'Mark as Zakat Eligible'}</span>
+                                </DropdownMenuItem>
+                            )}
+                            
+                            {canDelete && <DropdownMenuSeparator />}
                             {canDelete && <DropdownMenuItem onClick={() => onDelete(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
                         </DropdownMenuContent>
                     </DropdownMenu>
