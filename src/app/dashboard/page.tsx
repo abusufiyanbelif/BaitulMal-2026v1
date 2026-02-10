@@ -1,9 +1,8 @@
-
 'use client';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
 import { useSession } from '@/hooks/use-session';
-import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, Database, FlaskConical, LifeBuoy, Home } from 'lucide-react';
+import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, Database, FlaskConical, LifeBuoy } from 'lucide-react';
 import { getNestedValue } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -41,7 +40,6 @@ export default function DashboardPage() {
   const canViewDiagnostics = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.diagnostics', false);
 
   const cards = [
-    { title: "Public Home", description: "View the public-facing homepage.", href: "/", icon: Home, isVisible: true },
     { title: "Campaigns", description: "Manage ration, relief, and general campaigns.", href: "/campaign-members", icon: FolderKanban, isVisible: canViewCampaigns },
     { title: "Leads", description: "Track and convert new initiatives and opportunities.", href: "/leads-members", icon: Lightbulb, isVisible: canViewLeads },
     { title: "Donations", description: "View and manage all incoming donations.", href: "/donations", icon: LifeBuoy, isVisible: canViewDonations },
