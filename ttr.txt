@@ -1,0 +1,11 @@
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(81,57): error TS2339: Property 'forceRefetch' does not exist on type 'UseDocResult<Campaign>'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(87,68): error TS2339: Property 'forceRefetch' does not exist on type 'UseCollectionResult<Beneficiary>'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(421,61): error TS2322: Type '{ id: string; name: string; phone: string; address: string; members: number; earningMembers: number; male: number; female: number; idProofType: string; idNumber: string; referralBy: string; kitAmount: number; status: string; notes: string; isEligibleForZakat: boolean; zakatAllocation: number; }' is not assignable to type 'Partial<Beneficiary>'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type '"Verified" | "Need More Details" | "Hold" | "Given" | "Pending" | undefined'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(423,61): error TS2322: Type '{ id: string; name: string; phone: string; address: string; members: number; earningMembers: number; male: number; female: number; idProofType: string; idNumber: string; referralBy: string; kitAmount: number; status: string; notes: string; isEligibleForZakat: boolean; zakatAllocation: number; }' is not assignable to type 'Partial<Beneficiary>'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type '"Verified" | "Need More Details" | "Hold" | "Given" | "Pending" | undefined'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(425,61): error TS2322: Type '{ id: string; name: string; phone: string; address: string; members: number; earningMembers: number; male: number; female: number; idProofType: string; idNumber: string; referralBy: string; kitAmount: number; status: string; notes: string; isEligibleForZakat: boolean; zakatAllocation: number; }' is not assignable to type 'Partial<Beneficiary>'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type '"Verified" | "Need More Details" | "Hold" | "Given" | "Pending" | undefined'.

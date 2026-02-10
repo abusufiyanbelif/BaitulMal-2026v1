@@ -1,6 +1,6 @@
 'use client';
     
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   DocumentReference,
   onSnapshot,
@@ -22,6 +22,7 @@ export interface UseDocResult<T> {
   data: WithId<T> | null; // Document data with ID, or null.
   isLoading: boolean;       // True if loading.
   error: FirestoreError | Error | null; // Error object, or null.
+  forceRefetch: () => void;
 }
 
 /**
@@ -44,6 +45,11 @@ export function useDoc<T = any>(
   const [data, setData] = useState<StateDataType>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
+  const [refetchToggle, setRefetchToggle] = useState(false);
+
+  const forceRefetch = useCallback(() => {
+    setRefetchToggle(prev => !prev);
+  }, []);
 
   useEffect(() => {
     if (!memoizedDocRef) {
@@ -83,7 +89,7 @@ export function useDoc<T = any>(
     return () => unsubscribe(); // Cleanup subscription on unmount
 
   // The effect should re-run if the document reference changes.
-  }, [memoizedDocRef]);
+  }, [memoizedDocRef, refetchToggle]);
 
-  return { data, isLoading, error };
+  return { data, isLoading, error, forceRefetch };
 }

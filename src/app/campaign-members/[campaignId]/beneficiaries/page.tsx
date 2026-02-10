@@ -57,6 +57,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 
 type SortKey = keyof Beneficiary | 'srNo';
+type BeneficiaryStatus = Beneficiary['status'];
 
 const parseBoolean = (value: any): boolean => {
     if (value === null || value === undefined) return false;
@@ -350,9 +351,9 @@ export default function BeneficiariesPage() {
         referralBy: b.referralBy || '',
         kitAmount: b.kitAmount || 0,
         status: b.status || 'Pending',
-        notes: b.notes || '',
         isEligibleForZakat: b.isEligibleForZakat || false,
         zakatAllocation: b.zakatAllocation || 0,
+        notes: b.notes || '',
     }));
 
     const ws = XLSX.utils.json_to_sheet(dataToExport, { header: headers });
@@ -389,14 +390,17 @@ export default function BeneficiariesPage() {
                  throw new Error(`File is missing required headers. Required: ${requiredHeaders.join(', ')}`);
             }
 
-            const validStatuses = ['Given', 'Pending', 'Hold', 'Need More Details', 'Verified'];
+            const validStatuses: BeneficiaryStatus[] = ['Given', 'Pending', 'Hold', 'Need More Details', 'Verified'];
             
             const processedRecords: ProcessedRecord[] = [];
             const existingBeneficiaryIds = new Set(beneficiaries.map(b => b.id));
             const existingNamePhoneSet = new Set(beneficiaries.map(b => `${(b.name || '').trim().toLowerCase()}|${(b.phone || '').trim()}`));
 
             json.forEach((row, index) => {
-                const beneficiaryData = {
+                const importedStatusString = String(row.status || '').trim();
+                const status: BeneficiaryStatus = validStatuses.includes(importedStatusString as BeneficiaryStatus) ? importedStatusString as BeneficiaryStatus : 'Pending';
+
+                const beneficiaryData: Partial<Beneficiary> = {
                     id: String(row.id || '').trim(),
                     name: String(row.name || '').trim(),
                     phone: String(row.phone || '').trim(),
@@ -409,13 +413,13 @@ export default function BeneficiariesPage() {
                     idNumber: String(row.idNumber || '').trim(),
                     referralBy: String(row.referralBy || '').trim(),
                     kitAmount: Number(row.kitAmount || 0),
-                    status: validStatuses.includes(String(row.status || '').trim()) ? String(row.status || '').trim() : 'Pending',
+                    status: status,
                     notes: String(row.notes || '').trim(),
                     isEligibleForZakat: parseBoolean(row.isEligibleForZakat),
                     zakatAllocation: Number(row.zakatAllocation || 0),
                 };
                 
-                const recordKey = `${beneficiaryData.name.toLowerCase()}|${beneficiaryData.phone}`;
+                const recordKey = `${beneficiaryData.name?.toLowerCase()}|${beneficiaryData.phone}`;
 
                 if (beneficiaryData.id && existingBeneficiaryIds.has(beneficiaryData.id)) {
                     processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'duplicate-id', reason: `A beneficiary with this ID already exists.` });
