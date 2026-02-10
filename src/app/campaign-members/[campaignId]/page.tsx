@@ -56,8 +56,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn, getNestedValue } from '@/lib/utils';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 
@@ -1157,6 +1155,7 @@ export default function CampaignDetailsPage() {
 }
 
     
+
 
 
 
