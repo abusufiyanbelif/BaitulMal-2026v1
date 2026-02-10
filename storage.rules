@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 /**
@@ -85,6 +86,17 @@ service firebase.storage {
        allow read: if true;
        allow write: if isSignedIn();
     }
+    
+    // --- Authenticated Paths ---
+    
+    match /campaigns/{campaignId}/beneficiaries/{beneficiaryId}/{allPaths=**} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /leads/{leadId}/beneficiaries/{beneficiaryId}/{allPaths=**} {
+      allow read, write: if isSignedIn();
+    }
+
 
     // --- Private User Paths ---
     

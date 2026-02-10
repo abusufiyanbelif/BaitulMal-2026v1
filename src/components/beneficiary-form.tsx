@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,7 +18,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { Beneficiary, RationCategory } from '@/lib/types';
-import { Loader2, Edit } from 'lucide-react';
+import { Loader2, Edit, Trash2, FileIcon, Replace, ScanLine } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -28,6 +29,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -39,6 +41,8 @@ const formSchema = z.object({
   female: z.coerce.number().optional(),
   idProofType: z.string().optional(),
   idNumber: z.string().optional(),
+  idProofFile: z.any().optional(),
+  idProofDeleted: z.boolean().optional(),
   referralBy: z.string().min(1, { message: 'Referral is required.' }),
   kitAmount: z.coerce.number(),
   status: z.enum(['Given', 'Pending', 'Hold', 'Need More Details', 'Verified']),
@@ -60,6 +64,7 @@ interface BeneficiaryFormProps {
 
 export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, initialReadOnly = false }: BeneficiaryFormProps) {
     const isEditing = !!beneficiary;
+    const { toast } = useToast();
 
     const form = useForm<BeneficiaryFormData>({
         resolver: zodResolver(formSchema),
@@ -79,14 +84,88 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, initialReadOn
             notes: beneficiary?.notes || '',
             isEligibleForZakat: beneficiary?.isEligibleForZakat || false,
             zakatAllocation: beneficiary?.zakatAllocation || 0,
+            idProofDeleted: false,
         },
     });
 
-    const { control, handleSubmit, watch } = form;
+    const { control, handleSubmit, watch, setValue, getValues, register } = form;
     
     const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isScanning, setIsScanning] = useState(false);
     
+    const idProofFile = watch('idProofFile');
+    const [preview, setPreview] = useState<string | null>(beneficiary?.idProofUrl || null);
+
+    useEffect(() => {
+        const fileList = idProofFile as FileList | undefined;
+        if (fileList && fileList.length > 0) {
+            const file = fileList[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+            setValue('idProofDeleted', false);
+        } else if (!watch('idProofDeleted')) {
+            setPreview(beneficiary?.idProofUrl || null);
+        } else {
+            setPreview(null);
+        }
+    }, [idProofFile, beneficiary?.idProofUrl, watch, setValue]);
+
+    const handleDeleteProof = () => {
+        setValue('idProofFile', null);
+        setValue('idProofDeleted', true);
+        setPreview(null);
+        toast({ title: 'Image Marked for Deletion', description: 'The ID proof will be permanently deleted when you save.', variant: 'default' });
+    };
+
+    const handleScanIdProof = async () => {
+        const fileList = getValues('idProofFile') as FileList | undefined;
+        if (!fileList || fileList.length === 0) {
+            toast({ title: "No File", description: "Please upload an ID proof document to scan.", variant: "destructive" });
+            return;
+        }
+        
+        setIsScanning(true);
+        toast({ title: "Scanning document...", description: "Please wait while the AI extracts the details." });
+
+        const file = fileList[0];
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const dataUri = e.target?.result as string;
+            if (!dataUri) {
+                toast({ title: "Read Error", description: "Could not read the file.", variant: "destructive" });
+                setIsScanning(false);
+                return;
+            }
+
+            try {
+                const apiResponse = await fetch('/api/scan-id', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ photoDataUri: dataUri }),
+                });
+                if (!apiResponse.ok) throw new Error('API request failed');
+
+                const response = await apiResponse.json();
+                if (response) {
+                    if (response.name) setValue('name', response.name, { shouldValidate: true });
+                    if (response.aadhaarNumber) setValue('idNumber', response.aadhaarNumber, { shouldValidate:true });
+                    if (response.address) setValue('address', response.address, { shouldValidate:true });
+                    setValue('idProofType', 'Aadhaar', { shouldValidate: true });
+                    toast({ title: "Autofill Successful", description: "Beneficiary details populated.", variant: "success" });
+                }
+            } catch (error) {
+                toast({ title: "Scan Failed", description: "Could not automatically read the document.", variant: "destructive" });
+            } finally {
+                setIsScanning(false);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
     const handleFormSubmit = async (data: BeneficiaryFormData) => {
         setIsSubmitting(true);
         await onSubmit(data);
@@ -129,12 +208,55 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, initialReadOn
                 <Separator />
                 
                 <div className="space-y-4">
-                     <h3 className="text-lg font-semibold">Identification & Financials</h3>
+                    <h3 className="text-lg font-semibold">Identification & Financials</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField control={control} name="idProofType" render={({ field }) => (<FormItem><FormLabel>ID Proof Type</FormLabel><FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
                         <FormField control={control} name="idNumber" render={({ field }) => (<FormItem><FormLabel>ID Number</FormLabel><FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
                     </div>
-
+                    
+                    <div className="space-y-2">
+                        <FormField
+                            control={control}
+                            name="idProofFile"
+                            render={() => (
+                                <FormItem>
+                                    <FormLabel>ID Proof Document</FormLabel>
+                                    <FormControl>
+                                        <Input id="beneficiary-id-proof" type="file" accept="image/*,application/pdf" {...register('idProofFile')} disabled={formIsDisabled}/>
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        {preview && (
+                            <div className="relative group w-full h-48 mt-2 rounded-md overflow-hidden border bg-secondary/20">
+                                {preview.startsWith('data:application/pdf') || preview.endsWith('.pdf') ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
+                                        <FileIcon className="w-12 h-12 mb-2" />
+                                        <p className="text-sm text-center">PDF Document Uploaded</p>
+                                    </div>
+                                ) : (
+                                    <Image src={preview} alt="ID Proof Preview" fill className="object-contain" />
+                                )}
+                                {!isReadOnly && 
+                                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <Button type="button" size="icon" variant="outline" onClick={() => document.getElementById('beneficiary-id-proof')?.click()}>
+                                          <Replace className="h-5 w-5"/>
+                                      </Button>
+                                      <Button type="button" size="icon" variant="destructive" onClick={handleDeleteProof}>
+                                          <Trash2 className="h-5 w-5"/>
+                                      </Button>
+                                  </div>
+                                }
+                            </div>
+                        )}
+                        {idProofFile?.length > 0 && !isReadOnly && (
+                            <Button type="button" className="w-full mt-2" onClick={handleScanIdProof} disabled={isScanning || formIsDisabled}>
+                                {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />}
+                                Scan & Autofill Details
+                            </Button>
+                        )}
+                    </div>
+                    
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <FormField control={control} name="referralBy" render={({ field }) => (<FormItem><FormLabel>Referred By *</FormLabel><FormControl><Input placeholder="e.g. Local NGO" {...field} disabled={formIsDisabled} /></FormControl><FormMessage/></FormItem>)}/>
                         <FormField control={control} name="kitAmount" render={({ field }) => (<FormItem><FormLabel>Kit Amount (₹) *</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} disabled={formIsDisabled} /></FormControl><FormMessage/></FormItem>)}/>
