@@ -11,7 +11,7 @@ rules_version = '2';
  *
  * 1. Public Reads for Public Content:
  *    - Files in `/settings` (like the app logo) are publicly readable by anyone.
- *    - Files in `/campaigns` and `/leads` are also publicly readable. This supports
+ *    - Files in `/campaigns`, `/donations`, and `/leads` are also publicly readable. This supports
  *      public-facing summary pages that might show donation screenshots or other media.
  *
  * 2. Authenticated Writes:
@@ -57,7 +57,7 @@ service firebase.storage {
     }
 
     /**
-     * @description Files for public campaigns (e.g., donation screenshots).
+     * @description Files for public campaigns.
      * Publicly readable to support public pages.
      * Writes are restricted to signed-in users.
      */
@@ -72,6 +72,16 @@ service firebase.storage {
      * Writes are restricted to signed-in users.
      */
     match /leads/{leadId}/{allPaths=**} {
+       allow read: if true;
+       allow write: if isSignedIn();
+    }
+    
+    /**
+     * @description Files for donations (e.g., transaction screenshots).
+     * Publicly readable to support public receipt pages.
+     * Writes are restricted to signed-in users.
+     */
+    match /donations/{donationId}/{allPaths=**} {
        allow read: if true;
        allow write: if isSignedIn();
     }
