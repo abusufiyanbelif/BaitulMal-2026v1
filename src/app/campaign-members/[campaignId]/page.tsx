@@ -236,6 +236,37 @@ export default function CampaignDetailsPage() {
     if (!editableCampaign) return;
     setEditableCampaign(prev => prev ? { ...prev, [field]: value } : null);
   };
+
+    const syncAllCategoriesFromMaster = (lists: RationCategory[]): RationCategory[] => {
+        const masterList = lists.find(cat => cat.name === 'General Item List');
+        if (!masterList) return lists;
+
+        const masterPriceMap = new Map<string, { price: number; quantityType: string }>();
+        masterList.items.forEach(item => {
+            masterPriceMap.set(item.name.trim().toLowerCase(), {
+                price: Number(item.price) || 0,
+                quantityType: item.quantityType || '',
+            });
+        });
+
+        return lists.map(category => {
+            if (category.name === 'General Item List') {
+                return category; // Return master list as is
+            }
+            const updatedItems = category.items.map(item => {
+                const masterItem = masterPriceMap.get(item.name.trim().toLowerCase());
+                if (masterItem) {
+                    return {
+                        ...item,
+                        price: masterItem.price * (Number(item.quantity) || 0),
+                        quantityType: masterItem.quantityType,
+                    };
+                }
+                return { ...item, price: 0, quantityType: '' };
+            });
+            return { ...category, items: updatedItems };
+        });
+    };
   
   const handleItemChange = (
     categoryId: string,
@@ -245,59 +276,39 @@ export default function CampaignDetailsPage() {
   ) => {
     if (!editableCampaign || !editableCampaign.rationLists) return;
 
-    const oldItem = sanitizedEditableRationLists.find(c => c.id === categoryId)?.items.find(i => i.id === itemId);
-    const oldName = oldItem?.name?.trim().toLowerCase();
-
-    const category = sanitizedEditableRationLists.find(cat => cat.id === categoryId);
-    const isGeneralList = category?.name === 'General Item List';
-
-    // Create a deep copy to avoid mutation issues
-    const newRationLists = JSON.parse(JSON.stringify(sanitizedEditableRationLists));
-
-    // Find the category and item to update
+    let newRationLists = JSON.parse(JSON.stringify(sanitizedEditableRationLists));
     const categoryToUpdate = newRationLists.find((cat: RationCategory) => cat.id === categoryId);
     if (!categoryToUpdate) return;
-
+    
     const itemToUpdate = categoryToUpdate.items.find((item: RationItem) => item.id === itemId);
     if (!itemToUpdate) return;
 
     // Update the specific field
     (itemToUpdate as any)[field] = value;
     
-    // If we're updating a non-general list, just recalculate its price from the master list
-    if (!isGeneralList) {
-        const masterItem = masterPriceList[itemToUpdate.name.trim().toLowerCase()];
-        if (field === 'quantity' || field === 'name') {
-            if (masterItem) {
-                itemToUpdate.price = masterItem.price * (Number(itemToUpdate.quantity) || 0);
-                itemToUpdate.quantityType = masterItem.quantityType;
-            } else {
-                itemToUpdate.price = 0;
-                itemToUpdate.quantityType = '';
-            }
-        }
-    }
-    
-    // If we are updating the general list, we need to propagate the changes.
-    if (isGeneralList && oldName) {
-        const newName = itemToUpdate.name.trim().toLowerCase();
-        const newUnitPrice = Number(itemToUpdate.price) || 0;
-        const newUnitType = itemToUpdate.quantityType || '';
-
-        // Iterate over all other categories and update matching items
-        newRationLists.forEach((cat: RationCategory) => {
-            if (cat.id !== categoryId) { // Don't update the general list itself
-                cat.items.forEach((item: RationItem) => {
-                    if (item.name.trim().toLowerCase() === oldName) {
-                        item.price = newUnitPrice * (Number(item.quantity) || 0);
-                        item.quantityType = newUnitType;
-                        if (field === 'name') {
-                            item.name = itemToUpdate.name;
-                        }
-                    }
+    // If the general list was updated, we need to sync everything.
+    if (categoryToUpdate.name === 'General Item List') {
+        newRationLists = syncAllCategoriesFromMaster(newRationLists);
+    } else {
+        // If a non-general list was updated, just sync that single item
+        const masterList = newRationLists.find((cat: RationCategory) => cat.name === 'General Item List');
+        const masterPriceMap = new Map<string, { price: number; quantityType: string }>();
+        if (masterList) {
+            masterList.items.forEach((item: RationItem) => {
+                masterPriceMap.set(item.name.trim().toLowerCase(), {
+                    price: Number(item.price) || 0,
+                    quantityType: item.quantityType || '',
                 });
-            }
-        });
+            });
+        }
+        const masterItem = masterPriceMap.get(itemToUpdate.name.trim().toLowerCase());
+        if (masterItem) {
+            itemToUpdate.price = masterItem.price * (Number(itemToUpdate.quantity) || 0);
+            itemToUpdate.quantityType = masterItem.quantityType;
+        } else {
+            itemToUpdate.price = 0;
+            itemToUpdate.quantityType = '';
+        }
     }
 
     handleFieldChange('rationLists', newRationLists);
@@ -324,12 +335,19 @@ export default function CampaignDetailsPage() {
 
   const handleDeleteItem = (categoryId: string, itemId: string) => {
     if (!editableCampaign || !editableCampaign.rationLists) return;
-    const newRationLists = sanitizedEditableRationLists.map(cat => {
+
+    let newRationLists = sanitizedEditableRationLists.map(cat => {
         if (cat.id === categoryId) {
             return { ...cat, items: cat.items.filter(item => item.id !== itemId) };
         }
         return cat;
     });
+    
+    const category = sanitizedEditableRationLists.find(cat => cat.id === categoryId);
+    if (category?.name === 'General Item List') {
+        newRationLists = syncAllCategoriesFromMaster(newRationLists);
+    }
+
     handleFieldChange('rationLists', newRationLists);
   };
 
