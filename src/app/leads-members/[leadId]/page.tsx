@@ -1,19 +1,20 @@
 
+
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { doc, updateDoc, DocumentReference } from 'firebase/firestore';
-import type { Lead, RationItem, RationCategory } from '@/lib/types';
+import { doc, updateDoc, DocumentReference, collection, writeBatch } from 'firebase/firestore';
+import type { Lead, RationItem, RationCategory, Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Plus, Trash2, Download, Edit, Save, ShieldAlert, Info } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Download, Edit, Save, ShieldAlert, Info, RefreshCw, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import {
     Select,
@@ -45,9 +46,16 @@ export default function LeadDetailsPage() {
   }, [firestore, leadId]);
 
   const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
+  
+  const beneficiariesCollectionRef = useMemo(() => {
+    if (!firestore || !leadId) return null;
+    return collection(firestore, `leads/${leadId}/beneficiaries`);
+  }, [firestore, leadId]);
+  const { data: beneficiaries, isLoading: areBeneficiariesLoading, forceRefetch: forceRefetchBeneficiaries } = useCollection<Beneficiary>(beneficiariesCollectionRef);
 
   const [editMode, setEditMode] = useState(false);
   const [editableLead, setEditableLead] = useState<Lead | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
   
   useEffect(() => {
     if (lead && !editMode) {
@@ -71,7 +79,7 @@ export default function LeadDetailsPage() {
   const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
   const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.update', false);
 
-  const isLoading = isLeadLoading || isProfileLoading;
+  const isLoading = isLeadLoading || isProfileLoading || areBeneficiariesLoading;
 
   const handleFieldChange = (field: keyof Lead, value: any) => {
     if (!editableLead) return;
@@ -161,6 +169,51 @@ export default function LeadDetailsPage() {
   };
 
   const totalKitCost = useMemo(() => calculateTotal(itemList), [itemList]);
+  
+  const handleSyncKitAmounts = async () => {
+    if (!firestore || !canUpdate || !beneficiaries || !editableLead) {
+        toast({ title: "Error", description: "Cannot sync. Data is missing or you don't have permission.", variant: 'destructive' });
+        return;
+    }
+    
+    if (editMode) {
+        toast({ title: "Save Required", description: "Please save your changes before syncing.", variant: 'destructive' });
+        return;
+    }
+
+    setIsSyncing(true);
+    toast({ title: "Syncing started...", description: "Recalculating and updating beneficiary kit amounts." });
+
+    const batch = writeBatch(firestore);
+    let newTotalRequiredAmount = 0;
+    
+    const newKitAmount = totalKitCost;
+
+    for (const beneficiary of beneficiaries) {
+      const beneficiaryRef = doc(firestore, `leads/${leadId}/beneficiaries`, beneficiary.id);
+      batch.update(beneficiaryRef, { kitAmount: newKitAmount });
+      newTotalRequiredAmount += newKitAmount;
+    }
+
+    if (leadDocRef) {
+        batch.update(leadDocRef, { targetAmount: newTotalRequiredAmount });
+    }
+
+    try {
+        await batch.commit();
+        toast({ title: "Sync Complete!", description: `Updated ${beneficiaries.length} beneficiaries and the lead's target amount.`, variant: 'success' });
+        forceRefetchBeneficiaries();
+    } catch (e: any) {
+        console.error("Sync error:", e);
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: `leads/${leadId}`,
+            operation: 'write',
+            requestResourceData: { note: `Batch sync for ${beneficiaries.length} beneficiaries` }
+        }));
+    } finally {
+        setIsSyncing(false);
+    }
+};
 
   if (isLoading || !editableLead) {
     return (
@@ -287,11 +340,19 @@ export default function LeadDetailsPage() {
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Item List</CardTitle>
-            {canUpdate && editMode && (
-              <Button onClick={handleAddItem} size="sm">
-                <Plus className="mr-2 h-4 w-4" /> Add Item
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {canUpdate && (
+                <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary">
+                    {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                    Sync Kit Amounts
+                </Button>
+              )}
+              {canUpdate && editMode && (
+                <Button onClick={handleAddItem} size="sm">
+                  <Plus className="mr-2 h-4 w-4" /> Add Item
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -360,3 +421,4 @@ export default function LeadDetailsPage() {
     </>
   );
 }
+

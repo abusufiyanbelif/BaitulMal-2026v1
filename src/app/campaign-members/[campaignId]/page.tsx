@@ -84,7 +84,7 @@ export default function CampaignDetailsPage() {
     if (!firestore || !campaignId) return null;
     return collection(firestore, `campaigns/${campaignId}/beneficiaries`);
   }, [firestore, campaignId]);
-  const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
+  const { data: beneficiaries, isLoading: areBeneficiariesLoading, forceRefetch: forceRefetchBeneficiaries } = useCollection<Beneficiary>(beneficiariesCollectionRef);
 
   const [editMode, setEditMode] = useState(false);
   const [editableCampaign, setEditableCampaign] = useState<Campaign | null>(null);
@@ -560,6 +560,65 @@ export default function CampaignDetailsPage() {
     });
     setIsCopyItemsOpen(false);
   };
+  
+  const handleSyncKitAmounts = async () => {
+    if (!firestore || !canUpdate || !beneficiaries || !editableCampaign) {
+      toast({ title: "Error", description: "Cannot sync. Data is missing or you don't have permission.", variant: 'destructive' });
+      return;
+    }
+    
+    if(editMode){
+        toast({ title: "Save Required", description: "Please save your changes before syncing.", variant: 'destructive' });
+        return;
+    }
+
+    setIsSyncing(true);
+    toast({ title: "Syncing started...", description: "Recalculating and updating beneficiary kit amounts." });
+
+    const batch = writeBatch(firestore);
+    let newTotalRequiredAmount = 0;
+
+    const generalCategory = sanitizedEditableRationLists.find(cat => cat.name === 'General Item List');
+    
+    for (const beneficiary of beneficiaries) {
+      const members = beneficiary.members || 0;
+      
+      const specificCategory = sanitizedEditableRationLists.find(
+        cat => cat.name !== 'General Item List' && members >= cat.minMembers && members <= cat.maxMembers
+      );
+      
+      const appliedCategory = specificCategory || generalCategory;
+      
+      let newKitAmount = 0;
+      if (appliedCategory) {
+          const isGeneral = appliedCategory.name === 'General Item List';
+          newKitAmount = calculateTotal(appliedCategory.items, isGeneral);
+      }
+
+      const beneficiaryRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
+      batch.update(beneficiaryRef, { kitAmount: newKitAmount });
+      newTotalRequiredAmount += newKitAmount;
+    }
+
+    if (campaignDocRef) {
+        batch.update(campaignDocRef, { targetAmount: newTotalRequiredAmount });
+    }
+
+    try {
+        await batch.commit();
+        toast({ title: "Sync Complete!", description: `Updated ${beneficiaries.length} beneficiaries and the campaign's target amount.`, variant: 'success' });
+        forceRefetchBeneficiaries(); // Refetch to show updated amounts if needed
+    } catch (e: any) {
+        console.error("Sync error:", e);
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: `campaigns/${campaignId}`,
+            operation: 'write',
+            requestResourceData: { note: `Batch sync for ${beneficiaries.length} beneficiaries` }
+        }));
+    } finally {
+        setIsSyncing(false);
+    }
+};
 
     const renderRationTable = (category: RationCategory) => {
     const isGeneralList = category.name === 'General Item List';
@@ -808,6 +867,12 @@ export default function CampaignDetailsPage() {
                     )}
                 </div>
                 <div className="flex gap-2 flex-wrap justify-end">
+                    {canUpdate && editableCampaign.category === 'Ration' && (
+                        <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary">
+                            {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                            Sync Ration Kit Amounts
+                        </Button>
+                    )}
                     {canUpdate && (
                         !editMode ? (
                             <Button onClick={() => setEditMode(true)}>
@@ -1001,54 +1066,6 @@ export default function CampaignDetailsPage() {
                 <Button type="submit" onClick={handleUpdateCategory}>Save Changes</Button>
             </DialogFooter>
         </DialogContent>
-      </Dialog>
-
-      <AlertDialog open={isDeleteCategoryDialogOpen} onOpenChange={setIsDeleteCategoryDialogOpen}>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-            <AlertDialogTitle>Delete Category: {categoryToDelete?.name}?</AlertDialogTitle>
-                {dependentBeneficiaries.length === 0 ? (
-                    <AlertDialogDescription>
-                        Are you sure you want to permanently delete this category and all of its items? This action cannot be undone.
-                    </AlertDialogDescription>
-                ) : (
-                    <AlertDialogDescription>
-                        <Alert variant="destructive" className="mb-4">
-                            <ShieldAlert className="h-4 w-4" />
-                            <AlertTitle>Warning: {dependentBeneficiaries.length} Beneficiaries Found</AlertTitle>
-                            <AlertDescription>
-                                These beneficiaries are linked to this category. You must move them to another category before deleting this one. Their kit amounts will be automatically recalculated.
-                            </AlertDescription>
-                        </Alert>
-                        <div className="pt-4 space-y-2">
-                             <Label htmlFor="target-category">Move Beneficiaries To</Label>
-                             <Select onValueChange={setTargetCategoryId} value={targetCategoryId || ''}>
-                                 <SelectTrigger id="target-category">
-                                     <SelectValue placeholder="Select a new category..." />
-                                 </SelectTrigger>
-                                 <SelectContent>
-                                     {sanitizedEditableRationLists.filter(cat => cat.id !== categoryToDelete?.id).map(cat => (
-                                         <SelectItem key={cat.id} value={cat.id}>
-                                             {cat.name}
-                                             {cat.name !== 'General Item List' && ` (${cat.minMembers}-${cat.maxMembers})`}
-                                        </SelectItem>
-                                     ))}
-                                 </SelectContent>
-                             </Select>
-                        </div>
-                    </AlertDialogDescription>
-                )}
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setCategoryToDelete(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-                onClick={handleDeleteCategoryConfirm} 
-                disabled={isDeletingCategory || (dependentBeneficiaries.length > 0 && !targetCategoryId)}
-                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                    {isDeletingCategory ? <Loader2 className="animate-spin" /> : 'Delete'}
-                </AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
       </AlertDialog>
 
         <Dialog open={isCopyItemsOpen} onOpenChange={setIsCopyItemsOpen}>
@@ -1140,5 +1157,6 @@ export default function CampaignDetailsPage() {
 }
 
     
+
 
 
