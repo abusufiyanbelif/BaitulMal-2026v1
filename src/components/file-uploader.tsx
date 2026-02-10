@@ -85,6 +85,14 @@ export function FileUploader({
     return file.type === 'application/pdf' || (previewUrl.startsWith('blob:') && file.name.endsWith('.pdf'));
   };
 
+  const descriptionText = acceptedFileTypes.includes('image') && acceptedFileTypes.includes('pdf')
+    ? 'Any image file or PDF'
+    : acceptedFileTypes.includes('image')
+    ? 'Image files (PNG, JPG, etc.)'
+    : acceptedFileTypes.includes('pdf')
+    ? 'PDF documents'
+    : 'Supported files';
+
   if (files.length > 0) {
     return (
       <div className="flex flex-col items-center gap-4 w-full">
@@ -177,7 +185,7 @@ export function FileUploader({
           <p className="mb-2 text-sm text-center text-muted-foreground">
             <span className="font-semibold text-primary">Click to upload</span> or drag and drop
           </p>
-          <p className="text-xs text-muted-foreground">Any image file (PNG, JPG, etc.) or PDF</p>
+          <p className="text-xs text-muted-foreground">{descriptionText}</p>
         </div>
         <Input
           id="file-upload"

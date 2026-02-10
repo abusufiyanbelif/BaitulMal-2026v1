@@ -98,7 +98,7 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
           </TableRow>
           
           {/* Campaign Submodules */}
-          <TableRow className="bg-muted/30 hover:bg-muted/50">
+          <TableRow key="campaigns-summary" className="bg-muted/30 hover:bg-muted/50">
             <TableCell className="pl-12 text-muted-foreground">Summary</TableCell>
             <TableCell />
             <TableCell className="text-center">
@@ -117,7 +117,7 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             </TableCell>
             <TableCell />
           </TableRow>
-          <TableRow className="bg-muted/30 hover:bg-muted/50">
+          <TableRow key="campaigns-ration" className="bg-muted/30 hover:bg-muted/50">
             <TableCell className="pl-12 text-muted-foreground">Ration Details</TableCell>
             <TableCell />
             <TableCell className="text-center">
@@ -136,7 +136,7 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             </TableCell>
             <TableCell />
           </TableRow>
-          <TableRow className="bg-muted/30 hover:bg-muted/50">
+          <TableRow key="campaigns-beneficiaries" className="bg-muted/30 hover:bg-muted/50">
             <TableCell className="pl-12 text-muted-foreground">Beneficiary List</TableCell>
             <TableCell className="text-center">
               <Checkbox
@@ -167,7 +167,7 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
               />
             </TableCell>
           </TableRow>
-          <TableRow className="bg-muted/30 hover:bg-muted/50">
+          <TableRow key="campaigns-donations" className="bg-muted/30 hover:bg-muted/50">
             <TableCell className="pl-12 text-muted-foreground">Donations</TableCell>
             <TableCell className="text-center">
               <Checkbox
@@ -232,7 +232,7 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
           </TableRow>
           
            {/* Lead Submodules */}
-          <TableRow className="bg-muted/30 hover:bg-muted/50">
+          <TableRow key="leads-summary" className="bg-muted/30 hover:bg-muted/50">
             <TableCell className="pl-12 text-muted-foreground">Summary</TableCell>
             <TableCell />
             <TableCell className="text-center">
@@ -251,7 +251,7 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             </TableCell>
             <TableCell />
           </TableRow>
-          <TableRow className="bg-muted/30 hover:bg-muted/50">
+          <TableRow key="leads-beneficiaries" className="bg-muted/30 hover:bg-muted/50">
             <TableCell className="pl-12 text-muted-foreground">Beneficiary List</TableCell>
             <TableCell className="text-center">
               <Checkbox
@@ -282,7 +282,7 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
               />
             </TableCell>
           </TableRow>
-          <TableRow className="bg-muted/30 hover:bg-muted/50">
+          <TableRow key="leads-donations" className="bg-muted/30 hover:bg-muted/50">
             <TableCell className="pl-12 text-muted-foreground">Donations</TableCell>
             <TableCell className="text-center">
               <Checkbox
