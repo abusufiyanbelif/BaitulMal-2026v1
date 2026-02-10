@@ -88,7 +88,6 @@ export default function BeneficiariesPage() {
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isSyncing, setIsSyncing] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -423,106 +422,6 @@ export default function BeneficiariesPage() {
     }
     setSortConfig({ key, direction });
   };
-  
-  const handleSyncKitAmounts = async () => {
-    if (!firestore || !campaign || !beneficiaries || !canUpdate) {
-        toast({ title: 'Error', description: 'Cannot sync. Data is missing or you lack permissions.', variant: 'destructive'});
-        return;
-    };
-    setIsSyncing(true);
-
-    const rationLists = sanitizedRationLists;
-    if (!rationLists || rationLists.length === 0) {
-        toast({ title: 'Sync Canceled', description: 'No ration lists found for this campaign to calculate amounts.', variant: 'destructive' });
-        setIsSyncing(false);
-        return;
-    }
-    
-    const generalCategory = rationLists.find(cat => cat.name === 'General Item List');
-    if (!generalCategory) {
-        toast({ title: 'Sync Canceled', description: 'A "General Item List" is required to determine unit prices.', variant: 'destructive' });
-        setIsSyncing(false);
-        return;
-    }
-
-    const masterPriceList = generalCategory.items.reduce((acc: Record<string, number>, item: RationItem) => {
-        const itemName = (item.name || '').trim().toLowerCase();
-        if (itemName) {
-            const quantity = Number(item.quantity) || 0;
-            const price = Number(item.price) || 0;
-            const unitPrice = quantity > 0 ? price / quantity : 0;
-            acc[itemName] = unitPrice;
-        }
-        return acc;
-    }, {} as Record<string, number>);
-    
-    const batch = writeBatch(firestore);
-    let updatesCount = 0;
-    let totalRequiredAmount = 0;
-
-    for (const beneficiary of beneficiaries) {
-        let finalKitAmount = beneficiary.kitAmount || 0;
-        
-        if (beneficiary.status !== 'Given') {
-            const members = beneficiary.members;
-            const matchingCategory = rationLists.find(
-                cat => members >= cat.minMembers && members <= cat.maxMembers && cat.name !== 'General Item List'
-            );
-            const categoryToUse = matchingCategory || generalCategory;
-            
-            let expectedAmount = 0;
-            if (categoryToUse) {
-                expectedAmount = categoryToUse.items.reduce((sum: number, item: RationItem) => {
-                    const unitPrice = masterPriceList[item.name.trim().toLowerCase()] || 0;
-                    const quantity = Number(item.quantity) || 0;
-                    return sum + (unitPrice * quantity);
-                }, 0);
-            }
-            
-            if (beneficiary.kitAmount !== expectedAmount) {
-                const docRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
-                batch.update(docRef, { kitAmount: expectedAmount });
-                updatesCount++;
-            }
-            finalKitAmount = expectedAmount;
-        }
-        
-        totalRequiredAmount += finalKitAmount;
-    }
-
-    const campaignTargetUpdated = campaign.targetAmount !== totalRequiredAmount;
-    if (campaignTargetUpdated) {
-        const campaignDocRef = doc(firestore, 'campaigns', campaignId);
-        batch.update(campaignDocRef, { targetAmount: totalRequiredAmount });
-    }
-
-    if (updatesCount === 0 && !campaignTargetUpdated) {
-        toast({ title: 'No Updates Needed', description: 'All amounts are already up to date.' });
-        setIsSyncing(false);
-        return;
-    }
-
-    try {
-        await batch.commit();
-        let description = '';
-        if (updatesCount > 0) {
-            description += `${updatesCount} beneficiary kit amounts were updated. `;
-        }
-        if (campaignTargetUpdated) {
-            description += `Campaign target synced to ₹${totalRequiredAmount.toFixed(2)}.`;
-        }
-        toast({ title: 'Sync Complete', description: description.trim(), variant: 'success' });
-    } catch (serverError: any) {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: `campaigns/${campaignId}`,
-            operation: 'update',
-            requestResourceData: { note: `Batch update for sync kit amounts` }
-        }));
-    } finally {
-        setIsSyncing(false);
-    }
-  };
-
 
   const uniqueReferrals = useMemo(() => {
     if (!beneficiaries) return [];
@@ -740,12 +639,6 @@ export default function BeneficiariesPage() {
                 </div>
                 {canCreate && (
                     <div className="flex flex-wrap gap-2 shrink-0">
-                        {canUpdate && (
-                            <Button onClick={handleSyncKitAmounts} disabled={isSyncing} variant="secondary">
-                                {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                                Sync Beneficiary Kit Amounts
-                            </Button>
-                        )}
                         <Button variant="outline" onClick={handleDownloadTemplate}>
                             <Download className="mr-2 h-4 w-4" />
                             Template

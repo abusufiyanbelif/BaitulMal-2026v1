@@ -247,64 +247,60 @@ export default function CampaignDetailsPage() {
     value: string | number
   ) => {
     if (!editableCampaign || !editableCampaign.rationLists) return;
-    
+
+    const oldItem = sanitizedEditableRationLists.find(c => c.id === categoryId)?.items.find(i => i.id === itemId);
+    const oldName = oldItem?.name?.trim().toLowerCase();
+
     const category = sanitizedEditableRationLists.find(cat => cat.id === categoryId);
     const isGeneralList = category?.name === 'General Item List';
+
+    // Create a deep copy to avoid mutation issues
+    const newRationLists = JSON.parse(JSON.stringify(sanitizedEditableRationLists));
+
+    // Find the category and item to update
+    const categoryToUpdate = newRationLists.find((cat: RationCategory) => cat.id === categoryId);
+    if (!categoryToUpdate) return;
+
+    const itemToUpdate = categoryToUpdate.items.find((item: RationItem) => item.id === itemId);
+    if (!itemToUpdate) return;
+
+    // Update the specific field
+    (itemToUpdate as any)[field] = value;
     
-    const newRationLists = sanitizedEditableRationLists.map(cat => {
-        if (cat.id !== categoryId) return cat;
-        
-        const updatedItems = cat.items.map(item => {
-            if (item.id !== itemId) return item;
-
-            const newItem = { ...item, [field]: value };
-            
-            if (!isGeneralList) {
-                const masterItem = masterPriceList[newItem.name.trim().toLowerCase()];
-                if (field === 'quantity' || field === 'name') {
-                    if (masterItem) {
-                        newItem.price = masterItem.price * (Number(newItem.quantity) || 0);
-                        newItem.quantityType = masterItem.quantityType;
-                    } else {
-                        newItem.price = 0;
-                        newItem.quantityType = '';
-                    }
-                }
+    // If we're updating a non-general list, just recalculate its price from the master list
+    if (!isGeneralList) {
+        const masterItem = masterPriceList[itemToUpdate.name.trim().toLowerCase()];
+        if (field === 'quantity' || field === 'name') {
+            if (masterItem) {
+                itemToUpdate.price = masterItem.price * (Number(itemToUpdate.quantity) || 0);
+                itemToUpdate.quantityType = masterItem.quantityType;
+            } else {
+                itemToUpdate.price = 0;
+                itemToUpdate.quantityType = '';
             }
-            return newItem;
-        });
-
-        return { ...cat, items: updatedItems };
-    });
-
-    if (isGeneralList) {
-        const changedItem = newRationLists.find(c => c.id === categoryId)?.items.find(i => i.id === itemId);
-        const oldItem = sanitizedEditableRationLists.find(c => c.id === categoryId)?.items.find(i => i.id === itemId);
-
-        if (changedItem && oldItem) {
-            const oldName = oldItem.name.trim().toLowerCase();
-            const newName = changedItem.name.trim().toLowerCase();
-            const newUnitPrice = Number(changedItem.price) || 0;
-            const newUnitType = changedItem.quantityType || '';
-
-            newRationLists.forEach(cat => {
-                if (cat.id !== categoryId) {
-                    cat.items = cat.items.map(item => {
-                        const itemNameLower = item.name.trim().toLowerCase();
-                        if (itemNameLower === oldName) {
-                            const updatedItem = { ...item };
-                            updatedItem.price = newUnitPrice * (Number(updatedItem.quantity) || 0);
-                            updatedItem.quantityType = newUnitType;
-                            if (oldName !== newName) {
-                                updatedItem.name = changedItem.name;
-                            }
-                            return updatedItem;
-                        }
-                        return item;
-                    });
-                }
-            });
         }
+    }
+    
+    // If we are updating the general list, we need to propagate the changes.
+    if (isGeneralList && oldName) {
+        const newName = itemToUpdate.name.trim().toLowerCase();
+        const newUnitPrice = Number(itemToUpdate.price) || 0;
+        const newUnitType = itemToUpdate.quantityType || '';
+
+        // Iterate over all other categories and update matching items
+        newRationLists.forEach((cat: RationCategory) => {
+            if (cat.id !== categoryId) { // Don't update the general list itself
+                cat.items.forEach((item: RationItem) => {
+                    if (item.name.trim().toLowerCase() === oldName) {
+                        item.price = newUnitPrice * (Number(item.quantity) || 0);
+                        item.quantityType = newUnitType;
+                        if (field === 'name') {
+                            item.name = itemToUpdate.name;
+                        }
+                    }
+                });
+            }
+        });
     }
 
     handleFieldChange('rationLists', newRationLists);
@@ -502,105 +498,6 @@ export default function CampaignDetailsPage() {
       }
   };
   
-  const handleSyncKitAmounts = async () => {
-    if (!firestore || !campaign || !beneficiaries || !canUpdate) {
-        toast({ title: 'Error', description: 'Cannot sync. Data is missing or you lack permissions.', variant: 'destructive'});
-        return;
-    };
-    setIsSyncing(true);
-    
-    const rationLists = sanitizedEditableRationLists;
-
-    if (!rationLists || rationLists.length === 0) {
-        toast({ title: 'Sync Canceled', description: 'No ration lists found for this campaign to calculate amounts.', variant: 'destructive' });
-        setIsSyncing(false);
-        return;
-    }
-    
-    const generalCategory = rationLists.find(cat => cat.name === 'General Item List');
-    if (!generalCategory) {
-        toast({ title: 'Sync Canceled', description: 'A "General Item List" is required to determine unit prices.', variant: 'destructive' });
-        setIsSyncing(false);
-        return;
-    }
-
-    const masterPriceList = generalCategory.items.reduce((acc, item) => {
-        const itemName = (item.name || '').trim().toLowerCase();
-        if (itemName) {
-            const unitPrice = Number(item.price) || 0;
-            acc[itemName] = unitPrice;
-        }
-        return acc;
-    }, {} as Record<string, number>);
-
-    
-    const batch = writeBatch(firestore);
-    let updatesCount = 0;
-    let totalRequiredAmount = 0;
-
-    for (const beneficiary of beneficiaries) {
-        let finalKitAmount = beneficiary.kitAmount || 0;
-        
-        if (beneficiary.status !== 'Given') {
-            const members = beneficiary.members;
-            const matchingCategory = rationLists.find(
-                cat => members >= cat.minMembers && members <= cat.maxMembers && cat.name !== 'General Item List'
-            );
-            const categoryToUse = matchingCategory || generalCategory;
-            
-            let expectedAmount = 0;
-            if (categoryToUse) {
-                expectedAmount = categoryToUse.items.reduce((sum, item) => {
-                    const unitPrice = masterPriceList[item.name.trim().toLowerCase()] || 0;
-                    const quantity = Number(item.quantity) || 0;
-                    return sum + (unitPrice * quantity);
-                }, 0);
-            }
-            
-            if (beneficiary.kitAmount !== expectedAmount) {
-                const docRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
-                batch.update(docRef, { kitAmount: expectedAmount });
-                updatesCount++;
-            }
-            finalKitAmount = expectedAmount;
-        }
-        
-        totalRequiredAmount += finalKitAmount;
-    }
-
-    const campaignTargetUpdated = campaign.targetAmount !== totalRequiredAmount;
-    if (campaignTargetUpdated) {
-        const campaignDocRef = doc(firestore, 'campaigns', campaignId);
-        batch.update(campaignDocRef, { targetAmount: totalRequiredAmount });
-    }
-
-    if (updatesCount === 0 && !campaignTargetUpdated) {
-        toast({ title: 'No Updates Needed', description: 'All amounts are already up to date.' });
-        setIsSyncing(false);
-        return;
-    }
-
-    try {
-        await batch.commit();
-        let description = '';
-        if (updatesCount > 0) {
-            description += `${updatesCount} beneficiary kit amounts were updated. `;
-        }
-        if (campaignTargetUpdated) {
-            description += `Campaign target synced to ₹${totalRequiredAmount.toFixed(2)}.`;
-        }
-        toast({ title: 'Sync Complete', description: description.trim(), variant: 'success' });
-    } catch (serverError: any) {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: `campaigns/${campaignId}`,
-            operation: 'update',
-            requestResourceData: { note: `Batch update for sync kit amounts` }
-        }));
-    } finally {
-        setIsSyncing(false);
-    }
-  };
-
   const handleCopyItemsClick = (category: RationCategory) => {
     setCopyTargetCategory(category);
     setCopySourceCategoryId(null);
@@ -925,10 +822,6 @@ export default function CampaignDetailsPage() {
                             </div>
                         )
                     )}
-                     <Button onClick={handleSyncKitAmounts} disabled={isSyncing} variant="secondary">
-                        {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                        Sync Ration Kit Categories Amounts
-                    </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline">
@@ -1247,4 +1140,5 @@ export default function CampaignDetailsPage() {
 }
 
     
+
 
