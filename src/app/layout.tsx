@@ -10,6 +10,8 @@ export const metadata: Metadata = {
     default: 'Baitulmal Samajik Sanstha Solapur',
   },
   description: 'Managing and tracking community support campaigns efficiently.',
+  manifest: '/manifest.json',
+  themeColor: '#16a34a',
 };
 
 
