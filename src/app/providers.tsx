@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ReactNode } from 'react';
@@ -21,12 +20,9 @@ export function Providers({ children }: { children: ReactNode }) {
       <AuthProvider>
         <FirebaseContentWrapper>
           <div className="relative">
-            <div className={cn(
-              "relative z-10 flex min-h-screen flex-col",
-              isLoginPage && "items-center justify-center p-4" // Center content and add padding only on login page
-            )}>
+            <div className="relative z-10 flex min-h-screen flex-col">
               <DocuExtractHeader />
-              <main className={cn("flex-1 w-full", isLoginPage && "flex items-center justify-center")}>
+              <main className={cn("flex-1 w-full", isLoginPage && "flex items-center justify-center p-4")}>
                 {children}
               </main>
               <AppFooter />

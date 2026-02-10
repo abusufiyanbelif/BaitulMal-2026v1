@@ -67,10 +67,6 @@ export function DocuExtractHeader() {
   } else {
     logoStyle.height = 'auto';
   }
-  
-  if (pathname === '/login') {
-    return null;
-  }
 
   return (
     <header className="bg-card border-b p-1 shadow-sm">
@@ -154,13 +150,15 @@ export function DocuExtractHeader() {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button asChild variant="outline" className="animate-slide-in-from-top" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
-              <Link href="/login">
-                  <LogIn className="mr-2 h-4 w-4" />
-                  <span className="hidden sm:inline">Organization members login</span>
-                  <span className="sm:hidden">Login</span>
-              </Link>
-          </Button>
+          pathname !== '/login' && (
+            <Button asChild variant="outline" className="animate-slide-in-from-top" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
+                <Link href="/login">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">Organization members login</span>
+                    <span className="sm:hidden">Login</span>
+                </Link>
+            </Button>
+          )
         )}
       </div>
     </header>
