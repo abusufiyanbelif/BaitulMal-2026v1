@@ -17,6 +17,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ArrowLeft, Plus, Trash2, Download, Edit, Save, ShieldAlert, Info, RefreshCw, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
     Select,
     SelectContent,
     SelectItem,
@@ -56,6 +66,9 @@ export default function LeadDetailsPage() {
   const [editMode, setEditMode] = useState(false);
   const [editableLead, setEditableLead] = useState<Lead | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  
+  const [itemToDelete, setItemToDelete] = useState<{ itemId: string; itemName: string } | null>(null);
+  const [isDeleteItemDialogOpen, setIsDeleteItemDialogOpen] = useState(false);
   
   useEffect(() => {
     if (lead && !editMode) {
@@ -119,6 +132,19 @@ export default function LeadDetailsPage() {
       : { 'General Item List': updatedItems };
 
     handleFieldChange('rationLists', newRationLists);
+  };
+
+  const handleDeleteItemClick = (itemId: string, itemName: string) => {
+    if (!editableLead || !editMode) return;
+    setItemToDelete({ itemId, itemName });
+    setIsDeleteItemDialogOpen(true);
+  };
+
+  const handleDeleteItemConfirm = () => {
+    if (!itemToDelete) return;
+    handleDeleteItem(itemToDelete.itemId);
+    setIsDeleteItemDialogOpen(false);
+    setItemToDelete(null);
   };
   
   const calculateTotal = (items: RationItem[]) => {
@@ -400,7 +426,7 @@ export default function LeadDetailsPage() {
                     </TableCell>
                     {canUpdate && editMode && (
                       <TableCell className="text-center">
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteItemClick(item.id, item.name)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </TableCell>
                     )}
                   </TableRow>
@@ -418,7 +444,23 @@ export default function LeadDetailsPage() {
         </CardContent>
       </Card>
     </main>
+
+    <AlertDialog open={isDeleteItemDialogOpen} onOpenChange={setIsDeleteItemDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure you want to delete this item?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This will permanently delete the item "{itemToDelete?.itemName}" from the list. This action cannot be undone.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteItemConfirm} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                    Delete
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
     </>
   );
 }
-

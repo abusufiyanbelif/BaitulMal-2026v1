@@ -106,6 +106,9 @@ export default function CampaignDetailsPage() {
   const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
   const [categoryToEdit, setCategoryToEdit] = useState<RationCategory | null>(null);
 
+  const [itemToDelete, setItemToDelete] = useState<{ categoryId: string; itemId: string; itemName: string } | null>(null);
+  const [isDeleteItemDialogOpen, setIsDeleteItemDialogOpen] = useState(false);
+
   // Reset local state if edit mode is cancelled or if the base data changes while NOT in edit mode.
   useEffect(() => {
     if (campaign && !editMode) {
@@ -375,6 +378,19 @@ export default function CampaignDetailsPage() {
     }
 
     handleFieldChange('rationLists', newRationLists);
+  };
+
+  const handleDeleteItemClick = (categoryId: string, itemId: string, itemName: string) => {
+    if (!editableCampaign || !editableCampaign.rationLists || !editMode) return;
+    setItemToDelete({ categoryId, itemId, itemName });
+    setIsDeleteItemDialogOpen(true);
+  };
+
+  const handleDeleteItemConfirm = () => {
+    if (!itemToDelete) return;
+    handleDeleteItem(itemToDelete.categoryId, itemToDelete.itemId);
+    setIsDeleteItemDialogOpen(false);
+    setItemToDelete(null);
   };
 
   const calculateTotal = (items: RationItem[], isGeneralList: boolean) => {
@@ -740,7 +756,7 @@ export default function CampaignDetailsPage() {
                                 </TableCell>
                                 {canUpdate && editMode && (
                                     <TableCell className="text-center">
-                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(category.id, item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteItemClick(category.id, item.id, item.name)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                     </TableCell>
                                 )}
                             </TableRow>
@@ -1066,6 +1082,23 @@ export default function CampaignDetailsPage() {
           </CardContent>
         </Card>
       </main>
+
+      <AlertDialog open={isDeleteItemDialogOpen} onOpenChange={setIsDeleteItemDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure you want to delete this item?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This will permanently delete the item "{itemToDelete?.itemName}" from this category's list. If this item is from the 'General Item List', it will be removed from ALL categories.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteItemConfirm} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                    Delete
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={isEditCategoryOpen} onOpenChange={setIsEditCategoryOpen}>
         <DialogContent className="sm:max-w-md">
