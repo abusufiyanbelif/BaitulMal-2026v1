@@ -55,6 +55,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 type SortKey = keyof Beneficiary | 'srNo';
 type BeneficiaryStatus = Beneficiary['status'];
@@ -102,7 +103,7 @@ export default function BeneficiariesPage() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [referralFilter, setReferralFilter] = useState<string[]>([]);
   const [openReferralPopover, setOpenReferralPopover] = useState(false);
-  const [kitAmountFilter, setKitAmountFilter] = useState('');
+  const [zakatFilter, setZakatFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [collapsedSubGroups, setCollapsedSubGroups] = useState<Record<string, boolean>>({});
@@ -148,32 +149,83 @@ export default function BeneficiariesPage() {
     ];
   }, [campaign?.rationLists]);
 
-  const statusCounts = useMemo(() => {
-    if (!beneficiaries) {
-      return {
-        Total: 0,
-        Given: 0,
-        Verified: 0,
-        Pending: 0,
-        Hold: 0,
-        'Need More Details': 0,
-      };
+  const uniqueReferrals = useMemo(() => {
+    if (!beneficiaries) return [];
+    const referrals = new Set(beneficiaries.map(b => b.referralBy).filter(Boolean));
+    return [...Array.from(referrals).sort()];
+  }, [beneficiaries]);
+  
+  const filteredAndSortedBeneficiaries = useMemo(() => {
+    if (!beneficiaries) return [];
+    let sortableItems = [...beneficiaries];
+    
+    // Filtering
+    if (statusFilter !== 'All') {
+        sortableItems = sortableItems.filter(b => b.status === statusFilter);
     }
-    const counts = beneficiaries.reduce((acc, b) => {
+    if (zakatFilter !== 'All') {
+        const isEligible = zakatFilter === 'Eligible';
+        sortableItems = sortableItems.filter(b => !!b.isEligibleForZakat === isEligible);
+    }
+    if (referralFilter.length > 0) {
+        sortableItems = sortableItems.filter(b => b.referralBy && referralFilter.includes(b.referralBy));
+    }
+    if (searchTerm) {
+        const lowercasedTerm = searchTerm.toLowerCase();
+        sortableItems = sortableItems.filter(b => 
+            (b.name || '').toLowerCase().includes(lowercasedTerm) ||
+            (b.phone || '').toLowerCase().includes(lowercasedTerm) ||
+            (b.address || '').toLowerCase().includes(lowercasedTerm) ||
+            (b.referralBy || '').toLowerCase().includes(lowercasedTerm)
+        );
+    }
+
+    // Sorting
+    if (sortConfig !== null) {
+        sortableItems.sort((a, b) => {
+            if (sortConfig.key === 'srNo') return 0; // Keep original order for srNo
+            const aValue = a[sortConfig.key as keyof Beneficiary] ?? '';
+            const bValue = b[sortConfig.key as keyof Beneficiary] ?? '';
+            
+            if (typeof aValue === 'number' && typeof bValue === 'number') {
+                return sortConfig.direction === 'ascending' ? aValue - bValue : bValue - aValue;
+            }
+            if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
+                 return sortConfig.direction === 'ascending' ? (aValue === bValue ? 0 : aValue ? -1 : 1) : (aValue === bValue ? 0 : aValue ? 1 : -1);
+            }
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+                 if (aValue < bValue) {
+                    return sortConfig.direction === 'ascending' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === 'ascending' ? 1 : -1;
+                }
+            }
+            return 0;
+        });
+    }
+
+    return sortableItems;
+  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, referralFilter, sortConfig]);
+
+  const statusCounts = useMemo(() => {
+    const listToCount = filteredAndSortedBeneficiaries || [];
+
+    const counts = listToCount.reduce((acc, b) => {
       const status = b.status || 'Pending';
       acc[status] = (acc[status] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
     return {
-      Total: beneficiaries.length,
+      Total: listToCount.length,
       Given: counts.Given || 0,
       Verified: counts.Verified || 0,
       Pending: counts.Pending || 0,
       Hold: counts.Hold || 0,
       'Need More Details': counts['Need More Details'] || 0,
     };
-  }, [beneficiaries]);
+  }, [filteredAndSortedBeneficiaries]);
 
   const handleAdd = () => {
     if (!canCreate) return;
@@ -533,65 +585,7 @@ export default function BeneficiariesPage() {
     }
     setSortConfig({ key, direction });
   };
-
-  const uniqueReferrals = useMemo(() => {
-    if (!beneficiaries) return [];
-    const referrals = new Set(beneficiaries.map(b => b.referralBy).filter(Boolean));
-    return [...Array.from(referrals).sort()];
-  }, [beneficiaries]);
   
-  const filteredAndSortedBeneficiaries = useMemo(() => {
-    if (!beneficiaries) return [];
-    let sortableItems = [...beneficiaries];
-    
-    // Filtering
-    if (statusFilter !== 'All') {
-        sortableItems = sortableItems.filter(b => b.status === statusFilter);
-    }
-    if (referralFilter.length > 0) {
-        sortableItems = sortableItems.filter(b => b.referralBy && referralFilter.includes(b.referralBy));
-    }
-    if (kitAmountFilter) {
-        sortableItems = sortableItems.filter(b => String(b.kitAmount) === kitAmountFilter);
-    }
-    if (searchTerm) {
-        const lowercasedTerm = searchTerm.toLowerCase();
-        sortableItems = sortableItems.filter(b => 
-            (b.name || '').toLowerCase().includes(lowercasedTerm) ||
-            (b.phone || '').toLowerCase().includes(lowercasedTerm) ||
-            (b.address || '').toLowerCase().includes(lowercasedTerm) ||
-            (b.referralBy || '').toLowerCase().includes(lowercasedTerm)
-        );
-    }
-
-    // Sorting
-    if (sortConfig !== null) {
-        sortableItems.sort((a, b) => {
-            if (sortConfig.key === 'srNo') return 0; // Keep original order for srNo
-            const aValue = a[sortConfig.key as keyof Beneficiary] ?? '';
-            const bValue = b[sortConfig.key as keyof Beneficiary] ?? '';
-            
-            if (typeof aValue === 'number' && typeof bValue === 'number') {
-                return sortConfig.direction === 'ascending' ? aValue - bValue : bValue - aValue;
-            }
-            if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
-                 return sortConfig.direction === 'ascending' ? (aValue === bValue ? 0 : aValue ? -1 : 1) : (aValue === bValue ? 0 : aValue ? 1 : -1);
-            }
-            if (typeof aValue === 'string' && typeof bValue === 'string') {
-                 if (aValue < bValue) {
-                    return sortConfig.direction === 'ascending' ? -1 : 1;
-                }
-                if (aValue > bValue) {
-                    return sortConfig.direction === 'ascending' ? 1 : -1;
-                }
-            }
-            return 0;
-        });
-    }
-
-    return sortableItems;
-  }, [beneficiaries, searchTerm, statusFilter, referralFilter, kitAmountFilter, sortConfig]);
-
   const groupedBeneficiaries = useMemo(() => {
     if (!filteredAndSortedBeneficiaries || !sanitizedRationLists || sanitizedRationLists.length === 0) return {};
 
@@ -765,7 +759,7 @@ export default function BeneficiariesPage() {
                     </div>
                 )}
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 pt-4">
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Total</CardTitle><Users className="h-4 w-4 text-muted-foreground"/></CardHeader>
                     <CardContent className="p-2"><div className="text-2xl font-bold">{statusCounts.Total}</div></CardContent>
@@ -812,6 +806,16 @@ export default function BeneficiariesPage() {
                           <SelectItem value="Need More Details">Need More Details</SelectItem>
                       </SelectContent>
                   </Select>
+                  <Select value={zakatFilter} onValueChange={setZakatFilter}>
+                      <SelectTrigger className="w-auto md:w-[180px]">
+                          <SelectValue placeholder="Filter by Zakat" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="All">All Zakat Status</SelectItem>
+                          <SelectItem value="Eligible">Eligible</SelectItem>
+                          <SelectItem value="Not Eligible">Not Eligible</SelectItem>
+                      </SelectContent>
+                  </Select>
                   <Popover open={openReferralPopover} onOpenChange={setOpenReferralPopover}>
                     <PopoverTrigger asChild>
                       <Button
@@ -828,11 +832,17 @@ export default function BeneficiariesPage() {
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[250px] p-0">
+                    <PopoverContent className="w-[350px] p-0">
                       <Command>
                         <CommandInput placeholder="Search referrals..." />
                         <CommandList>
                           <CommandEmpty>No referral found.</CommandEmpty>
+                           <CommandGroup>
+                            <CommandItem onSelect={() => setReferralFilter([])} className="text-xs text-muted-foreground justify-center cursor-pointer">
+                              Clear all selections
+                            </CommandItem>
+                          </CommandGroup>
+                          <Separator />
                           <CommandGroup>
                             {uniqueReferrals.map((referral) => (
                               <CommandItem
@@ -861,13 +871,6 @@ export default function BeneficiariesPage() {
                       </Command>
                     </PopoverContent>
                   </Popover>
-                  <Input
-                      placeholder="Filter by kit amount"
-                      type="number"
-                      value={kitAmountFilter}
-                      onChange={(e) => setKitAmountFilter(e.target.value)}
-                      className="w-auto md:w-[160px]"
-                  />
               </div>
               {referralFilter.length > 0 && (
                   <div className="pt-2 flex flex-wrap gap-1 items-center">
