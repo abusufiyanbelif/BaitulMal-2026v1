@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
@@ -24,6 +23,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -75,7 +75,7 @@ export default function CampaignDetailsPage() {
     return doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign>;
   }, [firestore, campaignId]);
 
-  const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
+  const { data: campaign, isLoading: isCampaignLoading, forceRefetch: forceRefetchCampaign } = useDoc<Campaign>(campaignDocRef);
   
   const beneficiariesCollectionRef = useMemo(() => {
     if (!firestore || !campaignId) return null;
@@ -604,7 +604,8 @@ export default function CampaignDetailsPage() {
     try {
         await batch.commit();
         toast({ title: "Sync Complete!", description: `Updated ${beneficiaries.length} beneficiaries and the campaign's target amount.`, variant: 'success' });
-        forceRefetchBeneficiaries(); // Refetch to show updated amounts if needed
+        forceRefetchCampaign();
+        forceRefetchBeneficiaries();
     } catch (e: any) {
         console.error("Sync error:", e);
         errorEmitter.emit('permission-error', new FirestorePermissionError({
@@ -1064,6 +1065,39 @@ export default function CampaignDetailsPage() {
             </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      <AlertDialog open={isDeleteCategoryDialogOpen} onOpenChange={setIsDeleteCategoryDialogOpen}>
+          <AlertDialogContent>
+              <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Category: '{categoryToDelete?.name}'?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                      This category has {dependentBeneficiaries.length} dependent beneficiaries. Their kit amounts will be affected. Please choose a new category to move them to.
+                  </AlertDialogDescription>
+              </AlertDialogHeader>
+              {dependentBeneficiaries.length > 0 && (
+                <div className="py-4">
+                    <Label htmlFor="target-category">Move Beneficiaries To</Label>
+                    <Select onValueChange={setTargetCategoryId} value={targetCategoryId || ''}>
+                        <SelectTrigger id="target-category">
+                            <SelectValue placeholder="Select a category..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {sanitizedEditableRationLists.filter(c => c.id !== categoryToDelete?.id).map(cat => (
+                                 <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+              )}
+              <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteCategoryConfirm} disabled={isDeletingCategory || (dependentBeneficiaries.length > 0 && !targetCategoryId)}>
+                     {isDeletingCategory && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                     Confirm & Delete
+                  </AlertDialogAction>
+              </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
 
         <Dialog open={isCopyItemsOpen} onOpenChange={setIsCopyItemsOpen}>
             <DialogContent>
@@ -1152,10 +1186,4 @@ export default function CampaignDetailsPage() {
     </>
   );
 }
-
-    
-
-
-
-
 
