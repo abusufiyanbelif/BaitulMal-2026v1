@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
-import { collection, addDoc, deleteDoc, doc, serverTimestamp, setDoc, DocumentReference } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, serverTimestamp, setDoc, DocumentReference, writeBatch } from 'firebase/firestore';
 import type { Beneficiary, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -65,13 +65,13 @@ export default function BeneficiariesPage() {
     if (!firestore || !leadId) return null;
     return doc(firestore, 'leads', leadId) as DocumentReference<Lead>;
   }, [firestore, leadId]);
-  const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
+  const { data: lead, isLoading: isLeadLoading, forceRefetch: forceRefetchLead } = useDoc<Lead>(leadDocRef);
   
   const beneficiariesCollectionRef = useMemo(() => {
     if (!firestore || !leadId) return null;
     return collection(firestore, `leads/${leadId}/beneficiaries`);
   }, [firestore, leadId]);
-  const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
+  const { data: beneficiaries, isLoading: areBeneficiariesLoading, forceRefetch } = useCollection<Beneficiary>(beneficiariesCollectionRef);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBeneficiary, setEditingBeneficiary] = useState<Beneficiary | null>(null);
@@ -111,24 +111,36 @@ export default function BeneficiariesPage() {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!beneficiaryToDelete || !firestore || !storage || !leadId || !canDelete || !beneficiaries) return;
+    if (!beneficiaryToDelete || !firestore || !leadId || !canDelete || !beneficiaries || !lead) return;
 
     const beneficiaryData = beneficiaries.find(b => b.id === beneficiaryToDelete);
     if (!beneficiaryData) return;
     
-    const docRef = doc(firestore, `leads/${leadId}/beneficiaries`, beneficiaryToDelete);
-    
     setIsDeleteDialogOpen(false);
 
-    deleteDoc(docRef)
-        .catch(async (serverError) => {
-            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'delete' });
-            errorEmitter.emit('permission-error', permissionError);
-        })
-        .finally(() => {
-            toast({ title: 'Success', description: 'Beneficiary deleted successfully.', variant: 'success' });
-            setBeneficiaryToDelete(null);
-        });
+    const batch = writeBatch(firestore);
+    const beneficiaryDocRef = doc(firestore, `leads/${leadId}/beneficiaries`, beneficiaryToDelete);
+    const leadDocRef = doc(firestore, 'leads', leadId);
+
+    const amountToSubtract = beneficiaryData.kitAmount || 0;
+    const newTargetAmount = (lead.targetAmount || 0) - amountToSubtract;
+
+    batch.delete(beneficiaryDocRef);
+    batch.update(leadDocRef, { targetAmount: newTargetAmount });
+    
+    try {
+        await batch.commit();
+        toast({ title: 'Success', description: 'Beneficiary deleted and lead total updated.', variant: 'success' });
+        forceRefetch();
+        forceRefetchLead();
+    } catch (serverError) {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: `Batch operation on leads/${leadId}`,
+            operation: 'write'
+        }));
+    } finally {
+        setBeneficiaryToDelete(null);
+    }
   };
   
   const handleFormSubmit = async (data: BeneficiaryFormData) => {
@@ -154,7 +166,9 @@ export default function BeneficiariesPage() {
     setIsFormOpen(false);
     setEditingBeneficiary(null);
 
-    const docRef = editingBeneficiary
+    const batch = writeBatch(firestore);
+    const leadDocRef = doc(firestore, 'leads', leadId);
+    const beneficiaryDocRef = editingBeneficiary
         ? doc(firestore, `leads/${leadId}/beneficiaries`, editingBeneficiary.id)
         : doc(collection(firestore, `leads/${leadId}/beneficiaries`));
     
@@ -170,16 +184,25 @@ export default function BeneficiariesPage() {
                 createdByName: userProfile.name,
             }),
         };
+
+        const oldKitAmount = editingBeneficiary?.kitAmount || 0;
+        const newKitAmount = data.kitAmount || 0;
+        const amountDifference = newKitAmount - oldKitAmount;
+        const newTargetAmount = (lead.targetAmount || 0) + (editingBeneficiary ? amountDifference : newKitAmount);
+
+        batch.set(beneficiaryDocRef, finalData, { merge: true });
+        batch.update(leadDocRef, { targetAmount: newTargetAmount });
         
-        await setDoc(docRef, finalData, { merge: true });
+        await batch.commit();
         
-        toast({ title: 'Success', description: `Beneficiary ${editingBeneficiary ? 'updated' : 'added'}.`, variant: 'success' });
+        toast({ title: 'Success', description: `Beneficiary ${editingBeneficiary ? 'updated' : 'added'} and lead total updated.`, variant: 'success' });
+        forceRefetchLead();
 
     } catch (error: any) {
         console.warn("Error during form submission:", error);
         if (error.code === 'permission-denied') {
              const permissionError = new FirestorePermissionError({
-                path: docRef.path,
+                path: beneficiaryDocRef.path,
                 operation: editingBeneficiary ? 'update' : 'create',
                 requestResourceData: finalData,
             });
@@ -556,4 +579,3 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
         </>
     );
 };
-

@@ -202,37 +202,45 @@ export default function BeneficiariesPage() {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!beneficiaryToDelete || !firestore || !storage || !campaignId || !canDelete || !beneficiaries) return;
+    if (!beneficiaryToDelete || !firestore || !storage || !campaignId || !canDelete || !beneficiaries || !campaign) return;
 
     const beneficiaryData = beneficiaries.find(b => b.id === beneficiaryToDelete);
     if (!beneficiaryData) return;
-    
-    const docRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiaryToDelete);
-    const idProofUrl = beneficiaryData.idProofUrl;
 
     setIsDeleteDialogOpen(false);
 
-    const deleteDocument = () => {
-        deleteDoc(docRef)
-            .catch(async (serverError) => {
-                const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'delete' });
-                errorEmitter.emit('permission-error', permissionError);
-            })
-            .finally(() => {
-                toast({ title: 'Success', description: 'Beneficiary deleted successfully.', variant: 'success' });
-                setBeneficiaryToDelete(null);
-            });
-    };
+    const batch = writeBatch(firestore);
+    const beneficiaryDocRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiaryToDelete);
+    const campaignDocRef = doc(firestore, 'campaigns', campaignId);
+    
+    const amountToSubtract = beneficiaryData.kitAmount || 0;
+    const newTargetAmount = (campaign.targetAmount || 0) - amountToSubtract;
 
-    if (idProofUrl) {
-        const fileRef = storageRef(storage, idProofUrl);
+    batch.delete(beneficiaryDocRef);
+    batch.update(campaignDocRef, { targetAmount: newTargetAmount });
+
+    if (beneficiaryData.idProofUrl) {
+        const fileRef = storageRef(storage, beneficiaryData.idProofUrl);
         await deleteObject(fileRef).catch(err => {
             if (err.code !== 'storage/object-not-found') {
-                console.warn("Failed to delete ID proof from storage:", err);
+                console.warn("Failed to delete ID proof from storage, but Firestore transaction will proceed:", err);
             }
         });
     }
-    deleteDocument();
+    
+    try {
+        await batch.commit();
+        toast({ title: 'Success', description: 'Beneficiary deleted and campaign total updated.', variant: 'success' });
+        forceRefetch();
+        forceRefetchCampaign();
+    } catch (serverError) {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: `Batch operation on campaigns/${campaignId}`,
+            operation: 'write'
+        }));
+    } finally {
+        setBeneficiaryToDelete(null);
+    }
   };
   
   const handleFormSubmit = async (data: BeneficiaryFormData) => {
@@ -258,7 +266,9 @@ export default function BeneficiariesPage() {
     setIsFormOpen(false);
     setEditingBeneficiary(null);
   
-    const docRef = editingBeneficiary
+    const batch = writeBatch(firestore);
+    const campaignDocRef = doc(firestore, 'campaigns', campaignId);
+    const beneficiaryDocRef = editingBeneficiary
       ? doc(firestore, `campaigns/${campaignId}/beneficiaries`, editingBeneficiary.id)
       : doc(collection(firestore, `campaigns/${campaignId}/beneficiaries`));
   
@@ -281,7 +291,7 @@ export default function BeneficiariesPage() {
         const resizedBlob = await new Promise<Blob>((resolve) => {
           Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
         });
-        const filePath = `campaigns/${campaignId}/beneficiaries/${docRef.id}/${Date.now()}.png`;
+        const filePath = `campaigns/${campaignId}/beneficiaries/${beneficiaryDocRef.id}/${Date.now()}.png`;
         const fileRef = storageRef(storage, filePath);
         const uploadResult = await uploadBytes(fileRef, resizedBlob);
         idProofUrl = await getDownloadURL(uploadResult.ref);
@@ -306,15 +316,25 @@ export default function BeneficiariesPage() {
       // Clean up form-only fields
       delete finalData.idProofFile;
       delete finalData.idProofDeleted;
+
+      const oldKitAmount = editingBeneficiary?.kitAmount || 0;
+      const newKitAmount = data.kitAmount || 0;
+      const amountDifference = newKitAmount - oldKitAmount;
+      const newTargetAmount = (campaign.targetAmount || 0) + (editingBeneficiary ? amountDifference : newKitAmount);
+
+      batch.set(beneficiaryDocRef, finalData, { merge: true });
+      batch.update(campaignDocRef, { targetAmount: newTargetAmount });
+
+      await batch.commit();
   
-      await setDoc(docRef, finalData, { merge: true });
-  
-      toast({ title: 'Success', description: `Beneficiary ${editingBeneficiary ? 'updated' : 'added'}.`, variant: 'success' });
+      toast({ title: 'Success', description: `Beneficiary ${editingBeneficiary ? 'updated' : 'added'} and campaign total updated.`, variant: 'success' });
+      forceRefetchCampaign();
+
     } catch (error: any) {
       console.warn("Error during form submission:", error);
       if (error.code === 'permission-denied') {
         const permissionError = new FirestorePermissionError({
-          path: docRef.path,
+          path: `Batch operation on campaigns/${campaignId}`,
           operation: editingBeneficiary ? 'update' : 'create',
           requestResourceData: finalData,
         });
@@ -456,11 +476,14 @@ export default function BeneficiariesPage() {
   };
   
   const handleCommitImport = async (recordsToImport: ProcessedRecord[]) => {
-    if (!recordsToImport || recordsToImport.length === 0 || !firestore || !campaignId || !userProfile) return;
+    if (!recordsToImport || recordsToImport.length === 0 || !firestore || !campaignId || !userProfile || !campaign) return;
 
     setIsImporting(true);
     const batch = writeBatch(firestore);
     const beneficiariesRef = collection(firestore, `campaigns/${campaignId}/beneficiaries`);
+    const campaignDocRef = doc(firestore, 'campaigns', campaignId);
+
+    let totalAmountFromImport = 0;
 
     recordsToImport.forEach(record => {
         const docRef = doc(beneficiariesRef);
@@ -472,8 +495,13 @@ export default function BeneficiariesPage() {
             createdById: userProfile.id,
             createdByName: userProfile.name,
         };
+        totalAmountFromImport += Number(fullData.kitAmount || 0);
         batch.set(docRef, fullData);
     });
+
+    const newTargetAmount = (campaign.targetAmount || 0) + totalAmountFromImport;
+    batch.update(campaignDocRef, { targetAmount: newTargetAmount });
+
 
     try {
         await batch.commit();
@@ -483,6 +511,7 @@ export default function BeneficiariesPage() {
             variant: 'success',
         });
         forceRefetch(); // Force a refetch of the beneficiary data
+        forceRefetchCampaign(); // Refetch campaign data
     } catch (serverError: any) {
         const permissionError = new FirestorePermissionError({
             path: `campaigns/${campaignId}/beneficiaries`,
