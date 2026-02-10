@@ -237,36 +237,62 @@ export default function CampaignDetailsPage() {
     setEditableCampaign(prev => prev ? { ...prev, [field]: value } : null);
   };
 
-    const syncAllCategoriesFromMaster = (lists: RationCategory[]): RationCategory[] => {
-        const masterList = lists.find(cat => cat.name === 'General Item List');
-        if (!masterList) return lists;
+  const syncAllCategoriesFromMaster = (lists: RationCategory[]): RationCategory[] => {
+    const masterList = lists.find(cat => cat.name === 'General Item List');
+    if (!masterList) return lists;
 
-        const masterPriceMap = new Map<string, { price: number; quantityType: string }>();
-        masterList.items.forEach(item => {
-            masterPriceMap.set(item.name.trim().toLowerCase(), {
-                price: Number(item.price) || 0,
-                quantityType: item.quantityType || '',
-            });
-        });
+    // Create a map of master items by their lowercase name for easy lookup.
+    const masterItemsMap = new Map<string, RationItem>();
+    masterList.items.forEach(item => {
+        if (item.name && item.name.trim()) {
+            masterItemsMap.set(item.name.trim().toLowerCase(), item);
+        }
+    });
 
-        return lists.map(category => {
-            if (category.name === 'General Item List') {
-                return category; // Return master list as is
+    return lists.map(category => {
+        if (category.name === 'General Item List') {
+            return category; // Return master list as is
+        }
+
+        // Create a map of the current category's items for efficient updates.
+        const categoryItemsMap = new Map<string, RationItem>();
+        category.items.forEach(item => {
+            if(item.name && item.name.trim()) {
+                categoryItemsMap.set(item.name.trim().toLowerCase(), item);
             }
-            const updatedItems = category.items.map(item => {
-                const masterItem = masterPriceMap.get(item.name.trim().toLowerCase());
-                if (masterItem) {
-                    return {
-                        ...item,
-                        price: masterItem.price * (Number(item.quantity) || 0),
-                        quantityType: masterItem.quantityType,
-                    };
-                }
-                return { ...item, price: 0, quantityType: '' };
-            });
-            return { ...category, items: updatedItems };
         });
-    };
+
+        const newCategoryItems: RationItem[] = [];
+
+        // Iterate through the master list to ensure all items are present in the category.
+        masterItemsMap.forEach((masterItem, masterItemName) => {
+            const existingItem = categoryItemsMap.get(masterItemName);
+            const unitPrice = Number(masterItem.price) || 0;
+            
+            if (existingItem) {
+                // Item exists, update its price based on its quantity and master unit price.
+                newCategoryItems.push({
+                    ...existingItem,
+                    price: unitPrice * (Number(existingItem.quantity) || 0),
+                    quantityType: masterItem.quantityType || '',
+                });
+            } else {
+                // Item does not exist, add it with a default quantity of 0.
+                newCategoryItems.push({
+                    id: `${category.id}-item-${Date.now()}-${Math.random()}`, // new unique ID
+                    name: masterItem.name,
+                    quantity: 0, // Default quantity
+                    quantityType: masterItem.quantityType || '',
+                    price: 0, // Price is 0 since quantity is 0
+                    notes: masterItem.notes || '',
+                });
+            }
+        });
+
+        // This approach implicitly handles deletions from master, as items no longer in masterItemsMap won't be added to newCategoryItems.
+        return { ...category, items: newCategoryItems };
+    });
+  };
   
   const handleItemChange = (
     categoryId: string,
@@ -290,7 +316,7 @@ export default function CampaignDetailsPage() {
     if (categoryToUpdate.name === 'General Item List') {
         newRationLists = syncAllCategoriesFromMaster(newRationLists);
     } else {
-        // If a non-general list was updated, just sync that single item
+        // If a non-general list was updated, just sync that single item's price
         const masterList = newRationLists.find((cat: RationCategory) => cat.name === 'General Item List');
         const masterPriceMap = new Map<string, { price: number; quantityType: string }>();
         if (masterList) {
@@ -1204,4 +1230,3 @@ export default function CampaignDetailsPage() {
     </>
   );
 }
-
