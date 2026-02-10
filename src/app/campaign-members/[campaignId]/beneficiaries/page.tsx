@@ -50,7 +50,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
-import { BeneficiaryImportDialog } from '@/components/beneficiary-import-dialog';
+import { BeneficiaryImportDialog, type ProcessedRecord } from '@/components/beneficiary-import-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -78,7 +78,7 @@ export default function BeneficiariesPage() {
     if (!firestore || !campaignId) return null;
     return collection(firestore, `campaigns/${campaignId}/beneficiaries`);
   }, [firestore, campaignId]);
-  const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
+  const { data: beneficiaries, isLoading: areBeneficiariesLoading, forceRefetch } = useCollection<Beneficiary>(beneficiariesCollectionRef);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBeneficiary, setEditingBeneficiary] = useState<Beneficiary | null>(null);
@@ -89,7 +89,7 @@ export default function BeneficiariesPage() {
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [importData, setImportData] = useState<{ newRecords: any[], duplicateRecords: any[] } | null>(null);
+  const [importData, setImportData] = useState<ProcessedRecord[]>([]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -226,66 +226,92 @@ export default function BeneficiariesPage() {
   };
   
   const handleFormSubmit = async (data: BeneficiaryFormData) => {
-    if (!firestore || !userProfile || !campaign) return;
+    if (!firestore || !storage || !userProfile || !campaign) return;
     if (editingBeneficiary && !canUpdate) return;
     if (!editingBeneficiary && !canCreate) return;
-
+  
     if (!editingBeneficiary) {
-        const isDuplicate = beneficiaries && beneficiaries.some(b => 
-            b.name.trim().toLowerCase() === data.name.trim().toLowerCase() &&
-            (b.phone || '') === (data.phone || '')
-        );
-        if (isDuplicate) {
-            toast({
-                title: 'Duplicate Beneficiary',
-                description: 'A beneficiary with the same name and phone number already exists in this campaign.',
-                variant: 'destructive',
-            });
-            return;
-        }
+      const isDuplicate = beneficiaries && beneficiaries.some(b =>
+        b.name.trim().toLowerCase() === data.name.trim().toLowerCase() &&
+        (b.phone || '') === (data.phone || '')
+      );
+      if (isDuplicate) {
+        toast({
+          title: 'Duplicate Beneficiary',
+          description: 'A beneficiary with the same name and phone number already exists in this campaign.',
+          variant: 'destructive',
+        });
+        return;
+      }
     }
-
+  
     setIsFormOpen(false);
     setEditingBeneficiary(null);
-
+  
     const docRef = editingBeneficiary
-        ? doc(firestore, `campaigns/${campaignId}/beneficiaries`, editingBeneficiary.id)
-        : doc(collection(firestore, `campaigns/${campaignId}/beneficiaries`));
-    
+      ? doc(firestore, `campaigns/${campaignId}/beneficiaries`, editingBeneficiary.id)
+      : doc(collection(firestore, `campaigns/${campaignId}/beneficiaries`));
+  
     let finalData: any;
-
+  
     try {
-        finalData = {
-            ...data,
-            ...(!editingBeneficiary && {
-                addedDate: new Date().toISOString().split('T')[0],
-                createdAt: serverTimestamp(),
-                createdById: userProfile.id,
-                createdByName: userProfile.name,
-            }),
-            ...(editingBeneficiary && {
-                updatedAt: serverTimestamp(),
-                updatedById: userProfile.id,
-                updatedByName: userProfile.name,
-            }),
-        };
-        
-        await setDoc(docRef, finalData, { merge: true });
-        
-        toast({ title: 'Success', description: `Beneficiary ${editingBeneficiary ? 'updated' : 'added'}.`, variant: 'success' });
-
+      let idProofUrl = editingBeneficiary?.idProofUrl || '';
+      
+      if (data.idProofDeleted && idProofUrl) {
+          await deleteObject(storageRef(storage, idProofUrl)).catch(err => {
+              if (err.code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
+          });
+          idProofUrl = '';
+      }
+      
+      const fileList = data.idProofFile as FileList | undefined;
+      if (fileList && fileList.length > 0) {
+        const file = fileList[0];
+        const { default: Resizer } = await import('react-image-file-resizer');
+        const resizedBlob = await new Promise<Blob>((resolve) => {
+          Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
+        });
+        const filePath = `campaigns/${campaignId}/beneficiaries/${docRef.id}/${Date.now()}.png`;
+        const fileRef = storageRef(storage, filePath);
+        const uploadResult = await uploadBytes(fileRef, resizedBlob);
+        idProofUrl = await getDownloadURL(uploadResult.ref);
+      }
+  
+      finalData = {
+        ...data,
+        idProofUrl,
+        ...(!editingBeneficiary && {
+          addedDate: new Date().toISOString().split('T')[0],
+          createdAt: serverTimestamp(),
+          createdById: userProfile.id,
+          createdByName: userProfile.name,
+        }),
+        ...(editingBeneficiary && {
+          updatedAt: serverTimestamp(),
+          updatedById: userProfile.id,
+          updatedByName: userProfile.name,
+        }),
+      };
+      
+      // Clean up form-only fields
+      delete finalData.idProofFile;
+      delete finalData.idProofDeleted;
+  
+      await setDoc(docRef, finalData, { merge: true });
+  
+      toast({ title: 'Success', description: `Beneficiary ${editingBeneficiary ? 'updated' : 'added'}.`, variant: 'success' });
     } catch (error: any) {
-        console.warn("Error during form submission:", error);
-        if (error.code === 'permission-denied') {
-             const permissionError = new FirestorePermissionError({
-                path: docRef.path,
-                operation: editingBeneficiary ? 'update' : 'create',
-                requestResourceData: finalData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        } else {
-            toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
-        }
+      console.warn("Error during form submission:", error);
+      if (error.code === 'permission-denied') {
+        const permissionError = new FirestorePermissionError({
+          path: docRef.path,
+          operation: editingBeneficiary ? 'update' : 'create',
+          requestResourceData: finalData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      } else {
+        toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
+      }
     }
   };
 
@@ -296,12 +322,13 @@ export default function BeneficiariesPage() {
     }
     const XLSX = await import('xlsx');
     const headers = [
-        'name', 'address', 'phone', 'members', 'earningMembers', 'male', 'female',
+        'id', 'name', 'address', 'phone', 'members', 'earningMembers', 'male', 'female',
         'idProofType', 'idNumber', 'referralBy', 'kitAmount', 'status', 'notes',
         'isEligibleForZakat', 'zakatAllocation'
     ];
 
     const dataToExport = beneficiaries.map(b => ({
+        id: b.id,
         name: b.name || '',
         address: b.address || '',
         phone: b.phone || '',
@@ -353,20 +380,17 @@ export default function BeneficiariesPage() {
                  throw new Error(`File is missing required headers. Required: ${requiredHeaders.join(', ')}`);
             }
 
-            const newRecords: any[] = [];
-            const duplicateRecords: any[] = [];
             const validStatuses = ['Given', 'Pending', 'Hold', 'Need More Details', 'Verified'];
-
-            const existingBeneficiarySet = new Set(beneficiaries.map(b => `${(b.name || '').trim().toLowerCase()}|${(b.phone || '').trim()}`));
+            
+            const processedRecords: ProcessedRecord[] = [];
+            const existingBeneficiaryIds = new Set(beneficiaries.map(b => b.id));
+            const existingNamePhoneSet = new Set(beneficiaries.map(b => `${(b.name || '').trim().toLowerCase()}|${(b.phone || '').trim()}`));
 
             json.forEach((row, index) => {
-                const name = String(row.name || '').trim();
-                const phone = String(row.phone || '').trim();
-                const recordKey = `${name.toLowerCase()}|${phone}`;
-
                 const beneficiaryData = {
-                    name,
-                    phone,
+                    id: String(row.id || '').trim(),
+                    name: String(row.name || '').trim(),
+                    phone: String(row.phone || '').trim(),
                     address: String(row.address || '').trim(),
                     members: Number(row.members || 0),
                     earningMembers: Number(row.earningMembers || 0),
@@ -381,15 +405,19 @@ export default function BeneficiariesPage() {
                     isEligibleForZakat: Boolean(row.isEligibleForZakat),
                     zakatAllocation: Number(row.zakatAllocation || 0),
                 };
+                
+                const recordKey = `${beneficiaryData.name.toLowerCase()}|${beneficiaryData.phone}`;
 
-                if (existingBeneficiarySet.has(recordKey)) {
-                    duplicateRecords.push({ row: index + 2, data: beneficiaryData });
+                if (beneficiaryData.id && existingBeneficiaryIds.has(beneficiaryData.id)) {
+                    processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'duplicate-id', reason: `ID '${beneficiaryData.id}' already exists.` });
+                } else if (existingNamePhoneSet.has(recordKey)) {
+                    processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'duplicate-name-phone', reason: `Name & Phone combination already exists.` });
                 } else {
-                    newRecords.push({ row: index + 2, data: beneficiaryData });
+                    processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'new' });
                 }
             });
 
-            setImportData({ newRecords, duplicateRecords });
+            setImportData(processedRecords);
 
         } catch (error: any) {
              toast({ title: 'Import Failed', description: error.message || "An error occurred during import.", variant: 'destructive' });
@@ -405,17 +433,18 @@ export default function BeneficiariesPage() {
     reader.readAsArrayBuffer(selectedFile);
   };
   
-  const handleCommitImport = async () => {
-    if (!importData || importData.newRecords.length === 0 || !firestore || !campaignId || !userProfile) return;
+  const handleCommitImport = async (recordsToImport: ProcessedRecord[]) => {
+    if (!recordsToImport || recordsToImport.length === 0 || !firestore || !campaignId || !userProfile) return;
 
     setIsImporting(true);
     const batch = writeBatch(firestore);
     const beneficiariesRef = collection(firestore, `campaigns/${campaignId}/beneficiaries`);
 
-    importData.newRecords.forEach(record => {
+    recordsToImport.forEach(record => {
         const docRef = doc(beneficiariesRef);
+        const { id, ...dataToSave } = record.data; // Exclude imported ID
         const fullData = {
-            ...record.data,
+            ...dataToSave,
             addedDate: new Date().toISOString().split('T')[0],
             createdAt: serverTimestamp(),
             createdById: userProfile.id,
@@ -428,19 +457,20 @@ export default function BeneficiariesPage() {
         await batch.commit();
         toast({
             title: 'Import Successful',
-            description: `${importData.newRecords.length} new beneficiaries have been added.`,
+            description: `${recordsToImport.length} new beneficiaries have been added.`,
             variant: 'success',
         });
+        forceRefetch(); // Force a refetch of the beneficiary data
     } catch (serverError: any) {
         const permissionError = new FirestorePermissionError({
             path: `campaigns/${campaignId}/beneficiaries`,
             operation: 'write',
-            requestResourceData: { note: `${importData.newRecords.length} beneficiaries to import` }
+            requestResourceData: { note: `${recordsToImport.length} beneficiaries to import` }
         });
         errorEmitter.emit('permission-error', permissionError);
     } finally {
         setIsImporting(false);
-        setImportData(null);
+        setImportData([]);
         setSelectedFile(null);
     }
 };
@@ -980,10 +1010,9 @@ export default function BeneficiariesPage() {
       </Dialog>
 
       <BeneficiaryImportDialog
-        open={!!importData}
-        onOpenChange={(open) => { if (!open) setImportData(null); }}
-        newRecords={importData?.newRecords || []}
-        duplicateRecords={importData?.duplicateRecords || []}
+        open={importData.length > 0}
+        onOpenChange={(open) => { if (!open) setImportData([]); }}
+        processedRecords={importData}
         onConfirm={handleCommitImport}
         isImporting={isImporting}
       />
@@ -1075,6 +1104,3 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
         </>
     );
 }
-
-
-    
