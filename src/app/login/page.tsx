@@ -130,6 +130,14 @@ export default function LoginPage() {
 
   return (
     <div className="w-full max-w-sm animate-fade-in-zoom" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
+        <div className="mb-4 flex">
+            <Button variant="outline" asChild>
+                <Link href="/">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Home
+                </Link>
+            </Button>
+        </div>
       <Card>
           <CardHeader className="text-center">
               <div className="flex justify-center items-center gap-3 mb-4">

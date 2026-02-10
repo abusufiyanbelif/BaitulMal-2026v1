@@ -10,27 +10,7 @@ import { AppFooter } from '@/components/app-footer';
 import { Toaster } from '@/components/ui/toaster';
 import { DocuExtractHeader } from '@/components/docu-extract-header';
 import { Watermark } from '@/components/watermark';
-
-function DefaultLayout({ children }: { children: ReactNode }) {
-    return (
-        <div className="relative">
-            <div className="relative z-10 flex min-h-screen flex-col">
-                <DocuExtractHeader />
-                <main className="flex-1">{children}</main>
-                <AppFooter />
-            </div>
-            <Watermark />
-        </div>
-    );
-}
-
-function LoginLayout({ children }: { children: ReactNode }) {
-    return (
-        <main className="flex min-h-screen flex-col items-center justify-center">
-            {children}
-        </main>
-    );
-}
+import { cn } from '@/lib/utils';
 
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -40,11 +20,19 @@ export function Providers({ children }: { children: ReactNode }) {
     <FirebaseClientProvider>
       <AuthProvider>
         <FirebaseContentWrapper>
-            {isLoginPage ? (
-                <LoginLayout>{children}</LoginLayout>
-            ) : (
-                <DefaultLayout>{children}</DefaultLayout>
-            )}
+          <div className="relative">
+            <div className={cn(
+              "relative z-10 flex min-h-screen flex-col",
+              isLoginPage && "items-center justify-center p-4" // Center content and add padding only on login page
+            )}>
+              <DocuExtractHeader />
+              <main className={cn("flex-1 w-full", isLoginPage && "flex items-center justify-center")}>
+                {children}
+              </main>
+              <AppFooter />
+            </div>
+            <Watermark />
+          </div>
           <Toaster />
         </FirebaseContentWrapper>
       </AuthProvider>
