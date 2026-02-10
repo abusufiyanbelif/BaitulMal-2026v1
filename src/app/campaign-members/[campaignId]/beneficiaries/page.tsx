@@ -107,7 +107,7 @@ export default function BeneficiariesPage() {
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [collapsedSubGroups, setCollapsedSubGroups] = useState<Record<string, boolean>>({});
   
-  const [isSyncingKits, setIsSyncingKits] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const toggleGroup = (groupKey: string) => {
     setCollapsedGroups(prev => ({
@@ -384,7 +384,7 @@ export default function BeneficiariesPage() {
 
             if (json.length === 0) throw new Error("The file is empty.");
 
-            const requiredHeaders = ['name', 'phone'];
+            const requiredHeaders = ['name', 'referralBy'];
             const actualHeaders = Object.keys(json[0] || {});
             if (!requiredHeaders.every(h => actualHeaders.includes(h))) {
                  throw new Error(`File is missing required headers. Required: ${requiredHeaders.join(', ')}`);
@@ -419,6 +419,15 @@ export default function BeneficiariesPage() {
                     zakatAllocation: Number(row.zakatAllocation || 0),
                 };
                 
+                if (!beneficiaryData.name) {
+                  processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'invalid', reason: `Missing required 'name' field.` });
+                  return;
+                }
+                if (!beneficiaryData.referralBy) {
+                  processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'invalid', reason: `Missing required 'referralBy' field.` });
+                  return;
+                }
+
                 const recordKey = `${beneficiaryData.name?.toLowerCase()}|${beneficiaryData.phone}`;
 
                 if (beneficiaryData.id && existingBeneficiaryIds.has(beneficiaryData.id)) {

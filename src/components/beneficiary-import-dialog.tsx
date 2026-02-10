@@ -17,13 +17,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Info, FileWarning, Loader2 } from 'lucide-react';
+import { CheckCircle, Info, FileWarning, Loader2, XCircle } from 'lucide-react';
 import type { Beneficiary } from '@/lib/types';
 
 export interface ProcessedRecord {
   row: number;
   data: Partial<Beneficiary>;
-  status: 'new' | 'duplicate-id' | 'duplicate-name-phone';
+  status: 'new' | 'duplicate-id' | 'duplicate-name-phone' | 'invalid';
   reason?: string;
 }
 
@@ -44,17 +44,23 @@ export function BeneficiaryImportDialog({
 }: BeneficiaryImportDialogProps) {
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
 
-  const { newRecords, duplicateRecords } = useMemo(() => {
+  const { newRecords, duplicateRecords, invalidRecords } = useMemo(() => {
     return processedRecords.reduce(
       (acc, record) => {
         if (record.status === 'new') {
           acc.newRecords.push(record);
+        } else if (record.status === 'invalid') {
+          acc.invalidRecords.push(record);
         } else {
           acc.duplicateRecords.push(record);
         }
         return acc;
       },
-      { newRecords: [] as ProcessedRecord[], duplicateRecords: [] as ProcessedRecord[] }
+      { 
+        newRecords: [] as ProcessedRecord[], 
+        duplicateRecords: [] as ProcessedRecord[],
+        invalidRecords: [] as ProcessedRecord[],
+      }
     );
   }, [processedRecords]);
 
@@ -93,23 +99,33 @@ export function BeneficiaryImportDialog({
         <DialogHeader>
           <DialogTitle>Import Verification</DialogTitle>
           <DialogDescription>
-            Review the summary of your import. New records are selected by default. Duplicates will be skipped.
+            Review the summary of your import. Only valid new records can be selected for import.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">New Records Ready to Import</CardTitle>
+                <CardTitle className="text-sm font-medium">New Records</CardTitle>
                 <CheckCircle className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{newRecords.length}</div>
-                <p className="text-xs text-muted-foreground">records will be created.</p>
+                <p className="text-xs text-muted-foreground">records ready to be imported.</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Duplicates Found (Skipped)</CardTitle>
+                <CardTitle className="text-sm font-medium">Invalid Records</CardTitle>
+                <XCircle className="h-4 w-4 text-red-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{invalidRecords.length}</div>
+                <p className="text-xs text-muted-foreground">records have missing data and will be skipped.</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Duplicates Found</CardTitle>
                 <FileWarning className="h-4 w-4 text-amber-500" />
               </CardHeader>
               <CardContent>
@@ -157,8 +173,12 @@ export function BeneficiaryImportDialog({
                     <TableCell>{record.data.name}</TableCell>
                     <TableCell>{record.data.phone}</TableCell>
                     <TableCell>
-                      <Badge variant={record.status === 'new' ? 'success' : 'destructive'}>
-                        {record.status === 'new' ? 'New' : 'Duplicate'}
+                      <Badge variant={
+                        record.status === 'new' ? 'success' : 
+                        record.status === 'invalid' ? 'destructive' :
+                        'outline'
+                      }>
+                        {record.status.replace('-id','').replace('-name-phone','')}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{record.reason}</TableCell>

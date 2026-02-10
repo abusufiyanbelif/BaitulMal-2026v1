@@ -1,9 +1,6 @@
-
 'use client';
 
 import { RefObject } from 'react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { useToast } from '@/hooks/use-toast';
 import type { BrandingSettings, PaymentSettings } from '@/lib/types';
 
@@ -47,6 +44,7 @@ export function useDownloadAs() {
     toast({ title: `Generating ${format.toUpperCase()}...`, description: 'Please wait.' });
 
     try {
+        const html2canvas = (await import('html2canvas')).default;
         const canvas = await html2canvas(element, {
             scale: 2,
             useCORS: true,
@@ -133,6 +131,7 @@ export function useDownloadAs() {
             link.href = finalCanvas.toDataURL('image/png');
             link.click();
         } else { // pdf
+            const { default: jsPDF } = await import('jspdf');
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
@@ -162,7 +161,7 @@ export function useDownloadAs() {
             // Watermark
             if (logoImg && logoDataUrl) {
                 pdf.saveGraphicsState();
-                pdf.setGState(new (jsPDF as any).GState({ opacity: 0.08 }));
+                pdf.setGState(new (pdf as any).GState({ opacity: 0.08 }));
                 const wmWidth = pdfWidth * 0.75;
                 const wmHeight = (logoImg.height / logoImg.width) * wmWidth;
                 pdf.addImage(logoDataUrl, 'PNG', (pdfWidth - wmWidth) / 2, (pdfHeight - wmHeight) / 2, wmWidth, wmHeight);
