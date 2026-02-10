@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ReactNode } from 'react';
@@ -30,8 +31,8 @@ export function Providers({ children }: { children: ReactNode }) {
             <Watermark />
           </div>
         </FirebaseContentWrapper>
-        <Toaster />
       </AuthProvider>
+      <Toaster />
     </FirebaseClientProvider>
   );
 }
