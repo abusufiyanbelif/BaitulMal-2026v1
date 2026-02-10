@@ -33,8 +33,8 @@ export function Providers({ children }: { children: ReactNode }) {
             </div>
             <Watermark />
           </div>
-          <Toaster />
         </FirebaseContentWrapper>
+        <Toaster />
       </AuthProvider>
     </FirebaseClientProvider>
   );
