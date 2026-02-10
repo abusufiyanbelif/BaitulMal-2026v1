@@ -24,7 +24,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -1064,7 +1063,7 @@ export default function CampaignDetailsPage() {
                 <Button type="submit" onClick={handleUpdateCategory}>Save Changes</Button>
             </DialogFooter>
         </DialogContent>
-      </AlertDialog>
+      </Dialog>
 
         <Dialog open={isCopyItemsOpen} onOpenChange={setIsCopyItemsOpen}>
             <DialogContent>
@@ -1155,6 +1154,7 @@ export default function CampaignDetailsPage() {
 }
 
     
+
 
 
 
