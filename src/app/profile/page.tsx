@@ -217,12 +217,12 @@ export default function ProfilePage() {
                     </DialogHeader>
                     {imageToView && (
                         <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
-                            <img
-                                src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
+                            <Image
+                                src={imageToView}
                                 alt="ID Proof"
-                                className="transition-transform duration-200 ease-out origin-center"
+                                fill
+                                className="object-contain transition-transform duration-200 ease-out origin-center"
                                 style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
-                                crossOrigin="anonymous"
                             />
                         </div>
                     )}

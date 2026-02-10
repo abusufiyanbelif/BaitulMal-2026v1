@@ -4,6 +4,7 @@
 import { useEffect } from 'react';
 import { LogOut, User, LogIn, Settings, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
@@ -52,22 +53,6 @@ export function DocuExtractHeader() {
   const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
   const homeHref = user ? '/dashboard' : '/';
   
-  const logoStyle: React.CSSProperties = {
-    objectFit: 'contain',
-    maxHeight: '3.5rem', // 56px
-  };
-
-  if (brandingSettings?.logoWidth) {
-    logoStyle.width = `${brandingSettings.logoWidth}px`;
-  } else {
-    logoStyle.width = 'auto';
-  }
-  if (brandingSettings?.logoHeight) {
-    logoStyle.height = `${brandingSettings.logoHeight}px`;
-  } else {
-    logoStyle.height = 'auto';
-  }
-
   return (
     <header className="bg-card border-b p-1 shadow-sm">
       <div className="container mx-auto flex flex-wrap justify-between items-center gap-2">
@@ -77,10 +62,18 @@ export function DocuExtractHeader() {
                 <Skeleton className="h-12 w-24" />
             ) : (
                 validLogoUrl && (
-                  <img
-                    src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
+                  <Image
+                    src={validLogoUrl}
                     alt="Company Logo"
-                    style={logoStyle}
+                    width={brandingSettings?.logoWidth || 100}
+                    height={brandingSettings?.logoHeight || 50}
+                    className="object-contain"
+                    style={{
+                      maxHeight: '3.5rem',
+                      width: 'auto',
+                      height: 'auto',
+                    }}
+                    priority
                   />
                 )
             )}

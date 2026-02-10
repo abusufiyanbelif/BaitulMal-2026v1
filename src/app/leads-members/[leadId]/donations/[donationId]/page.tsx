@@ -3,6 +3,7 @@
 
 import { useMemo, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';

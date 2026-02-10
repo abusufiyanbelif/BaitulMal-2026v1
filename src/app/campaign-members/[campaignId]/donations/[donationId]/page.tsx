@@ -9,6 +9,7 @@ import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { doc, DocumentReference, setDoc, serverTimestamp, collection, deleteField } from 'firebase/firestore';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useStorage } from '@/firebase';
 
