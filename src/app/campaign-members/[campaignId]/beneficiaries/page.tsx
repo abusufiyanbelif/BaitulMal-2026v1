@@ -58,6 +58,12 @@ import { cn, getNestedValue } from '@/lib/utils';
 
 type SortKey = keyof Beneficiary | 'srNo';
 
+const parseBoolean = (value: any): boolean => {
+    if (value === null || value === undefined) return false;
+    const lower = String(value).toLowerCase().trim();
+    return lower === 'true' || lower === '1';
+};
+
 export default function BeneficiariesPage() {
   const params = useParams();
   const router = useRouter();
@@ -72,7 +78,7 @@ export default function BeneficiariesPage() {
     if (!firestore || !campaignId) return null;
     return doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign>;
   }, [firestore, campaignId]);
-  const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
+  const { data: campaign, isLoading: isCampaignLoading, forceRefetch: forceRefetchCampaign } = useDoc<Campaign>(campaignDocRef);
   
   const beneficiariesCollectionRef = useMemo(() => {
     if (!firestore || !campaignId) return null;
@@ -99,6 +105,8 @@ export default function BeneficiariesPage() {
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [collapsedSubGroups, setCollapsedSubGroups] = useState<Record<string, boolean>>({});
+  
+  const [isSyncingKits, setIsSyncingKits] = useState(false);
 
   const toggleGroup = (groupKey: string) => {
     setCollapsedGroups(prev => ({
@@ -122,6 +130,7 @@ export default function BeneficiariesPage() {
   const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.create', false);
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.update', false);
   const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.delete', false);
+  const canUpdateCampaign = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.update', false);
 
     const sanitizedRationLists = useMemo(() => {
     if (!campaign?.rationLists) return [];
@@ -402,16 +411,16 @@ export default function BeneficiariesPage() {
                     kitAmount: Number(row.kitAmount || 0),
                     status: validStatuses.includes(String(row.status || '').trim()) ? String(row.status || '').trim() : 'Pending',
                     notes: String(row.notes || '').trim(),
-                    isEligibleForZakat: Boolean(row.isEligibleForZakat),
+                    isEligibleForZakat: parseBoolean(row.isEligibleForZakat),
                     zakatAllocation: Number(row.zakatAllocation || 0),
                 };
                 
                 const recordKey = `${beneficiaryData.name.toLowerCase()}|${beneficiaryData.phone}`;
 
                 if (beneficiaryData.id && existingBeneficiaryIds.has(beneficiaryData.id)) {
-                    processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'duplicate-id', reason: `ID '${beneficiaryData.id}' already exists.` });
+                    processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'duplicate-id', reason: `A beneficiary with this ID already exists.` });
                 } else if (existingNamePhoneSet.has(recordKey)) {
-                    processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'duplicate-name-phone', reason: `Name & Phone combination already exists.` });
+                    processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'duplicate-name-phone', reason: `A beneficiary with this Name & Phone already exists.` });
                 } else {
                     processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'new' });
                 }
