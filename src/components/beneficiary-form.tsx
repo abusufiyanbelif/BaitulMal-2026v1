@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Image from 'next/image';
@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { Beneficiary, RationCategory } from '@/lib/types';
+import type { Beneficiary, RationCategory, RationItem } from '@/lib/types';
 import { Loader2, Edit, Trash2, FileIcon, Replace, ScanLine } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -62,7 +62,7 @@ interface BeneficiaryFormProps {
   initialReadOnly?: boolean;
 }
 
-export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, initialReadOnly = false }: BeneficiaryFormProps) {
+export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, initialReadOnly = false }: BeneficiaryFormProps) {
     const isEditing = !!beneficiary;
     const { toast } = useToast();
 
@@ -96,6 +96,33 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, initialReadOn
     
     const idProofFile = watch('idProofFile');
     const [preview, setPreview] = useState<string | null>(beneficiary?.idProofUrl || null);
+    
+    const membersValue = watch('members');
+
+    useEffect(() => {
+        const calculateTotal = (items: RationItem[]) => {
+            return items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+        };
+        
+        if (isReadOnly) return; // Don't auto-update if viewing details.
+
+        const members = membersValue || 0;
+
+        if (rationLists && rationLists.length > 0) {
+            const generalCategory = rationLists.find(cat => cat.name === 'General Item List');
+            
+            const specificCategory = rationLists.find(
+                cat => cat.name !== 'General Item List' && members >= cat.minMembers && members <= cat.maxMembers
+            );
+            
+            const appliedCategory = specificCategory || generalCategory;
+
+            if (appliedCategory) {
+                const kitAmount = calculateTotal(appliedCategory.items);
+                setValue('kitAmount', kitAmount, { shouldValidate: true, shouldDirty: true });
+            }
+        }
+    }, [membersValue, rationLists, setValue, isReadOnly]);
 
     useEffect(() => {
         const fileList = idProofFile as FileList | undefined;
@@ -136,7 +163,7 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, initialReadOn
         reader.onload = async (e) => {
             const dataUri = e.target?.result as string;
             if (!dataUri) {
-                toast({ title: "Read Error", description: "Could not read the file.", variant: "destructive" });
+                toast({ title: "Read Error", description: "Could not read the uploaded file.", variant: "destructive" });
                 setIsScanning(false);
                 return;
             }
