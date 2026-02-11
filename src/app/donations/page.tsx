@@ -99,6 +99,7 @@ export default function DonationsPage() {
   const [typeFilter, setTypeFilter] = useState('All');
   const [donationTypeFilter, setDonationTypeFilter] = useState('All');
   const [linkFilter, setLinkFilter] = useState<string[]>([]);
+  const [tempLinkFilter, setTempLinkFilter] = useState<string[]>([]);
   const [openLinkFilter, setOpenLinkFilter] = useState(false);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
@@ -494,7 +495,12 @@ export default function DonationsPage() {
                           <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                   </Select>
-                   <Popover open={openLinkFilter} onOpenChange={setOpenLinkFilter}>
+                   <Popover open={openLinkFilter} onOpenChange={(isOpen) => {
+                       setOpenLinkFilter(isOpen);
+                       if (isOpen) {
+                           setTempLinkFilter(linkFilter);
+                       }
+                   }}>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
@@ -520,11 +526,10 @@ export default function DonationsPage() {
                                     key="unlinked"
                                     value="Unlinked Donations"
                                     onSelect={() => {
-                                      const selected = linkFilter.includes('unlinked');
-                                      setLinkFilter(selected ? linkFilter.filter((l) => l !== 'unlinked') : [...linkFilter, 'unlinked']);
+                                      setTempLinkFilter(prev => prev.includes('unlinked') ? prev.filter((l) => l !== 'unlinked') : [...prev, 'unlinked']);
                                     }}
                                 >
-                                    <Check className={cn("mr-2 h-4 w-4", linkFilter.includes('unlinked') ? "opacity-100" : "opacity-0")} />
+                                    <Check className={cn("mr-2 h-4 w-4", tempLinkFilter.includes('unlinked') ? "opacity-100" : "opacity-0")} />
                                     Unlinked Donations
                                 </CommandItem>
                             </CommandGroup>
@@ -535,11 +540,10 @@ export default function DonationsPage() {
                                   value={campaign.name}
                                   onSelect={() => {
                                     const filterId = `campaign_${campaign.id}`;
-                                    const selected = linkFilter.includes(filterId);
-                                    setLinkFilter(selected ? linkFilter.filter((l) => l !== filterId) : [...linkFilter, filterId]);
+                                    setTempLinkFilter(prev => prev.includes(filterId) ? prev.filter((l) => l !== filterId) : [...prev, filterId]);
                                   }}
                                 >
-                                  <Check className={cn("mr-2 h-4 w-4", linkFilter.includes(`campaign_${campaign.id}`) ? "opacity-100" : "opacity-0")} />
+                                  <Check className={cn("mr-2 h-4 w-4", tempLinkFilter.includes(`campaign_${campaign.id}`) ? "opacity-100" : "opacity-0")} />
                                   {campaign.name}
                                 </CommandItem>
                               ))}
@@ -551,17 +555,26 @@ export default function DonationsPage() {
                                   value={lead.name}
                                   onSelect={() => {
                                     const filterId = `lead_${lead.id}`;
-                                    const selected = linkFilter.includes(filterId);
-                                    setLinkFilter(selected ? linkFilter.filter((l) => l !== filterId) : [...linkFilter, filterId]);
+                                    setTempLinkFilter(prev => prev.includes(filterId) ? prev.filter((l) => l !== filterId) : [...prev, filterId]);
                                   }}
                                 >
-                                  <Check className={cn("mr-2 h-4 w-4", linkFilter.includes(`lead_${lead.id}`) ? "opacity-100" : "opacity-0")} />
+                                  <Check className={cn("mr-2 h-4 w-4", tempLinkFilter.includes(`lead_${lead.id}`) ? "opacity-100" : "opacity-0")} />
                                   {lead.name}
                                 </CommandItem>
                               ))}
                             </CommandGroup>
                           </CommandList>
                         </Command>
+                        <div className="p-2 border-t flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => {
+                                setTempLinkFilter([]);
+                                setLinkFilter([]);
+                            }}>Clear All</Button>
+                            <Button size="sm" onClick={() => {
+                                setLinkFilter(tempLinkFilter);
+                                setOpenLinkFilter(false);
+                            }}>Apply</Button>
+                        </div>
                       </PopoverContent>
                   </Popover>
               </div>
@@ -830,12 +843,13 @@ export default function DonationsPage() {
             </DialogHeader>
             {imageToView && (
                 <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
-                     <img
-                        src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
+                     <Image
+                        src={imageToView}
                         alt="Donation screenshot"
-                        className="transition-transform duration-200 ease-out origin-center"
+                        fill
+                        className="object-contain transition-transform duration-200 ease-out origin-center"
                         style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
-                        crossOrigin="anonymous"
+                        unoptimized
                     />
                 </div>
             )}

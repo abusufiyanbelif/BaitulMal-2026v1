@@ -109,6 +109,7 @@ export default function BeneficiariesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [referralFilter, setReferralFilter] = useState<string[]>([]);
+  const [tempReferralFilter, setTempReferralFilter] = useState<string[]>([]);
   const [openReferralPopover, setOpenReferralPopover] = useState(false);
   const [zakatFilter, setZakatFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
@@ -866,7 +867,12 @@ export default function BeneficiariesPage() {
                           <SelectItem value="Not Eligible">Not Eligible</SelectItem>
                       </SelectContent>
                   </Select>
-                  <Popover open={openReferralPopover} onOpenChange={setOpenReferralPopover}>
+                  <Popover open={openReferralPopover} onOpenChange={(isOpen) => {
+                      setOpenReferralPopover(isOpen);
+                      if (isOpen) {
+                          setTempReferralFilter(referralFilter);
+                      }
+                  }}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -876,7 +882,7 @@ export default function BeneficiariesPage() {
                       >
                         <span className="truncate">
                           {referralFilter.length > 0
-                            ? `${referralFilter.length} selected`
+                            ? `${referralFilter.length} referral(s) selected`
                             : "Filter by referral..."}
                         </span>
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -887,30 +893,26 @@ export default function BeneficiariesPage() {
                         <CommandInput placeholder="Search referrals..." />
                         <CommandList>
                           <CommandEmpty>No referral found.</CommandEmpty>
-                           <CommandGroup>
-                            <CommandItem onSelect={() => setReferralFilter([])} className="text-xs text-muted-foreground justify-center cursor-pointer">
-                              Clear all selections
-                            </CommandItem>
-                          </CommandGroup>
-                          <Separator />
                           <CommandGroup>
                             {uniqueReferrals.map((referral) => (
                               <CommandItem
                                 key={referral}
                                 value={referral}
                                 onSelect={(currentValue) => {
-                                  const selected = referralFilter.includes(currentValue);
-                                  if (selected) {
-                                    setReferralFilter(referralFilter.filter((r) => r !== currentValue));
-                                  } else {
-                                    setReferralFilter([...referralFilter, currentValue]);
-                                  }
+                                  setTempReferralFilter(prev => {
+                                      const selected = prev.includes(currentValue);
+                                      if (selected) {
+                                          return prev.filter((r) => r !== currentValue);
+                                      } else {
+                                          return [...prev, currentValue];
+                                      }
+                                  });
                                 }}
                               >
                                 <Check
                                   className={cn(
                                     "mr-2 h-4 w-4",
-                                    referralFilter.includes(referral) ? "opacity-100" : "opacity-0"
+                                    tempReferralFilter.includes(referral) ? "opacity-100" : "opacity-0"
                                   )}
                                 />
                                 {referral}
@@ -919,6 +921,16 @@ export default function BeneficiariesPage() {
                           </CommandGroup>
                         </CommandList>
                       </Command>
+                       <div className="p-2 border-t flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => {
+                                setTempReferralFilter([]);
+                                setReferralFilter([]);
+                            }}>Clear All</Button>
+                            <Button size="sm" onClick={() => {
+                                setReferralFilter(tempReferralFilter);
+                                setOpenReferralPopover(false);
+                            }}>Apply</Button>
+                        </div>
                     </PopoverContent>
                   </Popover>
               </div>
