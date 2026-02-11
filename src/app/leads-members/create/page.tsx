@@ -34,7 +34,7 @@ import { Label } from '@/components/ui/label';
 
 const leadSchema = z.object({
   name: z.string().min(3, 'Lead name must be at least 3 characters.'),
-  category: z.enum(['Ration', 'Relief', 'General']),
+  category: z.enum(['Ration', 'Relief', 'General', 'Education', 'Medical', 'Other']),
   status: z.enum(['Upcoming', 'Active', 'Completed']),
   authenticityStatus: z.enum(['Pending Verification', 'Verified', 'Rejected', 'On Hold', 'Need More Details']),
   publicVisibility: z.enum(['Hold', 'Ready to Publish', 'Published']),
@@ -213,6 +213,9 @@ export default function CreateLeadPage() {
                         <SelectItem value="Ration">Ration</SelectItem>
                         <SelectItem value="Relief">Relief</SelectItem>
                         <SelectItem value="General">General</SelectItem>
+                        <SelectItem value="Education">Education</SelectItem>
+                        <SelectItem value="Medical">Medical</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -427,3 +430,5 @@ export default function CreateLeadPage() {
     </main>
   );
 }
+
+    

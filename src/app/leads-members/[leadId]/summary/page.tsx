@@ -558,6 +558,9 @@ Your support and feedback are valuable.
                                             <SelectItem value="Ration">Ration</SelectItem>
                                             <SelectItem value="Relief">Relief</SelectItem>
                                             <SelectItem value="General">General</SelectItem>
+                                            <SelectItem value="Education">Education</SelectItem>
+                                            <SelectItem value="Medical">Medical</SelectItem>
+                                            <SelectItem value="Other">Other</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 ) : (
@@ -869,3 +872,5 @@ Your support and feedback are valuable.
         </main>
     );
 }
+
+    

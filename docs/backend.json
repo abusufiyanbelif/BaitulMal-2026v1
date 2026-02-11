@@ -63,7 +63,7 @@
         "name": { "type": "string" },
         "description": { "type": "string" },
         "notes": { "type": "string", "description": "Internal notes or comments about the lead." },
-        "category": { "type": "string", "enum": ["Ration", "Relief", "General"] },
+        "category": { "type": "string", "enum": ["Ration", "Relief", "General", "Education", "Medical", "Other"] },
         "status": { "type": "string", "enum": ["Upcoming", "Active", "Completed"] },
         "startDate": { "type": "string", "format": "date" },
         "endDate": { "type": "string", "format": "date" },
@@ -266,3 +266,5 @@
     "reasoning": "The Firestore data structure is designed with a mix of public and private collections. 'Campaigns' and 'Leads' can be made public, while user-specific data and internal lookups are restricted. Subcollections are used for beneficiaries to keep them tied to a parent campaign/lead."
   }
 }
+
+    

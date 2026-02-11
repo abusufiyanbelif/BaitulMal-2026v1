@@ -347,6 +347,9 @@ export default function LeadPage() {
                             <SelectItem value="Ration">Ration</SelectItem>
                             <SelectItem value="Relief">Relief</SelectItem>
                             <SelectItem value="General">General</SelectItem>
+                            <SelectItem value="Education">Education</SelectItem>
+                            <SelectItem value="Medical">Medical</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
                         </SelectContent>
                     </Select>
                     <Select value={authenticityFilter} onValueChange={(value) => { setAuthenticityFilter(value); setCurrentPage(1); }} disabled={isLoading}>
@@ -555,3 +558,5 @@ export default function LeadPage() {
     </>
   );
 }
+
+    

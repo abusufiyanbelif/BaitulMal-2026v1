@@ -128,6 +128,9 @@ export default function PublicLeadPage() {
                     <SelectItem value="Ration">Ration</SelectItem>
                     <SelectItem value="Relief">Relief</SelectItem>
                     <SelectItem value="General">General</SelectItem>
+                    <SelectItem value="Education">Education</SelectItem>
+                    <SelectItem value="Medical">Medical</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
             </Select>
         </div>
@@ -187,3 +190,5 @@ export default function PublicLeadPage() {
     </main>
   );
 }
+
+    
