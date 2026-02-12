@@ -367,15 +367,22 @@ Your contribution, big or small, makes a huge difference.
                         </CardHeader>
                         <CardContent>
                             <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                <BarChart data={Object.entries(fundingData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))}>
-                                    <CartesianGrid vertical={false} />
-                                    <XAxis
+                                <BarChart
+                                    data={Object.entries(fundingData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))}
+                                    layout="vertical"
+                                    margin={{ right: 20 }}
+                                >
+                                    <CartesianGrid horizontal={false} />
+                                    <YAxis
                                         dataKey="name"
+                                        type="category"
                                         tickLine={false}
                                         tickMargin={10}
                                         axisLine={false}
+                                        tick={{ fontSize: 12 }}
+                                        width={120}
                                     />
-                                    <YAxis tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
+                                    <XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
                                     <ChartTooltip content={<ChartTooltipContent />} />
                                     <Bar dataKey="value" radius={4}>
                                         {Object.entries(fundingData?.amountsByCategory || {}).map(([name,]) => (
