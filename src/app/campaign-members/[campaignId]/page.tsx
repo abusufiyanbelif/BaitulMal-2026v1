@@ -8,7 +8,7 @@ import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { doc, updateDoc, DocumentReference, collection, writeBatch } from 'firebase/firestore';
-import type { Campaign, RationItem, Beneficiary, RationCategory } from '@/lib/types';
+import type { Campaign, RationItem, Beneficiary, ItemCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -59,7 +59,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 
 
-const quantityTypes = ['kg', 'litre', 'gram', 'ml', 'piece', 'packet', 'dozen'];
+const quantityTypes = ['kg', 'litre', 'gram', 'ml', 'piece', 'packet', 'dozen', 'month', 'year', 'semester', 'unit', 'day', 'treatment'];
 
 export default function CampaignDetailsPage() {
   const params = useParams();
@@ -92,19 +92,19 @@ export default function CampaignDetailsPage() {
   
   const [isSyncing, setIsSyncing] = useState(false);
   const [isDeleteCategoryDialogOpen, setIsDeleteCategoryDialogOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<RationCategory | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<ItemCategory | null>(null);
   const [dependentBeneficiaries, setDependentBeneficiaries] = useState<Beneficiary[]>([]);
   const [targetCategoryId, setTargetCategoryId] = useState<string | null>(null);
   const [isDeletingCategory, setIsDeletingCategory] = useState(false);
 
   // Copy items state
   const [isCopyItemsOpen, setIsCopyItemsOpen] = useState(false);
-  const [copyTargetCategory, setCopyTargetCategory] = useState<RationCategory | null>(null);
+  const [copyTargetCategory, setCopyTargetCategory] = useState<ItemCategory | null>(null);
   const [copySourceCategoryId, setCopySourceCategoryId] = useState<string | null>(null);
   const [selectedItemsToCopy, setSelectedItemsToCopy] = useState<string[]>([]);
   
   const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
-  const [categoryToEdit, setCategoryToEdit] = useState<RationCategory | null>(null);
+  const [categoryToEdit, setCategoryToEdit] = useState<ItemCategory | null>(null);
 
   const [itemToDelete, setItemToDelete] = useState<{ categoryId: string; itemId: string; itemName: string } | null>(null);
   const [isDeleteItemDialogOpen, setIsDeleteItemDialogOpen] = useState(false);
@@ -113,18 +113,6 @@ export default function CampaignDetailsPage() {
   useEffect(() => {
     if (campaign && !editMode) {
         const campaignCopy = JSON.parse(JSON.stringify(campaign));
-        // Sanitize rationLists on load
-        if (campaignCopy.rationLists && !Array.isArray(campaignCopy.rationLists)) {
-            campaignCopy.rationLists = [
-                {
-                    id: 'general',
-                    name: 'General Item List',
-                    minMembers: 0,
-                    maxMembers: 0,
-                    items: (campaignCopy.rationLists as any)['General Item List'] || []
-                }
-            ];
-        }
         setEditableCampaign(campaignCopy);
     }
   }, [editMode, campaign])
@@ -136,53 +124,40 @@ export default function CampaignDetailsPage() {
     }
   }, [isCopyItemsOpen]);
 
-  const sanitizedEditableRationLists = useMemo(() => {
-    if (!editableCampaign?.rationLists) return [];
+  const sanitizedEditableItemCategories = useMemo(() => {
+    if (!editableCampaign?.itemCategories) return [];
     
-    let lists: RationCategory[];
-
-    if (Array.isArray(editableCampaign.rationLists)) {
-        lists = editableCampaign.rationLists.map(cat => {
-            // Rename "General" to "General Item List" for consistent display logic
-            if (cat.name === 'General') {
-                return { ...cat, name: 'General Item List' };
-            }
-            return cat;
-        });
-    } else {
-        // Hotfix for old object format
-        lists = [
-            {
-                id: 'general',
-                name: 'General Item List',
-                minMembers: 0,
-                maxMembers: 0,
-                items: (editableCampaign.rationLists as any)['General Item List'] || []
-            }
-        ];
-    }
-    
-    // Sort to put "General Item List" first, then by min members
-    return lists.sort((a, b) => {
-        if (a.name === 'General Item List') return -1;
-        if (b.name === 'General Item List') return 1;
-        return a.minMembers - b.minMembers;
+    let lists: ItemCategory[] = editableCampaign.itemCategories.map(cat => {
+        if (cat.name === 'General') {
+            return { ...cat, name: 'Item Master List' };
+        }
+        return cat;
     });
-  }, [editableCampaign?.rationLists]);
+    
+    // Sort to put "Item Master List" first, then by min members or name
+    return lists.sort((a, b) => {
+        if (a.name === 'Item Master List') return -1;
+        if (b.name === 'Item Master List') return 1;
+        if(a.minMembers !== undefined && b.minMembers !== undefined) {
+            return a.minMembers - b.minMembers;
+        }
+        return a.name.localeCompare(b.name);
+    });
+  }, [editableCampaign?.itemCategories]);
 
   const sourceCategoryForCopy = useMemo(() => {
     if (!copySourceCategoryId) return null;
-    return sanitizedEditableRationLists.find(c => c.id === copySourceCategoryId);
-  }, [copySourceCategoryId, sanitizedEditableRationLists]);
+    return sanitizedEditableItemCategories.find(c => c.id === copySourceCategoryId);
+  }, [copySourceCategoryId, sanitizedEditableItemCategories]);
   
   const masterPriceList = useMemo(() => {
-    const generalCategory = sanitizedEditableRationLists.find(
-      cat => cat.name === 'General Item List'
+    const masterCategory = sanitizedEditableItemCategories.find(
+      cat => cat.name === 'Item Master List'
     );
-    if (!generalCategory?.items) {
+    if (!masterCategory?.items) {
       return {};
     }
-    return generalCategory.items.reduce((acc, item) => {
+    return masterCategory.items.reduce((acc, item) => {
         const itemName = (item.name || '').trim().toLowerCase();
         if (itemName) {
             const unitPrice = Number(item.price) || 0;
@@ -193,7 +168,7 @@ export default function CampaignDetailsPage() {
         }
         return acc;
     }, {} as Record<string, { price: number; quantityType: string }>);
-  }, [sanitizedEditableRationLists]);
+  }, [sanitizedEditableItemCategories]);
 
   const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
   const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
@@ -206,13 +181,12 @@ export default function CampaignDetailsPage() {
   const handleSave = () => {
     if (!campaignDocRef || !editableCampaign || !canUpdate) return;
 
-    // Only send the fields that are editable on this page to respect granular security rules
     const saveData = {
         priceDate: editableCampaign.priceDate,
         shopName: editableCampaign.shopName,
         shopContact: editableCampaign.shopContact,
         shopAddress: editableCampaign.shopAddress,
-        rationLists: sanitizedEditableRationLists,
+        itemCategories: sanitizedEditableItemCategories,
     };
     
     updateDoc(campaignDocRef, saveData)
@@ -240,11 +214,10 @@ export default function CampaignDetailsPage() {
     setEditableCampaign(prev => prev ? { ...prev, [field]: value } : null);
   };
 
-  const syncAllCategoriesFromMaster = (lists: RationCategory[]): RationCategory[] => {
-    const masterList = lists.find(cat => cat.name === 'General Item List');
+  const syncAllCategoriesFromMaster = (lists: ItemCategory[]): ItemCategory[] => {
+    const masterList = lists.find(cat => cat.name === 'Item Master List');
     if (!masterList) return lists;
 
-    // Create a map of master items by their lowercase name for easy lookup.
     const masterItemsMap = new Map<string, RationItem>();
     masterList.items.forEach(item => {
         if (item.name && item.name.trim()) {
@@ -253,11 +226,10 @@ export default function CampaignDetailsPage() {
     });
 
     return lists.map(category => {
-        if (category.name === 'General Item List') {
+        if (category.name === 'Item Master List') {
             return category; // Return master list as is
         }
 
-        // Create a map of the current category's items for efficient updates.
         const categoryItemsMap = new Map<string, RationItem>();
         category.items.forEach(item => {
             if(item.name && item.name.trim()) {
@@ -267,20 +239,17 @@ export default function CampaignDetailsPage() {
 
         const newCategoryItems: RationItem[] = [];
 
-        // Iterate through the master list to ensure all items are present in the category.
         masterItemsMap.forEach((masterItem, masterItemName) => {
             const existingItem = categoryItemsMap.get(masterItemName);
             const unitPrice = Number(masterItem.price) || 0;
             
             if (existingItem) {
-                // Item exists, update its price based on its quantity and master unit price.
                 newCategoryItems.push({
                     ...existingItem,
                     price: unitPrice * (Number(existingItem.quantity) || 0),
                     quantityType: masterItem.quantityType || '',
                 });
             } else {
-                // Item does not exist, add it with a default quantity of 0.
                 newCategoryItems.push({
                     id: `${category.id}-item-${Date.now()}-${Math.random()}`, // new unique ID
                     name: masterItem.name,
@@ -292,7 +261,6 @@ export default function CampaignDetailsPage() {
             }
         });
 
-        // This approach implicitly handles deletions from master, as items no longer in masterItemsMap won't be added to newCategoryItems.
         return { ...category, items: newCategoryItems };
     });
   };
@@ -303,24 +271,21 @@ export default function CampaignDetailsPage() {
     field: keyof RationItem,
     value: string | number
   ) => {
-    if (!editableCampaign || !editableCampaign.rationLists) return;
+    if (!editableCampaign || !editableCampaign.itemCategories) return;
 
-    let newRationLists = JSON.parse(JSON.stringify(sanitizedEditableRationLists));
-    const categoryToUpdate = newRationLists.find((cat: RationCategory) => cat.id === categoryId);
+    let newitemCategories = JSON.parse(JSON.stringify(sanitizedEditableItemCategories));
+    const categoryToUpdate = newitemCategories.find((cat: ItemCategory) => cat.id === categoryId);
     if (!categoryToUpdate) return;
     
     const itemToUpdate = categoryToUpdate.items.find((item: RationItem) => item.id === itemId);
     if (!itemToUpdate) return;
 
-    // Update the specific field
     (itemToUpdate as any)[field] = value;
     
-    // If the general list was updated, we need to sync everything.
-    if (categoryToUpdate.name === 'General Item List') {
-        newRationLists = syncAllCategoriesFromMaster(newRationLists);
+    if (categoryToUpdate.name === 'Item Master List') {
+        newitemCategories = syncAllCategoriesFromMaster(newitemCategories);
     } else {
-        // If a non-general list was updated, just sync that single item's price
-        const masterList = newRationLists.find((cat: RationCategory) => cat.name === 'General Item List');
+        const masterList = newitemCategories.find((cat: ItemCategory) => cat.name === 'Item Master List');
         const masterPriceMap = new Map<string, { price: number; quantityType: string }>();
         if (masterList) {
             masterList.items.forEach((item: RationItem) => {
@@ -340,11 +305,11 @@ export default function CampaignDetailsPage() {
         }
     }
 
-    handleFieldChange('rationLists', newRationLists);
+    handleFieldChange('itemCategories', newitemCategories);
   };
 
   const handleAddItem = (categoryId: string) => {
-    if (!editableCampaign || !editableCampaign.rationLists) return;
+    if (!editableCampaign || !editableCampaign.itemCategories) return;
     const newItem: RationItem = {
       id: `${categoryId}-${Date.now()}`,
       name: '',
@@ -353,35 +318,35 @@ export default function CampaignDetailsPage() {
       price: 0,
       notes: '',
     };
-    const newRationLists = sanitizedEditableRationLists.map(cat => {
+    const newitemCategories = sanitizedEditableItemCategories.map(cat => {
         if (cat.id === categoryId) {
             return { ...cat, items: [...cat.items, newItem] };
         }
         return cat;
     });
-    handleFieldChange('rationLists', newRationLists);
+    handleFieldChange('itemCategories', newitemCategories);
   };
 
   const handleDeleteItem = (categoryId: string, itemId: string) => {
-    if (!editableCampaign || !editableCampaign.rationLists) return;
+    if (!editableCampaign || !editableCampaign.itemCategories) return;
 
-    let newRationLists = sanitizedEditableRationLists.map(cat => {
+    let newitemCategories = sanitizedEditableItemCategories.map(cat => {
         if (cat.id === categoryId) {
             return { ...cat, items: cat.items.filter(item => item.id !== itemId) };
         }
         return cat;
     });
     
-    const category = sanitizedEditableRationLists.find(cat => cat.id === categoryId);
-    if (category?.name === 'General Item List') {
-        newRationLists = syncAllCategoriesFromMaster(newRationLists);
+    const category = sanitizedEditableItemCategories.find(cat => cat.id === categoryId);
+    if (category?.name === 'Item Master List') {
+        newitemCategories = syncAllCategoriesFromMaster(newitemCategories);
     }
 
-    handleFieldChange('rationLists', newRationLists);
+    handleFieldChange('itemCategories', newitemCategories);
   };
 
   const handleDeleteItemClick = (categoryId: string, itemId: string, itemName: string) => {
-    if (!editableCampaign || !editableCampaign.rationLists || !editMode) return;
+    if (!editableCampaign || !editableCampaign.itemCategories || !editMode) return;
     setItemToDelete({ categoryId, itemId, itemName });
     setIsDeleteItemDialogOpen(true);
   };
@@ -393,13 +358,8 @@ export default function CampaignDetailsPage() {
     setItemToDelete(null);
   };
 
-  const calculateTotal = (items: RationItem[], isGeneralList: boolean) => {
-    return items.reduce((sum, item) => {
-        const itemPrice = Number(item.price || 0);
-        const itemQuantity = Number(item.quantity || 0);
-        const total = isGeneralList ? itemPrice * itemQuantity : itemPrice;
-        return sum + total;
-    }, 0);
+  const calculateTotal = (items: RationItem[]) => {
+    return items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
   };
   
   const handleAddNewCategory = () => {
@@ -412,21 +372,20 @@ export default function CampaignDetailsPage() {
         toast({ title: 'Invalid Name', description: 'Category name cannot be empty.', variant: 'destructive' });
         return;
     }
-    if (isNaN(min) || min < 1 || isNaN(max) || max < min) {
+    if (editableCampaign.category === 'Ration' && (isNaN(min) || min < 1 || isNaN(max) || max < min)) {
         toast({ title: 'Invalid Range', description: 'Please enter valid positive numbers for min/max members, with min <= max.', variant: 'destructive' });
         return;
     }
     
-    const newCategory: RationCategory = {
+    const newCategory: ItemCategory = {
         id: `cat-${Date.now()}`,
         name: newCategoryName,
-        minMembers: min,
-        maxMembers: max,
-        items: []
+        items: [],
+        ...(editableCampaign.category === 'Ration' && { minMembers: min, maxMembers: max }),
     };
     
-    const newRationLists = [...sanitizedEditableRationLists, newCategory];
-    handleFieldChange('rationLists', newRationLists);
+    const newitemCategories = [...sanitizedEditableItemCategories, newCategory];
+    handleFieldChange('itemCategories', newitemCategories);
     
     setNewCategoryName('');
     setNewCategoryMin('');
@@ -434,8 +393,8 @@ export default function CampaignDetailsPage() {
     setIsAddCategoryOpen(false);
   };
 
-  const handleEditCategoryClick = (category: RationCategory) => {
-    if (!canUpdate || !editMode || category.name === 'General Item List') return;
+  const handleEditCategoryClick = (category: ItemCategory) => {
+    if (!canUpdate || !editMode || category.name === 'Item Master List') return;
     setCategoryToEdit(JSON.parse(JSON.stringify(category))); // Deep copy
     setIsEditCategoryOpen(true);
   };
@@ -450,40 +409,24 @@ export default function CampaignDetailsPage() {
         toast({ title: 'Invalid Name', description: 'Category name cannot be empty.', variant: 'destructive' });
         return;
     }
-     if (isNaN(min) || min < 1 || isNaN(max) || max < min) {
+     if (editableCampaign.category === 'Ration' && (isNaN(min) || min < 1 || isNaN(max) || max < min)) {
         toast({ title: 'Invalid Range', description: 'Please enter valid positive numbers for min/max members, with min <= max.', variant: 'destructive' });
         return;
     }
 
-    const newRationLists = sanitizedEditableRationLists.map(cat => 
+    const newitemCategories = sanitizedEditableItemCategories.map(cat => 
         cat.id === categoryToEdit.id ? categoryToEdit : cat
     );
-    handleFieldChange('rationLists', newRationLists);
+    handleFieldChange('itemCategories', newitemCategories);
     
     setIsEditCategoryOpen(false);
     setCategoryToEdit(null);
   };
 
-  const handleDeleteCategoryClick = (categoryToDelete: RationCategory) => {
-    if (!beneficiaries || !canUpdate || !editMode || categoryToDelete.name === 'General Item List') return;
+  const handleDeleteCategoryClick = (categoryToDelete: ItemCategory) => {
+    if (!beneficiaries || !canUpdate || !editMode || categoryToDelete.name === 'Item Master List') return;
     
-    const generalCategory = sanitizedEditableRationLists.find(cat => cat.name === 'General Item List');
-
-    // More precise dependency check
-    const dependents = beneficiaries.filter(beneficiary => {
-        const members = beneficiary.members;
-        if (members === undefined || members === null) return false;
-        
-        // Find the specific category this beneficiary uses for kit amount calculation
-        const matchingCategory = sanitizedEditableRationLists.find(
-            cat => cat.name !== 'General Item List' && members >= cat.minMembers && members <= cat.maxMembers
-        );
-        
-        const appliedCategory = matchingCategory || generalCategory;
-        
-        // The beneficiary is dependent *only* if their applied category is the one being deleted.
-        return appliedCategory?.id === categoryToDelete.id;
-    });
+    const dependents = beneficiaries.filter(b => b.itemCategoryId === categoryToDelete.id);
     
     setCategoryToDelete(categoryToDelete);
     setDependentBeneficiaries(dependents);
@@ -503,9 +446,9 @@ export default function CampaignDetailsPage() {
       
       try {
           const batch = writeBatch(firestore);
-          const targetCategory = sanitizedEditableRationLists.find(c => c.id === targetCategoryId);
+          const targetCategory = sanitizedEditableItemCategories.find(c => c.id === targetCategoryId);
           const newKitAmountForDependents = (dependentBeneficiaries.length > 0 && targetCategory)
-            ? calculateTotal(targetCategory.items, false)
+            ? calculateTotal(targetCategory.items)
             : 0;
 
           if (dependentBeneficiaries.length > 0 && targetCategoryId) {
@@ -513,11 +456,15 @@ export default function CampaignDetailsPage() {
               
               for (const beneficiary of dependentBeneficiaries) {
                   const beneficiaryRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
-                  batch.update(beneficiaryRef, { kitAmount: newKitAmountForDependents });
+                  batch.update(beneficiaryRef, { 
+                    kitAmount: newKitAmountForDependents,
+                    itemCategoryId: targetCategory.id,
+                    itemCategoryName: targetCategory.name,
+                  });
               }
           }
 
-          const newRationLists = sanitizedEditableRationLists.filter(cat => cat.id !== categoryToDelete.id);
+          const newitemCategories = sanitizedEditableItemCategories.filter(cat => cat.id !== categoryToDelete.id);
           
           let newTotalRequiredAmount = 0;
           if (beneficiaries) {
@@ -532,7 +479,7 @@ export default function CampaignDetailsPage() {
           
           if(campaignDocRef) {
               batch.update(campaignDocRef, { 
-                rationLists: newRationLists,
+                itemCategories: newitemCategories,
                 targetAmount: newTotalRequiredAmount
               });
           }
@@ -555,7 +502,7 @@ export default function CampaignDetailsPage() {
       }
   };
   
-  const handleCopyItemsClick = (category: RationCategory) => {
+  const handleCopyItemsClick = (category: ItemCategory) => {
     setCopyTargetCategory(category);
     setCopySourceCategoryId(null);
     setIsCopyItemsOpen(true);
@@ -567,7 +514,7 @@ export default function CampaignDetailsPage() {
         return;
     }
 
-    const sourceCategory = sanitizedEditableRationLists.find(c => c.id === copySourceCategoryId);
+    const sourceCategory = sanitizedEditableItemCategories.find(c => c.id === copySourceCategoryId);
     if (!sourceCategory) return;
     
     const itemsToProcess = sourceCategory.items.filter(item => selectedItemsToCopy.includes(item.id));
@@ -602,14 +549,14 @@ export default function CampaignDetailsPage() {
         }
     });
 
-    const newRationLists = sanitizedEditableRationLists.map(cat => {
+    const newitemCategories = sanitizedEditableItemCategories.map(cat => {
         if (cat.id === copyTargetCategory.id) {
             return { ...cat, items: targetItems };
         }
         return cat;
     });
 
-    handleFieldChange('rationLists', newRationLists);
+    handleFieldChange('itemCategories', newitemCategories);
     
     toast({ 
         title: 'Items Copied', 
@@ -634,26 +581,32 @@ export default function CampaignDetailsPage() {
 
     const batch = writeBatch(firestore);
     let newTotalRequiredAmount = 0;
-
-    const generalCategory = sanitizedEditableRationLists.find(cat => cat.name === 'General Item List');
     
     for (const beneficiary of beneficiaries) {
-      const members = beneficiary.members || 0;
-      
-      const specificCategory = sanitizedEditableRationLists.find(
-        cat => cat.name !== 'General Item List' && members >= cat.minMembers && members <= cat.maxMembers
-      );
-      
-      const appliedCategory = specificCategory || generalCategory;
-      
       let newKitAmount = 0;
+      let appliedCategoryName = '';
+      
+      let appliedCategory: ItemCategory | undefined;
+
+      if (editableCampaign.category === 'Ration') {
+         const members = beneficiary.members || 0;
+         const generalCategory = sanitizedEditableItemCategories.find(cat => cat.name === 'Item Master List');
+         const specificCategory = sanitizedEditableItemCategories.find(
+           cat => cat.name !== 'Item Master List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
+         );
+         appliedCategory = specificCategory || generalCategory;
+      } else {
+        // For other categories, use the explicitly set category on the beneficiary
+        appliedCategory = sanitizedEditableItemCategories.find(c => c.id === beneficiary.itemCategoryId);
+      }
+
       if (appliedCategory) {
-          const isGeneral = appliedCategory.name === 'General Item List';
-          newKitAmount = calculateTotal(appliedCategory.items, isGeneral);
+          newKitAmount = calculateTotal(appliedCategory.items);
+          appliedCategoryName = appliedCategory.name;
       }
 
       const beneficiaryRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
-      batch.update(beneficiaryRef, { kitAmount: newKitAmount });
+      batch.update(beneficiaryRef, { kitAmount: newKitAmount, itemCategoryName: appliedCategoryName });
       newTotalRequiredAmount += newKitAmount;
     }
 
@@ -678,9 +631,9 @@ export default function CampaignDetailsPage() {
     }
 };
 
-    const renderRationTable = (category: RationCategory) => {
-    const isGeneralList = category.name === 'General Item List';
-    const total = calculateTotal(category.items, isGeneralList);
+    const renderItemTable = (category: ItemCategory) => {
+    const isGeneralList = category.name === 'Item Master List';
+    const total = calculateTotal(category.items);
 
     return (
       <Card className="animate-fade-in-zoom">
@@ -721,7 +674,7 @@ export default function CampaignDetailsPage() {
                     {category.items.map((item, index) => {
                         const masterItem = !isGeneralList ? masterPriceList[item.name.trim().toLowerCase()] : null;
                         const unitPrice = isGeneralList ? item.price : (masterItem?.price || 0);
-                        const totalPrice = isGeneralList ? (item.price || 0) * (item.quantity || 0) : (item.price || 0);
+                        const totalPrice = (isGeneralList ? unitPrice : item.price) || 0;
 
                         return (
                             <TableRow key={item.id}>
@@ -852,11 +805,9 @@ export default function CampaignDetailsPage() {
                             <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
                         </Button>
                     )}
-                    {canReadRation && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/campaign-members/${campaignId}`}>{editableCampaign.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
-                        </Button>
-                    )}
+                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/campaign-members/${campaignId}`}>Item Lists</Link>
+                    </Button>
                     {canReadBeneficiaries && (
                         <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                             <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
@@ -872,116 +823,116 @@ export default function CampaignDetailsPage() {
             </ScrollArea>
         </div>
 
-        {editableCampaign.category === 'Ration' ? (
-            <Card className="animate-fade-in-zoom">
-              <CardHeader>
-                 <div className="flex justify-between items-start flex-wrap gap-4">
-                    <div>
-                        <CardTitle>{editableCampaign.category === 'Ration' ? 'Ration Details' : 'Item List'}</CardTitle>
-                        <div className="text-sm text-muted-foreground mt-4">
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                                <div className="space-y-1">
-                                    <Label htmlFor="priceDate">Price Date</Label>
-                                    <Input
-                                    id="priceDate"
-                                    type="date"
-                                    value={editableCampaign.priceDate || ''}
-                                    onChange={(e) => handleFieldChange( 'priceDate', e.target.value )}
-                                    disabled={!editMode || !canUpdate}
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label htmlFor="shopName">Shop Name</Label>
-                                    <Input
-                                    id="shopName"
-                                    value={editableCampaign.shopName || ''}
-                                    onChange={(e) => handleFieldChange( 'shopName', e.target.value )}
-                                    placeholder="Shop Name"
-                                    disabled={!editMode || !canUpdate}
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label htmlFor="shopContact">Shop Contact</Label>
-                                    <Input
-                                    id="shopContact"
-                                    value={editableCampaign.shopContact || ''}
-                                    onChange={(e) => handleFieldChange( 'shopContact', e.target.value )}
-                                    placeholder="Contact Number"
-                                    disabled={!editMode || !canUpdate}
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label htmlFor="shopAddress">Shop Address</Label>
-                                    <Input
-                                    id="shopAddress"
-                                    value={editableCampaign.shopAddress || ''}
-                                    onChange={(e) => handleFieldChange( 'shopAddress', e.target.value )}
-                                    placeholder="Shop Address"
-                                    disabled={!editMode || !canUpdate}
-                                    />
-                                </div>
+        <Card className="animate-fade-in-zoom">
+            <CardHeader>
+                <div className="flex justify-between items-start flex-wrap gap-4">
+                <div>
+                    <CardTitle>Item Lists &amp; Costing</CardTitle>
+                    <div className="text-sm text-muted-foreground mt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            <div className="space-y-1">
+                                <Label htmlFor="priceDate">Price Date</Label>
+                                <Input
+                                id="priceDate"
+                                type="date"
+                                value={editableCampaign.priceDate || ''}
+                                onChange={(e) => handleFieldChange( 'priceDate', e.target.value )}
+                                disabled={!editMode || !canUpdate}
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="shopName">Shop Name</Label>
+                                <Input
+                                id="shopName"
+                                value={editableCampaign.shopName || ''}
+                                onChange={(e) => handleFieldChange( 'shopName', e.target.value )}
+                                placeholder="Shop Name"
+                                disabled={!editMode || !canUpdate}
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="shopContact">Shop Contact</Label>
+                                <Input
+                                id="shopContact"
+                                value={editableCampaign.shopContact || ''}
+                                onChange={(e) => handleFieldChange( 'shopContact', e.target.value )}
+                                placeholder="Contact Number"
+                                disabled={!editMode || !canUpdate}
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="shopAddress">Shop Address</Label>
+                                <Input
+                                id="shopAddress"
+                                value={editableCampaign.shopAddress || ''}
+                                onChange={(e) => handleFieldChange( 'shopAddress', e.target.value )}
+                                placeholder="Shop Address"
+                                disabled={!editMode || !canUpdate}
+                                />
                             </div>
                         </div>
                     </div>
-                    <div className="flex gap-2 flex-wrap justify-end">
-                        {canUpdate && editableCampaign.category === 'Ration' && (
-                            <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary">
-                                {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                                Sync Ration Kit Amounts
+                </div>
+                <div className="flex gap-2 flex-wrap justify-end">
+                    {canUpdate && (
+                        <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary">
+                            {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                            Sync Kit Amounts
+                        </Button>
+                    )}
+                    {canUpdate && (
+                        !editMode ? (
+                            <Button onClick={() => setEditMode(true)}>
+                                <Edit className="mr-2 h-4 w-4" /> Edit Details
                             </Button>
-                        )}
-                        {canUpdate && (
-                            !editMode ? (
-                                <Button onClick={() => setEditMode(true)}>
-                                    <Edit className="mr-2 h-4 w-4" /> Edit Details
+                        ) : (
+                            <div className="flex gap-2">
+                                <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+                                <Button onClick={handleSave}>
+                                    <Save className="mr-2 h-4 w-4" /> Save
                                 </Button>
-                            ) : (
-                                <div className="flex gap-2">
-                                    <Button variant="outline" onClick={handleCancel}>Cancel</Button>
-                                    <Button onClick={handleSave}>
-                                        <Save className="mr-2 h-4 w-4" /> Save
-                                    </Button>
-                                </div>
-                            )
-                        )}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                            </div>
+                        )
+                    )}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                <Download className="mr-2 h-4 w-4" />
+                                Download
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => {}}>Download as CSV</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {}}>Download as Excel</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {}}>Download as PDF</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    {canUpdate && editMode && (
+                        <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
+                            <DialogTrigger asChild>
                                 <Button variant="outline">
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Download
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add Category
                                 </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuItem onClick={() => {}}>Download as CSV</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => {}}>Download as Excel</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => {}}>Download as PDF</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        {canUpdate && editMode && editableCampaign.category === 'Ration' && (
-                            <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
-                                <DialogTrigger asChild>
-                                    <Button variant="outline">
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Add Category
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent className="sm:max-w-md">
-                                    <DialogHeader>
-                                        <DialogTitle>Add New Ration Category</DialogTitle>
-                                        <DialogDescription>
-                                            Define a named category for a range of family members.
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <div className="grid gap-4 py-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="cat-name">Category Name</Label>
-                                            <Input
-                                                id="cat-name"
-                                                value={newCategoryName}
-                                                onChange={(e) => setNewCategoryName(e.target.value)}
-                                                placeholder="e.g., 'Small Family', 'Members 5-10'"
-                                            />
-                                        </div>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                                <DialogHeader>
+                                    <DialogTitle>Add New Item Category</DialogTitle>
+                                    <DialogDescription>
+                                        Define a named category of items. For Ration campaigns, you can also specify member ranges.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="cat-name">Category Name</Label>
+                                        <Input
+                                            id="cat-name"
+                                            value={newCategoryName}
+                                            onChange={(e) => setNewCategoryName(e.target.value)}
+                                            placeholder="e.g., 'School Kit', 'Surgery Type A'"
+                                        />
+                                    </div>
+                                    {editableCampaign.category === 'Ration' && (
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label htmlFor="min-members">Min Members</Label>
@@ -1004,83 +955,75 @@ export default function CampaignDetailsPage() {
                                                 />
                                             </div>
                                         </div>
-                                    </div>
-                                    <DialogFooter>
-                                        <Button type="button" variant="outline" onClick={() => setIsAddCategoryOpen(false)}>Cancel</Button>
-                                        <Button type="submit" onClick={handleAddNewCategory}>Add Category</Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-                        )}
-                    </div>
-                 </div>
-              </CardHeader>
-                <CardContent>
-                    {(sanitizedEditableRationLists.length > 0) ? (
-                        <Tabs defaultValue={sanitizedEditableRationLists[0]?.id} className="w-full">
-                            <ScrollArea>
-                                <TabsList>
-                                    {sanitizedEditableRationLists.map(category => {
-                                        const categoryName = category.name === 'General Item List'
-                                        ? 'General Item List'
-                                        : category.minMembers === category.maxMembers
-                                            ? `${category.name} (${category.minMembers})`
-                                            : `${category.name} (${category.minMembers}-${category.maxMembers})`;
-                                        return (
-                                            <div key={category.id} className="flex items-center gap-1 p-1">
-                                                <TabsTrigger value={category.id}>{categoryName}</TabsTrigger>
-                                                {editMode && canUpdate && category.name !== 'General Item List' && (
-                                                    <div className="flex items-center">
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            size="icon" 
-                                                            className="h-6 w-6 shrink-0"
-                                                            onClick={() => handleEditCategoryClick(category)}
-                                                            title="Edit category"
-                                                        >
-                                                            <Edit className="h-3.5 w-3.5" />
-                                                        </Button>
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            size="icon" 
-                                                            className="h-6 w-6 shrink-0"
-                                                            onClick={() => handleDeleteCategoryClick(category)}
-                                                            disabled={isDeletingCategory}
-                                                            title="Delete category"
-                                                        >
-                                                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                                                        </Button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )
-                                    })}
-                                </TabsList>
-                                <ScrollBar orientation="horizontal" />
-                            </ScrollArea>
-                            {sanitizedEditableRationLists.map(category => (
-                                <TabsContent key={category.id} value={category.id} className="mt-4">
-                                    {renderRationTable(category)}
-                                </TabsContent>
-                            ))}
-                        </Tabs>
-                    ) : (
-                        <div className="text-center text-muted-foreground py-10">
-                            No ration categories defined for this campaign yet.
-                            {canUpdate && editMode && " Click 'Add Category' to begin."}
-                        </div>
+                                    )}
+                                </div>
+                                <DialogFooter>
+                                    <Button type="button" variant="outline" onClick={() => setIsAddCategoryOpen(false)}>Cancel</Button>
+                                    <Button type="submit" onClick={handleAddNewCategory}>Add Category</Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                     )}
-              </CardContent>
-            </Card>
-        ) : (
-            <Alert>
-               <Info className="h-4 w-4" />
-               <AlertTitle>Not a Ration Campaign</AlertTitle>
-               <AlertDescription>
-                   Item lists and kit amount calculations are only applicable to campaigns with the 'Ration' category.
-               </AlertDescription>
-           </Alert>
-        )}
+                </div>
+                </div>
+            </CardHeader>
+            <CardContent>
+                {(sanitizedEditableItemCategories.length > 0) ? (
+                    <Tabs defaultValue={sanitizedEditableItemCategories[0]?.id} className="w-full">
+                        <ScrollArea>
+                            <TabsList>
+                                {sanitizedEditableItemCategories.map(category => {
+                                    const categoryName = category.name === 'Item Master List'
+                                    ? 'Item Master List'
+                                    : (editableCampaign.category === 'Ration' && category.minMembers !== undefined && category.maxMembers !== undefined)
+                                        ? `${category.name} (${category.minMembers}-${category.maxMembers})`
+                                        : category.name;
+                                    return (
+                                        <div key={category.id} className="flex items-center gap-1 p-1">
+                                            <TabsTrigger value={category.id}>{categoryName}</TabsTrigger>
+                                            {editMode && canUpdate && category.name !== 'Item Master List' && (
+                                                <div className="flex items-center">
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="h-6 w-6 shrink-0"
+                                                        onClick={() => handleEditCategoryClick(category)}
+                                                        title="Edit category"
+                                                    >
+                                                        <Edit className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="h-6 w-6 shrink-0"
+                                                        onClick={() => handleDeleteCategoryClick(category)}
+                                                        disabled={isDeletingCategory}
+                                                        title="Delete category"
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )
+                                })}
+                            </TabsList>
+                            <ScrollBar orientation="horizontal" />
+                        </ScrollArea>
+                        {sanitizedEditableItemCategories.map(category => (
+                            <TabsContent key={category.id} value={category.id} className="mt-4">
+                                {renderItemTable(category)}
+                            </TabsContent>
+                        ))}
+                    </Tabs>
+                ) : (
+                    <div className="text-center text-muted-foreground py-10">
+                        No item categories defined for this campaign yet.
+                        {canUpdate && editMode && " Click 'Add Category' to begin."}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
       </main>
 
       <AlertDialog open={isDeleteItemDialogOpen} onOpenChange={setIsDeleteItemDialogOpen}>
@@ -1088,7 +1031,7 @@ export default function CampaignDetailsPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure you want to delete this item?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This will permanently delete the item "{itemToDelete?.itemName}" from this category's list. If this item is from the 'General Item List', it will be removed from ALL categories.
+                    This will permanently delete the item "{itemToDelete?.itemName}" from this category's list. If this item is from the 'Item Master List', it will be removed from ALL categories.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -1115,26 +1058,28 @@ export default function CampaignDetailsPage() {
                         onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, name: e.target.value} : null)}
                     />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="edit-min-members">Min Members</Label>
-                        <Input
-                            id="edit-min-members"
-                            type="number"
-                            value={categoryToEdit?.minMembers || ''}
-                             onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, minMembers: Number(e.target.value) || 0} : null)}
-                        />
+                 {editableCampaign?.category === 'Ration' && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-min-members">Min Members</Label>
+                            <Input
+                                id="edit-min-members"
+                                type="number"
+                                value={categoryToEdit?.minMembers || ''}
+                                onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, minMembers: Number(e.target.value) || 0} : null)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-max-members">Max Members</Label>
+                            <Input
+                                id="edit-max-members"
+                                type="number"
+                                value={categoryToEdit?.maxMembers || ''}
+                                onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, maxMembers: Number(e.target.value) || 0} : null)}
+                            />
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="edit-max-members">Max Members</Label>
-                        <Input
-                            id="edit-max-members"
-                            type="number"
-                            value={categoryToEdit?.maxMembers || ''}
-                            onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, maxMembers: Number(e.target.value) || 0} : null)}
-                        />
-                    </div>
-                </div>
+                 )}
             </div>
             <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsEditCategoryOpen(false)}>Cancel</Button>
@@ -1159,7 +1104,7 @@ export default function CampaignDetailsPage() {
                             <SelectValue placeholder="Select a category..." />
                         </SelectTrigger>
                         <SelectContent>
-                            {sanitizedEditableRationLists.filter(c => c.id !== categoryToDelete?.id).map(cat => (
+                            {sanitizedEditableItemCategories.filter(c => c.id !== categoryToDelete?.id).map(cat => (
                                  <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                             ))}
                         </SelectContent>
@@ -1192,12 +1137,12 @@ export default function CampaignDetailsPage() {
                                 <SelectValue placeholder="Select a source category..." />
                             </SelectTrigger>
                             <SelectContent>
-                                {sanitizedEditableRationLists.filter(cat => cat.id !== copyTargetCategory?.id).map(cat => {
-                                    const categoryName = cat.name === 'General Item List'
-                                    ? 'General Item List'
-                                    : cat.minMembers === cat.maxMembers
-                                        ? `${cat.name} ${cat.minMembers}`
-                                        : `${cat.name} (${cat.minMembers}-${cat.maxMembers})`;
+                                {sanitizedEditableItemCategories.filter(cat => cat.id !== copyTargetCategory?.id).map(cat => {
+                                    const categoryName = cat.name === 'Item Master List'
+                                    ? 'Item Master List'
+                                    : (editableCampaign?.category === 'Ration' && cat.minMembers !== undefined && cat.maxMembers !== undefined)
+                                        ? `${cat.name} (${cat.minMembers}-${cat.maxMembers})`
+                                        : cat.name;
                                     return <SelectItem key={cat.id} value={cat.id}>{categoryName}</SelectItem>
                                 })}
                             </SelectContent>
