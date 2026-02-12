@@ -61,21 +61,59 @@ export function DonationSummary() {
     if (!donations || !campaigns || !leads) return null;
 
     const totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
-
     const totalTargetAmount = [...campaigns, ...leads].reduce((sum, item) => sum + (item.targetAmount || 0), 0);
     
-    const allocatedAmount = donations.reduce((sum, d) => {
-        const allocatedPortion = (d.linkSplit || []).reduce((splitSum, link) => {
-            // 'general' is for unallocated funds.
-            if (link.linkType !== 'general') {
-                return splitSum + link.amount;
+    // Create maps for quick lookup of campaigns and leads by their ID.
+    const campaignsMap = new Map(campaigns.map(c => [c.id, c]));
+    const leadsMap = new Map(leads.map(l => [l.id, l]));
+    
+    const allocatedAmountForGoal = donations.reduce((sum, donation) => {
+        if (!donation.linkSplit || donation.linkSplit.length === 0) {
+            return sum;
+        }
+
+        const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
+        const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
+            ? donation.typeSplit
+            : [];
+        
+        // Calculate the total contribution to the goal from this single donation
+        const contributionFromThisDonation = donation.linkSplit.reduce((splitSum, link) => {
+            if (link.linkType === 'general') {
+                return splitSum; // Unallocated funds don't count towards goal
             }
-            return splitSum;
+
+            const initiative = link.linkType === 'campaign' 
+                ? campaignsMap.get(link.linkId) 
+                : leadsMap.get(link.linkId);
+            
+            if (!initiative) {
+                return splitSum; // Linked initiative not found
+            }
+
+            const allowedDonationTypes = initiative.allowedDonationTypes || [];
+
+            // Calculate the portion of the donation that is of an allowed type for *this specific initiative*
+            const applicableTypeTotal = typeSplits.reduce((acc, split) => {
+                if (allowedDonationTypes.includes(split.category)) {
+                    return acc + split.amount;
+                }
+                return acc;
+            }, 0);
+            
+            // The proportion of the whole donation that can be applied to this goal
+            const proportionOfApplicableTypes = applicableTypeTotal / totalDonationAmount;
+            
+            // The final amount from this allocation that counts towards the goal
+            const finalAmountForGoal = link.amount * proportionOfApplicableTypes;
+
+            return splitSum + finalAmountForGoal;
         }, 0);
-        return sum + allocatedPortion;
+
+        return sum + contributionFromThisDonation;
     }, 0);
     
-    const allocatedProgress = totalTargetAmount > 0 ? (allocatedAmount / totalTargetAmount) * 100 : 0;
+    const allocatedProgress = totalTargetAmount > 0 ? (allocatedAmountForGoal / totalTargetAmount) * 100 : 0;
 
     const amountsByCategory = donations.reduce((acc, d) => {
       const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : [];
@@ -91,7 +129,7 @@ export function DonationSummary() {
     return {
       totalAmount,
       totalTargetAmount,
-      allocatedAmount,
+      allocatedAmount: allocatedAmountForGoal,
       allocatedProgress,
       categoryChartData: Object.entries(amountsByCategory).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})`})),
     };
