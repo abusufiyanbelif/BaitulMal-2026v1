@@ -157,7 +157,7 @@ export default function DonationsPage() {
     setIsImageViewerOpen(true);
   };
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = () => {
     if (!donationToDelete || !firestore || !storage || !canDelete || !donations) return;
 
     const donationData = donations.find(d => d.id === donationToDelete);
@@ -169,26 +169,28 @@ export default function DonationsPage() {
     const screenshotUrls = (donationData.transactions || []).map(t => t.screenshotUrl).filter(Boolean) as string[];
 
     setIsDeleteDialogOpen(false);
-
-    // Delete all associated screenshots from storage
-    if (screenshotUrls.length > 0) {
-        const deletePromises = screenshotUrls.map(url => 
-            deleteObject(storageRef(storage, url)).catch(err => {
-                if (err.code !== 'storage/object-not-found') {
-                    console.warn(`Failed to delete screenshot from storage: ${url}`, err);
-                }
-            })
-        );
-        await Promise.all(deletePromises);
-    }
     
     deleteDoc(docRef)
+        .then(() => {
+            if (screenshotUrls.length > 0) {
+                const deletePromises = screenshotUrls.map(url => 
+                    deleteObject(storageRef(storage, url)).catch(err => {
+                        if (err.code !== 'storage/object-not-found') {
+                            console.warn(`Failed to delete screenshot from storage: ${url}`, err);
+                        }
+                    })
+                );
+                return Promise.all(deletePromises);
+            }
+        })
+        .then(() => {
+             toast({ title: 'Success', description: 'Donation deleted successfully.', variant: 'success' });
+        })
         .catch(async (serverError) => {
             const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'delete' });
             errorEmitter.emit('permission-error', permissionError);
         })
         .finally(() => {
-            toast({ title: 'Success', description: 'Donation deleted successfully.', variant: 'success' });
             setDonationToDelete(null);
         });
   };
@@ -277,22 +279,22 @@ export default function DonationsPage() {
             finalData.campaignName = deleteField();
         }
 
-        await setDoc(docRef, finalData, { merge: true });
-
-        toast({ title: 'Success', description: `Donation ${editingDonation ? 'updated' : 'added'}.`, variant: 'success' });
+        setDoc(docRef, finalData, { merge: true })
+            .then(() => {
+                toast({ title: 'Success', description: `Donation ${editingDonation ? 'updated' : 'added'}.`, variant: 'success' });
+            })
+            .catch(error => {
+                const permissionError = new FirestorePermissionError({
+                    path: docRef.path,
+                    operation: editingDonation ? 'update' : 'create',
+                    requestResourceData: finalData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
 
     } catch (error: any) {
-        console.warn("Error during form submission:", error);
-        if (error.code === 'permission-denied') {
-            const permissionError = new FirestorePermissionError({
-                path: docRef.path,
-                operation: editingDonation ? 'update' : 'create',
-                requestResourceData: finalData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        } else {
-            toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
-        }
+        console.warn("Error during file processing:", error);
+        toast({ title: 'Save Failed', description: error.message || 'Could not process uploaded files.', variant: 'destructive' });
     }
   };
   
@@ -844,7 +846,7 @@ export default function DonationsPage() {
             {imageToView && (
                 <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
                      <Image
-                        src={imageToView}
+                        src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
                         alt="Donation screenshot"
                         fill
                         className="object-contain transition-transform duration-200 ease-out origin-center"

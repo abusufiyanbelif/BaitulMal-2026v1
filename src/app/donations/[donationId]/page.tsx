@@ -339,7 +339,7 @@ export default function UnlinkedDonationDetailsPage() {
                                             <TableCell>
                                                 {tx.screenshotUrl ? (
                                                      <Button variant="outline" size="sm" asChild>
-                                                        <a href={tx.screenshotUrl} target="_blank" rel="noopener noreferrer">
+                                                        <a href={`/api/image-proxy?url=${encodeURIComponent(tx.screenshotUrl)}`} target="_blank" rel="noopener noreferrer">
                                                             <ImageIcon className="mr-2"/> View
                                                         </a>
                                                     </Button>

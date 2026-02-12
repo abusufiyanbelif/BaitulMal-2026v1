@@ -29,7 +29,7 @@ function ProfileDetail({ icon, label, value, children, isEditing }: { icon: Reac
 }
 
 export default function ProfilePage() {
-    const { userProfile, isLoading } = useSession();
+    const { userProfile, isLoading, forceRefetch: forceRefetchUser } = useSession();
     const firestore = useFirestore();
     const { toast } = useToast();
 
@@ -80,9 +80,9 @@ export default function ProfilePage() {
         setIsEditMode(false);
     };
 
-    const handleSave = async () => {
+    const handleSave = () => {
         if (!firestore || !userProfile || !isDirty) {
-            toast({ title: 'Error', description: 'No changes to save or services are unavailable.', variant: 'destructive'});
+            toast({ title: 'No Changes', description: 'There are no changes to save.', variant: 'default'});
             return;
         }
         setIsSubmitting(true);
@@ -107,23 +107,22 @@ export default function ProfilePage() {
             }
         }
         
-        try {
-            await batch.commit();
-            toast({ title: 'Success', description: 'Profile updated successfully.', variant: 'success' });
-            setIsEditMode(false);
-        } catch(serverError: any) {
-            if (serverError.code === 'permission-denied') {
-                 errorEmitter.emit('permission-error', new FirestorePermissionError({
+        batch.commit()
+            .then(() => {
+                toast({ title: 'Success', description: 'Profile updated successfully.', variant: 'success' });
+                forceRefetchUser();
+                setIsEditMode(false);
+            })
+            .catch((serverError) => {
+                errorEmitter.emit('permission-error', new FirestorePermissionError({
                     path: userDocRef.path,
                     operation: 'update',
                     requestResourceData: updateData,
                 }));
-            } else {
-                toast({ title: 'Error', description: 'Failed to update profile.', variant: 'destructive'});
-            }
-        } finally {
-            setIsSubmitting(false);
-        }
+            })
+            .finally(() => {
+                setIsSubmitting(false);
+            });
     };
 
 
@@ -218,11 +217,12 @@ export default function ProfilePage() {
                     {imageToView && (
                         <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
                             <Image
-                                src={imageToView}
+                                src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
                                 alt="ID Proof"
                                 fill
                                 className="object-contain transition-transform duration-200 ease-out origin-center"
                                 style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
+                                unoptimized
                             />
                         </div>
                     )}
