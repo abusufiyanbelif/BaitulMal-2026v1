@@ -1,4 +1,0 @@
-src/app/campaign-members/[campaignId]/page.tsx(900,71): error TS2322: Type 'false | null' is not assignable to type 'boolean | undefined'.
-  Type 'null' is not assignable to type 'boolean | undefined'.
-src/app/leads-members/[leadId]/page.tsx(345,69): error TS2322: Type 'false | null' is not assignable to type 'boolean | undefined'.
-  Type 'null' is not assignable to type 'boolean | undefined'.
