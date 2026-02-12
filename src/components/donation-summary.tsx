@@ -5,8 +5,8 @@ import { useMemo } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Donation, DonationCategory } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Wallet, PieChart as PieChartIcon, BarChart as BarChartIcon } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Wallet, PieChart as PieChartIcon, BarChart as BarChartIcon } from 'lucide-react';
 import {
   PieChart,
   Pie,
@@ -104,10 +104,10 @@ export function DonationSummary() {
             <Wallet className="h-6 w-6 text-primary" />
             Total Donations Received
           </CardTitle>
+          <CardDescription>A summary of all recorded donations.</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-4xl font-bold">₹{summaryData.totalAmount.toLocaleString('en-IN')}</p>
-          <p className="text-muted-foreground">across all initiatives.</p>
         </CardContent>
       </Card>
       <Card>
