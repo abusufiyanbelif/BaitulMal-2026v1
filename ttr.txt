@@ -1,9 +1,8 @@
-src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(10,50): error TS2724: '"@/lib/types"' has no exported member named 'RationCategory'. Did you mean 'DonationCategory'?
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(642,16): error TS18048: 'catA.minMembers' is possibly 'undefined'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(642,34): error TS18048: 'catB.minMembers' is possibly 'undefined'.
 src/app/campaign-members/[campaignId]/page.tsx(900,71): error TS2322: Type 'false | null' is not assignable to type 'boolean | undefined'.
   Type 'null' is not assignable to type 'boolean | undefined'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(27,66): error TS2724: '"@/lib/types"' has no exported member named 'RationCategory'. Did you mean 'DonationCategory'?
-src/app/leads-members/[leadId]/page.tsx(10,33): error TS2724: '"@/lib/types"' has no exported member named 'RationCategory'. Did you mean 'DonationCategory'?
 src/app/leads-members/[leadId]/page.tsx(345,69): error TS2322: Type 'false | null' is not assignable to type 'boolean | undefined'.
   Type 'null' is not assignable to type 'boolean | undefined'.
-src/app/leads-members/[leadId]/summary/page.tsx(27,62): error TS2724: '"@/lib/types"' has no exported member named 'RationCategory'. Did you mean 'DonationCategory'?
-src/components/beneficiary-form.tsx(20,28): error TS2724: '"@/lib/types"' has no exported member named 'RationCategory'. Did you mean 'DonationCategory'?
+src/components/beneficiary-form.tsx(117,71): error TS18048: 'cat.minMembers' is possibly 'undefined'.
+src/components/beneficiary-form.tsx(117,100): error TS18048: 'cat.maxMembers' is possibly 'undefined'.

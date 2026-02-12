@@ -143,8 +143,8 @@ export default function BeneficiariesPage() {
   const canUpdateCampaign = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.update', false);
 
     const sanitizedRationLists = useMemo(() => {
-    if (!campaign?.rationLists) return [];
-    if (Array.isArray(campaign.rationLists)) return campaign.rationLists;
+    if (!campaign?.itemCategories) return [];
+    if (Array.isArray(campaign.itemCategories)) return campaign.itemCategories;
     // Hotfix for old object format
     return [
       {
@@ -152,10 +152,10 @@ export default function BeneficiariesPage() {
         name: 'General Item List',
         minMembers: 0,
         maxMembers: 0,
-        items: (campaign.rationLists as any)['General Item List'] || []
+        items: (campaign.itemCategories as any)['General Item List'] || []
       }
     ];
-  }, [campaign?.rationLists]);
+  }, [campaign?.itemCategories]);
 
   const uniqueReferrals = useMemo(() => {
     if (!beneficiaries) return [];
@@ -605,7 +605,7 @@ export default function BeneficiariesPage() {
       const members = beneficiary.members || 0;
       
       const specificCategory = sanitizedRationLists.find(
-        cat => cat.name !== 'General Item List' && members >= cat.minMembers && members <= cat.maxMembers
+        cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 0)
       );
       
       const appliedCategory = specificCategory || generalCategory;
@@ -639,7 +639,7 @@ export default function BeneficiariesPage() {
         const catB = groupedBeneficiaries[b].category;
         if (catA.name === 'General Item List') return -1;
         if (catB.name === 'General Item List') return 1;
-        return catA.minMembers - catB.minMembers;
+        return (catA.minMembers ?? 0) - (catB.minMembers ?? 0);
     });
   }, [groupedBeneficiaries]);
 
@@ -1002,12 +1002,12 @@ export default function BeneficiariesPage() {
                                 const categoryIsCollapsed = collapsedGroups[categoryId];
                                 const totalBeneficiariesInCategory = Object.values(beneficiariesByMemberCount).reduce((sum, benList) => sum + benList.length, 0);
 
-                                const isRangedCategory = category.minMembers !== category.maxMembers && category.name !== 'General Item List';
+                                const isRangedCategory = (category.minMembers ?? 0) !== (category.maxMembers ?? 0) && category.name !== 'General Item List';
                                 const categoryIsEffectivelyRanged = isRangedCategory && Object.keys(beneficiariesByMemberCount).length > 1;
 
                                 const categoryName = category.name === 'General Item List'
                                     ? category.name
-                                    : category.minMembers === category.maxMembers
+                                    : (category.minMembers ?? 0) === (category.maxMembers ?? 0)
                                         ? `${category.name} (${category.minMembers})`
                                         : `${category.name} (${category.minMembers}-${category.maxMembers})`;
 
@@ -1040,7 +1040,7 @@ export default function BeneficiariesPage() {
                                                     </TableRow>
 
                                                     {!subGroupIsCollapsed && beneficiariesInSubGroup.map((beneficiary, index) => (
-                                                        <BeneficiaryRow beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} isSubRow={true} />
+                                                        <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} isSubRow={true} />
                                                     ))}
                                                 </React.Fragment>
                                             );
