@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -9,24 +8,47 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getNestedValue } from '@/lib/utils';
 import React from 'react';
 import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, LifeBuoy, FlaskConical, Eye } from 'lucide-react';
-import { DonationSummary } from '@/components/donation-summary';
-import { LeadAndCampaignSummary } from '@/components/lead-campaign-summary';
+import dynamic from 'next/dynamic';
 
-function HomeDashboardCard({ title, description, href, icon: Icon }: { title: string, description: string, href: string, icon: React.ComponentType<{}> }) {
+const DonationSummary = dynamic(() => import('@/components/donation-summary').then(mod => mod.DonationSummary), {
+    loading: () => (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-48 w-full md:col-span-2 lg:col-span-1" />
+            <Skeleton className="h-48 w-full" />
+        </div>
+    ),
+    ssr: false,
+});
+
+const LeadAndCampaignSummary = dynamic(() => import('@/components/lead-campaign-summary').then(mod => mod.LeadAndCampaignSummary), {
+    loading: () => (
+        <div className="grid gap-6 md:grid-cols-2">
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-48 w-full" />
+        </div>
+    ),
+    ssr: false,
+});
+
+
+function HomeDashboardCard({ title, description, href, icon: Icon }: { title: string, description: string, href: string, icon: React.ComponentType<{ className?: string }> }) {
   return (
-    <Link href={href} key={title} className="group">
-        <Card className="h-full hover:shadow-lg hover:border-primary transition-all duration-200 ease-in-out hover:scale-105 active:scale-95">
-        <CardHeader className="flex flex-row items-center gap-4 space-y-0">
-            <Icon />
-            <div className="flex-1">
-            <CardTitle>{title}</CardTitle>
+    <div className="animate-fade-in-zoom" style={{ animationDelay: '500ms' }}>
+      <Link href={href} className="block group">
+        <Card className="h-full p-4 transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:-translate-y-1 group-hover:border-primary active:scale-95">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <CardTitle className="text-base">{title}</CardTitle>
+              <CardDescription className="text-xs">{description}</CardDescription>
             </div>
-        </CardHeader>
-        <CardContent>
-            <CardDescription>{description}</CardDescription>
-        </CardContent>
+            <Icon className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-primary" />
+          </div>
         </Card>
-    </Link>
+      </Link>
+    </div>
   );
 }
 
@@ -114,8 +136,8 @@ export default function Home() {
                 <h2 className="text-3xl font-bold tracking-tight mb-4">
                     Welcome back, {userProfile.name}!
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {visibleCards.map((card) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {visibleCards.map((card, index) => (
                         <HomeDashboardCard
                             key={card.title}
                             title={card.title}
