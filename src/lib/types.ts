@@ -81,6 +81,7 @@ export interface Lead extends DocumentData {
   description?: string;
   notes?: string;
   targetAmount?: number;
+  requiredAmount?: number;
   startDate: string;
   endDate: string;
   status: 'Upcoming' | 'Active' | 'Completed';

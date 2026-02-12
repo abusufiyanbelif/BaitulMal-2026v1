@@ -132,6 +132,7 @@ export default function LeadSummaryPage() {
                 endDate: lead.endDate || '',
                 category: lead.category || 'General',
                 status: lead.status || 'Upcoming',
+                requiredAmount: lead.requiredAmount || 0,
                 targetAmount: lead.targetAmount || 0,
                 authenticityStatus: lead.authenticityStatus || 'Pending Verification',
                 publicVisibility: lead.publicVisibility || 'Hold',
@@ -176,6 +177,7 @@ export default function LeadSummaryPage() {
             endDate: editableLead.endDate || '',
             category: editableLead.category || 'General',
             status: editableLead.status || 'Upcoming',
+            requiredAmount: editableLead.requiredAmount || 0,
             targetAmount: editableLead.targetAmount || 0,
             authenticityStatus: editableLead.authenticityStatus || 'Pending Verification',
             publicVisibility: editableLead.publicVisibility || 'Hold',
@@ -212,6 +214,7 @@ export default function LeadSummaryPage() {
                 endDate: lead.endDate || '',
                 category: lead.category || 'General',
                 status: lead.status || 'Upcoming',
+                requiredAmount: lead.requiredAmount || 0,
                 targetAmount: lead.targetAmount || 0,
                 authenticityStatus: lead.authenticityStatus || 'Pending Verification',
                 publicVisibility: lead.publicVisibility || 'Hold',
@@ -548,6 +551,20 @@ Your support and feedback are valuable.
                             )}
                         </div>
                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                             <div className="space-y-1">
+                                <Label htmlFor="requiredAmount" className="text-sm font-medium text-muted-foreground">Required Amount (₹)</Label>
+                                {editMode && canUpdate ? (
+                                    <Input
+                                        id="requiredAmount"
+                                        type="number"
+                                        value={editableLead.requiredAmount}
+                                        onChange={(e) => setEditableLead(p => ({...p, requiredAmount: Number(e.target.value) || 0}))}
+                                        className="mt-1"
+                                    />
+                                ) : (
+                                    <p className="mt-1 text-lg font-semibold">₹{(lead.requiredAmount || 0).toLocaleString('en-IN')}</p>
+                                )}
+                            </div>
                             <div className="space-y-1">
                                 <Label htmlFor="targetAmount" className="text-sm font-medium text-muted-foreground">Fundraising Goal (Target)</Label>
                                 {editMode && canUpdate ? (

@@ -67,6 +67,7 @@ export default function PublicLeadSummaryPage() {
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
     const summaryRef = useRef<HTMLDivElement>(null);
 
+    // Data fetching
     const leadDocRef = useMemo(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
     const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
     
@@ -136,7 +137,14 @@ export default function PublicLeadSummaryPage() {
     const isLoading = isLeadLoading || isBrandingLoading || isPaymentLoading || areDonationsLoading || areBeneficiariesLoading;
 
     const handleShare = async () => {
-        if (!lead || !fundingData) return;
+        if (!lead || !fundingData) {
+            toast({
+                title: 'Error',
+                description: 'Cannot share, summary data is not available.',
+                variant: 'destructive',
+            });
+            return;
+        }
         
         const shareText = `
 *Assalamualaikum Warahmatullahi Wabarakatuh*
@@ -245,6 +253,10 @@ Your support and feedback are valuable.
                         <p className="mt-1 text-sm">{lead.description || 'No description provided.'}</p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div className="space-y-1">
+                                <p className="text-sm font-medium text-muted-foreground">Required Amount</p>
+                                <p className="mt-1 text-lg font-semibold">₹{(lead.requiredAmount ?? 0).toLocaleString('en-IN')}</p>
+                            </div>
+                            <div className="space-y-1">
                                 <p className="text-sm font-medium text-muted-foreground">Fundraising Goal</p>
                                 <p className="mt-1 text-lg font-semibold">₹{(lead.targetAmount ?? 0).toLocaleString('en-IN')}</p>
                             </div>
@@ -265,7 +277,7 @@ Your support and feedback are valuable.
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Funding Progress (for Kits)</CardTitle>
+                        <CardTitle>Funding Progress</CardTitle>
                         <CardDescription>
                             ₹{fundingData?.totalCollectedForGoal.toLocaleString('en-IN') ?? 0} of ₹{(fundingData?.targetAmount ?? 0).toLocaleString('en-IN')} funded from selected donation types.
                         </CardDescription>

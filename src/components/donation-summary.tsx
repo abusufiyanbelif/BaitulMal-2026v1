@@ -4,7 +4,7 @@
 import { useMemo } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import type { Donation, DonationCategory } from '@/lib/types';
+import type { Donation, DonationCategory, Campaign, Lead } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Wallet, PieChart as PieChartIcon, BarChart as BarChartIcon } from 'lucide-react';
 import {
@@ -28,6 +28,7 @@ import type { ChartConfig } from '@/components/ui/chart';
 import { donationCategories } from '@/lib/modules';
 import { Skeleton } from './ui/skeleton';
 import dynamic from 'next/dynamic';
+import { Progress } from '@/components/ui/progress';
 
 const DynamicPieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false, loading: () => <Skeleton className="h-[200px] w-full" /> });
 const DynamicBarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false, loading: () => <Skeleton className="h-[200px] w-full" /> });
@@ -47,12 +48,28 @@ export function DonationSummary() {
     return collection(firestore, 'donations');
   }, [firestore]);
   
-  const { data: donations, isLoading } = useCollection<Donation>(donationsCollectionRef);
+  const campaignsCollectionRef = useMemo(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'campaigns');
+  }, [firestore]);
+  const leadsCollectionRef = useMemo(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'leads');
+  }, [firestore]);
+  
+  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
+  const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
+  const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
+  
+  const isLoading = areDonationsLoading || areCampaignsLoading || areLeadsLoading;
 
   const summaryData = useMemo(() => {
-    if (!donations) return null;
+    if (!donations || !campaigns || !leads) return null;
 
     const totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
+
+    const totalTargetAmount = [...campaigns, ...leads].reduce((sum, item) => sum + (item.targetAmount || 0), 0);
+    const progress = totalTargetAmount > 0 ? (totalAmount / totalTargetAmount) * 100 : 0;
 
     const amountsByCategory = donations.reduce((acc, d) => {
       const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : [];
@@ -65,29 +82,19 @@ export function DonationSummary() {
       return acc;
     }, {} as Record<DonationCategory, number>);
 
-    const amountsByYear = donations.reduce((acc, d) => {
-        if (d.donationDate) {
-            const year = new Date(d.donationDate).getFullYear();
-            if (!isNaN(year)) {
-                acc[year] = (acc[year] || 0) + d.amount;
-            }
-        }
-        return acc;
-    }, {} as Record<string, number>);
-
     return {
       totalAmount,
+      totalTargetAmount,
+      progress,
       categoryChartData: Object.entries(amountsByCategory).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})`})),
-      yearChartData: Object.entries(amountsByYear)
-        .map(([year, total]) => ({ year, total }))
-        .sort((a, b) => parseInt(a.year) - parseInt(b.year)),
     };
-  }, [donations]);
+  }, [donations, campaigns, leads]);
 
   if (isLoading) {
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {[...Array(3)].map((_, i) => <Card key={i}><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>)}
+        {[...Array(2)].map((_, i) => <Card key={i}><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>)}
+         <Card><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
       </div>
     );
   }
@@ -98,19 +105,23 @@ export function DonationSummary() {
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <Card>
+      <Card className="lg:col-span-1">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Wallet className="h-6 w-6 text-primary" />
             Total Donations Received
           </CardTitle>
-          <CardDescription>A summary of all recorded donations.</CardDescription>
+          <CardDescription>A summary of all recorded donations against total goals.</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-4xl font-bold">₹{summaryData.totalAmount.toLocaleString('en-IN')}</p>
+          <Progress value={summaryData.progress} className="mt-2 h-2" />
+           <p className="text-xs text-muted-foreground mt-1">
+            of ₹{summaryData.totalTargetAmount.toLocaleString('en-IN')} goal from all initiatives
+          </p>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <PieChartIcon className="h-6 w-6 text-primary" />
@@ -126,30 +137,8 @@ export function DonationSummary() {
                   <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                 ))}
               </Pie>
-              <ChartLegend content={<ChartLegendContent />} />
+              <ChartLegend content={<ChartLegendContent nameKey="name" />} />
             </DynamicPieChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChartIcon className="h-6 w-6 text-primary" />
-            Donations by Year
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={{}} className="h-[200px] w-full">
-            <DynamicBarChart data={summaryData.yearChartData}>
-              <CartesianGrid vertical={false} />
-              <XAxis dataKey="year" tickLine={false} tickMargin={10} axisLine={false} stroke="#888888" fontSize={12} />
-              <YAxis stroke="#888888" fontSize={12} tickFormatter={(value) => `₹${new Intl.NumberFormat('en-IN', { notation: 'compact' }).format(value)}`} />
-              <ChartTooltip
-                cursor={{ fill: "hsl(var(--muted))" }}
-                content={<ChartTooltipContent indicator="dot" />}
-              />
-              <Bar dataKey="total" fill="hsl(var(--primary))" radius={4} />
-            </DynamicBarChart>
           </ChartContainer>
         </CardContent>
       </Card>

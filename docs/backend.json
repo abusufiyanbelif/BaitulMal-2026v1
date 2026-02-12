@@ -68,6 +68,7 @@
         "startDate": { "type": "string", "format": "date" },
         "endDate": { "type": "string", "format": "date" },
         "targetAmount": { "type": "number" },
+        "requiredAmount": { "type": "number", "description": "The actual amount required for the lead's purpose." },
         "authenticityStatus": { "type": "string", "enum": ["Pending Verification", "Verified", "Rejected", "On Hold", "Need More Details"] },
         "publicVisibility": { "type": "string", "enum": ["Hold", "Ready to Publish", "Published"] },
         "allowedDonationTypes": {

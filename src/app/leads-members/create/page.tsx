@@ -40,7 +40,8 @@ const leadSchema = z.object({
   publicVisibility: z.enum(['Hold', 'Ready to Publish', 'Published']),
   startDate: z.string().min(1, 'Start date is required.'),
   endDate: z.string().min(1, 'End date is required.'),
-  targetAmount: z.coerce.number().min(0, 'Target amount must be a positive number.').optional(),
+  requiredAmount: z.coerce.number().min(0).optional(),
+  targetAmount: z.coerce.number().min(0).optional(),
   allowedDonationTypes: z.array(z.string()).optional(),
   degree: z.string().optional(),
   year: z.string().optional(),
@@ -83,6 +84,7 @@ export default function CreateLeadPage() {
       publicVisibility: 'Hold',
       startDate: new Date().toISOString().split('T')[0],
       endDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split('T')[0],
+      requiredAmount: 0,
       targetAmount: 0,
       allowedDonationTypes: [...donationCategories],
       degree: '',
@@ -102,6 +104,7 @@ export default function CreateLeadPage() {
 
     const newLeadData = {
       ...data,
+      requiredAmount: data.requiredAmount || 0,
       targetAmount: data.targetAmount || 0,
       description: '',
       createdAt: serverTimestamp(),
@@ -276,21 +279,34 @@ export default function CreateLeadPage() {
                   </div>
                 </div>
               )}
-
-              <FormField
-                control={form.control}
-                name="targetAmount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Target Amount (₹)</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="e.g. 100000" {...field} />
-                    </FormControl>
-                    <CardDescription>The fundraising goal for the lead. This can be edited later.</CardDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                    control={form.control}
+                    name="requiredAmount"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Required Amount (₹)</FormLabel>
+                        <FormControl>
+                            <Input type="number" placeholder="e.g. 125000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="targetAmount"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Target Amount (₹)</FormLabel>
+                        <FormControl>
+                            <Input type="number" placeholder="e.g. 100000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </div>
 
                 <FormField
                   control={form.control}
