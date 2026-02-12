@@ -1,5 +1,5 @@
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import * as React from 'react';
 import { Providers } from './providers';
@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   },
   description: 'Managing and tracking community support campaigns efficiently.',
   manifest: '/manifest.json',
+};
+
+export const viewport: Viewport = {
   themeColor: '#16a34a',
 };
 
