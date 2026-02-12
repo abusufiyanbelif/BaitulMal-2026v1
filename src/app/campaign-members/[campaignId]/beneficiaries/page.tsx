@@ -7,7 +7,7 @@ import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, Firestor
 import type { SecurityRuleContext } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, setDoc, DocumentReference } from 'firebase/firestore';
-import type { Beneficiary, Campaign, RationItem, RationCategory } from '@/lib/types';
+import type { Beneficiary, Campaign, RationItem, ItemCategory } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
@@ -627,7 +627,7 @@ export default function BeneficiariesPage() {
       }
       
       return acc;
-    }, {} as Record<string, { category: RationCategory, beneficiariesByMemberCount: Record<number, Beneficiary[]> }>);
+    }, {} as Record<string, { category: ItemCategory, beneficiariesByMemberCount: Record<number, Beneficiary[]> }>);
 
     return byCategory;
 

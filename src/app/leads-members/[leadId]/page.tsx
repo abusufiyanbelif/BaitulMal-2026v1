@@ -7,7 +7,7 @@ import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollec
 import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc, DocumentReference, collection, writeBatch } from 'firebase/firestore';
-import type { Lead, RationItem, RationCategory, Beneficiary } from '@/lib/types';
+import type { Lead, RationItem, ItemCategory, Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';

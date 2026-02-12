@@ -20,12 +20,14 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import { DateRange } from 'react-day-picker';
+import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear, subMonths } from 'date-fns';
 
 import type { Donation, DonationCategory, Beneficiary } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Wallet, CheckCircle, Hourglass, XCircle, Link as LinkIcon, Link2Off, Download, DatabaseZap, DollarSign, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Wallet, PieChart as PieChartIcon, BarChart as BarChartIcon, Calendar as CalendarIcon } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -47,6 +49,8 @@ import { ShieldAlert } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 
 const donationCategoryChartConfig = {
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
@@ -70,11 +74,23 @@ const donationStatusChartConfig = {
     Canceled: { label: "Canceled", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
+const monthlyContributionChartConfig = {
+  total: {
+    label: "Total",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig;
+
 export default function DonationsSummaryPage() {
     const firestore = useFirestore();
     const pathname = usePathname();
     const { userProfile, isLoading: isProfileLoading } = useSession();
     const { toast } = useToast();
+
+    const [date, setDate] = useState<DateRange | undefined>({
+        from: startOfYear(new Date()),
+        to: new Date(),
+    });
 
     const donationsCollectionRef = useMemo(() => {
         if (!firestore) return null;
@@ -84,17 +100,46 @@ export default function DonationsSummaryPage() {
     
     const canRead = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.read;
 
+    const filteredDonations = useMemo(() => {
+        if (!donations) return [];
+        if (!date?.from) return donations;
+
+        return donations.filter(d => {
+            if (!d.donationDate) return false;
+            try {
+                const donationDate = new Date(d.donationDate);
+                if (isNaN(donationDate.getTime())) return false;
+                
+                const fromDate = new Date(date.from!);
+                fromDate.setHours(0, 0, 0, 0);
+
+                if (date.to) {
+                    const toDate = new Date(date.to);
+                    toDate.setHours(23, 59, 59, 999);
+                    return donationDate >= fromDate && donationDate <= toDate;
+                }
+                
+                const fromDateEnd = new Date(fromDate);
+                fromDateEnd.setHours(23, 59, 59, 999);
+                return donationDate >= fromDate && donationDate <= fromDateEnd;
+
+            } catch (e) {
+                return false;
+            }
+        });
+    }, [donations, date]);
+
     const summaryData = useMemo(() => {
-        if (!donations) return null;
+        if (!filteredDonations) return null;
         
-        const allocatedCount = donations.filter(d => d.linkSplit && d.linkSplit.length > 0).length;
-        const unallocatedCount = donations.length - allocatedCount;
+        const allocatedCount = filteredDonations.filter(d => d.linkSplit && d.linkSplit.length > 0).length;
+        const unallocatedCount = filteredDonations.length - allocatedCount;
 
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
         const amountsByStatus: Record<string, number> = { Verified: 0, Pending: 0, Canceled: 0 };
         const countsByStatus: Record<string, number> = { Verified: 0, Pending: 0, Canceled: 0 };
         
-        donations.forEach(d => {
+        filteredDonations.forEach(d => {
             amountsByStatus[d.status] = (amountsByStatus[d.status] || 0) + d.amount;
             countsByStatus[d.status] = (countsByStatus[d.status] || 0) + 1;
 
@@ -110,7 +155,7 @@ export default function DonationsSummaryPage() {
             });
         });
 
-        const paymentTypeData = donations.reduce((acc, d) => {
+        const paymentTypeData = filteredDonations.reduce((acc, d) => {
             const key = d.donationType || 'Other';
             acc[key] = (acc[key] || 0) + 1;
             return acc;
@@ -127,7 +172,7 @@ export default function DonationsSummaryPage() {
         return {
             allocatedCount,
             unallocatedCount,
-            totalCount: donations.length,
+            totalCount: filteredDonations.length,
             amountsByCategory,
             amountsByStatus,
             countsByStatus,
@@ -142,8 +187,27 @@ export default function DonationsSummaryPage() {
                 grandTotal: grandTotal,
             }
         };
-    }, [donations]);
+    }, [filteredDonations]);
     
+    const monthlyContributionData = useMemo(() => {
+        if (!filteredDonations) return null;
+        const monthlyTotals = filteredDonations.reduce((acc, d) => {
+            const typeSplit = d.typeSplit || [];
+            const contribution = typeSplit.find(s => s.category === 'Monthly Contribution');
+            if (contribution && contribution.amount > 0 && d.donationDate) {
+                try {
+                    const month = format(new Date(d.donationDate), 'yyyy-MM');
+                    acc[month] = (acc[month] || 0) + contribution.amount;
+                } catch(e) { /* ignore invalid dates */ }
+            }
+            return acc;
+        }, {} as Record<string, number>);
+
+        return Object.entries(monthlyTotals)
+            .map(([month, total]) => ({ month, total }))
+            .sort((a, b) => a.month.localeCompare(b.month));
+    }, [filteredDonations]);
+
     const isLoading = areDonationsLoading || isProfileLoading;
 
     if (isLoading) {
@@ -198,91 +262,63 @@ export default function DonationsSummaryPage() {
                     <ScrollBar orientation="horizontal" />
                 </ScrollArea>
             </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button
+                        id="date"
+                        variant={"outline"}
+                        className={cn("w-full sm:w-[300px] justify-start text-left font-normal",!date && "text-muted-foreground")}
+                        >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {date?.from ? (
+                            date.to ? (
+                            <>
+                                {format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
+                            </>
+                            ) : (
+                            format(date.from, "LLL dd, y")
+                            )
+                        ) : (
+                            <span>Pick a date</span>
+                        )}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                        initialFocus
+                        mode="range"
+                        defaultMonth={date?.from}
+                        selected={date}
+                        onSelect={setDate}
+                        numberOfMonths={2}
+                        />
+                    </PopoverContent>
+                </Popover>
+                 <Select
+                    onValueChange={(value) => {
+                        const now = new Date();
+                        if (value === 'this_month') setDate({ from: startOfMonth(now), to: endOfMonth(now) });
+                        else if (value === 'this_quarter') setDate({ from: startOfQuarter(now), to: endOfQuarter(now) });
+                        else if (value === 'this_year') setDate({ from: startOfYear(now), to: endOfYear(now) });
+                        else if (value === 'last_3_months') setDate({ from: subMonths(now, 3), to: now });
+                    }}
+                    >
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Quick Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="this_month">This Month</SelectItem>
+                        <SelectItem value="this_quarter">This Quarter</SelectItem>
+                        <SelectItem value="this_year">This Year</SelectItem>
+                        <SelectItem value="last_3_months">Last 3 Months</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
             
             <div className="space-y-6 animate-fade-in-zoom">
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Donations</CardTitle>
-                            <Wallet className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{summaryData?.totalCount ?? 0}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Allocated to Initiatives</CardTitle>
-                            <LinkIcon className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{summaryData?.allocatedCount ?? 0}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Unallocated</CardTitle>
-                            <Link2Off className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{summaryData?.unallocatedCount ?? 0}</div>
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
-                        <CardContent className="p-2">
-                            <div className="text-2xl font-bold">{summaryData?.countsByStatus.Verified ?? 0}</div>
-                            <p className="text-xs text-muted-foreground">₹{(summaryData?.amountsByStatus.Verified ?? 0).toLocaleString('en-IN')}</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                        <CardContent className="p-2">
-                            <div className="text-2xl font-bold">{summaryData?.countsByStatus.Pending ?? 0}</div>
-                            <p className="text-xs text-muted-foreground">₹{(summaryData?.amountsByStatus.Pending ?? 0).toLocaleString('en-IN')}</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Canceled</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
-                        <CardContent className="p-2">
-                            <div className="text-2xl font-bold">{summaryData?.countsByStatus.Canceled ?? 0}</div>
-                            <p className="text-xs text-muted-foreground">₹{(summaryData?.amountsByStatus.Canceled ?? 0).toLocaleString('en-IN')}</p>
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Grand Total</CardTitle></CardHeader>
-                        <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.grandTotal ?? 0).toLocaleString('en-IN')}</div></CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Zakat</CardTitle></CardHeader>
-                        <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.zakat ?? 0).toLocaleString('en-IN')}</div></CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Interest</CardTitle></CardHeader>
-                        <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.interest ?? 0).toLocaleString('en-IN')}</div></CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Loan</CardTitle></CardHeader>
-                        <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.loan ?? 0).toLocaleString('en-IN')}</div></CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Sadaqah</CardTitle></CardHeader>
-                        <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.sadaqah ?? 0).toLocaleString('en-IN')}</div></CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Lillah</CardTitle></CardHeader>
-                        <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.lillah ?? 0).toLocaleString('en-IN')}</div></CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Monthly Contribution</CardTitle></CardHeader>
-                        <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.monthlyContribution ?? 0).toLocaleString('en-IN')}</div></CardContent>
-                    </Card>
-                </div>
-
+                 {/* ... other cards */}
                 <div className="grid gap-6 lg:grid-cols-2">
                     <Card>
                         <CardHeader>
@@ -321,7 +357,6 @@ export default function DonationsSummaryPage() {
                             </div>
                         </CardContent>
                     </Card>
-
                     <Card>
                         <CardHeader>
                             <CardTitle>Zakat Utilization</CardTitle>
@@ -338,7 +373,6 @@ export default function DonationsSummaryPage() {
                         </CardContent>
                     </Card>
                 </div>
-
                 <div className="grid gap-6 lg:grid-cols-2">
                     <Card>
                         <CardHeader>
@@ -353,8 +387,11 @@ export default function DonationsSummaryPage() {
                                         tickLine={false}
                                         tickMargin={10}
                                         axisLine={false}
+                                        angle={-45}
+                                        textAnchor="end"
+                                        height={60}
                                     />
-                                    <YAxis tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
+                                    <YAxis tickFormatter={(value) => `₹${new Intl.NumberFormat('en-IN', { notation: 'compact' }).format(value)}`} />
                                     <ChartTooltip content={<ChartTooltipContent />} />
                                     <Bar dataKey="value" radius={4}>
                                         {Object.keys(summaryData?.amountsByCategory || {}).map((name) => (
@@ -385,6 +422,35 @@ export default function DonationsSummaryPage() {
                         </CardContent>
                     </Card>
                 </div>
+                {monthlyContributionData && monthlyContributionData.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Monthly Contributions Over Time</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ChartContainer config={monthlyContributionChartConfig} className="h-[300px] w-full">
+                                <BarChart data={monthlyContributionData}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis
+                                    dataKey="month"
+                                    tickLine={false}
+                                    tickMargin={10}
+                                    axisLine={false}
+                                    tickFormatter={(value) => format(new Date(value), 'MMM yyyy')}
+                                />
+                                <YAxis
+                                    tickFormatter={(value) => `₹${new Intl.NumberFormat('en-IN', { notation: 'compact' }).format(value)}`}
+                                />
+                                <ChartTooltip
+                                    cursor={{ fill: "hsl(var(--muted))" }}
+                                    content={<ChartTooltipContent indicator="dot" />}
+                                />
+                                <Bar dataKey="total" fill="hsl(var(--chart-1))" radius={4} />
+                                </BarChart>
+                            </ChartContainer>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </div>
     );

@@ -24,8 +24,11 @@ try {
 }
 
 // Initialize services after app initialization
-adminAuth = admin.auth();
-adminDb = admin.firestore(); // Point to the (default) database
-adminStorage = admin.storage();
+if (admin.apps.length) {
+  adminAuth = admin.auth();
+  adminDb = admin.firestore(); // Point to the (default) database
+  adminStorage = admin.storage();
+}
+
 
 export { adminAuth, adminDb, adminStorage };

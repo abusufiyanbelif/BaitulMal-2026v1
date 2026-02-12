@@ -24,7 +24,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-import type { Campaign, Beneficiary, Donation, DonationCategory, RationCategory } from '@/lib/types';
+import type { Campaign, Beneficiary, Donation, DonationCategory, ItemCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';

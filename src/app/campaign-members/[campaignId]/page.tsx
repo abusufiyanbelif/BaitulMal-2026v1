@@ -1174,7 +1174,7 @@ export default function CampaignDetailsPage() {
                                             id="select-all-copy"
                                             checked={sourceCategoryForCopy.items.length > 0 && selectedItemsToCopy.length === sourceCategoryForCopy.items.length}
                                             onCheckedChange={(checked) => {
-                                                if (checked) {
+                                                if (checked === true) {
                                                     setSelectedItemsToCopy(sourceCategoryForCopy.items.map(item => item.id));
                                                 } else {
                                                     setSelectedItemsToCopy([]);
@@ -1193,7 +1193,7 @@ export default function CampaignDetailsPage() {
                                             checked={selectedItemsToCopy.includes(item.id)}
                                             onCheckedChange={(checked) => {
                                                 setSelectedItemsToCopy(prev => 
-                                                    checked ? [...prev, item.id] : prev.filter(id => id !== item.id)
+                                                    checked === true ? [...prev, item.id] : prev.filter(id => id !== item.id)
                                                 );
                                             }}
                                         />

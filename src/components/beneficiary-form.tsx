@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { Beneficiary, RationCategory, RationItem } from '@/lib/types';
+import type { Beneficiary, ItemCategory, RationItem } from '@/lib/types';
 import { Loader2, Edit, Trash2, FileIcon, Replace, ScanLine } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -59,7 +59,7 @@ interface BeneficiaryFormProps {
   beneficiary?: Beneficiary | null;
   onSubmit: (data: BeneficiaryFormData) => void;
   onCancel: () => void;
-  rationLists: RationCategory[];
+  rationLists: ItemCategory[];
   initialReadOnly?: boolean;
 }
 
