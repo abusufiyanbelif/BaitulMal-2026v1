@@ -8,11 +8,12 @@ import type { Campaign, Lead } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, FolderKanban, Lightbulb } from 'lucide-react';
 import {
-  PieChart,
-  Pie,
+  BarChart,
+  Bar,
   Cell,
+  XAxis,
+  YAxis,
   Tooltip,
-  ResponsiveContainer,
 } from 'recharts';
 import {
   ChartContainer,
@@ -102,16 +103,21 @@ export function LeadAndCampaignSummary() {
         </CardHeader>
         <CardContent>
           <ChartContainer config={campaignCategoryChartConfig} className="h-[150px] w-full">
-            <PieChart>
-              <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-              <Pie data={campaignSummary?.chartData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} strokeWidth={2}>
-                 {campaignSummary?.chartData.map((entry) => (
-                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                  ))}
-              </Pie>
-              <ChartLegend content={<ChartLegendContent nameKey="name" />} />
-            </PieChart>
+            <BarChart data={campaignSummary?.chartData} layout="vertical" margin={{ left: 0, right: 0 }}>
+                <XAxis type="number" hide />
+                <YAxis dataKey="name" type="category" hide />
+                <Tooltip
+                    cursor={{ fill: 'hsl(var(--muted))' }}
+                    content={<ChartTooltipContent indicator="dot" />}
+                />
+                <Bar dataKey="value" radius={4} barSize={30}>
+                    {campaignSummary?.chartData.map((entry) => (
+                        <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                    ))}
+                </Bar>
+            </BarChart>
           </ChartContainer>
+          <ChartLegend content={<ChartLegendContent />} className="pt-4" />
         </CardContent>
       </Card>
       <Card>
@@ -129,16 +135,21 @@ export function LeadAndCampaignSummary() {
         </CardHeader>
         <CardContent>
            <ChartContainer config={leadCategoryChartConfig} className="h-[150px] w-full">
-            <PieChart>
-              <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-              <Pie data={leadSummary?.chartData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} strokeWidth={2}>
-                 {leadSummary?.chartData.map((entry) => (
-                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                  ))}
-              </Pie>
-              <ChartLegend content={<ChartLegendContent nameKey="name" />} />
-            </PieChart>
+             <BarChart data={leadSummary?.chartData} layout="vertical" margin={{ left: 0, right: 0 }}>
+                <XAxis type="number" hide />
+                <YAxis dataKey="name" type="category" hide />
+                <Tooltip
+                    cursor={{ fill: 'hsl(var(--muted))' }}
+                    content={<ChartTooltipContent indicator="dot" />}
+                />
+                <Bar dataKey="value" radius={4} barSize={30}>
+                    {leadSummary?.chartData.map((entry) => (
+                        <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                    ))}
+                </Bar>
+            </BarChart>
           </ChartContainer>
+           <ChartLegend content={<ChartLegendContent />} className="pt-4" />
         </CardContent>
       </Card>
     </div>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -96,12 +97,12 @@ export function DonationSummary() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Wallet className="h-6 w-6 text-primary" />
-            Total Collections
+            Total Donations Received
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-4xl font-bold">₹{summaryData.totalAmount.toLocaleString('en-IN')}</p>
-          <p className="text-muted-foreground">collected across all initiatives</p>
+          <p className="text-muted-foreground">across all initiatives.</p>
         </CardContent>
       </Card>
       <Card>
