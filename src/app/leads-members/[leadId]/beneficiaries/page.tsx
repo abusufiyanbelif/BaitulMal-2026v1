@@ -86,6 +86,7 @@ export default function BeneficiariesPage() {
   const [editingBeneficiary, setEditingBeneficiary] = useState<Beneficiary | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<string | null>(null);
+  const [formMode, setFormMode] = useState<'add' | 'edit' | 'view'>('add');
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -104,12 +105,20 @@ export default function BeneficiariesPage() {
   const handleAdd = () => {
     if (!canCreate) return;
     setEditingBeneficiary(null);
+    setFormMode('add');
+    setIsFormOpen(true);
+  };
+
+  const handleView = (beneficiary: Beneficiary) => {
+    setEditingBeneficiary(beneficiary);
+    setFormMode('view');
     setIsFormOpen(true);
   };
 
   const handleEdit = (beneficiary: Beneficiary) => {
     if (!canUpdate) return;
     setEditingBeneficiary(beneficiary);
+    setFormMode('edit');
     setIsFormOpen(true);
   };
 
@@ -509,6 +518,7 @@ export default function BeneficiariesPage() {
                                     index={index + 1}
                                     canUpdate={canUpdate}
                                     canDelete={canDelete}
+                                    onView={handleView}
                                     onEdit={handleEdit}
                                     onDelete={handleDeleteClick}
                                     onStatusChange={handleStatusChange}
@@ -531,13 +541,14 @@ export default function BeneficiariesPage() {
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-                <DialogTitle>{editingBeneficiary ? 'Edit' : 'Add'} Beneficiary</DialogTitle>
+                <DialogTitle>{formMode === 'add' ? 'Add' : formMode === 'view' ? 'View' : 'Edit'} Beneficiary</DialogTitle>
             </DialogHeader>
             <BeneficiaryForm
                 beneficiary={editingBeneficiary}
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
                 rationLists={[]}
+                initialReadOnly={formMode === 'view'}
             />
         </DialogContent>
       </Dialog>
@@ -576,12 +587,13 @@ interface BeneficiaryRowProps {
     index: number;
     canUpdate?: boolean;
     canDelete?: boolean;
+    onView: (beneficiary: Beneficiary) => void;
     onEdit: (beneficiary: Beneficiary) => void;
     onDelete: (id: string) => void;
     onStatusChange: (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => void;
 }
 
-const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onEdit, onDelete, onStatusChange }) => {
+const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, onStatusChange }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
@@ -625,8 +637,23 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                                 <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => onView(beneficiary)}><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
                                 {canUpdate && <DropdownMenuItem onClick={() => onEdit(beneficiary)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
                                 {canUpdate && <DropdownMenuSeparator />}
+
+                                {canUpdate && beneficiary.status !== 'Given' && (
+                                    <DropdownMenuItem onClick={() => onStatusChange(beneficiary, 'Given')}>
+                                        <CheckCircle2 className="mr-2 h-4 w-4 text-success-foreground" />
+                                        <span>Mark as Given</span>
+                                    </DropdownMenuItem>
+                                )}
+                                {canUpdate && beneficiary.status === 'Given' && (
+                                    <DropdownMenuItem onClick={() => onStatusChange(beneficiary, 'Pending')}>
+                                        <Hourglass className="mr-2 h-4 w-4" />
+                                        <span>Mark as Pending</span>
+                                    </DropdownMenuItem>
+                                )}
+
                                 {canUpdate && (
                                     <DropdownMenuSub>
                                         <DropdownMenuSubTrigger>

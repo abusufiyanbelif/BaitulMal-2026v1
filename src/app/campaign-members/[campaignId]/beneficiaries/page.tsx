@@ -1200,6 +1200,20 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                             {canUpdate && <DropdownMenuItem onClick={() => onEdit(beneficiary)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
                             
                             {canUpdate && <DropdownMenuSeparator />}
+                            
+                            {canUpdate && beneficiary.status !== 'Given' && (
+                                <DropdownMenuItem onClick={() => onStatusChange(beneficiary, 'Given')}>
+                                    <CheckCircle2 className="mr-2 h-4 w-4 text-success-foreground" />
+                                    <span>Mark as Given</span>
+                                </DropdownMenuItem>
+                            )}
+                            {canUpdate && beneficiary.status === 'Given' && (
+                                <DropdownMenuItem onClick={() => onStatusChange(beneficiary, 'Pending')}>
+                                    <Hourglass className="mr-2 h-4 w-4" />
+                                    <span>Mark as Pending</span>
+                                </DropdownMenuItem>
+                            )}
+                            
                             {canUpdate && (
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger>
