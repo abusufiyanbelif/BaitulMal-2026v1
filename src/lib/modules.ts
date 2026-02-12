@@ -1,4 +1,3 @@
-
 import { getNestedValue, set } from "./utils";
 
 export const crudPermissions = ['create', 'read', 'update', 'delete'] as const;
@@ -23,6 +22,17 @@ export const leadSubModules = [
   { id: 'beneficiaries', name: 'Beneficiary List', permissions: crudPermissions },
   { id: 'donations', name: 'Donations', permissions: crudPermissions },
 ] as const;
+
+export const leadPurposesConfig = [
+  { id: 'Education', name: 'Education', categories: ['School Fees', 'College Fees', 'Tuition Fees', 'Exam Fees', 'Hostel Fees', 'Books & Uniforms', 'Educational Materials', 'Other'] },
+  { id: 'Medical', name: 'Medical', categories: ['Hospital Bill', 'Doctor Fees', 'Medication', 'Surgery', 'Other'] },
+  { id: 'Ration', name: 'Ration', categories: [] as string[] },
+  { id: 'Relief', name: 'Relief', categories: [] as string[] },
+  { id: 'General', name: 'General', categories: [] as string[] },
+  { id: 'Other', name: 'Other', categories: [] as string[] },
+] as const;
+
+export const leadSeriousnessLevels = ['High', 'Moderate', 'Low'] as const;
 
 export const modules = [
   { id: 'users', name: 'User Management', permissions: crudPermissions },

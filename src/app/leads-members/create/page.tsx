@@ -1,13 +1,12 @@
-
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirestore, errorEmitter, FirestorePermissionError, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,24 +16,18 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import type { Lead, DonationCategory } from '@/lib/types';
-import { donationCategories } from '@/lib/modules';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import type { Lead } from '@/lib/types';
+import { donationCategories, leadPurposesConfig, leadSeriousnessLevels } from '@/lib/modules';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 
 const leadSchema = z.object({
   name: z.string().min(3, 'Lead name must be at least 3 characters.'),
-  category: z.enum(['Ration', 'Relief', 'General', 'Education', 'Medical', 'Other']),
+  purpose: z.enum(['Ration', 'Relief', 'General', 'Education', 'Medical', 'Other']),
+  purposeDetails: z.string().optional(),
+  category: z.string().optional(),
+  categoryDetails: z.string().optional(),
   status: z.enum(['Upcoming', 'Active', 'Completed']),
   authenticityStatus: z.enum(['Pending Verification', 'Verified', 'Rejected', 'On Hold', 'Need More Details']),
   publicVisibility: z.enum(['Hold', 'Ready to Publish', 'Published']),
@@ -48,10 +41,25 @@ const leadSchema = z.object({
   semester: z.string().optional(),
   diseaseIdentified: z.string().optional(),
   diseaseStage: z.string().optional(),
-  seriousness: z.string().optional(),
+  seriousness: z.enum(leadSeriousnessLevels).optional(),
 }).refine(data => new Date(data.startDate) <= new Date(data.endDate), {
     message: "End date cannot be before the start date.",
     path: ["endDate"],
+}).refine(data => {
+    const selectedPurpose = leadPurposesConfig.find(p => p.id === data.purpose);
+    if (selectedPurpose && selectedPurpose.categories.length > 0) {
+      return !!data.category;
+    }
+    return true;
+}, {
+    message: 'Category is required for this purpose.',
+    path: ['category'],
+}).refine(data => data.purpose !== 'Other' || (data.purpose === 'Other' && data.purposeDetails && data.purposeDetails.trim().length > 0), {
+  message: "Details for 'Other' purpose are required.",
+  path: ['purposeDetails'],
+}).refine(data => data.category !== 'Other' || (data.category === 'Other' && data.categoryDetails && data.categoryDetails.trim().length > 0), {
+  message: "Details for 'Other' category are required.",
+  path: ['categoryDetails'],
 });
 
 type LeadFormValues = z.infer<typeof leadSchema>;
@@ -78,7 +86,8 @@ export default function CreateLeadPage() {
     resolver: zodResolver(leadSchema),
     defaultValues: {
       name: '',
-      category: 'Ration',
+      purpose: 'Ration',
+      category: '',
       status: 'Upcoming',
       authenticityStatus: 'Pending Verification',
       publicVisibility: 'Hold',
@@ -87,16 +96,20 @@ export default function CreateLeadPage() {
       requiredAmount: 0,
       targetAmount: 0,
       allowedDonationTypes: [...donationCategories],
-      degree: '',
-      year: '',
-      semester: '',
-      diseaseIdentified: '',
-      diseaseStage: '',
-      seriousness: '',
     },
   });
 
+  const purpose = form.watch('purpose');
   const category = form.watch('category');
+
+  const availableCategories = useMemo(() => {
+    const selectedPurpose = leadPurposesConfig.find(p => p.id === purpose);
+    return selectedPurpose?.categories || [];
+  }, [purpose]);
+  
+  useEffect(() => {
+    form.setValue('category', '');
+  }, [purpose, form.setValue]);
 
   const handleCreateLead = (data: LeadFormValues) => {
     if (!firestore || !canCreate || !userProfile) return;
@@ -114,21 +127,7 @@ export default function CreateLeadPage() {
       shopName: '',
       shopContact: '',
       shopAddress: '',
-      rationLists: [
-        {
-          id: 'general',
-          name: 'General Item List',
-          minMembers: 0,
-          maxMembers: 0,
-          items: []
-        }
-      ],
-      degree: data.degree || '',
-      year: data.year || '',
-      semester: data.semester || '',
-      diseaseIdentified: data.diseaseIdentified || '',
-      diseaseStage: data.diseaseStage || '',
-      seriousness: data.seriousness || '',
+      itemCategories: data.purpose === 'Ration' ? [{ id: 'general', name: 'General', items: [] }] : [],
     };
 
     addDoc(collection(firestore, 'leads'), newLeadData)
@@ -212,7 +211,7 @@ export default function CreateLeadPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Lead Name</FormLabel>
+                    <FormLabel>Lead Name *</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g. Lead for new initiative" {...field} />
                     </FormControl>
@@ -220,33 +219,63 @@ export default function CreateLeadPage() {
                   </FormItem>
                 )}
               />
-               <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Lead Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Ration">Ration</SelectItem>
-                        <SelectItem value="Relief">Relief</SelectItem>
-                        <SelectItem value="General">General</SelectItem>
-                        <SelectItem value="Education">Education</SelectItem>
-                        <SelectItem value="Medical">Medical</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="purpose"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Purpose *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a purpose" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {availableCategories.length > 0 && (
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category *</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {availableCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 )}
-              />
+              </div>
+              
+              {purpose === 'Other' && (
+                <FormField control={form.control} name="purposeDetails" render={({ field }) => (
+                  <FormItem><FormLabel>Details for 'Other' Purpose</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )}/>
+              )}
+              {category === 'Other' && (
+                <FormField control={form.control} name="categoryDetails" render={({ field }) => (
+                  <FormItem><FormLabel>Details for 'Other' Category</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )}/>
+              )}
 
-              {category === 'Education' && (
+              {purpose === 'Education' && (
                 <div className="space-y-4 rounded-md border p-4 animate-fade-in-zoom">
                   <h3 className="text-lg font-semibold">Education Details</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -263,7 +292,7 @@ export default function CreateLeadPage() {
                 </div>
               )}
 
-              {category === 'Medical' && (
+              {purpose === 'Medical' && (
                 <div className="space-y-4 rounded-md border p-4 animate-fade-in-zoom">
                   <h3 className="text-lg font-semibold">Medical Details</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -273,9 +302,24 @@ export default function CreateLeadPage() {
                     <FormField control={form.control} name="diseaseStage" render={({ field }) => (
                         <FormItem><FormLabel>Disease Stage</FormLabel><FormControl><Input placeholder="e.g. Initial" {...field} /></FormControl><FormMessage /></FormItem>
                     )}/>
-                    <FormField control={form.control} name="seriousness" render={({ field }) => (
-                        <FormItem><FormLabel>Seriousness</FormLabel><FormControl><Input placeholder="e.g. High" {...field} /></FormControl><FormMessage /></FormItem>
-                    )}/>
+                    <FormField
+                      control={form.control}
+                      name="seriousness"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Seriousness</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger><SelectValue placeholder="Select level..."/></SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {leadSeriousnessLevels.map(level => <SelectItem key={level} value={level}>{level}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
               )}
@@ -375,7 +419,7 @@ export default function CreateLeadPage() {
                   name="startDate"
                   render={({ field }) => (
                       <FormItem>
-                      <FormLabel>Start Date</FormLabel>
+                      <FormLabel>Start Date *</FormLabel>
                       <FormControl>
                           <Input type="date" {...field} />
                       </FormControl>
@@ -388,7 +432,7 @@ export default function CreateLeadPage() {
                   name="endDate"
                   render={({ field }) => (
                       <FormItem>
-                      <FormLabel>End Date</FormLabel>
+                      <FormLabel>End Date *</FormLabel>
                       <FormControl>
                           <Input type="date" {...field} />
                       </FormControl>
@@ -403,7 +447,7 @@ export default function CreateLeadPage() {
                   name="status"
                   render={({ field }) => (
                       <FormItem>
-                      <FormLabel>Status</FormLabel>
+                      <FormLabel>Status *</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                           <SelectTrigger>
@@ -425,7 +469,7 @@ export default function CreateLeadPage() {
                   name="authenticityStatus"
                   render={({ field }) => (
                       <FormItem>
-                      <FormLabel>Authenticity</FormLabel>
+                      <FormLabel>Authenticity *</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                           <SelectTrigger>
@@ -450,7 +494,7 @@ export default function CreateLeadPage() {
                 name="publicVisibility"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Public Visibility</FormLabel>
+                    <FormLabel>Public Visibility *</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>

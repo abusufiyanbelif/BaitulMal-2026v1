@@ -1,5 +1,3 @@
-
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -17,34 +15,14 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSubTrigger
-} from '@/components/ui/dropdown-menu';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSubTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { CopyLeadDialog } from '@/components/copy-lead-dialog';
 import { copyLeadAction } from './actions';
 import { getNestedValue } from '@/lib/utils';
-import { donationCategories } from '@/lib/modules';
+import { leadPurposesConfig } from '@/lib/modules';
 
 
 export default function LeadPage() {
@@ -55,7 +33,7 @@ export default function LeadPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [purposeFilter, setPurposeFilter] = useState('All');
   const [authenticityFilter, setAuthenticityFilter] = useState('All');
   const [visibilityFilter, setVisibilityFilter] = useState('All');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -112,8 +90,7 @@ export default function LeadPage() {
             return sum + finalAmountForGoal;
         }, 0);
 
-        const targetAmount = lead.targetAmount || 0;
-        const progress = targetAmount > 0 ? (collected / targetAmount) * 100 : 0;
+        const progress = lead.targetAmount && lead.targetAmount > 0 ? (collected / lead.targetAmount) * 100 : 0;
         
         return {
             ...lead,
@@ -240,8 +217,8 @@ export default function LeadPage() {
     if (statusFilter !== 'All') {
         sortableItems = sortableItems.filter(c => c.status === statusFilter);
     }
-    if (categoryFilter !== 'All') {
-        sortableItems = sortableItems.filter(c => c.category === categoryFilter);
+    if (purposeFilter !== 'All') {
+        sortableItems = sortableItems.filter(c => c.purpose === purposeFilter);
     }
     if (authenticityFilter !== 'All') {
         sortableItems = sortableItems.filter(c => (c.authenticityStatus || 'Pending Verification') === authenticityFilter);
@@ -272,7 +249,7 @@ export default function LeadPage() {
     });
 
     return sortableItems;
-  }, [leadData, searchTerm, statusFilter, categoryFilter, authenticityFilter, visibilityFilter]);
+  }, [leadData, searchTerm, statusFilter, purposeFilter, authenticityFilter, visibilityFilter]);
 
   const totalPages = Math.ceil(filteredAndSortedLeads.length / itemsPerPage);
   const paginatedLeads = useMemo(() => {
@@ -338,18 +315,13 @@ export default function LeadPage() {
                             <SelectItem value="Completed">Completed</SelectItem>
                         </SelectContent>
                     </Select>
-                     <Select value={categoryFilter} onValueChange={(value) => { setCategoryFilter(value); setCurrentPage(1); }} disabled={isLoading}>
+                     <Select value={purposeFilter} onValueChange={(value) => { setPurposeFilter(value); setCurrentPage(1); }} disabled={isLoading}>
                         <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
-                            <SelectValue placeholder="Category" />
+                            <SelectValue placeholder="Purpose" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All">All Categories</SelectItem>
-                            <SelectItem value="Ration">Ration</SelectItem>
-                            <SelectItem value="Relief">Relief</SelectItem>
-                            <SelectItem value="General">General</SelectItem>
-                            <SelectItem value="Education">Education</SelectItem>
-                            <SelectItem value="Medical">Medical</SelectItem>
-                            <SelectItem value="Other">Other</SelectItem>
+                            <SelectItem value="All">All Purposes</SelectItem>
+                            {leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                     <Select value={authenticityFilter} onValueChange={(value) => { setAuthenticityFilter(value); setCurrentPage(1); }} disabled={isLoading}>
@@ -472,7 +444,7 @@ export default function LeadPage() {
                         </CardHeader>
                         <CardContent className="flex-grow space-y-2">
                              <div className="flex justify-between text-xs text-muted-foreground">
-                                <Badge variant="outline">{lead.category}</Badge>
+                                <Badge variant="outline">{lead.purpose}</Badge>
                                 <Badge variant={
                                     lead.status === 'Active' ? 'success' :
                                     lead.status === 'Completed' ? 'secondary' : 'outline'
@@ -558,5 +530,3 @@ export default function LeadPage() {
     </>
   );
 }
-
-    
