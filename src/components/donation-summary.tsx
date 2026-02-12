@@ -6,7 +6,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import type { Donation, DonationCategory } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, DollarSign, PieChart as PieChartIcon, BarChart3 } from 'lucide-react';
+import { Loader2, Wallet, PieChart as PieChartIcon, BarChart3 } from 'lucide-react';
 import {
   PieChart,
   Pie,
@@ -100,7 +100,7 @@ export function DonationSummary() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-6 w-6 text-primary" />
+            <Wallet className="h-6 w-6 text-primary" />
             Total Donations
           </CardTitle>
         </CardHeader>
@@ -112,7 +112,7 @@ export function DonationSummary() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-6 w-6 text-primary" />
+            <Wallet className="h-6 w-6 text-primary" />
             Total Amount
           </CardTitle>
         </CardHeader>
@@ -121,7 +121,7 @@ export function DonationSummary() {
           <p className="text-muted-foreground">collected across all initiatives</p>
         </CardContent>
       </Card>
-      <Card className="md:col-span-2 lg:col-span-1">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <PieChartIcon className="h-6 w-6 text-primary" />

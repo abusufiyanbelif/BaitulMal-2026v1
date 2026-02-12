@@ -254,31 +254,31 @@ export default function DonationsSummaryPage() {
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Grand Total</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Grand Total</CardTitle></CardHeader>
                         <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.grandTotal ?? 0).toLocaleString('en-IN')}</div></CardContent>
                     </Card>
                     <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Zakat</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Zakat</CardTitle></CardHeader>
                         <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.zakat ?? 0).toLocaleString('en-IN')}</div></CardContent>
                     </Card>
                     <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Interest</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Interest</CardTitle></CardHeader>
                         <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.interest ?? 0).toLocaleString('en-IN')}</div></CardContent>
                     </Card>
                     <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Loan</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Loan</CardTitle></CardHeader>
                         <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.loan ?? 0).toLocaleString('en-IN')}</div></CardContent>
                     </Card>
                     <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Sadaqah</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Sadaqah</CardTitle></CardHeader>
                         <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.sadaqah ?? 0).toLocaleString('en-IN')}</div></CardContent>
                     </Card>
                     <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Lillah</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Lillah</CardTitle></CardHeader>
                         <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.lillah ?? 0).toLocaleString('en-IN')}</div></CardContent>
                     </Card>
                     <Card>
-                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Monthly Contribution</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                        <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Monthly Contribution</CardTitle></CardHeader>
                         <CardContent className="p-2"><div className="text-xl font-bold">₹{(summaryData?.fundTotals.monthlyContribution ?? 0).toLocaleString('en-IN')}</div></CardContent>
                     </Card>
                 </div>
