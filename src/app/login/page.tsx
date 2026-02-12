@@ -128,7 +128,7 @@ export default function LoginPage() {
   const authUrl = `https://console.firebase.google.com/project/${firebaseProjectId}/authentication/sign-in-method`;
 
   return (
-    <div className="w-full max-w-sm animate-fade-in-zoom" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
+    <div className="w-full max-w-sm animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
         <div className="mb-4 flex">
             <Button variant="outline" asChild>
                 <Link href="/">

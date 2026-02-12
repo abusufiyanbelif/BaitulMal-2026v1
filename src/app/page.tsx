@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -36,7 +37,7 @@ const LeadAndCampaignSummary = dynamic(() => import('@/components/lead-campaign-
 
 function HomeDashboardCard({ title, description, href, icon: Icon }: { title: string, description: string, href: string, icon: React.ComponentType<{ className?: string }> }) {
   return (
-    <div className="animate-fade-in-zoom" style={{ animationDelay: '500ms' }}>
+    <div className="animate-fade-in-up" style={{ animationDelay: '500ms' }}>
       <Link href={href} className="block group">
         <Card className="h-full p-4 transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:-translate-y-1 group-hover:border-primary active:scale-95">
           <div className="flex justify-between items-start">
@@ -150,7 +151,7 @@ export default function Home() {
             </>
             ) : (
             <div className="space-y-8">
-              <Card className="max-w-4xl mx-auto text-center">
+              <Card className="max-w-4xl mx-auto text-center animate-fade-in-up">
                   <CardHeader>
                       <CardTitle className="text-3xl font-bold">Welcome to Baitulmal Samajik Sanstha Solapur</CardTitle>
                       <CardDescription className="text-lg text-muted-foreground pt-2">

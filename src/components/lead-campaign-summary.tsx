@@ -92,13 +92,14 @@ export function LeadAndCampaignSummary() {
     <div className="grid gap-6 md:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FolderKanban className="h-6 w-6 text-primary" />
-            Campaigns
-          </CardTitle>
-          <CardDescription>
-            Total of {campaignSummary?.total || 0} campaigns recorded.
-          </CardDescription>
+          <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <FolderKanban className="h-6 w-6 text-primary" />
+                Campaigns
+              </CardTitle>
+              <span className="text-2xl font-bold">{campaignSummary?.total || 0}</span>
+          </div>
+          <CardDescription>Total campaigns recorded by category.</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={campaignCategoryChartConfig} className="h-[150px] w-full">
@@ -117,12 +118,15 @@ export function LeadAndCampaignSummary() {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lightbulb className="h-6 w-6 text-primary" />
-            Leads
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Lightbulb className="h-6 w-6 text-primary" />
+              Leads
+            </CardTitle>
+            <span className="text-2xl font-bold">{leadSummary?.total || 0}</span>
+          </div>
           <CardDescription>
-            Total of {leadSummary?.total || 0} leads being tracked.
+            Total leads being tracked by category.
           </CardDescription>
         </CardHeader>
         <CardContent>

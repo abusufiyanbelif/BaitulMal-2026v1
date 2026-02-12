@@ -69,6 +69,9 @@ export default function PublicLeadSummaryPage() {
 
     const leadDocRef = useMemo(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
     const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
+    
+    const beneficiariesCollectionRef = useMemo(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
+    const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
 
     const allDonationsCollectionRef = useMemo(() => {
         if (!firestore) return null;
@@ -119,7 +122,18 @@ export default function PublicLeadSummaryPage() {
         };
     }, [allDonations, lead]);
     
-    const isLoading = isLeadLoading || isBrandingLoading || isPaymentLoading || areDonationsLoading;
+     const beneficiaryData = useMemo(() => {
+        if (!beneficiaries) return null;
+        const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
+        const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
+        return {
+            totalBeneficiaries: beneficiaries.length,
+            beneficiariesGiven,
+            beneficiariesPending,
+        }
+    }, [beneficiaries]);
+    
+    const isLoading = isLeadLoading || isBrandingLoading || isPaymentLoading || areDonationsLoading || areBeneficiariesLoading;
 
     const handleShare = async () => {
         if (!lead || !fundingData) return;
@@ -260,9 +274,38 @@ Your support and feedback are valuable.
                         <Progress value={fundingData?.fundingProgress || 0} />
                     </CardContent>
                 </Card>
+                <div className="grid gap-6 sm:grid-cols-3">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle>
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{beneficiaryData?.totalBeneficiaries ?? 0}</div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Kits Given</CardTitle>
+                            <Gift className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{beneficiaryData?.beneficiariesGiven ?? 0}</div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Kits Pending</CardTitle>
+                            <Hourglass className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{beneficiaryData?.beneficiariesPending ?? 0}</div>
+                        </CardContent>
+                    </Card>
+                </div>
                  <Card>
                     <CardHeader>
-                        <CardTitle>All Donations by Category</CardTitle>
+                        <CardTitle>Donations by Category</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
