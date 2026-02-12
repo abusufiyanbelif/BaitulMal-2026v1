@@ -3,7 +3,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useAuth, useStorage, useFirestore } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { firebaseConfig } from '@/firebase/config';
 import { collection, query, limit, getDocs, doc, where, getDoc } from 'firebase/firestore';
 import { ref as storageRef, getMetadata } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
@@ -59,12 +58,15 @@ export default function DiagnosticsPage() {
             icon: <FileCog className="h-6 w-6 text-primary" />,
             run: async () => {
                 await new Promise(res => setTimeout(res, 300));
-                if (firebaseConfig.projectId && firebaseConfig.storageBucket) {
+                const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+                const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+
+                if (projectId && storageBucket) {
                      return { status: 'success', details: `Project ID and Storage Bucket are present in the configuration.` };
                 } else {
                     let missingVars = [];
-                    if (!firebaseConfig.projectId) missingVars.push('NEXT_PUBLIC_FIREBASE_PROJECT_ID');
-                    if (!firebaseConfig.storageBucket) missingVars.push('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET');
+                    if (!projectId) missingVars.push('NEXT_PUBLIC_FIREBASE_PROJECT_ID');
+                    if (!storageBucket) missingVars.push('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET');
                     return { status: 'failure', details: (
                         <span>
                             The following environment variables are missing from your configuration: <strong>{missingVars.join(', ')}</strong>. Please check your `.env` file.
@@ -154,7 +156,10 @@ export default function DiagnosticsPage() {
             description: 'Attempts to read metadata from a public file to verify read access.',
             icon: <FolderKanban className="h-6 w-6 text-primary" />,
             run: async () => {
-                if (!storage || !firebaseConfig.storageBucket) {
+                const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+                const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+
+                if (!storage || !storageBucket) {
                     return { status: 'failure', details: `Cannot perform Storage test without the Storage service or a configured Storage Bucket.` };
                 }
                 
@@ -170,7 +175,7 @@ export default function DiagnosticsPage() {
                             </span>
                         )};
                     } else if (error.code === 'storage/unauthorized') {
-                        const storageRulesUrl = `https://console.firebase.google.com/project/${firebaseConfig.projectId}/storage/${firebaseConfig.storageBucket}/rules`;
+                        const storageRulesUrl = `https://console.firebase.google.com/project/${projectId}/storage/${storageBucket}/rules`;
                         return { status: 'failure', details: (
                             <div className="space-y-2">
                                 <p><strong>Permission Denied.</strong> This is a Firebase Storage Security Rules issue.</p>
@@ -192,7 +197,7 @@ export default function DiagnosticsPage() {
                     } else if (error.code === 'storage/bucket-not-found') {
                          return { status: 'failure', details: (
                             <span>
-                                <strong>Bucket Not Found.</strong> The storage bucket <strong>{firebaseConfig.storageBucket}</strong> does not exist. Please verify the `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` value in your `.env` file.
+                                <strong>Bucket Not Found.</strong> The storage bucket <strong>{storageBucket}</strong> does not exist. Please verify the `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` value in your `.env` file.
                             </span>
                         )};
                     }
