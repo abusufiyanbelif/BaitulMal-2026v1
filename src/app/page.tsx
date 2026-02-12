@@ -9,7 +9,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getNestedValue } from '@/lib/utils';
 import React from 'react';
 import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, LifeBuoy, FlaskConical } from 'lucide-react';
-
+import { DonationSummary } from '@/components/donation-summary';
+import { LeadAndCampaignSummary } from '@/components/lead-campaign-summary';
 
 export default function Home() {
     const { userProfile, isLoading } = useSession();
@@ -107,22 +108,29 @@ export default function Home() {
                 </div>
             </>
             ) : (
-            <Card className="max-w-2xl mx-auto text-center mt-10">
-                    <CardHeader>
-                        <CardTitle className="text-3xl font-bold">Welcome to Baitulmal Samajik Sanstha Solapur</CardTitle>
-                        <CardDescription className="text-lg text-muted-foreground pt-2">
-                            Managing and tracking community support campaigns efficiently. View our public campaigns or log in to manage your account.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button asChild size="lg">
-                            <Link href="/campaign-public">View Public Campaigns</Link>
-                        </Button>
-                        <Button asChild variant="outline" size="lg">
-                            <Link href="/leads-public">View Public Leads</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
+            <div className="space-y-8">
+              <Card className="max-w-4xl mx-auto text-center">
+                  <CardHeader>
+                      <CardTitle className="text-3xl font-bold">Welcome to Baitulmal Samajik Sanstha Solapur</CardTitle>
+                      <CardDescription className="text-lg text-muted-foreground pt-2">
+                          An overview of our organization's impact and activities.
+                      </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <Button asChild size="lg">
+                          <Link href="/campaign-public">View Public Campaigns</Link>
+                      </Button>
+                      <Button asChild variant="outline" size="lg">
+                          <Link href="/leads-public">View Public Leads</Link>
+                      </Button>
+                  </CardContent>
+              </Card>
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-center">Live Summary</h2>
+                <DonationSummary />
+                <LeadAndCampaignSummary />
+              </div>
+            </div>
             )}
         </div>
     );
