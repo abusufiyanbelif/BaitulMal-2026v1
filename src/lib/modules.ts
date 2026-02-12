@@ -27,8 +27,7 @@ export const leadSubModules = [
 export const leadPurposesConfig = [
   { id: 'Education', name: 'Education', categories: ['School Fees', 'College Fees', 'Tuition Fees', 'Exam Fees', 'Hostel Fees', 'Books & Uniforms', 'Educational Materials', 'Other'] },
   { id: 'Medical', name: 'Medical', categories: ['Hospital Bill', 'Doctor Fees', 'Medication', 'Surgery', 'Other'] },
-  { id: 'Ration', name: 'Ration', categories: [] as string[] },
-  { id: 'Relief', name: 'Relief', categories: [] as string[] },
+  { id: 'Relief', name: 'Relief Fund', categories: ['Ration Kit', 'Financial Aid', 'Disaster Relief', 'Shelter Assistance', 'Utility Bill Payment', 'Other'] },
   { id: 'General', name: 'General', categories: [] as string[] },
   { id: 'Other', name: 'Other', categories: [] as string[] },
 ] as const;

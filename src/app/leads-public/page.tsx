@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { collection, query, where } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
+import { leadPurposesConfig } from '@/lib/modules';
 
 export default function PublicLeadPage() {
   const firestore = useFirestore();
@@ -22,7 +23,7 @@ export default function PublicLeadPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [purposeFilter, setPurposeFilter] = useState('All');
 
   const leadsCollectionRef = useMemo(() => {
     if (!firestore) return null;
@@ -80,10 +81,10 @@ export default function PublicLeadPage() {
     if (!leadData) return [];
     return leadData.filter(l => 
         (statusFilter === 'All' || l.status === statusFilter) &&
-        (categoryFilter === 'All' || l.category === categoryFilter) &&
+        (purposeFilter === 'All' || l.purpose === purposeFilter) &&
         (l.name.toLowerCase().includes(searchTerm.toLowerCase()))
     ).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-  }, [leadData, searchTerm, statusFilter, categoryFilter]);
+  }, [leadData, searchTerm, statusFilter, purposeFilter]);
   
   const isLoading = areLeadsLoading || areDonationsLoading;
 
@@ -119,18 +120,13 @@ export default function PublicLeadPage() {
                      <SelectItem value="Upcoming">Upcoming</SelectItem>
                 </SelectContent>
             </Select>
-             <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}>
+             <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}>
                 <SelectTrigger className="w-auto md:w-[180px]">
-                    <SelectValue placeholder="Filter by category" />
+                    <SelectValue placeholder="Filter by purpose" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="All">All Categories</SelectItem>
-                    <SelectItem value="Ration">Ration</SelectItem>
-                    <SelectItem value="Relief">Relief</SelectItem>
-                    <SelectItem value="General">General</SelectItem>
-                    <SelectItem value="Education">Education</SelectItem>
-                    <SelectItem value="Medical">Medical</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="All">All Purposes</SelectItem>
+                    {leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                 </SelectContent>
             </Select>
         </div>
@@ -190,5 +186,3 @@ export default function PublicLeadPage() {
     </main>
   );
 }
-
-    

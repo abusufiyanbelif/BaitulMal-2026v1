@@ -1,3 +1,4 @@
+
 import type { DocumentData } from 'firebase/firestore';
 import type { UserPermissions } from './modules';
 import { donationCategories } from './modules';
@@ -76,7 +77,7 @@ export interface Campaign extends DocumentData {
 export interface Lead extends DocumentData {
   id: string;
   name: string;
-  purpose: 'Ration' | 'Relief' | 'General' | 'Education' | 'Medical' | 'Other';
+  purpose: 'Relief' | 'General' | 'Education' | 'Medical' | 'Other';
   category: string;
   purposeDetails?: string;
   categoryDetails?: string;

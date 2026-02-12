@@ -25,7 +25,7 @@ import { Label } from '@/components/ui/label';
 
 const leadSchema = z.object({
   name: z.string().min(3, 'Lead name must be at least 3 characters.'),
-  purpose: z.enum(['Ration', 'Relief', 'General', 'Education', 'Medical', 'Other']),
+  purpose: z.enum(['Relief', 'General', 'Education', 'Medical', 'Other']),
   purposeDetails: z.string().optional(),
   category: z.string().optional(),
   categoryDetails: z.string().optional(),
@@ -87,7 +87,7 @@ export default function CreateLeadPage() {
     resolver: zodResolver(leadSchema),
     defaultValues: {
       name: '',
-      purpose: 'Ration',
+      purpose: 'Relief',
       category: '',
       status: 'Upcoming',
       authenticityStatus: 'Pending Verification',
