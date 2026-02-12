@@ -1,16 +1,20 @@
-
 'use client';
 
 import { useMemo } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
 import type { Donation, DonationCategory } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Wallet, PieChart as PieChartIcon } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2, Wallet, PieChart as PieChartIcon, BarChart as BarChartIcon } from 'lucide-react';
 import {
   PieChart,
   Pie,
   Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid
 } from 'recharts';
 import {
   ChartContainer,
@@ -55,17 +59,29 @@ export function DonationSummary() {
       return acc;
     }, {} as Record<DonationCategory, number>);
 
+    const amountsByYear = donations.reduce((acc, d) => {
+        if (d.donationDate) {
+            const year = new Date(d.donationDate).getFullYear();
+            if (!isNaN(year)) {
+                acc[year] = (acc[year] || 0) + d.amount;
+            }
+        }
+        return acc;
+    }, {} as Record<string, number>);
 
     return {
       totalAmount,
       categoryChartData: Object.entries(amountsByCategory).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})`})),
+      yearChartData: Object.entries(amountsByYear)
+        .map(([year, total]) => ({ year, total }))
+        .sort((a, b) => parseInt(a.year) - parseInt(b.year)),
     };
   }, [donations]);
 
   if (isLoading) {
     return (
-      <div className="grid gap-6 md:grid-cols-2">
-        {[...Array(2)].map((_, i) => <Card key={i}><CardHeader><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></CardHeader><CardContent><Loader2 className="h-24 w-full animate-spin text-muted-foreground" /></CardContent></Card>)}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {[...Array(3)].map((_, i) => <Card key={i}><CardHeader><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></CardHeader><CardContent><Loader2 className="h-24 w-full animate-spin text-muted-foreground" /></CardContent></Card>)}
       </div>
     );
   }
@@ -75,7 +91,7 @@ export function DonationSummary() {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -106,6 +122,28 @@ export function DonationSummary() {
               </Pie>
               <ChartLegend content={<ChartLegendContent nameKey="name" />} />
             </PieChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChartIcon className="h-6 w-6 text-primary" />
+            Donations by Year
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={{}} className="h-[150px] w-full">
+            <BarChart data={summaryData.yearChartData}>
+              <CartesianGrid vertical={false} />
+              <XAxis dataKey="year" tickLine={false} tickMargin={10} axisLine={false} stroke="#888888" fontSize={12} />
+              <YAxis stroke="#888888" fontSize={12} tickFormatter={(value) => `₹${new Intl.NumberFormat('en-IN', { notation: 'compact' }).format(value)}`} />
+              <ChartTooltip
+                cursor={{ fill: "hsl(var(--muted))" }}
+                content={<ChartTooltipContent indicator="dot" />}
+              />
+              <Bar dataKey="total" fill="hsl(var(--primary))" radius={4} />
+            </BarChart>
           </ChartContainer>
         </CardContent>
       </Card>
