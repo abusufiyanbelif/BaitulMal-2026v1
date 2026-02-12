@@ -872,12 +872,12 @@ export default function CampaignDetailsPage() {
             </ScrollArea>
         </div>
 
-        <Card className="animate-fade-in-zoom">
-          <CardHeader>
-             <div className="flex justify-between items-start flex-wrap gap-4">
-                <div>
-                    <CardTitle>{editableCampaign.category === 'Ration' ? 'Ration Details' : 'Item List'}</CardTitle>
-                    {editableCampaign.category === 'Ration' && (
+        {editableCampaign.category === 'Ration' ? (
+            <Card className="animate-fade-in-zoom">
+              <CardHeader>
+                 <div className="flex justify-between items-start flex-wrap gap-4">
+                    <div>
+                        <CardTitle>{editableCampaign.category === 'Ration' ? 'Ration Details' : 'Item List'}</CardTitle>
                         <div className="text-sm text-muted-foreground mt-4">
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                 <div className="space-y-1">
@@ -922,165 +922,165 @@ export default function CampaignDetailsPage() {
                                 </div>
                             </div>
                         </div>
-                    )}
-                </div>
-                <div className="flex gap-2 flex-wrap justify-end">
-                    {canUpdate && editableCampaign.category === 'Ration' && (
-                        <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary">
-                            {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                            Sync Ration Kit Amounts
-                        </Button>
-                    )}
-                    {canUpdate && (
-                        !editMode ? (
-                            <Button onClick={() => setEditMode(true)}>
-                                <Edit className="mr-2 h-4 w-4" /> Edit Details
-                            </Button>
-                        ) : (
-                            <div className="flex gap-2">
-                                <Button variant="outline" onClick={handleCancel}>Cancel</Button>
-                                <Button onClick={handleSave}>
-                                    <Save className="mr-2 h-4 w-4" /> Save
-                                </Button>
-                            </div>
-                        )
-                    )}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline">
-                                <Download className="mr-2 h-4 w-4" />
-                                Download
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => {}}>Download as CSV</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {}}>Download as Excel</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {}}>Download as PDF</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    {canUpdate && editMode && editableCampaign.category === 'Ration' && (
-                        <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
-                            <DialogTrigger asChild>
-                                <Button variant="outline">
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Add Category
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-md">
-                                <DialogHeader>
-                                    <DialogTitle>Add New Ration Category</DialogTitle>
-                                    <DialogDescription>
-                                        Define a named category for a range of family members.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="cat-name">Category Name</Label>
-                                        <Input
-                                            id="cat-name"
-                                            value={newCategoryName}
-                                            onChange={(e) => setNewCategoryName(e.target.value)}
-                                            placeholder="e.g., 'Small Family', 'Members 5-10'"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="min-members">Min Members</Label>
-                                            <Input
-                                                id="min-members"
-                                                type="number"
-                                                value={newCategoryMin}
-                                                onChange={(e) => setNewCategoryMin(e.target.value)}
-                                                placeholder="e.g., 1"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="max-members">Max Members</Label>
-                                            <Input
-                                                id="max-members"
-                                                type="number"
-                                                value={newCategoryMax}
-                                                onChange={(e) => setNewCategoryMax(e.target.value)}
-                                                placeholder="e.g., 4"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <DialogFooter>
-                                    <Button type="button" variant="outline" onClick={() => setIsAddCategoryOpen(false)}>Cancel</Button>
-                                    <Button type="submit" onClick={handleAddNewCategory}>Add Category</Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
-                    )}
-                </div>
-             </div>
-          </CardHeader>
-            <CardContent>
-                {editableCampaign.category === 'Ration' ? (
-                (sanitizedEditableRationLists.length > 0) ? (
-                    <Tabs defaultValue={sanitizedEditableRationLists[0]?.id} className="w-full">
-                        <ScrollArea>
-                            <TabsList>
-                                {sanitizedEditableRationLists.map(category => {
-                                    const categoryName = category.name === 'General Item List'
-                                    ? 'General Item List'
-                                    : category.minMembers === category.maxMembers
-                                        ? `${category.name} (${category.minMembers})`
-                                        : `${category.name} (${category.minMembers}-${category.maxMembers})`;
-                                    return (
-                                        <div key={category.id} className="flex items-center gap-1 p-1">
-                                            <TabsTrigger value={category.id}>{categoryName}</TabsTrigger>
-                                            {editMode && canUpdate && category.name !== 'General Item List' && (
-                                                <div className="flex items-center">
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="icon" 
-                                                        className="h-6 w-6 shrink-0"
-                                                        onClick={() => handleEditCategoryClick(category)}
-                                                        title="Edit category"
-                                                    >
-                                                        <Edit className="h-3.5 w-3.5" />
-                                                    </Button>
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="icon" 
-                                                        className="h-6 w-6 shrink-0"
-                                                        onClick={() => handleDeleteCategoryClick(category)}
-                                                        disabled={isDeletingCategory}
-                                                        title="Delete category"
-                                                    >
-                                                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )
-                                })}
-                            </TabsList>
-                            <ScrollBar orientation="horizontal" />
-                        </ScrollArea>
-                        {sanitizedEditableRationLists.map(category => (
-                            <TabsContent key={category.id} value={category.id} className="mt-4">
-                                {renderRationTable(category)}
-                            </TabsContent>
-                        ))}
-                    </Tabs>
-                ) : (
-                    <div className="text-center text-muted-foreground py-10">
-                        No ration categories defined for this campaign yet.
-                        {canUpdate && editMode && " Click 'Add Category' to begin."}
                     </div>
-                )
-            ) : (
-                <div className="mt-4">
-                {sanitizedEditableRationLists.find(c => c.name === 'General Item List') &&
-                    renderRationTable(sanitizedEditableRationLists.find(c => c.name === 'General Item List')!)
-                }
-                </div>
-            )}
-          </CardContent>
-        </Card>
+                    <div className="flex gap-2 flex-wrap justify-end">
+                        {canUpdate && editableCampaign.category === 'Ration' && (
+                            <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary">
+                                {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                                Sync Ration Kit Amounts
+                            </Button>
+                        )}
+                        {canUpdate && (
+                            !editMode ? (
+                                <Button onClick={() => setEditMode(true)}>
+                                    <Edit className="mr-2 h-4 w-4" /> Edit Details
+                                </Button>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+                                    <Button onClick={handleSave}>
+                                        <Save className="mr-2 h-4 w-4" /> Save
+                                    </Button>
+                                </div>
+                            )
+                        )}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline">
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Download
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem onClick={() => {}}>Download as CSV</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => {}}>Download as Excel</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => {}}>Download as PDF</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        {canUpdate && editMode && editableCampaign.category === 'Ration' && (
+                            <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline">
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Add Category
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-md">
+                                    <DialogHeader>
+                                        <DialogTitle>Add New Ration Category</DialogTitle>
+                                        <DialogDescription>
+                                            Define a named category for a range of family members.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="grid gap-4 py-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="cat-name">Category Name</Label>
+                                            <Input
+                                                id="cat-name"
+                                                value={newCategoryName}
+                                                onChange={(e) => setNewCategoryName(e.target.value)}
+                                                placeholder="e.g., 'Small Family', 'Members 5-10'"
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="min-members">Min Members</Label>
+                                                <Input
+                                                    id="min-members"
+                                                    type="number"
+                                                    value={newCategoryMin}
+                                                    onChange={(e) => setNewCategoryMin(e.target.value)}
+                                                    placeholder="e.g., 1"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="max-members">Max Members</Label>
+                                                <Input
+                                                    id="max-members"
+                                                    type="number"
+                                                    value={newCategoryMax}
+                                                    onChange={(e) => setNewCategoryMax(e.target.value)}
+                                                    placeholder="e.g., 4"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button type="button" variant="outline" onClick={() => setIsAddCategoryOpen(false)}>Cancel</Button>
+                                        <Button type="submit" onClick={handleAddNewCategory}>Add Category</Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                        )}
+                    </div>
+                 </div>
+              </CardHeader>
+                <CardContent>
+                    {(sanitizedEditableRationLists.length > 0) ? (
+                        <Tabs defaultValue={sanitizedEditableRationLists[0]?.id} className="w-full">
+                            <ScrollArea>
+                                <TabsList>
+                                    {sanitizedEditableRationLists.map(category => {
+                                        const categoryName = category.name === 'General Item List'
+                                        ? 'General Item List'
+                                        : category.minMembers === category.maxMembers
+                                            ? `${category.name} (${category.minMembers})`
+                                            : `${category.name} (${category.minMembers}-${category.maxMembers})`;
+                                        return (
+                                            <div key={category.id} className="flex items-center gap-1 p-1">
+                                                <TabsTrigger value={category.id}>{categoryName}</TabsTrigger>
+                                                {editMode && canUpdate && category.name !== 'General Item List' && (
+                                                    <div className="flex items-center">
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="icon" 
+                                                            className="h-6 w-6 shrink-0"
+                                                            onClick={() => handleEditCategoryClick(category)}
+                                                            title="Edit category"
+                                                        >
+                                                            <Edit className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="icon" 
+                                                            className="h-6 w-6 shrink-0"
+                                                            onClick={() => handleDeleteCategoryClick(category)}
+                                                            disabled={isDeletingCategory}
+                                                            title="Delete category"
+                                                        >
+                                                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
+                                    })}
+                                </TabsList>
+                                <ScrollBar orientation="horizontal" />
+                            </ScrollArea>
+                            {sanitizedEditableRationLists.map(category => (
+                                <TabsContent key={category.id} value={category.id} className="mt-4">
+                                    {renderRationTable(category)}
+                                </TabsContent>
+                            ))}
+                        </Tabs>
+                    ) : (
+                        <div className="text-center text-muted-foreground py-10">
+                            No ration categories defined for this campaign yet.
+                            {canUpdate && editMode && " Click 'Add Category' to begin."}
+                        </div>
+                    )}
+              </CardContent>
+            </Card>
+        ) : (
+            <Alert>
+               <Info className="h-4 w-4" />
+               <AlertTitle>Not a Ration Campaign</AlertTitle>
+               <AlertDescription>
+                   Item lists and kit amount calculations are only applicable to campaigns with the 'Ration' category.
+               </AlertDescription>
+           </Alert>
+        )}
       </main>
 
       <AlertDialog open={isDeleteItemDialogOpen} onOpenChange={setIsDeleteItemDialogOpen}>

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -362,87 +361,97 @@ export default function LeadDetailsPage() {
         </CardContent>
       </Card>
       
-      <Card className="animate-fade-in-zoom">
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Item List</CardTitle>
-            <div className="flex gap-2">
-              {canUpdate && (
-                <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary">
-                    {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                    Sync Kit Amounts
-                </Button>
-              )}
-              {canUpdate && editMode && (
-                <Button onClick={handleAddItem} size="sm">
-                  <Plus className="mr-2 h-4 w-4" /> Add Item
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
-            <h4 className="text-lg font-bold">Total Kit Cost: <span className="font-mono">₹{totalKitCost.toFixed(2)}</span></h4>
-          </div>
-          <div className="w-full overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]">#</TableHead>
-                  <TableHead className="min-w-[180px]">Item Name</TableHead>
-                  <TableHead className="min-w-[100px]">Quantity</TableHead>
-                  <TableHead className="min-w-[150px]">Quantity Type</TableHead>
-                  <TableHead className="min-w-[120px]">Price per Unit (₹)</TableHead>
-                  <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>
-                  {canUpdate && editMode && <TableHead className="w-[50px] text-center">Action</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {itemList.map((item: RationItem, index: number) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>
-                      <Input value={item.name || ''} onChange={e => handleItemChange(item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
-                    </TableCell>
-                    <TableCell>
-                      <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
-                    </TableCell>
-                    <TableCell>
-                      <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(item.id, 'quantityType', value)} disabled={!editMode || !canUpdate}>
-                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                        <SelectContent>
-                          {quantityTypes.map(type => (
-                            <SelectItem key={type} value={type}>{type}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      <Input type="number" value={item.price || ''} onChange={e => handleItemChange(item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
-                    </TableCell>
-                    <TableCell className="text-right font-mono">
-                      ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
-                    </TableCell>
-                    {canUpdate && editMode && (
-                      <TableCell className="text-center">
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteItemClick(item.id, item.name)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      </TableCell>
+      {editableLead.category === 'Ration' ? (
+          <Card className="animate-fade-in-zoom">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>Item List</CardTitle>
+                <div className="flex gap-2">
+                  {canUpdate && (
+                    <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary">
+                        {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                        Sync Kit Amounts
+                    </Button>
+                  )}
+                  {canUpdate && editMode && (
+                    <Button onClick={handleAddItem} size="sm">
+                      <Plus className="mr-2 h-4 w-4" /> Add Item
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+                <h4 className="text-lg font-bold">Total Kit Cost: <span className="font-mono">₹{totalKitCost.toFixed(2)}</span></h4>
+              </div>
+              <div className="w-full overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]">#</TableHead>
+                      <TableHead className="min-w-[180px]">Item Name</TableHead>
+                      <TableHead className="min-w-[100px]">Quantity</TableHead>
+                      <TableHead className="min-w-[150px]">Quantity Type</TableHead>
+                      <TableHead className="min-w-[120px]">Price per Unit (₹)</TableHead>
+                      <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>
+                      {canUpdate && editMode && <TableHead className="w-[50px] text-center">Action</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {itemList.map((item: RationItem, index: number) => (
+                      <TableRow key={item.id}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>
+                          <Input value={item.name || ''} onChange={e => handleItemChange(item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
+                        </TableCell>
+                        <TableCell>
+                          <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
+                        </TableCell>
+                        <TableCell>
+                          <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(item.id, 'quantityType', value)} disabled={!editMode || !canUpdate}>
+                            <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                            <SelectContent>
+                              {quantityTypes.map(type => (
+                                <SelectItem key={type} value={type}>{type}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Input type="number" value={item.price || ''} onChange={e => handleItemChange(item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
+                        </TableCell>
+                        {canUpdate && editMode && (
+                          <TableCell className="text-center">
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItemClick(item.id, item.name)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                    {itemList.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={canUpdate && editMode ? 7 : 6} className="text-center h-24 text-muted-foreground">
+                          No items added yet.
+                        </TableCell>
+                      </TableRow>
                     )}
-                  </TableRow>
-                ))}
-                {itemList.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={canUpdate && editMode ? 7 : 6} className="text-center h-24 text-muted-foreground">
-                      No items added yet.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+            <Alert>
+                <Info className="h-4 w-4" />
+                <AlertTitle>Not a Ration-Based Lead</AlertTitle>
+                <AlertDescription>
+                    Item lists and kit amount calculations are only applicable to leads with the 'Ration' category.
+                </AlertDescription>
+            </Alert>
+        )}
     </main>
 
     <AlertDialog open={isDeleteItemDialogOpen} onOpenChange={setIsDeleteItemDialogOpen}>
