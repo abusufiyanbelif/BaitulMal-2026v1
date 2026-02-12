@@ -5,7 +5,7 @@ import { useParams, useRouter, usePathname } from 'next/navigation';
 import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { collection, addDoc, deleteDoc, doc, serverTimestamp, setDoc, DocumentReference, writeBatch } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, serverTimestamp, setDoc, DocumentReference, writeBatch, updateDoc } from 'firebase/firestore';
 import type { Beneficiary, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -14,12 +14,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Upload, Download, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Upload, Download, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, ChevronsUpDown, CheckCircle2, BadgeCheck, Hourglass, XCircle, Info } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -52,6 +59,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 
 type SortKey = keyof Beneficiary | 'srNo';
+type BeneficiaryStatus = Beneficiary['status'];
 
 export default function BeneficiariesPage() {
   const params = useParams();
@@ -282,6 +290,27 @@ export default function BeneficiariesPage() {
     }
     setSortConfig({ key, direction });
   };
+
+  const handleStatusChange = async (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => {
+    if (!firestore || !leadId || !canUpdate) return;
+    
+    const beneficiaryDocRef = doc(firestore, `leads/${leadId}/beneficiaries`, beneficiary.id);
+    
+    try {
+      await updateDoc(beneficiaryDocRef, { status: newStatus });
+      toast({
+        title: 'Status Updated',
+        description: `${beneficiary.name}'s status has been set to ${newStatus}.`,
+        variant: 'success',
+      });
+    } catch (serverError) {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: beneficiaryDocRef.path,
+        operation: 'update',
+        requestResourceData: { status: newStatus },
+      }));
+    }
+  };
   
   const filteredAndSortedBeneficiaries = useMemo(() => {
     if (!beneficiaries) return [];
@@ -481,6 +510,7 @@ export default function BeneficiariesPage() {
                                     canDelete={canDelete}
                                     onEdit={handleEdit}
                                     onDelete={handleDeleteClick}
+                                    onStatusChange={handleStatusChange}
                                 />
                             ))
                         ) : (
@@ -547,9 +577,10 @@ interface BeneficiaryRowProps {
     canDelete?: boolean;
     onEdit: (beneficiary: Beneficiary) => void;
     onDelete: (id: string) => void;
+    onStatusChange: (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => void;
 }
 
-const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onEdit, onDelete }) => {
+const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onEdit, onDelete, onStatusChange }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
@@ -576,8 +607,7 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                 </TableCell>
                 <TableCell>
                     <Badge variant={
-                        beneficiary.status === 'Given' ? 'success' :
-                        beneficiary.status === 'Verified' ? 'success' :
+                        beneficiary.status === 'Given' || beneficiary.status === 'Verified' ? 'success' :
                         beneficiary.status === 'Pending' ? 'secondary' :
                         beneficiary.status === 'Hold' ? 'destructive' : 'outline'
                     }>{beneficiary.status}</Badge>
@@ -595,6 +625,30 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 {canUpdate && <DropdownMenuItem onClick={() => onEdit(beneficiary)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
+                                {canUpdate && <DropdownMenuSeparator />}
+                                {canUpdate && (
+                                    <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger>
+                                            <ChevronsUpDown className="mr-2 h-4 w-4" />
+                                            <span>Change Status</span>
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuPortal>
+                                            <DropdownMenuSubContent>
+                                                <DropdownMenuRadioGroup
+                                                    value={beneficiary.status}
+                                                    onValueChange={(newStatus) => onStatusChange(beneficiary, newStatus as BeneficiaryStatus)}
+                                                >
+                                                    <DropdownMenuRadioItem value="Pending"><Hourglass className="mr-2"/>Pending</DropdownMenuRadioItem>
+                                                    <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2"/>Verified</DropdownMenuRadioItem>
+                                                    <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2"/>Given</DropdownMenuRadioItem>
+                                                    <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2"/>Hold</DropdownMenuRadioItem>
+                                                    <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2"/>Need More Details</DropdownMenuRadioItem>
+                                                </DropdownMenuRadioGroup>
+                                            </DropdownMenuSubContent>
+                                        </DropdownMenuPortal>
+                                    </DropdownMenuSub>
+                                )}
+                                {canDelete && <DropdownMenuSeparator />}
                                 {canDelete && <DropdownMenuItem onClick={() => onDelete(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
                             </DropdownMenuContent>
                         </DropdownMenu>

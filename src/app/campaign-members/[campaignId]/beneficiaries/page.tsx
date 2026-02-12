@@ -1176,8 +1176,7 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                 </TableCell>
                 <TableCell>
                     <Badge variant={
-                        beneficiary.status === 'Given' ? 'success' :
-                        beneficiary.status === 'Verified' ? 'success' :
+                        beneficiary.status === 'Given' || beneficiary.status === 'Verified' ? 'success' :
                         beneficiary.status === 'Pending' ? 'secondary' :
                         beneficiary.status === 'Hold' ? 'destructive' : 'outline'
                     }>{beneficiary.status}</Badge>
@@ -1211,11 +1210,11 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                                                 value={beneficiary.status}
                                                 onValueChange={(newStatus) => onStatusChange(beneficiary, newStatus as BeneficiaryStatus)}
                                             >
-                                                <DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Hold">Hold</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Pending"><Hourglass className="mr-2"/>Pending</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2"/>Verified</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2"/>Given</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2"/>Hold</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2"/>Need More Details</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
