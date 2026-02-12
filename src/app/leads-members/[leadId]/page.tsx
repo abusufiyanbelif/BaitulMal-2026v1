@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Plus, Trash2, Download, Edit, Save, ShieldAlert, Info, RefreshCw, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Download, Edit, Save, ShieldAlert, Info, RefreshCw, Loader2, Database } from 'lucide-react';
 import Link from 'next/link';
 import {
   AlertDialog,
@@ -75,14 +75,23 @@ export default function LeadDetailsPage() {
     }
   }, [editMode, lead]);
 
+  const isLegacyData = useMemo(() => {
+    // @ts-ignore
+    return lead && !lead.itemCategories && lead.rationLists;
+  }, [lead]);
+
   const itemList = useMemo(() => {
     if (!editableLead) return [];
-    if (Array.isArray(editableLead.rationLists)) {
-        const generalList = editableLead.rationLists.find(c => c.name === 'General Item List');
-        return generalList?.items || [];
+    if (Array.isArray(editableLead.itemCategories) && editableLead.itemCategories.length > 0) {
+        return editableLead.itemCategories[0]?.items || [];
     }
-    // Handle old object format
-    return (editableLead.rationLists as any)['General Item List'] || [];
+    // Fallback for old structure for safety, though UI should prevent this state.
+    // @ts-ignore
+    if (editableLead.rationLists && !Array.isArray(editableLead.rationLists)) {
+        // @ts-ignore
+        return editableLead.rationLists['General Item List'] || [];
+    }
+    return [];
   }, [editableLead]);
 
 
@@ -99,38 +108,27 @@ export default function LeadDetailsPage() {
   };
   
   const handleItemChange = (itemId: string, field: keyof RationItem, value: string | number) => {
-    if (!editableLead) return;
-    
+    if (!editableLead || !editableLead.itemCategories) return;
     const updatedItems = itemList.map((item: RationItem) => 
         item.id === itemId ? { ...item, [field]: value } : item
     );
-
-    const newRationLists = Array.isArray(editableLead.rationLists) 
-      ? editableLead.rationLists.map((cat: RationCategory) => cat.name === 'General Item List' ? {...cat, items: updatedItems} : cat)
-      : { 'General Item List': updatedItems };
-
-    handleFieldChange('rationLists', newRationLists);
+    const newItemCategories = [{ ...editableLead.itemCategories[0], items: updatedItems }];
+    handleFieldChange('itemCategories', newItemCategories);
   };
 
   const handleAddItem = () => {
     if (!editableLead) return;
-    const newItem: RationItem = { id: `item-${Date.now()}`, name: '', quantity: 1, quantityType: 'kg', price: 0, notes: '' };
+    const newItem: RationItem = { id: `item-${Date.now()}`, name: '', quantity: 1, quantityType: 'unit', price: 0, notes: '' };
     const updatedItems = [...itemList, newItem];
-    const newRationLists = Array.isArray(editableLead.rationLists) 
-      ? editableLead.rationLists.map((cat: RationCategory) => cat.name === 'General Item List' ? {...cat, items: updatedItems} : cat)
-      : { 'General Item List': updatedItems };
-
-    handleFieldChange('rationLists', newRationLists);
+    const newItemCategories = [{ ...(editableLead.itemCategories?.[0] || {id: 'general', name: 'General', items:[]}), items: updatedItems }];
+    handleFieldChange('itemCategories', newItemCategories);
   };
 
   const handleDeleteItem = (itemId: string) => {
-    if (!editableLead) return;
+    if (!editableLead || !editableLead.itemCategories) return;
     const updatedItems = itemList.filter((item: RationItem) => item.id !== itemId);
-    const newRationLists = Array.isArray(editableLead.rationLists) 
-      ? editableLead.rationLists.map((cat: RationCategory) => cat.name === 'General Item List' ? {...cat, items: updatedItems} : cat)
-      : { 'General Item List': updatedItems };
-
-    handleFieldChange('rationLists', newRationLists);
+    const newItemCategories = [{ ...editableLead.itemCategories[0], items: updatedItems }];
+    handleFieldChange('itemCategories', newItemCategories);
   };
 
   const handleDeleteItemClick = (itemId: string, itemName: string) => {
@@ -164,7 +162,7 @@ export default function LeadDetailsPage() {
         targetAmount: editableLead.targetAmount || 0,
         authenticityStatus: editableLead.authenticityStatus,
         publicVisibility: editableLead.publicVisibility,
-        rationLists: editableLead.rationLists,
+        itemCategories: editableLead.itemCategories,
         priceDate: editableLead.priceDate || '',
         shopName: editableLead.shopName || '',
         shopContact: editableLead.shopContact || '',
@@ -324,6 +322,16 @@ export default function LeadDetailsPage() {
             <ScrollBar orientation="horizontal" />
         </ScrollArea>
       </div>
+
+        {isLegacyData && (
+            <Alert variant="destructive" className="mb-4">
+              <Database className="h-4 w-4" />
+              <AlertTitle>Data Migration Required</AlertTitle>
+              <AlertDescription>
+                This lead is using an old data format. To enable editing of its item lists and full functionality, please run the migration script from your terminal: <code className="font-mono bg-destructive/20 p-1 rounded-sm">npm run db:migrate-categories</code>
+              </AlertDescription>
+            </Alert>
+        )}
       
       <Card className="animate-fade-in-zoom mb-6">
         <CardHeader>
@@ -334,7 +342,7 @@ export default function LeadDetailsPage() {
               <div className="flex gap-2 flex-wrap justify-end">
                   {canUpdate && (
                       !editMode ? (
-                          <Button onClick={() => setEditMode(true)}>
+                          <Button onClick={() => setEditMode(true)} disabled={isLegacyData}>
                               <Edit className="mr-2 h-4 w-4" /> Edit Details
                           </Button>
                       ) : (

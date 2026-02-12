@@ -11,7 +11,7 @@
     "lint": "npx next lint",
     "typecheck": "tsc --noEmit",
     "db:seed": "tsx scripts/seed.ts",
-    "db:migrate-wve4": "tsx scripts/migrate-ration-wve4.ts",
+    "db:migrate-categories": "tsx scripts/migrate-categories.ts",
     "db:erase": "tsx scripts/erase.ts",
     "check": "tsx scripts/check.ts",
     "check:db": "tsx scripts/check-db.ts",

@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, Copy, RefreshCw, ShieldAlert, Info } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, Copy, RefreshCw, ShieldAlert, Info, Database } from 'lucide-react';
 import Link from 'next/link';
 import {
   Dialog,
@@ -125,7 +125,7 @@ export default function CampaignDetailsPage() {
   }, [isCopyItemsOpen]);
 
   const sanitizedEditableItemCategories = useMemo(() => {
-    if (!editableCampaign?.itemCategories) return [];
+    if (!editableCampaign || !editableCampaign.itemCategories) return [];
     
     let lists: ItemCategory[] = editableCampaign.itemCategories.map(cat => {
         if (cat.name === 'General') {
@@ -144,6 +144,11 @@ export default function CampaignDetailsPage() {
         return a.name.localeCompare(b.name);
     });
   }, [editableCampaign?.itemCategories]);
+
+  const isLegacyData = useMemo(() => {
+    // @ts-ignore
+    return campaign && !campaign.itemCategories && campaign.rationLists;
+  }, [campaign]);
 
   const sourceCategoryForCopy = useMemo(() => {
     if (!copySourceCategoryId) return null;
@@ -823,6 +828,16 @@ export default function CampaignDetailsPage() {
             </ScrollArea>
         </div>
 
+        {isLegacyData && (
+            <Alert variant="destructive" className="mb-4">
+              <Database className="h-4 w-4" />
+              <AlertTitle>Data Migration Required</AlertTitle>
+              <AlertDescription>
+                This campaign is using an old data format. To enable editing of its item lists and full functionality, please run the migration script from your terminal: <code className="font-mono bg-destructive/20 p-1 rounded-sm">npm run db:migrate-categories</code>
+              </AlertDescription>
+            </Alert>
+        )}
+
         <Card className="animate-fade-in-zoom">
             <CardHeader>
                 <div className="flex justify-between items-start flex-wrap gap-4">
@@ -882,7 +897,7 @@ export default function CampaignDetailsPage() {
                     )}
                     {canUpdate && (
                         !editMode ? (
-                            <Button onClick={() => setEditMode(true)}>
+                            <Button onClick={() => setEditMode(true)} disabled={isLegacyData}>
                                 <Edit className="mr-2 h-4 w-4" /> Edit Details
                             </Button>
                         ) : (

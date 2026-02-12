@@ -71,6 +71,7 @@ export interface Campaign extends DocumentData {
   createdAt?: any;
   createdById?: string;
   createdByName?: string;
+  rationLists?: any; // Legacy
 }
 
 export interface Lead extends DocumentData {
@@ -95,6 +96,7 @@ export interface Lead extends DocumentData {
   createdAt?: any;
   createdById?: string;
   createdByName?: string;
+  rationLists?: any; // Legacy
   // Education fields
   degree?: string;
   year?: string;
