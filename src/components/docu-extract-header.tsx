@@ -63,7 +63,7 @@ export function DocuExtractHeader() {
             ) : (
                 validLogoUrl && (
                   <Image
-                    src={validLogoUrl}
+                    src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                     alt="Company Logo"
                     width={brandingSettings?.logoWidth || 100}
                     height={brandingSettings?.logoHeight || 50}

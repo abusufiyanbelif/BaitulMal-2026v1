@@ -36,7 +36,7 @@ export function AppFooter() {
         description: "Your QR code image is being prepared.",
     });
     try {
-        const response = await fetch(validQrCodeUrl);
+        const response = await fetch(`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`);
         if (!response.ok) {
             throw new Error('Failed to fetch QR code');
         }
@@ -143,7 +143,7 @@ export function AppFooter() {
                         <DialogTrigger asChild>
                             <button className="cursor-pointer transition-transform duration-300 ease-in-out hover:scale-105 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg">
                                 <Image
-                                    src={validQrCodeUrl}
+                                    src={`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`}
                                     alt="UPI QR Code"
                                     width={paymentSettings?.qrWidth || 112}
                                     height={paymentSettings?.qrHeight || 112}
@@ -160,7 +160,7 @@ export function AppFooter() {
                             </DialogHeader>
                             <div className="flex items-center justify-center p-4 bg-secondary/30 rounded-lg">
                                 <Image
-                                    src={validQrCodeUrl}
+                                    src={`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`}
                                     alt="UPI QR Code"
                                     className="w-full max-w-xs h-auto rounded-lg"
                                     width={300}
