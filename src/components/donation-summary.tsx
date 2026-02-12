@@ -6,16 +6,11 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Donation, DonationCategory, Campaign, Lead } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wallet, PieChart as PieChartIcon, BarChart as BarChartIcon } from 'lucide-react';
+import { Wallet, PieChart as PieChartIcon, Target } from 'lucide-react';
 import {
   PieChart,
   Pie,
   Cell,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid
 } from 'recharts';
 import {
   ChartContainer,
@@ -31,7 +26,6 @@ import dynamic from 'next/dynamic';
 import { Progress } from '@/components/ui/progress';
 
 const DynamicPieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false, loading: () => <Skeleton className="h-[200px] w-full" /> });
-const DynamicBarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false, loading: () => <Skeleton className="h-[200px] w-full" /> });
 
 const donationCategoryChartConfig = donationCategories.reduce((acc, category, index) => {
   acc[category.replace(/\s+/g, '')] = {
@@ -69,7 +63,19 @@ export function DonationSummary() {
     const totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
 
     const totalTargetAmount = [...campaigns, ...leads].reduce((sum, item) => sum + (item.targetAmount || 0), 0);
-    const progress = totalTargetAmount > 0 ? (totalAmount / totalTargetAmount) * 100 : 0;
+    
+    const allocatedAmount = donations.reduce((sum, d) => {
+        const allocatedPortion = (d.linkSplit || []).reduce((splitSum, link) => {
+            // 'general' is for unallocated funds.
+            if (link.linkType !== 'general') {
+                return splitSum + link.amount;
+            }
+            return splitSum;
+        }, 0);
+        return sum + allocatedPortion;
+    }, 0);
+    
+    const allocatedProgress = totalTargetAmount > 0 ? (allocatedAmount / totalTargetAmount) * 100 : 0;
 
     const amountsByCategory = donations.reduce((acc, d) => {
       const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : [];
@@ -85,7 +91,8 @@ export function DonationSummary() {
     return {
       totalAmount,
       totalTargetAmount,
-      progress,
+      allocatedAmount,
+      allocatedProgress,
       categoryChartData: Object.entries(amountsByCategory).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})`})),
     };
   }, [donations, campaigns, leads]);
@@ -93,8 +100,7 @@ export function DonationSummary() {
   if (isLoading) {
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {[...Array(2)].map((_, i) => <Card key={i}><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>)}
-         <Card><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
+        {[...Array(3)].map((_, i) => <Card key={i}><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>)}
       </div>
     );
   }
@@ -105,23 +111,35 @@ export function DonationSummary() {
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <Card className="lg:col-span-1">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Wallet className="h-6 w-6 text-primary" />
             Total Donations Received
           </CardTitle>
-          <CardDescription>A summary of all recorded donations against total goals.</CardDescription>
+          <CardDescription>The grand total of all donations received, including unallocated funds.</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-4xl font-bold">₹{summaryData.totalAmount.toLocaleString('en-IN')}</p>
-          <Progress value={summaryData.progress} className="mt-2 h-2" />
-           <p className="text-xs text-muted-foreground mt-1">
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-6 w-6 text-primary" />
+            Fundraising Progress
+          </CardTitle>
+          <CardDescription>Donations allocated to specific campaigns and leads against their goals.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-4xl font-bold">₹{summaryData.allocatedAmount.toLocaleString('en-IN')}</p>
+          <Progress value={summaryData.allocatedProgress} className="mt-2 h-2" />
+          <p className="text-xs text-muted-foreground mt-1">
             of ₹{summaryData.totalTargetAmount.toLocaleString('en-IN')} goal from all initiatives
           </p>
         </CardContent>
       </Card>
-      <Card className="lg:col-span-2">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <PieChartIcon className="h-6 w-6 text-primary" />
