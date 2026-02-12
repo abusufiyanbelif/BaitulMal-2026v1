@@ -43,7 +43,7 @@ export default function DashboardPage() {
   const cards = [
     { title: "Campaigns", description: "Manage ration, relief, and general campaigns.", href: "/campaign-members", icon: FolderKanban, isVisible: canViewCampaigns },
     { title: "Leads", description: "Track and convert new initiatives and opportunities.", href: "/leads-members", icon: Lightbulb, isVisible: canViewLeads },
-    { title: "Donations", description: "View and manage all incoming donations.", href: "/donations", icon: LifeBuoy, isVisible: canViewDonations },
+    { title: "Donations", description: "View and manage all incoming donations.", href: "/donations/summary", icon: LifeBuoy, isVisible: canViewDonations },
     { title: "Public Summary", description: "Preview public-facing pages.", href: "/public-summary", icon: Eye, isVisible: canViewPublicSummary },
     { title: "Extractor", description: "Scan & extract data from various documents.", href: "/extractor", icon: ScanSearch, isVisible: canViewExtractor },
     { title: "Story Creator", description: "Generate narratives from documents.", href: "/story-creator", icon: MessageSquare, isVisible: canViewStoryCreator },
