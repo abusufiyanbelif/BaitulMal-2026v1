@@ -642,11 +642,12 @@ export default function DonationsPage() {
             {imageToView && (
                 <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
                     <Image
-                        src={imageToView}
+                        src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
                         alt="Donation screenshot"
                         fill
                         className="object-contain transition-transform duration-200 ease-out origin-center"
                         style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
+                        unoptimized
                     />
                 </div>
             )}
