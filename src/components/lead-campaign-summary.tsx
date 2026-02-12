@@ -3,17 +3,14 @@
 
 import { useMemo } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
 import type { Campaign, Lead } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, FolderKanban, Lightbulb } from 'lucide-react';
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
+  PieChart,
+  Pie,
   Cell,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
@@ -21,6 +18,8 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 
@@ -103,16 +102,15 @@ export function LeadAndCampaignSummary() {
         </CardHeader>
         <CardContent>
           <ChartContainer config={campaignCategoryChartConfig} className="h-[150px] w-full">
-            <BarChart data={campaignSummary?.chartData} layout="vertical" margin={{ left: 10 }}>
-              <XAxis type="number" hide />
-              <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tickMargin={10} width={60} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="value" radius={4} layout="vertical">
+            <PieChart>
+              <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+              <Pie data={campaignSummary?.chartData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} strokeWidth={2}>
                  {campaignSummary?.chartData.map((entry) => (
                     <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                   ))}
-              </Bar>
-            </BarChart>
+              </Pie>
+              <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+            </PieChart>
           </ChartContainer>
         </CardContent>
       </Card>
@@ -131,16 +129,15 @@ export function LeadAndCampaignSummary() {
         </CardHeader>
         <CardContent>
            <ChartContainer config={leadCategoryChartConfig} className="h-[150px] w-full">
-            <BarChart data={leadSummary?.chartData} layout="vertical" margin={{ left: 10 }}>
-              <XAxis type="number" hide />
-              <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tickMargin={10} width={80} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="value" radius={4} layout="vertical">
+            <PieChart>
+              <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+              <Pie data={leadSummary?.chartData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} strokeWidth={2}>
                  {leadSummary?.chartData.map((entry) => (
                     <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                   ))}
-              </Bar>
-            </BarChart>
+              </Pie>
+              <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+            </PieChart>
           </ChartContainer>
         </CardContent>
       </Card>

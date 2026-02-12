@@ -6,18 +6,11 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import type { Donation, DonationCategory } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Wallet, PieChart as PieChartIcon, BarChart3, Calendar } from 'lucide-react';
+import { Loader2, Wallet, PieChart as PieChartIcon } from 'lucide-react';
 import {
   PieChart,
   Pie,
   Cell,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from 'recharts';
 import {
   ChartContainer,
@@ -62,39 +55,17 @@ export function DonationSummary() {
       return acc;
     }, {} as Record<DonationCategory, number>);
 
-    const amountsByYear = donations.reduce((acc, d) => {
-        const year = new Date(d.donationDate).getFullYear();
-        if (year && !isNaN(year)) {
-            acc[year] = (acc[year] || 0) + d.amount;
-        }
-        return acc;
-    }, {} as Record<string, number>);
-
-    const yearChartData = Object.entries(amountsByYear)
-        .map(([name, value]) => ({ name, value, fill: `var(--color-${name})`}))
-        .sort((a, b) => parseInt(a.name) - parseInt(b.name));
-
-    const yearChartConfig = yearChartData.reduce((acc, {name}, index) => {
-        acc[name] = {
-            label: name,
-            color: `hsl(var(--chart-${(index % 5) + 1}))`,
-        };
-        return acc;
-    }, {} as ChartConfig);
 
     return {
-      totalDonations: donations.length,
       totalAmount,
       categoryChartData: Object.entries(amountsByCategory).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})`})),
-      yearChartData,
-      yearChartConfig,
     };
   }, [donations]);
 
   if (isLoading) {
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {[...Array(4)].map((_, i) => <Card key={i}><CardHeader><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></CardHeader><CardContent><Loader2 className="h-24 w-full animate-spin text-muted-foreground" /></CardContent></Card>)}
+      <div className="grid gap-6 md:grid-cols-2">
+        {[...Array(2)].map((_, i) => <Card key={i}><CardHeader><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></CardHeader><CardContent><Loader2 className="h-24 w-full animate-spin text-muted-foreground" /></CardContent></Card>)}
       </div>
     );
   }
@@ -104,19 +75,7 @@ export function DonationSummary() {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Wallet className="h-6 w-6 text-primary" />
-            Total Donations
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-4xl font-bold">{summaryData.totalDonations}</p>
-          <p className="text-muted-foreground">donations recorded to date</p>
-        </CardContent>
-      </Card>
+    <div className="grid gap-6 md:grid-cols-2">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -129,29 +88,7 @@ export function DonationSummary() {
           <p className="text-muted-foreground">collected across all initiatives</p>
         </CardContent>
       </Card>
-       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-6 w-6 text-primary" />
-            Donations by Year
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-           <ChartContainer config={summaryData.yearChartConfig} className="h-[200px] w-full">
-            <BarChart data={summaryData.yearChartData} layout="vertical" margin={{ left: 10 }}>
-              <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tickMargin={10} width={40} />
-              <XAxis type="number" hide />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="value" radius={4} layout="vertical">
-                 {summaryData.yearChartData.map((entry) => (
-                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                  ))}
-              </Bar>
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-      <Card className="lg:col-span-2">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <PieChartIcon className="h-6 w-6 text-primary" />
@@ -159,10 +96,10 @@ export function DonationSummary() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={donationCategoryChartConfig} className="h-[200px] w-full">
+          <ChartContainer config={donationCategoryChartConfig} className="h-[150px] w-full">
             <PieChart>
               <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-              <Pie data={summaryData.categoryChartData} dataKey="value" nameKey="name" innerRadius={40} strokeWidth={2}>
+              <Pie data={summaryData.categoryChartData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} strokeWidth={2}>
                 {summaryData.categoryChartData.map((entry) => (
                   <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                 ))}
