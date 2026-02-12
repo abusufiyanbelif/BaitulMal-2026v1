@@ -35,6 +35,7 @@ const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   address: z.string().optional(),
   phone: z.string().optional(),
+  occupation: z.string().optional(),
   members: z.coerce.number().optional(),
   earningMembers: z.coerce.number().optional(),
   male: z.coerce.number().optional(),
@@ -72,6 +73,7 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
             name: beneficiary?.name || '',
             address: beneficiary?.address || '',
             phone: beneficiary?.phone || '',
+            occupation: beneficiary?.occupation || '',
             members: beneficiary?.members || 1,
             earningMembers: beneficiary?.earningMembers || 0,
             male: beneficiary?.male || 0,
@@ -215,6 +217,13 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
                             <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="10-digit mobile number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
                         )}/>
                     </div>
+                    <FormField control={control} name="occupation" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Occupation</FormLabel>
+                            <FormControl><Input placeholder="e.g. Daily Wage Laborer" {...field} disabled={formIsDisabled} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}/>
                     <FormField control={control} name="address" render={({ field }) => (
                         <FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Full residential address" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
                     )}/>

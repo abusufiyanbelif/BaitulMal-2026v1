@@ -412,7 +412,7 @@ export default function BeneficiariesPage() {
     }
     const XLSX = await import('xlsx');
     const headers = [
-        'id', 'name', 'address', 'phone', 'members', 'earningMembers', 'male', 'female',
+        'id', 'name', 'address', 'phone', 'occupation', 'members', 'earningMembers', 'male', 'female',
         'idProofType', 'idNumber', 'referralBy', 'kitAmount', 'status', 'notes',
         'isEligibleForZakat', 'zakatAllocation'
     ];
@@ -422,6 +422,7 @@ export default function BeneficiariesPage() {
         name: b.name || '',
         address: b.address || '',
         phone: b.phone || '',
+        occupation: b.occupation || '',
         members: b.members || 0,
         earningMembers: b.earningMembers || 0,
         male: b.male || 0,
@@ -485,6 +486,7 @@ export default function BeneficiariesPage() {
                     name: String(row.name || '').trim(),
                     phone: String(row.phone || '').trim(),
                     address: String(row.address || '').trim(),
+                    occupation: String(row.occupation || '').trim(),
                     members: Number(row.members || 0),
                     earningMembers: Number(row.earningMembers || 0),
                     male: Number(row.male || 0),
@@ -1238,15 +1240,16 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
             {isOpen && (
                  <TableRow className="bg-muted/20 hover:bg-muted/30">
                     <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="p-0">
-                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-6 p-4">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 p-4">
                             <DetailItem label="Address" value={beneficiary.address} />
+                            <DetailItem label="Occupation" value={beneficiary.occupation} />
                             <DetailItem label="Family" value={`Total: ${beneficiary.members}, Earning: ${beneficiary.earningMembers}, M: ${beneficiary.male}, F: ${beneficiary.female}`} />
                             <DetailItem label="ID Proof" value={`${beneficiary.idProofType || 'N/A'} - ${beneficiary.idNumber || 'N/A'}`} />
                             <DetailItem label="Date Added" value={beneficiary.addedDate} />
                              {beneficiary.isEligibleForZakat && (
                                 <DetailItem label="Zakat Allocation" value={`₹${(beneficiary.zakatAllocation || 0).toFixed(2)}`} />
                              )}
-                            {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-4"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
+                            {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-3"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
                         </div>
                     </TableCell>
                 </TableRow>

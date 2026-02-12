@@ -267,6 +267,7 @@ export default function BeneficiariesPage() {
         name: beneficiaryData.name,
         address: beneficiaryData.address,
         phone: beneficiaryData.phone,
+        occupation: beneficiaryData.occupation,
         members: beneficiaryData.members,
         earningMembers: beneficiaryData.earningMembers,
         male: beneficiaryData.male,
@@ -658,15 +659,16 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
             {isOpen && (
                  <TableRow className="bg-muted/20 hover:bg-muted/30">
                     <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="p-0">
-                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-6 p-4">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 p-4">
                             <DetailItem label="Address" value={beneficiary.address} />
+                            <DetailItem label="Occupation" value={beneficiary.occupation} />
                             <DetailItem label="Family" value={`Total: ${beneficiary.members}, Earning: ${beneficiary.earningMembers}, M: ${beneficiary.male}, F: ${beneficiary.female}`} />
                             <DetailItem label="ID Proof" value={`${beneficiary.idProofType || 'N/A'} - ${beneficiary.idNumber || 'N/A'}`} />
                             <DetailItem label="Date Added" value={beneficiary.addedDate} />
                              {beneficiary.isEligibleForZakat && beneficiary.zakatAllocation != null && (
                                 <DetailItem label="Zakat Allocation" value={`₹${(beneficiary.zakatAllocation || 0).toFixed(2)}`} />
                              )}
-                            {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-4"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
+                            {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-3"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
                         </div>
                     </TableCell>
                 </TableRow>

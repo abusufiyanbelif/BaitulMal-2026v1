@@ -112,6 +112,7 @@ export interface Beneficiary extends DocumentData {
     name: string;
     address: string;
     phone: string;
+    occupation?: string;
     members: number;
     earningMembers: number;
     male: number;
