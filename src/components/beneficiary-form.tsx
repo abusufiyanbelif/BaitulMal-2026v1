@@ -114,7 +114,7 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
             const generalCategory = rationLists.find(cat => cat.name === 'General Item List');
             
             const specificCategory = rationLists.find(
-                cat => cat.name !== 'General Item List' && members >= cat.minMembers && members <= cat.maxMembers
+                cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
             );
             
             const appliedCategory = specificCategory || generalCategory;
