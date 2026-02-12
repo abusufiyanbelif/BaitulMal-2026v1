@@ -1,5 +1,6 @@
 
 // Busting the cache to resolve a "Cannot find module" build error.
+// Forcing another rebuild to clear the cache.
 /** @type {import('next').NextConfig} */
 const withPWA = require('@ducanh2912/next-pwa').default({
   dest: 'public',
