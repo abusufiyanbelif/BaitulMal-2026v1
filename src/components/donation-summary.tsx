@@ -29,8 +29,8 @@ import { donationCategories } from '@/lib/modules';
 import { Skeleton } from './ui/skeleton';
 import dynamic from 'next/dynamic';
 
-const DynamicPieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false, loading: () => <Skeleton className="h-[150px] w-full" /> });
-const DynamicBarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false, loading: () => <Skeleton className="h-[150px] w-full" /> });
+const DynamicPieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false, loading: () => <Skeleton className="h-[200px] w-full" /> });
+const DynamicBarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false, loading: () => <Skeleton className="h-[200px] w-full" /> });
 
 const donationCategoryChartConfig = donationCategories.reduce((acc, category, index) => {
   acc[category.replace(/\s+/g, '')] = {
@@ -118,10 +118,10 @@ export function DonationSummary() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={donationCategoryChartConfig} className="h-[150px] w-full">
+          <ChartContainer config={donationCategoryChartConfig} className="h-[200px] w-full">
             <DynamicPieChart>
               <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-              <Pie data={summaryData.categoryChartData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} strokeWidth={2}>
+              <Pie data={summaryData.categoryChartData} dataKey="value" nameKey="name" innerRadius={40} outerRadius={60} strokeWidth={2}>
                 {summaryData.categoryChartData.map((entry) => (
                   <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                 ))}
@@ -139,7 +139,7 @@ export function DonationSummary() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={{}} className="h-[150px] w-full">
+          <ChartContainer config={{}} className="h-[200px] w-full">
             <DynamicBarChart data={summaryData.yearChartData}>
               <CartesianGrid vertical={false} />
               <XAxis dataKey="year" tickLine={false} tickMargin={10} axisLine={false} stroke="#888888" fontSize={12} />
