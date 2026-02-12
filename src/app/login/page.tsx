@@ -146,7 +146,7 @@ export default function LoginPage() {
                   </h1>
               </div>
           <CardTitle>Welcome Back!</CardTitle>
-          <CardDescription>organization member Enter your credentials to access your account.</CardDescription>
+          <CardDescription>Organization Member Enter your credentials to access your account.</CardDescription>
           </CardHeader>
           <CardContent>
           <Form {...form}>
