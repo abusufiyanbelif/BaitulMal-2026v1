@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -14,6 +13,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  CartesianGrid,
 } from 'recharts';
 import {
   ChartContainer,
@@ -58,7 +58,8 @@ export function LeadAndCampaignSummary() {
   const campaignSummary = useMemo(() => {
     if (!campaigns) return null;
     const counts = campaigns.reduce((acc, c) => {
-      acc[c.category] = (acc[c.category] || 0) + 1;
+      const category = c.category || 'General';
+      acc[category] = (acc[category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
     return {
@@ -70,7 +71,8 @@ export function LeadAndCampaignSummary() {
   const leadSummary = useMemo(() => {
     if (!leads) return null;
     const counts = leads.reduce((acc, l) => {
-      acc[l.category] = (acc[l.category] || 0) + 1;
+      const category = l.category || 'Other';
+      acc[category] = (acc[category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
     return {
@@ -103,21 +105,33 @@ export function LeadAndCampaignSummary() {
         </CardHeader>
         <CardContent>
           <ChartContainer config={campaignCategoryChartConfig} className="h-[150px] w-full">
-            <BarChart data={campaignSummary?.chartData} layout="vertical" margin={{ left: 0, right: 0 }}>
-                <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" hide />
-                <Tooltip
-                    cursor={{ fill: 'hsl(var(--muted))' }}
-                    content={<ChartTooltipContent indicator="dot" />}
+            <BarChart data={campaignSummary?.chartData}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) => value.slice(0, 3)}
                 />
-                <Bar dataKey="value" radius={4} barSize={30}>
+                 <YAxis
+                    stroke="#888888"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `${value}`}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Bar dataKey="value" radius={8}>
                     {campaignSummary?.chartData.map((entry) => (
                         <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                     ))}
                 </Bar>
             </BarChart>
           </ChartContainer>
-          <ChartLegend content={<ChartLegendContent />} className="pt-4" />
         </CardContent>
       </Card>
       <Card>
@@ -135,21 +149,33 @@ export function LeadAndCampaignSummary() {
         </CardHeader>
         <CardContent>
            <ChartContainer config={leadCategoryChartConfig} className="h-[150px] w-full">
-             <BarChart data={leadSummary?.chartData} layout="vertical" margin={{ left: 0, right: 0 }}>
-                <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" hide />
-                <Tooltip
-                    cursor={{ fill: 'hsl(var(--muted))' }}
-                    content={<ChartTooltipContent indicator="dot" />}
+             <BarChart data={leadSummary?.chartData}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) => value.slice(0, 3)}
                 />
-                <Bar dataKey="value" radius={4} barSize={30}>
+                <YAxis
+                    stroke="#888888"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `${value}`}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Bar dataKey="value" radius={8}>
                     {leadSummary?.chartData.map((entry) => (
                         <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                     ))}
                 </Bar>
             </BarChart>
           </ChartContainer>
-           <ChartLegend content={<ChartLegendContent />} className="pt-4" />
         </CardContent>
       </Card>
     </div>
