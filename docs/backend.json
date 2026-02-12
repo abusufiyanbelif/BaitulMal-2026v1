@@ -70,14 +70,20 @@
         "targetAmount": { "type": "number" },
         "authenticityStatus": { "type": "string", "enum": ["Pending Verification", "Verified", "Rejected", "On Hold", "Need More Details"] },
         "publicVisibility": { "type": "string", "enum": ["Hold", "Ready to Publish", "Published"] },
-         "allowedDonationTypes": {
+        "allowedDonationTypes": {
           "type": "array",
           "items": {
             "type": "string",
             "enum": ["Zakat", "Sadaqah", "Interest", "Lillah", "Loan", "Monthly Contribution"]
           },
           "description": "A list of donation categories accepted for this lead."
-        }
+        },
+        "degree": { "type": "string", "description": "Degree or class for educational leads." },
+        "year": { "type": "string", "description": "Year for educational leads." },
+        "semester": { "type": "string", "description": "Semester for educational leads." },
+        "diseaseIdentified": { "type": "string", "description": "Identified disease for medical leads." },
+        "diseaseStage": { "type": "string", "description": "Stage of the disease for medical leads." },
+        "seriousness": { "type": "string", "description": "Seriousness of the medical condition." }
       },
       "required": ["name", "category", "status", "startDate", "endDate"]
     },
@@ -266,5 +272,3 @@
     "reasoning": "The Firestore data structure is designed with a mix of public and private collections. 'Campaigns' and 'Leads' can be made public, while user-specific data and internal lookups are restricted. Subcollections are used for beneficiaries to keep them tied to a parent campaign/lead."
   }
 }
-
-    

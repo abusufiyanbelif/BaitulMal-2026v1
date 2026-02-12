@@ -76,7 +76,7 @@ export interface Campaign extends DocumentData {
 export interface Lead extends DocumentData {
   id: string;
   name: string;
-  category: 'Ration' | 'Relief' | 'General';
+  category: 'Ration' | 'Relief' | 'General' | 'Education' | 'Medical' | 'Other';
   description?: string;
   notes?: string;
   targetAmount?: number;
@@ -90,11 +90,19 @@ export interface Lead extends DocumentData {
   shopContact: string;
   shopAddress: string;
   documents?: CampaignDocument[];
-  rationLists: RationCategory[] | Record<string, RationItem[]>; // Supports both old and new
+  rationLists: RationCategory[] | Record<string, RationItem[]>;
   allowedDonationTypes?: DonationCategory[];
   createdAt?: any;
   createdById?: string;
   createdByName?: string;
+  // Education fields
+  degree?: string;
+  year?: string;
+  semester?: string;
+  // Medical fields
+  diseaseIdentified?: string;
+  diseaseStage?: string;
+  seriousness?: string;
 }
 
 export interface Beneficiary extends DocumentData {

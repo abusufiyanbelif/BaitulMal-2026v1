@@ -42,6 +42,12 @@ const leadSchema = z.object({
   endDate: z.string().min(1, 'End date is required.'),
   targetAmount: z.coerce.number().min(0, 'Target amount must be a positive number.').optional(),
   allowedDonationTypes: z.array(z.string()).optional(),
+  degree: z.string().optional(),
+  year: z.string().optional(),
+  semester: z.string().optional(),
+  diseaseIdentified: z.string().optional(),
+  diseaseStage: z.string().optional(),
+  seriousness: z.string().optional(),
 }).refine(data => new Date(data.startDate) <= new Date(data.endDate), {
     message: "End date cannot be before the start date.",
     path: ["endDate"],
@@ -79,8 +85,16 @@ export default function CreateLeadPage() {
       endDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split('T')[0],
       targetAmount: 0,
       allowedDonationTypes: [...donationCategories],
+      degree: '',
+      year: '',
+      semester: '',
+      diseaseIdentified: '',
+      diseaseStage: '',
+      seriousness: '',
     },
   });
+
+  const category = form.watch('category');
 
   const handleCreateLead = (data: LeadFormValues) => {
     if (!firestore || !canCreate || !userProfile) return;
@@ -106,6 +120,12 @@ export default function CreateLeadPage() {
           items: []
         }
       ],
+      degree: data.degree || '',
+      year: data.year || '',
+      semester: data.semester || '',
+      diseaseIdentified: data.diseaseIdentified || '',
+      diseaseStage: data.diseaseStage || '',
+      seriousness: data.seriousness || '',
     };
 
     addDoc(collection(firestore, 'leads'), newLeadData)
@@ -222,6 +242,41 @@ export default function CreateLeadPage() {
                   </FormItem>
                 )}
               />
+
+              {category === 'Education' && (
+                <div className="space-y-4 rounded-md border p-4 animate-fade-in-zoom">
+                  <h3 className="text-lg font-semibold">Education Details</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <FormField control={form.control} name="degree" render={({ field }) => (
+                        <FormItem><FormLabel>Degree/Class</FormLabel><FormControl><Input placeholder="e.g. 12th, B.Sc" {...field} /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                    <FormField control={form.control} name="year" render={({ field }) => (
+                        <FormItem><FormLabel>Year</FormLabel><FormControl><Input placeholder="e.g. First Year" {...field} /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                    <FormField control={form.control} name="semester" render={({ field }) => (
+                        <FormItem><FormLabel>Semester</FormLabel><FormControl><Input placeholder="e.g. 2nd" {...field} /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                  </div>
+                </div>
+              )}
+
+              {category === 'Medical' && (
+                <div className="space-y-4 rounded-md border p-4 animate-fade-in-zoom">
+                  <h3 className="text-lg font-semibold">Medical Details</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <FormField control={form.control} name="diseaseIdentified" render={({ field }) => (
+                        <FormItem><FormLabel>Disease Identified</FormLabel><FormControl><Input placeholder="e.g. Cataract" {...field} /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                    <FormField control={form.control} name="diseaseStage" render={({ field }) => (
+                        <FormItem><FormLabel>Disease Stage</FormLabel><FormControl><Input placeholder="e.g. Initial" {...field} /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                    <FormField control={form.control} name="seriousness" render={({ field }) => (
+                        <FormItem><FormLabel>Seriousness</FormLabel><FormControl><Input placeholder="e.g. High" {...field} /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                  </div>
+                </div>
+              )}
+
               <FormField
                 control={form.control}
                 name="targetAmount"
@@ -430,5 +485,3 @@ export default function CreateLeadPage() {
     </main>
   );
 }
-
-    

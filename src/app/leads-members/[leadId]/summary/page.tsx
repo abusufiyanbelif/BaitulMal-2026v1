@@ -136,6 +136,12 @@ export default function LeadSummaryPage() {
                 authenticityStatus: lead.authenticityStatus || 'Pending Verification',
                 publicVisibility: lead.publicVisibility || 'Hold',
                 allowedDonationTypes: lead.allowedDonationTypes || [...donationCategories],
+                degree: lead.degree || '',
+                year: lead.year || '',
+                semester: lead.semester || '',
+                diseaseIdentified: lead.diseaseIdentified || '',
+                diseaseStage: lead.diseaseStage || '',
+                seriousness: lead.seriousness || '',
             });
         }
     }, [lead, editMode]);
@@ -174,6 +180,12 @@ export default function LeadSummaryPage() {
             authenticityStatus: editableLead.authenticityStatus || 'Pending Verification',
             publicVisibility: editableLead.publicVisibility || 'Hold',
             allowedDonationTypes: editableLead.allowedDonationTypes,
+            degree: editableLead.degree || '',
+            year: editableLead.year || '',
+            semester: editableLead.semester || '',
+            diseaseIdentified: editableLead.diseaseIdentified || '',
+            diseaseStage: editableLead.diseaseStage || '',
+            seriousness: editableLead.seriousness || '',
         };
 
         updateDoc(leadDocRef, saveData)
@@ -204,6 +216,12 @@ export default function LeadSummaryPage() {
                 authenticityStatus: lead.authenticityStatus || 'Pending Verification',
                 publicVisibility: lead.publicVisibility || 'Hold',
                 allowedDonationTypes: lead.allowedDonationTypes || [...donationCategories],
+                degree: lead.degree || '',
+                year: lead.year || '',
+                semester: lead.semester || '',
+                diseaseIdentified: lead.diseaseIdentified || '',
+                diseaseStage: lead.diseaseStage || '',
+                seriousness: lead.seriousness || '',
             });
         }
         setEditMode(true);
@@ -488,20 +506,20 @@ Your support and feedback are valuable.
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex w-max space-x-2">
                         {canReadSummary && (
-                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/summary` ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground")}>
+                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                                 <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
                             </Button>
                         )}
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground")}>
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                             <Link href={`/leads-members/${leadId}`}>Item List</Link>
                         </Button>
                         {canReadBeneficiaries && (
-                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground")}>
+                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                                 <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
                             </Button>
                         )}
                         {canReadDonations && (
-                            <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground")}>
+                            <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                                 <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
                             </Button>
                         )}
@@ -679,6 +697,70 @@ Your support and feedback are valuable.
                                 </div>
                             )}
                         </div>
+
+                         {/* Conditional Education Fields */}
+                        {editMode && editableLead?.category === 'Education' ? (
+                            <div className="pt-4">
+                                <Separator className="my-4" />
+                                <h3 className="text-base font-semibold mb-2">Education Details</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="degree">Degree/Class</Label>
+                                        <Input id="degree" value={editableLead.degree || ''} onChange={(e) => setEditableLead(p => ({ ...p, degree: e.target.value }))} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="year">Year</Label>
+                                        <Input id="year" value={editableLead.year || ''} onChange={(e) => setEditableLead(p => ({ ...p, year: e.target.value }))} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="semester">Semester</Label>
+                                        <Input id="semester" value={editableLead.semester || ''} onChange={(e) => setEditableLead(p => ({ ...p, semester: e.target.value }))} />
+                                    </div>
+                                </div>
+                            </div>
+                        ) : !editMode && lead.category === 'Education' && (
+                            <div className="pt-4">
+                                <Separator className="my-4" />
+                                <h3 className="text-base font-semibold mb-2">Education Details</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div><p className="text-sm font-medium text-muted-foreground">Degree/Class</p><p className="font-semibold">{lead.degree || 'N/A'}</p></div>
+                                    <div><p className="text-sm font-medium text-muted-foreground">Year</p><p className="font-semibold">{lead.year || 'N/A'}</p></div>
+                                    <div><p className="text-sm font-medium text-muted-foreground">Semester</p><p className="font-semibold">{lead.semester || 'N/A'}</p></div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Conditional Medical Fields */}
+                        {editMode && editableLead?.category === 'Medical' ? (
+                            <div className="pt-4">
+                                <Separator className="my-4" />
+                                <h3 className="text-base font-semibold mb-2">Medical Details</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="diseaseIdentified">Disease Identified</Label>
+                                        <Input id="diseaseIdentified" value={editableLead.diseaseIdentified || ''} onChange={(e) => setEditableLead(p => ({ ...p, diseaseIdentified: e.target.value }))} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="diseaseStage">Disease Stage</Label>
+                                        <Input id="diseaseStage" value={editableLead.diseaseStage || ''} onChange={(e) => setEditableLead(p => ({ ...p, diseaseStage: e.target.value }))} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="seriousness">Seriousness</Label>
+                                        <Input id="seriousness" value={editableLead.seriousness || ''} onChange={(e) => setEditableLead(p => ({ ...p, seriousness: e.target.value }))} />
+                                    </div>
+                                </div>
+                            </div>
+                        ) : !editMode && lead.category === 'Medical' && (
+                            <div className="pt-4">
+                                <Separator className="my-4" />
+                                <h3 className="text-base font-semibold mb-2">Medical Details</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div><p className="text-sm font-medium text-muted-foreground">Disease Identified</p><p className="font-semibold">{lead.diseaseIdentified || 'N/A'}</p></div>
+                                    <div><p className="text-sm font-medium text-muted-foreground">Disease Stage</p><p className="font-semibold">{lead.diseaseStage || 'N/A'}</p></div>
+                                    <div><p className="text-sm font-medium text-muted-foreground">Seriousness</p><p className="font-semibold">{lead.seriousness || 'N/A'}</p></div>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
                 
@@ -872,5 +954,3 @@ Your support and feedback are valuable.
         </main>
     );
 }
-
-    
