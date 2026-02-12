@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
+import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, deleteDoc, doc, serverTimestamp, setDoc, DocumentReference, writeBatch } from 'firebase/firestore';
 import type { Beneficiary, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -111,7 +112,7 @@ export default function BeneficiariesPage() {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!beneficiaryToDelete || !firestore || !leadId || !canDelete || !beneficiaries || !lead) return;
+    if (!beneficiaryToDelete || !firestore || !storage || !leadId || !canDelete || !beneficiaries || !lead) return;
 
     const beneficiaryData = beneficiaries.find(b => b.id === beneficiaryToDelete);
     if (!beneficiaryData) return;
@@ -128,6 +129,15 @@ export default function BeneficiariesPage() {
     batch.delete(beneficiaryDocRef);
     batch.update(leadDocRef, { targetAmount: newTargetAmount });
     
+    if (beneficiaryData.idProofUrl) {
+        const fileRef = storageRef(storage, beneficiaryData.idProofUrl);
+        await deleteObject(fileRef).catch(err => {
+            if (err.code !== 'storage/object-not-found') {
+                console.warn("Failed to delete ID proof from storage, but Firestore transaction will proceed:", err);
+            }
+        });
+    }
+
     try {
         await batch.commit();
         toast({ title: 'Success', description: 'Beneficiary deleted and lead total updated.', variant: 'success' });
@@ -175,15 +185,46 @@ export default function BeneficiariesPage() {
     let finalData: any;
 
     try {
+        let idProofUrl = editingBeneficiary?.idProofUrl || '';
+      
+        if (data.idProofDeleted && idProofUrl) {
+            await deleteObject(storageRef(storage, idProofUrl)).catch(err => {
+                if (err.code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
+            });
+            idProofUrl = '';
+        }
+      
+        const fileList = data.idProofFile as FileList | undefined;
+        if (fileList && fileList.length > 0) {
+            const file = fileList[0];
+            const { default: Resizer } = await import('react-image-file-resizer');
+            const resizedBlob = await new Promise<Blob>((resolve) => {
+                Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
+            });
+            const filePath = `leads/${leadId}/beneficiaries/${beneficiaryDocRef.id}/${Date.now()}.png`;
+            const fileRef = storageRef(storage, filePath);
+            const uploadResult = await uploadBytes(fileRef, resizedBlob);
+            idProofUrl = await getDownloadURL(uploadResult.ref);
+        }
+
         finalData = {
             ...data,
+            idProofUrl,
             ...(!editingBeneficiary && {
                 addedDate: new Date().toISOString().split('T')[0],
                 createdAt: serverTimestamp(),
                 createdById: userProfile.id,
                 createdByName: userProfile.name,
             }),
+             ...(editingBeneficiary && {
+                updatedAt: serverTimestamp(),
+                updatedById: userProfile.id,
+                updatedByName: userProfile.name,
+            }),
         };
+
+        delete finalData.idProofFile;
+        delete finalData.idProofDeleted;
 
         const oldKitAmount = editingBeneficiary?.kitAmount || 0;
         const newKitAmount = data.kitAmount || 0;
