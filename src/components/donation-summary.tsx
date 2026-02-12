@@ -26,6 +26,11 @@ import {
 } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { donationCategories } from '@/lib/modules';
+import { Skeleton } from './ui/skeleton';
+import dynamic from 'next/dynamic';
+
+const DynamicPieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false, loading: () => <Skeleton className="h-[150px] w-full" /> });
+const DynamicBarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false, loading: () => <Skeleton className="h-[150px] w-full" /> });
 
 const donationCategoryChartConfig = donationCategories.reduce((acc, category, index) => {
   acc[category.replace(/\s+/g, '')] = {
@@ -82,7 +87,7 @@ export function DonationSummary() {
   if (isLoading) {
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {[...Array(3)].map((_, i) => <Card key={i}><CardHeader><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></CardHeader><CardContent><Loader2 className="h-24 w-full animate-spin text-muted-foreground" /></CardContent></Card>)}
+        {[...Array(3)].map((_, i) => <Card key={i}><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>)}
       </div>
     );
   }
@@ -114,19 +119,19 @@ export function DonationSummary() {
         </CardHeader>
         <CardContent>
           <ChartContainer config={donationCategoryChartConfig} className="h-[150px] w-full">
-            <PieChart>
+            <DynamicPieChart>
               <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
               <Pie data={summaryData.categoryChartData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} strokeWidth={2}>
                 {summaryData.categoryChartData.map((entry) => (
                   <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                 ))}
               </Pie>
-              <ChartLegend content={<ChartLegendContent nameKey="name" />} />
-            </PieChart>
+              <ChartLegend content={<ChartLegendContent />} />
+            </DynamicPieChart>
           </ChartContainer>
         </CardContent>
       </Card>
-      <Card>
+       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChartIcon className="h-6 w-6 text-primary" />
@@ -135,7 +140,7 @@ export function DonationSummary() {
         </CardHeader>
         <CardContent>
           <ChartContainer config={{}} className="h-[150px] w-full">
-            <BarChart data={summaryData.yearChartData}>
+            <DynamicBarChart data={summaryData.yearChartData}>
               <CartesianGrid vertical={false} />
               <XAxis dataKey="year" tickLine={false} tickMargin={10} axisLine={false} stroke="#888888" fontSize={12} />
               <YAxis stroke="#888888" fontSize={12} tickFormatter={(value) => `₹${new Intl.NumberFormat('en-IN', { notation: 'compact' }).format(value)}`} />
@@ -144,7 +149,7 @@ export function DonationSummary() {
                 content={<ChartTooltipContent indicator="dot" />}
               />
               <Bar dataKey="total" fill="hsl(var(--primary))" radius={4} />
-            </BarChart>
+            </DynamicBarChart>
           </ChartContainer>
         </CardContent>
       </Card>

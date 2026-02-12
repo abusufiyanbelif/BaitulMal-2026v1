@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -12,17 +13,19 @@ import {
   Cell,
   XAxis,
   YAxis,
-  Tooltip,
   CartesianGrid,
 } from 'recharts';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
+import { Skeleton } from './ui/skeleton';
+import dynamic from 'next/dynamic';
+
+const DynamicBarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false, loading: () => <Skeleton className="h-[150px] w-full" /> });
+
 
 const campaignCategoryChartConfig = {
   Ration: { label: "Ration", color: "hsl(var(--chart-1))" },
@@ -84,8 +87,8 @@ export function LeadAndCampaignSummary() {
   if (isLoading) {
     return (
       <div className="grid gap-6 md:grid-cols-2">
-        <Card><CardHeader><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></CardHeader><CardContent><Loader2 className="h-24 w-full animate-spin text-muted-foreground" /></CardContent></Card>
-        <Card><CardHeader><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></CardHeader><CardContent><Loader2 className="h-24 w-full animate-spin text-muted-foreground" /></CardContent></Card>
+        <Card><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
+        <Card><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
       </div>
     )
   }
@@ -105,7 +108,7 @@ export function LeadAndCampaignSummary() {
         </CardHeader>
         <CardContent>
           <ChartContainer config={campaignCategoryChartConfig} className="h-[150px] w-full">
-            <BarChart data={campaignSummary?.chartData}>
+            <DynamicBarChart data={campaignSummary?.chartData}>
                 <CartesianGrid vertical={false} />
                 <XAxis
                   dataKey="name"
@@ -130,7 +133,7 @@ export function LeadAndCampaignSummary() {
                         <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                     ))}
                 </Bar>
-            </BarChart>
+            </DynamicBarChart>
           </ChartContainer>
         </CardContent>
       </Card>
@@ -149,7 +152,7 @@ export function LeadAndCampaignSummary() {
         </CardHeader>
         <CardContent>
            <ChartContainer config={leadCategoryChartConfig} className="h-[150px] w-full">
-             <BarChart data={leadSummary?.chartData}>
+             <DynamicBarChart data={leadSummary?.chartData}>
                 <CartesianGrid vertical={false} />
                 <XAxis
                   dataKey="name"
@@ -174,7 +177,7 @@ export function LeadAndCampaignSummary() {
                         <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                     ))}
                 </Bar>
-            </BarChart>
+            </DynamicBarChart>
           </ChartContainer>
         </CardContent>
       </Card>
