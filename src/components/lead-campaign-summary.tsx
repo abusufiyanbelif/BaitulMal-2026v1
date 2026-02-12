@@ -6,41 +6,16 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Campaign, Lead } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, FolderKanban, Lightbulb } from 'lucide-react';
+import { FolderKanban, Lightbulb } from 'lucide-react';
 import {
-  BarChart,
-  Bar,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from 'recharts';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart';
-import type { ChartConfig } from '@/components/ui/chart';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Skeleton } from './ui/skeleton';
-import dynamic from 'next/dynamic';
-
-const DynamicBarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false, loading: () => <Skeleton className="h-[150px] w-full" /> });
-
-
-const campaignCategoryChartConfig = {
-  Ration: { label: "Ration", color: "hsl(var(--chart-1))" },
-  Relief: { label: "Relief", color: "hsl(var(--chart-2))" },
-  General: { label: "General", color: "hsl(var(--chart-3))" },
-} satisfies ChartConfig;
-
-const leadCategoryChartConfig = {
-  Ration: { label: "Ration", color: "hsl(var(--chart-1))" },
-  Relief: { label: "Relief", color: "hsl(var(--chart-2))" },
-  General: { label: "General", color: "hsl(var(--chart-3))" },
-  Education: { label: "Education", color: "hsl(var(--chart-4))" },
-  Medical: { label: "Medical", color: "hsl(var(--chart-5))" },
-  Other: { label: "Other", color: "hsl(var(--chart-6))" },
-} satisfies ChartConfig;
 
 export function LeadAndCampaignSummary() {
   const firestore = useFirestore();
@@ -67,7 +42,7 @@ export function LeadAndCampaignSummary() {
     }, {} as Record<string, number>);
     return {
       total: campaigns.length,
-      chartData: Object.entries(counts).map(([name, value]) => ({ name, value, fill: `var(--color-${name})`})),
+      chartData: Object.entries(counts).map(([name, value]) => ({ name, value })),
     }
   }, [campaigns]);
   
@@ -80,7 +55,7 @@ export function LeadAndCampaignSummary() {
     }, {} as Record<string, number>);
     return {
       total: leads.length,
-      chartData: Object.entries(counts).map(([name, value]) => ({ name, value, fill: `var(--color-${name})`})),
+      chartData: Object.entries(counts).map(([name, value]) => ({ name, value })),
     }
   }, [leads]);
   
@@ -107,34 +82,22 @@ export function LeadAndCampaignSummary() {
           <CardDescription>Total campaigns recorded by category.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={campaignCategoryChartConfig} className="h-[150px] w-full">
-            <DynamicBarChart data={campaignSummary?.chartData}>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tickFormatter={(value) => value.slice(0, 3)}
-                />
-                 <YAxis
-                    stroke="#888888"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => `${value}`}
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
-                />
-                <Bar dataKey="value" radius={8}>
-                    {campaignSummary?.chartData.map((entry) => (
-                        <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                    ))}
-                </Bar>
-            </DynamicBarChart>
-          </ChartContainer>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Category</TableHead>
+                <TableHead className="text-right">Count</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {campaignSummary?.chartData.map((entry) => (
+                <TableRow key={entry.name}>
+                  <TableCell className="font-medium">{entry.name}</TableCell>
+                  <TableCell className="text-right">{entry.value}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
       <Card>
@@ -151,34 +114,22 @@ export function LeadAndCampaignSummary() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-           <ChartContainer config={leadCategoryChartConfig} className="h-[150px] w-full">
-             <DynamicBarChart data={leadSummary?.chartData}>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tickFormatter={(value) => value.slice(0, 3)}
-                />
-                <YAxis
-                    stroke="#888888"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => `${value}`}
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
-                />
-                <Bar dataKey="value" radius={8}>
-                    {leadSummary?.chartData.map((entry) => (
-                        <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                    ))}
-                </Bar>
-            </DynamicBarChart>
-          </ChartContainer>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Category</TableHead>
+                <TableHead className="text-right">Count</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {leadSummary?.chartData.map((entry) => (
+                <TableRow key={entry.name}>
+                  <TableCell className="font-medium">{entry.name}</TableCell>
+                  <TableCell className="text-right">{entry.value}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
