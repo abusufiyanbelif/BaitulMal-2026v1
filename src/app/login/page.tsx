@@ -9,7 +9,6 @@ import { z } from 'zod';
 import { useAuth, useFirestore } from '@/firebase';
 import { signInWithLoginId } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
-import { firebaseConfig } from '@/firebase/config';
 import { sendPasswordResetEmail } from 'firebase/auth';
 
 import { Button } from '@/components/ui/button';
@@ -125,7 +124,7 @@ export default function LoginPage() {
   };
 
 
-  const firebaseProjectId = firebaseConfig.projectId;
+  const firebaseProjectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
   const authUrl = `https://console.firebase.google.com/project/${firebaseProjectId}/authentication/sign-in-method`;
 
   return (

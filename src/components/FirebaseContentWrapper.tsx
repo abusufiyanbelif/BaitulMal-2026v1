@@ -1,7 +1,7 @@
+
 'use client';
 import { ReactNode } from 'react';
 import { useFirebase } from '@/firebase';
-import { firebaseConfig } from '@/firebase/config';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ export function FirebaseContentWrapper({ children }: { children: ReactNode }) {
   if (initializationError) {
     const isFirestoreError = initializationError.message.includes("firestore");
     const isSsrError = initializationError.message.includes("blocked on server");
-    const projectId = firebaseConfig.projectId;
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
     const firestoreConsoleUrl = `https://console.firebase.google.com/project/${projectId}/firestore`;
     const firestoreApiConsoleUrl = `https://console.cloud.google.com/apis/library/firestore.googleapis.com?project=${projectId}`;
 
