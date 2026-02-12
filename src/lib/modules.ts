@@ -1,3 +1,4 @@
+
 import { getNestedValue, set } from "./utils";
 
 export const crudPermissions = ['create', 'read', 'update', 'delete'] as const;
@@ -33,6 +34,18 @@ export const leadPurposesConfig = [
 ] as const;
 
 export const leadSeriousnessLevels = ['High', 'Moderate', 'Low'] as const;
+
+export const educationDegrees = [
+  '10th', '12th', 'B.A.', 'B.Com.', 'B.Sc.', 'B.E.', 'M.A.', 'M.Com.', 'M.Sc.', 'M.E.', 'Diploma', 'Other'
+] as const;
+
+export const educationYears = [
+  'First Year', 'Second Year', 'Third Year', 'Final Year', 'Other'
+] as const;
+
+export const educationSemesters = [
+  '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', 'Annual', 'Other'
+] as const;
 
 export const modules = [
   { id: 'users', name: 'User Management', permissions: crudPermissions },

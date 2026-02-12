@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -27,7 +28,7 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ShareDialog } from '@/components/share-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { donationCategories, leadPurposesConfig, leadSeriousnessLevels } from '@/lib/modules';
+import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters } from '@/lib/modules';
 import { Badge } from '@/components/ui/badge';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
@@ -208,8 +209,8 @@ export default function LeadSummaryPage() {
     
     // ... (rest of the component logic for handleShare, handleDownload, etc.)
     
-    if (isLoading) { /* ... */ }
-    if (!lead) { /* ... */ }
+    if (isLoading) { return <main className="container mx-auto p-4 md:p-8"><Loader2 className="h-8 w-8 animate-spin" /></main> }
+    if (!lead) { return <main className="container mx-auto p-4 md:p-8 text-center"><p>Lead not found.</p></main> }
 
     return (
         <main className="container mx-auto p-4 md:p-8">
@@ -316,9 +317,30 @@ export default function LeadSummaryPage() {
                                 <Separator className="my-4" />
                                 <h3 className="text-base font-semibold mb-2">Education Details</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <div className="space-y-1"><Label>Degree/Class</Label>{editMode && canUpdate ? <Input value={editableLead.degree || ''} onChange={(e) => setEditableLead(p => ({...p, degree: e.target.value}))} /> : <p className="font-semibold">{lead.degree || 'N/A'}</p>}</div>
-                                    <div className="space-y-1"><Label>Year</Label>{editMode && canUpdate ? <Input value={editableLead.year || ''} onChange={(e) => setEditableLead(p => ({...p, year: e.target.value}))} /> : <p className="font-semibold">{lead.year || 'N/A'}</p>}</div>
-                                    <div className="space-y-1"><Label>Semester</Label>{editMode && canUpdate ? <Input value={editableLead.semester || ''} onChange={(e) => setEditableLead(p => ({...p, semester: e.target.value}))} /> : <p className="font-semibold">{lead.semester || 'N/A'}</p>}</div>
+                                    <div className="space-y-1"><Label>Degree/Class</Label>
+                                        {editMode && canUpdate ? (
+                                            <Select value={editableLead.degree} onValueChange={(value) => setEditableLead(p => ({...p, degree: value as any}))}>
+                                                <SelectTrigger><SelectValue placeholder="Select Degree..."/></SelectTrigger>
+                                                <SelectContent>{educationDegrees.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                        ) : <p className="font-semibold">{lead.degree || 'N/A'}</p>}
+                                    </div>
+                                    <div className="space-y-1"><Label>Year</Label>
+                                        {editMode && canUpdate ? (
+                                            <Select value={editableLead.year} onValueChange={(value) => setEditableLead(p => ({...p, year: value as any}))}>
+                                                <SelectTrigger><SelectValue placeholder="Select Year..."/></SelectTrigger>
+                                                <SelectContent>{educationYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                        ) : <p className="font-semibold">{lead.year || 'N/A'}</p>}
+                                    </div>
+                                    <div className="space-y-1"><Label>Semester</Label>
+                                        {editMode && canUpdate ? (
+                                            <Select value={editableLead.semester} onValueChange={(value) => setEditableLead(p => ({...p, semester: value as any}))}>
+                                                <SelectTrigger><SelectValue placeholder="Select Semester..."/></SelectTrigger>
+                                                <SelectContent>{educationSemesters.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                        ) : <p className="font-semibold">{lead.semester || 'N/A'}</p>}
+                                    </div>
                                 </div>
                             </div>
                         )}

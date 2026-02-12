@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -18,7 +19,7 @@ import { z } from 'zod';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import type { Lead } from '@/lib/types';
-import { donationCategories, leadPurposesConfig, leadSeriousnessLevels } from '@/lib/modules';
+import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters } from '@/lib/modules';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 
@@ -280,13 +281,13 @@ export default function CreateLeadPage() {
                   <h3 className="text-lg font-semibold">Education Details</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <FormField control={form.control} name="degree" render={({ field }) => (
-                        <FormItem><FormLabel>Degree/Class</FormLabel><FormControl><Input placeholder="e.g. 12th, B.Sc" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Degree/Class</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Degree..."/></SelectTrigger></FormControl><SelectContent>{educationDegrees.map(d=><SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="year" render={({ field }) => (
-                        <FormItem><FormLabel>Year</FormLabel><FormControl><Input placeholder="e.g. First Year" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Year</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Year..."/></SelectTrigger></FormControl><SelectContent>{educationYears.map(y=><SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="semester" render={({ field }) => (
-                        <FormItem><FormLabel>Semester</FormLabel><FormControl><Input placeholder="e.g. 2nd" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Semester</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Semester..."/></SelectTrigger></FormControl><SelectContent>{educationSemesters.map(s=><SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                     )}/>
                   </div>
                 </div>
