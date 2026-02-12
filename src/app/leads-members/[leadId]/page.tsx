@@ -77,7 +77,7 @@ export default function LeadDetailsPage() {
 
   const isLegacyData = useMemo(() => {
     // @ts-ignore
-    return lead && !lead.itemCategories && lead.rationLists;
+    return !!(lead && !lead.itemCategories && lead.rationLists);
   }, [lead]);
 
   const itemList = useMemo(() => {

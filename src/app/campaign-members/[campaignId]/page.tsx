@@ -147,7 +147,7 @@ export default function CampaignDetailsPage() {
 
   const isLegacyData = useMemo(() => {
     // @ts-ignore
-    return campaign && !campaign.itemCategories && campaign.rationLists;
+    return !!(campaign && !campaign.itemCategories && campaign.rationLists);
   }, [campaign]);
 
   const sourceCategoryForCopy = useMemo(() => {
