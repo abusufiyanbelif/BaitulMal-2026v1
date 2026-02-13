@@ -119,7 +119,7 @@ export function DonationSummary() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2">
         {[...Array(2)].map((_, i) => <Card key={i}><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>)}
       </div>
     );
@@ -130,8 +130,8 @@ export function DonationSummary() {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <Card className="lg:col-span-2">
+    <div className="grid gap-6 md:grid-cols-2">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-6 w-6 text-primary" />
