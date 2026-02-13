@@ -10,6 +10,7 @@ import { getNestedValue } from '@/lib/utils';
 import React from 'react';
 import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, LifeBuoy, FlaskConical, Eye } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { WisdomAndReflection } from '@/components/WisdomAndReflection';
 
 const DonationSummary = dynamic(() => import('@/components/donation-summary').then(mod => mod.DonationSummary), {
     loading: () => (
@@ -174,6 +175,7 @@ export default function Home() {
                       </Button>
                   </CardContent>
               </Card>
+              <WisdomAndReflection />
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold text-center">Live Summary</h2>
                 <DonationSummary />

@@ -8,6 +8,7 @@ import { getNestedValue } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import React from 'react';
 import dynamic from 'next/dynamic';
+import { WisdomAndReflection } from '@/components/WisdomAndReflection';
 
 const DonationSummary = dynamic(() => import('@/components/donation-summary').then(mod => mod.DonationSummary), {
     loading: () => (
@@ -142,7 +143,7 @@ export default function Home() {
                 <h2 className="text-3xl font-bold tracking-tight mb-4">
                     Welcome back, {userProfile.name}!
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
                     {visibleCards.map((card, index) => (
                         <HomeDashboardCard
                             key={card.title}
@@ -153,6 +154,7 @@ export default function Home() {
                         />
                     ))}
                 </div>
+                 <WisdomAndReflection />
             </>
             ) : (
             <div className="space-y-8">
