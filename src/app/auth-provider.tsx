@@ -30,8 +30,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (isLoading) {
       return; // Wait for the auth state to be confirmed
     }
-    
-    if (user && pathname === '/') {
+
+    // If the user is logged in and on ANY public route, redirect to the dashboard.
+    if (user && isPublicRoute) {
         router.push('/dashboard');
         return;
     }
@@ -41,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       router.push('/login');
     }
 
-  }, [isLoading, user, isPublicRoute, isLoginPage, router, pathname]);
+  }, [isLoading, user, isPublicRoute, router, pathname]);
 
   // Show a loader in two scenarios:
   // 1. On initial load of a private page while auth state is being determined.
