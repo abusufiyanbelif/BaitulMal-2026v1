@@ -175,6 +175,15 @@ service cloud.firestore {
     // Internal & Private Collections
     // ----------------------------------------------------------------------
     
+     /**
+     * @description Manages the master list of all beneficiaries.
+     * @path /beneficiaries/{beneficiaryId}
+     * @allow (read, write) Any authenticated user can read or write. Client-side logic enforces granular permissions.
+     */
+    match /beneficiaries/{beneficiaryId} {
+      allow read, write: if isSignedIn();
+    }
+
     /**
      * @description Lookup table for finding a user's email by loginId or phone.
      * @path /user_lookups/{lookupId}
