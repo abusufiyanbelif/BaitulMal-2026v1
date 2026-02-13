@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Quote } from 'lucide-react';
@@ -20,6 +21,7 @@ function getRandomItem<T>(arr: T[]): T {
 
 export function WisdomAndReflection() {
   const [selectedWisdom, setSelectedWisdom] = useState<{ quran: any; hadith: any; scholar: any } | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     setSelectedWisdom({
@@ -27,7 +29,7 @@ export function WisdomAndReflection() {
       hadith: getRandomItem(typedWisdomData.hadith),
       scholar: getRandomItem(typedWisdomData.scholars),
     });
-  }, []);
+  }, [pathname]);
 
   if (!selectedWisdom) {
     return (
