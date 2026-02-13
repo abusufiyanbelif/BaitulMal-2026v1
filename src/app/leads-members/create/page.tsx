@@ -1,16 +1,19 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, errorEmitter, FirestorePermissionError, useCollection } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import Image from 'next/image';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Loader2, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Loader2, ShieldAlert, UploadCloud, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -42,6 +45,7 @@ const leadSchema = z.object({
   diseaseIdentified: z.string().optional(),
   diseaseStage: z.string().optional(),
   seriousness: z.enum(leadSeriousnessLevels).optional(),
+  imageFile: z.any().optional(),
 }).refine(data => new Date(data.startDate) <= new Date(data.endDate), {
     message: "End date cannot be before the start date.",
     path: ["endDate"],
@@ -67,12 +71,14 @@ type LeadFormValues = z.infer<typeof leadSchema>;
 export default function CreateLeadPage() {
   const router = useRouter();
   const firestore = useFirestore();
+  const storage = useStorage();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const { userProfile, isLoading: isProfileLoading } = useSession();
   
   const [isDuplicateAlertOpen, setIsDuplicateAlertOpen] = useState(false);
   const [leadDataToCreate, setLeadDataToCreate] = useState<LeadFormValues | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const leadsCollectionRef = useMemo(() => {
     if (!firestore) return null;
@@ -110,13 +116,56 @@ export default function CreateLeadPage() {
   useEffect(() => {
     form.setValue('category', '');
   }, [purpose, form.setValue]);
+  
+  const handleImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      form.setValue('imageFile', event.target.files);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-  const handleCreateLead = (data: LeadFormValues) => {
+  const handleRemoveImage = () => {
+    form.setValue('imageFile', null);
+    setImagePreview(null);
+  };
+
+  const handleCreateLead = async (data: LeadFormValues) => {
     if (!firestore || !canCreate || !userProfile) return;
     setIsLoading(true);
 
+    const { imageFile, ...leadCoreData } = data;
+    const newLeadRef = doc(collection(firestore, 'leads'));
+    const newLeadId = newLeadRef.id;
+
+    let imageUrl = '';
+    if (imageFile && imageFile.length > 0 && storage) {
+        try {
+            const file = imageFile[0];
+            const { default: Resizer } = await import('react-image-file-resizer');
+            const resizedBlob = await new Promise<Blob>((resolve) => {
+                Resizer.imageFileResizer(file, 1280, 400, 'PNG', 85, 0, blob => resolve(blob as Blob), 'blob');
+            });
+            
+            const filePath = `leads/${newLeadId}/background.png`;
+            const fileRef = storageRef(storage, filePath);
+            await uploadBytes(fileRef, resizedBlob);
+            imageUrl = await getDownloadURL(fileRef);
+        } catch (uploadError) {
+            console.error("Image upload failed:", uploadError);
+            toast({ title: 'Image Upload Failed', description: 'Lead was not created.', variant: 'destructive'});
+            setIsLoading(false);
+            return;
+        }
+    }
+
     const newLeadData = {
-      ...data,
+      ...leadCoreData,
+      imageUrl,
       requiredAmount: data.requiredAmount || 0,
       targetAmount: data.targetAmount || 0,
       description: '',
@@ -130,8 +179,8 @@ export default function CreateLeadPage() {
       itemCategories: data.category === 'Ration Kit' ? [{ id: 'general', name: 'General', items: [] }] : [],
     };
 
-    addDoc(collection(firestore, 'leads'), newLeadData)
-      .then((docRef) => {
+    setDoc(newLeadRef, newLeadData)
+      .then(() => {
         toast({ title: 'Success', description: 'Lead created successfully.', variant: 'success' });
         router.push(`/leads-members`);
       })
@@ -219,6 +268,31 @@ export default function CreateLeadPage() {
                   </FormItem>
                 )}
               />
+                <FormItem>
+                    <FormLabel>Header Image</FormLabel>
+                    <FormControl>
+                        <Input id="imageFile" type="file" accept="image/png, image/jpeg" onChange={handleImageFileChange} className="hidden" />
+                    </FormControl>
+                    <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
+                        {imagePreview ? (
+                            <>
+                                <Image src={imagePreview} alt="Preview" fill className="object-cover rounded-lg" />
+                                <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}>
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </>
+                        ) : (
+                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
+                                <p className="mb-2 text-sm text-center text-muted-foreground">
+                                    <span className="font-semibold text-primary">Click to upload</span> or drag and drop
+                                </p>
+                                <p className="text-xs text-muted-foreground">PNG, JPG (1280x400 recommended)</p>
+                            </div>
+                        )}
+                    </label>
+                    <FormMessage />
+                </FormItem>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
