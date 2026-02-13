@@ -218,57 +218,6 @@ export default function CampaignDetailsPage() {
     if (!editableCampaign) return;
     setEditableCampaign(prev => prev ? { ...prev, [field]: value } : null);
   };
-
-  const syncAllCategoriesFromMaster = (lists: ItemCategory[]): ItemCategory[] => {
-    const masterList = lists.find(cat => cat.name === 'Item Price List');
-    if (!masterList) return lists;
-
-    const masterItemsMap = new Map<string, RationItem>();
-    masterList.items.forEach(item => {
-        if (item.name && item.name.trim()) {
-            masterItemsMap.set(item.name.trim().toLowerCase(), item);
-        }
-    });
-
-    return lists.map(category => {
-        if (category.name === 'Item Price List') {
-            return category; // Return master list as is
-        }
-
-        const categoryItemsMap = new Map<string, RationItem>();
-        category.items.forEach(item => {
-            if(item.name && item.name.trim()) {
-                categoryItemsMap.set(item.name.trim().toLowerCase(), item);
-            }
-        });
-
-        const newCategoryItems: RationItem[] = [];
-
-        masterItemsMap.forEach((masterItem, masterItemName) => {
-            const existingItem = categoryItemsMap.get(masterItemName);
-            const unitPrice = Number(masterItem.price) || 0;
-            
-            if (existingItem) {
-                newCategoryItems.push({
-                    ...existingItem,
-                    price: unitPrice * (Number(existingItem.quantity) || 0),
-                    quantityType: masterItem.quantityType || '',
-                });
-            } else {
-                newCategoryItems.push({
-                    id: `${category.id}-item-${Date.now()}-${Math.random()}`, // new unique ID
-                    name: masterItem.name,
-                    quantity: 0, // Default quantity
-                    quantityType: masterItem.quantityType || '',
-                    price: 0, // Price is 0 since quantity is 0
-                    notes: masterItem.notes || '',
-                });
-            }
-        });
-
-        return { ...category, items: newCategoryItems };
-    });
-  };
   
   const handleItemChange = (
     categoryId: string,
@@ -593,9 +542,27 @@ export default function CampaignDetailsPage() {
       
       if (editableCampaign.category === 'Ration') {
         const members = beneficiary.members || 0;
-        const appliedCategory = sanitizedEditableItemCategories.find(
+        
+        const matchingCategories = sanitizedEditableItemCategories.filter(
           cat => cat.name !== 'Item Price List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
         );
+
+        let appliedCategory: ItemCategory | null = null;
+        if (matchingCategories.length > 1) {
+            // If multiple categories match, find the most specific one (smallest range)
+            matchingCategories.sort((a, b) => {
+                const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
+                const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
+                if (rangeA !== rangeB) {
+                    return rangeA - rangeB;
+                }
+                // If ranges are equal, prefer the one with higher minMembers
+                return (b.minMembers ?? 0) - (a.minMembers ?? 0);
+            });
+            appliedCategory = matchingCategories[0];
+        } else if (matchingCategories.length === 1) {
+            appliedCategory = matchingCategories[0];
+        }
         
         if (appliedCategory) {
            newKitAmount = calculateTotal(appliedCategory.items);

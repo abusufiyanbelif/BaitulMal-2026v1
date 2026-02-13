@@ -144,19 +144,38 @@ export default function BeneficiariesPage() {
   const canUpdateCampaign = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.update', false);
 
     const sanitizedRationLists = useMemo(() => {
-    if (!campaign?.itemCategories) return [];
-    if (Array.isArray(campaign.itemCategories)) return campaign.itemCategories;
-    // Hotfix for old object format
-    return [
-      {
-        id: 'general',
-        name: 'General Item List',
-        minMembers: 0,
-        maxMembers: 0,
-        items: (campaign.itemCategories as any)['General Item List'] || []
-      }
-    ];
-  }, [campaign?.itemCategories]);
+        if (!campaign?.itemCategories) return [];
+
+        let lists: ItemCategory[] = [];
+        if (Array.isArray(campaign.itemCategories)) {
+          lists = campaign.itemCategories.map(cat => {
+            if (cat.name === 'General Item List' || cat.name === 'General' || cat.name === 'Item Master List') {
+              return { ...cat, name: 'Item Price List' };
+            }
+            return cat;
+          });
+        } else { // Hotfix for old object format
+          lists = Object.keys(campaign.itemCategories).map(key => {
+            const id = key.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const items = (campaign.itemCategories as any)[key] || [];
+            return {
+              id: id,
+              name: key === 'General Item List' ? 'Item Price List' : key,
+              items: items,
+            };
+          });
+        }
+        
+        // Sort to put "Item Price List" first, then by min members or name
+        return lists.sort((a, b) => {
+            if (a.name === 'Item Price List') return -1;
+            if (b.name === 'Item Price List') return 1;
+            if(a.minMembers !== undefined && b.minMembers !== undefined) {
+                return a.minMembers - b.minMembers;
+            }
+            return a.name.localeCompare(b.name);
+        });
+    }, [campaign?.itemCategories]);
 
   const uniqueReferrals = useMemo(() => {
     if (!beneficiaries) return [];
@@ -603,49 +622,60 @@ export default function BeneficiariesPage() {
   const groupedBeneficiaries = useMemo(() => {
     if (!filteredAndSortedBeneficiaries || !sanitizedRationLists || sanitizedRationLists.length === 0) return {};
 
-    const generalCategory = sanitizedRationLists.find(cat => cat.name === 'General Item List');
+    return filteredAndSortedBeneficiaries.reduce((acc, beneficiary) => {
+        const members = beneficiary.members || 0;
+        
+        const matchingCategories = sanitizedRationLists.filter(
+            cat => cat.name !== 'Item Price List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
+        );
 
-    const byCategory = filteredAndSortedBeneficiaries.reduce((acc, beneficiary) => {
-      const members = beneficiary.members || 0;
-      
-      const specificCategory = sanitizedRationLists.find(
-        cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
-      );
-      
-      const appliedCategory = specificCategory || generalCategory;
+        let appliedCategory: ItemCategory | undefined = undefined;
 
-      if (appliedCategory) {
-        const categoryId = appliedCategory.id;
+        if (matchingCategories.length > 1) {
+            matchingCategories.sort((a, b) => {
+                const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
+                const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
+                if (rangeA !== rangeB) {
+                    return rangeA - rangeB;
+                }
+                return (b.minMembers ?? 0) - (a.minMembers ?? 0);
+            });
+            appliedCategory = matchingCategories[0];
+        } else if (matchingCategories.length === 1) {
+            appliedCategory = matchingCategories[0];
+        }
+
+        const categoryId = appliedCategory ? appliedCategory.id : 'uncategorized';
+        const categoryForGroup = appliedCategory || { id: 'uncategorized', name: 'Uncategorized', items: [] };
+
         if (!acc[categoryId]) {
-          acc[categoryId] = {
-            category: appliedCategory,
-            beneficiariesByMemberCount: {},
-          };
+            acc[categoryId] = {
+                category: categoryForGroup,
+                beneficiariesByMemberCount: {},
+            };
         }
 
         const memberCount = beneficiary.members || 0;
         if (!acc[categoryId].beneficiariesByMemberCount[memberCount]) {
-          acc[categoryId].beneficiariesByMemberCount[memberCount] = [];
+            acc[categoryId].beneficiariesByMemberCount[memberCount] = [];
         }
         acc[categoryId].beneficiariesByMemberCount[memberCount].push(beneficiary);
-      }
-      
-      return acc;
+        
+        return acc;
     }, {} as Record<string, { category: ItemCategory, beneficiariesByMemberCount: Record<number, Beneficiary[]> }>);
+}, [filteredAndSortedBeneficiaries, sanitizedRationLists]);
 
-    return byCategory;
-
-  }, [filteredAndSortedBeneficiaries, sanitizedRationLists]);
-
-  const sortedGroupKeys = useMemo(() => {
+const sortedGroupKeys = useMemo(() => {
     return Object.keys(groupedBeneficiaries).sort((a, b) => {
         const catA = groupedBeneficiaries[a].category;
         const catB = groupedBeneficiaries[b].category;
-        if (catA.name === 'General Item List') return -1;
-        if (catB.name === 'General Item List') return 1;
+        if (catA.id === 'uncategorized') return 1;
+        if (catB.id === 'uncategorized') return -1;
+        if (catA.name === 'Item Price List') return -1;
+        if (catB.name === 'Item Price List') return 1;
         return (catA.minMembers ?? 0) - (catB.minMembers ?? 0);
     });
-  }, [groupedBeneficiaries]);
+}, [groupedBeneficiaries]);
 
   const totalKitAmount = useMemo(() => {
     return filteredAndSortedBeneficiaries.reduce((acc, b) => acc + (b.kitAmount || 0), 0);
@@ -1006,10 +1036,12 @@ export default function BeneficiariesPage() {
                                 const categoryIsCollapsed = collapsedGroups[categoryId];
                                 const totalBeneficiariesInCategory = Object.values(beneficiariesByMemberCount).reduce((sum, benList) => sum + benList.length, 0);
 
-                                const isRangedCategory = (category.minMembers ?? 0) !== (category.maxMembers ?? 0) && category.name !== 'General Item List';
+                                const isRangedCategory = (category.minMembers ?? 0) !== (category.maxMembers ?? 0) && category.name !== 'Item Price List';
                                 const categoryIsEffectivelyRanged = isRangedCategory && Object.keys(beneficiariesByMemberCount).length > 1;
 
-                                const categoryName = category.name === 'General Item List'
+                                const categoryName = category.name === 'Uncategorized' 
+                                    ? category.name
+                                    : category.name === 'Item Price List'
                                     ? category.name
                                     : (category.minMembers ?? 0) === (category.maxMembers ?? 0)
                                         ? `${category.name} (${category.minMembers})`
