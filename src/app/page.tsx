@@ -71,6 +71,13 @@ export default function Home() {
             icon: Lightbulb,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members', false),
         },
+         {
+            title: "Beneficiaries",
+            description: "Manage a master list of all beneficiaries.",
+            href: "/beneficiaries",
+            icon: Users,
+            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries', false),
+        },
         {
             title: "Donations",
             description: "View and manage all incoming donations.",

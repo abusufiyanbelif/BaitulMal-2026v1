@@ -153,7 +153,7 @@ export default function BeneficiaryDetailsPage() {
               onCancel={handleCancel}
               isSubmitting={isSubmitting}
               isLoading={isBeneficiaryLoading}
-              isReadOnly={!isEditMode || !canUpdate}
+              initialReadOnly={!isEditMode && canUpdate}
               rationLists={[]}
           />
         </CardContent>
