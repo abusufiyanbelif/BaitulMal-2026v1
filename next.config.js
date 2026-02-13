@@ -16,6 +16,7 @@ const withPWA = require('@ducanh2912/next-pwa').default({
 const nextConfig = {
   // Triggering a rebuild to clear a potentially corrupted cache.
   // Adding another comment to force a rebuild again to resolve 404s.
+  // One more time to be sure.
   reactStrictMode: true,
   images: {
     remotePatterns: [
