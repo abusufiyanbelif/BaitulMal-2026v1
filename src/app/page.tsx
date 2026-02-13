@@ -74,11 +74,11 @@ export default function Home() {
                       </Button>
                   </CardContent>
               </Card>
+              
+              <WisdomAndReflection />
 
               <LeadAndCampaignSummary />
               <DonationSummary />
-              
-              <WisdomAndReflection />
             </div>
         </div>
     );
