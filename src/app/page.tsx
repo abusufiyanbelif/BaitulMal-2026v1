@@ -27,6 +27,32 @@ const WisdomAndReflection = dynamic(() => import('@/components/WisdomAndReflecti
     ),
 });
 
+const DonationSummary = dynamic(() => import('@/components/donation-summary').then(mod => mod.DonationSummary), {
+    ssr: false,
+    loading: () => (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="lg:col-span-2">
+                <CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader>
+                <CardContent><Skeleton className="h-40 w-full" /></CardContent>
+            </Card>
+            <Card>
+                <CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader>
+                <CardContent><Skeleton className="h-40 w-full" /></CardContent>
+            </Card>
+      </div>
+    )
+});
+
+const LeadAndCampaignSummary = dynamic(() => import('@/components/lead-campaign-summary').then(mod => mod.LeadAndCampaignSummary), {
+    ssr: false,
+    loading: () => (
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
+        <Card><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
+      </div>
+    )
+});
+
 
 export default function Home() {
     return (
@@ -48,6 +74,10 @@ export default function Home() {
                       </Button>
                   </CardContent>
               </Card>
+
+              <LeadAndCampaignSummary />
+              <DonationSummary />
+              
               <WisdomAndReflection />
             </div>
         </div>
