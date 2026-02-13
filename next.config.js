@@ -10,8 +10,8 @@
 // });
 
 const nextConfig = {
-  // Forcing a clean rebuild to resolve server instability.
-  reactStrictMode: true,
+  // Disabling strict mode as a diagnostic step to stabilize the dev server.
+  reactStrictMode: false,
   images: {
     remotePatterns: [
       {
