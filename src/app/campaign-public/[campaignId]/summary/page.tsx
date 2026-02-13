@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useMemo, useState, useRef } from 'react';
@@ -54,6 +55,8 @@ import {
   ChartLegendContent,
 } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
+import Image from 'next/image';
+import placeholderImages from '@/lib/placeholder-images.json';
 
 const donationCategoryChartConfig = {
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
@@ -98,7 +101,7 @@ export default function PublicCampaignSummaryPage() {
 
         const donations = allDonations.filter(d => {
             if (d.linkSplit && d.linkSplit.length > 0) {
-                return d.linkSplit.some(link => link.linkId === campaign.id);
+                return d.linkSplit.some(link => link.linkId === campaign.id && link.linkType === 'campaign');
             }
             return d.campaignId === campaign.id;
         });
@@ -266,11 +269,24 @@ Your contribution, big or small, makes a huge difference.
                     </Link>
                 </Button>
             </div>
-            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-                 <div className="space-y-1">
-                    <h1 className="text-3xl font-bold">{campaign.name}</h1>
-                    <p className="text-muted-foreground">{campaign.status}</p>
+            
+            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6">
+                <Image
+                    src={campaign.imageUrl || placeholderImages.campaign_fallback}
+                    alt={campaign.name}
+                    fill
+                    className="object-cover"
+                    data-ai-hint="campaign background"
+                    priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                <div className="absolute bottom-0 left-0 p-6">
+                    <h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{campaign.name}</h1>
+                    <p className="text-sm text-white/90 shadow-md">{campaign.status}</p>
                 </div>
+            </div>
+
+            <div className="flex justify-end items-center mb-4 flex-wrap gap-2">
                  <div className="flex gap-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>

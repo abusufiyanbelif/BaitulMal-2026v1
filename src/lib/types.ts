@@ -53,6 +53,7 @@ export interface ItemCategory {
 export interface Campaign extends DocumentData {
   id: string;
   name: string;
+  imageUrl?: string;
   category: 'Ration' | 'Relief' | 'General';
   description?: string;
   targetAmount?: number;
@@ -77,6 +78,7 @@ export interface Campaign extends DocumentData {
 export interface Lead extends DocumentData {
   id: string;
   name: string;
+  imageUrl?: string;
   purpose: 'Relief' | 'General' | 'Education' | 'Medical' | 'Other';
   category: string;
   purposeDetails?: string;

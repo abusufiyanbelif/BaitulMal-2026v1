@@ -9,7 +9,7 @@ import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { doc, collection, query, where, DocumentReference } from 'firebase/firestore';
 import Link from 'next/link';
-
+import Image from 'next/image';
 import {
   BarChart,
   Bar,
@@ -40,7 +40,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
-import jsPDF from 'jspdf';
+import placeholderImages from '@/lib/placeholder-images.json';
 
 
 const donationCategoryChartConfig = {
@@ -220,11 +220,23 @@ Your support and feedback are valuable.
                     </Link>
                 </Button>
             </div>
-            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-                 <div className="space-y-1">
-                    <h1 className="text-3xl font-bold">{lead.name}</h1>
-                    <p className="text-muted-foreground">{lead.status}</p>
+            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6">
+                <Image
+                    src={lead.imageUrl || placeholderImages.lead_fallback}
+                    alt={lead.name}
+                    fill
+                    className="object-cover"
+                    data-ai-hint="lead background"
+                    priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                <div className="absolute bottom-0 left-0 p-6">
+                    <h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{lead.name}</h1>
+                    <p className="text-sm text-white/90 shadow-md">{lead.status}</p>
                 </div>
+            </div>
+
+            <div className="flex justify-end items-center mb-4 flex-wrap gap-2">
                  <div className="flex gap-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>

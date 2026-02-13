@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,8 @@ import { Badge } from '@/components/ui/badge';
 import { collection, query, where } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
 import { leadPurposesConfig } from '@/lib/modules';
+import Image from 'next/image';
+import placeholderImages from '@/lib/placeholder-images.json';
 
 const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: number; })[] }) => {
     const router = useRouter();
@@ -24,7 +27,16 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {leads.map(lead => (
-                <Card key={lead.id} className="flex flex-col hover:shadow-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 cursor-pointer" onClick={() => router.push(`/leads-public/${lead.id}/summary`)}>
+                <Card key={lead.id} className="flex flex-col hover:shadow-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 cursor-pointer overflow-hidden" onClick={() => router.push(`/leads-public/${lead.id}/summary`)}>
+                    <div className="relative h-40 w-full bg-secondary">
+                        <Image
+                          src={lead.imageUrl || placeholderImages.lead_fallback}
+                          alt={lead.name}
+                          fill
+                          className="object-cover"
+                          data-ai-hint="lead background"
+                        />
+                    </div>
                     <CardHeader>
                         <div className="flex justify-between items-start gap-2">
                             <CardTitle>{lead.name}</CardTitle>
@@ -129,7 +141,7 @@ export default function PublicLeadPage() {
         (statusFilter === 'All' || l.status === statusFilter) &&
         (purposeFilter === 'All' || l.purpose === purposeFilter) &&
         (l.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    ).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
   }, [leadData, searchTerm, statusFilter, purposeFilter]);
   
   const activeLeads = useMemo(() => filteredLeads.filter(c => c.status === 'Active').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredLeads]);

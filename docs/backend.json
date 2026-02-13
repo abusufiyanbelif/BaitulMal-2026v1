@@ -37,6 +37,7 @@
       "properties": {
         "name": { "type": "string" },
         "description": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri", "description": "URL for the campaign's background image." },
         "category": { "type": "string", "enum": ["Ration", "Relief", "General"] },
         "status": { "type": "string", "enum": ["Upcoming", "Active", "Completed"] },
         "startDate": { "type": "string", "format": "date" },
@@ -63,6 +64,7 @@
       "properties": {
         "name": { "type": "string" },
         "description": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri", "description": "URL for the lead's background image." },
         "notes": { "type": "string", "description": "Internal notes or comments about the lead." },
         "purpose": { "type": "string", "enum": ["Relief", "General", "Education", "Medical", "Other"] },
         "purposeDetails": { "type": "string", "description": "Details if purpose is 'Other'." },

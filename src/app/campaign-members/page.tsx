@@ -44,7 +44,8 @@ import { Badge } from '@/components/ui/badge';
 import { CopyCampaignDialog } from '@/components/copy-campaign-dialog';
 import { copyCampaignAction } from './actions';
 import { getNestedValue } from '@/lib/utils';
-import { donationCategories } from '@/lib/modules';
+import Image from 'next/image';
+import placeholderImages from '@/lib/placeholder-images.json';
 
 
 export default function CampaignPage() {
@@ -287,7 +288,16 @@ export default function CampaignPage() {
   const isLoading = areCampaignsLoading || isProfileLoading || isDeleting || areDonationsLoading;
   
   const CampaignCard = ({ campaign }: { campaign: Campaign & { collected: number; progress: number; }}) => (
-    <Card className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-zoom" onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}>
+    <Card className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-zoom overflow-hidden" onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}>
+       <div className="relative h-32 w-full bg-secondary">
+        <Image
+          src={campaign.imageUrl || placeholderImages.campaign_fallback}
+          alt={campaign.name}
+          fill
+          className="object-cover"
+          data-ai-hint="campaign background"
+        />
+      </div>
       <CardHeader>
         <div className="flex justify-between items-start gap-2">
             <CardTitle className="w-full break-words text-base">{campaign.name}</CardTitle>
