@@ -14,12 +14,12 @@ function HomeDashboardCard({ title, description, href, icon: Icon }: { title: st
     <div className="animate-fade-in-up" style={{ animationDelay: '500ms' }}>
       <Link href={href} className="block group">
         <Card className="h-full p-4 transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:-translate-y-1 group-hover:border-primary active:scale-95">
-          <div className="flex justify-between items-start">
+          <div className="flex justify-between items-start gap-4">
             <div className="space-y-1">
-              <CardTitle className="text-base">{title}</CardTitle>
+              <CardTitle className="text-md">{title}</CardTitle>
               <CardDescription className="text-xs">{description}</CardDescription>
             </div>
-            <Icon className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-primary" />
+            <Icon className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-primary shrink-0" />
           </div>
         </Card>
       </Link>

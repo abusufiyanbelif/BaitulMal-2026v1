@@ -10,6 +10,7 @@ import { useAuth, useFirestore } from '@/firebase';
 import { signInWithLoginId } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { sendPasswordResetEmail } from 'firebase/auth';
+import { useBranding } from '@/hooks/use-branding';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +29,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, AlertTriangle, ExternalLink, ArrowLeft } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const loginSchema = z.object({
   loginId: z.string().min(3, 'Login ID or Phone Number is required.'),
@@ -44,6 +46,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
 
   // State for password reset dialog
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
@@ -140,9 +143,13 @@ export default function LoginPage() {
       <Card>
           <CardHeader className="text-center">
               <div className="flex justify-center items-center gap-3 mb-4">
-                  <h1 className="text-3xl font-bold font-headline text-foreground">
-                  Baitulmal Samajik Sanstha Solapur
-                  </h1>
+                {isBrandingLoading ? (
+                    <Skeleton className="h-9 w-full max-w-xs" />
+                ) : (
+                    <h1 className="text-2xl sm:text-3xl font-bold font-headline text-foreground">
+                        {brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}
+                    </h1>
+                )}
               </div>
           <CardTitle>Welcome Back!</CardTitle>
           <CardDescription>Organization Member Enter your credentials to access your account.</CardDescription>

@@ -79,7 +79,7 @@ export function DocuExtractHeader() {
             )}
             </div>
           <h1 className="text-base sm:text-lg md:text-xl font-bold font-headline text-foreground animate-fade-in-zoom" style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}>
-            {isBrandingLoading ? <Skeleton className="h-8 w-80" /> : (brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur')}
+            {isBrandingLoading ? <Skeleton className="h-8 w-64 md:w-80" /> : (brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur')}
           </h1>
         </Link>
 
