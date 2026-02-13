@@ -17,9 +17,7 @@
     "check:db": "tsx scripts/check-db.ts",
     "check:storage": "tsx scripts/check-storage.ts",
     "setup:storage": "tsx scripts/setup-storage.ts",
-    "fix:iam": "tsx scripts/fix-iam.ts",
-    "rebuild": "echo 'Forcing a rebuild'",
-    "cache-bust": "echo 'Cache busted'"
+    "fix:iam": "tsx scripts/fix-iam.ts"
   },
   "dependencies": {
     "@dataconnect/admin-generated": "file:src/dataconnect-admin-generated",

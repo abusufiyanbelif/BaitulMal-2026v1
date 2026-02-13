@@ -8,29 +8,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import dynamic from 'next/dynamic';
 import { Quote } from 'lucide-react';
 
-const DonationSummary = dynamic(() => import('@/components/donation-summary').then(mod => mod.DonationSummary), {
-    loading: () => (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-48 w-full md:col-span-2 lg:col-span-1" />
-            <Skeleton className="h-48 w-full" />
-        </div>
-    ),
-    ssr: false,
-});
-
-const LeadAndCampaignSummary = dynamic(() => import('@/components/lead-campaign-summary').then(mod => mod.LeadAndCampaignSummary), {
-    loading: () => (
-        <div className="grid gap-6 md:grid-cols-2">
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-48 w-full" />
-        </div>
-    ),
-    ssr: false,
-});
-
 const WisdomAndReflection = dynamic(() => import('@/components/WisdomAndReflection').then(mod => mod.WisdomAndReflection), {
     ssr: false,
     loading: () => (
@@ -72,11 +49,6 @@ export default function Home() {
                   </CardContent>
               </Card>
               <WisdomAndReflection />
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-center">Live Summary</h2>
-                <DonationSummary />
-                <LeadAndCampaignSummary />
-              </div>
             </div>
         </div>
     );

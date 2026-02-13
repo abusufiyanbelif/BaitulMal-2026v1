@@ -1,7 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Disabling strict mode as a diagnostic step to stabilize the dev server.
-  reactStrictMode: false,
   images: {
     remotePatterns: [
       {
@@ -15,7 +13,6 @@ const nextConfig = {
   devIndicators: {
     allowedDevOrigins: ['*.cloudworkstations.dev'],
   },
-  // Cache-busting comment to force a clean rebuild.
 };
 
 module.exports = nextConfig;
