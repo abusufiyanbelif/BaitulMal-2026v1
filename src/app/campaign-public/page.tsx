@@ -1,5 +1,3 @@
-
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +13,49 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { collection, query, where } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
+
+const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: number; progress: number; })[] }) => {
+    const router = useRouter();
+    if (campaigns.length === 0) {
+        return <p className="text-muted-foreground">No campaigns in this category.</p>;
+    }
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {campaigns.map(campaign => (
+                <Card key={campaign.id} className="flex flex-col hover:shadow-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 cursor-pointer" onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}>
+                    <CardHeader>
+                        <div className="flex justify-between items-start gap-2">
+                            <CardTitle>{campaign.name}</CardTitle>
+                            <Badge variant={
+                                campaign.status === 'Active' ? 'success' :
+                                campaign.status === 'Completed' ? 'secondary' : 'outline'
+                            }>{campaign.status}</Badge>
+                        </div>
+                        <CardDescription>{campaign.startDate} to {campaign.endDate}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col flex-grow space-y-4">
+                        <p className="text-sm text-muted-foreground line-clamp-3 flex-grow">{campaign.description || "No description provided."}</p>
+                         {campaign.targetAmount && campaign.targetAmount > 0 && (
+                          <div className="space-y-2 pt-2">
+                              <Progress value={campaign.progress} />
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                  <span>₹{campaign.collected.toLocaleString('en-IN')} raised</span>
+                                  <span>Goal: ₹{campaign.targetAmount.toLocaleString('en-IN')}</span>
+                              </div>
+                          </div>
+                         )}
+                    </CardContent>
+                    <CardFooter>
+                        <Button className="w-full" tabIndex={-1}>
+                            View Details
+                        </Button>
+                    </CardFooter>
+                </Card>
+            ))}
+        </div>
+    );
+};
+
 
 export default function PublicCampaignPage() {
   const firestore = useFirestore();
@@ -96,8 +137,13 @@ export default function PublicCampaignPage() {
         (statusFilter === 'All' || c.status === statusFilter) &&
         (categoryFilter === 'All' || c.category === categoryFilter) &&
         (c.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    ).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+    );
   }, [campaignData, searchTerm, statusFilter, categoryFilter]);
+
+  const activeCampaigns = useMemo(() => filteredCampaigns.filter(c => c.status === 'Active').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredCampaigns]);
+  const upcomingCampaigns = useMemo(() => filteredCampaigns.filter(c => c.status === 'Upcoming').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredCampaigns]);
+  const completedCampaigns = useMemo(() => filteredCampaigns.filter(c => c.status === 'Completed').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredCampaigns]);
+
   
   const isLoading = areCampaignsLoading || areDonationsLoading;
 
@@ -147,53 +193,39 @@ export default function PublicCampaignPage() {
         </div>
       </div>
 
-      {isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+      {isLoading ? (
+        <div className="space-y-8">
+            <Skeleton className="h-8 w-1/4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+            </div>
+             <Skeleton className="h-8 w-1/4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+            </div>
         </div>
+      ) : (
+          <div className="space-y-8">
+            {(statusFilter === 'All' || statusFilter === 'Active') && (
+                <section>
+                    <h2 className="text-2xl font-bold mb-4">Active Campaigns ({activeCampaigns.length})</h2>
+                    <CampaignGrid campaigns={activeCampaigns} />
+                </section>
+            )}
+            {(statusFilter === 'All' || statusFilter === 'Upcoming') && (
+                <section>
+                    <h2 className="text-2xl font-bold mb-4">Upcoming Campaigns ({upcomingCampaigns.length})</h2>
+                    <CampaignGrid campaigns={upcomingCampaigns} />
+                </section>
+            )}
+            {(statusFilter === 'All' || statusFilter === 'Completed') && (
+                <section>
+                    <h2 className="text-2xl font-bold mb-4">Completed Campaigns ({completedCampaigns.length})</h2>
+                    <CampaignGrid campaigns={completedCampaigns} />
+                </section>
+            )}
+          </div>
       )}
-      
-      {!isLoading && filteredCampaigns.length > 0 && (
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredCampaigns.map(campaign => (
-                  <Card key={campaign.id} className="flex flex-col hover:shadow-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 cursor-pointer" onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}>
-                      <CardHeader>
-                          <div className="flex justify-between items-start gap-2">
-                              <CardTitle>{campaign.name}</CardTitle>
-                              <Badge variant={
-                                  campaign.status === 'Active' ? 'success' :
-                                  campaign.status === 'Completed' ? 'secondary' : 'outline'
-                              }>{campaign.status}</Badge>
-                          </div>
-                          <CardDescription>{campaign.startDate} to {campaign.endDate}</CardDescription>
-                      </CardHeader>
-                      <CardContent className="flex flex-col flex-grow space-y-4">
-                          <p className="text-sm text-muted-foreground line-clamp-3 flex-grow">{campaign.description || "No description provided."}</p>
-                           {campaign.targetAmount && campaign.targetAmount > 0 && (
-                            <div className="space-y-2 pt-2">
-                                <Progress value={campaign.progress} />
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                    <span>₹{campaign.collected.toLocaleString('en-IN')} raised</span>
-                                    <span>Goal: ₹{campaign.targetAmount.toLocaleString('en-IN')}</span>
-                                </div>
-                            </div>
-                           )}
-                      </CardContent>
-                      <CardFooter>
-                          <Button className="w-full" tabIndex={-1}>
-                              View Details
-                          </Button>
-                      </CardFooter>
-                  </Card>
-              ))}
-        </div>
-      )}
-    
-     {!isLoading && filteredCampaigns.length === 0 && (
-        <div className="text-center py-16">
-            <p className="text-muted-foreground">No campaigns found matching your criteria.</p>
-        </div>
-    )}
     </main>
   );
 }
