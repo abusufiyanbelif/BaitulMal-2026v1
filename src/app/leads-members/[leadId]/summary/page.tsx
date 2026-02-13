@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -109,7 +110,7 @@ export default function LeadSummaryPage() {
                 semester: lead.semester || '',
                 diseaseIdentified: lead.diseaseIdentified || '',
                 diseaseStage: lead.diseaseStage || '',
-                seriousness: lead.seriousness || undefined,
+                seriousness: lead.seriousness || null,
                 imageUrl: lead.imageUrl || '',
             });
             setImagePreview(lead.imageUrl || null);
@@ -196,7 +197,7 @@ export default function LeadSummaryPage() {
             semester: editableLead.semester || '',
             diseaseIdentified: editableLead.diseaseIdentified || '',
             diseaseStage: editableLead.diseaseStage || '',
-            seriousness: editableLead.seriousness || undefined,
+            seriousness: editableLead.seriousness || null,
             imageUrl: imageUrl,
         };
 

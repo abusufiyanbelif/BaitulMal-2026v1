@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -177,6 +178,7 @@ export default function CreateLeadPage() {
       shopContact: '',
       shopAddress: '',
       itemCategories: data.category === 'Ration Kit' ? [{ id: 'general', name: 'General', items: [] }] : [],
+      seriousness: data.seriousness || null,
     };
 
     setDoc(newLeadRef, newLeadData)

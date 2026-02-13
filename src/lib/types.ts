@@ -1,4 +1,5 @@
 
+
 import type { DocumentData } from 'firebase/firestore';
 import type { UserPermissions } from './modules';
 import { donationCategories } from './modules';
@@ -110,7 +111,7 @@ export interface Lead extends DocumentData {
   // Medical fields
   diseaseIdentified?: string;
   diseaseStage?: string;
-  seriousness?: 'High' | 'Moderate' | 'Low';
+  seriousness?: 'High' | 'Moderate' | 'Low' | null;
 }
 
 export interface Beneficiary extends DocumentData {
