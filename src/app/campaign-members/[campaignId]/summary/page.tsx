@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -586,7 +585,61 @@ Your contribution, big or small, makes a huge difference.
                                     <p className="mt-1 text-sm">{campaign.description || 'No description provided.'}</p>
                                 )}
                             </div>
-                           {/* ... rest of the form fields */}
+                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="startDate">Start Date</Label>
+                                    <Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={e => setEditableCampaign(p => ({...p, startDate: e.target.value}))} disabled={!editMode}/>
+                                </div>
+                                <div>
+                                    <Label htmlFor="endDate">End Date</Label>
+                                    <Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={e => setEditableCampaign(p => ({...p, endDate: e.target.value}))} disabled={!editMode}/>
+                                </div>
+                                <div>
+                                    <Label htmlFor="category">Category</Label>
+                                    <Select value={editableCampaign.category} onValueChange={value => setEditableCampaign(p => ({...p, category: value as any}))} disabled={!editMode}>
+                                        <SelectTrigger><SelectValue/></SelectTrigger>
+                                        <SelectContent><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <Label htmlFor="targetAmount">Target Amount (₹)</Label>
+                                    <Input id="targetAmount" type="number" value={editableCampaign.targetAmount || ''} onChange={e => setEditableCampaign(p => ({...p, targetAmount: Number(e.target.value)}))} disabled={!editMode}/>
+                                </div>
+                                <div>
+                                    <Label htmlFor="authenticityStatus">Authenticity</Label>
+                                    <Select value={editableCampaign.authenticityStatus} onValueChange={value => setEditableCampaign(p => ({...p, authenticityStatus: value as any}))} disabled={!editMode}>
+                                        <SelectTrigger><SelectValue/></SelectTrigger>
+                                        <SelectContent><SelectItem value="Pending Verification">Pending Verification</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="On Hold">On Hold</SelectItem><SelectItem value="Rejected">Rejected</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <Label htmlFor="publicVisibility">Visibility</Label>
+                                    <Select value={editableCampaign.publicVisibility} onValueChange={value => setEditableCampaign(p => ({...p, publicVisibility: value as any}))} disabled={!editMode}>
+                                        <SelectTrigger><SelectValue/></SelectTrigger>
+                                        <SelectContent><SelectItem value="Hold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish">Ready to Publish</SelectItem><SelectItem value="Published">Published</SelectItem></SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <div>
+                                <Label>Allowed Donation Types</Label>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2 border rounded-md mt-1">
+                                    {donationCategories.map(type => (
+                                        <div key={type} className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id={`type-${type}`}
+                                                disabled={!editMode}
+                                                checked={editableCampaign.allowedDonationTypes?.includes(type)}
+                                                onCheckedChange={checked => {
+                                                    const currentTypes = editableCampaign.allowedDonationTypes || [];
+                                                    const newTypes = checked ? [...currentTypes, type] : currentTypes.filter(t => t !== type);
+                                                    setEditableCampaign(p => ({...p, allowedDonationTypes: newTypes as any}));
+                                                }}
+                                            />
+                                            <Label htmlFor={`type-${type}`} className="font-normal text-sm">{type}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 
@@ -601,7 +654,7 @@ Your contribution, big or small, makes a huge difference.
                             <Progress value={summaryData?.fundingProgress || 0} />
                             <div className="mt-2 text-xs text-muted-foreground">
                                 {summaryData && summaryData.targetAmount === 0 ? (
-                                    'Set a Target Amount or sync beneficiary kit amounts from the "Ration Details" tab to see progress.'
+                                    'Set a Target Amount or sync beneficiary kit amounts from the "Item Lists" tab to see progress.'
                                 ) : summaryData && summaryData.pendingDonations > 0 ? (
                                     <span>(+ ₹{summaryData.pendingDonations.toLocaleString('en-IN')} pending verification)</span>
                                 ) : (
@@ -649,8 +702,74 @@ Your contribution, big or small, makes a huge difference.
                             </CardContent>
                         </Card>
                     </div>
+                    <div className="grid gap-6 lg:grid-cols-2">
+                      <Card>
+                          <CardHeader>
+                              <CardTitle>Donations by Category</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                              <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
+                                  <BarChart data={Object.entries(summaryData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
+                                      <CartesianGrid horizontal={false} />
+                                      <YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/>
+                                      <XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
+                                      <ChartTooltip content={<ChartTooltipContent />} />
+                                      <Bar dataKey="value" radius={4}>
+                                          {Object.entries(summaryData?.amountsByCategory || {}).map(([name]) => (
+                                              <Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />
+                                          ))}
+                                      </Bar>
+                                  </BarChart>
+                              </ChartContainer>
+                          </CardContent>
+                      </Card>
 
-                   {/* ... Other summary cards ... */}
+                      <Card>
+                          <CardHeader>
+                              <CardTitle>Donations by Payment Type</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                               <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
+                                  <PieChart>
+                                      <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                      <Pie data={summaryData?.donationPaymentTypeChartData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5}>
+                                          {summaryData?.donationPaymentTypeChartData?.map((entry) => (
+                                              <Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />
+                                          ))}
+                                      </Pie>
+                                      <ChartLegend content={<ChartLegendContent />} />
+                                  </PieChart>
+                              </ChartContainer>
+                          </CardContent>
+                      </Card>
+                  </div>
+                  {campaign.category === 'Ration' && summaryData && summaryData.sortedBeneficiaryCategoryKeys.length > 0 && (
+                      <Card>
+                          <CardHeader><CardTitle>Beneficiary Groups</CardTitle></CardHeader>
+                          <CardContent>
+                              <Table>
+                                  <TableHeader>
+                                      <TableRow><TableHead>Category</TableHead><TableHead className="text-center">Beneficiaries</TableHead><TableHead className="text-right">Total Amount (₹)</TableHead></TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                      {summaryData.sortedBeneficiaryCategoryKeys.map(key => {
+                                          const group = summaryData.beneficiariesByCategory[key];
+                                          return (
+                                              <TableRow key={key}><TableCell>{group.categoryName}</TableCell><TableCell className="text-center">{group.beneficiaries.length}</TableCell><TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell></TableRow>
+                                          );
+                                      })}
+                                  </TableBody>
+                                   <TableFooter>
+                                        <TableRow>
+                                            <TableCell className="font-bold">Total</TableCell>
+                                            <TableCell className="text-center font-bold">{summaryData.totalBeneficiaries}</TableCell>
+                                            <TableCell className="text-right font-bold font-mono">₹{Object.values(summaryData.beneficiariesByCategory).reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
+                                        </TableRow>
+                                    </TableFooter>
+                              </Table>
+                          </CardContent>
+                      </Card>
+                  )}
                 </div>
             </div>
 
