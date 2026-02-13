@@ -1,6 +1,7 @@
 
 // Busting the cache to resolve a "Cannot find module" build error.
 // Forcing another rebuild to clear the cache.
+// Forcing yet another rebuild to try and resolve caching issues.
 /** @type {import('next').NextConfig} */
 const withPWA = require('@ducanh2912/next-pwa').default({
   dest: 'public',
@@ -15,7 +16,6 @@ const withPWA = require('@ducanh2912/next-pwa').default({
 const nextConfig = {
   // Triggering a rebuild to clear a potentially corrupted cache.
   // Adding another comment to force a rebuild again to resolve 404s.
-  // Forcing yet another rebuild to try and resolve caching issues.
   reactStrictMode: true,
   images: {
     remotePatterns: [
