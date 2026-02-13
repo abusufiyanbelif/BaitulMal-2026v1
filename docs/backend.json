@@ -250,6 +250,15 @@
         }
       },
       {
+        "path": "/beneficiaries/{beneficiaryId}",
+        "definition": {
+          "entityName": "Beneficiary",
+          "schema": { "$ref": "#/entities/Beneficiary" },
+          "description": "Stores a master list of all beneficiaries.",
+          "params": [{"name": "beneficiaryId", "description": "The unique identifier for the beneficiary."}]
+        }
+      },
+      {
         "path": "/user_lookups/{lookupId}",
         "definition": {
           "entityName": "UserLookup",
@@ -275,6 +284,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed with a mix of public and private collections. 'Campaigns' and 'Leads' can be made public, while user-specific data and internal lookups are restricted. Subcollections are used for beneficiaries to keep them tied to a parent campaign/lead."
+    "reasoning": "The Firestore data structure is designed with a mix of public and private collections. 'Campaigns' and 'Leads' can be made public, while user-specific data and internal lookups are restricted. A master 'beneficiaries' collection is included for centralized management. Subcollections are used for beneficiaries within campaigns/leads to keep them tied to a parent context for historical or specific-use cases, but the master list serves as the primary source of truth."
   }
 }

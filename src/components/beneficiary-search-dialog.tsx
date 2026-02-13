@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useFirestore } from '@/firebase';
-import { collectionGroup, query, where, getDocs, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import type { Beneficiary } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -35,21 +35,14 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
     const lowerCaseTerm = searchTerm.toLowerCase();
 
     try {
-      const beneficiariesQuery = query(collectionGroup(firestore, 'beneficiaries'));
+      const beneficiariesQuery = query(collection(firestore, 'beneficiaries'));
       const querySnapshot = await getDocs(beneficiariesQuery);
       const allBeneficiaries: Beneficiary[] = [];
       querySnapshot.forEach((doc) => {
           allBeneficiaries.push({ id: doc.id, ...doc.data() } as Beneficiary);
       });
 
-      const uniqueBeneficiaries = allBeneficiaries.reduce((acc, current) => {
-        if (!acc.find(item => item.name === current.name && item.phone === current.phone)) {
-          acc.push(current);
-        }
-        return acc;
-      }, [] as Beneficiary[]);
-
-      const filtered = uniqueBeneficiaries.filter(b => 
+      const filtered = allBeneficiaries.filter(b => 
         b.name.toLowerCase().includes(lowerCaseTerm) || 
         (b.phone && b.phone.includes(searchTerm))
       ).slice(0, 20);
@@ -82,7 +75,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
         <DialogHeader>
           <DialogTitle>Search Existing Beneficiaries</DialogTitle>
           <DialogDescription>
-            Search by name or phone number to find and add an existing beneficiary.
+            Search by name or phone number to find and add an existing beneficiary from the master list.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
@@ -110,7 +103,6 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
                                 <p className="text-sm text-muted-foreground">
                                     {beneficiary.phone || 'No Phone'}
                                     {beneficiary.address && ` - ${beneficiary.address}`}
-                                    {beneficiary.kitAmount > 0 && <span className="font-mono text-xs"> - ₹{beneficiary.kitAmount}</span>}
                                 </p>
                             </div>
                             <Button size="sm" onClick={() => handleSelect(beneficiary)}>Select</Button>
