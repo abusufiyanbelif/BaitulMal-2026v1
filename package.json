@@ -24,7 +24,6 @@
   "dependencies": {
     "@dataconnect/admin-generated": "file:src/dataconnect-admin-generated",
     "@dataconnect/generated": "file:src/dataconnect-generated",
-    "@ducanh2912/next-pwa": "^10.2.7",
     "@genkit-ai/google-genai": "^1.0.0",
     "@google-cloud/resource-manager": "^5.0.1",
     "@hookform/resolvers": "3.3.4",

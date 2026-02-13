@@ -1,11 +1,4 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require('@ducanh2912/next-pwa').default({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
-});
-
 const nextConfig = {
   // Disabling strict mode as a diagnostic step to stabilize the dev server.
   reactStrictMode: false,
@@ -25,4 +18,4 @@ const nextConfig = {
   // Cache-busting comment to force a clean rebuild.
 };
 
-module.exports = withPWA(nextConfig);
+module.exports = nextConfig;
