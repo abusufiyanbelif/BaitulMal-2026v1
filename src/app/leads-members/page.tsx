@@ -1,4 +1,5 @@
 
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -41,9 +42,6 @@ export default function LeadPage() {
   
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<Lead | null>(null);
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
 
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const [leadToCopy, setLeadToCopy] = useState<Lead | null>(null);
@@ -234,31 +232,123 @@ export default function LeadPage() {
         );
     }
 
-    const statusOrder: { [key: string]: number } = {
-        'Active': 1,
-        'Upcoming': 2,
-        'Completed': 3
-    };
-
-    sortableItems.sort((a, b) => {
-        const statusA = statusOrder[a.status] || 99;
-        const statusB = statusOrder[b.status] || 99;
-        if (statusA !== statusB) {
-            return statusA - statusB;
-        }
-        return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
-    });
-
     return sortableItems;
   }, [leadData, searchTerm, statusFilter, purposeFilter, authenticityFilter, visibilityFilter]);
 
-  const totalPages = Math.ceil(filteredAndSortedLeads.length / itemsPerPage);
-  const paginatedLeads = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredAndSortedLeads.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredAndSortedLeads, currentPage, itemsPerPage]);
-
+  const activeLeads = useMemo(() => filteredAndSortedLeads.filter(c => c.status === 'Active').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedLeads]);
+  const upcomingLeads = useMemo(() => filteredAndSortedLeads.filter(c => c.status === 'Upcoming').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedLeads]);
+  const completedLeads = useMemo(() => filteredAndSortedLeads.filter(c => c.status === 'Completed').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedLeads]);
+  
   const isLoading = areLeadsLoading || isProfileLoading || isDeleting || areDonationsLoading;
+
+  const LeadCard = ({ lead }: { lead: Lead & { collected: number; progress: number; }}) => (
+    <Card className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-zoom" onClick={() => router.push(`/leads-members/${lead.id}/summary`)}>
+      <CardHeader>
+        <div className="flex justify-between items-start gap-2">
+            <CardTitle className="w-full break-words text-base">{lead.name}</CardTitle>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenuItem onClick={() => router.push(`/leads-members/${lead.id}/summary`)} className="cursor-pointer">
+                        <Edit className="mr-2 h-4 w-4" />
+                        View Details
+                    </DropdownMenuItem>
+                    {canUpdate && <DropdownMenuSeparator />}
+                    {canUpdate && (
+                        <>
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger><span>Change Status</span></DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                    <DropdownMenuRadioGroup value={lead.status} onValueChange={(value) => handleStatusUpdate(lead, 'status', value)}>
+                                        <DropdownMenuRadioItem value="Upcoming">Upcoming</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Active">Active</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Completed">Completed</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger><span>Verification</span></DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                    <DropdownMenuRadioGroup value={lead.authenticityStatus} onValueChange={(value) => handleStatusUpdate(lead, 'authenticityStatus', value as string)}>
+                                        <DropdownMenuRadioItem value="Pending Verification">Pending Verification</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                    <DropdownMenuRadioGroup value={lead.publicVisibility} onValueChange={(value) => handleStatusUpdate(lead, 'publicVisibility', value as string)}>
+                                        <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+                        </>
+                    )}
+                    <DropdownMenuSeparator />
+                    {canCreate && (
+                        <DropdownMenuItem
+                            onClick={() => handleCopyClick(lead)}
+                            className="cursor-pointer"
+                        >
+                            <Copy className="mr-2 h-4 w-4" />
+                            Copy
+                        </DropdownMenuItem>
+                    )}
+                    {canDelete && (
+                        <>
+                            {canCreate && <DropdownMenuSeparator />}
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(lead); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                            </DropdownMenuItem>
+                        </>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
+        <CardDescription className="text-xs">{lead.startDate} to {lead.endDate}</CardDescription>
+    </CardHeader>
+    <CardContent className="flex-grow space-y-2">
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <Badge variant="outline">{lead.purpose}</Badge>
+            <Badge variant={
+                lead.status === 'Active' ? 'success' :
+                lead.status === 'Completed' ? 'secondary' : 'outline'
+            }>{lead.status}</Badge>
+        </div>
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <Badge variant="outline">{lead.authenticityStatus || 'N/A'}</Badge>
+            <Badge variant="outline">{lead.publicVisibility || 'N/A'}</Badge>
+        </div>
+          {(lead.targetAmount || 0) > 0 && (
+            <div className="space-y-1 pt-1">
+                <Progress value={lead.progress} className="h-2" />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>₹{lead.collected.toLocaleString('en-IN')}</span>
+                    <span>Goal: ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</span>
+                </div>
+            </div>
+        )}
+    </CardContent>
+    <CardFooter className="p-2">
+        <Button asChild className="w-full" size="sm">
+            <Link href={`/leads-members/${lead.id}/summary`}>
+                View Details
+            </Link>
+        </Button>
+    </CardFooter>
+    </Card>
+  );
   
   if (!isLoading && userProfile && !canViewLeads) {
     return (
@@ -301,11 +391,11 @@ export default function LeadPage() {
                     <Input 
                         placeholder="Search by name..."
                         value={searchTerm}
-                        onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                        onChange={(e) => { setSearchTerm(e.target.value); }}
                         className="max-w-xs"
                         disabled={isLoading}
                     />
-                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }} disabled={isLoading}>
+                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); }} disabled={isLoading}>
                         <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
@@ -316,7 +406,7 @@ export default function LeadPage() {
                             <SelectItem value="Completed">Completed</SelectItem>
                         </SelectContent>
                     </Select>
-                     <Select value={purposeFilter} onValueChange={(value) => { setPurposeFilter(value); setCurrentPage(1); }} disabled={isLoading}>
+                     <Select value={purposeFilter} onValueChange={(value) => { setPurposeFilter(value); }} disabled={isLoading}>
                         <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
                             <SelectValue placeholder="Purpose" />
                         </SelectTrigger>
@@ -325,7 +415,7 @@ export default function LeadPage() {
                             {leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
-                    <Select value={authenticityFilter} onValueChange={(value) => { setAuthenticityFilter(value); setCurrentPage(1); }} disabled={isLoading}>
+                    <Select value={authenticityFilter} onValueChange={(value) => { setAuthenticityFilter(value); }} disabled={isLoading}>
                         <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
                             <SelectValue placeholder="Authenticity" />
                         </SelectTrigger>
@@ -337,7 +427,7 @@ export default function LeadPage() {
                             <SelectItem value="Rejected">Rejected</SelectItem>
                         </SelectContent>
                     </Select>
-                    <Select value={visibilityFilter} onValueChange={(value) => { setVisibilityFilter(value); setCurrentPage(1); }} disabled={isLoading}>
+                    <Select value={visibilityFilter} onValueChange={(value) => { setVisibilityFilter(value); }} disabled={isLoading}>
                         <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
                             <SelectValue placeholder="Visibility" />
                         </SelectTrigger>
@@ -360,146 +450,54 @@ export default function LeadPage() {
               </Button>
             )}
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {isLoading && (
-                    [...Array(3)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)
+          <CardContent className="space-y-8">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+              </div>
+            ) : (
+              <>
+                {(statusFilter === 'All' || statusFilter === 'Active') && activeLeads.length > 0 && (
+                    <section>
+                        <h2 className="text-2xl font-bold mb-4">Active Leads ({activeLeads.length})</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {activeLeads.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
+                        </div>
+                    </section>
                 )}
-                {!isLoading && paginatedLeads.map((lead, index) => {
-                    return (
-                    <Card key={lead.id} className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-zoom" style={{ animationDelay: `${100 * index}ms` }} onClick={() => router.push(`/leads-members/${lead.id}/summary`)}>
-                        <CardHeader>
-                            <div className="flex justify-between items-start gap-2">
-                                <CardTitle className="w-full break-words text-base">{lead.name}</CardTitle>
-                                 <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                                            <MoreHorizontal className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                        <DropdownMenuItem onClick={() => router.push(`/leads-members/${lead.id}/summary`)} className="cursor-pointer">
-                                            <Edit className="mr-2 h-4 w-4" />
-                                            View Details
-                                        </DropdownMenuItem>
-                                        {canUpdate && <DropdownMenuSeparator />}
-                                        {canUpdate && (
-                                            <>
-                                                <DropdownMenuSub>
-                                                    <DropdownMenuSubTrigger><span>Change Status</span></DropdownMenuSubTrigger>
-                                                    <DropdownMenuSubContent>
-                                                        <DropdownMenuRadioGroup value={lead.status} onValueChange={(value) => handleStatusUpdate(lead, 'status', value)}>
-                                                            <DropdownMenuRadioItem value="Upcoming">Upcoming</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Active">Active</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Completed">Completed</DropdownMenuRadioItem>
-                                                        </DropdownMenuRadioGroup>
-                                                    </DropdownMenuSubContent>
-                                                </DropdownMenuSub>
-                                                <DropdownMenuSub>
-                                                    <DropdownMenuSubTrigger><span>Verification</span></DropdownMenuSubTrigger>
-                                                    <DropdownMenuSubContent>
-                                                        <DropdownMenuRadioGroup value={lead.authenticityStatus} onValueChange={(value) => handleStatusUpdate(lead, 'authenticityStatus', value as string)}>
-                                                            <DropdownMenuRadioItem value="Pending Verification">Pending Verification</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
-                                                        </DropdownMenuRadioGroup>
-                                                    </DropdownMenuSubContent>
-                                                </DropdownMenuSub>
-                                                <DropdownMenuSub>
-                                                    <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
-                                                    <DropdownMenuSubContent>
-                                                        <DropdownMenuRadioGroup value={lead.publicVisibility} onValueChange={(value) => handleStatusUpdate(lead, 'publicVisibility', value as string)}>
-                                                            <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
-                                                        </DropdownMenuRadioGroup>
-                                                    </DropdownMenuSubContent>
-                                                </DropdownMenuSub>
-                                            </>
-                                        )}
-                                        <DropdownMenuSeparator />
-                                        {canCreate && (
-                                            <DropdownMenuItem
-                                                onClick={() => handleCopyClick(lead)}
-                                                className="cursor-pointer"
-                                            >
-                                                <Copy className="mr-2 h-4 w-4" />
-                                                Copy
-                                            </DropdownMenuItem>
-                                        )}
-                                        {canDelete && (
-                                            <>
-                                                {canCreate && <DropdownMenuSeparator />}
-                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(lead); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    Delete
-                                                </DropdownMenuItem>
-                                            </>
-                                        )}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                            <CardDescription className="text-xs">{lead.startDate} to {lead.endDate}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex-grow space-y-2">
-                             <div className="flex justify-between text-xs text-muted-foreground">
-                                <Badge variant="outline">{lead.purpose}</Badge>
-                                <Badge variant={
-                                    lead.status === 'Active' ? 'success' :
-                                    lead.status === 'Completed' ? 'secondary' : 'outline'
-                                }>{lead.status}</Badge>
-                            </div>
-                             <div className="flex justify-between text-xs text-muted-foreground">
-                                <Badge variant="outline">{lead.authenticityStatus || 'N/A'}</Badge>
-                                <Badge variant="outline">{lead.publicVisibility || 'N/A'}</Badge>
-                            </div>
-                             {(lead.targetAmount || 0) > 0 && (
-                                <div className="space-y-1 pt-1">
-                                    <Progress value={lead.progress} className="h-2" />
-                                    <div className="flex justify-between text-xs text-muted-foreground">
-                                        <span>₹{lead.collected.toLocaleString('en-IN')}</span>
-                                        <span>Goal: ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</span>
-                                    </div>
-                                </div>
-                            )}
-                        </CardContent>
-                        <CardFooter className="p-2">
-                            <Button asChild className="w-full" size="sm">
-                                <Link href={`/leads-members/${lead.id}/summary`}>
-                                    View Details
+                {(statusFilter === 'All' || statusFilter === 'Upcoming') && upcomingLeads.length > 0 && (
+                    <section>
+                        <h2 className="text-2xl font-bold mb-4">Upcoming Leads ({upcomingLeads.length})</h2>
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {upcomingLeads.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
+                        </div>
+                    </section>
+                )}
+                {(statusFilter === 'All' || statusFilter === 'Completed') && completedLeads.length > 0 && (
+                    <section>
+                        <h2 className="text-2xl font-bold mb-4">Completed Leads ({completedLeads.length})</h2>
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {completedLeads.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
+                        </div>
+                    </section>
+                )}
+                {filteredAndSortedLeads.length === 0 && (
+                    <div className="text-center py-16">
+                        <p className="text-muted-foreground">No leads found matching your criteria.</p>
+                        {canCreate && leads?.length === 0 && (
+                            <p className="text-sm text-muted-foreground mt-2">
+                                <Link href="/leads-members/create" className="text-primary underline">
+                                    Create one now
                                 </Link>
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                )})}
-            </div>
-             {!isLoading && filteredAndSortedLeads.length === 0 && (
-                 <div className="text-center py-16">
-                    <p className="text-muted-foreground">No leads found matching your criteria.</p>
-                    {canCreate && leads?.length === 0 && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                            <Link href="/leads-members/create" className="text-primary underline">
-                                Create one now
-                            </Link>
-                        </p>
-                    )}
-                </div>
+                            </p>
+                        )}
+                    </div>
+                )}
+              </>
             )}
           </CardContent>
-          {totalPages > 1 && (
-            <CardFooter className="flex items-center justify-between pt-4">
-                <p className="text-sm text-muted-foreground">
-                    Page {currentPage} of {totalPages}
-                </p>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
-                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
-                </div>
-            </CardFooter>
-        )}
         </Card>
+      </main>
       
        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
@@ -527,7 +525,6 @@ export default function LeadPage() {
             onCopyConfirm={handleCopyConfirm}
         />
 
-    </main>
     </>
   );
 }

@@ -66,9 +66,6 @@ export default function CampaignPage() {
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const [campaignToCopy, setCampaignToCopy] = useState<Campaign | null>(null);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
-  
   const { userProfile, isLoading: isProfileLoading } = useSession();
 
   const campaignsCollectionRef = useMemo(() => {
@@ -278,33 +275,123 @@ export default function CampaignPage() {
             c.name.toLowerCase().includes(lowercasedTerm)
         );
     }
-
-    const statusOrder: { [key: string]: number } = {
-        'Active': 1,
-        'Upcoming': 2,
-        'Completed': 3
-    };
-
-    sortableItems.sort((a, b) => {
-        const statusA = statusOrder[a.status] || 99;
-        const statusB = statusOrder[b.status] || 99;
-        if (statusA !== statusB) {
-            return statusA - statusB;
-        }
-        return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
-    });
     
     return sortableItems;
   }, [campaignData, searchTerm, statusFilter, categoryFilter, authenticityFilter, visibilityFilter]);
 
-  const totalPages = Math.ceil(filteredAndSortedCampaigns.length / itemsPerPage);
-  const paginatedCampaigns = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredAndSortedCampaigns.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredAndSortedCampaigns, currentPage, itemsPerPage]);
+  const activeCampaigns = useMemo(() => filteredAndSortedCampaigns.filter(c => c.status === 'Active').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedCampaigns]);
+  const upcomingCampaigns = useMemo(() => filteredAndSortedCampaigns.filter(c => c.status === 'Upcoming').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedCampaigns]);
+  const completedCampaigns = useMemo(() => filteredAndSortedCampaigns.filter(c => c.status === 'Completed').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedCampaigns]);
+  
 
   const isLoading = areCampaignsLoading || isProfileLoading || isDeleting || areDonationsLoading;
   
+  const CampaignCard = ({ campaign }: { campaign: Campaign & { collected: number; progress: number; }}) => (
+    <Card className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-zoom" onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}>
+      <CardHeader>
+        <div className="flex justify-between items-start gap-2">
+            <CardTitle className="w-full break-words text-base">{campaign.name}</CardTitle>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenuItem onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)} className="cursor-pointer">
+                        <Edit className="mr-2 h-4 w-4" />
+                        View Details
+                    </DropdownMenuItem>
+                    {canUpdate && <DropdownMenuSeparator />}
+                    {canUpdate && (
+                        <>
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger><span>Change Status</span></DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                    <DropdownMenuRadioGroup value={campaign.status} onValueChange={(value) => handleStatusUpdate(campaign, 'status', value)}>
+                                        <DropdownMenuRadioItem value="Upcoming">Upcoming</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Active">Active</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Completed">Completed</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger><span>Verification</span></DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                    <DropdownMenuRadioGroup value={campaign.authenticityStatus} onValueChange={(value) => handleStatusUpdate(campaign, 'authenticityStatus', value as string)}>
+                                        <DropdownMenuRadioItem value="Pending Verification">Pending Verification</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                    <DropdownMenuRadioGroup value={campaign.publicVisibility} onValueChange={(value) => handleStatusUpdate(campaign, 'publicVisibility', value as string)}>
+                                        <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+                        </>
+                    )}
+                    <DropdownMenuSeparator />
+                    {canCreate && (
+                        <DropdownMenuItem onClick={() => handleCopyClick(campaign)} className="cursor-pointer">
+                            <Copy className="mr-2 h-4 w-4" />
+                            Copy
+                        </DropdownMenuItem>
+                    )}
+                    {canDelete && (
+                        <>
+                            {canCreate && <DropdownMenuSeparator />}
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(campaign); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                            </DropdownMenuItem>
+                        </>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
+        <CardDescription className="text-xs">{campaign.startDate} to {campaign.endDate}</CardDescription>
+    </CardHeader>
+    <CardContent className="flex-grow space-y-2">
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <Badge variant="outline">{campaign.category}</Badge>
+            <Badge variant={
+                campaign.status === 'Active' ? 'success' :
+                campaign.status === 'Completed' ? 'secondary' : 'outline'
+            }>{campaign.status}</Badge>
+        </div>
+        <div className="flex justify-between text-xs text-muted-foreground">
+            <Badge variant="outline">{campaign.authenticityStatus || 'N/A'}</Badge>
+            <Badge variant="outline">{campaign.publicVisibility || 'N/A'}</Badge>
+        </div>
+        {(campaign.targetAmount || 0) > 0 && (
+            <div className="space-y-1 pt-1">
+                <Progress value={campaign.progress} className="h-2" />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>₹{campaign.collected.toLocaleString('en-IN')}</span>
+                    <span>Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</span>
+                </div>
+            </div>
+        )}
+    </CardContent>
+    <CardFooter className="p-2">
+        <Button asChild className="w-full" size="sm">
+            <Link href={`/campaign-members/${campaign.id}/summary`}>
+                View Details
+            </Link>
+        </Button>
+    </CardFooter>
+    </Card>
+  );
+
   if (!isLoading && userProfile && !canViewCampaigns) {
     return (
         <main className="container mx-auto p-4 md:p-8">
@@ -346,11 +433,11 @@ export default function CampaignPage() {
                     <Input 
                         placeholder="Search by name..."
                         value={searchTerm}
-                        onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                        onChange={(e) => { setSearchTerm(e.target.value); }}
                         className="max-w-xs"
                         disabled={isLoading}
                     />
-                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }} disabled={isLoading}>
+                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); }} disabled={isLoading}>
                         <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
@@ -361,7 +448,7 @@ export default function CampaignPage() {
                             <SelectItem value="Completed">Completed</SelectItem>
                         </SelectContent>
                     </Select>
-                     <Select value={categoryFilter} onValueChange={(value) => { setCategoryFilter(value); setCurrentPage(1); }} disabled={isLoading}>
+                     <Select value={categoryFilter} onValueChange={(value) => { setCategoryFilter(value); }} disabled={isLoading}>
                         <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
                             <SelectValue placeholder="Category" />
                         </SelectTrigger>
@@ -372,7 +459,7 @@ export default function CampaignPage() {
                             <SelectItem value="General">General</SelectItem>
                         </SelectContent>
                     </Select>
-                    <Select value={authenticityFilter} onValueChange={(value) => { setAuthenticityFilter(value); setCurrentPage(1); }} disabled={isLoading}>
+                    <Select value={authenticityFilter} onValueChange={(value) => { setAuthenticityFilter(value); }} disabled={isLoading}>
                         <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
                             <SelectValue placeholder="Authenticity" />
                         </SelectTrigger>
@@ -384,7 +471,7 @@ export default function CampaignPage() {
                             <SelectItem value="Rejected">Rejected</SelectItem>
                         </SelectContent>
                     </Select>
-                    <Select value={visibilityFilter} onValueChange={(value) => { setVisibilityFilter(value); setCurrentPage(1); }} disabled={isLoading}>
+                    <Select value={visibilityFilter} onValueChange={(value) => { setVisibilityFilter(value); }} disabled={isLoading}>
                         <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
                             <SelectValue placeholder="Visibility" />
                         </SelectTrigger>
@@ -407,142 +494,52 @@ export default function CampaignPage() {
               </Button>
             )}
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {isLoading && (
-                    [...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)
+          <CardContent className="space-y-8">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+              </div>
+            ) : (
+              <>
+                {(statusFilter === 'All' || statusFilter === 'Active') && activeCampaigns.length > 0 && (
+                    <section>
+                        <h2 className="text-2xl font-bold mb-4">Active Campaigns ({activeCampaigns.length})</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {activeCampaigns.map((campaign) => <CampaignCard key={campaign.id} campaign={campaign} />)}
+                        </div>
+                    </section>
                 )}
-                {!isLoading && paginatedCampaigns.map((campaign, index) => {
-                    return (
-                    <Card key={campaign.id} className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-zoom" style={{ animationDelay: `${100 * index}ms` }} onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}>
-                        <CardHeader>
-                            <div className="flex justify-between items-start gap-2">
-                                <CardTitle className="w-full break-words text-base">{campaign.name}</CardTitle>
-                                 <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                                            <MoreHorizontal className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                        <DropdownMenuItem onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)} className="cursor-pointer">
-                                            <Edit className="mr-2 h-4 w-4" />
-                                            View Details
-                                        </DropdownMenuItem>
-                                        {canUpdate && <DropdownMenuSeparator />}
-                                        {canUpdate && (
-                                            <>
-                                                <DropdownMenuSub>
-                                                    <DropdownMenuSubTrigger><span>Change Status</span></DropdownMenuSubTrigger>
-                                                    <DropdownMenuSubContent>
-                                                        <DropdownMenuRadioGroup value={campaign.status} onValueChange={(value) => handleStatusUpdate(campaign, 'status', value)}>
-                                                            <DropdownMenuRadioItem value="Upcoming">Upcoming</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Active">Active</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Completed">Completed</DropdownMenuRadioItem>
-                                                        </DropdownMenuRadioGroup>
-                                                    </DropdownMenuSubContent>
-                                                </DropdownMenuSub>
-                                                <DropdownMenuSub>
-                                                    <DropdownMenuSubTrigger><span>Verification</span></DropdownMenuSubTrigger>
-                                                    <DropdownMenuSubContent>
-                                                        <DropdownMenuRadioGroup value={campaign.authenticityStatus} onValueChange={(value) => handleStatusUpdate(campaign, 'authenticityStatus', value as string)}>
-                                                            <DropdownMenuRadioItem value="Pending Verification">Pending Verification</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
-                                                        </DropdownMenuRadioGroup>
-                                                    </DropdownMenuSubContent>
-                                                </DropdownMenuSub>
-                                                <DropdownMenuSub>
-                                                    <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
-                                                    <DropdownMenuSubContent>
-                                                        <DropdownMenuRadioGroup value={campaign.publicVisibility} onValueChange={(value) => handleStatusUpdate(campaign, 'publicVisibility', value as string)}>
-                                                            <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
-                                                        </DropdownMenuRadioGroup>
-                                                    </DropdownMenuSubContent>
-                                                </DropdownMenuSub>
-                                            </>
-                                        )}
-                                        <DropdownMenuSeparator />
-                                        {canCreate && (
-                                            <DropdownMenuItem onClick={() => handleCopyClick(campaign)} className="cursor-pointer">
-                                                <Copy className="mr-2 h-4 w-4" />
-                                                Copy
-                                            </DropdownMenuItem>
-                                        )}
-                                        {canDelete && (
-                                            <>
-                                                {canCreate && <DropdownMenuSeparator />}
-                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(campaign); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    Delete
-                                                </DropdownMenuItem>
-                                            </>
-                                        )}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                            <CardDescription className="text-xs">{campaign.startDate} to {campaign.endDate}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex-grow space-y-2">
-                             <div className="flex justify-between text-xs text-muted-foreground">
-                                <Badge variant="outline">{campaign.category}</Badge>
-                                <Badge variant={
-                                    campaign.status === 'Active' ? 'success' :
-                                    campaign.status === 'Completed' ? 'secondary' : 'outline'
-                                }>{campaign.status}</Badge>
-                            </div>
-                            <div className="flex justify-between text-xs text-muted-foreground">
-                                <Badge variant="outline">{campaign.authenticityStatus || 'N/A'}</Badge>
-                                <Badge variant="outline">{campaign.publicVisibility || 'N/A'}</Badge>
-                            </div>
-                            {(campaign.targetAmount || 0) > 0 && (
-                                <div className="space-y-1 pt-1">
-                                    <Progress value={campaign.progress} className="h-2" />
-                                    <div className="flex justify-between text-xs text-muted-foreground">
-                                        <span>₹{campaign.collected.toLocaleString('en-IN')}</span>
-                                        <span>Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</span>
-                                    </div>
-                                </div>
-                            )}
-                        </CardContent>
-                        <CardFooter className="p-2">
-                            <Button asChild className="w-full" size="sm">
-                                <Link href={`/campaign-members/${campaign.id}/summary`}>
-                                    View Details
-                                </Link>
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                )})}
-            </div>
-             {!isLoading && filteredAndSortedCampaigns.length === 0 && (
-                 <div className="text-center py-16">
-                    <p className="text-muted-foreground">No campaigns found matching your criteria.</p>
-                    {canCreate && campaigns?.length === 0 && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                            <Link href="/campaign-members/create" className="text-primary underline">
-                                Create one now
-                            </Link>
-                        </p>
-                    )}
-                </div>
+                {(statusFilter === 'All' || statusFilter === 'Upcoming') && upcomingCampaigns.length > 0 && (
+                    <section>
+                        <h2 className="text-2xl font-bold mb-4">Upcoming Campaigns ({upcomingCampaigns.length})</h2>
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {upcomingCampaigns.map((campaign) => <CampaignCard key={campaign.id} campaign={campaign} />)}
+                        </div>
+                    </section>
+                )}
+                {(statusFilter === 'All' || statusFilter === 'Completed') && completedCampaigns.length > 0 && (
+                    <section>
+                        <h2 className="text-2xl font-bold mb-4">Completed Campaigns ({completedCampaigns.length})</h2>
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {completedCampaigns.map((campaign) => <CampaignCard key={campaign.id} campaign={campaign} />)}
+                        </div>
+                    </section>
+                )}
+                {filteredAndSortedCampaigns.length === 0 && (
+                  <div className="text-center py-16">
+                      <p className="text-muted-foreground">No campaigns found matching your criteria.</p>
+                      {canCreate && campaigns?.length === 0 && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                              <Link href="/campaign-members/create" className="text-primary underline">
+                                  Create one now
+                              </Link>
+                          </p>
+                      )}
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
-           {totalPages > 1 && (
-            <CardFooter className="flex items-center justify-between pt-4">
-                <p className="text-sm text-muted-foreground">
-                    Page {currentPage} of {totalPages}
-                </p>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
-                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
-                </div>
-            </CardFooter>
-          )}
         </Card>
       </main>
       
