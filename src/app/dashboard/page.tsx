@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
@@ -137,6 +138,7 @@ export default function Home() {
                 <h2 className="text-3xl font-bold tracking-tight mb-4">
                     Welcome back, {userProfile.name}!
                 </h2>
+                <WisdomAndReflection />
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
                     {visibleCards.map((card) => (
                         <HomeDashboardCard
@@ -148,7 +150,6 @@ export default function Home() {
                         />
                     ))}
                 </div>
-                 <WisdomAndReflection />
             </div>
             ) : (
              <div className="text-center">
