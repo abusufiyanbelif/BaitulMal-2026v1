@@ -35,7 +35,23 @@ export const leadPurposesConfig = [
 export const leadSeriousnessLevels = ['High', 'Moderate', 'Low'] as const;
 
 export const educationDegrees = [
-  '10th', '12th', 'B.A.', 'B.Com.', 'B.Sc.', 'B.E.', 'M.A.', 'M.Com.', 'M.Sc.', 'M.E.', 'Diploma', 'Other'
+  'SSC',
+  'HSC',
+  'B.A.',
+  'B.Com.',
+  'B.Sc.',
+  'B.E.',
+  'MBBS',
+  'B.Pharm',
+  'D.Pharm',
+  'BUMS',
+  'BHMS',
+  'M.A.',
+  'M.Com.',
+  'M.Sc.',
+  'M.E.',
+  'Diploma',
+  'Other',
 ] as const;
 
 export const educationYears = [
