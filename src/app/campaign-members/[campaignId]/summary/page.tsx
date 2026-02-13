@@ -545,12 +545,10 @@ Your contribution, big or small, makes a huge difference.
                             <CardTitle>Campaign Details</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                             {editMode ? (
-                                <FormItem>
-                                    <FormLabel>Header Image</FormLabel>
-                                    <FormControl>
-                                        <Input id="imageFile" type="file" accept="image/png, image/jpeg" onChange={handleImageFileChange} className="hidden" />
-                                    </FormControl>
+                            {editMode ? (
+                                <div className="space-y-2">
+                                    <Label htmlFor="imageFile">Header Image</Label>
+                                    <Input id="imageFile" type="file" accept="image/png, image/jpeg" onChange={handleImageFileChange} className="hidden" />
                                     <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
                                         {imagePreview ? (
                                             <>
@@ -569,7 +567,7 @@ Your contribution, big or small, makes a huge difference.
                                             </div>
                                         )}
                                     </label>
-                                </FormItem>
+                                </div>
                             ) : (
                                 campaign.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden"><Image src={campaign.imageUrl} alt={campaign.name} fill className="object-cover" /></div>
                             )}
@@ -664,4 +662,3 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
-
