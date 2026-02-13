@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -286,7 +287,7 @@ export default function LeadPage() {
       <main className="container mx-auto p-2 sm:p-4">
         <div className="mb-4">
           <Button variant="outline" asChild>
-            <Link href="/">
+            <Link href="/dashboard">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Home
             </Link>
