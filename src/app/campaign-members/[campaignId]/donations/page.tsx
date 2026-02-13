@@ -46,7 +46,7 @@ import {
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -528,108 +528,107 @@ export default function DonationsPage() {
                       </TableRow>
                   ))
                   ) : (filteredAndSortedDonations && filteredAndSortedDonations.length > 0) ? (
-                  filteredAndSortedDonations.map((donation, index) => {
-                      const isOpen = openRows[donation.id] || false;
-                      return (
-                        <Collapsible key={donation.id} asChild>
+                  filteredAndSortedDonations.map((donation, index) => (
+                      <React.Fragment key={donation.id}>
+                        <Collapsible asChild>
                           <>
-                          <TableRow className="bg-background hover:bg-accent/50" data-state={isOpen ? 'open' : 'closed'}>
-                              <TableCell className="pl-4">{index + 1}</TableCell>
-                              <TableCell>
-                                <div className="font-medium">{donation.donorName}</div>
-                                <div className="text-xs text-muted-foreground">{donation.donorPhone || 'No Phone'}</div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="font-medium">{donation.receiverName}</div>
-                                <div className="text-xs text-muted-foreground">Ref: {donation.referral || 'N/A'}</div>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                  <div className="font-medium font-mono">₹{donation.amount.toFixed(2)}</div>
-                                  <div className="text-xs text-muted-foreground">{donation.donationDate}</div>
-                              </TableCell>
-                              <TableCell>
-                                  <div className="flex flex-wrap items-center gap-1">
-                                      {donation.typeSplit?.map(split => (
-                                          <Badge key={split.category} variant="secondary">
-                                              {split.category}
-                                          </Badge>
-                                      ))}
-                                      <Badge variant="outline">{donation.donationType}</Badge>
-                                  </div>
-                              </TableCell>
-                              <TableCell>
-                                  <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge>
-                              </TableCell>
-                              <TableCell className="text-right pr-4">
-                                    <div className="flex items-center justify-end">
-                                      <CollapsibleTrigger asChild onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
-                                          <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!donation.transactions || donation.transactions.length === 0}>
-                                              {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            <CollapsibleTrigger asChild>
+                              <TableRow className="bg-background hover:bg-accent/50" data-state={openRows[donation.id] ? 'open' : 'closed'}>
+                                  <TableCell className="pl-4">{index + 1}</TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">{donation.donorName}</div>
+                                    <div className="text-xs text-muted-foreground">{donation.donorPhone || 'No Phone'}</div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">{donation.receiverName}</div>
+                                    <div className="text-xs text-muted-foreground">Ref: {donation.referral || 'N/A'}</div>
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                      <div className="font-medium font-mono">₹{donation.amount.toFixed(2)}</div>
+                                      <div className="text-xs text-muted-foreground">{donation.donationDate}</div>
+                                  </TableCell>
+                                  <TableCell>
+                                      <div className="flex flex-wrap items-center gap-1">
+                                          {donation.typeSplit?.map(split => (
+                                              <Badge key={split.category} variant="secondary">
+                                                  {split.category}
+                                              </Badge>
+                                          ))}
+                                          <Badge variant="outline">{donation.donationType}</Badge>
+                                      </div>
+                                  </TableCell>
+                                  <TableCell>
+                                      <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge>
+                                  </TableCell>
+                                  <TableCell className="text-right pr-4">
+                                        <div className="flex items-center justify-end">
+                                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))} disabled={!donation.transactions || donation.transactions.length === 0}>
+                                              {openRows[donation.id] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                               <span className="sr-only">Toggle details</span>
                                           </Button>
-                                      </CollapsibleTrigger>
-                                      <DropdownMenu>
-                                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                  <MoreHorizontal className="h-4 w-4" />
-                                              </Button>
-                                          </DropdownMenuTrigger>
-                                          <DropdownMenuContent align="end">
-                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/campaign-members/${campaignId}/donations/${donation.id}`); }}>
-                                                  <Eye className="mr-2 h-4 w-4" /> View Details
-                                              </DropdownMenuItem>
-                                              {canUpdate && (
-                                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(donation); }}>
-                                                      <Edit className="mr-2 h-4 w-4" /> Edit
+                                          <DropdownMenu>
+                                              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                      <MoreHorizontal className="h-4 w-4" />
+                                                  </Button>
+                                              </DropdownMenuTrigger>
+                                              <DropdownMenuContent align="end">
+                                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/campaign-members/${campaignId}/donations/${donation.id}`); }}>
+                                                      <Eye className="mr-2 h-4 w-4" /> View Details
                                                   </DropdownMenuItem>
-                                              )}
-                                              {canDelete && (
-                                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
-                                                      <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                  </DropdownMenuItem>
-                                              )}
-                                          </DropdownMenuContent>
-                                      </DropdownMenu>
-                                  </div>
-                              </TableCell>
-                          </TableRow>
-                          <CollapsibleContent asChild>
-                              <TableRow className="bg-muted/50 hover:bg-muted/50">
-                                  <TableCell colSpan={7} className="p-2">
-                                      <h4 className="text-sm font-semibold mb-2">Transaction Details</h4>
-                                      <div className="border rounded-md bg-background">
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>Amount</TableHead>
-                                                    <TableHead>Transaction ID</TableHead>
-                                                    <TableHead>Screenshot</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {(donation.transactions || []).map((tx) => (
-                                                    <TableRow key={tx.id}>
-                                                        <TableCell>₹{tx.amount.toFixed(2)}</TableCell>
-                                                        <TableCell>{tx.transactionId || 'N/A'}</TableCell>
-                                                        <TableCell>
-                                                            {tx.screenshotUrl ? (
-                                                                <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)}>
-                                                                    <Eye className="mr-2 h-4 w-4"/> View
-                                                                </Button>
-                                                            ) : 'No'}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
+                                                  {canUpdate && (
+                                                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(donation); }}>
+                                                          <Edit className="mr-2 h-4 w-4" /> Edit
+                                                      </DropdownMenuItem>
+                                                  )}
+                                                  {canDelete && (
+                                                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
+                                                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                      </DropdownMenuItem>
+                                                  )}
+                                              </DropdownMenuContent>
+                                          </DropdownMenu>
                                       </div>
                                   </TableCell>
                               </TableRow>
-                          </CollapsibleContent>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent asChild>
+                              <TableRow className="bg-muted/50 hover:bg-muted/50">
+                                <TableCell colSpan={7} className="p-2">
+                                  <h4 className="text-sm font-semibold mb-2">Transaction Details</h4>
+                                  <div className="border rounded-md bg-background">
+                                    <Table>
+                                      <TableHeader>
+                                        <TableRow>
+                                          <TableHead>Amount</TableHead>
+                                          <TableHead>Transaction ID</TableHead>
+                                          <TableHead>Screenshot</TableHead>
+                                        </TableRow>
+                                      </TableHeader>
+                                      <TableBody>
+                                        {(donation.transactions || []).map((tx) => (
+                                          <TableRow key={tx.id}>
+                                            <TableCell>₹{tx.amount.toFixed(2)}</TableCell>
+                                            <TableCell>{tx.transactionId || 'N/A'}</TableCell>
+                                            <TableCell>
+                                              {tx.screenshotUrl ? (
+                                                <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)}>
+                                                  <Eye className="mr-2 h-4 w-4" /> View
+                                                </Button>
+                                              ) : 'No'}
+                                            </TableCell>
+                                          </TableRow>
+                                        ))}
+                                      </TableBody>
+                                    </Table>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            </CollapsibleContent>
                           </>
-                      </Collapsible>
-                  );
-              })
+                        </Collapsible>
+                      </React.Fragment>
+                  ))
                   ) : (
                   <TableRow>
                       <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
@@ -686,12 +685,13 @@ export default function DonationsPage() {
             </DialogHeader>
             {imageToView && (
                 <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
-                     <img
+                     <Image
                         src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
                         alt="Donation screenshot"
-                        className="transition-transform duration-200 ease-out origin-center"
+                        fill
+                        className="object-contain transition-transform duration-200 ease-out origin-center"
                         style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
-                        crossOrigin="anonymous"
+                        unoptimized
                     />
                 </div>
             )}
