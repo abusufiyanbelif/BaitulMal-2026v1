@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -236,6 +237,7 @@ export default function CampaignSummaryPage() {
             if (campaignLink) {
                 amountForThisCampaign = campaignLink.amount;
             } else if ((!d.linkSplit || d.linkSplit.length === 0) && d.campaignId === campaign.id) {
+                // This is a legacy donation for this campaign
                 amountForThisCampaign = d.amount;
             } else {
                 return; // Skip this donation if not related
