@@ -103,6 +103,7 @@ export default function BeneficiariesPage() {
   
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [importData, setImportData] = useState<ProcessedRecord[]>([]);
 
@@ -323,8 +324,7 @@ export default function BeneficiariesPage() {
       }
     }
   
-    setIsFormOpen(false);
-    setEditingBeneficiary(null);
+    setIsSubmitting(true);
   
     const batch = writeBatch(firestore);
     const campaignDocRef = doc(firestore, 'campaigns', campaignId);
@@ -389,6 +389,8 @@ export default function BeneficiariesPage() {
   
       toast({ title: 'Success', description: `Beneficiary ${editingBeneficiary ? 'updated' : 'added'} and campaign total updated.`, variant: 'success' });
       forceRefetchCampaign();
+      setIsFormOpen(false);
+      setEditingBeneficiary(null);
 
     } catch (error: any) {
       console.warn("Error during form submission:", error);
@@ -402,6 +404,8 @@ export default function BeneficiariesPage() {
       } else {
         toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
       }
+    } finally {
+        setIsSubmitting(false);
     }
   };
 
