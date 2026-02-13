@@ -6,7 +6,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Donation, DonationCategory, Campaign, Lead } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wallet, PieChart as PieChartIcon, Target } from 'lucide-react';
+import { Wallet, PieChart as PieChartIcon, Target, Calendar } from 'lucide-react';
 import {
   PieChart,
   Pie,
@@ -24,6 +24,14 @@ import { donationCategories } from '@/lib/modules';
 import { Skeleton } from './ui/skeleton';
 import dynamic from 'next/dynamic';
 import { Progress } from '@/components/ui/progress';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 const DynamicPieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false, loading: () => <Skeleton className="h-[200px] w-full" /> });
 
@@ -60,60 +68,36 @@ export function DonationSummary() {
   const summaryData = useMemo(() => {
     if (!donations || !campaigns || !leads) return null;
 
+    // Overall Total
     const totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
-    const totalTargetAmount = [...campaigns, ...leads].reduce((sum, item) => sum + (item.targetAmount || 0), 0);
-    
-    // Create maps for quick lookup of campaigns and leads by their ID.
-    const campaignsMap = new Map(campaigns.map(c => [c.id, c]));
-    const leadsMap = new Map(leads.map(l => [l.id, l]));
-    
-    const allocatedAmountForGoal = donations.reduce((sum, donation) => {
-        if (!donation.linkSplit || donation.linkSplit.length === 0) {
-            return sum;
+
+    // Yearly Breakdown
+    const yearlyData: Record<string, { totalReceived: number; totalTarget: number; }> = {};
+
+    donations.forEach(donation => {
+        if (donation.donationDate) {
+            const year = new Date(donation.donationDate).getFullYear().toString();
+            if (!yearlyData[year]) {
+                yearlyData[year] = { totalReceived: 0, totalTarget: 0 };
+            }
+            yearlyData[year].totalReceived += donation.amount;
         }
+    });
 
-        const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
-        const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
-            ? donation.typeSplit
-            : [];
-        
-        // Calculate the total contribution to the goal from this single donation
-        const contributionFromThisDonation = donation.linkSplit.reduce((splitSum, link) => {
-            if (link.linkType === 'general') {
-                return splitSum; // Unallocated funds don't count towards goal
+    [...campaigns, ...leads].forEach(item => {
+        if (item.startDate && item.targetAmount) {
+            const year = new Date(item.startDate).getFullYear().toString();
+             if (!yearlyData[year]) {
+                yearlyData[year] = { totalReceived: 0, totalTarget: 0 };
             }
+            yearlyData[year].totalTarget += item.targetAmount;
+        }
+    });
 
-            const initiative = link.linkType === 'campaign' 
-                ? campaignsMap.get(link.linkId) 
-                : leadsMap.get(link.linkId);
-            
-            if (!initiative) {
-                return splitSum; // Linked initiative not found
-            }
+    const sortedYearlyData = Object.entries(yearlyData)
+        .map(([year, data]) => ({ year, ...data, progress: data.totalTarget > 0 ? (data.totalReceived / data.totalTarget) * 100 : 0 }))
+        .sort((a, b) => parseInt(b.year) - parseInt(a.year));
 
-            const allowedDonationTypes = initiative.allowedDonationTypes || [];
-
-            // Calculate the portion of the donation that is of an allowed type for *this specific initiative*
-            const applicableTypeTotal = typeSplits.reduce((acc, split) => {
-                if (allowedDonationTypes.includes(split.category)) {
-                    return acc + split.amount;
-                }
-                return acc;
-            }, 0);
-            
-            // The proportion of the whole donation that can be applied to this goal
-            const proportionOfApplicableTypes = applicableTypeTotal / totalDonationAmount;
-            
-            // The final amount from this allocation that counts towards the goal
-            const finalAmountForGoal = link.amount * proportionOfApplicableTypes;
-
-            return splitSum + finalAmountForGoal;
-        }, 0);
-
-        return sum + contributionFromThisDonation;
-    }, 0);
-    
-    const allocatedProgress = totalTargetAmount > 0 ? (allocatedAmountForGoal / totalTargetAmount) * 100 : 0;
 
     const amountsByCategory = donations.reduce((acc, d) => {
       const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : [];
@@ -128,9 +112,7 @@ export function DonationSummary() {
 
     return {
       totalAmount,
-      totalTargetAmount,
-      allocatedAmount: allocatedAmountForGoal,
-      allocatedProgress,
+      sortedYearlyData,
       categoryChartData: Object.entries(amountsByCategory).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})`})),
     };
   }, [donations, campaigns, leads]);
@@ -138,7 +120,7 @@ export function DonationSummary() {
   if (isLoading) {
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {[...Array(3)].map((_, i) => <Card key={i}><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>)}
+        {[...Array(2)].map((_, i) => <Card key={i}><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>)}
       </div>
     );
   }
@@ -149,40 +131,50 @@ export function DonationSummary() {
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <Card>
+      <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Wallet className="h-6 w-6 text-primary" />
-            Total Donations Received
+            <Calendar className="h-6 w-6 text-primary" />
+            Yearly Financial Summary
           </CardTitle>
-          <CardDescription>The grand total of all donations received, including unallocated funds.</CardDescription>
+          <CardDescription>A year-by-year breakdown of funds received against fundraising goals.</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-4xl font-bold">₹{summaryData.totalAmount.toLocaleString('en-IN')}</p>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead className="w-[100px]">Year</TableHead>
+                        <TableHead>Fundraising Goal</TableHead>
+                        <TableHead>Donations Received</TableHead>
+                        <TableHead className="text-right">Progress</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {summaryData.sortedYearlyData.map(({ year, totalTarget, totalReceived, progress }) => (
+                        <TableRow key={year}>
+                            <TableCell className="font-bold">{year}</TableCell>
+                            <TableCell>₹{totalTarget.toLocaleString('en-IN')}</TableCell>
+                            <TableCell>₹{totalReceived.toLocaleString('en-IN')}</TableCell>
+                            <TableCell className="text-right w-[150px]">
+                                <div className="flex items-center gap-2">
+                                    <Progress value={progress} className="h-2 flex-1" />
+                                    <span className="text-xs font-mono">{Math.round(progress)}%</span>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-6 w-6 text-primary" />
-            Fundraising Progress
-          </CardTitle>
-          <CardDescription>Donations allocated to specific campaigns and leads against their goals.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-4xl font-bold">₹{summaryData.allocatedAmount.toLocaleString('en-IN')}</p>
-          <Progress value={summaryData.allocatedProgress} className="mt-2 h-2" />
-          <p className="text-xs text-muted-foreground mt-1">
-            of ₹{summaryData.totalTargetAmount.toLocaleString('en-IN')} goal from all initiatives
-          </p>
-        </CardContent>
-      </Card>
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <PieChartIcon className="h-6 w-6 text-primary" />
             Donations by Category
           </CardTitle>
+           <CardDescription>A lifetime breakdown of all donations by their category.</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={donationCategoryChartConfig} className="h-[200px] w-full">
