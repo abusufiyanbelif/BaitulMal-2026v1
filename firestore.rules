@@ -128,8 +128,12 @@ service cloud.firestore {
      * @path /campaigns/{campaignId}/beneficiaries/{beneficiaryId}
      */
     match /campaigns/{campaignId}/beneficiaries/{beneficiaryId} {
-        // Beneficiaries should only be readable/writable by signed-in users.
-        allow read, write: if isSignedIn();
+        // Allow reads if the parent campaign is public, or if the user is signed in.
+        // Writes are always restricted to signed-in users.
+        allow read: if (get(/databases/$(database)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published'
+                      && get(/databases/$(database)/documents/campaigns/$(campaignId)).data.authenticityStatus == 'Verified')
+                     || isSignedIn();
+        allow write: if isSignedIn();
     }
 
     /**
@@ -167,7 +171,12 @@ service cloud.firestore {
       allow write: if isSignedIn();
       
       match /beneficiaries/{beneficiaryId} {
-        allow read, write: if isSignedIn();
+        // Allow reads if the parent lead is public, or if the user is signed in.
+        // Writes are always restricted to signed-in users.
+        allow read: if (get(/databases/$(database)/documents/leads/$(leadId)).data.publicVisibility == 'Published'
+                      && get(/databases/$(database)/documents/leads/$(leadId)).data.authenticityStatus == 'Verified')
+                     || isSignedIn();
+        allow write: if isSignedIn();
       }
     }
 
