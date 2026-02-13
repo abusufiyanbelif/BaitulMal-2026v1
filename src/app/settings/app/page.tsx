@@ -283,7 +283,7 @@ export default function AppSettingsPage() {
                                         </div>
                                     )}
                                 </div>
-                                <div className="w-full grid grid-cols-2 gap-4">
+                                <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <Label htmlFor="logoWidth">Width (px)</Label>
                                         <Input id="logoWidth" type="number" placeholder="e.g., 48" value={displayData.logoWidth || ''} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} />
@@ -346,7 +346,7 @@ export default function AppSettingsPage() {
                                             </div>
                                         )}
                                     </div>
-                                    <div className="w-full grid grid-cols-2 gap-4">
+                                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1">
                                             <Label htmlFor="qrWidth">Width (px)</Label>
                                             <Input id="qrWidth" type="number" placeholder="e.g., 128" value={displayData.qrWidth || ''} onChange={(e) => handleFieldChange('qrWidth', e.target.value)} disabled={isFormDisabled} />

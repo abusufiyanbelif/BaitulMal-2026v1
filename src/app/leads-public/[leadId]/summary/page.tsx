@@ -9,7 +9,6 @@ import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { doc, collection, query, where, DocumentReference } from 'firebase/firestore';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   BarChart,
   Bar,
@@ -24,8 +23,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-import type { Lead, Donation, DonationCategory, Beneficiary } from '@/lib/types';
-import { donationCategories } from '@/lib/modules';
+import type { Lead, Beneficiary, Donation, DonationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -33,13 +31,25 @@ import { ArrowLeft, Loader2, LogIn, Share2, Download, Hourglass, Wallet, Users, 
 import { ShareDialog } from '@/components/share-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { donationCategories } from '@/lib/modules';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableFooter,
+} from "@/components/ui/table"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
+import Image from 'next/image';
 import placeholderImages from '@/app/lib/placeholder-images.json';
 
 const donationCategoryChartConfig = {
@@ -64,25 +74,27 @@ export default function PublicLeadSummaryPage() {
     
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
+
     const summaryRef = useRef<HTMLDivElement>(null);
 
     // Data fetching
     const leadDocRef = useMemo(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
-    const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
-    
     const beneficiariesCollectionRef = useMemo(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
-    const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
-
+    
     const allDonationsCollectionRef = useMemo(() => {
         if (!firestore) return null;
         return collection(firestore, 'donations');
     }, [firestore]);
-    const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
 
+    const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
+    const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
+    const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
+    
     const fundingData = useMemo(() => {
         if (!allDonations || !lead) return null;
-        
-        const donations = allDonations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id));
+
+        const donations = allDonations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id && link.linkType === 'lead'));
+
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
@@ -124,17 +136,33 @@ export default function PublicLeadSummaryPage() {
     
      const beneficiaryData = useMemo(() => {
         if (!beneficiaries) return null;
+
+        const beneficiariesByCategory = beneficiaries.reduce((acc, ben) => {
+            const key = ben.members || 0;
+            if (!acc[key]) {
+                acc[key] = { beneficiaries: [], totalAmount: 0 };
+            }
+            acc[key].beneficiaries.push(ben);
+            acc[key].totalAmount += ben.kitAmount || 0;
+            return acc;
+        }, {} as Record<number, { beneficiaries: Beneficiary[], totalAmount: number }>);
+        
+        const sortedBeneficiaryCategories = Object.keys(beneficiariesByCategory).map(Number).sort((a, b) => b - a);
+
         const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
         const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
+        
         return {
             totalBeneficiaries: beneficiaries.length,
             beneficiariesGiven,
             beneficiariesPending,
+            beneficiariesByCategory,
+            sortedBeneficiaryCategories,
         }
     }, [beneficiaries]);
-    
-    const isLoading = isLeadLoading || isBrandingLoading || isPaymentLoading || areDonationsLoading || areBeneficiariesLoading;
 
+    const isLoading = isLeadLoading || areDonationsLoading || areBeneficiariesLoading || isBrandingLoading || isPaymentLoading;
+    
     const handleShare = async () => {
         if (!lead || !fundingData) {
             toast({
@@ -150,22 +178,24 @@ export default function PublicLeadSummaryPage() {
 
 🙏 *We Need Your Support!* 🙏
 
-We are exploring a new initiative: *${lead.name}*.
+Join us for the *${lead.name}* campaign as we work to provide essential aid to our community.
 
-*Details:*
+*Our Goal:*
 ${lead.description || 'To support those in need.'}
 
 *Financial Update:*
-🎯 Target: ₹${fundingData.targetAmount.toLocaleString('en-IN')}
-✅ Collected: ₹${fundingData.totalCollectedForGoal.toLocaleString('en-IN')}
+🎯 Target for Kits: ₹${fundingData.targetAmount.toLocaleString('en-IN')}
+✅ Collected (Verified): ₹${fundingData.totalCollectedForGoal.toLocaleString('en-IN')}
 ⏳ Remaining: *₹${fundingData.remainingToCollect.toLocaleString('en-IN')}*
 
-Your support and feedback are valuable.
+Your contribution, big or small, makes a huge difference.
+
+*Please donate and share this message.*
         `.trim().replace(/^\s+/gm, '');
 
 
         const dataToShare = {
-            title: `Lead: ${lead.name}`,
+            title: `Lead Summary: ${lead.name}`,
             text: shareText,
             url: window.location.href,
         };
@@ -219,6 +249,7 @@ Your support and feedback are valuable.
                     </Link>
                 </Button>
             </div>
+            
             <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6">
                 <Image
                     src={lead.imageUrl || placeholderImages.lead_fallback}
@@ -297,6 +328,7 @@ Your support and feedback are valuable.
                         <Progress value={fundingData?.fundingProgress || 0} />
                     </CardContent>
                 </Card>
+
                 <div className="grid gap-6 sm:grid-cols-3">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -326,40 +358,89 @@ Your support and feedback are valuable.
                         </CardContent>
                     </Card>
                 </div>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Donations by Category</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                            <BarChart
-                                data={Object.entries(fundingData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))}
-                                layout="vertical"
-                                margin={{ right: 20 }}
-                            >
-                                <CartesianGrid horizontal={false} />
-                                <YAxis
-                                    dataKey="name"
-                                    type="category"
-                                    tickLine={false}
-                                    tickMargin={10}
-                                    axisLine={false}
-                                    tick={{ fontSize: 12 }}
-                                    width={120}
-                                />
-                                <XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
-                                <ChartTooltip content={<ChartTooltipContent />} />
-                                <Bar dataKey="value" radius={4}>
-                                    {Object.entries(fundingData?.amountsByCategory || {}).map(([name,]) => (
-                                        <Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ChartContainer>
-                    </CardContent>
-                </Card>
+                
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>All Donations by Category</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
+                                <BarChart
+                                    data={Object.entries(fundingData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))}
+                                    layout="vertical"
+                                    margin={{ right: 20 }}
+                                >
+                                    <CartesianGrid horizontal={false} />
+                                    <YAxis
+                                        dataKey="name"
+                                        type="category"
+                                        tickLine={false}
+                                        tickMargin={10}
+                                        axisLine={false}
+                                        tick={{ fontSize: 12 }}
+                                        width={120}
+                                    />
+                                    <XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Bar dataKey="value" radius={4}>
+                                        {Object.entries(fundingData?.amountsByCategory || {}).map(([name,]) => (
+                                            <Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ChartContainer>
+                        </CardContent>
+                    </Card>
+
+                    {beneficiaryData && beneficiaryData.sortedBeneficiaryCategories.length > 0 && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Beneficiaries by Category</CardTitle>
+                                <CardDescription>
+                                    Summary of beneficiaries grouped by family size.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="w-full overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="whitespace-nowrap">Category Name</TableHead>
+                                            <TableHead className="text-center whitespace-nowrap">Total Beneficiaries</TableHead>
+                                            <TableHead className="text-right whitespace-nowrap">Kit Amount (per kit)</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {beneficiaryData.sortedBeneficiaryCategories.map(memberCount => {
+                                            const group = beneficiaryData.beneficiariesByCategory[memberCount];
+                                            const count = group.beneficiaries.length;
+                                            const kitAmount = group.beneficiaries[0]?.kitAmount || 0;
+                                            return (
+                                                <TableRow key={memberCount}>
+                                                    <TableCell className="font-medium">{memberCount} Members</TableCell>
+                                                    <TableCell className="text-center">{count}</TableCell>
+                                                    <TableCell className="text-right font-mono">₹{kitAmount.toFixed(2)}</TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
+                                    </TableBody>
+                                    <TableFooter>
+                                        <TableRow>
+                                            <TableCell className="font-bold">Total</TableCell>
+                                            <TableCell className="text-center font-bold">{beneficiaryData.totalBeneficiaries}</TableCell>
+                                            <TableCell></TableCell>
+                                        </TableRow>
+                                    </TableFooter>
+                                </Table>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
             </div>
-             <ShareDialog 
+
+            <ShareDialog 
                 open={isShareDialogOpen} 
                 onOpenChange={setIsShareDialogOpen} 
                 shareData={shareDialogData} 

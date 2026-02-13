@@ -803,6 +803,7 @@ Your contribution, big or small, makes a huge difference.
                       <Card>
                           <CardHeader><CardTitle>Beneficiary Groups</CardTitle></CardHeader>
                           <CardContent>
+                            <div className="w-full overflow-x-auto">
                               <Table>
                                   <TableHeader>
                                       <TableRow><TableHead>Category</TableHead><TableHead className="text-center">Beneficiaries</TableHead><TableHead className="text-right">Total Amount (₹)</TableHead></TableRow>
@@ -823,6 +824,7 @@ Your contribution, big or small, makes a huge difference.
                                         </TableRow>
                                     </TableFooter>
                               </Table>
+                            </div>
                           </CardContent>
                       </Card>
                   )}
