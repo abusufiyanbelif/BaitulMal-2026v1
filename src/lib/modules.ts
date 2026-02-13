@@ -24,6 +24,15 @@ export const leadSubModules = [
   { id: 'donations', name: 'Donations', permissions: crudPermissions },
 ] as const;
 
+export const settingsSubModules = [
+    { id: 'app', name: 'App Settings', permissions: readUpdatePermissions },
+    { id: 'campaign', name: 'Campaign Settings', permissions: readUpdatePermissions },
+    { id: 'lead', name: 'Lead Settings', permissions: readUpdatePermissions },
+    { id: 'donation', name: 'Donation Settings', permissions: readUpdatePermissions },
+    { id: 'beneficiary', name: 'Beneficiary Settings', permissions: readUpdatePermissions },
+    { id: 'user', name: 'User Settings', permissions: readUpdatePermissions },
+] as const;
+
 export const leadPurposesConfig = [
   { id: 'Education', name: 'Education', categories: ['School Fees', 'College Fees', 'Tuition Fees', 'Exam Fees', 'Hostel Fees', 'Books & Uniforms', 'Educational Materials', 'Other'] },
   { id: 'Medical', name: 'Medical', categories: ['Hospital Bill', 'Doctor Fees', 'Medication', 'Surgery', 'Other'] },
@@ -81,7 +90,12 @@ export const modules = [
   { id: 'extractor', name: 'Extractor', permissions: simpleReadPermission },
   { id: 'storyCreator', name: 'Story Creator', permissions: simpleReadPermission },
   { id: 'diagnostics', name: 'Diagnostics', permissions: simpleReadPermission },
-  { id: 'settings', name: 'Settings', permissions: readUpdatePermissions },
+  { 
+    id: 'settings', 
+    name: 'Settings', 
+    permissions: readUpdatePermissions,
+    subModules: settingsSubModules,
+  },
 ] as const;
 
 export const permissions = ['create', 'read', 'update', 'delete'] as const;
@@ -95,14 +109,16 @@ type SubModulePermissions<T extends Readonly<any[]>> = {
 
 type CampaignPermissions = Partial<Record<Permission, boolean>> & SubModulePermissions<typeof campaignSubModules>;
 type LeadPermissions = Partial<Record<"create" | "read" | "update" | "delete", boolean>> & SubModulePermissions<typeof leadSubModules>;
+type SettingsPermissions = Partial<Record<"read" | "update", boolean>> & SubModulePermissions<typeof settingsSubModules>;
 
 
 export type UserPermissions = Partial<
-  Record<Exclude<ModuleId, 'campaigns' | 'leads-members'>, Partial<Record<Permission, boolean>>>
+  Record<Exclude<ModuleId, 'campaigns' | 'leads-members' | 'settings'>, Partial<Record<Permission, boolean>>>
 > & {
   campaigns?: CampaignPermissions;
   'leads-members'?: LeadPermissions;
   beneficiaries?: Partial<Record<Permission, boolean>>;
+  settings?: SettingsPermissions;
 };
 
 
