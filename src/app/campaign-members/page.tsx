@@ -45,7 +45,7 @@ import { CopyCampaignDialog } from '@/components/copy-campaign-dialog';
 import { copyCampaignAction } from './actions';
 import { getNestedValue } from '@/lib/utils';
 import Image from 'next/image';
-import placeholderImages from '@/lib/placeholder-images.json';
+import placeholderImages from '@/app/lib/placeholder-images.json';
 
 
 export default function CampaignPage() {
@@ -581,3 +581,5 @@ export default function CampaignPage() {
     </>
   );
 }
+
+    

@@ -25,6 +25,8 @@ import { CopyLeadDialog } from '@/components/copy-lead-dialog';
 import { copyLeadAction } from './actions';
 import { getNestedValue } from '@/lib/utils';
 import { leadPurposesConfig } from '@/lib/modules';
+import Image from 'next/image';
+import placeholderImages from '@/app/lib/placeholder-images.json';
 
 
 export default function LeadPage() {
@@ -528,3 +530,5 @@ export default function LeadPage() {
     </>
   );
 }
+
+    
