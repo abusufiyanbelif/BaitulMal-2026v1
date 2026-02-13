@@ -11,8 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, DollarSign, CheckCircle2, Hourglass, XCircle } from 'lucide-react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
-import { getNestedValue } from '@/lib/utils';
+import { cn, getNestedValue } from '@/lib/utils';
 
 export default function DonationsSummaryPage() {
   const params = useParams();
@@ -148,27 +147,27 @@ export default function DonationsSummaryPage() {
         
         <div className="border-b mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex w-max space-x-2">
-                    {canReadSummary && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
-                        </Button>
-                    )}
-                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/leads-members/${leadId}`}>Item List</Link>
-                    </Button>
-                    {canReadBeneficiaries && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
-                        </Button>
-                    )}
-                    {canReadDonations && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
-                        </Button>
-                    )}
-                </div>
-                <ScrollBar orientation="horizontal" />
+              <div className="flex w-max space-x-2">
+                  {canReadSummary && (
+                      <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                          <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
+                      </Button>
+                  )}
+                  <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                      <Link href={`/leads-members/${leadId}`}>Item List</Link>
+                  </Button>
+                  {canReadBeneficiaries && (
+                      <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                          <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
+                      </Button>
+                  )}
+                  {canReadDonations && (
+                      <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                          <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
+                      </Button>
+                  )}
+              </div>
+              <ScrollBar orientation="horizontal" />
             </ScrollArea>
         </div>
 

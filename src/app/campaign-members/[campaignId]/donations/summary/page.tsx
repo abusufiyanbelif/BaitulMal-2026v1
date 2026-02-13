@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, DollarSign, CheckCircle2, Hourglass, XCircle } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 
 export default function DonationsSummaryPage() {
@@ -152,28 +152,31 @@ export default function DonationsSummaryPage() {
         </div>
         
         <div className="border-b mb-4">
-            <div className="flex flex-wrap items-center">
-                {canReadSummary && (
-                    <Button variant="ghost" asChild className={cn(pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
-                    </Button>
-                )}
-                {canReadRation && (
-                    <Button variant="ghost" asChild className={cn(pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/campaign-members/${campaignId}`}>{campaign?.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
-                    </Button>
-                )}
-                {canReadBeneficiaries && (
-                    <Button variant="ghost" asChild className={cn(pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
-                    </Button>
-                )}
-                {canReadDonations && (
-                    <Button variant="ghost" asChild className={cn(pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
-                    </Button>
-                )}
-            </div>
+            <ScrollArea className="w-full whitespace-nowrap">
+                <div className="flex w-max space-x-2">
+                    {canReadSummary && (
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                            <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
+                        </Button>
+                    )}
+                    {canReadRation && (
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                            <Link href={`/campaign-members/${campaignId}`}>{campaign?.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
+                        </Button>
+                    )}
+                    {canReadBeneficiaries && (
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                            <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
+                        </Button>
+                    )}
+                    {canReadDonations && (
+                        <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                            <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
+                        </Button>
+                    )}
+                </div>
+                <ScrollBar orientation="horizontal" />
+            </ScrollArea>
         </div>
 
         {canReadDonations && (
