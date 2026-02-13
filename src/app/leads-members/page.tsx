@@ -22,7 +22,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { CopyLeadDialog } from '@/components/copy-lead-dialog';
-import { copyLeadAction } from './actions';
+import { copyLeadAction, deleteLeadAction } from './actions';
 import { getNestedValue } from '@/lib/utils';
 import { leadPurposesConfig } from '@/lib/modules';
 import Image from 'next/image';
@@ -140,52 +140,24 @@ export default function LeadPage() {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!leadToDelete || !firestore || !storage || !canDelete) {
+    if (!leadToDelete || !canDelete) {
         toast({ title: 'Error', description: 'Could not delete lead.', variant: 'destructive'});
         return;
     };
 
     setIsDeleteDialogOpen(false);
     setIsDeleting(true);
-    toast({ title: 'Deleting...', description: `Please wait while '${leadToDelete.name}' and all its data are being deleted.`});
 
-    try {
-        const leadId = leadToDelete.id;
+    const result = await deleteLeadAction(leadToDelete.id);
 
-        const beneficiariesRef = collection(firestore, `leads/${leadId}/beneficiaries`);
-        const beneficiariesSnap = await getDocs(beneficiariesRef);
-        
-        const storageUrls: string[] = [];
-        beneficiariesSnap.forEach(doc => {
-            const data = doc.data() as Beneficiary;
-            if (data.idProofUrl) storageUrls.push(data.idProofUrl);
-        });
-
-        const deleteFilePromises = storageUrls.map(url => {
-            const fileRef = storageRef(storage, url);
-            return deleteObject(fileRef).catch(error => {
-                if (error.code !== 'storage/object-not-found') {
-                    console.warn(`Failed to delete file ${url}`, error);
-                }
-            });
-        });
-
-        await Promise.all(deleteFilePromises);
-        
-        const batch = writeBatch(firestore);
-        beneficiariesSnap.forEach(doc => batch.delete(doc.ref));
-        batch.delete(doc(firestore, 'leads', leadId));
-
-        await batch.commit();
-        
-        toast({ title: 'Success', description: `Lead '${leadToDelete.name}' was successfully deleted.`, variant: 'success' });
-
-    } catch (error: any) {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: `leads/${leadToDelete.id} and all sub-collections`, operation: 'delete' }));
-    } finally {
-        setIsDeleting(false);
-        setLeadToDelete(null);
+    if (result.success) {
+        toast({ title: 'Lead Deleted', description: result.message, variant: 'success' });
+    } else {
+        toast({ title: 'Deletion Failed', description: result.message, variant: 'destructive' });
     }
+    
+    setIsDeleting(false);
+    setLeadToDelete(null);
   };
 
   const handleStatusUpdate = async (leadToUpdate: Lead, field: 'status' | 'authenticityStatus' | 'publicVisibility', value: string) => {

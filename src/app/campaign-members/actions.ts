@@ -1,7 +1,7 @@
 
 'use server';
 
-import { adminDb } from '@/lib/firebase-admin-sdk';
+import { adminDb, adminStorage } from '@/lib/firebase-admin-sdk';
 import type { Campaign, Beneficiary, Donation } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import * as admin from 'firebase-admin';
@@ -42,6 +42,7 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
       status: 'Upcoming', // Copied campaigns should start as Upcoming
       authenticityStatus: 'Pending Verification',
       publicVisibility: 'Hold',
+      imageUrl: '', // Reset image URL for the new campaign
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       // We assume the copier is the creator. In a real app you'd pass the userId.
       createdByName: 'System Copy',
@@ -49,7 +50,7 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
     };
 
     if (!copyRationLists) {
-      newCampaignData.rationLists = { 'General Item List': [] }; // Reset ration lists if not copied
+      newCampaignData.itemCategories = [];
     }
     
     // Remove ID from data object
@@ -143,5 +144,46 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
   } catch (error: any) {
     console.error('Error in copyCampaignAction:', error);
     return { success: false, message: `An unexpected error occurred during copy: ${error.message}` };
+  }
+}
+
+export async function deleteCampaignAction(campaignId: string): Promise<{ success: boolean; message: string }> {
+  if (!adminDb || !adminStorage) {
+    const errorMessage = 'Firebase Admin SDK is not initialized.';
+    console.error(errorMessage);
+    return { success: false, message: errorMessage };
+  }
+
+  try {
+    // Get campaign name before deleting for toast message
+    const campaignRef = adminDb.collection('campaigns').doc(campaignId);
+    const campaignSnap = await campaignRef.get();
+    if (!campaignSnap.exists) {
+      return { success: true, message: 'Campaign already deleted.' };
+    }
+    const campaignName = campaignSnap.data()?.name || 'Unknown Campaign';
+
+    // Delete beneficiaries subcollection in batches
+    const beneficiariesRef = campaignRef.collection('beneficiaries');
+    const beneficiariesSnap = await beneficiariesRef.get();
+    if (!beneficiariesSnap.empty) {
+      const batch = adminDb.batch();
+      beneficiariesSnap.docs.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+    }
+
+    // Delete the main campaign document
+    await campaignRef.delete();
+
+    // Delete files from Storage folder
+    const bucket = adminStorage.bucket();
+    const prefix = `campaigns/${campaignId}/`;
+    await bucket.deleteFiles({ prefix });
+
+    revalidatePath('/campaign-members');
+    return { success: true, message: `Successfully deleted campaign '${campaignName}' and all its data.` };
+  } catch (error: any) {
+    console.error('Error in deleteCampaignAction:', error);
+    return { success: false, message: `An unexpected error occurred: ${error.message}` };
   }
 }

@@ -1,7 +1,7 @@
 
 'use server';
 
-import { adminDb } from '@/lib/firebase-admin-sdk';
+import { adminDb, adminStorage } from '@/lib/firebase-admin-sdk';
 import type { Lead, Beneficiary } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import * as admin from 'firebase-admin';
@@ -41,13 +41,14 @@ export async function copyLeadAction(options: CopyLeadOptions): Promise<{ succes
       status: 'Upcoming', // Copied leads should start as Upcoming
       authenticityStatus: 'Pending Verification',
       publicVisibility: 'Hold',
+      imageUrl: '', // Reset image URL
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       createdByName: 'System Copy',
       createdById: 'system',
     };
 
     if (!copyRationLists) {
-      newLeadData.rationLists = { 'General Item List': [] }; // Reset ration lists if not copied
+      newLeadData.itemCategories = [];
     }
     
     delete newLeadData.id;
@@ -98,5 +99,42 @@ export async function copyLeadAction(options: CopyLeadOptions): Promise<{ succes
   } catch (error: any) {
     console.error('Error in copyLeadAction:', error);
     return { success: false, message: `An unexpected error occurred during copy: ${error.message}` };
+  }
+}
+
+export async function deleteLeadAction(leadId: string): Promise<{ success: boolean; message: string }> {
+  if (!adminDb || !adminStorage) {
+    const errorMessage = 'Firebase Admin SDK is not initialized.';
+    console.error(errorMessage);
+    return { success: false, message: errorMessage };
+  }
+
+  try {
+    const leadRef = adminDb.collection('leads').doc(leadId);
+    const leadSnap = await leadRef.get();
+    if (!leadSnap.exists) {
+      return { success: true, message: 'Lead already deleted.' };
+    }
+    const leadName = leadSnap.data()?.name || 'Unknown Lead';
+
+    const beneficiariesRef = leadRef.collection('beneficiaries');
+    const beneficiariesSnap = await beneficiariesRef.get();
+    if (!beneficiariesSnap.empty) {
+      const batch = adminDb.batch();
+      beneficiariesSnap.docs.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+    }
+
+    await leadRef.delete();
+
+    const bucket = adminStorage.bucket();
+    const prefix = `leads/${leadId}/`;
+    await bucket.deleteFiles({ prefix });
+
+    revalidatePath('/leads-members');
+    return { success: true, message: `Successfully deleted lead '${leadName}' and all its data.` };
+  } catch (error: any) {
+    console.error('Error in deleteLeadAction:', error);
+    return { success: false, message: `An unexpected error occurred: ${error.message}` };
   }
 }

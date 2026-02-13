@@ -42,7 +42,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { CopyCampaignDialog } from '@/components/copy-campaign-dialog';
-import { copyCampaignAction } from './actions';
+import { copyCampaignAction, deleteCampaignAction } from './actions';
 import { getNestedValue } from '@/lib/utils';
 import Image from 'next/image';
 import placeholderImages from '@/app/lib/placeholder-images.json';
@@ -172,7 +172,7 @@ export default function CampaignPage() {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!campaignToDelete || !firestore || !storage || !canDelete) {
+    if (!campaignToDelete || !canDelete) {
         toast({ title: 'Error', description: 'Could not delete campaign.', variant: 'destructive'});
         return;
     };
@@ -180,55 +180,16 @@ export default function CampaignPage() {
     setIsDeleteDialogOpen(false);
     setIsDeleting(true);
 
-    try {
-        const campaignId = campaignToDelete.id;
+    const result = await deleteCampaignAction(campaignToDelete.id);
 
-        // --- Fetch all associated documents and file URLs ---
-        const beneficiariesRef = collection(firestore, `campaigns/${campaignId}/beneficiaries`);
-        const beneficiariesSnap = await getDocs(beneficiariesRef);
-
-        const donationsQuery = query(collection(firestore, 'donations'), where('campaignId', '==', campaignId));
-        const donationsSnap = await getDocs(donationsQuery);
-        
-        const storageUrls: string[] = [];
-        beneficiariesSnap.forEach(doc => {
-            const data = doc.data() as Beneficiary;
-            if (data.idProofUrl) storageUrls.push(data.idProofUrl);
-        });
-        donationsSnap.forEach(doc => {
-            const data = doc.data() as Donation;
-            if (data.screenshotUrl) storageUrls.push(data.screenshotUrl);
-        });
-
-        // --- Step 1: Delete files from Storage ---
-        const deleteFilePromises = storageUrls.map(url => {
-            const fileRef = storageRef(storage, url);
-            return deleteObject(fileRef).catch(error => {
-                // Don't throw an error, just continue
-                if (error.code !== 'storage/object-not-found') {
-                    console.warn(`Failed to delete file ${url}`, error);
-                }
-            });
-        });
-
-        await Promise.all(deleteFilePromises);
-        
-        // --- Step 2: Delete documents from Firestore ---
-        const batch = writeBatch(firestore);
-        beneficiariesSnap.forEach(doc => batch.delete(doc.ref));
-        donationsSnap.forEach(doc => batch.delete(doc.ref));
-        batch.delete(doc(firestore, 'campaigns', campaignId));
-
-        await batch.commit();
-        
-        toast({ title: 'Success', description: `Campaign '${campaignToDelete.name}' was successfully deleted.`, variant: 'success' });
-
-    } catch (error: any) {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: `campaigns/${campaignToDelete.id} and all sub-collections`, operation: 'delete' }));
-    } finally {
-        setIsDeleting(false);
-        setCampaignToDelete(null);
+    if (result.success) {
+        toast({ title: 'Campaign Deleted', description: result.message, variant: 'success' });
+    } else {
+        toast({ title: 'Deletion Failed', description: result.message, variant: 'destructive' });
     }
+    
+    setIsDeleting(false);
+    setCampaignToDelete(null);
   };
   
   const handleStatusUpdate = async (campaignToUpdate: Campaign, field: 'status' | 'authenticityStatus' | 'publicVisibility', value: string) => {
