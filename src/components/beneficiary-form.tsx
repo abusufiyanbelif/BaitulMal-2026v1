@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -61,9 +60,11 @@ interface BeneficiaryFormProps {
   onCancel: () => void;
   rationLists: ItemCategory[];
   initialReadOnly?: boolean;
+  isSubmitting?: boolean;
+  isLoading?: boolean;
 }
 
-export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, initialReadOnly = false }: BeneficiaryFormProps) {
+export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, initialReadOnly = false, isSubmitting = false, isLoading = false }: BeneficiaryFormProps) {
     const isEditing = !!beneficiary;
     const { toast } = useToast();
 
@@ -93,7 +94,6 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
     const { control, handleSubmit, watch, setValue, getValues, register } = form;
     
     const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isScanning, setIsScanning] = useState(false);
     
     const idProofFile = watch('idProofFile');
@@ -195,17 +195,11 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
         reader.readAsDataURL(file);
     };
 
-    const handleFormSubmit = async (data: BeneficiaryFormData) => {
-        setIsSubmitting(true);
-        await onSubmit(data);
-        setIsSubmitting(false);
-    };
-
-    const formIsDisabled = isReadOnly || isSubmitting;
+    const formIsDisabled = isReadOnly || isSubmitting || isLoading;
   
     return (
         <Form {...form}>
-            <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6 pt-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pt-4">
                 
                 <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Personal Information</h3>

@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -128,7 +127,7 @@ export default function CreateLeadPage() {
       shopName: '',
       shopContact: '',
       shopAddress: '',
-      itemCategories: data.purpose === 'Ration' ? [{ id: 'general', name: 'General', items: [] }] : [],
+      itemCategories: data.category === 'Ration Kit' ? [{ id: 'general', name: 'General', items: [] }] : [],
     };
 
     addDoc(collection(firestore, 'leads'), newLeadData)

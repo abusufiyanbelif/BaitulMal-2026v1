@@ -1,6 +1,5 @@
-
 'use client';
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';

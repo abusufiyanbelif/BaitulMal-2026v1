@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -369,7 +368,7 @@ export default function LeadDetailsPage() {
         </CardContent>
       </Card>
       
-      {editableLead.category === 'Ration' ? (
+      {editableLead.category === 'Ration Kit' ? (
           <Card className="animate-fade-in-zoom">
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -456,7 +455,7 @@ export default function LeadDetailsPage() {
                 <Info className="h-4 w-4" />
                 <AlertTitle>Not a Ration-Based Lead</AlertTitle>
                 <AlertDescription>
-                    Item lists and kit amount calculations are only applicable to leads with the 'Ration' category.
+                    Item lists and kit amount calculations are only applicable to leads with the 'Ration Kit' category.
                 </AlertDescription>
             </Alert>
         )}
