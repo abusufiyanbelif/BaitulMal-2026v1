@@ -86,7 +86,7 @@ const donationCategoryChartConfig = {
 const donationPaymentTypeChartConfig = {
     Cash: { label: "Cash", color: "hsl(var(--chart-1))" },
     'Online Payment': { label: "Online Payment", color: "hsl(var(--chart-2))" },
-    Check: { label: "Check", color: "hsl(var(--chart-3))" },
+    Check: { label: "Check", color: "hsl(var(--chart-5))" },
     Other: { label: "Other", color: "hsl(var(--chart-4))" },
 } satisfies ChartConfig;
 
@@ -143,8 +143,8 @@ export default function CampaignSummaryPage() {
     }, [campaign, editMode]);
 
     const sanitizedRationLists = useMemo(() => {
-        if (!campaign?.rationLists) return [];
-        if (Array.isArray(campaign.rationLists)) return campaign.rationLists;
+        if (!campaign?.itemCategories) return [];
+        if (Array.isArray(campaign.itemCategories)) return campaign.itemCategories;
         // Hotfix for old object format
         return [
           {
@@ -152,10 +152,10 @@ export default function CampaignSummaryPage() {
             name: 'General Item List',
             minMembers: 0,
             maxMembers: 0,
-            items: (campaign.rationLists as any)['General Item List'] || []
+            items: (campaign.itemCategories as any)['General Item List'] || []
           }
         ];
-    }, [campaign?.rationLists]);
+    }, [campaign?.itemCategories]);
     
     const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
     const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
@@ -282,7 +282,7 @@ export default function CampaignSummaryPage() {
         const beneficiariesByCategory = beneficiaries.reduce((acc, ben) => {
             const members = ben.members || 0;
             const generalCategory = sanitizedRationLists.find(cat => cat.name === 'General Item List');
-            const specificCategory = sanitizedRationLists.find(cat => cat.name !== 'General Item List' && members >= cat.minMembers && members <= cat.maxMembers);
+            const specificCategory = sanitizedRationLists.find(cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999));
             
             const appliedCategory = specificCategory || generalCategory;
             
@@ -940,3 +940,5 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+
+    

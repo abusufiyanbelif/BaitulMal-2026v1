@@ -605,7 +605,7 @@ export default function BeneficiariesPage() {
       const members = beneficiary.members || 0;
       
       const specificCategory = sanitizedRationLists.find(
-        cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 0)
+        cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
       );
       
       const appliedCategory = specificCategory || generalCategory;
@@ -1078,6 +1078,8 @@ export default function BeneficiariesPage() {
                 onCancel={() => setIsFormOpen(false)}
                 rationLists={sanitizedRationLists}
                 initialReadOnly={formMode === 'view'}
+                isSubmitting={isSubmitting}
+                isLoading={isLoading}
             />
         </DialogContent>
       </Dialog>
@@ -1271,3 +1273,5 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
         </>
     );
 }
+
+    
