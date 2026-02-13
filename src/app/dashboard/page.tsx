@@ -1,13 +1,32 @@
-
 'use client';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
 import { useSession } from '@/hooks/use-session';
-import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, Database, FlaskConical, LifeBuoy, Eye } from 'lucide-react';
+import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, Database, FlaskConical, LifeBuoy, Eye, Quote } from 'lucide-react';
 import { getNestedValue } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import React from 'react';
-import { WisdomAndReflection } from '@/components/WisdomAndReflection';
+import dynamic from 'next/dynamic';
+
+const WisdomAndReflection = dynamic(() => import('@/components/WisdomAndReflection').then(mod => mod.WisdomAndReflection), {
+    ssr: false,
+    loading: () => (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Quote className="h-6 w-6 text-primary" />
+                    Wisdom & Reflection
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6 pl-10">
+                <Skeleton className="h-8 w-4/5" />
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-8 w-4/5" />
+            </CardContent>
+        </Card>
+    ),
+});
+
 
 function HomeDashboardCard({ title, description, href, icon: Icon }: { title: string, description: string, href: string, icon: React.ComponentType<{ className?: string }> }) {
   return (

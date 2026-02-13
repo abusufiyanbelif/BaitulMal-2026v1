@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -7,7 +6,7 @@ import Link from 'next/link';
 import React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import dynamic from 'next/dynamic';
-import { WisdomAndReflection } from '@/components/WisdomAndReflection';
+import { Quote } from 'lucide-react';
 
 const DonationSummary = dynamic(() => import('@/components/donation-summary').then(mod => mod.DonationSummary), {
     loading: () => (
@@ -31,6 +30,26 @@ const LeadAndCampaignSummary = dynamic(() => import('@/components/lead-campaign-
     ),
     ssr: false,
 });
+
+const WisdomAndReflection = dynamic(() => import('@/components/WisdomAndReflection').then(mod => mod.WisdomAndReflection), {
+    ssr: false,
+    loading: () => (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Quote className="h-6 w-6 text-primary" />
+                    Wisdom & Reflection
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6 pl-10">
+                <Skeleton className="h-8 w-4/5" />
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-8 w-4/5" />
+            </CardContent>
+        </Card>
+    ),
+});
+
 
 export default function Home() {
     return (
