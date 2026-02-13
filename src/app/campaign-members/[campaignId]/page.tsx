@@ -109,6 +109,41 @@ export default function CampaignDetailsPage() {
   const [itemToDelete, setItemToDelete] = useState<{ categoryId: string; itemId: string; itemName: string } | null>(null);
   const [isDeleteItemDialogOpen, setIsDeleteItemDialogOpen] = useState(false);
 
+  const syncAllCategoriesFromMaster = useCallback((itemCategories: ItemCategory[]): ItemCategory[] => {
+    const masterList = itemCategories.find(cat => cat.name === 'Item Price List');
+    if (!masterList) return itemCategories;
+
+    const masterPriceMap = new Map<string, { price: number; quantityType: string }>();
+    masterList.items.forEach((item: RationItem) => {
+        masterPriceMap.set(item.name.trim().toLowerCase(), {
+            price: Number(item.price) || 0,
+            quantityType: item.quantityType || '',
+        });
+    });
+
+    return itemCategories.map(cat => {
+        if (cat.name === 'Item Price List') {
+            return cat;
+        }
+        const updatedItems = cat.items.map(item => {
+            const masterItem = masterPriceMap.get(item.name.trim().toLowerCase());
+            if (masterItem) {
+                return {
+                    ...item,
+                    price: masterItem.price * (Number(item.quantity) || 0),
+                    quantityType: masterItem.quantityType,
+                };
+            }
+            return {
+                ...item,
+                price: 0,
+                quantityType: '',
+            };
+        });
+        return { ...cat, items: updatedItems };
+    });
+  }, []);
+
   // Reset local state if edit mode is cancelled or if the base data changes while NOT in edit mode.
   useEffect(() => {
     if (campaign && !editMode) {

@@ -1,0 +1,2 @@
+src/app/campaign-members/[campaignId]/page.tsx(240,29): error TS2304: Cannot find name 'syncAllCategoriesFromMaster'.
+src/app/campaign-members/[campaignId]/page.tsx(296,29): error TS2304: Cannot find name 'syncAllCategoriesFromMaster'.
