@@ -25,6 +25,7 @@ const nextConfig = {
   devIndicators: {
     allowedDevOrigins: ['*.cloudworkstations.dev'],
   },
+  // Cache-busting comment to force a clean rebuild.
 };
 
 module.exports = nextConfig;
