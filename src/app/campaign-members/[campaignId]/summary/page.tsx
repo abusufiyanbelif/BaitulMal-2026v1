@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, Target, Users, Gift, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, ChevronDown, ChevronUp, UploadCloud, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Target, Users, Gift, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, ChevronDown, ChevronUp, UploadCloud, Trash2, CheckCircle2, XCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
@@ -215,7 +215,6 @@ export default function CampaignSummaryPage() {
     const handleEditClick = () => setEditMode(true);
     const handleCancel = () => setEditMode(false);
 
-    // ... (rest of component remains unchanged)
     const summaryData = useMemo(() => {
         if (!allDonations || !campaign || !beneficiaries || !sanitizedRationLists) return null;
         
@@ -257,23 +256,39 @@ export default function CampaignSummaryPage() {
                 }
             });
         });
+        
+        const donationStatusStats = donations.reduce((acc, donation) => {
+            const status = donation.status || 'Pending';
+            let amountForThisCampaign = 0;
+            const campaignLink = donation.linkSplit?.find(l => l.linkId === campaign.id && l.linkType === 'campaign');
+            if (campaignLink) {
+                amountForThisCampaign = campaignLink.amount;
+            } else if ((!donation.linkSplit || donation.linkSplit.length === 0) && donation.campaignId === campaign.id) {
+                amountForThisCampaign = donation.amount;
+            }
+
+            if (status === 'Verified') {
+                acc.verified.count += 1;
+                acc.verified.amount += amountForThisCampaign;
+            } else if (status === 'Pending') {
+                acc.pending.count += 1;
+                acc.pending.amount += amountForThisCampaign;
+            } else if (status === 'Canceled') {
+                acc.canceled.count += 1;
+                acc.canceled.amount += amountForThisCampaign;
+            }
+            return acc;
+        }, {
+            verified: { count: 0, amount: 0 },
+            pending: { count: 0, amount: 0 },
+            canceled: { count: 0, amount: 0 },
+        });
 
         const totalCollectedForGoal = Object.entries(amountsByCategory)
             .filter(([category]) => campaign.allowedDonationTypes?.includes(category as DonationCategory))
             .reduce((sum, [, amount]) => sum + amount, 0);
 
-        const pendingDonations = donations
-            .filter(d => d.status === 'Pending')
-            .reduce((sum, d) => {
-                let amountForThisCampaign = 0;
-                const campaignLink = d.linkSplit?.find(l => l.linkId === campaign.id && l.linkType === 'campaign');
-                if (campaignLink) {
-                    amountForThisCampaign = campaignLink.amount;
-                } else if ((!d.linkSplit || d.linkSplit.length === 0) && d.campaignId === campaign.id) {
-                    amountForThisCampaign = d.amount;
-                }
-                return sum + amountForThisCampaign;
-            }, 0);
+        const pendingDonations = donationStatusStats.pending.amount;
 
         const fundingGoal = campaign.targetAmount || 0;
         const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
@@ -353,7 +368,8 @@ export default function CampaignSummaryPage() {
                 lillah: lillahTotal,
                 monthlyContribution: monthlyContributionTotal,
                 grandTotal: grandTotal,
-            }
+            },
+            donationStatusStats,
         };
     }, [allDonations, campaign, beneficiaries, sanitizedRationLists]);
     
@@ -704,7 +720,45 @@ Your contribution, big or small, makes a huge difference.
                             </CardContent>
                         </Card>
                     </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Card>
+                            <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified Donations</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
+                            <CardContent className="p-4 pt-0">
+                                <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.verified.count}</div>
+                                <p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.verified.amount.toLocaleString('en-IN')}</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending Donations</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                            <CardContent className="p-4 pt-0">
+                                <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.pending.count}</div>
+                                <p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.pending.amount.toLocaleString('en-IN')}</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Canceled Donations</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
+                            <CardContent className="p-4 pt-0">
+                                <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.canceled.count}</div>
+                                <p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.canceled.amount.toLocaleString('en-IN')}</p>
+                            </CardContent>
+                        </Card>
+                    </div>
                     <div className="grid gap-6 lg:grid-cols-2">
+                      <Card>
+                        <CardHeader>
+                            <CardTitle>Fund Totals by Type</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold">₹{summaryData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <Separator className="my-2"/>
+                            <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                        </CardContent>
+                      </Card>
                       <Card>
                           <CardHeader>
                               <CardTitle>Donations by Category</CardTitle>
