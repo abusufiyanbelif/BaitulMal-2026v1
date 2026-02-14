@@ -138,7 +138,8 @@ export default function CampaignPage() {
   const canCreate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.create', false);
   const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.update', false);
   const canDelete = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.delete', false);
-  const canViewCampaigns = userProfile?.role === 'Admin' || canCreate || canUpdate || canDelete || Object.values(getNestedValue(userProfile, 'permissions.campaigns', {})).some((perm: any) => perm?.read);
+  const canViewCampaigns = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false);
+
 
   const handleDeleteClick = (campaign: Campaign) => {
     if (!canDelete) return;

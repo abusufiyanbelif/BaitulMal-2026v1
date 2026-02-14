@@ -72,12 +72,13 @@ export default function LeadPage() {
             }
             
             const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
+            const proportionForThisLead = leadLink.amount / totalDonationAmount;
 
             const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
                 ? donation.typeSplit
                 : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
 
-            const applicableTypeTotal = typeSplits.reduce((acc, split) => {
+            const totalApplicableAmountInDonation = typeSplits.reduce((acc, split) => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
                 if (lead.allowedDonationTypes?.includes(category)) {
                     return acc + split.amount;
@@ -85,10 +86,7 @@ export default function LeadPage() {
                 return acc;
             }, 0);
             
-            const proportionOfApplicableTypes = applicableTypeTotal / totalDonationAmount;
-            const finalAmountForGoal = leadLink.amount * proportionOfApplicableTypes;
-
-            return sum + finalAmountForGoal;
+            return sum + (totalApplicableAmountInDonation * proportionForThisLead);
         }, 0);
 
         const progress = lead.targetAmount && lead.targetAmount > 0 ? (collected / lead.targetAmount) * 100 : 0;
@@ -104,7 +102,7 @@ export default function LeadPage() {
   const canCreate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.create', false);
   const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.update', false);
   const canDelete = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.delete', false);
-  const canViewLeads = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members', false);
+  const canViewLeads = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.read', false);
 
 
   const handleDeleteClick = (lead: Lead) => {
