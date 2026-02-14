@@ -3,20 +3,9 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
 import { SessionProvider } from '@/components/session-provider';
 import { useUser } from '@/firebase';
-
-function AuthLoader() {
-    return (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
-            <div className="w-full max-w-xs text-center">
-                <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-                <p className="text-muted-foreground">Authenticating...</p>
-            </div>
-        </div>
-    );
-}
+import { BrandedLoader } from '@/components/branded-loader';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -50,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const showLoader = (isLoading && !isPublicRoute) || (!isLoading && !user && !isPublicRoute);
   
   if (showLoader) {
-    return <AuthLoader />;
+    return <BrandedLoader />;
   }
   
   // Render the session provider and children.

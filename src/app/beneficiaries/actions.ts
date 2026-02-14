@@ -48,3 +48,61 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
     return { success: false, message: message };
   }
 }
+
+export async function syncMasterBeneficiaryListAction(): Promise<{ success: boolean; message: string; addedCount: number; }> {
+    if (!adminDb) {
+        return { success: false, message: 'Firebase Admin SDK is not initialized.', addedCount: 0 };
+    }
+
+    try {
+        let addedCount = 0;
+        const masterBeneficiarySnaps = await adminDb.collection('beneficiaries').get();
+        const masterBeneficiaryIds = new Set(masterBeneficiarySnaps.docs.map(doc => doc.id));
+        const beneficiariesToSync: Map<string, any> = new Map();
+
+        // Get from Campaigns
+        const campaignsSnap = await adminDb.collection('campaigns').get();
+        for (const campaignDoc of campaignsSnap.docs) {
+            const beneficiariesSnap = await campaignDoc.ref.collection('beneficiaries').get();
+            beneficiariesSnap.forEach(doc => {
+                if (!masterBeneficiaryIds.has(doc.id)) {
+                    beneficiariesToSync.set(doc.id, doc.data());
+                }
+            });
+        }
+
+        // Get from Leads
+        const leadsSnap = await adminDb.collection('leads').get();
+        for (const leadDoc of leadsSnap.docs) {
+            const beneficiariesSnap = await leadDoc.ref.collection('beneficiaries').get();
+            beneficiariesSnap.forEach(doc => {
+                if (!masterBeneficiaryIds.has(doc.id)) {
+                     beneficiariesToSync.set(doc.id, doc.data());
+                }
+            });
+        }
+        
+        if (beneficiariesToSync.size > 0) {
+            const batch = adminDb.batch();
+            beneficiariesToSync.forEach((data, id) => {
+                const masterRef = adminDb.collection('beneficiaries').doc(id);
+                // Ensure the 'id' field is present in the data
+                const dataWithId = { ...data, id: id };
+                batch.set(masterRef, dataWithId, { merge: true });
+                addedCount++;
+            });
+            await batch.commit();
+        }
+        
+        revalidatePath('/beneficiaries');
+        if (addedCount > 0) {
+            return { success: true, message: `Successfully synced ${addedCount} beneficiaries to the master list.`, addedCount };
+        } else {
+            return { success: true, message: 'Master beneficiary list is already up to date.', addedCount: 0 };
+        }
+
+    } catch (error: any) {
+        console.error('Error in syncMasterBeneficiaryListAction:', error);
+        return { success: false, message: `An unexpected error occurred: ${error.message}`, addedCount: 0 };
+    }
+}

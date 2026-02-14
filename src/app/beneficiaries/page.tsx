@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, ShieldAlert, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, ShieldAlert, ArrowUp, ArrowDown, DatabaseZap, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +32,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { deleteBeneficiaryAction } from './actions';
+import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction } from './actions';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
@@ -51,6 +51,7 @@ export default function BeneficiariesPage() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [zakatFilter, setZakatFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -84,6 +85,21 @@ export default function BeneficiariesPage() {
     if (!canDelete) return;
     setBeneficiaryToDelete(id);
     setIsDeleteDialogOpen(true);
+  };
+  
+  const handleSyncMasterList = async () => {
+    setIsSyncing(true);
+    toast({ title: 'Syncing Master List...', description: 'Please wait while we check all campaigns and leads for new beneficiaries.' });
+    
+    const result = await syncMasterBeneficiaryListAction();
+    
+    if (result.success) {
+      toast({ title: 'Sync Complete', description: result.message, variant: 'success' });
+    } else {
+      toast({ title: 'Sync Failed', description: result.message, variant: 'destructive' });
+    }
+
+    setIsSyncing(false);
   };
 
   const handleDeleteConfirm = async () => {
@@ -265,12 +281,18 @@ export default function BeneficiariesPage() {
                   </Select>
                 </div>
             </div>
-            {canCreate && (
-                <Button onClick={handleAdd} disabled={areBeneficiariesLoading}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Beneficiary
+            <div className="flex flex-wrap gap-2 shrink-0">
+                <Button onClick={handleSyncMasterList} disabled={isSyncing || areBeneficiariesLoading} variant="outline">
+                    {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
+                    Sync Master List
                 </Button>
-            )}
+                {canCreate && (
+                    <Button onClick={handleAdd} disabled={areBeneficiariesLoading}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Beneficiary
+                    </Button>
+                )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
