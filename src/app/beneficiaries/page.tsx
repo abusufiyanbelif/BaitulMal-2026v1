@@ -1,23 +1,28 @@
-
 'use client';
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirestore, useCollection, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { collection } from 'firebase/firestore';
+import { collection, doc, updateDoc } from 'firebase/firestore';
 import type { Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, ShieldAlert, ArrowUp, ArrowDown, DatabaseZap, Loader2 } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, ShieldAlert, ArrowUp, ArrowDown, DatabaseZap, Loader2, Upload, Download, Eye, CheckCircle2, Hourglass, XCircle, Info, ChevronsUpDown, Check, X, ChevronDown, ChevronUp, BadgeCheck } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -37,8 +42,13 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { getNestedValue } from '@/lib/utils';
+import { BeneficiaryImportDialog, type ProcessedRecord } from '@/components/beneficiary-import-dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 type SortKey = keyof Beneficiary | 'srNo';
+type BeneficiaryStatus = Beneficiary['status'];
 
 export default function BeneficiariesPage() {
   const firestore = useFirestore();
@@ -50,8 +60,18 @@ export default function BeneficiariesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [zakatFilter, setZakatFilter] = useState('All');
+  const [referralFilter, setReferralFilter] = useState<string[]>([]);
+  const [tempReferralFilter, setTempReferralFilter] = useState<string[]>([]);
+  const [openReferralPopover, setOpenReferralPopover] = useState(false);
+  
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
   const [isSyncing, setIsSyncing] = useState(false);
+  const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
+  
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [importData, setImportData] = useState<ProcessedRecord[]>([]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -71,9 +91,19 @@ export default function BeneficiariesPage() {
   const canDelete = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.beneficiaries.delete', false);
   const canRead = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.beneficiaries.read', false);
 
+  const uniqueReferrals = useMemo(() => {
+    if (!beneficiaries) return [];
+    const referrals = new Set(beneficiaries.map(b => b.referralBy).filter(Boolean));
+    return [...Array.from(referrals).sort()];
+  }, [beneficiaries]);
+
   const handleAdd = () => {
     if (!canCreate) return;
     router.push('/beneficiaries/create');
+  };
+  
+  const handleView = (beneficiary: Beneficiary) => {
+    router.push(`/beneficiaries/${beneficiary.id}`);
   };
 
   const handleEdit = (beneficiary: Beneficiary) => {
@@ -142,6 +172,9 @@ export default function BeneficiariesPage() {
         const isEligible = zakatFilter === 'Eligible';
         sortableItems = sortableItems.filter(b => !!b.isEligibleForZakat === isEligible);
     }
+    if (referralFilter.length > 0) {
+        sortableItems = sortableItems.filter(b => b.referralBy && referralFilter.includes(b.referralBy));
+    }
     if (searchTerm) {
         const lowercasedTerm = searchTerm.toLowerCase();
         sortableItems = sortableItems.filter(b => 
@@ -177,7 +210,7 @@ export default function BeneficiariesPage() {
     }
 
     return sortableItems;
-  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, sortConfig]);
+  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, referralFilter, sortConfig]);
 
   const totalPages = Math.ceil(filteredAndSortedBeneficiaries.length / itemsPerPage);
   const paginatedBeneficiaries = useMemo(() => {
@@ -186,6 +219,45 @@ export default function BeneficiariesPage() {
   }, [filteredAndSortedBeneficiaries, currentPage, itemsPerPage]);
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
+  
+    const handleStatusChange = async (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => {
+        if (!firestore || !canUpdate) return;
+        const beneficiaryDocRef = doc(firestore, 'beneficiaries', beneficiary.id);
+        try {
+        await updateDoc(beneficiaryDocRef, { status: newStatus });
+        toast({
+            title: 'Status Updated',
+            description: `${beneficiary.name}'s status has been set to ${newStatus}.`,
+            variant: 'success',
+        });
+        } catch (serverError) {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: beneficiaryDocRef.path,
+            operation: 'update',
+            requestResourceData: { status: newStatus },
+        }));
+        }
+    };
+  
+    const handleZakatToggle = async (beneficiary: Beneficiary) => {
+        if (!firestore || !canUpdate) return;
+        const masterBeneficiaryDocRef = doc(firestore, 'beneficiaries', beneficiary.id);
+        const newZakatStatus = !beneficiary.isEligibleForZakat;
+        try {
+            await updateDoc(masterBeneficiaryDocRef, { isEligibleForZakat: newZakatStatus });
+            toast({
+                title: 'Zakat Status Updated',
+                description: `${beneficiary.name} is now ${newZakatStatus ? 'Eligible' : 'Not Eligible'} for Zakat.`,
+                variant: 'success',
+            });
+        } catch (serverError) {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: masterBeneficiaryDocRef.path,
+                operation: 'update',
+                requestResourceData: { isEligibleForZakat: newZakatStatus },
+            }));
+        }
+    };
   
   const SortableHeader = ({ sortKey, children, className }: { sortKey: SortKey, children: React.ReactNode, className?: string }) => {
     const isSorted = sortConfig?.key === sortKey;
@@ -279,7 +351,102 @@ export default function BeneficiariesPage() {
                           <SelectItem value="Not Eligible">Not Eligible</SelectItem>
                       </SelectContent>
                   </Select>
+                    <Popover open={openReferralPopover} onOpenChange={(isOpen) => {
+                      setOpenReferralPopover(isOpen);
+                      if (isOpen) {
+                          setTempReferralFilter(referralFilter);
+                      }
+                  }}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={openReferralPopover}
+                        className="w-auto md:w-[250px] justify-between"
+                      >
+                        <span className="truncate">
+                          {referralFilter.length > 0
+                            ? `${referralFilter.length} referral(s) selected`
+                            : "Filter by referral..."}
+                        </span>
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[350px] p-0">
+                      <Command>
+                        <CommandInput placeholder="Search referrals..." />
+                        <CommandList>
+                          <CommandEmpty>No referral found.</CommandEmpty>
+                          <CommandGroup>
+                            {uniqueReferrals.map((referral) => (
+                              <CommandItem
+                                key={referral}
+                                value={referral}
+                                onSelect={(currentValue) => {
+                                  setTempReferralFilter(prev => {
+                                      const selected = prev.includes(currentValue);
+                                      if (selected) {
+                                          return prev.filter((r) => r !== currentValue);
+                                      } else {
+                                          return [...prev, currentValue];
+                                      }
+                                  });
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    tempReferralFilter.includes(referral) ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {referral}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                       <div className="p-2 border-t flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => {
+                                setTempReferralFilter([]);
+                                setReferralFilter([]);
+                            }}>Clear All</Button>
+                            <Button size="sm" onClick={() => {
+                                setReferralFilter(tempReferralFilter);
+                                setOpenReferralPopover(false);
+                            }}>Apply</Button>
+                        </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
+                {referralFilter.length > 0 && (
+                  <div className="pt-2 flex flex-wrap gap-1 items-center">
+                      {referralFilter.map((referral) => (
+                          <Badge
+                              key={referral}
+                              variant="secondary"
+                              className="flex items-center gap-1"
+                          >
+                              {referral}
+                              <button
+                                  type="button"
+                                  aria-label={`Remove ${referral} filter`}
+                                  onClick={() => setReferralFilter(referralFilter.filter((r) => r !== referral))}
+                                  className="ml-1 rounded-full p-0.5 hover:bg-background/50 focus:outline-none focus:ring-1 focus:ring-ring"
+                              >
+                                  <X className="h-3 w-3" />
+                              </button>
+                          </Badge>
+                      ))}
+                       <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto py-0.5 px-1 text-xs text-muted-foreground hover:bg-transparent"
+                          onClick={() => setReferralFilter([])}
+                      >
+                          Clear all
+                      </Button>
+                  </div>
+              )}
             </div>
             <div className="flex flex-wrap gap-2 shrink-0">
                 <Button onClick={handleSyncMasterList} disabled={isSyncing || areBeneficiariesLoading} variant="outline">
@@ -300,7 +467,7 @@ export default function BeneficiariesPage() {
               <Table>
                   <TableHeader>
                       <TableRow className="bg-muted/50">
-                          <SortableHeader sortKey="srNo">#</SortableHeader>
+                          <SortableHeader sortKey="srNo" className="w-[100px]">#</SortableHeader>
                           <SortableHeader sortKey="name">Name</SortableHeader>
                           <SortableHeader sortKey="phone">Phone</SortableHeader>
                           <SortableHeader sortKey="address">Address</SortableHeader>
@@ -324,44 +491,18 @@ export default function BeneficiariesPage() {
                           ))
                       ) : paginatedBeneficiaries.length > 0 ? (
                           paginatedBeneficiaries.map((beneficiary, index) => (
-                          <TableRow key={beneficiary.id} onClick={() => handleEdit(beneficiary)} className="cursor-pointer">
-                              <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
-                              <TableCell className="font-medium">{beneficiary.name}</TableCell>
-                              <TableCell>{beneficiary.phone}</TableCell>
-                              <TableCell className="truncate max-w-xs">{beneficiary.address}</TableCell>
-                              <TableCell>
-                                  <Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'}>{beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}</Badge>
-                              </TableCell>
-                              <TableCell>
-                                  <Badge variant={beneficiary.status === 'Verified' ? 'success' : beneficiary.status === 'Pending' ? 'secondary' : 'outline'}>{beneficiary.status}</Badge>
-                              </TableCell>
-                              {(canUpdate || canDelete) && (
-                              <TableCell className="text-right">
-                                  <DropdownMenu>
-                                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                          <Button variant="ghost" size="icon">
-                                              <MoreHorizontal className="h-4 w-4" />
-                                          </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent align="end">
-                                          {canUpdate && (
-                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(beneficiary)}}>
-                                                  <Edit className="mr-2 h-4 w-4" />
-                                                  View / Edit
-                                              </DropdownMenuItem>
-                                          )}
-                                          {canDelete && <DropdownMenuSeparator />}
-                                          {canDelete && (
-                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleDeleteClick(beneficiary.id)}} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
-                                                  <Trash2 className="mr-2 h-4 w-4" />
-                                                  Delete
-                                              </DropdownMenuItem>
-                                          )}
-                                      </DropdownMenuContent>
-                                  </DropdownMenu>
-                              </TableCell>
-                              )}
-                          </TableRow>
+                            <BeneficiaryRow
+                                key={beneficiary.id}
+                                beneficiary={beneficiary}
+                                index={(currentPage - 1) * itemsPerPage + index + 1}
+                                canUpdate={canUpdate}
+                                canDelete={canDelete}
+                                onView={handleView}
+                                onEdit={handleEdit}
+                                onDelete={handleDeleteClick}
+                                onStatusChange={handleStatusChange}
+                                onZakatToggle={handleZakatToggle}
+                            />
                       ))
                       ) : (
                       <TableRow>
@@ -408,4 +549,119 @@ export default function BeneficiariesPage() {
       </AlertDialog>
     </main>
   );
+}
+
+interface BeneficiaryRowProps {
+    beneficiary: Beneficiary;
+    index: number;
+    canUpdate?: boolean;
+    canDelete?: boolean;
+    onView: (beneficiary: Beneficiary) => void;
+    onEdit: (beneficiary: Beneficiary) => void;
+    onDelete: (id: string) => void;
+    onStatusChange: (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => void;
+    onZakatToggle: (beneficiary: Beneficiary) => void;
+}
+
+const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, onStatusChange, onZakatToggle }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
+        <div>
+            <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">{label}</p>
+            <p className="text-sm font-medium pt-1">{value || 'N/A'}</p>
+        </div>
+    );
+    
+    return (
+        <React.Fragment>
+            <TableRow className="bg-background hover:bg-accent/50 data-[state=open]:bg-accent/50 cursor-pointer" onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? 'open' : 'closed'}>
+                <TableCell className="w-[100px]">
+                     <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 data-[state=open]:bg-accent" data-state={isOpen ? 'open' : 'closed'}>
+                            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
+                        <span>{index}</span>
+                    </div>
+                </TableCell>
+                <TableCell className="font-medium">{beneficiary.name}</TableCell>
+                <TableCell>{beneficiary.phone}</TableCell>
+                <TableCell className="truncate max-w-xs">{beneficiary.address}</TableCell>
+                <TableCell>
+                    <Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'}>{beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}</Badge>
+                </TableCell>
+                <TableCell>
+                    <Badge variant={beneficiary.status === 'Verified' ? 'success' : beneficiary.status === 'Pending' ? 'secondary' : 'outline'}>{beneficiary.status}</Badge>
+                </TableCell>
+                {(canUpdate || canDelete) && (
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onView(beneficiary)}><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
+                            {canUpdate && <DropdownMenuItem onClick={() => onEdit(beneficiary)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
+                            {canUpdate && <DropdownMenuSeparator />}
+                             {canUpdate && (
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger>
+                                        <ChevronsUpDown className="mr-2 h-4 w-4" />
+                                        <span>Change Status</span>
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuRadioGroup
+                                                value={beneficiary.status}
+                                                onValueChange={(newStatus) => onStatusChange(beneficiary, newStatus as BeneficiaryStatus)}
+                                            >
+                                                <DropdownMenuRadioItem value="Pending"><Hourglass className="mr-2"/>Pending</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2"/>Verified</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2"/>Given</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2"/>Hold</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2"/>Need More Details</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
+                                </DropdownMenuSub>
+                            )}
+                             {canUpdate && (
+                                <DropdownMenuItem onClick={() => onZakatToggle(beneficiary)}>
+                                    {beneficiary.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                                    <span>{beneficiary.isEligibleForZakat ? 'Mark as Not Eligible' : 'Mark as Zakat Eligible'}</span>
+                                </DropdownMenuItem>
+                            )}
+                            {canDelete && <DropdownMenuSeparator />}
+                            {canDelete && (
+                                <DropdownMenuItem onClick={() => onDelete(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                </DropdownMenuItem>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </TableCell>
+                )}
+            </TableRow>
+             {isOpen && (
+                 <TableRow className="bg-muted/20 hover:bg-muted/30">
+                    <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="p-0">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 p-4">
+                            <DetailItem label="Address" value={beneficiary.address} />
+                            <DetailItem label="Occupation" value={beneficiary.occupation} />
+                            <DetailItem label="Family" value={`Total: ${beneficiary.members}, Earning: ${beneficiary.earningMembers}, M: ${beneficiary.male}, F: ${beneficiary.female}`} />
+                            <DetailItem label="ID Proof" value={`${beneficiary.idProofType || 'N/A'} - ${beneficiary.idNumber || 'N/A'}`} />
+                            <DetailItem label="Date Added" value={beneficiary.addedDate} />
+                             {beneficiary.isEligibleForZakat && (
+                                <DetailItem label="Zakat Allocation" value={`₹${(beneficiary.zakatAllocation || 0).toFixed(2)}`} />
+                             )}
+                            {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-3"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
+                        </div>
+                    </TableCell>
+                </TableRow>
+            )}
+        </React.Fragment>
+    );
 }
