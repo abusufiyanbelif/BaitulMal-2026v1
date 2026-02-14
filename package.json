@@ -18,7 +18,8 @@
     "check:db": "tsx scripts/check-db.ts",
     "check:storage": "tsx scripts/check-storage.ts",
     "setup:storage": "tsx scripts/setup-storage.ts",
-    "fix:iam": "tsx scripts/fix:iam.ts"
+    "fix:iam": "tsx scripts/fix:iam.ts",
+    "clean:next": "rm -rf .next"
   },
   "dependencies": {
     "@dataconnect/admin-generated": "file:src/dataconnect-admin-generated",
