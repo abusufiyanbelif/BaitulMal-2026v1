@@ -110,7 +110,7 @@ export default function CreateCampaignPage() {
             const file = imageFile[0];
             const { default: Resizer } = await import('react-image-file-resizer');
             const resizedBlob = await new Promise<Blob>((resolve) => {
-                Resizer.imageFileResizer(file, 1280, 400, 'PNG', 85, 0, blob => resolve(blob as Blob), 'blob');
+                Resizer.imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             
             const filePath = `campaigns/${newCampaignId}/background.png`;

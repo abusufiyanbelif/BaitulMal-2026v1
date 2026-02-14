@@ -1,3 +1,4 @@
+
 'use server';
 
 import type { Beneficiary } from '@/lib/types';
@@ -7,7 +8,7 @@ const notImplemented = { success: false, message: 'Admin actions are temporarily
 
 export async function createMasterBeneficiaryAction(data: Omit<Beneficiary, 'id' | 'createdAt' | 'createdById' | 'createdByName'>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
     console.error("createMasterBeneficiaryAction is not implemented");
-    return notImplemented;
+    return { ...notImplemented, id: undefined };
 }
 
 export async function updateMasterBeneficiaryAction(beneficiaryId: string, data: Partial<Beneficiary>, updatedBy: {id: string, name: string}): Promise<{ success: boolean; message: string }> {

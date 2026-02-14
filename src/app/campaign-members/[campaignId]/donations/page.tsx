@@ -191,7 +191,7 @@ export default function DonationsPage() {
 
     if (screenshotUrls.length > 0) {
         const deletePromises = screenshotUrls.map(url => 
-            deleteObject(storageRef(storage, url)).catch(err => {
+            deleteObject(storageRef(storage, url)).catch((err: any) => {
                 if (err.code !== 'storage/object-not-found') {
                     console.warn(`Failed to delete screenshot from storage: ${url}`, err);
                 }
@@ -201,7 +201,7 @@ export default function DonationsPage() {
     }
     
     deleteDoc(docRef)
-        .catch(async (serverError) => {
+        .catch(async (serverError: any) => {
             const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'delete' });
             errorEmitter.emit('permission-error', permissionError);
         })
@@ -235,7 +235,7 @@ export default function DonationsPage() {
                 if(file) {
                     const { default: Resizer } = await import('react-image-file-resizer');
                     const resizedBlob = await new Promise<Blob>((resolve) => {
-                         Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
+                         Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                     });
                     const filePath = `donations/${docRef.id}/${transaction.id}.png`;
                     const fileRef = storageRef(storage, filePath);
@@ -373,7 +373,7 @@ export default function DonationsPage() {
     return sortableItems;
   }, [donations, searchTerm, statusFilter, typeFilter, donationTypeFilter, sortConfig]);
 
-  const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading || areAllCampaignsLoading || areAllLeadsLoading;
+  const isLoading = isLeadLoading || areDonationsLoading || isProfileLoading || areAllCampaignsLoading || areAllLeadsLoading;
   
   if (isLoading) {
     return (

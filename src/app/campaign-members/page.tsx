@@ -388,7 +388,7 @@ export default function CampaignPage() {
       <main className="container mx-auto p-2 sm:p-4">
         <div className="mb-4">
           <Button variant="outline" asChild>
-            <Link href="/">
+            <Link href="/dashboard">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Home
             </Link>
@@ -540,4 +540,3 @@ export default function CampaignPage() {
     </>
   );
 }
-

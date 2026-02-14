@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useStorage } from '@/firebase';
@@ -75,7 +75,7 @@ export default function UserDetailsPage() {
     let idProofUrl = user?.idProofUrl || '';
     try {
         if (data.idProofDeleted && idProofUrl) {
-            await deleteObject(storageRef(storage, idProofUrl)).catch(err => {
+            await deleteObject(storageRef(storage, idProofUrl)).catch((err: any) => {
                 if (err.code !== 'storage/object-not-found') {
                     console.warn("Failed to delete old ID proof:", err);
                 }
@@ -90,7 +90,7 @@ export default function UserDetailsPage() {
             const resizedBlob = await new Promise<Blob>((resolve) => {
                  Resizer.imageFileResizer(
                     file, 1024, 1024, 'PNG', 100, 0,
-                    blob => {
+                    (blob: any) => {
                         resolve(blob as Blob);
                     }, 'blob'
                 );
@@ -104,7 +104,7 @@ export default function UserDetailsPage() {
             const uploadResult = await uploadBytes(fileRef, resizedBlob);
             idProofUrl = await getDownloadURL(uploadResult.ref);
         }
-    } catch (uploadError) {
+    } catch (uploadError: any) {
          console.error("Error during file upload:", uploadError);
          toast({ title: 'File Upload Error', description: 'Could not upload ID proof file. Other details were not saved.', variant: 'destructive' });
          setIsSubmitting(false);

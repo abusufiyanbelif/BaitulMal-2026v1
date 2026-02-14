@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useMemo } from 'react';
@@ -172,10 +173,13 @@ export function DonationSummary() {
     <div className="grid gap-6 md:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-6 w-6 text-primary" />
-            Yearly Financial Summary
-          </CardTitle>
+          <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-6 w-6 text-primary" />
+                Yearly Financial Summary
+              </CardTitle>
+              <span className="text-2xl font-bold">{summaryData?.sortedYearlyData[0]?.year || new Date().getFullYear()}</span>
+          </div>
           <CardDescription>A year-by-year breakdown of funds received against fundraising goals.</CardDescription>
         </CardHeader>
         <CardContent>

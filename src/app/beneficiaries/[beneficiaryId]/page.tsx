@@ -65,7 +65,7 @@ export default function BeneficiaryDetailsPage() {
             return;
         }
 
-        const initiativePromises = beneficiarySubcollectionDocs.docs.map(async (benDoc: QueryDocumentSnapshot) => {
+        const initiativePromises = beneficiarySubcollectionDocs.docs.map(async (benDoc: QueryDocumentSnapshot<any>) => {
             if (benDoc.ref.path.startsWith('beneficiaries/')) return null;
 
             const parentRef = benDoc.ref.parent.parent;
