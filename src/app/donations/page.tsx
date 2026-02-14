@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, setDoc, deleteField } from 'firebase/firestore';
 import type { Donation, Campaign, Lead, TransactionDetail } from '@/lib/types';
@@ -72,16 +72,16 @@ export default function DonationsPage() {
   const pathname = usePathname();
   const { userProfile, isLoading: isProfileLoading } = useSession();
   
-  const donationsCollectionRef = useMemo(() => {
+  const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return collection(firestore, 'donations');
   }, [firestore]);
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
 
-  const campaignsCollectionRef = useMemo(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
+  const campaignsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
   const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
 
-  const leadsCollectionRef = useMemo(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
+  const leadsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
   const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -862,3 +862,5 @@ export default function DonationsPage() {
     </>
   );
 }
+
+    

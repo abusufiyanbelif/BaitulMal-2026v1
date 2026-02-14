@@ -4,7 +4,7 @@
 
 import React, { useMemo, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useFirestore, useDoc, useCollection } from '@/firebase';
+import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { doc, collection, query, where, DocumentReference } from 'firebase/firestore';
@@ -81,10 +81,10 @@ export default function PublicCampaignSummaryPage() {
     const summaryRef = useRef<HTMLDivElement>(null);
 
     // Data fetching
-    const campaignDocRef = useMemo(() => (firestore && campaignId) ? doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign> : null, [firestore, campaignId]);
-    const beneficiariesCollectionRef = useMemo(() => (firestore && campaignId) ? collection(firestore, `campaigns/${campaignId}/beneficiaries`) : null, [firestore, campaignId]);
+    const campaignDocRef = useMemoFirebase(() => (firestore && campaignId) ? doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign> : null, [firestore, campaignId]);
+    const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && campaignId) ? collection(firestore, `campaigns/${campaignId}/beneficiaries`) : null, [firestore, campaignId]);
     
-    const allDonationsCollectionRef = useMemo(() => {
+    const allDonationsCollectionRef = useMemoFirebase(() => {
         if (!firestore) return null;
         return collection(firestore, 'donations');
     }, [firestore]);
@@ -160,7 +160,7 @@ export default function PublicCampaignSummaryPage() {
         return {
             totalCollectedForGoal,
             fundingProgress,
-            targetAmount: campaign.targetAmount || 0,
+            targetAmount: fundingGoal,
             remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal),
             amountsByCategory,
         };
@@ -540,3 +540,5 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+
+    

@@ -49,3 +49,5 @@ export function SessionProvider({ authUser, children }: { authUser?: User | null
     </SessionContext.Provider>
   );
 }
+
+    

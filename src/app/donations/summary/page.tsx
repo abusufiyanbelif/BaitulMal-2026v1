@@ -4,7 +4,7 @@
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
-import { useFirestore, useCollection } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, collectionGroup, query } from 'firebase/firestore';
 import Link from 'next/link';
@@ -100,7 +100,7 @@ export default function DonationsSummaryPage() {
         setIsClient(true);
     }, []);
 
-    const donationsCollectionRef = useMemo(() => {
+    const donationsCollectionRef = useMemoFirebase(() => {
         if (!firestore) return null;
         return collection(firestore, 'donations');
     }, [firestore]);
@@ -456,3 +456,4 @@ export default function DonationsSummaryPage() {
 }
 
 
+    

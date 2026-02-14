@@ -4,7 +4,7 @@
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useFirestore, useDoc, useCollection, errorEmitter, FirestorePermissionError, useStorage } from '@/firebase';
+import { useFirestore, useDoc, useCollection, errorEmitter, FirestorePermissionError, useStorage, useMemoFirebase } from '@/firebase';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import type { SecurityRuleContext } from '@/firebase';
@@ -89,10 +89,10 @@ export default function CampaignSummaryPage() {
     }, []);
 
     // Data fetching
-    const campaignDocRef = useMemo(() => (firestore && campaignId) ? doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign> : null, [firestore, campaignId]);
-    const beneficiariesCollectionRef = useMemo(() => (firestore && campaignId) ? collection(firestore, `campaigns/${campaignId}/beneficiaries`) : null, [firestore, campaignId]);
+    const campaignDocRef = useMemoFirebase(() => (firestore && campaignId) ? doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign> : null, [firestore, campaignId]);
+    const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && campaignId) ? collection(firestore, `campaigns/${campaignId}/beneficiaries`) : null, [firestore, campaignId]);
     
-    const allDonationsCollectionRef = useMemo(() => {
+    const allDonationsCollectionRef = useMemoFirebase(() => {
         if (!firestore) return null;
         return collection(firestore, 'donations');
     }, [firestore]);
@@ -179,7 +179,7 @@ export default function CampaignSummaryPage() {
                 }
                 const { default: Resizer } = await import('react-image-file-resizer');
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                    Resizer.imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, blob => resolve(blob as Blob), 'blob');
+                    Resizer.imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = `campaigns/${campaignId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
@@ -938,3 +938,5 @@ Your contribution, big or small, makes a huge difference.
     );
 }
 
+
+    

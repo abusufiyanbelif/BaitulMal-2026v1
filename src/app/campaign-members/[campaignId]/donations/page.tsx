@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, where, setDoc, DocumentReference, deleteField } from 'firebase/firestore';
@@ -73,13 +73,13 @@ export default function DonationsPage() {
   const { toast } = useToast();
   const { userProfile, isLoading: isProfileLoading } = useSession();
   
-  const campaignDocRef = useMemo(() => {
+  const campaignDocRef = useMemoFirebase(() => {
     if (!firestore || !campaignId) return null;
     return doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign>;
   }, [firestore, campaignId]);
   const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
   
-  const allDonationsCollectionRef = useMemo(() => {
+  const allDonationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return collection(firestore, 'donations');
   }, [firestore]);
@@ -97,10 +97,10 @@ export default function DonationsPage() {
     });
   }, [allDonations, campaignId]);
 
-  const allCampaignsCollectionRef = useMemo(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
+  const allCampaignsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
   const { data: allCampaigns, isLoading: areAllCampaignsLoading } = useCollection<Campaign>(allCampaignsCollectionRef);
 
-  const allLeadsCollectionRef = useMemo(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
+  const allLeadsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
   const { data: allLeads, isLoading: areAllLeadsLoading } = useCollection<Lead>(allLeadsCollectionRef);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -706,3 +706,5 @@ export default function DonationsPage() {
     </>
   );
 }
+
+    

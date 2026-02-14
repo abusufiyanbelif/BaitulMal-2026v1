@@ -2,7 +2,7 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
-import { useFirestore, useCollection, useDoc } from '@/firebase';
+import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, query, where, DocumentReference, doc } from 'firebase/firestore';
 import type { Donation, Campaign, Lead } from '@/lib/types';
 import { useSession } from '@/hooks/use-session';
@@ -20,13 +20,13 @@ export default function DonationsSummaryPage() {
   const firestore = useFirestore();
   const { userProfile, isLoading: isProfileLoading } = useSession();
   
-  const campaignDocRef = useMemo(() => {
+  const campaignDocRef = useMemoFirebase(() => {
     if (!firestore || !campaignId) return null;
     return doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign>;
   }, [firestore, campaignId]);
   const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
   
-  const allDonationsCollectionRef = useMemo(() => {
+  const allDonationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return collection(firestore, 'donations');
   }, [firestore]);
@@ -230,7 +230,7 @@ export default function DonationsSummaryPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Grand Total</CardTitle></CardHeader>
-                    <CardContent><div className="text-2xl font-bold">₹{grandTotal.toLocaleString('en-IN')}</div></CardContent>
+                    <CardContent className="p-2"><div className="text-2xl font-bold">₹{grandTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Fitra</CardTitle></CardHeader>
@@ -267,3 +267,5 @@ export default function DonationsSummaryPage() {
     </>
   );
 }
+
+    
