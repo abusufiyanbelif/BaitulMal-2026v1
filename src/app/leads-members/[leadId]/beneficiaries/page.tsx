@@ -254,6 +254,7 @@ export default function BeneficiariesPage() {
         await batch.commit();
         
         toast({ title: 'Success', description: `Beneficiary ${editingBeneficiary ? 'updated' : 'added'} and lead total updated.`, variant: 'success' });
+        forceRefetch();
         forceRefetchLead();
 
     } catch (error: any) {

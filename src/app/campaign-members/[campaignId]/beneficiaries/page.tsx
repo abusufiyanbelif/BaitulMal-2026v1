@@ -407,6 +407,7 @@ export default function BeneficiariesPage() {
       await batch.commit();
   
       toast({ title: 'Success', description: `Beneficiary ${editingBeneficiary ? 'updated' : 'added'} and campaign total updated.`, variant: 'success' });
+      forceRefetch();
       forceRefetchCampaign();
       setIsFormOpen(false);
       setEditingBeneficiary(null);
