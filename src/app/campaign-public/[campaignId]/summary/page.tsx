@@ -27,15 +27,8 @@ import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/ty
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, LogIn, Share2, Download, Hourglass, Wallet, Users, Gift } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useDownloadAs } from '@/hooks/use-download-as';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
 import {
@@ -77,7 +70,6 @@ export default function PublicCampaignSummaryPage() {
     const { toast } = useToast();
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
-    const { download } = useDownloadAs();
     
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
@@ -225,17 +217,6 @@ Your contribution, big or small, makes a huge difference.
         setIsShareDialogOpen(true);
     };
 
-    const handleDownload = (format: 'png' | 'pdf') => {
-        download(format, {
-            contentRef: summaryRef,
-            documentTitle: `Campaign Summary: ${campaign?.name || 'Summary'}`,
-            documentName: `campaign-summary-${campaignId}`,
-            brandingSettings,
-            paymentSettings
-        });
-    };
-
-
     if (isLoading) {
         return (
             <main className="flex items-center justify-center min-h-screen p-4">
@@ -290,18 +271,6 @@ Your contribution, big or small, makes a huge difference.
 
             <div className="flex justify-end items-center mb-4 flex-wrap gap-2">
                  <div className="flex gap-2">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline">
-                                <Download className="mr-2 h-4 w-4" />
-                                Download
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => handleDownload('png')}>Download as Image (PNG)</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDownload('pdf')}>Download as PDF</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                     <Button onClick={handleShare} variant="outline">
                         <Share2 className="mr-2 h-4 w-4" /> Share
                     </Button>

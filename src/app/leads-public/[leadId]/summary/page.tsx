@@ -27,10 +27,9 @@ import type { Lead, Beneficiary, Donation, DonationCategory } from '@/lib/types'
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, LogIn, Share2, Download, Hourglass, Wallet, Users, Gift } from 'lucide-react';
-import { ShareDialog } from '@/components/share-dialog';
+import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useDownloadAs } from '@/hooks/use-download-as';
+import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
 import {
   Table,
@@ -51,8 +50,6 @@ import {
 import type { ChartConfig } from '@/components/ui/chart';
 import Image from 'next/image';
 import placeholderImages from '@/app/lib/placeholder-images.json';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-
 
 const donationCategoryChartConfig = {
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
@@ -73,7 +70,6 @@ export default function PublicLeadSummaryPage() {
     const { toast } = useToast();
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
-    const { download } = useDownloadAs();
     
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
@@ -207,17 +203,6 @@ Your contribution, big or small, makes a huge difference.
         setIsShareDialogOpen(true);
     };
 
-    const handleDownload = (format: 'png' | 'pdf') => {
-        download(format, {
-            contentRef: summaryRef,
-            documentTitle: `Lead Summary: ${lead?.name || 'Summary'}`,
-            documentName: `lead-summary-${leadId}`,
-            brandingSettings,
-            paymentSettings
-        });
-    };
-
-
     if (isLoading) {
         return (
             <main className="flex items-center justify-center min-h-screen p-4">
@@ -272,18 +257,6 @@ Your contribution, big or small, makes a huge difference.
 
             <div className="flex justify-end items-center mb-4 flex-wrap gap-2">
                  <div className="flex gap-2">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline">
-                                <Download className="mr-2 h-4 w-4" />
-                                Download
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => handleDownload('png')}>Download as Image (PNG)</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDownload('pdf')}>Download as PDF</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                     <Button onClick={handleShare} variant="outline">
                         <Share2 className="mr-2 h-4 w-4" /> Share
                     </Button>
