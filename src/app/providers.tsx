@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@/app/auth-provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
@@ -19,7 +19,9 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <FirebaseClientProvider>
-      <ProgressBar />
+      <Suspense fallback={null}>
+        <ProgressBar />
+      </Suspense>
       <AuthProvider>
         <FirebaseContentWrapper>
           <div className="relative">
