@@ -74,9 +74,6 @@
     "xlsx": "^0.18.5",
     "zod": "^3.23.8"
   },
-  "overrides": {
-    "firebase": "12.8.0"
-  },
   "devDependencies": {
     "@types/node": "^20",
     "@types/nprogress": "^0.2.3",
