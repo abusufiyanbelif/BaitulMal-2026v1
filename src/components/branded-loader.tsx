@@ -1,3 +1,4 @@
+
 'use client';
 import { useBranding } from '@/hooks/use-branding';
 import { TempLogo } from '@/components/temp-logo';
@@ -37,7 +38,7 @@ export function BrandedLoader() {
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background">
             <div className="relative flex items-center justify-center">
                 <div 
-                    className="animate-pulse-scale flex items-center justify-center"
+                    className="animate-zoom-in-out flex items-center justify-center"
                     style={{ 
                         width: `${logoWidth}px`, 
                         height: `${logoHeight}px`
