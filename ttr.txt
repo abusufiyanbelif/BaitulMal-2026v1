@@ -1,0 +1,1 @@
+src/app/leads-members/[leadId]/donations/page.tsx(521,40): error TS17008: JSX element 'CollapsibleTrigger' has no corresponding closing tag.

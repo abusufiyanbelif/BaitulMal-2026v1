@@ -65,35 +65,35 @@ export default function BeneficiaryDetailsPage() {
 
       const findLinks = async () => {
           setIsLinksLoading(true);
-          const foundLinks: LinkedInitiative[] = [];
           const allItems = [
               ...(campaigns || []).map(c => ({ ...c, itemType: 'Campaign' as const })),
               ...(leads || []).map(l => ({ ...l, itemType: 'Lead' as const }))
           ];
 
-          for (const item of allItems) {
-              const subcollectionPath = item.itemType === 'Campaign' ? 'campaigns' : 'leads';
-              const benRef = doc(firestore, subcollectionPath, item.id, 'beneficiaries', beneficiary.id);
-              try {
-                const benSnap = await getDoc(benRef);
-                if (benSnap.exists()) {
-                    const benData = benSnap.data() as Beneficiary;
-                    foundLinks.push({
-                        id: item.id,
-                        name: item.name,
-                        type: item.itemType,
-                        status: item.status,
-                        kitAmount: benData.kitAmount || 0,
-                        beneficiaryStatus: benData.status || 'Pending'
-                    });
-                }
-              } catch (e) {
-                // This can happen if rules prevent reading from a subcollection the user has no access to.
-                // We'll just skip it.
-                console.warn(`Could not check link for beneficiary in ${subcollectionPath}/${item.id}:`, e);
+          const checkPromises = allItems.map(async (item) => {
+            const subcollectionPath = item.itemType === 'Campaign' ? 'campaigns' : 'leads';
+            const benRef = doc(firestore, subcollectionPath, item.id, 'beneficiaries', beneficiary.id);
+            try {
+              const benSnap = await getDoc(benRef);
+              if (benSnap.exists()) {
+                const benData = benSnap.data() as Beneficiary;
+                return {
+                  id: item.id,
+                  name: item.name,
+                  type: item.itemType,
+                  status: item.status,
+                  kitAmount: benData.kitAmount || 0,
+                  beneficiaryStatus: benData.status || 'Pending'
+                };
               }
-          }
-          setLinkedInitiatives(foundLinks);
+            } catch (e) {
+              console.warn(`Could not check link for beneficiary in ${subcollectionPath}/${item.id}:`, e);
+            }
+            return null;
+          });
+
+          const results = await Promise.all(checkPromises);
+          setLinkedInitiatives(results.filter((link): link is LinkedInitiative => link !== null));
           setIsLinksLoading(false);
       };
 
