@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -42,12 +43,55 @@ export function OverallFundingSummary() {
   const summaryData = useMemo(() => {
     if (!campaigns || !leads || !donations) return null;
 
-    const totalTarget = [...campaigns, ...leads].reduce((sum, item) => sum + (item.targetAmount || 0), 0);
-    
-    // Sum up all verified donations, regardless of what they are linked to.
-    const totalRaised = donations.reduce((sum, donation) => sum + donation.amount, 0);
+    const allItems = [...campaigns, ...leads];
+    const totalTarget = allItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
+    const grandTotalRaised = donations.reduce((sum, d) => sum + d.amount, 0);
 
-    const progress = totalTarget > 0 ? Math.min((totalRaised / totalTarget) * 100, 100) : 0;
+    let totalCollectedForGoals = 0;
+
+    allItems.forEach(item => {
+      const itemDonations = donations.filter(d => 
+        d.linkSplit?.some(link => link.linkId === item.id) || (d as any).campaignId === item.id
+      );
+
+      const collectedForItemGoal = itemDonations.reduce((itemSum, donation) => {
+        let amountForThisItem = 0;
+        const itemLink = donation.linkSplit?.find(l => l.linkId === item.id);
+        
+        if (itemLink) {
+          amountForThisItem = itemLink.amount;
+        } else if ((!donation.linkSplit || donation.linkSplit.length === 0) && (donation as any).campaignId === item.id) {
+          amountForThisItem = donation.amount;
+        } else {
+          return itemSum;
+        }
+
+        if (amountForThisItem === 0) {
+            return itemSum;
+        }
+
+        const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
+        const proportionForThisItem = amountForThisItem / totalDonationAmount;
+
+        const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
+            ? donation.typeSplit
+            : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
+        
+        const applicableAmountInDonation = typeSplits.reduce((acc, split) => {
+            const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
+            if (item.allowedDonationTypes?.includes(category)) {
+                return acc + split.amount;
+            }
+            return acc;
+        }, 0);
+        
+        return itemSum + (applicableAmountInDonation * proportionForThisItem);
+      }, 0);
+
+      totalCollectedForGoals += collectedForItemGoal;
+    });
+
+    const progress = totalTarget > 0 ? Math.min((totalCollectedForGoals / totalTarget) * 100, 100) : 0;
     
     const chartData = [
       {
@@ -59,7 +103,8 @@ export function OverallFundingSummary() {
 
     return {
       totalTarget,
-      totalRaised,
+      grandTotalRaised,
+      totalCollectedForGoals,
       progress,
       chartData,
     };
@@ -128,15 +173,21 @@ export function OverallFundingSummary() {
             </div>
              <div className="space-y-4 text-center md:text-left">
                 <div>
-                    <p className="text-sm text-muted-foreground">Total Raised</p>
+                    <p className="text-sm text-muted-foreground">Total Raised for Goals</p>
                     <p className="text-3xl font-bold">
-                    ₹{summaryData.totalRaised.toLocaleString('en-IN')}
+                    ₹{summaryData.totalCollectedForGoals.toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Combined Target</p>
                     <p className="text-3xl font-bold">
                     ₹{summaryData.totalTarget.toLocaleString('en-IN')}
+                    </p>
+                </div>
+                <div>
+                    <p className="text-sm text-muted-foreground">Grand Total Received (All Types)</p>
+                    <p className="text-3xl font-bold">
+                    ₹{summaryData.grandTotalRaised.toLocaleString('en-IN')}
                     </p>
                 </div>
             </div>

@@ -476,11 +476,19 @@ Your contribution, big or small, makes a huge difference.
                             ₹{summaryData?.totalCollectedForGoal.toLocaleString('en-IN') ?? 0} of ₹{(summaryData?.targetAmount ?? 0).toLocaleString('en-IN')} funded from selected donation types.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                     <CardContent>
                         <Progress value={summaryData?.fundingProgress || 0} />
-                        {summaryData && summaryData.pendingDonations > 0 && (
-                            <p className="mt-2 text-xs text-muted-foreground">(+ ₹{summaryData.pendingDonations.toLocaleString('en-IN')} pending verification)</p>
-                        )}
+                        <div className="mt-4 space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Pending Verification</span>
+                                <span className="font-medium">₹{summaryData?.pendingDonations.toLocaleString('en-IN') ?? 0}</span>
+                            </div>
+                            <Separator className="my-2"/>
+                            <div className="flex justify-between text-base font-semibold">
+                                <span>Grand Total Received for Lead</span>
+                                <span className="text-primary">₹{summaryData?.fundTotals.grandTotal.toLocaleString('en-IN') ?? 0}</span>
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
 

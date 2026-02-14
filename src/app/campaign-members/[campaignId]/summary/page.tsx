@@ -244,6 +244,10 @@ export default function CampaignSummaryPage() {
                 return; // Skip this donation if not related
             }
 
+            if (amountForThisCampaign === 0) {
+                return;
+            }
+
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
             const proportionForThisCampaign = amountForThisCampaign / totalDonationAmount;
 
@@ -674,14 +678,16 @@ Your contribution, big or small, makes a huge difference.
                         </CardHeader>
                         <CardContent>
                             <Progress value={summaryData?.fundingProgress || 0} />
-                            <div className="mt-2 text-xs text-muted-foreground">
-                                {summaryData && summaryData.targetAmount === 0 ? (
-                                    'Set a Target Amount or sync beneficiary kit amounts from the "Item Lists" tab to see progress.'
-                                ) : summaryData && summaryData.pendingDonations > 0 ? (
-                                    <span>(+ ₹{summaryData.pendingDonations.toLocaleString('en-IN')} pending verification)</span>
-                                ) : (
-                                    <span>&nbsp;</span>
-                                )}
+                            <div className="mt-4 space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Pending Verification</span>
+                                    <span className="font-medium">₹{summaryData?.pendingDonations.toLocaleString('en-IN') ?? 0}</span>
+                                </div>
+                                <Separator className="my-2"/>
+                                <div className="flex justify-between text-base font-semibold">
+                                    <span>Grand Total Received for Campaign</span>
+                                    <span className="text-primary">₹{summaryData?.fundTotals.grandTotal.toLocaleString('en-IN') ?? 0}</span>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
