@@ -1,5 +1,4 @@
 
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -116,40 +115,45 @@ export default function PublicLeadPage() {
   const leadData = useMemo(() => {
     if (!leads || !donations) return [];
 
-    const collectedAmounts = new Map<string, number>();
-    const leadsById = new Map(leads.map(l => [l.id, l]));
-
+    // Create a map of donations by lead ID for efficient lookup
+    const donationsByLead = new Map<string, Donation[]>();
     donations.forEach(donation => {
-        const links = donation.linkSplit || [];
-        
-        links.forEach(link => {
-            if (link.linkType !== 'lead') return;
+        if (donation.linkSplit) {
+            donation.linkSplit.forEach(link => {
+                if (link.linkType === 'lead') {
+                    if (!donationsByLead.has(link.linkId)) {
+                        donationsByLead.set(link.linkId, []);
+                    }
+                    donationsByLead.get(link.linkId)!.push(donation);
+                }
+            });
+        }
+    });
 
-            const lead = leadsById.get(link.linkId);
-            if (!lead) return;
+    return leads.map(lead => {
+        const relevantDonations = donationsByLead.get(lead.id) || [];
+        const collected = relevantDonations.reduce((sum, donation) => {
+            const leadLink = donation.linkSplit?.find(l => l.linkId === lead.id);
+            if (!leadLink) return sum;
 
             const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
-            const proportionForThisLead = link.amount / totalDonationAmount;
+            const proportionForThisLead = leadLink.amount / totalDonationAmount;
 
             const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
                 ? donation.typeSplit
                 : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
-            
-            const applicableAmount = typeSplits.reduce((acc, split) => {
+
+            const totalApplicableAmountInDonation = typeSplits.reduce((acc, split) => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
                 if (lead.allowedDonationTypes?.includes(category as DonationCategory)) {
                     return acc + split.amount;
                 }
                 return acc;
             }, 0);
+            
+            return sum + (totalApplicableAmountInDonation * proportionForThisLead);
+        }, 0);
 
-            const currentCollected = collectedAmounts.get(link.linkId) || 0;
-            collectedAmounts.set(link.linkId, currentCollected + (applicableAmount * proportionForThisLead));
-        });
-    });
-
-    return leads.map(lead => {
-        const collected = collectedAmounts.get(lead.id) || 0;
         const progress = lead.targetAmount && lead.targetAmount > 0 ? (collected / lead.targetAmount) * 100 : 0;
         
         return {
@@ -254,6 +258,12 @@ export default function PublicLeadPage() {
             )}
           </div>
       )}
+    
+     {!isLoading && filteredLeads.length === 0 && (
+        <div className="text-center py-16">
+            <p className="text-muted-foreground">No public leads found matching your criteria.</p>
+        </div>
+    )}
     </main>
   );
 }

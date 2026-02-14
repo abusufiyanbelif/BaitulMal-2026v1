@@ -1,5 +1,4 @@
 
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -106,45 +105,56 @@ export default function PublicCampaignPage() {
 
   const campaignData = useMemo(() => {
     if (!campaigns || !donations) return [];
-
-    const collectedAmounts = new Map<string, number>();
-    const campaignsById = new Map(campaigns.map(c => [c.id, c]));
-
+  
+    // Create a map of donations by campaign ID for efficient lookup
+    const donationsByCampaign = new Map<string, Donation[]>();
     donations.forEach(donation => {
       const links = (donation.linkSplit && donation.linkSplit.length > 0)
         ? donation.linkSplit
-        : donation.campaignId ? [{ linkId: donation.campaignId, amount: donation.amount, linkType: 'campaign' }] : [];
+        : (donation.campaignId ? [{ linkId: donation.campaignId, amount: donation.amount, linkType: 'campaign' }] : []);
       
       links.forEach(link => {
-        if (link.linkType !== 'campaign') return;
-
-        const campaign = campaignsById.get(link.linkId);
-        if (!campaign) return;
-
-        const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
-        const proportionForThisCampaign = link.amount / totalDonationAmount;
-
-        const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
-          ? donation.typeSplit
-          : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
-        
-        const applicableAmount = typeSplits.reduce((acc, split) => {
-          const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-          if (campaign.allowedDonationTypes?.includes(category as DonationCategory)) {
-            return acc + split.amount;
-          }
-          return acc;
-        }, 0);
-
-        const currentCollected = collectedAmounts.get(link.linkId) || 0;
-        collectedAmounts.set(link.linkId, currentCollected + (applicableAmount * proportionForThisCampaign));
+        if(link.linkType === 'campaign') {
+            if (!donationsByCampaign.has(link.linkId)) {
+                donationsByCampaign.set(link.linkId, []);
+            }
+            donationsByCampaign.get(link.linkId)!.push(donation);
+        }
       });
     });
-
+  
     return campaigns.map(campaign => {
-      const collected = collectedAmounts.get(campaign.id) || 0;
-      const targetAmount = campaign.targetAmount || 0;
-      const progress = targetAmount > 0 ? (collected / targetAmount) * 100 : 0;
+      const relevantDonations = donationsByCampaign.get(campaign.id) || [];
+      const collected = relevantDonations.reduce((sum, donation) => {
+        let amountForThisCampaign = 0;
+        if (donation.linkSplit && donation.linkSplit.length > 0) {
+            const campaignLink = donation.linkSplit.find(l => l.linkId === campaign.id);
+            amountForThisCampaign = campaignLink?.amount || 0;
+        } else {
+            amountForThisCampaign = donation.amount;
+        }
+        
+        if (amountForThisCampaign === 0) return sum;
+  
+        const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
+        const proportionForThisCampaign = amountForThisCampaign / totalDonationAmount;
+  
+        const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
+            ? donation.typeSplit
+            : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
+        
+        const totalApplicableAmountInDonation = typeSplits.reduce((acc, split) => {
+            const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
+            if (campaign.allowedDonationTypes?.includes(category as DonationCategory)) {
+                return acc + split.amount;
+            }
+            return acc;
+        }, 0);
+  
+        return sum + (totalApplicableAmountInDonation * proportionForThisCampaign);
+      }, 0);
+  
+      const progress = campaign.targetAmount && campaign.targetAmount > 0 ? (collected / campaign.targetAmount) * 100 : 0;
       
       return {
         ...campaign,
@@ -217,7 +227,7 @@ export default function PublicCampaignPage() {
         </div>
       </div>
 
-      {isLoading ? (
+      {isLoading && (
         <div className="space-y-8">
             <Skeleton className="h-8 w-1/4" />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -228,7 +238,9 @@ export default function PublicCampaignPage() {
               {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
             </div>
         </div>
-      ) : (
+      )}
+      
+      {!isLoading && filteredCampaigns.length > 0 && (
           <div className="space-y-8">
             {(statusFilter === 'All' || statusFilter === 'Active') && (
                 <section>
