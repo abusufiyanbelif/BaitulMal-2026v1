@@ -33,7 +33,7 @@ export default function SettingsLayout({
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-8">
+    <div className="container mx-auto p-4 md:p-8 animate-fade-in-zoom">
        <div className="mb-4">
           <Button variant="outline" asChild>
               <Link href="/dashboard">

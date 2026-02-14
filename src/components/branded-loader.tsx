@@ -24,7 +24,6 @@ export function BrandedLoader() {
         }
     }, [loadingAnimationUrl]);
 
-    // Don't render anything until we know what to render, prevents flash of temp logo.
     if (isBrandingLoading) {
         return <div className="fixed inset-0 z-[9999] bg-background"></div>;
     }
@@ -32,19 +31,14 @@ export function BrandedLoader() {
     const logoWidth = brandingSettings?.logoWidth || 150;
     const logoHeight = brandingSettings?.logoHeight || 75;
     
-    // Make the animation container slightly larger than the logo to frame it
     const animationContainerSize = Math.max(logoWidth, logoHeight) * 1.5;
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background">
             <div className="relative flex items-center justify-center">
-                
-                {/* Logo with its own animation */}
                 <div 
-                    className="animate-pulse flex items-center justify-center"
+                    className="animate-pulse-scale flex items-center justify-center"
                     style={{ 
-                        animationDuration: '2s', 
-                        animationIterationCount: 'infinite',
                         width: `${logoWidth}px`, 
                         height: `${logoHeight}px`
                     }}
@@ -58,14 +52,13 @@ export function BrandedLoader() {
                             className="object-contain"
                             priority
                          />
-                    ) : !loadingAnimationUrl ? ( // Only show TempLogo if no other assets are available
+                    ) : !loadingAnimationUrl ? (
                          <div className="w-40 h-40">
                            <TempLogo />
                          </div>
                     ) : null }
                 </div>
 
-                {/* Animation overlaid */}
                 {loadingAnimationUrl && animationData && (
                     <div 
                         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"

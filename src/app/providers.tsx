@@ -11,6 +11,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { DocuExtractHeader } from '@/components/docu-extract-header';
 import { Watermark } from '@/components/watermark';
 import { cn } from '@/lib/utils';
+import { ProgressBar } from '@/components/progress-bar';
 
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -18,6 +19,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <FirebaseClientProvider>
+      <ProgressBar />
       <AuthProvider>
         <FirebaseContentWrapper>
           <div className="relative">
