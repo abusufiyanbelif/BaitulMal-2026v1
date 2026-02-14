@@ -78,7 +78,7 @@ export default function BeneficiariesPage() {
   
   const beneficiariesCollectionRef = useMemo(() => {
     if (!firestore || !leadId) return null;
-    return collection(firestore, `leads/${leadId}/beneficiaries`);
+    return collection(firestore, 'leads', leadId, 'beneficiaries');
   }, [firestore, leadId]);
   const { data: beneficiaries, isLoading: areBeneficiariesLoading, forceRefetch } = useCollection<Beneficiary>(beneficiariesCollectionRef);
 
@@ -137,7 +137,7 @@ export default function BeneficiariesPage() {
     setIsDeleteDialogOpen(false);
 
     const batch = writeBatch(firestore);
-    const beneficiaryDocRef = doc(firestore, `leads/${leadId}/beneficiaries`, beneficiaryToDelete);
+    const beneficiaryDocRef = doc(firestore, 'leads', leadId, 'beneficiaries', beneficiaryToDelete);
     const leadDocRef = doc(firestore, 'leads', leadId);
 
     const amountToSubtract = beneficiaryData.kitAmount || 0;
@@ -200,7 +200,7 @@ export default function BeneficiariesPage() {
     const leadBeneficiaryDocRef = doc(firestore, 'leads', leadId, 'beneficiaries', newBeneficiaryId);
     const masterBeneficiaryDocRef = doc(firestore, 'beneficiaries', newBeneficiaryId);
     
-    let finalData: any;
+    let finalData: Beneficiary;
 
     try {
         let idProofUrl = editingBeneficiary?.idProofUrl || '';
@@ -225,8 +225,10 @@ export default function BeneficiariesPage() {
             idProofUrl = await getDownloadURL(uploadResult.ref);
         }
 
+        const { idProofFile, idProofDeleted, ...restData } = data;
+
         finalData = {
-            ...data,
+            ...restData,
             id: newBeneficiaryId,
             idProofUrl,
             ...(!editingBeneficiary && !masterId && {
@@ -239,10 +241,7 @@ export default function BeneficiariesPage() {
                 updatedById: userProfile.id,
                 updatedByName: userProfile.name,
             }),
-        };
-
-        delete finalData.idProofFile;
-        delete finalData.idProofDeleted;
+        } as Beneficiary;
 
         const oldKitAmount = editingBeneficiary?.kitAmount || 0;
         const newKitAmount = data.kitAmount || 0;
@@ -265,7 +264,7 @@ export default function BeneficiariesPage() {
              const permissionError = new FirestorePermissionError({
                 path: leadBeneficiaryDocRef.path,
                 operation: editingBeneficiary ? 'update' : 'create',
-                requestResourceData: finalData,
+                requestResourceData: data,
             });
             errorEmitter.emit('permission-error', permissionError);
         } else {
@@ -307,7 +306,7 @@ export default function BeneficiariesPage() {
   const handleStatusChange = async (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => {
     if (!firestore || !leadId || !canUpdate) return;
     
-    const beneficiaryDocRef = doc(firestore, `leads/${leadId}/beneficiaries`, beneficiary.id);
+    const beneficiaryDocRef = doc(firestore, 'leads', leadId, 'beneficiaries', beneficiary.id);
     
     try {
       await updateDoc(beneficiaryDocRef, { status: newStatus });
@@ -708,3 +707,4 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
 };
 
     
+

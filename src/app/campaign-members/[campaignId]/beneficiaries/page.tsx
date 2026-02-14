@@ -92,7 +92,7 @@ export default function BeneficiariesPage() {
   
   const beneficiariesCollectionRef = useMemo(() => {
     if (!firestore || !campaignId) return null;
-    return collection(firestore, `campaigns/${campaignId}/beneficiaries`);
+    return collection(firestore, 'campaigns', campaignId, 'beneficiaries');
   }, [firestore, campaignId]);
   const { data: beneficiaries, isLoading: areBeneficiariesLoading, forceRefetch } = useCollection<Beneficiary>(beneficiariesCollectionRef);
 
@@ -293,8 +293,8 @@ export default function BeneficiariesPage() {
     setIsDeleteDialogOpen(false);
 
     const batch = writeBatch(firestore);
-    const beneficiaryDocRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiaryToDelete);
-    const masterBeneficiaryDocRef = doc(firestore, `beneficiaries`, beneficiaryToDelete);
+    const beneficiaryDocRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiaryToDelete);
+    const masterBeneficiaryDocRef = doc(firestore, 'beneficiaries', beneficiaryToDelete);
     const campaignDocRef = doc(firestore, 'campaigns', campaignId);
     
     const amountToSubtract = beneficiaryData.kitAmount || 0;
@@ -356,10 +356,10 @@ export default function BeneficiariesPage() {
     const campaignDocRef = doc(firestore, 'campaigns', campaignId);
     
     const newBeneficiaryId = masterId || (editingBeneficiary ? editingBeneficiary.id : doc(collection(firestore, 'beneficiaries')).id);
-    const campaignBeneficiaryDocRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, newBeneficiaryId);
+    const campaignBeneficiaryDocRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', newBeneficiaryId);
     const masterBeneficiaryDocRef = doc(firestore, 'beneficiaries', newBeneficiaryId);
 
-    let finalData: any;
+    let finalData: Beneficiary;
   
     try {
       let idProofUrl = editingBeneficiary?.idProofUrl || (masterId ? (await getDoc(masterBeneficiaryDocRef)).data()?.idProofUrl : '');
@@ -384,8 +384,11 @@ export default function BeneficiariesPage() {
         idProofUrl = await getDownloadURL(uploadResult.ref);
       }
   
+      const { idProofFile, idProofDeleted, ...restData } = data;
+
       finalData = {
-        ...data,
+        ...restData,
+        id: newBeneficiaryId,
         idProofUrl,
         ...(!editingBeneficiary && !masterId && {
           createdAt: serverTimestamp(),
@@ -397,11 +400,7 @@ export default function BeneficiariesPage() {
           updatedById: userProfile.id,
           updatedByName: userProfile.name,
         }),
-      };
-      
-      // Clean up form-only fields
-      delete finalData.idProofFile;
-      delete finalData.idProofDeleted;
+      } as Beneficiary;
 
       const oldKitAmount = editingBeneficiary?.kitAmount || 0;
       const newKitAmount = data.kitAmount || 0;
@@ -417,8 +416,8 @@ export default function BeneficiariesPage() {
 
       const newTargetAmount = (campaign.targetAmount || 0) + amountDifference;
 
-      batch.set(masterBeneficiaryDocRef, { ...finalData, id: newBeneficiaryId }, { merge: true });
-      batch.set(campaignBeneficiaryDocRef, { ...finalData, id: newBeneficiaryId }, { merge: true });
+      batch.set(masterBeneficiaryDocRef, finalData, { merge: true });
+      batch.set(campaignBeneficiaryDocRef, finalData, { merge: true });
       batch.update(campaignDocRef, { targetAmount: newTargetAmount });
 
       await batch.commit();
@@ -435,7 +434,7 @@ export default function BeneficiariesPage() {
         const permissionError = new FirestorePermissionError({
           path: `Batch operation on campaigns/${campaignId}`,
           operation: editingBeneficiary ? 'update' : 'create',
-          requestResourceData: finalData,
+          requestResourceData: data,
         });
         errorEmitter.emit('permission-error', permissionError);
       } else {
@@ -757,7 +756,7 @@ const sortedGroupKeys = useMemo(() => {
   const handleZakatToggle = async (beneficiary: Beneficiary) => {
     if (!firestore || !campaignId || !canUpdate) return;
 
-    const beneficiaryDocRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
+    const beneficiaryDocRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiary.id);
     const masterBeneficiaryDocRef = doc(firestore, 'beneficiaries', beneficiary.id);
     const newZakatStatus = !beneficiary.isEligibleForZakat;
 

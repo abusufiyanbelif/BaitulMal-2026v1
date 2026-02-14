@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -31,9 +31,10 @@ export default function CreateBeneficiaryPage() {
     setIsSubmitting(true);
 
     try {
-        const docRef = collection(firestore, 'beneficiaries');
-        await addDoc(docRef, {
+        const newDocRef = doc(collection(firestore, 'beneficiaries'));
+        await setDoc(newDocRef, {
             ...data,
+            id: newDocRef.id,
             createdAt: serverTimestamp(),
             createdById: userProfile.id,
             createdByName: userProfile.name,
