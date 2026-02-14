@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
   images: {
     remotePatterns: [
       {
@@ -13,9 +14,6 @@ const nextConfig = {
         hostname: 'picsum.photos',
       },
     ],
-  },
-  devIndicators: {
-    allowedDevOrigins: ["https://*.cloudworkstations.dev"],
   },
 };
 
