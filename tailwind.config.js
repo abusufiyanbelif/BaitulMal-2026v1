@@ -111,20 +111,6 @@ const config = {
         'shimmer': {
           '100%': { transform: 'translateX(100%)' },
         },
-        'logo-in': {
-          '0%': {
-              transform: 'scale(0.95)',
-              opacity: '0.8',
-          },
-          '50%': {
-              transform: 'scale(1)',
-              opacity: '1',
-          },
-          '100%': {
-              transform: 'scale(0.95)',
-              opacity: '0.8',
-          },
-        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -134,7 +120,6 @@ const config = {
         'fade-in-up': 'fade-in-up 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'fade-in-zoom': 'fade-in-zoom 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'shimmer': 'shimmer 2s infinite',
-        'logo-in': 'logo-in 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
     },
   },
