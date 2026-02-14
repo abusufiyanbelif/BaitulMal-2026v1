@@ -1,8 +1,8 @@
-src/app/beneficiaries/[beneficiaryId]/page.tsx(96,32): error TS2345: Argument of type '({ id: string; name: string; type: "Campaign" | "Lead"; status: "Upcoming" | "Active" | "Completed"; kitAmount: number; beneficiaryStatus: "Given" | "Pending" | "Hold" | "Need More Details" | "Verified"; } | null)[]' is not assignable to parameter of type 'SetStateAction<LinkedInitiative[]>'.
+src/app/beneficiaries/[beneficiaryId]/page.tsx(95,32): error TS2345: Argument of type '({ id: string; name: string; type: "Campaign" | "Lead"; status: "Upcoming" | "Active" | "Completed"; kitAmount: number; beneficiaryStatus: "Given" | "Pending" | "Hold" | "Need More Details" | "Verified"; } | null)[]' is not assignable to parameter of type 'SetStateAction<LinkedInitiative[]>'.
   Type '({ id: string; name: string; type: "Campaign" | "Lead"; status: "Upcoming" | "Active" | "Completed"; kitAmount: number; beneficiaryStatus: "Given" | "Pending" | "Hold" | "Need More Details" | "Verified"; } | null)[]' is not assignable to type 'LinkedInitiative[]'.
     Type '{ id: string; name: string; type: "Campaign" | "Lead"; status: "Upcoming" | "Active" | "Completed"; kitAmount: number; beneficiaryStatus: "Given" | "Pending" | "Hold" | "Need More Details" | "Verified"; } | null' is not assignable to type 'LinkedInitiative'.
       Type 'null' is not assignable to type 'LinkedInitiative'.
-src/app/beneficiaries/[beneficiaryId]/page.tsx(96,63): error TS2677: A type predicate's type must be assignable to its parameter's type.
+src/app/beneficiaries/[beneficiaryId]/page.tsx(95,63): error TS2677: A type predicate's type must be assignable to its parameter's type.
   Type 'LinkedInitiative' is not assignable to type '{ id: string; name: string; type: "Campaign" | "Lead"; status: "Upcoming" | "Active" | "Completed"; kitAmount: number; beneficiaryStatus: "Given" | "Pending" | "Hold" | "Need More Details" | "Verified"; }'.
     Types of property 'status' are incompatible.
       Type 'string' is not assignable to type '"Upcoming" | "Active" | "Completed"'.

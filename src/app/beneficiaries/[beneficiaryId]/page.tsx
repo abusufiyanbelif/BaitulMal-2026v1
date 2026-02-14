@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -21,7 +22,7 @@ interface LinkedInitiative {
     id: string;
     name: string;
     type: 'Campaign' | 'Lead';
-    status: string;
+    status: 'Upcoming' | 'Active' | 'Completed';
     kitAmount: number;
     beneficiaryStatus: 'Given' | 'Pending' | 'Hold' | 'Need More Details' | 'Verified';
 }
