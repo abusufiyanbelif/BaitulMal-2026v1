@@ -15,7 +15,7 @@ import { Loader2, Search } from 'lucide-react';
 interface BeneficiarySearchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSelectBeneficiary: (beneficiary: Omit<Beneficiary, 'id'>) => void;
+  onSelectBeneficiary: (beneficiary: Beneficiary) => void;
   currentLeadId: string;
 }
 
@@ -56,8 +56,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
   }, [firestore, searchTerm]);
 
   const handleSelect = (beneficiary: Beneficiary) => {
-    const { id, ...beneficiaryData } = beneficiary;
-    onSelectBeneficiary(beneficiaryData);
+    onSelectBeneficiary(beneficiary);
     onOpenChange(false);
   };
 
@@ -118,3 +117,5 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
     </Dialog>
   );
 }
+
+    

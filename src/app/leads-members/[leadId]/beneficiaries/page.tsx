@@ -170,7 +170,7 @@ export default function BeneficiariesPage() {
     }
   };
   
-  const handleFormSubmit = async (data: BeneficiaryFormData) => {
+  const handleFormSubmit = async (data: BeneficiaryFormData, masterId?: string) => {
     if (!firestore || !storage || !leadId || !userProfile || !lead) return;
     if (editingBeneficiary && !canUpdate) return;
     if (!editingBeneficiary && !canCreate) return;
@@ -195,9 +195,10 @@ export default function BeneficiariesPage() {
 
     const batch = writeBatch(firestore);
     const leadDocRef = doc(firestore, 'leads', leadId);
-    const beneficiaryDocRef = editingBeneficiary
-        ? doc(firestore, `leads/${leadId}/beneficiaries`, editingBeneficiary.id)
-        : doc(collection(firestore, `leads/${leadId}/beneficiaries`));
+    
+    const newBeneficiaryId = masterId || (editingBeneficiary ? editingBeneficiary.id : doc(collection(firestore, 'beneficiaries')).id);
+    const leadBeneficiaryDocRef = doc(firestore, `leads/${leadId}/beneficiaries`, newBeneficiaryId);
+    const masterBeneficiaryDocRef = doc(firestore, 'beneficiaries', newBeneficiaryId);
     
     let finalData: any;
 
@@ -218,7 +219,7 @@ export default function BeneficiariesPage() {
             const resizedBlob = await new Promise<Blob>((resolve) => {
                 Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
             });
-            const filePath = `leads/${leadId}/beneficiaries/${beneficiaryDocRef.id}/${Date.now()}.png`;
+            const filePath = `beneficiaries/${newBeneficiaryId}/${Date.now()}.png`;
             const fileRef = storageRef(storage, filePath);
             const uploadResult = await uploadBytes(fileRef, resizedBlob);
             idProofUrl = await getDownloadURL(uploadResult.ref);
@@ -226,9 +227,9 @@ export default function BeneficiariesPage() {
 
         finalData = {
             ...data,
+            id: newBeneficiaryId,
             idProofUrl,
-            ...(!editingBeneficiary && {
-                addedDate: new Date().toISOString().split('T')[0],
+            ...(!editingBeneficiary && !masterId && {
                 createdAt: serverTimestamp(),
                 createdById: userProfile.id,
                 createdByName: userProfile.name,
@@ -248,7 +249,8 @@ export default function BeneficiariesPage() {
         const amountDifference = newKitAmount - oldKitAmount;
         const newTargetAmount = (lead.targetAmount || 0) + (editingBeneficiary ? amountDifference : newKitAmount);
 
-        batch.set(beneficiaryDocRef, finalData, { merge: true });
+        batch.set(masterBeneficiaryDocRef, finalData, { merge: true });
+        batch.set(leadBeneficiaryDocRef, finalData, { merge: true });
         batch.update(leadDocRef, { targetAmount: newTargetAmount });
         
         await batch.commit();
@@ -261,7 +263,7 @@ export default function BeneficiariesPage() {
         console.warn("Error during form submission:", error);
         if (error.code === 'permission-denied') {
              const permissionError = new FirestorePermissionError({
-                path: beneficiaryDocRef.path,
+                path: leadBeneficiaryDocRef.path,
                 operation: editingBeneficiary ? 'update' : 'create',
                 requestResourceData: finalData,
             });
@@ -272,7 +274,7 @@ export default function BeneficiariesPage() {
     }
   };
 
-  const handleSelectExisting = (beneficiaryData: Omit<Beneficiary, 'id'>) => {
+  const handleSelectExisting = (beneficiaryData: Beneficiary) => {
     const dataToSubmit: BeneficiaryFormData = {
         name: beneficiaryData.name,
         address: beneficiaryData.address,
@@ -285,13 +287,13 @@ export default function BeneficiariesPage() {
         idProofType: beneficiaryData.idProofType,
         idNumber: beneficiaryData.idNumber,
         referralBy: beneficiaryData.referralBy,
-        kitAmount: beneficiaryData.kitAmount,
+        kitAmount: 0,
         status: 'Pending',
         notes: beneficiaryData.notes,
         isEligibleForZakat: beneficiaryData.isEligibleForZakat,
         zakatAllocation: beneficiaryData.zakatAllocation,
     };
-    handleFormSubmit(dataToSubmit);
+    handleFormSubmit(dataToSubmit, beneficiaryData.id);
   };
   
   const handleSort = (key: SortKey) => {
@@ -704,3 +706,5 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
         </>
     );
 };
+
+    

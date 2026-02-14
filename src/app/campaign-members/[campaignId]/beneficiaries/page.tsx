@@ -58,6 +58,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { BeneficiaryImportDialog, type ProcessedRecord } from '@/components/beneficiary-import-dialog';
+import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -106,6 +107,8 @@ export default function BeneficiariesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [importData, setImportData] = useState<ProcessedRecord[]>([]);
+
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -291,12 +294,16 @@ export default function BeneficiariesPage() {
 
     const batch = writeBatch(firestore);
     const beneficiaryDocRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiaryToDelete);
+    const masterBeneficiaryDocRef = doc(firestore, `beneficiaries`, beneficiaryToDelete);
     const campaignDocRef = doc(firestore, 'campaigns', campaignId);
     
     const amountToSubtract = beneficiaryData.kitAmount || 0;
     const newTargetAmount = (campaign.targetAmount || 0) - amountToSubtract;
 
     batch.delete(beneficiaryDocRef);
+    // Note: We are not deleting from the master list on campaign-specific deletion.
+    // batch.delete(masterBeneficiaryDocRef);
+
     batch.update(campaignDocRef, { targetAmount: newTargetAmount });
 
     if (beneficiaryData.idProofUrl) {
@@ -310,7 +317,7 @@ export default function BeneficiariesPage() {
     
     try {
         await batch.commit();
-        toast({ title: 'Success', description: 'Beneficiary deleted and campaign total updated.', variant: 'success' });
+        toast({ title: 'Success', description: 'Beneficiary removed from campaign and campaign total updated.', variant: 'success' });
         forceRefetch();
         forceRefetchCampaign();
     } catch (serverError) {
@@ -323,7 +330,7 @@ export default function BeneficiariesPage() {
     }
   };
   
-  const handleFormSubmit = async (data: BeneficiaryFormData) => {
+  const handleFormSubmit = async (data: BeneficiaryFormData, masterId?: string) => {
     if (!firestore || !storage || !userProfile || !campaign) return;
     if (editingBeneficiary && !canUpdate) return;
     if (!editingBeneficiary && !canCreate) return;
@@ -347,14 +354,15 @@ export default function BeneficiariesPage() {
   
     const batch = writeBatch(firestore);
     const campaignDocRef = doc(firestore, 'campaigns', campaignId);
-    const beneficiaryDocRef = editingBeneficiary
-      ? doc(firestore, `campaigns/${campaignId}/beneficiaries`, editingBeneficiary.id)
-      : doc(collection(firestore, `campaigns/${campaignId}/beneficiaries`));
-  
+    
+    const newBeneficiaryId = masterId || (editingBeneficiary ? editingBeneficiary.id : doc(collection(firestore, 'beneficiaries')).id);
+    const campaignBeneficiaryDocRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, newBeneficiaryId);
+    const masterBeneficiaryDocRef = doc(firestore, 'beneficiaries', newBeneficiaryId);
+
     let finalData: any;
   
     try {
-      let idProofUrl = editingBeneficiary?.idProofUrl || '';
+      let idProofUrl = editingBeneficiary?.idProofUrl || (masterId ? (await getDoc(masterBeneficiaryDocRef)).data()?.idProofUrl : '');
       
       if (data.idProofDeleted && idProofUrl) {
           await deleteObject(storageRef(storage, idProofUrl)).catch(err => {
@@ -370,7 +378,7 @@ export default function BeneficiariesPage() {
         const resizedBlob = await new Promise<Blob>((resolve) => {
           Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
         });
-        const filePath = `campaigns/${campaignId}/beneficiaries/${beneficiaryDocRef.id}/${Date.now()}.png`;
+        const filePath = `beneficiaries/${newBeneficiaryId}/${Date.now()}.png`;
         const fileRef = storageRef(storage, filePath);
         const uploadResult = await uploadBytes(fileRef, resizedBlob);
         idProofUrl = await getDownloadURL(uploadResult.ref);
@@ -379,8 +387,7 @@ export default function BeneficiariesPage() {
       finalData = {
         ...data,
         idProofUrl,
-        ...(!editingBeneficiary && {
-          addedDate: new Date().toISOString().split('T')[0],
+        ...(!editingBeneficiary && !masterId && {
           createdAt: serverTimestamp(),
           createdById: userProfile.id,
           createdByName: userProfile.name,
@@ -398,10 +405,20 @@ export default function BeneficiariesPage() {
 
       const oldKitAmount = editingBeneficiary?.kitAmount || 0;
       const newKitAmount = data.kitAmount || 0;
-      const amountDifference = newKitAmount - oldKitAmount;
-      const newTargetAmount = (campaign.targetAmount || 0) + (editingBeneficiary ? amountDifference : newKitAmount);
+      
+      let amountDifference;
+      if (masterId) { // Adding existing beneficiary
+        amountDifference = newKitAmount;
+      } else if (editingBeneficiary) { // Editing existing beneficiary in campaign
+        amountDifference = newKitAmount - oldKitAmount;
+      } else { // Adding brand new beneficiary
+        amountDifference = newKitAmount;
+      }
 
-      batch.set(beneficiaryDocRef, finalData, { merge: true });
+      const newTargetAmount = (campaign.targetAmount || 0) + amountDifference;
+
+      batch.set(masterBeneficiaryDocRef, { ...finalData, id: newBeneficiaryId }, { merge: true });
+      batch.set(campaignBeneficiaryDocRef, { ...finalData, id: newBeneficiaryId }, { merge: true });
       batch.update(campaignDocRef, { targetAmount: newTargetAmount });
 
       await batch.commit();
@@ -427,6 +444,21 @@ export default function BeneficiariesPage() {
     } finally {
         setIsSubmitting(false);
     }
+  };
+
+  const handleSelectExisting = async (beneficiaryToCopy: Beneficiary) => {
+    if (!canCreate || !userProfile) return;
+
+     const isDuplicate = beneficiaries && beneficiaries.some(b => b.id === beneficiaryToCopy.id);
+     if(isDuplicate) {
+         toast({ title: 'Already Exists', description: 'This beneficiary is already in the current campaign.', variant: 'destructive' });
+         return;
+     }
+
+    setIsSearchOpen(false);
+    
+    // We pass the full beneficiary object including its original master ID
+    await handleFormSubmit(beneficiaryToCopy as BeneficiaryFormData, beneficiaryToCopy.id);
   };
 
   const handleExportData = async () => {
@@ -566,23 +598,28 @@ export default function BeneficiariesPage() {
 
     setIsImporting(true);
     const batch = writeBatch(firestore);
-    const beneficiariesRef = collection(firestore, `campaigns/${campaignId}/beneficiaries`);
     const campaignDocRef = doc(firestore, 'campaigns', campaignId);
 
     let totalAmountFromImport = 0;
 
     recordsToImport.forEach(record => {
-        const docRef = doc(beneficiariesRef);
-        const { id, ...dataToSave } = record.data; // Exclude imported ID
+        const newBeneficiaryId = doc(collection(firestore, 'beneficiaries')).id;
+        const masterRef = doc(firestore, 'beneficiaries', newBeneficiaryId);
+        const campaignRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, newBeneficiaryId);
+        
+        const { id, ...dataToSave } = record.data;
         const fullData = {
             ...dataToSave,
+            id: newBeneficiaryId,
             addedDate: new Date().toISOString().split('T')[0],
             createdAt: serverTimestamp(),
             createdById: userProfile.id,
             createdByName: userProfile.name,
         };
         totalAmountFromImport += Number(fullData.kitAmount || 0);
-        batch.set(docRef, fullData);
+
+        batch.set(masterRef, fullData);
+        batch.set(campaignRef, fullData);
     });
 
     const newTargetAmount = (campaign.targetAmount || 0) + totalAmountFromImport;
@@ -721,15 +758,20 @@ const sortedGroupKeys = useMemo(() => {
     if (!firestore || !campaignId || !canUpdate) return;
 
     const beneficiaryDocRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
+    const masterBeneficiaryDocRef = doc(firestore, 'beneficiaries', beneficiary.id);
     const newZakatStatus = !beneficiary.isEligibleForZakat;
 
     try {
-      await updateDoc(beneficiaryDocRef, { isEligibleForZakat: newZakatStatus });
-      toast({
-        title: 'Zakat Status Updated',
-        description: `${beneficiary.name} is now ${newZakatStatus ? 'Eligible' : 'Not Eligible'} for Zakat.`,
-        variant: 'success',
-      });
+        const batch = writeBatch(firestore);
+        batch.update(beneficiaryDocRef, { isEligibleForZakat: newZakatStatus });
+        batch.update(masterBeneficiaryDocRef, { isEligibleForZakat: newZakatStatus });
+        await batch.commit();
+
+        toast({
+            title: 'Zakat Status Updated',
+            description: `${beneficiary.name} is now ${newZakatStatus ? 'Eligible' : 'Not Eligible'} for Zakat.`,
+            variant: 'success',
+        });
     } catch (serverError) {
       errorEmitter.emit('permission-error', new FirestorePermissionError({
         path: beneficiaryDocRef.path,
@@ -839,6 +881,10 @@ const sortedGroupKeys = useMemo(() => {
                         <Button variant="outline" onClick={() => setIsImportOpen(true)}>
                             <Upload className="mr-2 h-4 w-4" />
                             Import Data
+                        </Button>
+                        <Button variant="outline" onClick={() => setIsSearchOpen(true)}>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Add from Existing
                         </Button>
                         <Button onClick={handleAdd}>
                             <PlusCircle className="mr-2 h-4 w-4" />
@@ -1126,7 +1172,7 @@ const sortedGroupKeys = useMemo(() => {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the beneficiary record and its associated ID proof file from storage.
+                    This will remove the beneficiary from this campaign, but their record will remain in the master list. This action cannot be undone.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -1172,6 +1218,12 @@ const sortedGroupKeys = useMemo(() => {
         processedRecords={importData}
         onConfirm={handleCommitImport}
         isImporting={isImporting}
+      />
+      <BeneficiarySearchDialog
+        open={isSearchOpen}
+        onOpenChange={setIsSearchOpen}
+        onSelectBeneficiary={handleSelectExisting}
+        currentLeadId={campaignId}
       />
     </>
   );
@@ -1310,5 +1362,7 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
         </>
     );
 }
+
+    
 
     
