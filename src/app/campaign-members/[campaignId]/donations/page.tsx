@@ -689,6 +689,7 @@ export default function DonationsPage() {
                         src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
                         alt="Donation screenshot"
                         fill
+                        sizes="(max-width: 896px) 100vw, 896px"
                         className="object-contain transition-transform duration-200 ease-out origin-center"
                         style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
                         unoptimized
