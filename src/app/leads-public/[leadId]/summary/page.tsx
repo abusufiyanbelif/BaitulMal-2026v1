@@ -140,18 +140,6 @@ export default function PublicLeadSummaryPage() {
      const beneficiaryData = useMemo(() => {
         if (!beneficiaries) return null;
 
-        const beneficiariesByCategory = beneficiaries.reduce((acc, ben) => {
-            const key = ben.members || 0;
-            if (!acc[key]) {
-                acc[key] = { beneficiaries: [], totalAmount: 0 };
-            }
-            acc[key].beneficiaries.push(ben);
-            acc[key].totalAmount += ben.kitAmount || 0;
-            return acc;
-        }, {} as Record<number, { beneficiaries: Beneficiary[], totalAmount: number }>);
-        
-        const sortedBeneficiaryCategories = Object.keys(beneficiariesByCategory).map(Number).sort((a, b) => b - a);
-
         const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
         const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
         
@@ -159,8 +147,6 @@ export default function PublicLeadSummaryPage() {
             totalBeneficiaries: beneficiaries.length,
             beneficiariesGiven,
             beneficiariesPending,
-            beneficiariesByCategory,
-            sortedBeneficiaryCategories,
         }
     }, [beneficiaries]);
 
@@ -436,54 +422,6 @@ Your contribution, big or small, makes a huge difference.
                             </ChartContainer>
                         </CardContent>
                     </Card>
-
-                    {beneficiaryData && beneficiaryData.sortedBeneficiaryCategories.length > 0 && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Beneficiaries by Category</CardTitle>
-                                <CardDescription>
-                                    Summary of beneficiaries grouped by family size.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="w-full overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="whitespace-nowrap">Category Name</TableHead>
-                                            <TableHead className="text-center whitespace-nowrap">Total Beneficiaries</TableHead>
-                                            <TableHead className="text-right whitespace-nowrap">Kit Amount (per kit)</TableHead>
-                                            <TableHead className="text-right whitespace-nowrap">Total Kit Amount</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {beneficiaryData.sortedBeneficiaryCategories.map(memberCount => {
-                                            const group = beneficiaryData.beneficiariesByCategory[memberCount];
-                                            const count = group.beneficiaries.length;
-                                            const kitAmount = group.beneficiaries[0]?.kitAmount || 0;
-                                            return (
-                                                <TableRow key={memberCount}>
-                                                    <TableCell className="font-medium">{memberCount} Members</TableCell>
-                                                    <TableCell className="text-center">{count}</TableCell>
-                                                    <TableCell className="text-right font-mono">₹{kitAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                                    <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                                </TableRow>
-                                            )
-                                        })}
-                                    </TableBody>
-                                    <TableFooter>
-                                        <TableRow>
-                                            <TableCell className="font-bold">Total</TableCell>
-                                            <TableCell className="text-center font-bold">{beneficiaryData.totalBeneficiaries}</TableCell>
-                                            <TableCell></TableCell>
-                                            <TableCell className="text-right font-bold font-mono">₹{Object.values(beneficiaryData.beneficiariesByCategory).reduce((sum, group) => sum + group.totalAmount, 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                        </TableRow>
-                                    </TableFooter>
-                                </Table>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
                 </div>
             </div>
 
