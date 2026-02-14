@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Force rebuild to clear corrupted cache.
-  // Invalidate cache again.
+  // Invalidate cache again and again.
   images: {
     remotePatterns: [
       {
