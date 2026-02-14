@@ -1,187 +1,317 @@
-
 {
   "entities": {
-    "User": {
+    "UserProfile": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
+      "title": "UserProfile",
       "type": "object",
-      "description": "Represents an application user, including their role and permissions.",
+      "description": "Represents a user of the DocuExtract application.",
       "properties": {
-        "id": { "type": "string", "description": "Unique identifier for the User." },
-        "name": { "type": "string", "description": "Full name of the user." },
-        "email": { "type": "string", "format": "email", "description": "User's email address." },
-        "phone": { "type": "string", "description": "User's 10-digit phone number." },
-        "loginId": { "type": "string", "description": "Unique login identifier." },
-        "userKey": { "type": "string", "description": "System-level unique key." },
-        "role": { "type": "string", "enum": ["Admin", "User"], "description": "User's role." },
-        "status": { "type": "string", "enum": ["Active", "Inactive"], "description": "User's account status." }
-      },
-      "required": ["id", "name", "email", "loginId", "userKey", "role", "status"]
-    },
-    "UserLookup": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "UserLookup",
-      "type": "object",
-      "description": "A lookup document to find a user's email by their loginId or phone.",
-      "properties": {
-        "email": { "type": "string", "format": "email" },
-        "userKey": { "type": "string" }
-      },
-      "required": ["email", "userKey"]
-    },
-    "Campaign": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Campaign",
-      "type": "object",
-      "description": "Represents a fundraising or distribution campaign.",
-      "properties": {
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "imageUrl": { "type": "string", "format": "uri", "description": "URL for the campaign's background image." },
-        "category": { "type": "string", "enum": ["Ration", "Relief", "General"] },
-        "status": { "type": "string", "enum": ["Upcoming", "Active", "Completed"] },
-        "startDate": { "type": "string", "format": "date" },
-        "endDate": { "type": "string", "format": "date" },
-        "targetAmount": { "type": "number" },
-        "authenticityStatus": { "type": "string", "enum": ["Pending Verification", "Verified", "Rejected", "On Hold", "Need More Details"] },
-        "publicVisibility": { "type": "string", "enum": ["Hold", "Ready to Publish", "Published"] },
-        "allowedDonationTypes": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["Zakat", "Sadaqah", "Interest", "Lillah", "Loan", "Monthly Contribution"]
-          },
-          "description": "A list of donation categories accepted for this campaign."
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the user profile was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the user profile was last updated.",
+          "format": "date-time"
         }
       },
-      "required": ["name", "category", "status", "startDate", "endDate"]
+      "required": [
+        "id",
+        "email",
+        "createdAt",
+        "updatedAt"
+      ]
     },
-    "Lead": {
+    "Document": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Lead",
+      "title": "Document",
       "type": "object",
-      "description": "Represents a potential new initiative or lead.",
+      "description": "Represents an uploaded document or image for text extraction and analysis.",
       "properties": {
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "imageUrl": { "type": "string", "format": "uri", "description": "URL for the lead's background image." },
-        "notes": { "type": "string", "description": "Internal notes or comments about the lead." },
-        "purpose": { "type": "string", "enum": ["Relief", "General", "Education", "Medical", "Other"] },
-        "purposeDetails": { "type": "string", "description": "Details if purpose is 'Other'." },
-        "category": { "type": "string" },
-        "categoryDetails": { "type": "string", "description": "Details if category is 'Other'." },
-        "status": { "type": "string", "enum": ["Upcoming", "Active", "Completed"] },
-        "startDate": { "type": "string", "format": "date" },
-        "endDate": { "type": "string", "format": "date" },
-        "targetAmount": { "type": "number" },
-        "requiredAmount": { "type": "number", "description": "The actual amount required for the lead's purpose." },
-        "authenticityStatus": { "type": "string", "enum": ["Pending Verification", "Verified", "Rejected", "On Hold", "Need More Details"] },
-        "publicVisibility": { "type": "string", "enum": ["Hold", "Ready to Publish", "Published"] },
-        "allowedDonationTypes": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["Zakat", "Sadaqah", "Interest", "Lillah", "Loan", "Monthly Contribution"]
-          },
-          "description": "A list of donation categories accepted for this lead."
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Document entity."
         },
-        "degree": { "type": "string", "description": "Degree or class for educational leads." },
-        "year": { "type": "string", "description": "Year for educational leads." },
-        "semester": { "type": "string", "description": "Semester for educational leads." },
-        "diseaseIdentified": { "type": "string", "description": "Identified disease for medical leads." },
-        "diseaseStage": { "type": "string", "description": "Stage of the disease for medical leads." },
-        "seriousness": { "type": "string", "description": "Seriousness of the medical condition." }
-      },
-      "required": ["name", "purpose", "status", "startDate", "endDate"]
-    },
-    "Beneficiary": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Beneficiary",
-      "type": "object",
-      "description": "Represents a beneficiary of a campaign or lead.",
-      "properties": {
-        "name": { "type": "string" },
-        "address": { "type": "string" },
-        "phone": { "type": "string" },
-        "occupation": { "type": "string", "description": "The beneficiary's occupation." },
-        "members": { "type": "number" },
-        "earningMembers": { "type": "number" },
-        "male": { "type": "number" },
-        "female": { "type": "number" },
-        "idProofType": { "type": "string" },
-        "idNumber": { "type": "string" },
-        "status": { "type": "string", "enum": ["Given", "Pending", "Hold", "Need More Details", "Verified"] },
-        "kitAmount": { "type": "number" },
-        "notes": { "type": "string", "description": "Internal notes or comments about the beneficiary." },
-        "isEligibleForZakat": { "type": "boolean", "description": "Indicates if the beneficiary is eligible to receive Zakat funds." },
-        "zakatAllocation": { "type": "number", "description": "The amount of Zakat funds allocated to this beneficiary." }
-      },
-      "required": ["name", "status"]
-    },
-    "Donation": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Donation",
-      "type": "object",
-      "description": "Represents a single donation transaction.",
-      "properties": {
-        "campaignId": { "type": "string" },
-        "donorName": { "type": "string" },
-        "amount": { "type": "number" },
-        "typeSplit": {
-          "type": "array",
-          "description": "Breakdown of donation amounts by category.",
-          "items": {
-            "type": "object",
-            "properties": {
-              "category": {
-                "type": "string",
-                "enum": ["Zakat", "Sadaqah", "Interest", "Lillah", "Loan", "Monthly Contribution"]
-              },
-              "amount": {
-                "type": "number"
-              }
-            },
-            "required": ["category", "amount"]
-          }
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile who uploaded this document. (Relationship: UserProfile 1:N Document)"
         },
-        "donationDate": { "type": "string", "format": "date" },
-        "status": { "type": "string", "enum": ["Verified", "Pending", "Canceled"] },
-        "comments": { "type": "string", "description": "Comments from the donor or staff." },
-        "suggestions": { "type": "string", "description": "Suggestions from the donor or staff." }
+        "originalFileName": {
+          "type": "string",
+          "description": "The original name of the file uploaded by the user."
+        },
+        "storageUrl": {
+          "type": "string",
+          "description": "URL or path where the original document file is stored.",
+          "format": "uri"
+        },
+        "uploadDate": {
+          "type": "string",
+          "description": "Timestamp when the document was uploaded.",
+          "format": "date-time"
+        },
+        "documentType": {
+          "type": "string",
+          "description": "Categorization of the document type to guide AI processing. Can be 'identityProof', 'billing', 'medicalReport', or 'general'."
+        },
+        "status": {
+          "type": "string",
+          "description": "Current processing status of the document. Can be 'uploaded', 'processing', 'extracted', or 'error'."
+        },
+        "extractedText": {
+          "type": "string",
+          "description": "The full raw text extracted from the document by OCR and AI."
+        },
+        "lastEditedAt": {
+          "type": "string",
+          "description": "Timestamp of the last manual edit made to the extracted text.",
+          "format": "date-time"
+        }
       },
-      "required": ["donorName", "amount", "typeSplit", "donationDate", "status"]
+      "required": [
+        "id",
+        "userId",
+        "originalFileName",
+        "storageUrl",
+        "uploadDate",
+        "documentType",
+        "status",
+        "extractedText"
+      ]
     },
-    "BrandingSettings": {
+    "IdentityProofExtraction": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "BrandingSettings",
+      "title": "IdentityProofExtraction",
       "type": "object",
-      "description": "Global settings for application branding.",
+      "description": "Stores extracted personal details from identity proof documents.",
       "properties": {
-        "logoUrl": { "type": "string", "format": "uri" },
-        "loadingAnimationUrl": { "type": "string", "format": "uri" },
-        "logoWidth": { "type": "number" },
-        "logoHeight": { "type": "number" }
-      }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the IdentityProofExtraction entity."
+        },
+        "documentId": {
+          "type": "string",
+          "description": "Reference to the Document entity this extraction belongs to. (Relationship: Document 1:1 IdentityProofExtraction)"
+        },
+        "extractedAt": {
+          "type": "string",
+          "description": "Timestamp when the identity proof details were extracted.",
+          "format": "date-time"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "The full name extracted from the identity document."
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "description": "The date of birth extracted from the identity document.",
+          "format": "date"
+        },
+        "address": {
+          "type": "string",
+          "description": "The address extracted from the identity document."
+        },
+        "documentNumber": {
+          "type": "string",
+          "description": "The unique identification number (e.g., passport number, driver's license number) from the document."
+        },
+        "documentType": {
+          "type": "string",
+          "description": "The specific type of identity document (e.g., 'Passport', 'Driver\\'s License', 'National ID Card')."
+        },
+        "issueDate": {
+          "type": "string",
+          "description": "The date the identity document was issued.",
+          "format": "date"
+        },
+        "expiryDate": {
+          "type": "string",
+          "description": "The date the identity document expires.",
+          "format": "date"
+        }
+      },
+      "required": [
+        "id",
+        "documentId",
+        "extractedAt",
+        "fullName",
+        "dateOfBirth",
+        "address",
+        "documentNumber",
+        "documentType"
+      ]
     },
-    "PaymentSettings": {
+    "BillingExtraction": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "PaymentSettings",
+      "title": "BillingExtraction",
       "type": "object",
-      "description": "Global settings for payment and contact information.",
+      "description": "Stores extracted financial details from billing documents.",
       "properties": {
-        "qrCodeUrl": { "type": "string", "format": "uri" },
-        "qrWidth": { "type": "number" },
-        "qrHeight": { "type": "number" },
-        "upiId": { "type": "string" },
-        "paymentMobileNumber": { "type": "string" },
-        "contactEmail": { "type": "string", "format": "email" },
-        "contactPhone": { "type": "string" },
-        "address": { "type": "string" },
-        "website": { "type": "string", "format": "uri" },
-        "regNo": { "type": "string" },
-        "pan": { "type": "string" },
-        "copyright": { "type": "string", "description": "Copyright notice for the footer." }
-      }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the BillingExtraction entity."
+        },
+        "documentId": {
+          "type": "string",
+          "description": "Reference to the Document entity this extraction belongs to. (Relationship: Document 1:1 BillingExtraction)"
+        },
+        "extractedAt": {
+          "type": "string",
+          "description": "Timestamp when the billing details were extracted.",
+          "format": "date-time"
+        },
+        "vendorName": {
+          "type": "string",
+          "description": "The name of the vendor or service provider on the bill."
+        },
+        "billDate": {
+          "type": "string",
+          "description": "The date the bill was issued.",
+          "format": "date"
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "The due date for payment.",
+          "format": "date"
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "The total amount of the bill."
+        },
+        "currency": {
+          "type": "string",
+          "description": "The currency of the total amount (e.g., 'USD', 'EUR')."
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "description": "The invoice or bill number."
+        },
+        "billingAddress": {
+          "type": "string",
+          "description": "The billing address provided on the document."
+        }
+      },
+      "required": [
+        "id",
+        "documentId",
+        "extractedAt",
+        "vendorName",
+        "billDate",
+        "totalAmount",
+        "currency",
+        "invoiceNumber"
+      ]
+    },
+    "BillingLineItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BillingLineItem",
+      "type": "object",
+      "description": "Represents a single item or service listed on a billing document.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the BillingLineItem entity."
+        },
+        "billingExtractionId": {
+          "type": "string",
+          "description": "Reference to the BillingExtraction entity this line item belongs to. (Relationship: BillingExtraction 1:N BillingLineItem)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the item or service."
+        },
+        "quantity": {
+          "type": "number",
+          "description": "The quantity of the item or service."
+        },
+        "unitPrice": {
+          "type": "number",
+          "description": "The price per unit of the item or service."
+        },
+        "lineTotal": {
+          "type": "number",
+          "description": "The total cost for this specific line item (quantity * unitPrice)."
+        }
+      },
+      "required": [
+        "id",
+        "billingExtractionId",
+        "description",
+        "quantity",
+        "unitPrice",
+        "lineTotal"
+      ]
+    },
+    "MedicalReportExtraction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MedicalReportExtraction",
+      "type": "object",
+      "description": "Stores extracted medical information, diagnoses, and findings from hospital reports.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MedicalReportExtraction entity."
+        },
+        "documentId": {
+          "type": "string",
+          "description": "Reference to the Document entity this extraction belongs to. (Relationship: Document 1:1 MedicalReportExtraction)"
+        },
+        "extractedAt": {
+          "type": "string",
+          "description": "Timestamp when the medical report details were extracted.",
+          "format": "date-time"
+        },
+        "patientName": {
+          "type": "string",
+          "description": "The name of the patient mentioned in the report."
+        },
+        "dateOfReport": {
+          "type": "string",
+          "description": "The date the medical report was issued.",
+          "format": "date"
+        },
+        "diagnosis": {
+          "type": "string",
+          "description": "The primary diagnosis or condition identified in the report."
+        },
+        "treatmentRecommendations": {
+          "type": "string",
+          "description": "Recommended treatments or next steps based on the report."
+        },
+        "doctorName": {
+          "type": "string",
+          "description": "The name of the doctor or physician who issued the report."
+        },
+        "hospitalName": {
+          "type": "string",
+          "description": "The name of the hospital or clinic where the report originated."
+        },
+        "keyFindings": {
+          "type": "string",
+          "description": "A summary of key findings or observations from the medical report."
+        }
+      },
+      "required": [
+        "id",
+        "documentId",
+        "extractedAt",
+        "patientName",
+        "dateOfReport",
+        "diagnosis",
+        "treatmentRecommendations",
+        "keyFindings"
+      ]
     }
   },
   "auth": {
@@ -195,98 +325,134 @@
       {
         "path": "/users/{userId}",
         "definition": {
-          "entityName": "User",
-          "schema": { "$ref": "#/entities/User" },
-          "description": "Stores user profiles. Access is restricted to the user or an admin.",
-          "params": [{"name": "userId", "description": "The unique identifier for the user."}]
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores individual user profiles. The document ID (`{userId}`) for each UserProfile document directly corresponds to the Firebase Authentication UID, ensuring path-based ownership. This collection forms the root of a user's private data hierarchy."
         }
       },
       {
-        "path": "/campaigns/{campaignId}",
+        "path": "/users/{userId}/documents/{documentId}",
         "definition": {
-          "entityName": "Campaign",
-          "schema": { "$ref": "#/entities/Campaign" },
-          "description": "Stores campaign details. Publicly readable if published.",
-          "params": [{"name": "campaignId", "description": "The unique identifier for the campaign."}]
-        }
-      },
-      {
-        "path": "/campaigns/{campaignId}/beneficiaries/{beneficiaryId}",
-        "definition": {
-          "entityName": "Beneficiary",
-          "schema": { "$ref": "#/entities/Beneficiary" },
-          "description": "Stores beneficiaries for a specific campaign.",
+          "entityName": "Document",
+          "schema": {
+            "$ref": "#/backend/entities/Document"
+          },
+          "description": "Contains documents uploaded by a specific user. This subcollection is nested under the respective UserProfile, establishing a clear ownership hierarchy. Authorization is achieved via the `{userId}` in the path. The `userId` field within the document serves as an explicit data link and redundancy.",
           "params": [
-            {"name": "campaignId", "description": "The campaign ID."},
-            {"name": "beneficiaryId", "description": "The beneficiary ID."}
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the document."
+            },
+            {
+              "name": "documentId",
+              "description": "The unique identifier for the uploaded document."
+            }
           ]
         }
       },
       {
-        "path": "/leads/{leadId}",
+        "path": "/users/{userId}/documents/{documentId}/identityProofExtractions/{extractionId}",
         "definition": {
-          "entityName": "Lead",
-          "schema": { "$ref": "#/entities/Lead" },
-          "description": "Stores lead details. Publicly readable if published.",
-          "params": [{"name": "leadId", "description": "The unique identifier for the lead."}]
-        }
-      },
-      {
-        "path": "/leads/{leadId}/beneficiaries/{beneficiaryId}",
-        "definition": {
-          "entityName": "Beneficiary",
-          "schema": { "$ref": "#/entities/Beneficiary" },
-          "description": "Stores beneficiaries for a specific lead.",
+          "entityName": "IdentityProofExtraction",
+          "schema": {
+            "$ref": "#/backend/entities/IdentityProofExtraction"
+          },
+          "description": "Stores extracted personal details from identity proof documents. This is a subcollection of a specific Document, implicitly inheriting its `userId` and `documentId` from the parent path for authorization independence. The `documentId` field within the extraction document provides an explicit data link.",
           "params": [
-            {"name": "leadId", "description": "The lead ID."},
-            {"name": "beneficiaryId", "description": "The beneficiary ID."}
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the document and extraction."
+            },
+            {
+              "name": "documentId",
+              "description": "The unique identifier for the parent document."
+            },
+            {
+              "name": "extractionId",
+              "description": "The unique identifier for the identity proof extraction."
+            }
           ]
         }
       },
       {
-        "path": "/donations/{donationId}",
+        "path": "/users/{userId}/documents/{documentId}/billingExtractions/{extractionId}",
         "definition": {
-          "entityName": "Donation",
-          "schema": { "$ref": "#/entities/Donation" },
-          "description": "Stores individual donation records.",
-          "params": [{"name": "donationId", "description": "The unique identifier for the donation."}]
+          "entityName": "BillingExtraction",
+          "schema": {
+            "$ref": "#/backend/entities/BillingExtraction"
+          },
+          "description": "Stores extracted financial details from billing documents. This is a subcollection of a specific Document, implicitly inheriting its `userId` and `documentId` from the parent path for authorization independence. The `documentId` field within the extraction document provides an explicit data link.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the document and extraction."
+            },
+            {
+              "name": "documentId",
+              "description": "The unique identifier for the parent document."
+            },
+            {
+              "name": "extractionId",
+              "description": "The unique identifier for the billing extraction."
+            }
+          ]
         }
       },
       {
-        "path": "/beneficiaries/{beneficiaryId}",
+        "path": "/users/{userId}/documents/{documentId}/billingExtractions/{billingExtractionId}/lineItems/{lineItemId}",
         "definition": {
-          "entityName": "Beneficiary",
-          "schema": { "$ref": "#/entities/Beneficiary" },
-          "description": "Stores a master list of all beneficiaries.",
-          "params": [{"name": "beneficiaryId", "description": "The unique identifier for the beneficiary."}]
+          "entityName": "BillingLineItem",
+          "schema": {
+            "$ref": "#/backend/entities/BillingLineItem"
+          },
+          "description": "Stores individual line items associated with a specific BillingExtraction. Nested under its parent BillingExtraction, this structure ensures strong data consistency and inherits authorization from the upstream user and document IDs.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the parent document and extraction."
+            },
+            {
+              "name": "documentId",
+              "description": "The unique identifier for the parent document."
+            },
+            {
+              "name": "billingExtractionId",
+              "description": "The unique identifier for the parent billing extraction."
+            },
+            {
+              "name": "lineItemId",
+              "description": "The unique identifier for the billing line item."
+            }
+          ]
         }
       },
       {
-        "path": "/user_lookups/{lookupId}",
+        "path": "/users/{userId}/documents/{documentId}/medicalReportExtractions/{extractionId}",
         "definition": {
-          "entityName": "UserLookup",
-          "schema": { "$ref": "#/entities/UserLookup" },
-          "description": "Lookup table to find user emails for login.",
-          "params": [{"name": "lookupId", "description": "The login ID or phone number."}]
-        }
-      },
-      {
-        "path": "/settings/branding",
-        "definition": {
-          "entityName": "BrandingSettings",
-          "schema": { "$ref": "#/entities/BrandingSettings" },
-          "description": "Stores branding settings. Only one document exists at this path."
-        }
-      },
-       {
-        "path": "/settings/payment",
-        "definition": {
-          "entityName": "PaymentSettings",
-          "schema": { "$ref": "#/entities/PaymentSettings" },
-          "description": "Stores payment settings. Only one document exists at this path."
+          "entityName": "MedicalReportExtraction",
+          "schema": {
+            "$ref": "#/backend/entities/MedicalReportExtraction"
+          },
+          "description": "Stores extracted medical information, diagnoses, and findings from hospital reports. This is a subcollection of a specific Document, implicitly inheriting its `userId` and `documentId` from the parent path for authorization independence. The `documentId` field within the extraction document provides an explicit data link.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the document and extraction."
+            },
+            {
+              "name": "documentId",
+              "description": "The unique identifier for the parent document."
+            },
+            {
+              "name": "extractionId",
+              "description": "The unique identifier for the medical report extraction."
+            }
+          ]
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed with a mix of public and private collections. 'Campaigns' and 'Leads' can be made public, while user-specific data and internal lookups are restricted. A master 'beneficiaries' collection is included for centralized management. Subcollections are used for beneficiaries within campaigns/leads to keep them tied to a parent context for historical or specific-use cases, but the master list serves as the primary source of truth."
+    "reasoning": "The Firestore structure is designed following the core principles of Authorization Independence, Structural Segregation, and Access Modeling, prioritizing a secure, scalable, and debuggable system for DocuExtract. The primary strategy employed is **Path-Based Ownership** and deep hierarchical nesting for all user-specific data.\n\n**Authorization Independence (CRITICAL):** Authorization independence is achieved primarily through the hierarchical structure. Every piece of user-specific data (documents, and their corresponding extractions) is nested directly under a user's unique ID (`/users/{userId}/...`). This means that the `userId` is always part of the document path. Consequently, Firestore Security Rules can directly check `request.auth.uid == userId` without needing to perform `get()` operations on parent documents to determine ownership or permissions. For instance, to check if a user can access a `Document` or an `IdentityProofExtraction`, the rule simply compares the authenticated user's UID with the `{userId}` wildcard in the path. This eliminates hierarchical authorization dependencies, making rules atomic, faster, and easier to debug.\n\nWhile the entity schemas include `userId` in `Document` and `documentId` in extraction entities, these serve primarily for data integrity, querying flexibility, and client-side data modeling rather than direct authorization in rules. The path itself carries the necessary authorization context.\n\n**QAPs (Rules are not Filters):** The structure ensures that security rules are not used as filters. All documents for a specific user are stored under their unique path, `/users/{userId}/documents/{documentId}`. When a user queries for their documents (`/users/{request.auth.uid}/documents`), the query itself is scoped to their data. The security rule (`allow read: if request.auth.uid == userId;`) simply enforces that only the owner can access their subcollection. There are no public documents mixed with private ones, which would necessitate filtering on document fields. This homogeneous security posture within each user's hierarchy allows for efficient and secure `list` operations, as the server-side rules will only grant access to data already partitioned by the user's ID.\n\n**Structural Segregation:** All application data is fundamentally private and owned by individual users. There are no "
   }
 }

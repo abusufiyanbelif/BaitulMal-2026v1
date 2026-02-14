@@ -1,20 +1,16 @@
-
 /**
- * Core Philosophy: This ruleset uses a mixed-privacy model. User-specific data is private and
- * protected under the `/users/{userId}` path. Public-facing data, such as campaigns and settings,
- * is globally readable to support public pages, while write access is restricted to authenticated users.
+ * Core Philosophy: This ruleset enforces a strict user-ownership security model. All application data, including user profiles, uploaded documents, and their extracted content, is considered private. A user can only access data that exists within their own designated data tree, identified by their unique user ID.
  *
- * Data Structure:
- * - `/users/{userId}`: Private user data, accessible only by the owner or an admin.
- * - `/campaigns`, `/donations`, `/settings`: Publicly readable data for the website.
- * - `/leads`, `/user_lookups`: Internal data accessible only by authenticated users, with stricter writes.
+ * Data Structure: The entire data model is hierarchical, starting with a top-level `users` collection. Each user has a single document in this collection, where the document ID matches their Firebase Authentication UID. All subsequent data, such as documents and extractions, are stored in subcollections under this user-specific document (e.g., `/users/{userId}/documents/{documentId}`). This structure is fundamental to the security model.
  *
  * Key Security Decisions:
- * - Public Reads: `campaigns`, `donations`, and `settings` are readable by anyone to populate public-facing pages.
- * - Authenticated Writes: All write operations (create, update, delete) on public collections still require user authentication.
- *   Client-side logic is responsible for role-based authorization (e.g., only admins can edit settings).
- * - Admin Override: Admins have read/write access to user data for management purposes.
- * - No User Enumeration: Listing documents in `/users` is restricted to admins.
+ * - User Privacy: There are no public collections. All data is private to the owning user.
+ * - No User Enumeration: Listing the top-level `/users` collection is explicitly disallowed to prevent malicious actors from discovering the application's user base.
+ * - Path-Based Authorization: Security decisions are made primarily using the document's path. This is highly performant as it avoids costly database lookups (`get()` calls) to other documents to verify permissions.
+ *
+ * Denormalization for Authorization: The core security strategy relies on the data's path. By placing all of a user's data under `/users/{userId}`, we use the `{userId}` wildcard as a denormalized authorization key. The rules can simply compare this path segment to the authenticated user's ID (`request.auth.uid`) to grant or deny access, which is the most efficient method available in Firestore.
+ *
+ * Structural Segregation: The data is segregated by user at the highest level. Each user's data exists in a completely separate document tree. This clean separation prevents any possibility of data leakage between users and simplifies list queries, as any query will only ever operate on a single user's data partition.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -25,270 +21,180 @@ service cloud.firestore {
     // ----------------------------------------------------------------------
 
     /**
-     * Checks if the user is authenticated.
+     * Verifies that the request is coming from an authenticated user.
      */
     function isSignedIn() {
       return request.auth != null;
     }
-    
-    /**
-     * Checks if the currently authenticated user has the 'Admin' role in their user document.
-     * WARNING: This incurs a document read on every check. Use judiciously.
-     */
-    function isUserAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
-    }
 
     /**
-     * Checks if the currently authenticated user's UID matches the provided userId.
-     * This is the primary function for verifying data ownership.
+     * Checks if the currently authenticated user's ID matches the provided userId.
+     * This is the primary function for enforcing document ownership.
      */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
     /**
-     * For update and delete operations, confirms the document exists AND the user is the owner.
-     * This prevents users from attempting to modify documents that don't exist.
+     * Checks for ownership on an existing document. Used for update/delete
+     * operations to prevent acting on documents that don't exist.
      */
     function isExistingOwner(userId) {
       return isOwner(userId) && resource != null;
     }
 
     /**
-     * On create, validates that the user is creating their own profile document
-     * and that the document's internal 'id' field matches the path UID for integrity.
+     * On create, validates that the UserProfile document's internal `id` field
+     * matches the document's ID in the path (`userId`).
      */
-    function isCreatingOwnValidProfile(userId) {
-      return isOwner(userId) && request.resource.data.id == userId;
+    function isUserProfileDataConsistent(userId) {
+      return request.resource.data.id == userId;
     }
 
     /**
-     * On update, ensures the document's internal 'id' field cannot be changed.
+     * On update, ensures the UserProfile's `id` field is immutable.
      */
-    function isProfileIdImmutable() {
+    function isUserProfileIdImmutable() {
       return request.resource.data.id == resource.data.id;
+    }
+
+    /**
+     * On create, validates that the Document's internal `userId` field
+     * matches the `userId` from the path.
+     */
+    function isDocumentDataConsistent(userId) {
+      return request.resource.data.userId == userId;
+    }
+
+    /**
+     * On update, ensures the Document's `userId` field is immutable.
+     */
+    function isDocumentUserIdImmutable() {
+      return request.resource.data.userId == resource.data.userId;
     }
     
     /**
-     * On create, validates the user is creating a document under their own path and
-     * that the denormalized `userId` field is correctly set to their own UID.
+     * On create, validates that an extraction's internal `documentId` field
+     * matches the `documentId` from the path.
      */
-    function isCreatingOwnValidDocument(userId) {
-      return isOwner(userId) && request.resource.data.userId == userId;
-    }
-
-    /**
-     * On update, ensures the denormalized `userId` ownership field is immutable.
-     */
-    function isDocumentOwnerImmutable() {
-      return request.resource.data.userId == resource.data.userId;
-    }
-
-    /**
-     * On create, validates that a detail record's internal `documentId` correctly
-     * references the parent document ID from the path.
-     */
-    function isCreatingValidDetail(documentId) {
+    function isExtractionDataConsistent(documentId) {
       return request.resource.data.documentId == documentId;
     }
 
     /**
-     * On update, ensures the parent document link (`documentId`) is immutable.
+     * On update, ensures an extraction's `documentId` field is immutable.
      */
-    function isDetailParentLinkImmutable() {
+    function isExtractionDocIdImmutable() {
       return request.resource.data.documentId == resource.data.documentId;
     }
-    
-    // ----------------------------------------------------------------------
-    // Collection Group Rules
-    // ----------------------------------------------------------------------
-    match /{path=**}/beneficiaries/{beneficiaryId} {
-      // This rule allows collection group queries on 'beneficiaries'.
-      // Reads are allowed only by authenticated users.
-      allow read: if isSignedIn();
-    }
-
-
-    // ----------------------------------------------------------------------
-    // Publicly Readable Collections
-    // ----------------------------------------------------------------------
 
     /**
-     * @description Manages campaigns, which are publicly viewable.
-     * @path /campaigns/{campaignId}
+     * On create, validates that a Line Item's internal `billingExtractionId`
+     * field matches the `billingExtractionId` from the path.
      */
-    match /campaigns/{campaignId} {
-      // Allow GET if document is public OR user is signed in
-      allow get: if (resource.data.authenticityStatus == 'Verified' && resource.data.publicVisibility == 'Published') || isSignedIn();
-      // Allow LIST for all; client query is responsible for filtering.
-      allow list: if true;
-      // Allow WRITE only for signed-in users (UI manages roles).
-      allow write: if isSignedIn();
-    }
-    
-    /**
-     * @description Manages beneficiaries within a campaign.
-     * @path /campaigns/{campaignId}/beneficiaries/{beneficiaryId}
-     */
-    match /campaigns/{campaignId}/beneficiaries/{beneficiaryId} {
-        // Allow reads if the parent campaign is public, or if the user is signed in.
-        // Writes are always restricted to signed-in users.
-        allow read: if (get(/databases/$(database)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published'
-                      && get(/databases/$(database)/documents/campaigns/$(campaignId)).data.authenticityStatus == 'Verified')
-                     || isSignedIn();
-        allow write: if isSignedIn();
+    function isLineItemDataConsistent(billingExtractionId) {
+      return request.resource.data.billingExtractionId == billingExtractionId;
     }
 
     /**
-     * @description Manages donations, which are publicly readable for summary charts.
-     * @path /donations/{donationId}
-     * @allow (read) Anyone can read donation data for aggregation on public pages.
-     * @allow (write) Only authenticated users can manage donations.
+     * On update, ensures a Line Item's `billingExtractionId` field is immutable.
      */
-    match /donations/{donationId} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
-
-    /**
-     * @description Manages public app settings like branding.
-     * @path /settings/{docId}
-     * @allow (read) Anyone can read settings.
-     * @allow (write) Only authenticated users can modify settings (UI restricts to admins).
-     */
-    match /settings/{docId} {
-        allow read: if true;
-        allow write: if isSignedIn();
-    }
-
-    /**
-     * @description Manages leads, which are publicly viewable in some cases.
-     * @path /leads/{leadId}
-     */
-    match /leads/{leadId} {
-      // Allow GET if document is public OR user is signed in
-      allow get: if (resource.data.authenticityStatus == 'Verified' && resource.data.publicVisibility == 'Published') || isSignedIn();
-      // Allow LIST for all; client query is responsible for filtering.
-      allow list: if true;
-      // Allow WRITE only for signed-in users (UI manages roles).
-      allow write: if isSignedIn();
-      
-      match /beneficiaries/{beneficiaryId} {
-        // Allow reads if the parent lead is public, or if the user is signed in.
-        // Writes are always restricted to signed-in users.
-        allow read: if (get(/databases/$(database)/documents/leads/$(leadId)).data.publicVisibility == 'Published'
-                      && get(/databases/$(database)/documents/leads/$(leadId)).data.authenticityStatus == 'Verified')
-                     || isSignedIn();
-        allow write: if isSignedIn();
-      }
+    function isLineItemExtractionIdImmutable() {
+      return request.resource.data.billingExtractionId == resource.data.billingExtractionId;
     }
 
     // ----------------------------------------------------------------------
-    // Internal & Private Collections
+    // Collection Rules
     // ----------------------------------------------------------------------
-    
-     /**
-     * @description Manages the master list of all beneficiaries.
-     * @path /beneficiaries/{beneficiaryId}
-     * @allow (read, write) Any authenticated user can read or write. Client-side logic enforces granular permissions.
-     */
-    match /beneficiaries/{beneficiaryId} {
-      allow read, write: if isSignedIn();
-    }
 
     /**
-     * @description Lookup table for finding a user's email by loginId or phone.
-     * @path /user_lookups/{lookupId}
-     * @allow (get) Anyone can perform a direct lookup during login.
-     * @deny (list) Listing all lookups is denied to prevent user enumeration.
-     * @allow (write, delete) Only admins can write (for profile creation/updates).
-     */
-    match /user_lookups/{lookupId} {
-        allow get: if true;
-        allow list: if false;
-        allow write, delete: if isUserAdmin();
-    }
-
-    // ----------------------------------------------------------------------
-    // User-Private Collections
-    // ----------------------------------------------------------------------
-    
-    /**
-     * @description Manages user profile documents.
+     * @description Controls access to user profile documents.
      * @path /users/{userId}
-     * @allow (get) Owner or an admin can read a user profile.
-     * @allow (list) Only admins can list all users.
-     * @allow (create) An admin or a new user creating their own profile.
-     * @allow (update) An owner or an admin can update a profile.
-     * @principle Secures user data while allowing for admin oversight.
+     * @allow (create) An authenticated user creating their own profile document.
+     * @deny (list) Any user, to prevent enumeration of the user base.
+     * @principle A user owns their profile. They can create, read, update, and delete it, but cannot see other users' profiles.
      */
     match /users/{userId} {
-      allow get: if isOwner(userId) || isUserAdmin();
-      allow list: if isUserAdmin();
-      allow create: if isCreatingOwnValidProfile(userId) || isUserAdmin();
-      allow update: if (isExistingOwner(userId) && isProfileIdImmutable()) || isUserAdmin();
-      allow delete: if false; // Deleting users should be a privileged server-side operation.
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && isUserProfileDataConsistent(userId);
+      allow update: if isExistingOwner(userId) && isUserProfileIdImmutable();
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Manages user-uploaded documents, which are stored in a subcollection.
+     * @description Controls access to a user's uploaded documents.
      * @path /users/{userId}/documents/{documentId}
-     * @allow (create) An authenticated user creating a document for themselves.
+     * @allow (create) An authenticated user creating a document under their own profile.
      * @deny (get) A user trying to read a document belonging to another user.
-     * @principle Enforces document ownership for all operations using the path's {userId}.
+     * @principle Restricts all access to the user's own data tree, enforcing strict data privacy.
      */
     match /users/{userId}/documents/{documentId} {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
-      allow create: if isCreatingOwnValidDocument(userId);
-      allow update: if isExistingOwner(userId) && isDocumentOwnerImmutable();
+      allow create: if isOwner(userId) && isDocumentDataConsistent(userId);
+      allow update: if isExistingOwner(userId) && isDocumentUserIdImmutable();
       allow delete: if isExistingOwner(userId);
-    }
 
-    /**
-     * @description Secures extracted details from an identity proof document.
-     * @path /users/{userId}/documents/{documentId}/identityProofDetails/{identityProofDetailsId}
-     * @allow (update) The document owner updating details of their own identity proof.
-     * @deny (list) A user trying to list identity details from another user's document.
-     * @principle Inherits ownership from the path, ensuring only the owner can access sensitive details.
-     */
-    match /users/{userId}/documents/{documentId}/identityProofDetails/{identityProofDetailsId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && isCreatingValidDetail(documentId);
-      allow update: if isExistingOwner(userId) && isDetailParentLinkImmutable();
-      allow delete: if isExistingOwner(userId);
-    }
+      /**
+       * @description Controls access to identity proof extractions for a specific document.
+       * @path /users/{userId}/documents/{documentId}/identityProofExtractions/{extractionId}
+       * @allow (list) The document owner listing their own identity proof extractions.
+       * @deny (create) Another user attempting to add an extraction to someone else's document.
+       * @principle Inherits ownership from the parent document path, ensuring only the owner can manage their sensitive extracted data.
+       */
+      match /identityProofExtractions/{extractionId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isExtractionDataConsistent(documentId);
+        allow update: if isExistingOwner(userId) && isExtractionDocIdImmutable();
+        allow delete: if isExistingOwner(userId);
+      }
 
-    /**
-     * @description Secures extracted details from a billing document.
-     * @path /users/{userId}/documents/{documentId}/billingDetails/{billingDetailsId}
-     * @allow (get) The document owner reading their own billing information.
-     * @deny (create) A user trying to create billing details under another user's document.
-     * @principle Inherits ownership from the path, ensuring only the owner can access sensitive details.
-     */
-    match /users/{userId}/documents/{documentId}/billingDetails/{billingDetailsId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && isCreatingValidDetail(documentId);
-      allow update: if isExistingOwner(userId) && isDetailParentLinkImmutable();
-      allow delete: if isExistingOwner(userId);
-    }
+      /**
+       * @description Controls access to billing extractions for a specific document.
+       * @path /users/{userId}/documents/{documentId}/billingExtractions/{extractionId}
+       * @allow (get) The document owner reading their own billing extraction.
+       * @deny (update) Another user attempting to modify an extraction on someone else's document.
+       * @principle Inherits ownership from the parent document path, ensuring only the owner can manage their sensitive extracted data.
+       */
+      match /billingExtractions/{extractionId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isExtractionDataConsistent(documentId);
+        allow update: if isExistingOwner(userId) && isExtractionDocIdImmutable();
+        allow delete: if isExistingOwner(userId);
 
-    /**
-     * @description Secures extracted details from a medical report.
-     * @path /users/{userId}/documents/{documentId}/medicalReportDetails/{medicalReportDetailsId}
-     * @allow (delete) The document owner deleting their own medical report data.
-     * @deny (get) A user trying to access another user's private medical information.
-     * @principle Inherits ownership from the path, ensuring only the owner can access sensitive details.
-     */
-    match /users/{userId}/documents/{documentId}/medicalReportDetails/{medicalReportDetailsId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && isCreatingValidDetail(documentId);
-      allow update: if isExistingOwner(userId) && isDetailParentLinkImmutable();
-      allow delete: if isExistingOwner(userId);
+        /**
+         * @description Controls access to line items within a billing extraction.
+         * @path /users/{userId}/documents/{documentId}/billingExtractions/{billingExtractionId}/lineItems/{lineItemId}
+         * @allow (delete) The document owner deleting a line item from their billing extraction.
+         * @deny (get) Any user trying to access a line item belonging to another user.
+         * @principle Deeply nested ownership is enforced by checking the top-level `userId` in the path.
+         */
+        match /lineItems/{lineItemId} {
+          allow get: if isOwner(userId);
+          allow list: if isOwner(userId);
+          allow create: if isOwner(userId) && isLineItemDataConsistent(extractionId);
+          allow update: if isExistingOwner(userId) && isLineItemExtractionIdImmutable();
+          allow delete: if isExistingOwner(userId);
+        }
+      }
+
+      /**
+       * @description Controls access to medical report extractions for a specific document.
+       * @path /users/{userId}/documents/{documentId}/medicalReportExtractions/{extractionId}
+       * @allow (create) The document owner creating a new medical extraction record.
+       * @deny (list) Another user trying to list extractions from someone else's document.
+       * @principle Inherits ownership from the parent document path, ensuring only the owner can manage their sensitive extracted data.
+       */
+      match /medicalReportExtractions/{extractionId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isExtractionDataConsistent(documentId);
+        allow update: if isExistingOwner(userId) && isExtractionDocIdImmutable();
+        allow delete: if isExistingOwner(userId);
+      }
     }
   }
 }

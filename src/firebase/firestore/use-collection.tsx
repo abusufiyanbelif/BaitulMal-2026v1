@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Query,
   onSnapshot,
@@ -23,7 +23,18 @@ export interface UseCollectionResult<T> {
   data: WithId<T>[] | null; // Document data with ID, or null.
   isLoading: boolean;       // True if loading.
   error: FirestoreError | Error | null; // Error object, or null.
-  forceRefetch: () => void;
+}
+
+/* Internal implementation of Query:
+  https://github.com/firebase/firebase-js-sdk/blob/c5f08a9bc5da0d2b0207802c972d53724ccef055/packages/firestore/src/lite-api/reference.ts#L143
+*/
+export interface InternalQuery extends Query<DocumentData> {
+  _query: {
+    path: {
+      canonicalString(): string;
+      toString(): string;
+    }
+  }
 }
 
 /**
@@ -41,19 +52,14 @@ export interface UseCollectionResult<T> {
  * @returns {UseCollectionResult<T>} Object with data, isLoading, error.
  */
 export function useCollection<T = any>(
-    memoizedTargetRefOrQuery: CollectionReference<DocumentData> | Query<DocumentData> | null | undefined,
+    memoizedTargetRefOrQuery: ((CollectionReference<DocumentData> | Query<DocumentData>) & {__memo?: boolean})  | null | undefined,
 ): UseCollectionResult<T> {
   type ResultItemType = WithId<T>;
   type StateDataType = ResultItemType[] | null;
 
   const [data, setData] = useState<StateDataType>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
-  const [refetchToggle, setRefetchToggle] = useState(false);
-
-  const forceRefetch = useCallback(() => {
-    setRefetchToggle(prev => !prev);
-  }, []);
 
   useEffect(() => {
     if (!memoizedTargetRefOrQuery) {
@@ -79,30 +85,20 @@ export function useCollection<T = any>(
         setIsLoading(false);
       },
       (error: FirestoreError) => {
-        let path = 'unknown_path';
-        try {
-          if (memoizedTargetRefOrQuery.type === 'collection') {
-            path = (memoizedTargetRefOrQuery as CollectionReference).path;
-          } else if (memoizedTargetRefOrQuery.type === 'query') {
-            // Safely access internal properties for debugging; this is not a public API.
-            const internalQuery = memoizedTargetRefOrQuery as any;
-            if (internalQuery._query?.path?.canonicalString) {
-              path = internalQuery._query.path.canonicalString();
-            }
-          }
-        } catch (e) {
-          // If accessing internal properties fails, log a warning but don't crash.
-          console.warn('Could not determine path for Firestore error reporting.', e);
-        }
+        // This logic extracts the path from either a ref or a query
+        const path: string =
+          memoizedTargetRefOrQuery.type === 'collection'
+            ? (memoizedTargetRefOrQuery as CollectionReference).path
+            : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString()
 
         const contextualError = new FirestorePermissionError({
           operation: 'list',
           path,
-        });
+        })
 
-        setError(contextualError);
-        setData(null);
-        setIsLoading(false);
+        setError(contextualError)
+        setData(null)
+        setIsLoading(false)
 
         // trigger global error propagation
         errorEmitter.emit('permission-error', contextualError);
@@ -110,7 +106,9 @@ export function useCollection<T = any>(
     );
 
     return () => unsubscribe();
-  }, [memoizedTargetRefOrQuery, refetchToggle]); // Re-run if the target query/reference changes.
-  
-  return { data, isLoading, error, forceRefetch };
+  }, [memoizedTargetRefOrQuery]); // Re-run if the target query/reference changes.
+  if(memoizedTargetRefOrQuery && !memoizedTargetRefOrQuery.__memo) {
+    throw new Error(memoizedTargetRefOrQuery + ' was not properly memoized using useMemoFirebase');
+  }
+  return { data, isLoading, error };
 }
