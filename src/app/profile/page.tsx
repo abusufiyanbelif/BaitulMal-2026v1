@@ -220,6 +220,7 @@ export default function ProfilePage() {
                                 src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
                                 alt="ID Proof"
                                 fill
+                                sizes="100vw"
                                 className="object-contain transition-transform duration-200 ease-out origin-center"
                                 style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
                                 unoptimized

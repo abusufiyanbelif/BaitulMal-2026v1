@@ -573,7 +573,7 @@ Your contribution, big or small, makes a huge difference.
                                     <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
                                         {imagePreview ? (
                                             <>
-                                                <Image src={imagePreview} alt="Preview" fill className="object-cover rounded-lg" sizes="100vw" />
+                                                <Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" />
                                                 <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}>
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -590,7 +590,7 @@ Your contribution, big or small, makes a huge difference.
                                     </label>
                                 </div>
                             ) : (
-                                campaign.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden"><Image src={campaign.imageUrl} alt={campaign.name} fill className="object-cover" sizes="100vw" /></div>
+                                campaign.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden"><Image src={campaign.imageUrl} alt={campaign.name} fill sizes="100vw" className="object-cover" /></div>
                             )}
 
                             <div>

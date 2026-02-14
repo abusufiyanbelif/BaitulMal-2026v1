@@ -258,6 +258,7 @@ Your contribution, big or small, makes a huge difference.
                     src={lead.imageUrl || placeholderImages.lead_fallback}
                     alt={lead.name}
                     fill
+                    sizes="100vw"
                     className="object-cover"
                     data-ai-hint="lead background"
                     priority

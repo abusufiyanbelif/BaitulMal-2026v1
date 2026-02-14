@@ -255,6 +255,7 @@ export default function CampaignPage() {
           src={campaign.imageUrl || placeholderImages.campaign_fallback}
           alt={campaign.name}
           fill
+          sizes="100vw"
           className="object-cover"
           data-ai-hint="campaign background"
         />
@@ -542,5 +543,3 @@ export default function CampaignPage() {
     </>
   );
 }
-
-    

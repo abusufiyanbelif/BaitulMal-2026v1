@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -14,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DollarSign, CheckCircle2, Hourglass, XCircle, ChevronDown, ChevronUp, DatabaseZap, Check, ChevronsUpDown, X } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DollarSign, CheckCircle2, Hourglass, XCircle, DatabaseZap, Check, ChevronsUpDown, X } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -849,6 +850,7 @@ export default function DonationsPage() {
                         src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
                         alt="Donation screenshot"
                         fill
+                        sizes="100vw"
                         className="object-contain transition-transform duration-200 ease-out origin-center"
                         style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
                         unoptimized

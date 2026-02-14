@@ -32,6 +32,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                           src={campaign.imageUrl || placeholderImages.campaign_fallback}
                           alt={campaign.name}
                           fill
+                          sizes="100vw"
                           className="object-cover"
                           data-ai-hint="campaign background"
                         />

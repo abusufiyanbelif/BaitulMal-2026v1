@@ -222,6 +222,7 @@ export default function LeadPage() {
           src={lead.imageUrl || placeholderImages.lead_fallback}
           alt={lead.name}
           fill
+          sizes="100vw"
           className="object-cover"
           data-ai-hint="lead background"
         />
@@ -511,6 +512,3 @@ export default function LeadPage() {
     </>
   );
 }
-
-    
-
