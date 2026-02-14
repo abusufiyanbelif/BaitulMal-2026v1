@@ -21,8 +21,6 @@
     "fix:iam": "tsx scripts/fix:iam.ts"
   },
   "dependencies": {
-    "@dataconnect/admin-generated": "file:src/dataconnect-admin-generated",
-    "@dataconnect/generated": "file:src/dataconnect-generated",
     "@genkit-ai/google-genai": "^1.0.0",
     "@google-cloud/resource-manager": "^5.0.1",
     "@hookform/resolvers": "3.3.4",
