@@ -12,14 +12,14 @@ import { useSession } from '@/hooks/use-session';
 import { doc, collection, updateDoc, query, where, DocumentReference } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import Link from 'next/link';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 import type { Lead, Beneficiary, Donation, DonationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, Users, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, Gift, UploadCloud, Trash2, FolderKanban, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Loader2, Users, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, Gift, UploadCloud, Trash2, FolderKanban, Lightbulb, Target } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
@@ -471,22 +471,70 @@ Your contribution, big or small, makes a huge difference.
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Funding Progress</CardTitle>
-                        <CardDescription>
-                            ₹{summaryData?.totalCollectedForGoal.toLocaleString('en-IN') ?? 0} of ₹{(summaryData?.targetAmount ?? 0).toLocaleString('en-IN')} funded from selected donation types.
-                        </CardDescription>
+                        <CardTitle className="flex items-center gap-2">
+                            <Target className="h-6 w-6 text-primary" />
+                            Fundraising Progress
+                        </CardTitle>
+                        <CardDescription>A real-time look at the collected donations against the goal for this initiative.</CardDescription>
                     </CardHeader>
-                     <CardContent>
-                        <Progress value={summaryData?.fundingProgress || 0} />
-                        <div className="mt-4 space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Pending Verification</span>
-                                <span className="font-medium">₹{summaryData?.pendingDonations.toLocaleString('en-IN') ?? 0}</span>
+                    <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                            <div className="relative h-48 w-full">
+                                <ChartContainer
+                                    config={{
+                                        progress: {
+                                            label: 'Progress',
+                                            color: 'hsl(var(--primary))',
+                                        },
+                                    }}
+                                    className="mx-auto aspect-square h-full"
+                                >
+                                    <RadialBarChart
+                                        data={[{ name: 'Progress', value: summaryData?.fundingProgress || 0, fill: 'hsl(var(--primary))' }]}
+                                        startAngle={-270}
+                                        endAngle={90}
+                                        innerRadius="75%"
+                                        outerRadius="100%"
+                                        barSize={20}
+                                    >
+                                    <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                    <RadialBar
+                                        dataKey="value"
+                                        background={{ fill: 'hsl(var(--muted))' }}
+                                        cornerRadius={10}
+                                    />
+                                    <ChartTooltip
+                                        cursor={false}
+                                        content={<ChartTooltipContent hideLabel />}
+                                    />
+                                    </RadialBarChart>
+                                </ChartContainer>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span className="text-4xl font-bold text-primary">
+                                        {(summaryData?.fundingProgress || 0).toFixed(0)}%
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">Funded</span>
+                                </div>
                             </div>
-                            <Separator className="my-2"/>
-                            <div className="flex justify-between text-base font-semibold">
-                                <span>Grand Total Received for Lead</span>
-                                <span className="text-primary">₹{summaryData?.fundTotals.grandTotal.toLocaleString('en-IN') ?? 0}</span>
+                            <div className="space-y-4 text-center md:text-left">
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Raised for Goal</p>
+                                    <p className="text-3xl font-bold">
+                                    ₹{(summaryData?.totalCollectedForGoal || 0).toLocaleString('en-IN')}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Fundraising Target</p>
+                                    <p className="text-3xl font-bold">
+                                    ₹{(summaryData?.targetAmount || 0).toLocaleString('en-IN')}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Grand Total Received</p>
+                                    <p className="text-3xl font-bold">
+                                    ₹{(summaryData?.fundTotals.grandTotal || 0).toLocaleString('en-IN')}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </CardContent>

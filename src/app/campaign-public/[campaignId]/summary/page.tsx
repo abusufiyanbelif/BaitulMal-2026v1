@@ -21,13 +21,16 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  RadialBarChart,
+  RadialBar,
+  PolarAngleAxis,
 } from 'recharts';
 
 import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift } from 'lucide-react';
+import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift, Target } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
@@ -318,13 +321,66 @@ Your contribution, big or small, makes a huge difference.
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Funding Progress (for Kits)</CardTitle>
-                        <CardDescription>
-                            ₹{fundingData?.totalCollectedForGoal.toLocaleString('en-IN') ?? 0} of ₹{(fundingData?.targetAmount ?? 0).toLocaleString('en-IN')} funded from selected donation types.
-                        </CardDescription>
+                        <CardTitle className="flex items-center gap-2">
+                            <Target className="h-6 w-6 text-primary" />
+                            Fundraising Progress
+                        </CardTitle>
+                        <CardDescription>A real-time look at our collected donations against the goal for this campaign.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Progress value={fundingData?.fundingProgress || 0} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                            <div className="relative h-48 w-full">
+                                <ChartContainer
+                                    config={{
+                                        progress: {
+                                            label: 'Progress',
+                                            color: 'hsl(var(--primary))',
+                                        },
+                                    }}
+                                    className="mx-auto aspect-square h-full"
+                                >
+                                    <RadialBarChart
+                                        data={[{ name: 'Progress', value: fundingData?.fundingProgress || 0, fill: 'hsl(var(--primary))' }]}
+                                        startAngle={-270}
+                                        endAngle={90}
+                                        innerRadius="75%"
+                                        outerRadius="100%"
+                                        barSize={20}
+                                    >
+                                    <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                    <RadialBar
+                                        dataKey="value"
+                                        background={{ fill: 'hsl(var(--muted))' }}
+                                        cornerRadius={10}
+                                    />
+                                    <ChartTooltip
+                                        cursor={false}
+                                        content={<ChartTooltipContent hideLabel />}
+                                    />
+                                    </RadialBarChart>
+                                </ChartContainer>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span className="text-4xl font-bold text-primary">
+                                        {(fundingData?.fundingProgress || 0).toFixed(0)}%
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">Funded</span>
+                                </div>
+                            </div>
+                            <div className="space-y-4 text-center md:text-left">
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Collected for Goal</p>
+                                    <p className="text-3xl font-bold">
+                                    ₹{(fundingData?.totalCollectedForGoal || 0).toLocaleString('en-IN')}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Fundraising Target</p>
+                                    <p className="text-3xl font-bold">
+                                    ₹{(fundingData?.targetAmount || 0).toLocaleString('en-IN')}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -401,40 +457,40 @@ Your contribution, big or small, makes a huge difference.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="w-full overflow-x-auto">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="whitespace-nowrap">Category Name</TableHead>
-                                                <TableHead className="text-center whitespace-nowrap">Total Beneficiaries</TableHead>
-                                                <TableHead className="text-right whitespace-nowrap">Kit Amount (per kit)</TableHead>
-                                                <TableHead className="text-right whitespace-nowrap">Total Kit Amount</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {beneficiaryData.sortedBeneficiaryCategories.map(memberCount => {
-                                                const group = beneficiaryData.beneficiariesByCategory[memberCount];
-                                                const count = group.beneficiaries.length;
-                                                const kitAmount = group.beneficiaries[0]?.kitAmount || 0;
-                                                return (
-                                                    <TableRow key={memberCount}>
-                                                        <TableCell className="font-medium">{memberCount} Members</TableCell>
-                                                        <TableCell className="text-center">{count}</TableCell>
-                                                        <TableCell className="text-right font-mono">₹{kitAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                                        <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                                    </TableRow>
-                                                )
-                                            })}
-                                        </TableBody>
-                                        <TableFooter>
-                                            <TableRow>
-                                                <TableCell className="font-bold">Total</TableCell>
-                                                <TableCell className="text-center font-bold">{beneficiaryData.totalBeneficiaries}</TableCell>
-                                                <TableCell></TableCell>
-                                                <TableCell className="text-right font-bold font-mono">₹{Object.values(beneficiaryData.beneficiariesByCategory).reduce((sum, group) => sum + group.totalAmount, 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                            </TableRow>
-                                        </TableFooter>
-                                    </Table>
+                              <div className="w-full overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="whitespace-nowrap">Category Name</TableHead>
+                                            <TableHead className="text-center whitespace-nowrap">Total Beneficiaries</TableHead>
+                                            <TableHead className="text-right whitespace-nowrap">Kit Amount (per kit)</TableHead>
+                                            <TableHead className="text-right whitespace-nowrap">Total Kit Amount</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {beneficiaryData.sortedBeneficiaryCategories.map(memberCount => {
+                                            const group = beneficiaryData.beneficiariesByCategory[memberCount];
+                                            const count = group.beneficiaries.length;
+                                            const kitAmount = group.beneficiaries[0]?.kitAmount || 0;
+                                            return (
+                                                <TableRow key={memberCount}>
+                                                    <TableCell className="font-medium">{memberCount} Members</TableCell>
+                                                    <TableCell className="text-center">{count}</TableCell>
+                                                    <TableCell className="text-right font-mono">₹{kitAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                                    <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
+                                    </TableBody>
+                                    <TableFooter>
+                                        <TableRow>
+                                            <TableCell className="font-bold">Total</TableCell>
+                                            <TableCell className="text-center font-bold">{beneficiaryData.totalBeneficiaries}</TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell className="text-right font-bold font-mono">₹{Object.values(beneficiaryData.beneficiariesByCategory).reduce((sum, group) => sum + group.totalAmount, 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                        </TableRow>
+                                    </TableFooter>
+                                </Table>
                                 </div>
                             </CardContent>
                         </Card>
