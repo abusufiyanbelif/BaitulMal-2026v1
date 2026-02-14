@@ -197,7 +197,7 @@ export default function BeneficiariesPage() {
     const leadDocRef = doc(firestore, 'leads', leadId);
     
     const newBeneficiaryId = masterId || (editingBeneficiary ? editingBeneficiary.id : doc(collection(firestore, 'beneficiaries')).id);
-    const leadBeneficiaryDocRef = doc(firestore, `leads/${leadId}/beneficiaries`, newBeneficiaryId);
+    const leadBeneficiaryDocRef = doc(firestore, 'leads', leadId, 'beneficiaries', newBeneficiaryId);
     const masterBeneficiaryDocRef = doc(firestore, 'beneficiaries', newBeneficiaryId);
     
     let finalData: any;
