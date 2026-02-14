@@ -1,4 +1,3 @@
-
 'use client';
 import { useBranding } from '@/hooks/use-branding';
 import { TempLogo } from '@/components/temp-logo';
@@ -10,8 +9,8 @@ export function BrandedLoader() {
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     const [animationData, setAnimationData] = useState(null);
 
-    const loadingAnimationUrl = brandingSettings?.loadingAnimationUrl?.trim() ? brandingSettings.loadingAnimationUrl : null;
-    const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
+    const loadingAnimationUrl = !isBrandingLoading && brandingSettings?.loadingAnimationUrl?.trim() ? brandingSettings.loadingAnimationUrl : null;
+    const validLogoUrl = !isBrandingLoading && brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
 
     useEffect(() => {
         if (loadingAnimationUrl) {
@@ -24,16 +23,12 @@ export function BrandedLoader() {
                 });
         }
     }, [loadingAnimationUrl]);
-
-    if (isBrandingLoading) {
-        return <div className="fixed inset-0 z-[9999] bg-background"></div>;
-    }
     
     // Set a large, fixed size for the loader based on user request.
     const logoContainerWidth = 500;
     const logoContainerHeight = 500;
     
-    const animationContainerSize = Math.max(logoContainerWidth, logoContainerHeight) * 1.5;
+    const animationContainerSize = Math.max(logoContainerWidth, logoContainerHeight) * 1.2;
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background">
@@ -45,7 +40,11 @@ export function BrandedLoader() {
                         height: `${logoContainerHeight}px`
                     }}
                 >
-                    {validLogoUrl ? (
+                    {isBrandingLoading || !validLogoUrl ? (
+                         <div className="w-full h-full">
+                           <TempLogo />
+                         </div>
+                    ) : (
                          <Image
                             src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                             alt="Logo"
@@ -54,11 +53,7 @@ export function BrandedLoader() {
                             className="object-contain"
                             priority
                          />
-                    ) : !loadingAnimationUrl ? (
-                         <div className="w-full h-full">
-                           <TempLogo />
-                         </div>
-                    ) : null }
+                    )}
                 </div>
 
                 {loadingAnimationUrl && animationData && (
