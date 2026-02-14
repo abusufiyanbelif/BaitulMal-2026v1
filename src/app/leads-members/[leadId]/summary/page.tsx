@@ -38,6 +38,7 @@ import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 
 const donationCategoryChartConfig = {
+    Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
     Sadaqah: { label: "Sadaqah", color: "hsl(var(--chart-2))" },
     Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
@@ -245,18 +246,23 @@ export default function LeadSummaryPage() {
         const paymentTypeData = donations.reduce((acc, d) => { const key = d.donationType || 'Other'; acc[key] = (acc[key] || 0) + 1; return acc; }, {} as Record<string, number>);
         const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
         const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
+        const zakatAllocated = beneficiaries
+            .filter(b => b.isEligibleForZakat && b.zakatAllocation)
+            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
+        const fitraTotal = amountsByCategory['Fitra'] || 0;
         const zakatTotal = amountsByCategory['Zakat'] || 0;
         const loanTotal = amountsByCategory['Loan'] || 0;
         const interestTotal = amountsByCategory['Interest'] || 0;
         const sadaqahTotal = amountsByCategory['Sadaqah'] || 0;
         const lillahTotal = amountsByCategory['Lillah'] || 0;
         const monthlyContributionTotal = amountsByCategory['Monthly Contribution'] || 0;
-        const grandTotal = zakatTotal + loanTotal + interestTotal + sadaqahTotal + lillahTotal + monthlyContributionTotal;
+        const grandTotal = fitraTotal + zakatTotal + loanTotal + interestTotal + sadaqahTotal + lillahTotal + monthlyContributionTotal;
 
         return {
             totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal), totalBeneficiaries: beneficiaries.length,
             beneficiariesGiven, beneficiariesPending, pendingDonations, amountsByCategory, donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
-            fundTotals: { zakat: zakatTotal, loan: loanTotal, interest: interestTotal, sadaqah: sadaqahTotal, lillah: lillahTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal, }
+            zakatAllocated,
+            fundTotals: { fitra: fitraTotal, zakat: zakatTotal, loan: loanTotal, interest: interestTotal, sadaqah: sadaqahTotal, lillah: lillahTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal, }
         };
     }, [beneficiaries, allDonations, lead]);
     
@@ -384,7 +390,7 @@ Your contribution, big or small, makes a huge difference.
                                 <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
                                     {imagePreview ? (
                                         <>
-                                            <Image src={imagePreview} alt="Preview" fill className="object-cover rounded-lg" />
+                                            <Image src={imagePreview} alt="Preview" fill className="object-cover rounded-lg" sizes="100vw" />
                                             <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}>
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
@@ -401,7 +407,7 @@ Your contribution, big or small, makes a huge difference.
                                 </label>
                             </div>
                         ) : (
-                            lead.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden"><Image src={lead.imageUrl} alt={lead.name} fill className="object-cover" /></div>
+                            lead.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden"><Image src={lead.imageUrl} alt={lead.name} fill className="object-cover" sizes="100vw" /></div>
                         )}
                         <div>
                             <Label htmlFor="description" className="text-sm font-medium text-muted-foreground">Description</Label>
@@ -478,7 +484,7 @@ Your contribution, big or small, makes a huge difference.
                     </CardContent>
                 </Card>
 
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader>
                         <CardContent><div className="text-2xl font-bold">{summaryData?.totalBeneficiaries ?? 0}</div></CardContent>
@@ -488,28 +494,48 @@ Your contribution, big or small, makes a huge difference.
                         <CardContent><div className="text-2xl font-bold">₹{(summaryData?.fundTotals?.grandTotal || 0).toLocaleString('en-IN')}</div></CardContent>
                     </Card>
                     <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Kits Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Items Distributed</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader>
                         <CardContent><div className="text-2xl font-bold">{summaryData?.beneficiariesGiven ?? 0}</div></CardContent>
                     </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Kits Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader>
-                        <CardContent><div className="text-2xl font-bold">{summaryData?.beneficiariesPending ?? 0}</div></CardContent>
-                    </Card>
                 </div>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Zakat Utilization</CardTitle>
+                        <CardDescription>
+                            Tracking of Zakat funds collected and allocated within this lead.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="text-muted-foreground">Total Zakat Collected</span>
+                            <span className="font-semibold font-mono">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="text-muted-foreground">Total Zakat Allocated</span>
+                            <span className="font-semibold font-mono">₹{(summaryData?.zakatAllocated || 0).toLocaleString('en-IN')}</span>
+                        </div>
+                        <Separator />
+                        <div className="flex justify-between items-center text-base">
+                            <span className="font-bold">Zakat Balance</span>
+                            <span className="font-bold text-primary font-mono">₹{((summaryData?.fundTotals.zakat || 0) - (summaryData?.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
+                        </div>
+                    </CardContent>
+                </Card>
                 <div className="grid gap-6 lg:grid-cols-2">
-                    <Card>
+                      <Card>
                         <CardHeader>
                             <CardTitle>Fund Totals by Type</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
-                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold">₹{summaryData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
                             <Separator className="my-2"/>
-                            <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
                         </CardContent>
                       </Card>
                     <Card>
