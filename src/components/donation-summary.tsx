@@ -68,34 +68,73 @@ export function DonationSummary() {
   const summaryData = useMemo(() => {
     if (!donations || !campaigns || !leads) return null;
 
-    // Overall Total
     const totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
 
-    // Yearly Breakdown
-    const yearlyData: Record<string, { totalReceived: number; totalTarget: number; }> = {};
+    const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
+    const allItems = [...campaigns, ...leads];
+    const itemsById = new Map(allItems.map(item => [item.id, item]));
 
     donations.forEach(donation => {
         if (donation.donationDate) {
-            const year = new Date(donation.donationDate).getFullYear().toString();
-            if (!yearlyData[year]) {
-                yearlyData[year] = { totalReceived: 0, totalTarget: 0 };
+            try {
+                const year = new Date(donation.donationDate).getFullYear().toString();
+                if (!yearlyData[year]) {
+                    yearlyData[year] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
+                }
+                yearlyData[year].overallTotalReceived += donation.amount;
+
+                const donationLinks = donation.linkSplit && donation.linkSplit.length > 0 
+                    ? donation.linkSplit
+                    : (donation as any).campaignId ? [{ linkId: (donation as any).campaignId, amount: donation.amount }] : [];
+
+                donationLinks.forEach(link => {
+                    const item = itemsById.get(link.linkId);
+                    if (item) {
+                        const amountForThisItem = link.amount;
+                        const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
+                        const proportion = amountForThisItem / totalDonationAmount;
+
+                        const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
+                            ? donation.typeSplit
+                            : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
+                        
+                        const applicableAmount = typeSplits.reduce((acc, split) => {
+                            const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
+                            if (item.allowedDonationTypes?.includes(category as DonationCategory)) {
+                                return acc + split.amount;
+                            }
+                            return acc;
+                        }, 0);
+
+                        yearlyData[year].totalGoalReceived += applicableAmount * proportion;
+                    }
+                });
+            } catch (e) {
+                // Ignore invalid date format
             }
-            yearlyData[year].totalReceived += donation.amount;
         }
     });
 
-    [...campaigns, ...leads].forEach(item => {
+    allItems.forEach(item => {
         if (item.startDate && item.targetAmount) {
-            const year = new Date(item.startDate).getFullYear().toString();
-             if (!yearlyData[year]) {
-                yearlyData[year] = { totalReceived: 0, totalTarget: 0 };
+            try {
+                const year = new Date(item.startDate).getFullYear().toString();
+                 if (!yearlyData[year]) {
+                    yearlyData[year] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
+                }
+                yearlyData[year].totalTarget += item.targetAmount;
+            } catch(e) {
+                // Ignore invalid date format
             }
-            yearlyData[year].totalTarget += item.targetAmount;
         }
     });
-
+    
     const sortedYearlyData = Object.entries(yearlyData)
-        .map(([year, data]) => ({ year, ...data, progress: data.totalTarget > 0 ? (data.totalReceived / data.totalTarget) * 100 : 0 }))
+        .map(([year, data]) => ({ 
+            year, 
+            ...data, 
+            progress: data.totalTarget > 0 ? (data.totalGoalReceived / data.totalTarget) * 100 : 0 
+        }))
         .sort((a, b) => parseInt(b.year) - parseInt(a.year));
 
 
@@ -145,16 +184,18 @@ export function DonationSummary() {
                     <TableRow>
                         <TableHead className="w-[100px]">Year</TableHead>
                         <TableHead>Fundraising Goal</TableHead>
-                        <TableHead>Donations Received</TableHead>
+                        <TableHead>Donations for Goal</TableHead>
+                        <TableHead>Overall Donations</TableHead>
                         <TableHead className="text-right">Progress</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {summaryData.sortedYearlyData.map(({ year, totalTarget, totalReceived, progress }) => (
+                    {summaryData.sortedYearlyData.map(({ year, totalTarget, totalGoalReceived, overallTotalReceived, progress }) => (
                         <TableRow key={year}>
                             <TableCell className="font-bold">{year}</TableCell>
                             <TableCell>₹{totalTarget.toLocaleString('en-IN')}</TableCell>
-                            <TableCell>₹{totalReceived.toLocaleString('en-IN')}</TableCell>
+                            <TableCell>₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
+                            <TableCell>₹{overallTotalReceived.toLocaleString('en-IN')}</TableCell>
                             <TableCell className="text-right w-[150px]">
                                 <div className="flex items-center gap-2">
                                     <Progress value={progress} className="h-2 flex-1" />
