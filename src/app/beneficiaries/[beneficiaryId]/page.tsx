@@ -22,9 +22,9 @@ interface LinkedInitiative {
     id: string;
     name: string;
     type: 'Campaign' | 'Lead';
-    status: string;
+    status: 'Upcoming' | 'Active' | 'Completed';
     kitAmount: number;
-    beneficiaryStatus: string;
+    beneficiaryStatus: 'Given' | 'Pending' | 'Hold' | 'Need More Details' | 'Verified';
 }
 
 export default function BeneficiaryDetailsPage() {
