@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, RefreshCw, ZoomIn, ZoomOut, RotateCw, DollarSign, CheckCircle2, Hourglass, XCircle, DatabaseZap, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DollarSign, CheckCircle2, Hourglass, XCircle, DatabaseZap, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -523,31 +523,30 @@ export default function DonationsPage() {
                                               {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                               <span className="sr-only">Toggle details</span>
                                           </Button>
-                                      </CollapsibleTrigger>
-                                      <DropdownMenu>
-                                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                  <MoreHorizontal className="h-4 w-4" />
-                                              </Button>
-                                          </DropdownMenuTrigger>
-                                          <DropdownMenuContent align="end">
-                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/leads-members/${leadId}/donations/${donation.id}`); }}>
-                                                  <Eye className="mr-2 h-4 w-4" /> View Details
-                                              </DropdownMenuItem>
-                                              {canUpdate && (
-                                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(donation); }}>
-                                                      <Edit className="mr-2 h-4 w-4" /> Edit
+                                          <DropdownMenu>
+                                              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                      <MoreHorizontal className="h-4 w-4" />
+                                                  </Button>
+                                              </DropdownMenuTrigger>
+                                              <DropdownMenuContent align="end">
+                                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/leads-members/${leadId}/donations/${donation.id}`); }}>
+                                                      <Eye className="mr-2 h-4 w-4" /> View Details
                                                   </DropdownMenuItem>
-                                              )}
-                                              {canDelete && (
-                                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
-                                                      <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                  </DropdownMenuItem>
-                                              )}
-                                          </DropdownMenuContent>
-                                      </DropdownMenu>
-                                  </div>
-                              </TableCell>
+                                                  {canUpdate && (
+                                                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(donation); }}>
+                                                          <Edit className="mr-2 h-4 w-4" /> Edit
+                                                      </DropdownMenuItem>
+                                                  )}
+                                                  {canDelete && (
+                                                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
+                                                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                      </DropdownMenuItem>
+                                                  )}
+                                              </DropdownMenuContent>
+                                          </DropdownMenu>
+                                      </div>
+                                  </TableCell>
                           </TableRow>
                           <CollapsibleContent asChild>
                               <TableRow className="bg-muted/50 hover:bg-muted/50">
