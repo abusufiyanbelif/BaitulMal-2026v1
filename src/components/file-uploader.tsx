@@ -110,7 +110,7 @@ export function FileUploader({
                 src={activePreview} 
                 alt="File preview" 
                 fill 
-                sizes="100vw"
+                sizes="(max-width: 384px) 100vw, 384px"
                 className="object-contain"
                 data-ai-hint="document preview"
               />
@@ -200,3 +200,5 @@ export function FileUploader({
     </div>
   );
 }
+
+  

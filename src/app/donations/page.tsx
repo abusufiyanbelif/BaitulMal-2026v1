@@ -1,7 +1,7 @@
 
 
 'use client';
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
@@ -15,17 +15,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DollarSign, CheckCircle2, Hourglass, XCircle, DatabaseZap, Check, ChevronsUpDown, X } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DollarSign, CheckCircle2, Hourglass, XCircle, DatabaseZap, Check, ChevronsUpDown, X, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
   DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -40,9 +39,10 @@ import {
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -789,7 +789,7 @@ export default function DonationsPage() {
                                       </CollapsibleContent>
                                   </>
                               </Collapsible>
-                          )
+                          );
                       })
                       ) : (
                       <TableRow>
@@ -850,7 +850,7 @@ export default function DonationsPage() {
                         src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
                         alt="Donation screenshot"
                         fill
-                        sizes="100vw"
+                        sizes="(max-width: 896px) 100vw, 896px"
                         className="object-contain transition-transform duration-200 ease-out origin-center"
                         style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
                         unoptimized
@@ -868,3 +868,5 @@ export default function DonationsPage() {
     </>
   );
 }
+
+  

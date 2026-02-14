@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, setDoc, DocumentReference } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, setDoc, DocumentReference, getDoc } from 'firebase/firestore';
 import type { Beneficiary, Campaign, RationItem, ItemCategory } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -1366,3 +1366,5 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
     
 
     
+
+  
