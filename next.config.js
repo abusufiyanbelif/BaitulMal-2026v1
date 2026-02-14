@@ -2,6 +2,7 @@
 const nextConfig = {
   // Force rebuild to clear corrupted cache.
   // Invalidate cache again and again.
+  // Force another rebuild to clear corrupted cache.
   images: {
     remotePatterns: [
       {
