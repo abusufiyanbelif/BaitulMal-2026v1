@@ -24,7 +24,8 @@ import {
   DropdownMenuPortal,
   DropdownMenuSub,
   DropdownMenuSubContent,
-  DropdownMenuSubTrigger
+  DropdownMenuSubTrigger,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -774,7 +775,7 @@ export default function DonationsPage() {
                                                                         <TableCell>
                                                                             {tx.screenshotUrl ? (
                                                                                 <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)}>
-                                                                                    <Eye className="mr-2 h-4 w-4"/> View
+                                                                                    <Eye className="mr-2 h-4 w-4" /> View
                                                                                 </Button>
                                                                             ) : 'No'}
                                                                         </TableCell>
