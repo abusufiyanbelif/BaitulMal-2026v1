@@ -102,6 +102,21 @@ export default function BeneficiariesPage() {
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.update', false);
   const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.delete', false);
   
+  const totalLeadAmount = useMemo(() => {
+    if (!lead || !lead.itemCategories || lead.itemCategories.length === 0) return 0;
+    const items = lead.itemCategories[0]?.items || [];
+    return items.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 0)), 0);
+  }, [lead]);
+
+  const kitAmountLabel = useMemo(() => {
+      switch (lead?.purpose) {
+          case 'Medical': return 'Medical Cost (₹)';
+          case 'Education': return 'Educational Fees (₹)';
+          case 'Relief': return 'Relief Aid Amount (₹)';
+          default: return 'Required Amount (₹)';
+      }
+  }, [lead?.purpose]);
+
   const handleAdd = () => {
     if (!canCreate) return;
     setEditingBeneficiary(null);
@@ -549,7 +564,9 @@ export default function BeneficiariesPage() {
                 beneficiary={editingBeneficiary}
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
-                rationLists={[]}
+                itemCategories={lead?.itemCategories || []}
+                kitAmountLabel={kitAmountLabel}
+                defaultKitAmount={totalLeadAmount}
                 initialReadOnly={formMode === 'view'}
             />
         </DialogContent>
@@ -707,4 +724,3 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
 };
 
     
-

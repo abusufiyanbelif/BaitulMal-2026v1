@@ -146,7 +146,7 @@ export default function BeneficiariesPage() {
   const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.delete', false);
   const canUpdateCampaign = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.update', false);
 
-    const sanitizedRationLists = useMemo(() => {
+    const sanitizedItemCategories = useMemo(() => {
         if (!campaign?.itemCategories) return [];
 
         let lists: ItemCategory[] = [];
@@ -657,12 +657,12 @@ export default function BeneficiariesPage() {
   };
   
   const groupedBeneficiaries = useMemo(() => {
-    if (!filteredAndSortedBeneficiaries || !sanitizedRationLists || sanitizedRationLists.length === 0) return {};
+    if (!filteredAndSortedBeneficiaries || !sanitizedItemCategories || sanitizedItemCategories.length === 0) return {};
 
     return filteredAndSortedBeneficiaries.reduce((acc, beneficiary) => {
         const members = beneficiary.members || 0;
         
-        const matchingCategories = sanitizedRationLists.filter(
+        const matchingCategories = sanitizedItemCategories.filter(
             cat => cat.name !== 'Item Price List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
         );
 
@@ -700,7 +700,7 @@ export default function BeneficiariesPage() {
         
         return acc;
     }, {} as Record<string, { category: ItemCategory, beneficiariesByMemberCount: Record<number, Beneficiary[]> }>);
-}, [filteredAndSortedBeneficiaries, sanitizedRationLists]);
+}, [filteredAndSortedBeneficiaries, sanitizedItemCategories]);
 
 const sortedGroupKeys = useMemo(() => {
     return Object.keys(groupedBeneficiaries).sort((a, b) => {
@@ -1158,7 +1158,7 @@ const sortedGroupKeys = useMemo(() => {
                 beneficiary={editingBeneficiary}
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
-                rationLists={sanitizedRationLists}
+                itemCategories={sanitizedItemCategories}
                 initialReadOnly={formMode === 'view'}
                 isSubmitting={isSubmitting}
                 isLoading={isLoading}

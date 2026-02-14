@@ -59,15 +59,28 @@ interface BeneficiaryFormProps {
   beneficiary?: Beneficiary | null;
   onSubmit: (data: BeneficiaryFormData) => void;
   onCancel: () => void;
-  rationLists: ItemCategory[];
+  itemCategories: ItemCategory[];
+  kitAmountLabel?: string;
+  defaultKitAmount?: number;
   initialReadOnly?: boolean;
   isSubmitting?: boolean;
   isLoading?: boolean;
   hideZakatInfo?: boolean;
 }
 
-export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, initialReadOnly = false, isSubmitting = false, isLoading = false, hideZakatInfo = false }: BeneficiaryFormProps) {
-    const isEditing = !!beneficiary;
+export function BeneficiaryForm({ 
+    beneficiary, 
+    onSubmit, 
+    onCancel, 
+    itemCategories, 
+    kitAmountLabel = 'Kit Amount (₹)',
+    defaultKitAmount,
+    initialReadOnly = false, 
+    isSubmitting = false, 
+    isLoading = false, 
+    hideZakatInfo = false 
+}: BeneficiaryFormProps) {
+    const isEditing = !!beneficiary?.id;
     const { toast } = useToast();
 
     const form = useForm<BeneficiaryFormData>({
@@ -84,7 +97,7 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
             idProofType: beneficiary?.idProofType || '',
             idNumber: beneficiary?.idNumber || '',
             referralBy: beneficiary?.referralBy || '',
-            kitAmount: beneficiary?.kitAmount || 0,
+            kitAmount: beneficiary?.kitAmount ?? defaultKitAmount ?? 0,
             status: beneficiary?.status || 'Pending',
             notes: beneficiary?.notes || '',
             isEligibleForZakat: beneficiary?.isEligibleForZakat || false,
@@ -104,15 +117,16 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
     const membersValue = watch('members');
 
     useEffect(() => {
+        const isRationStyle = itemCategories.some(cat => cat.minMembers !== undefined && cat.maxMembers !== undefined);
+        if (isReadOnly || !isRationStyle || itemCategories.length === 0) return;
+
         const calculateTotal = (items: RationItem[]) => {
             return items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
         };
         
-        if (isReadOnly || !rationLists || rationLists.length === 0) return;
-
         const members = membersValue || 0;
 
-        const matchingCategories = rationLists.filter(
+        const matchingCategories = itemCategories.filter(
             cat => cat.name !== 'Item Price List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
         );
 
@@ -123,9 +137,8 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
                 const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
                 const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
                 if (rangeA !== rangeB) {
-                    return rangeA - rangeB; // Smaller range is more specific
+                    return rangeA - rangeB;
                 }
-                // If ranges are equal, prefer the one with a higher minimum
                 return (b.minMembers ?? 0) - (a.minMembers ?? 0);
             });
             appliedCategory = matchingCategories[0];
@@ -137,7 +150,7 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
             const kitAmount = calculateTotal(appliedCategory.items);
             setValue('kitAmount', kitAmount, { shouldValidate: true, shouldDirty: true });
         }
-    }, [membersValue, rationLists, setValue, isReadOnly]);
+    }, [membersValue, itemCategories, setValue, isReadOnly]);
 
     useEffect(() => {
         const fileList = idProofFile as FileList | undefined;
@@ -302,7 +315,19 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
                     
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <FormField control={control} name="referralBy" render={({ field }) => (<FormItem><FormLabel>Referred By *</FormLabel><FormControl><Input placeholder="e.g. Local NGO" {...field} disabled={formIsDisabled} /></FormControl><FormMessage/></FormItem>)}/>
-                        <FormField control={control} name="kitAmount" render={({ field }) => (<FormItem><FormLabel>Kit Amount (₹) *</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} disabled={formIsDisabled} /></FormControl><FormMessage/></FormItem>)}/>
+                        <FormField
+                            control={control}
+                            name="kitAmount"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>{kitAmountLabel} *</FormLabel>
+                                <FormControl>
+                                    <Input type="number" placeholder="0.00" {...field} disabled={formIsDisabled} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                         <FormField control={control} name="status" render={({ field }) => (<FormItem><FormLabel>Status *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled={formIsDisabled}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Hold">Hold</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent></Select><FormMessage/></FormItem>)}/>
                     </div>
                 </div>
