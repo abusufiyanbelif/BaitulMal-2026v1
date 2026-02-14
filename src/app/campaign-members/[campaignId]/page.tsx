@@ -163,7 +163,7 @@ export default function CampaignDetailsPage() {
     if (!editableCampaign || !editableCampaign.itemCategories) return [];
     
     let lists: ItemCategory[] = editableCampaign.itemCategories.map(cat => {
-        if (cat.name === 'General' || cat.name === 'Item Master List') {
+        if (cat.name === 'General' || cat.name === 'Item Master List' || cat.name === 'General Item List') {
             return { ...cat, name: 'Item Price List' };
         }
         return cat;
