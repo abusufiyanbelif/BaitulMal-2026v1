@@ -10,7 +10,7 @@ export function BrandedLoader() {
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background">
-            <div className="animate-logo-in" style={{ perspective: '1000px' }}>
+            <div className="animate-logo-in">
                 {validLogoUrl ? (
                      <Image
                         src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}

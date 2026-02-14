@@ -112,7 +112,7 @@ const config = {
           '100%': { transform: 'translateX(100%)' },
         },
         'logo-in': {
-          '0%': { transform: 'scale(0.8)', opacity: '0' },
+          '0%': { transform: 'scale(0.9)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
       },
@@ -124,7 +124,7 @@ const config = {
         'fade-in-up': 'fade-in-up 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
         'fade-in-zoom': 'fade-in-zoom 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
         'shimmer': 'shimmer 2s infinite',
-        'logo-in': 'logo-in 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
+        'logo-in': 'logo-in 0.8s ease-out forwards',
       },
     },
   },
