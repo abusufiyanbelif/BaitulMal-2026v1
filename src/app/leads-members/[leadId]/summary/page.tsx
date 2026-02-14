@@ -36,6 +36,8 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 import type { ChartConfig } from '@/components/ui/chart';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
@@ -75,6 +77,11 @@ export default function LeadSummaryPage() {
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
     const summaryRef = useRef<HTMLDivElement>(null);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     const leadDocRef = useMemo(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
     const beneficiariesCollectionRef = useMemo(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
@@ -456,9 +463,7 @@ Your contribution, big or small, makes a huge difference.
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Financials &amp; Status</CardTitle>
-                    </CardHeader>
+                    <CardHeader><CardTitle>Financials &amp; Status</CardTitle></CardHeader>
                      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                          <div className="space-y-1"><Label>Start Date</Label>{editMode ? <Input type="date" value={editableLead.startDate || ''} onChange={e => setEditableLead(p => ({...p, startDate: e.target.value}))} /> : <p className="font-medium">{lead.startDate}</p>}</div>
                          <div className="space-y-1"><Label>End Date</Label>{editMode ? <Input type="date" value={editableLead.endDate || ''} onChange={e => setEditableLead(p => ({...p, endDate: e.target.value}))} /> : <p className="font-medium">{lead.endDate}</p>}</div>
@@ -478,6 +483,7 @@ Your contribution, big or small, makes a huge difference.
                         <CardDescription>A real-time look at the collected donations against the goal for this initiative.</CardDescription>
                     </CardHeader>
                     <CardContent>
+                      {isClient ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                             <div className="relative h-48 w-full">
                                 <ChartContainer
@@ -537,6 +543,7 @@ Your contribution, big or small, makes a huge difference.
                                 </div>
                             </div>
                         </div>
+                      ) : <Skeleton className="h-48 w-full" />}
                     </CardContent>
                 </Card>
 
@@ -599,6 +606,7 @@ Your contribution, big or small, makes a huge difference.
                             <CardTitle>Donations by Category</CardTitle>
                         </CardHeader>
                         <CardContent>
+                          {isClient ? (
                             <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
                                 <BarChart data={Object.entries(summaryData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
                                     <CartesianGrid horizontal={false} />
@@ -612,6 +620,7 @@ Your contribution, big or small, makes a huge difference.
                                     </Bar>
                                 </BarChart>
                             </ChartContainer>
+                          ) : <Skeleton className="h-[250px] w-full" />}
                         </CardContent>
                     </Card>
                 </div>
