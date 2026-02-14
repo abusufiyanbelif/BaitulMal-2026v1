@@ -119,6 +119,14 @@ const config = {
             transform: 'scale(1.2)',
           },
         },
+        'zoom-in-out-mobile': {
+          '0%, 100%': {
+            transform: 'scale(1)',
+          },
+          '50%': {
+            transform: 'scale(1.333)',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -129,6 +137,7 @@ const config = {
         'fade-in-zoom': 'fade-in-zoom 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'shimmer': 'shimmer 2s infinite',
         'zoom-in-out': 'zoom-in-out 4s ease-in-out infinite',
+        'zoom-in-out-mobile': 'zoom-in-out-mobile 4s ease-in-out infinite',
       },
     },
   },

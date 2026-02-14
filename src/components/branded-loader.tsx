@@ -4,10 +4,13 @@ import { TempLogo } from '@/components/temp-logo';
 import Image from 'next/image';
 import Lottie from 'lottie-react';
 import React, { useEffect, useState } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 export function BrandedLoader() {
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     const [animationData, setAnimationData] = useState(null);
+    const isMobile = useIsMobile();
 
     const loadingAnimationUrl = !isBrandingLoading && brandingSettings?.loadingAnimationUrl?.trim() ? brandingSettings.loadingAnimationUrl : null;
     const validLogoUrl = !isBrandingLoading && brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
@@ -24,17 +27,21 @@ export function BrandedLoader() {
         }
     }, [loadingAnimationUrl]);
     
-    // Set a large, fixed size for the loader based on user request.
-    const logoContainerWidth = 500;
-    const logoContainerHeight = 500;
+    // Conditional sizes based on mobile view
+    const logoContainerWidth = isMobile ? 300 : 500;
+    const logoContainerHeight = isMobile ? 300 : 500;
     
-    const animationContainerSize = Math.max(logoContainerWidth, logoContainerHeight) * 1.2;
+    const animationScale = isMobile ? 1.333 : 1.2;
+    const animationContainerSize = Math.max(logoContainerWidth, logoContainerHeight) * animationScale;
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background">
             <div className="relative flex items-center justify-center">
                 <div 
-                    className="animate-zoom-in-out flex items-center justify-center"
+                    className={cn(
+                        "flex items-center justify-center",
+                        isMobile ? "animate-zoom-in-out-mobile" : "animate-zoom-in-out"
+                    )}
                     style={{ 
                         width: `${logoContainerWidth}px`, 
                         height: `${logoContainerHeight}px`
