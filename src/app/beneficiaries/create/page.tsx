@@ -28,10 +28,8 @@ export default function CreateBeneficiaryPage() {
     }
     setIsSubmitting(true);
 
-    const { id, createdAt, createdById, createdByName, ...restData } = data;
-
     const result = await createMasterBeneficiaryAction(
-        restData, 
+        data, 
         { id: userProfile.id, name: userProfile.name }
     );
     
@@ -96,7 +94,7 @@ export default function CreateBeneficiaryPage() {
                 onSubmit={handleCreateBeneficiary}
                 onCancel={() => router.push('/beneficiaries')}
                 isSubmitting={isSubmitting}
-                rationLists={[]}
+                itemCategories={[]}
                 isLoading={false}
                 hideZakatInfo={true}
             />

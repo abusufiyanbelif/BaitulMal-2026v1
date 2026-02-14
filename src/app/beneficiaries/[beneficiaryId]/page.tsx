@@ -115,11 +115,9 @@ export default function BeneficiaryDetailsPage() {
     };
     setIsSubmitting(true);
     
-    const { id, createdAt, createdById, createdByName, ...updateData } = data;
-
     const result = await updateMasterBeneficiaryAction(
         beneficiaryId, 
-        updateData,
+        data,
         { id: currentUserProfile.id, name: currentUserProfile.name }
     );
     
@@ -227,7 +225,7 @@ export default function BeneficiaryDetailsPage() {
               isSubmitting={isSubmitting}
               isLoading={isBeneficiaryLoading}
               initialReadOnly={!isEditMode && canUpdate}
-              rationLists={[]}
+              itemCategories={[]}
           />
         </CardContent>
       </Card>
