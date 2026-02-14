@@ -1,13 +1,12 @@
 'use client';
-import { useMemo } from 'react';
-import { useFirestore, useDoc } from '@/firebase';
+import { useMemoFirebase, useFirestore, useDoc } from '@/firebase';
 import { doc, DocumentReference } from 'firebase/firestore';
 import type { PaymentSettings } from '@/lib/types';
 
 export function usePaymentSettings() {
   const firestore = useFirestore();
 
-  const paymentSettingsDocRef = useMemo(() => {
+  const paymentSettingsDocRef = useMemoFirebase(() => {
     if (!firestore) {
       return null;
     }

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { Campaign, Donation, DonationCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -22,7 +22,7 @@ export function PublicCampaignsView() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
 
-  const campaignsCollectionRef = useMemo(() => {
+  const campaignsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'campaigns'), 
         where('authenticityStatus', '==', 'Verified'),
@@ -31,7 +31,7 @@ export function PublicCampaignsView() {
   }, [firestore]);
   const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
 
-  const donationsCollectionRef = useMemo(() => {
+  const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
   }, [firestore]);
@@ -39,15 +39,26 @@ export function PublicCampaignsView() {
 
   const campaignData = useMemo(() => {
     if (!campaigns || !donations) return [];
-
-    return campaigns.map(campaign => {
-      const relevantDonations = donations.filter(d => {
-        if (d.linkSplit && d.linkSplit.length > 0) {
-            return d.linkSplit.some(link => link.linkId === campaign.id);
+  
+    // Create a map of donations by campaign ID for efficient lookup
+    const donationsByCampaign = new Map<string, Donation[]>();
+    donations.forEach(donation => {
+      const links = (donation.linkSplit && donation.linkSplit.length > 0)
+        ? donation.linkSplit
+        : ((donation as any).campaignId ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] : []);
+      
+      links.forEach(link => {
+        if(link.linkType === 'campaign') {
+            if (!donationsByCampaign.has(link.linkId)) {
+                donationsByCampaign.set(link.linkId, []);
+            }
+            donationsByCampaign.get(link.linkId)!.push(donation);
         }
-        return d.campaignId === campaign.id;
       });
-
+    });
+  
+    return campaigns.map(campaign => {
+      const relevantDonations = donationsByCampaign.get(campaign.id) || [];
       const collected = relevantDonations.reduce((sum, donation) => {
         let amountForThisCampaign = 0;
         if (donation.linkSplit && donation.linkSplit.length > 0) {
@@ -58,25 +69,25 @@ export function PublicCampaignsView() {
         }
         
         if (amountForThisCampaign === 0) return sum;
-
+  
         const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
         const proportionForThisCampaign = amountForThisCampaign / totalDonationAmount;
-
+  
         const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
             ? donation.typeSplit
             : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
         
         const totalApplicableAmountInDonation = typeSplits.reduce((acc, split) => {
             const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-            if (campaign.allowedDonationTypes?.includes(category)) {
+            if (campaign.allowedDonationTypes?.includes(category as DonationCategory)) {
                 return acc + split.amount;
             }
             return acc;
         }, 0);
-
+  
         return sum + (totalApplicableAmountInDonation * proportionForThisCampaign);
       }, 0);
-
+  
       const progress = campaign.targetAmount && campaign.targetAmount > 0 ? (collected / campaign.targetAmount) * 100 : 0;
       
       return {

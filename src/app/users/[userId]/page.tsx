@@ -1,9 +1,10 @@
 
+
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useStorage } from '@/firebase';
+import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useStorage, useMemoFirebase } from '@/firebase';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import { updateDoc, doc, writeBatch, DocumentReference } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
@@ -33,7 +34,7 @@ export default function UserDetailsPage() {
   
   const { userProfile: currentUserProfile, isLoading: isProfileLoading } = useCurrentUserSession();
   
-  const userDocRef = useMemo(() => {
+  const userDocRef = useMemoFirebase(() => {
     if (!firestore || !userId) return null;
     return doc(firestore, 'users', userId) as DocumentReference<UserProfile>;
   }, [firestore, userId]);

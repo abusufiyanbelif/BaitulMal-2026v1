@@ -3,7 +3,7 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, useCollection, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useCollection, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc, collection } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
@@ -56,7 +56,7 @@ export default function UsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const usersCollectionRef = useMemo(() => {
+  const usersCollectionRef = useMemoFirebase(() => {
     if (!firestore || !userProfile || userProfile.role !== 'Admin') {
       return null;
     }
@@ -111,7 +111,7 @@ export default function UsersPage() {
         .then(() => {
             toast({ title: 'Success', description: `${userToUpdate.name}'s account is now ${newStatus}.`, variant: 'success' });
         })
-        .catch(async (serverError) => {
+        .catch(async (serverError: any) => {
             const permissionError = new FirestorePermissionError({
                 path: docRef.path,
                 operation: 'update',

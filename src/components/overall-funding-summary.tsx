@@ -3,7 +3,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import type { Campaign, Lead, Donation, DonationCategory } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -20,17 +20,17 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 export function OverallFundingSummary() {
   const firestore = useFirestore();
 
-  const campaignsCollectionRef = useMemo(() => {
+  const campaignsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'campaigns'), where('status', 'in', ['Active', 'Upcoming']));
   }, [firestore]);
 
-  const leadsCollectionRef = useMemo(() => {
+  const leadsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'leads'), where('status', 'in', ['Active', 'Upcoming']));
   }, [firestore]);
   
-  const donationsCollectionRef = useMemo(() => {
+  const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
   }, [firestore]);

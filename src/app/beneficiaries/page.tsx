@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, useCollection, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useCollection, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, doc, updateDoc } from 'firebase/firestore';
 import type { Beneficiary } from '@/lib/types';
@@ -76,7 +76,7 @@ export default function BeneficiariesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const beneficiariesCollectionRef = useMemo(() => {
+  const beneficiariesCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return collection(firestore, 'beneficiaries');
   }, [firestore]);
@@ -230,7 +230,7 @@ export default function BeneficiariesPage() {
             description: `${beneficiary.name}'s status has been set to ${newStatus}.`,
             variant: 'success',
         });
-        } catch (serverError) {
+        } catch (serverError: any) {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
             path: beneficiaryDocRef.path,
             operation: 'update',
@@ -250,7 +250,7 @@ export default function BeneficiariesPage() {
                 description: `${beneficiary.name} is now ${newZakatStatus ? 'Eligible' : 'Not Eligible'} for Zakat.`,
                 variant: 'success',
             });
-        } catch (serverError) {
+        } catch (serverError: any) {
             errorEmitter.emit('permission-error', new FirestorePermissionError({
                 path: masterBeneficiaryDocRef.path,
                 operation: 'update',

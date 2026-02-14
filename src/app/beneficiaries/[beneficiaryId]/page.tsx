@@ -1,8 +1,9 @@
 
+
 'use client';
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useFirestore, useDoc, useCollection } from '@/firebase';
+import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, getDocs, getDoc, collectionGroup, query, where, doc, type QueryDocumentSnapshot } from 'firebase/firestore';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
@@ -40,7 +41,7 @@ export default function BeneficiaryDetailsPage() {
   
   const { userProfile: currentUserProfile, isLoading: isProfileLoading } = useSession();
   
-  const beneficiaryDocRef = useMemo(() => {
+  const beneficiaryDocRef = useMemoFirebase(() => {
     if (!firestore || !beneficiaryId) return null;
     return doc(firestore, 'beneficiaries', beneficiaryId);
   }, [firestore, beneficiaryId]);

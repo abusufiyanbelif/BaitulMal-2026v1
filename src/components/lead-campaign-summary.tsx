@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import { useMemo } from 'react';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Campaign, Lead } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -19,11 +20,11 @@ import { Skeleton } from './ui/skeleton';
 
 export function LeadAndCampaignSummary() {
   const firestore = useFirestore();
-  const campaignsCollectionRef = useMemo(() => {
+  const campaignsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return collection(firestore, 'campaigns');
   }, [firestore]);
-  const leadsCollectionRef = useMemo(() => {
+  const leadsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return collection(firestore, 'leads');
   }, [firestore]);

@@ -4,31 +4,34 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
 import { SessionProvider } from '@/components/session-provider';
-import { useUser } from '@/firebase';
+import { useUser } from '@/firebase/provider';
 import { BrandedLoader } from '@/components/branded-loader';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle } from 'lucide-react';
 
+// This internal component will only run AFTER the initial auth check is complete.
 function AuthGuard({ children }: { children: ReactNode }) {
-    const pathname = usePathname();
+    const { user } = useUser(); // We can safely get the user now.
     const router = useRouter();
-    const { user, isLoading } = useUser(); // isLoading will be false here from the parent component
+    const pathname = usePathname();
 
-    const isLoginPage = pathname === '/login';
-    const isPublicRoute = isLoginPage || pathname.startsWith('/campaign-public') || pathname.startsWith('/leads-public') || pathname === '/' || pathname === '/seed';
+    const isPublicRoute = ['/', '/login', '/seed'].includes(pathname) || pathname.startsWith('/campaign-public') || pathname.startsWith('/leads-public');
 
     useEffect(() => {
-        // This effect will run after the initial render, when isLoading is guaranteed to be false.
-        if (!isLoading && !isPublicRoute && !user) {
+        // This effect will now run with a stable `user` value.
+        if (!user && !isPublicRoute) {
             router.push('/login');
         }
-    }, [isLoading, user, isPublicRoute, router]);
+    }, [user, isPublicRoute, pathname, router]);
 
-    // While the redirect is in-flight for a private route, show a loader
-    // This prevents any of the children from attempting to render.
-    if (!isPublicRoute && !user) {
+    // While the redirect is happening for a protected route, show a loader.
+    if (!user && !isPublicRoute) {
         return <BrandedLoader />;
     }
 
-    // The user is authenticated, or the route is public, so render the app.
+    // If the route is public, or the user is authenticated, render the app.
     return (
         <SessionProvider authUser={user}>
             {children}
@@ -37,18 +40,40 @@ function AuthGuard({ children }: { children: ReactNode }) {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { isLoading } = useUser();
+    const { isLoading, userError } = useUser();
 
-  // This is the initial loading gate. It waits for onAuthStateChanged to fire at least once.
-  // Nothing else in the app will render until this is complete.
-  if (isLoading) {
-    return <BrandedLoader />;
-  }
-  
-  // Once the initial auth state is known, delegate to the AuthGuard for routing logic.
-  return (
-    <AuthGuard>
-        {children}
-    </AuthGuard>
-  );
+    if (userError) {
+        return (
+             <div className="flex flex-col items-center justify-center min-h-screen p-4">
+                <Card className="w-full max-w-lg">
+                    <CardHeader className="text-center">
+                        <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+                        <CardTitle className="text-destructive">Application Error</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                         <Alert variant="destructive">
+                            <AlertTitle>An error occurred while connecting to services.</AlertTitle>
+                            <AlertDescription>
+                                <p>This can happen due to network issues or a misconfiguration.</p>
+                                <p className="font-mono text-xs bg-destructive/20 p-2 rounded mt-2">
+                                    {userError.message}
+                                </p>
+                            </AlertDescription>
+                        </Alert>
+                        <Button onClick={() => window.location.reload()} className="w-full">
+                            Reload Page
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
+    // This is the "Loading Gate". It ensures nothing else renders until Firebase has confirmed the auth state.
+    if (isLoading) {
+        return <BrandedLoader />;
+    }
+
+    // Once the auth state is resolved (isLoading is false), we can safely render the AuthGuard.
+    return <AuthGuard>{children}</AuthGuard>;
 }

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { Lead, Donation, DonationCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -96,7 +96,7 @@ export function PublicLeadsView() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [purposeFilter, setPurposeFilter] = useState('All');
 
-  const leadsCollectionRef = useMemo(() => {
+  const leadsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'leads'),
         where('authenticityStatus', '==', 'Verified'),
@@ -106,7 +106,7 @@ export function PublicLeadsView() {
 
   const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
   
-  const donationsCollectionRef = useMemo(() => {
+  const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
   }, [firestore]);

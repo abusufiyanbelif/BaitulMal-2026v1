@@ -1,13 +1,12 @@
 'use client';
-import { useMemo } from 'react';
-import { useFirestore, useDoc } from '@/firebase';
+import { useMemoFirebase, useFirestore, useDoc } from '@/firebase';
 import { doc, DocumentReference } from 'firebase/firestore';
 import type { BrandingSettings } from '@/lib/types';
 
 export function useBranding() {
   const firestore = useFirestore();
 
-  const brandingDocRef = useMemo(() => {
+  const brandingDocRef = useMemoFirebase(() => {
     if (!firestore) {
       return null;
     }

@@ -1,7 +1,7 @@
 'use client';
 
-import { createContext, useMemo, ReactNode } from 'react';
-import { useFirestore } from '@/firebase';
+import { createContext, useMemo as useReactMemo, ReactNode } from 'react';
+import { useFirestore, useMemoFirebase } from '@/firebase';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { doc, DocumentReference } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
@@ -18,7 +18,7 @@ export const SessionContext = createContext<SessionContextType | undefined>(unde
 export function SessionProvider({ authUser, children }: { authUser?: User | null; children: ReactNode }) {
   const firestore = useFirestore();
 
-  const userDocRef = useMemo(() => {
+  const userDocRef = useMemoFirebase(() => {
     if (!firestore || !authUser?.uid) return null;
     return doc(firestore, 'users', authUser.uid) as DocumentReference<UserProfile>;
   }, [firestore, authUser?.uid]);
@@ -29,7 +29,7 @@ export function SessionProvider({ authUser, children }: { authUser?: User | null
   
   // If a profile exists but permissions are missing, provide a default empty object.
   // This makes downstream permission checks more robust.
-  const profileWithDefaults = useMemo(() => {
+  const profileWithDefaults = useReactMemo(() => {
     if (!userProfile) return null;
     return {
         ...userProfile,
