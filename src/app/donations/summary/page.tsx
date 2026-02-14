@@ -53,6 +53,7 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 
 const donationCategoryChartConfig = {
+    Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
     Sadaqah: { label: "Sadaqah", color: "hsl(var(--chart-2))" },
     Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
@@ -161,13 +162,14 @@ export default function DonationsSummaryPage() {
             return acc;
         }, {} as Record<string, number>);
         
+        const fitraTotal = amountsByCategory['Fitra'] || 0;
         const zakatTotal = amountsByCategory['Zakat'] || 0;
         const loanTotal = amountsByCategory['Loan'] || 0;
         const interestTotal = amountsByCategory['Interest'] || 0;
         const sadaqahTotal = amountsByCategory['Sadaqah'] || 0;
         const lillahTotal = amountsByCategory['Lillah'] || 0;
         const monthlyContributionTotal = amountsByCategory['Monthly Contribution'] || 0;
-        const grandTotal = zakatTotal + loanTotal + interestTotal + sadaqahTotal + lillahTotal + monthlyContributionTotal;
+        const grandTotal = fitraTotal + zakatTotal + loanTotal + interestTotal + sadaqahTotal + lillahTotal + monthlyContributionTotal;
 
         return {
             allocatedCount,
@@ -178,6 +180,7 @@ export default function DonationsSummaryPage() {
             countsByStatus,
             donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
             fundTotals: {
+                fitra: fitraTotal,
                 zakat: zakatTotal,
                 loan: loanTotal,
                 interest: interestTotal,
@@ -326,6 +329,10 @@ export default function DonationsSummaryPage() {
                             <CardDescription>A breakdown of all collected funds by their designated purpose.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">Fitra</span>
+                                <span className="font-semibold">₹{summaryData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span>
+                            </div>
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-muted-foreground">Zakat</span>
                                 <span className="font-semibold">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span>

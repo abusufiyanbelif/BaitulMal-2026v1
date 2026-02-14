@@ -4,7 +4,7 @@ import { getNestedValue, set } from "./utils";
 export const crudPermissions = ['create', 'read', 'update', 'delete'] as const;
 export const readUpdatePermissions = ['read', 'update'] as const;
 export const simpleReadPermission = ['read'] as const;
-export const donationCategories = ['Zakat', 'Sadaqah', 'Interest', 'Lillah', 'Loan', 'Monthly Contribution'] as const;
+export const donationCategories = ['Fitra', 'Zakat', 'Sadaqah', 'Interest', 'Lillah', 'Loan', 'Monthly Contribution'] as const;
 
 export type DonationCategory = typeof donationCategories[number];
 export type CrudPermissions = typeof crudPermissions;

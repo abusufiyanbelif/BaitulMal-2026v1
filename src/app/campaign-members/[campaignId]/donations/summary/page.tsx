@@ -47,11 +47,12 @@ export default function DonationsSummaryPage() {
   const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
   const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
 
-  const { zakatTotal, loanTotal, interestTotal, sadaqahTotal, lillahTotal, monthlyContributionTotal, grandTotal } = useMemo(() => {
+  const { fitraTotal, zakatTotal, loanTotal, interestTotal, sadaqahTotal, lillahTotal, monthlyContributionTotal, grandTotal } = useMemo(() => {
     if (!donations) {
-        return { zakatTotal: 0, loanTotal: 0, interestTotal: 0, sadaqahTotal: 0, lillahTotal: 0, monthlyContributionTotal: 0, grandTotal: 0 };
+        return { fitraTotal: 0, zakatTotal: 0, loanTotal: 0, interestTotal: 0, sadaqahTotal: 0, lillahTotal: 0, monthlyContributionTotal: 0, grandTotal: 0 };
     }
 
+    let fitra = 0;
     let zakat = 0;
     let loan = 0;
     let interest = 0;
@@ -63,6 +64,9 @@ export default function DonationsSummaryPage() {
         if (d.typeSplit && d.typeSplit.length > 0) {
             for (const split of d.typeSplit) {
                 switch (split.category) {
+                    case 'Fitra':
+                        fitra += split.amount;
+                        break;
                     case 'Zakat':
                         zakat += split.amount;
                         break;
@@ -85,9 +89,10 @@ export default function DonationsSummaryPage() {
             }
         }
     }
-    const grandTotal = zakat + loan + interest + sadaqah + lillah + monthlyContribution;
+    const grandTotal = fitra + zakat + loan + interest + sadaqah + lillah + monthlyContribution;
 
     return {
+        fitraTotal: fitra,
         zakatTotal: zakat,
         loanTotal: loan,
         interestTotal: interest,
@@ -201,21 +206,21 @@ export default function DonationsSummaryPage() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
                 <Card>
-                    <CardHeader className="pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
+                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{statusStats.verified.count}</div>
                         <p className="text-xs text-muted-foreground">₹{statusStats.verified.amount.toLocaleString('en-IN')}</p>
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader className="pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{statusStats.pending.count}</div>
                         <p className="text-xs text-muted-foreground">₹{statusStats.pending.amount.toLocaleString('en-IN')}</p>
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader className="pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Canceled</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
+                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Canceled</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{statusStats.canceled.count}</div>
                         <p className="text-xs text-muted-foreground">₹{statusStats.canceled.amount.toLocaleString('en-IN')}</p>
@@ -226,6 +231,10 @@ export default function DonationsSummaryPage() {
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Grand Total</CardTitle></CardHeader>
                     <CardContent><div className="text-2xl font-bold">₹{grandTotal.toLocaleString('en-IN')}</div></CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Fitra</CardTitle></CardHeader>
+                    <CardContent><div className="text-2xl font-bold">₹{fitraTotal.toLocaleString('en-IN')}</div></CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Zakat</CardTitle></CardHeader>
