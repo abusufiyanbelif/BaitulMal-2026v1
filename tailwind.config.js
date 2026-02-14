@@ -113,10 +113,10 @@ const config = {
         },
         'zoom-in-out': {
           '0%, 100%': {
-            transform: 'scale(0.95)',
+            transform: 'scale(1)',
           },
           '50%': {
-            transform: 'scale(1.05)',
+            transform: 'scale(1.2)',
           },
         },
       },

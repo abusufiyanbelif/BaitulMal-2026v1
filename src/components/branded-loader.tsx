@@ -29,9 +29,9 @@ export function BrandedLoader() {
         return <div className="fixed inset-0 z-[9999] bg-background"></div>;
     }
     
-    // Determine the size for the logo container
-    const logoContainerWidth = validLogoUrl ? (brandingSettings?.logoWidth || 150) : 160; // 160px matches w-40
-    const logoContainerHeight = validLogoUrl ? (brandingSettings?.logoHeight || 75) : 160; // 160px matches h-40
+    // Set a large, fixed size for the loader based on user request.
+    const logoContainerWidth = 500;
+    const logoContainerHeight = 500;
     
     const animationContainerSize = Math.max(logoContainerWidth, logoContainerHeight) * 1.5;
 
@@ -55,7 +55,7 @@ export function BrandedLoader() {
                             priority
                          />
                     ) : !loadingAnimationUrl ? (
-                         <div className="w-40 h-40">
+                         <div className="w-full h-full">
                            <TempLogo />
                          </div>
                     ) : null }
