@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useMemo } from 'react';
@@ -47,50 +48,40 @@ export function OverallFundingSummary() {
     const totalTarget = allItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
     const grandTotalRaised = donations.reduce((sum, d) => sum + d.amount, 0);
 
-    let totalCollectedForGoals = 0;
+    const collectedAmounts = new Map<string, number>();
+    const itemsById = new Map(allItems.map(item => [item.id, item]));
 
-    allItems.forEach(item => {
-      const itemDonations = donations.filter(d => 
-        d.linkSplit?.some(link => link.linkId === item.id) || (d as any).campaignId === item.id
-      );
+    donations.forEach(donation => {
+      const links = (donation.linkSplit && donation.linkSplit.length > 0)
+        ? donation.linkSplit
+        : (donation as any).campaignId ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] : [];
+      
+      links.forEach(link => {
+        const item = itemsById.get(link.linkId);
+        if (!item) return;
 
-      const collectedForItemGoal = itemDonations.reduce((itemSum, donation) => {
-        let amountForThisItem = 0;
-        const itemLink = donation.linkSplit?.find(l => l.linkId === item.id);
-        
-        if (itemLink) {
-          amountForThisItem = itemLink.amount;
-        } else if ((!donation.linkSplit || donation.linkSplit.length === 0) && (donation as any).campaignId === item.id) {
-          amountForThisItem = donation.amount;
-        } else {
-          return itemSum;
-        }
-
-        if (amountForThisItem === 0) {
-            return itemSum;
-        }
-
+        const amountForThisItem = link.amount;
         const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
         const proportionForThisItem = amountForThisItem / totalDonationAmount;
 
         const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
-            ? donation.typeSplit
-            : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
+          ? donation.typeSplit
+          : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
         
         const applicableAmountInDonation = typeSplits.reduce((acc, split) => {
-            const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-            if (item.allowedDonationTypes?.includes(category)) {
-                return acc + split.amount;
-            }
-            return acc;
+          const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
+          if (item.allowedDonationTypes?.includes(category as DonationCategory)) {
+            return acc + split.amount;
+          }
+          return acc;
         }, 0);
         
-        return itemSum + (applicableAmountInDonation * proportionForThisItem);
-      }, 0);
-
-      totalCollectedForGoals += collectedForItemGoal;
+        const currentCollected = collectedAmounts.get(link.linkId) || 0;
+        collectedAmounts.set(link.linkId, currentCollected + (applicableAmountInDonation * proportionForThisItem));
+      });
     });
 
+    const totalCollectedForGoals = Array.from(collectedAmounts.values()).reduce((sum, amount) => sum + amount, 0);
     const progress = totalTarget > 0 ? Math.min((totalCollectedForGoals / totalTarget) * 100, 100) : 0;
     
     const chartData = [
