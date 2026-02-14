@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { createMasterBeneficiaryAction } from '../actions';
+import type { Beneficiary } from '@/lib/types';
 
 export default function CreateBeneficiaryPage() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function CreateBeneficiaryPage() {
     setIsSubmitting(true);
 
     const result = await createMasterBeneficiaryAction(
-        { ...data, addedDate: new Date().toISOString().split('T')[0] },
+        { ...data, addedDate: new Date().toISOString().split('T')[0] } as Omit<Beneficiary, 'id' | 'createdAt' | 'createdById' | 'createdByName'>,
         { id: userProfile.id, name: userProfile.name }
     );
     
