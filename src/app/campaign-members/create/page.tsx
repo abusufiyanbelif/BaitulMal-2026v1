@@ -117,7 +117,7 @@ export default function CreateCampaignPage() {
             const fileRef = storageRef(storage, filePath);
             await uploadBytes(fileRef, resizedBlob);
             imageUrl = await getDownloadURL(fileRef);
-        } catch (uploadError) {
+        } catch (uploadError: any) {
             console.error("Image upload failed:", uploadError);
             toast({ title: 'Image Upload Failed', description: 'Campaign was not created.', variant: 'destructive'});
             setIsLoading(false);
@@ -145,7 +145,7 @@ export default function CreateCampaignPage() {
         toast({ title: 'Success', description: 'Campaign created successfully.', variant: 'success' });
         router.push(`/campaign-members`);
       })
-      .catch((serverError) => {
+      .catch((serverError: any) => {
         const permissionError = new FirestorePermissionError({
             path: 'campaigns',
             operation: 'create',
@@ -249,7 +249,7 @@ export default function CreateCampaignPage() {
                                 <p className="mb-2 text-sm text-center text-muted-foreground">
                                     <span className="font-semibold text-primary">Click to upload</span> or drag and drop
                                 </p>
-                                <p className="text-xs text-muted-foreground">PNG, JPG (MAX. 800x400px)</p>
+                                <p className="text-xs text-muted-foreground">PNG, JPG (1280x400 recommended)</p>
                             </div>
                         )}
                     </label>

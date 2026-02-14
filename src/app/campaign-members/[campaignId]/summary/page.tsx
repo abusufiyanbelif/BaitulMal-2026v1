@@ -170,7 +170,7 @@ export default function CampaignSummaryPage() {
         if (isImageDeleted && imageUrl && storage) {
             try {
                 await deleteObject(storageRef(storage, imageUrl));
-            } catch (e) { console.warn("Old image deletion failed, it might not exist.", e) }
+            } catch (e: any) { console.warn("Old image deletion failed, it might not exist.", e) }
             imageUrl = '';
         } else if (imageFile && storage) {
             try {
@@ -206,7 +206,7 @@ export default function CampaignSummaryPage() {
         };
 
         updateDoc(campaignDocRef, saveData)
-            .catch(async (serverError) => {
+            .catch(async (serverError: any) => {
                 const permissionError = new FirestorePermissionError({
                     path: campaignDocRef.path,
                     operation: 'update',
@@ -609,7 +609,7 @@ Your contribution, big or small, makes a huge difference.
                                     <Textarea
                                         id="description"
                                         value={editableCampaign.description}
-                                        onChange={(e) => setEditableCampaign(p => ({...p, description: e.target.value}))}
+                                        onChange={(e: any) => setEditableCampaign(p => ({...p, description: e.target.value}))}
                                         className="mt-1"
                                         rows={4}
                                     />
@@ -620,11 +620,11 @@ Your contribution, big or small, makes a huge difference.
                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <Label htmlFor="startDate">Start Date</Label>
-                                    <Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={e => setEditableCampaign(p => ({...p, startDate: e.target.value}))} disabled={!editMode}/>
+                                    <Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e: any) => setEditableCampaign(p => ({...p, startDate: e.target.value}))} disabled={!editMode}/>
                                 </div>
                                 <div>
                                     <Label htmlFor="endDate">End Date</Label>
-                                    <Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={e => setEditableCampaign(p => ({...p, endDate: e.target.value}))} disabled={!editMode}/>
+                                    <Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e: any) => setEditableCampaign(p => ({...p, endDate: e.target.value}))} disabled={!editMode}/>
                                 </div>
                                 <div>
                                     <Label htmlFor="category">Category</Label>
@@ -635,7 +635,7 @@ Your contribution, big or small, makes a huge difference.
                                 </div>
                                 <div>
                                     <Label htmlFor="targetAmount">Target Amount (₹)</Label>
-                                    <Input id="targetAmount" type="number" value={editableCampaign.targetAmount || ''} onChange={e => setEditableCampaign(p => ({...p, targetAmount: Number(e.target.value)}))} disabled={!editMode}/>
+                                    <Input id="targetAmount" type="number" value={editableCampaign.targetAmount || ''} onChange={(e: any) => setEditableCampaign(p => ({...p, targetAmount: Number(e.target.value)}))} disabled={!editMode}/>
                                 </div>
                                 <div>
                                     <Label htmlFor="authenticityStatus">Authenticity</Label>

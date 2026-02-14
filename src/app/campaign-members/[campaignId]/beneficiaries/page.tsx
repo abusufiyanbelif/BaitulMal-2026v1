@@ -509,7 +509,7 @@ export default function BeneficiariesPage() {
     setIsImporting(true);
 
     const reader = new FileReader();
-    reader.onload = async (e) => {
+    reader.onload = async (e: any) => {
         try {
             const XLSX = await import('xlsx');
             const data = e.target?.result;
@@ -1367,4 +1367,5 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
     
 
   
+
 

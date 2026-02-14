@@ -230,7 +230,7 @@ export default function CampaignDetailsPage() {
     };
     
     updateDoc(campaignDocRef, saveData)
-        .catch(async (serverError) => {
+        .catch(async (serverError: any) => {
             const permissionError = new FirestorePermissionError({
                 path: campaignDocRef.path,
                 operation: 'update',
@@ -708,7 +708,7 @@ export default function CampaignDetailsPage() {
                                     <Input
                                         type="number"
                                         value={unitPrice || ''}
-                                        onChange={(e) => handleItemChange(category.id, item.id, 'price', parseFloat(e.target.value) || 0)}
+                                        onChange={(e: any) => handleItemChange(category.id, item.id, 'price', parseFloat(e.target.value) || 0)}
                                         className="text-right"
                                         disabled={!editMode || !canUpdate || !isPriceList}
                                     />

@@ -111,7 +111,7 @@ export default function PublicCampaignPage() {
     donations.forEach(donation => {
       const links = (donation.linkSplit && donation.linkSplit.length > 0)
         ? donation.linkSplit
-        : (donation.campaignId ? [{ linkId: donation.campaignId, amount: donation.amount, linkType: 'campaign' }] : []);
+        : ((donation as any).campaignId ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] : []);
       
       links.forEach(link => {
         if(link.linkType === 'campaign') {

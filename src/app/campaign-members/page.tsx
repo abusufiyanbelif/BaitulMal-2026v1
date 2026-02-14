@@ -202,7 +202,7 @@ export default function CampaignPage() {
         .then(() => {
             toast({ title: 'Success', description: `Campaign '${campaignToUpdate.name}' has been updated.`, variant: 'success' });
         })
-        .catch(async (serverError) => {
+        .catch(async (serverError: any) => {
             const permissionError = new FirestorePermissionError({
                 path: docRef.path,
                 operation: 'update',

@@ -1,6 +1,6 @@
 
 
-import type { DocumentData } from 'firebase/firestore';
+import type { DocumentData, Timestamp } from 'firebase/firestore';
 import type { UserPermissions } from './modules';
 import { donationCategories } from './modules';
 
@@ -71,7 +71,7 @@ export interface Campaign extends DocumentData {
   documents?: CampaignDocument[];
   itemCategories: ItemCategory[];
   allowedDonationTypes?: DonationCategory[];
-  createdAt?: any;
+  createdAt?: Timestamp;
   createdById?: string;
   createdByName?: string;
   rationLists?: any; // Legacy
@@ -101,7 +101,7 @@ export interface Lead extends DocumentData {
   documents?: CampaignDocument[];
   itemCategories: ItemCategory[];
   allowedDonationTypes?: DonationCategory[];
-  createdAt?: any;
+  createdAt?: Timestamp;
   createdById?: string;
   createdByName?: string;
   rationLists?: any; // Legacy
@@ -138,10 +138,10 @@ export interface Beneficiary extends DocumentData {
     zakatAllocation?: number;
     itemCategoryId?: string;
     itemCategoryName?: string;
-    createdAt?: any;
+    createdAt?: Timestamp;
     createdById?: string;
     createdByName?: string;
-    updatedAt?: any;
+    updatedAt?: Timestamp;
     updatedById?: string;
     updatedByName?: string;
 }
@@ -159,7 +159,7 @@ export interface UserProfile extends DocumentData {
   idProofType?: string;
   idNumber?: string;
   idProofUrl?: string;
-  createdAt?: any;
+  createdAt?: Timestamp;
   createdById?: string;
   createdByName?: string;
 }
@@ -195,7 +195,7 @@ export interface Donation extends DocumentData {
   suggestions?: string;
   uploadedBy: string;
   uploadedById: string;
-  createdAt?: any;
+  createdAt?: Timestamp;
   transactions?: TransactionDetail[];
   
   // Legacy fields for migration

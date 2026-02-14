@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,79 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { collection, query, where } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
+import { leadPurposesConfig } from '@/lib/modules';
+import Image from 'next/image';
+import placeholderImages from '@/app/lib/placeholder-images.json';
+
+const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: number; })[] }) => {
+    const router = useRouter();
+    if (leads.length === 0) {
+        return <p className="text-muted-foreground">No leads in this category.</p>;
+    }
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {leads.map(lead => (
+                <Card key={lead.id} className="flex flex-col hover:shadow-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 cursor-pointer overflow-hidden" onClick={() => router.push(`/leads-public/${lead.id}/summary`)}>
+                    <div className="relative h-40 w-full bg-secondary">
+                        <Image
+                          src={lead.imageUrl || placeholderImages.lead_fallback}
+                          alt={lead.name}
+                          fill
+                          sizes="100vw"
+                          className="object-cover"
+                          data-ai-hint="lead background"
+                        />
+                    </div>
+                    <CardHeader>
+                        <div className="flex justify-between items-start gap-2">
+                            <CardTitle>{lead.name}</CardTitle>
+                            <Badge variant={
+                                lead.status === 'Active' ? 'success' :
+                                lead.status === 'Completed' ? 'secondary' : 'outline'
+                            }>{lead.status}</Badge>
+                        </div>
+                        <CardDescription>{lead.startDate} to {lead.endDate}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col flex-grow space-y-4">
+                        <p className="text-sm text-muted-foreground line-clamp-3 flex-grow">{lead.description || "No description provided."}</p>
+                        
+                        {lead.allowedDonationTypes && lead.allowedDonationTypes.length > 0 && (
+                            <div className="space-y-2 pt-2">
+                                <h4 className="text-xs font-semibold text-muted-foreground">Accepting</h4>
+                                <div className="flex flex-wrap gap-1">
+                                    {lead.allowedDonationTypes.map(type => (
+                                        <Badge key={type} variant="secondary">{type}</Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                         <div className="flex justify-between text-sm text-muted-foreground pt-2">
+                            <Badge variant="outline">{lead.authenticityStatus}</Badge>
+                            <Badge variant="outline">{lead.publicVisibility}</Badge>
+                        </div>
+                        {lead.targetAmount && lead.targetAmount > 0 && (
+                          <div className="space-y-2 pt-2">
+                              <Progress value={lead.progress} />
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                  <span>₹{lead.collected.toLocaleString('en-IN')} raised</span>
+                                  <span>Goal: ₹{lead.targetAmount.toLocaleString('en-IN')}</span>
+                              </div>
+                          </div>
+                        )}
+                    </CardContent>
+                     <CardFooter>
+                        <Button className="w-full" tabIndex={-1}>
+                            View Details
+                        </Button>
+                    </CardFooter>
+                </Card>
+            ))}
+        </div>
+    );
+};
+
 
 export function PublicLeadsView() {
   const firestore = useFirestore();
@@ -19,7 +93,7 @@ export function PublicLeadsView() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [purposeFilter, setPurposeFilter] = useState('All');
 
   const leadsCollectionRef = useMemo(() => {
     if (!firestore) return null;
@@ -54,7 +128,7 @@ export function PublicLeadsView() {
 
             const totalApplicableAmountInDonation = typeSplits.reduce((acc, split) => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                if (lead.allowedDonationTypes?.includes(category)) {
+                if (lead.allowedDonationTypes?.includes(category as DonationCategory)) {
                     return acc + split.amount;
                 }
                 return acc;
@@ -77,10 +151,14 @@ export function PublicLeadsView() {
     if (!leadData) return [];
     return leadData.filter(l => 
         (statusFilter === 'All' || l.status === statusFilter) &&
-        (categoryFilter === 'All' || l.category === categoryFilter) &&
+        (purposeFilter === 'All' || l.purpose === purposeFilter) &&
         (l.name.toLowerCase().includes(searchTerm.toLowerCase()))
     ).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-  }, [leadData, searchTerm, statusFilter, categoryFilter]);
+  }, [leadData, searchTerm, statusFilter, purposeFilter]);
+  
+  const activeLeads = useMemo(() => filteredLeads.filter(c => c.status === 'Active').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredLeads]);
+  const upcomingLeads = useMemo(() => filteredLeads.filter(c => c.status === 'Upcoming').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredLeads]);
+  const completedLeads = useMemo(() => filteredLeads.filter(c => c.status === 'Completed').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredLeads]);
   
   const isLoading = areLeadsLoading || areDonationsLoading;
 
@@ -107,74 +185,59 @@ export function PublicLeadsView() {
                      <SelectItem value="Upcoming">Upcoming</SelectItem>
                 </SelectContent>
             </Select>
-             <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}>
+             <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}>
                 <SelectTrigger className="w-auto md:w-[180px]">
-                    <SelectValue placeholder="Filter by category" />
+                    <SelectValue placeholder="Filter by purpose" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="All">All Categories</SelectItem>
-                    <SelectItem value="Ration">Ration</SelectItem>
-                    <SelectItem value="Relief">Relief</SelectItem>
-                    <SelectItem value="General">General</SelectItem>
-                    <SelectItem value="Education">Education</SelectItem>
-                    <SelectItem value="Medical">Medical</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="All">All Purposes</SelectItem>
+                    {leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                 </SelectContent>
             </Select>
         </div>
       </div>
 
       {isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+        <div className="space-y-8">
+            <Skeleton className="h-8 w-1/4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+            </div>
+             <Skeleton className="h-8 w-1/4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+            </div>
         </div>
       )}
       
       {!isLoading && filteredLeads.length > 0 && (
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredLeads.map(lead => (
-                  <Card key={lead.id} className="flex flex-col hover:shadow-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 cursor-pointer" onClick={() => router.push(`/leads-public/${lead.id}/summary`)}>
-                      <CardHeader>
-                          <div className="flex justify-between items-start gap-2">
-                              <CardTitle>{lead.name}</CardTitle>
-                              <Badge variant={
-                                  lead.status === 'Active' ? 'success' :
-                                  lead.status === 'Completed' ? 'secondary' : 'outline'
-                              }>{lead.status}</Badge>
-                          </div>
-                          <CardDescription>{lead.startDate} to {lead.endDate}</CardDescription>
-                      </CardHeader>
-                      <CardContent className="flex flex-col flex-grow space-y-4">
-                          <p className="text-sm text-muted-foreground line-clamp-3 flex-grow">{lead.description || "No description provided."}</p>
-                           <div className="flex justify-between text-sm text-muted-foreground pt-2">
-                              <Badge variant="outline">{lead.authenticityStatus}</Badge>
-                              <Badge variant="outline">{lead.publicVisibility}</Badge>
-                          </div>
-                          {lead.targetAmount && lead.targetAmount > 0 && (
-                            <div className="space-y-2 pt-2">
-                                <Progress value={lead.progress} />
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                    <span>₹{lead.collected.toLocaleString('en-IN')} raised</span>
-                                    <span>Goal: ₹{lead.targetAmount.toLocaleString('en-IN')}</span>
-                                </div>
-                            </div>
-                          )}
-                      </CardContent>
-                       <CardFooter>
-                          <Button className="w-full" tabIndex={-1}>
-                              View Details
-                          </Button>
-                      </CardFooter>
-                  </Card>
-              ))}
+          <div className="space-y-8">
+            {(statusFilter === 'All' || statusFilter === 'Active') && (
+                <section>
+                    <h2 className="text-2xl font-bold mb-4">Active Leads ({activeLeads.length})</h2>
+                    <LeadGrid leads={activeLeads} />
+                </section>
+            )}
+            {(statusFilter === 'All' || statusFilter === 'Upcoming') && (
+                <section>
+                    <h2 className="text-2xl font-bold mb-4">Upcoming Leads ({upcomingLeads.length})</h2>
+                    <LeadGrid leads={upcomingLeads} />
+                </section>
+            )}
+            {(statusFilter === 'All' || statusFilter === 'Completed') && (
+                <section>
+                    <h2 className="text-2xl font-bold mb-4">Completed Leads ({completedLeads.length})</h2>
+                    <LeadGrid leads={completedLeads} />
+                </section>
+            )}
           </div>
       )}
-      
-       {!isLoading && filteredLeads.length === 0 && (
-          <div className="text-center py-16">
-              <p className="text-muted-foreground">No public leads found matching your criteria.</p>
-          </div>
-      )}
+    
+     {!isLoading && filteredLeads.length === 0 && (
+        <div className="text-center py-16">
+            <p className="text-muted-foreground">No public leads found matching your criteria.</p>
+        </div>
+    )}
     </div>
   );
 }
