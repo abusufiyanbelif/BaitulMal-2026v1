@@ -12,12 +12,13 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 
 // This internal component will only run AFTER the initial auth check is complete.
-function AuthGuard({ children }: { children: ReactNode }) {
+// It handles route protection.
+function RouteGuard({ children }: { children: ReactNode }) {
     const { user } = useUser(); // We can safely get the user now.
     const router = useRouter();
     const pathname = usePathname();
 
-    const isPublicRoute = ['/', '/login', '/seed'].includes(pathname) || pathname.startsWith('/campaign-public') || pathname.startsWith('/leads-public');
+    const isPublicRoute = ['/', '/login', '/seed'].includes(pathname) || pathname.startsWith('/campaign-public') || pathname.startsWith('/leads-public') || pathname.startsWith('/info');
 
     useEffect(() => {
         // This effect will now run with a stable `user` value.
@@ -30,17 +31,14 @@ function AuthGuard({ children }: { children: ReactNode }) {
     if (!user && !isPublicRoute) {
         return <BrandedLoader />;
     }
-
-    // If the route is public, or the user is authenticated, render the app.
-    return (
-        <SessionProvider authUser={user}>
-            {children}
-        </SessionProvider>
-    );
+    
+    // If the route is public, or the user is authenticated, render the children.
+    return <>{children}</>;
 }
 
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const { isLoading, userError } = useUser();
+    const { user, isUserLoading, userError } = useUser();
 
     if (userError) {
         return (
@@ -69,11 +67,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
     }
 
-    // This is the "Loading Gate". It ensures nothing else renders until Firebase has confirmed the auth state.
-    if (isLoading) {
+    if (isUserLoading) {
         return <BrandedLoader />;
     }
-
-    // Once the auth state is resolved (isLoading is false), we can safely render the AuthGuard.
-    return <AuthGuard>{children}</AuthGuard>;
+    
+    // Once loading is complete, we provide the session and then guard the routes.
+    return (
+        <SessionProvider authUser={user}>
+            <RouteGuard>{children}</RouteGuard>
+        </SessionProvider>
+    );
 }

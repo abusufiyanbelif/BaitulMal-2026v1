@@ -25,7 +25,7 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
         await runTransaction(adminDb, async (transaction) => {
             const sourceCampaignRef = doc(adminDb, 'campaigns', sourceCampaignId);
             const sourceCampaignSnap = await transaction.get(sourceCampaignRef);
-            if (!sourceCampaignSnap.exists()) {
+            if (!sourceCampaignSnap.exists) {
                 throw new Error('Source campaign not found.');
             }
             
@@ -88,8 +88,9 @@ export async function deleteCampaignAction(campaignId: string): Promise<{ succes
         const beneficiariesSnap = await getDocs(collection(adminDb, `campaigns/${campaignId}/beneficiaries`));
         beneficiariesSnap.forEach(doc => batch.delete(doc.ref));
         
-        const donationsSnap = await getDocs(collection(adminDb, `campaigns/${campaignId}/donations`));
-        donationsSnap.forEach(doc => batch.delete(doc.ref));
+        // This is not the correct path for donations, they are in a root collection
+        // const donationsSnap = await getDocs(collection(adminDb, `campaigns/${campaignId}/donations`));
+        // donationsSnap.forEach(doc => batch.delete(doc.ref));
 
         batch.delete(campaignRef);
         

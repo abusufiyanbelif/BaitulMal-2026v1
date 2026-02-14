@@ -155,9 +155,12 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     };
   }, [services, userAuthState]);
   
-  if (userAuthState.userError) {
-     // Only render a full-screen error for critical auth errors
-      return (
+  return (
+    <FirebaseContext.Provider value={contextValue}>
+      <FirebaseErrorListener />
+      {(() => {
+        if (userAuthState.userError) {
+          return (
             <div className="flex flex-col items-center justify-center min-h-screen p-4">
                 <Card className="w-full max-w-lg">
                     <CardHeader className="text-center">
@@ -179,18 +182,15 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
                     </CardContent>
                 </Card>
             </div>
-      )
-  }
+          );
+        }
 
-  // Show loader while services are initializing OR while waiting for the first auth check
-  if (!services || userAuthState.isUserLoading) {
-      return <BrandedLoader />;
-  }
-
-  return (
-    <FirebaseContext.Provider value={contextValue}>
-      <FirebaseErrorListener />
-      {children}
+        if (!services || userAuthState.isUserLoading) {
+            return <BrandedLoader />;
+        }
+        
+        return children;
+      })()}
     </FirebaseContext.Provider>
   );
 };

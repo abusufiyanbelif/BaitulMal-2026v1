@@ -28,9 +28,11 @@ export default function CreateBeneficiaryPage() {
       return;
     }
     setIsSubmitting(true);
+    
+    const { idProofFile, idProofDeleted, ...beneficiaryData } = data;
 
     const result = await createMasterBeneficiaryAction(
-        { ...data, addedDate: new Date().toISOString().split('T')[0] } as Omit<Beneficiary, 'id' | 'createdAt' | 'createdById' | 'createdByName'>,
+        { ...beneficiaryData, addedDate: new Date().toISOString().split('T')[0] },
         { id: userProfile.id, name: userProfile.name }
     );
     

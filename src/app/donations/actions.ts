@@ -18,7 +18,7 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
         const donationsSnap = await getDocs(donationsRef);
         
         for (const docSnap of donationsSnap.docs) {
-            const donation = docSnap.data() as Donation;
+            const donation = docSnap.data() as any; // Use any to access legacy fields
             
             // Check if this is a legacy donation that needs updating
             if (donation.campaignId && (!donation.linkSplit || donation.linkSplit.length === 0)) {
@@ -30,11 +30,11 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
                     amount: donation.amount
                 }];
                 
+                // We cannot use deleteField in client-side code, but it's fine in server actions
                 batch.update(docSnap.ref, { 
                     linkSplit: newLinkSplit,
-                    // Optionally remove old fields if desired
-                    // campaignId: deleteField(),
-                    // campaignName: deleteField()
+                    campaignId: adminDb.FieldValue.delete(),
+                    campaignName: adminDb.FieldValue.delete()
                 });
                 updatedCount++;
             }
