@@ -9,6 +9,7 @@ export type DonationCategory = typeof donationCategories[number];
 export interface BrandingSettings extends DocumentData {
   name?: string;
   logoUrl?: string;
+  loadingAnimationUrl?: string;
   logoWidth?: number;
   logoHeight?: number;
 }

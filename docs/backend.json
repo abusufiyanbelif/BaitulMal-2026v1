@@ -158,6 +158,7 @@
       "description": "Global settings for application branding.",
       "properties": {
         "logoUrl": { "type": "string", "format": "uri" },
+        "loadingAnimationUrl": { "type": "string", "format": "uri" },
         "logoWidth": { "type": "number" },
         "logoHeight": { "type": "number" }
       }
