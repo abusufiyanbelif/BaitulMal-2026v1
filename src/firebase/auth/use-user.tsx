@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -14,7 +15,7 @@ export function useUser() {
       // The hook will re-run once the auth service is available.
       return;
     }
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
       setUser(user);
       setIsLoading(false);
     });

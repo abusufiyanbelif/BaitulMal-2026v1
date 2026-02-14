@@ -308,7 +308,7 @@ export default function BeneficiariesPage() {
 
     if (beneficiaryData.idProofUrl) {
         const fileRef = storageRef(storage, beneficiaryData.idProofUrl);
-        await deleteObject(fileRef).catch(err => {
+        await deleteObject(fileRef).catch((err: any) => {
             if (err.code !== 'storage/object-not-found') {
                 console.warn("Failed to delete ID proof from storage, but Firestore transaction will proceed:", err);
             }
@@ -320,7 +320,7 @@ export default function BeneficiariesPage() {
         toast({ title: 'Success', description: 'Beneficiary removed from campaign and campaign total updated.', variant: 'success' });
         forceRefetch();
         forceRefetchCampaign();
-    } catch (serverError) {
+    } catch (serverError: any) {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
             path: `Batch operation on campaigns/${campaignId}`,
             operation: 'write'
@@ -365,7 +365,7 @@ export default function BeneficiariesPage() {
       let idProofUrl = editingBeneficiary?.idProofUrl || (masterId ? (await getDoc(masterBeneficiaryDocRef)).data()?.idProofUrl : '');
       
       if (data.idProofDeleted && idProofUrl) {
-          await deleteObject(storageRef(storage, idProofUrl)).catch(err => {
+          await deleteObject(storageRef(storage, idProofUrl)).catch((err: any) => {
               if (err.code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
           });
           idProofUrl = '';
@@ -585,11 +585,11 @@ export default function BeneficiariesPage() {
             setIsImportOpen(false); // Close the upload dialog
         }
     };
-    reader.onerror = (error) => {
+    reader.onerror = (error: any) => {
         toast({ title: 'File Error', description: 'Could not read the file.', variant: 'destructive'});
         setIsImporting(false);
     }
-    reader.readAsArrayBuffer(selectedFile);
+    reader.readAsArrayBuffer(selectedFile!);
   };
   
   const handleCommitImport = async (recordsToImport: ProcessedRecord[]) => {
@@ -744,7 +744,7 @@ const sortedGroupKeys = useMemo(() => {
         description: `${beneficiary.name}'s status has been set to ${newStatus}.`,
         variant: 'success',
       });
-    } catch (serverError) {
+    } catch (serverError: any) {
       errorEmitter.emit('permission-error', new FirestorePermissionError({
         path: beneficiaryDocRef.path,
         operation: 'update',
@@ -771,7 +771,7 @@ const sortedGroupKeys = useMemo(() => {
             description: `${beneficiary.name} is now ${newZakatStatus ? 'Eligible' : 'Not Eligible'} for Zakat.`,
             variant: 'success',
         });
-    } catch (serverError) {
+    } catch (serverError: any) {
       errorEmitter.emit('permission-error', new FirestorePermissionError({
         path: beneficiaryDocRef.path,
         operation: 'update',
@@ -1367,3 +1367,4 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
     
 
   
+

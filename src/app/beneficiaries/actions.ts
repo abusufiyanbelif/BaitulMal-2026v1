@@ -123,7 +123,7 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
         const url = new URL(beneficiaryData.idProofUrl);
         const filePath = decodeURIComponent(url.pathname.split('/o/')[1].split('?')[0]);
         await adminStorage.bucket().file(filePath).delete();
-      } catch (storageError) {
+      } catch (storageError: any) {
         console.warn(`Could not delete storage file for beneficiary ${beneficiaryId}. It may not exist.`, storageError);
       }
     }

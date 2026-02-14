@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useFirestore, useDoc, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { collection, getDocs, getDoc, collectionGroup, query, where, doc } from 'firebase/firestore';
+import { collection, getDocs, getDoc, collectionGroup, query, where, doc, type QueryDocumentSnapshot } from 'firebase/firestore';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
@@ -65,7 +65,7 @@ export default function BeneficiaryDetailsPage() {
             return;
         }
 
-        const initiativePromises = beneficiarySubcollectionDocs.docs.map(async (benDoc) => {
+        const initiativePromises = beneficiarySubcollectionDocs.docs.map(async (benDoc: QueryDocumentSnapshot) => {
             if (benDoc.ref.path.startsWith('beneficiaries/')) return null;
 
             const parentRef = benDoc.ref.parent.parent;
@@ -90,9 +90,9 @@ export default function BeneficiaryDetailsPage() {
             return null;
         });
 
-        const results = await Promise.all(initiativePromises);
+        const results = (await Promise.all(initiativePromises)) as (LinkedInitiative | null)[];
         setLinkedInitiatives(results.filter((link): link is LinkedInitiative => link !== null));
-    } catch (e) {
+    } catch (e: any) {
         console.error("Error fetching linked initiatives:", e);
         toast({ title: "Error", description: "Could not fetch linked initiatives for this beneficiary.", variant: 'destructive'});
     } finally {
@@ -253,7 +253,7 @@ export default function BeneficiaryDetailsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {linkedInitiatives.map(link => (
+                            {linkedInitiatives.map((link: LinkedInitiative) => (
                                 <TableRow key={link.id}>
                                     <TableCell>
                                         <Link href={link.type === 'Campaign' ? `/campaign-members/${link.id}/beneficiaries` : `/leads-members/${link.id}/beneficiaries`} className="font-medium text-primary hover:underline flex items-center gap-2">

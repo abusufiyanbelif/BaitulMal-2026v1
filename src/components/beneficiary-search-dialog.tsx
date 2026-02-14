@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useFirestore } from '@/firebase';
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit, type QueryDocumentSnapshot } from 'firebase/firestore';
 import type { Beneficiary } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -38,7 +38,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
       const beneficiariesQuery = query(collection(firestore, 'beneficiaries'));
       const querySnapshot = await getDocs(beneficiariesQuery);
       const allBeneficiaries: Beneficiary[] = [];
-      querySnapshot.forEach((doc) => {
+      querySnapshot.forEach((doc: QueryDocumentSnapshot) => {
           allBeneficiaries.push({ id: doc.id, ...doc.data() } as Beneficiary);
       });
 
@@ -48,7 +48,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
       ).slice(0, 20);
 
       setSearchResults(filtered);
-    } catch (e) {
+    } catch (e: any) {
       console.error("Beneficiary search failed:", e);
     } finally {
       setIsSearching(false);
