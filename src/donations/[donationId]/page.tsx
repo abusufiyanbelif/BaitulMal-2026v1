@@ -3,6 +3,7 @@
 
 import { useMemo, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
@@ -85,7 +86,7 @@ export default function UnlinkedDonationDetailsPage() {
                     if(file) {
                         const Resizer = (await import('react-image-file-resizer')).default;
                         const resizedBlob = await new Promise<Blob>((resolve) => {
-                            Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
+                            Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                         });
                         const filePath = `donations/${docRef.id}/${transaction.id}.png`;
                         const fileRef = storageRef(storage, filePath);

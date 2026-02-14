@@ -1,5 +1,4 @@
 
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -219,7 +218,7 @@ export default function DonationsPage() {
                 if(file) {
                     const { default: Resizer } = await import('react-image-file-resizer');
                     const resizedBlob = await new Promise<Blob>((resolve) => {
-                         Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
+                         Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                     });
                     const filePath = `donations/${docRef.id}/${transaction.id}.png`;
                     const fileRef = storageRef(storage, filePath);

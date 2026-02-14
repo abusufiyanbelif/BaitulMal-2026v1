@@ -52,7 +52,7 @@ function buildAuthObject(currentUser: User | null): FirebaseAuthObject | null {
     phone_number: currentUser.phoneNumber,
     sub: currentUser.uid,
     firebase: {
-      identities: currentUser.providerData.reduce((acc: Record<string, string[]>, p: any) => {
+      identities: currentUser.providerData.reduce((acc: Record<string, any>, p: any) => {
         if (p.providerId) {
           acc[p.providerId] = [p.uid];
         }
