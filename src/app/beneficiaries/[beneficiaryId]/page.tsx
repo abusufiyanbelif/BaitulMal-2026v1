@@ -2,9 +2,9 @@
 'use client';
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection } from '@/firebase';
+import { useFirestore, useDoc, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { updateDoc, doc, collection, getDocs, getDoc, collectionGroup, query, where } from 'firebase/firestore';
+import { collection, getDocs, getDoc, collectionGroup, query, where, doc } from 'firebase/firestore';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { updateMasterBeneficiaryAction } from '../actions';
 
 interface LinkedInitiative {
     id: string;
@@ -44,7 +45,7 @@ export default function BeneficiaryDetailsPage() {
     return doc(firestore, 'beneficiaries', beneficiaryId);
   }, [firestore, beneficiaryId]);
 
-  const { data: beneficiary, isLoading: isBeneficiaryLoading } = useDoc<Beneficiary>(beneficiaryDocRef);
+  const { data: beneficiary, isLoading: isBeneficiaryLoading, forceRefetch } = useDoc<Beneficiary>(beneficiaryDocRef);
   
   const [linkedInitiatives, setLinkedInitiatives] = useState<LinkedInitiative[]>([]);
   const [isLinksLoading, setIsLinksLoading] = useState(true);
@@ -65,6 +66,8 @@ export default function BeneficiaryDetailsPage() {
         }
 
         const initiativePromises = beneficiarySubcollectionDocs.docs.map(async (benDoc) => {
+            if (benDoc.ref.path.startsWith('beneficiaries/')) return null;
+
             const parentRef = benDoc.ref.parent.parent;
             if (!parentRef) return null;
 
@@ -106,27 +109,29 @@ export default function BeneficiaryDetailsPage() {
   const canUpdate = currentUserProfile?.role === 'Admin' || !!currentUserProfile?.permissions?.beneficiaries?.update;
 
   const handleSave = async (data: BeneficiaryFormData) => {
-    if (!firestore || !beneficiary || !canUpdate) {
+    if (!beneficiaryId || !canUpdate || !currentUserProfile) {
         toast({ title: 'Error', description: 'You do not have permission or services are unavailable.', variant: 'destructive' });
-        setIsSubmitting(false);
         return;
     };
     setIsSubmitting(true);
     
-    try {
-        const docRef = doc(firestore, 'beneficiaries', beneficiaryId);
-        await updateDoc(docRef, { ...data });
-        toast({ title: 'Success', description: 'Beneficiary details have been successfully updated.', variant: 'success' });
+    const { id, createdAt, createdById, createdByName, ...updateData } = data;
+
+    const result = await updateMasterBeneficiaryAction(
+        beneficiaryId, 
+        updateData,
+        { id: currentUserProfile.id, name: currentUserProfile.name }
+    );
+    
+    if (result.success) {
+        toast({ title: 'Success', description: result.message, variant: 'success' });
+        forceRefetch();
         setIsEditMode(false);
-    } catch (serverError: any) {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: `beneficiaries/${beneficiaryId}`,
-            operation: 'update',
-            requestResourceData: data,
-        }));
-    } finally {
-        setIsSubmitting(false);
+    } else {
+        toast({ title: 'Update Failed', description: result.message, variant: 'destructive' });
     }
+
+    setIsSubmitting(false);
   };
 
   const handleCancel = () => {

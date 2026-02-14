@@ -3,9 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -13,10 +11,10 @@ import { ArrowLeft, Loader2, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
+import { createMasterBeneficiaryAction } from '../actions';
 
 export default function CreateBeneficiaryPage() {
   const router = useRouter();
-  const firestore = useFirestore();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { userProfile, isLoading: isProfileLoading } = useSession();
@@ -24,33 +22,27 @@ export default function CreateBeneficiaryPage() {
   const canCreate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.beneficiaries?.create;
 
   const handleCreateBeneficiary = async (data: BeneficiaryFormData) => {
-    if (!firestore || !canCreate || !userProfile) {
+    if (!canCreate || !userProfile) {
       toast({ title: 'Permission Denied', description: 'You do not have permission to create beneficiaries.', variant: 'destructive' });
       return;
     }
     setIsSubmitting(true);
 
-    try {
-        const newDocRef = doc(collection(firestore, 'beneficiaries'));
-        await setDoc(newDocRef, {
-            ...data,
-            id: newDocRef.id,
-            createdAt: serverTimestamp(),
-            createdById: userProfile.id,
-            createdByName: userProfile.name,
-        });
+    const { id, createdAt, createdById, createdByName, ...restData } = data;
 
-        toast({ title: 'Success', description: 'Beneficiary created successfully.', variant: 'success' });
+    const result = await createMasterBeneficiaryAction(
+        restData, 
+        { id: userProfile.id, name: userProfile.name }
+    );
+    
+    if (result.success) {
+        toast({ title: 'Success', description: result.message, variant: 'success' });
         router.push(`/beneficiaries`);
-    } catch (serverError) {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: 'beneficiaries',
-            operation: 'create',
-            requestResourceData: data,
-        }));
-    } finally {
-        setIsSubmitting(false);
+    } else {
+        toast({ title: 'Creation Failed', description: result.message, variant: 'destructive' });
     }
+
+    setIsSubmitting(false);
   };
 
   if (isProfileLoading) {

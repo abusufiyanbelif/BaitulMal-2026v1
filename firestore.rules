@@ -103,7 +103,11 @@ service cloud.firestore {
     // ----------------------------------------------------------------------
     // Collection Group Rules
     // ----------------------------------------------------------------------
-    // No collection group rules are currently needed.
+    match /{path=**}/beneficiaries/{beneficiaryId} {
+      // This rule allows collection group queries on 'beneficiaries'.
+      // Reads are allowed only by authenticated users.
+      allow read: if isSignedIn();
+    }
 
 
     // ----------------------------------------------------------------------
