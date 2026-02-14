@@ -11,7 +11,7 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, ExternalLink } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { firebaseConfig } from '@/firebase/config';
 
 interface FirebaseProviderProps {
@@ -28,8 +28,8 @@ interface UserAuthState {
 interface FirebaseServices {
     firebaseApp: FirebaseApp;
     auth: Auth;
-    firestore: Firestore;
-    storage: FirebaseStorage;
+    firestore: Firestore | null;
+    storage: FirebaseStorage | null;
 }
 
 
@@ -67,16 +67,32 @@ export interface UserHookResult {
 // React Context
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
 
-function initializeFirebaseClient() {
+function initializeFirebaseClient(): Partial<FirebaseServices> | null {
     if (typeof window === "undefined") {
         return null;
     }
     const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    
+    let firestore: Firestore | null = null;
+    let storage: FirebaseStorage | null = null;
+
+    try {
+      firestore = getFirestore(app);
+    } catch (e) {
+      console.warn("Could not initialize Firestore. This might be because it's not enabled in the Firebase console.", e);
+    }
+
+    try {
+      storage = getStorage(app);
+    } catch (e) {
+      console.warn("Could not initialize Storage. This might be because it's not enabled in the Firebase console or storageBucket is missing from config.", e);
+    }
+
     return {
         firebaseApp: app,
         auth: getAuth(app),
-        firestore: getFirestore(app),
-        storage: getStorage(app),
+        firestore: firestore,
+        storage: storage,
     };
 }
 
@@ -85,8 +101,7 @@ function initializeFirebaseClient() {
  * FirebaseProvider manages and provides Firebase services and user authentication state.
  */
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
-  const [services, setServices] = useState<FirebaseServices | null>(null);
-  const [initError, setInitError] = useState<Error | null>(null);
+  const [services, setServices] = useState<Partial<FirebaseServices> | null>(null);
   const [userAuthState, setUserAuthState] = useState<UserAuthState>({
     user: null,
     isUserLoading: true, // Start loading until first auth event
@@ -95,25 +110,21 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
 
   // Effect 1: Initialize Firebase services ONCE on the client
   useEffect(() => {
-    try {
-        const firebaseServices = initializeFirebaseClient();
-        if (!firebaseServices) {
-            // This indicates we are on the server, so we do nothing.
-            // The loading state will be handled by the initial state of `services`.
-            return;
-        }
-        setServices(firebaseServices);
-    } catch (error: any) {
-        setInitError(error);
-    }
+    const firebaseServices = initializeFirebaseClient();
+    setServices(firebaseServices);
   }, []);
 
   // Effect 2: Listen for auth state changes, depends on `services`
   useEffect(() => {
-    if (!services?.auth) {
-      if(initError) {
-          setUserAuthState({ user: null, isUserLoading: false, userError: initError });
-      }
+    if (services === null) {
+      // Services are not yet initialized.
+      return;
+    }
+
+    if (!services.auth) {
+      // This is a critical failure if the auth service itself can't initialize.
+      const authError = new Error("Firebase Authentication service failed to initialize. Check your firebaseConfig.");
+      setUserAuthState({ user: null, isUserLoading: false, userError: authError });
       return;
     }
 
@@ -128,77 +139,58 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
       }
     );
     return () => unsubscribe(); // Cleanup
-  }, [services, initError]); // Rerun when services are available
+  }, [services]);
 
   // Memoize the context value
   const contextValue = useMemo((): FirebaseContextState => {
-    const servicesAvailable = !!services;
     return {
-      areServicesAvailable: servicesAvailable,
+      areServicesAvailable: !!services,
       firebaseApp: services?.firebaseApp || null,
       firestore: services?.firestore || null,
       auth: services?.auth || null,
       storage: services?.storage || null,
       user: userAuthState.user,
       isUserLoading: userAuthState.isUserLoading,
-      userError: userAuthState.userError || initError,
+      userError: userAuthState.userError,
     };
-  }, [services, userAuthState, initError]);
+  }, [services, userAuthState]);
   
-  const finalUserError = userAuthState.userError || initError;
-
-  const ErrorDisplay = () => {
-      if (!finalUserError) return null;
-      const isFirestoreError = finalUserError.message.includes("firestore");
-      const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-      const firestoreConsoleUrl = `https://console.firebase.google.com/project/${projectId}/firestore`;
-      const firestoreApiConsoleUrl = `https://console.cloud.google.com/apis/library/firestore.googleapis.com?project=${projectId}`;
+  if (userAuthState.userError) {
+     // Only render a full-screen error for critical auth errors
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-            <Card className="w-full max-w-lg">
-                <CardHeader className="text-center">
-                    <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
-                    <CardTitle className="text-destructive">Firebase Initialization Failed</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                      <Alert variant="destructive">
-                        <AlertTitle>Error Details</AlertTitle>
-                        <AlertDescription>
-                            <div className="space-y-4">
-                                {isFirestoreError ? (
-                                    <div className="space-y-2 p-3 bg-destructive/10 rounded-md">
-                                        <p className="font-semibold">Firestore Not Available</p>
-                                        <p className="text-xs">Your project is missing a Firestore database. Go to the Firebase console to create one, or enable the Firestore API if a database already exists.</p>
-                                        <div className="flex gap-2 pt-1">
-                                            <Button asChild className="flex-1" size="sm" variant="secondary">
-                                                <a href={firestoreConsoleUrl} target="_blank" rel="noopener noreferrer">Create Database <ExternalLink className="ml-2 h-3 w-3"/></a>
-                                            </Button>
-                                            <Button asChild className="flex-1" size="sm" variant="secondary">
-                                                <a href={firestoreApiConsoleUrl} target="_blank" rel="noopener noreferrer">Enable API <ExternalLink className="ml-2 h-3 w-3"/></a>
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <p className="font-mono text-xs bg-destructive/20 p-2 rounded">
-                                        {finalUserError.message}
-                                    </p>
-                                )}
-                            </div>
-                        </AlertDescription>
-                    </Alert>
-                    <Button onClick={() => window.location.reload()} className="w-full">
-                        Reload Page
-                    </Button>
-                </CardContent>
-            </Card>
-        </div>
-      );
-  };
-  
+            <div className="flex flex-col items-center justify-center min-h-screen p-4">
+                <Card className="w-full max-w-lg">
+                    <CardHeader className="text-center">
+                        <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+                        <CardTitle className="text-destructive">Authentication Error</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                         <Alert variant="destructive">
+                            <AlertTitle>Could not verify user status.</AlertTitle>
+                            <AlertDescription>
+                                <p className="font-mono text-xs bg-destructive/20 p-2 rounded mt-2">
+                                    {userAuthState.userError.message}
+                                </p>
+                            </AlertDescription>
+                        </Alert>
+                        <Button onClick={() => window.location.reload()} className="w-full">
+                            Reload Page
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+      )
+  }
+
+  // Show loader while services are initializing OR while waiting for the first auth check
+  if (!services || userAuthState.isUserLoading) {
+      return <BrandedLoader />;
+  }
+
   return (
     <FirebaseContext.Provider value={contextValue}>
       <FirebaseErrorListener />
-      {finalUserError ? <ErrorDisplay /> : !services ? <BrandedLoader /> : children}
+      {children}
     </FirebaseContext.Provider>
   );
 };
@@ -214,11 +206,9 @@ export const useFirebase = (): FirebaseServicesAndUser => {
     throw new Error('useFirebase must be used within a FirebaseProvider.');
   }
 
-  if (!context.areServicesAvailable || !context.firebaseApp || !context.firestore || !context.auth || !context.storage) {
-    // This condition should not be hit if the children are gated by the `!services` check,
-    // but it's a good safeguard.
-    if (!context.isUserLoading) { // Avoid throwing during initial load
-      throw new Error('Firebase core services not available. This is an unexpected state inside a gated component.');
+  if (!context.areServicesAvailable || !context.firebaseApp || !context.auth) {
+    if (!context.isUserLoading) {
+      throw new Error('Firebase core services (App, Auth) not available. This is an unexpected state inside a gated component.');
     }
   }
 
@@ -236,18 +226,27 @@ export const useFirebase = (): FirebaseServicesAndUser => {
 /** Hook to access Firebase Auth instance. */
 export const useAuth = (): Auth => {
   const { auth } = useFirebase();
+  if (!auth) {
+    throw new Error("Firebase Auth service is not available. Check initialization.");
+  }
   return auth;
 };
 
 /** Hook to access Firestore instance. */
 export const useFirestore = (): Firestore => {
   const { firestore } = useFirebase();
+  if (!firestore) {
+    throw new Error("Firestore service is not available. Check configuration and ensure it's enabled in your Firebase project.");
+  }
   return firestore;
 };
 
 /** Hook to access Firebase Storage instance. */
 export const useStorage = (): FirebaseStorage => {
   const { storage } = useFirebase();
+  if (!storage) {
+    throw new Error("Firebase Storage service is not available. Check configuration and ensure it's enabled in your Firebase project.");
+  }
   return storage;
 };
 
