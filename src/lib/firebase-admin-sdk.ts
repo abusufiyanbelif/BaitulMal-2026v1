@@ -1,6 +1,5 @@
 
 import * as admin from 'firebase-admin';
-import 'dotenv/config';
 
 let adminAuth: admin.auth.Auth | null = null;
 let adminDb: admin.firestore.Firestore | null = null;
