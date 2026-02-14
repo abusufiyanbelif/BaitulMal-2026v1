@@ -12,12 +12,13 @@
     "typecheck": "tsc --noEmit",
     "db:seed": "tsx scripts/seed.ts",
     "db:migrate-categories": "tsx scripts/migrate-categories.ts",
+    "db:migrate-beneficiaries": "tsx scripts/migrate-beneficiaries.ts",
     "db:erase": "tsx scripts/erase.ts",
     "check": "tsx scripts/check.ts",
     "check:db": "tsx scripts/check-db.ts",
     "check:storage": "tsx scripts/check-storage.ts",
     "setup:storage": "tsx scripts/setup-storage.ts",
-    "fix:iam": "tsx scripts/fix-iam.ts"
+    "fix:iam": "tsx scripts/fix:iam.ts"
   },
   "dependencies": {
     "@dataconnect/admin-generated": "file:src/dataconnect-admin-generated",

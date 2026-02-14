@@ -22,7 +22,7 @@ export default function SeedPage() {
         <CardHeader>
           <CardTitle>Database Management via Command Line</CardTitle>
           <CardDescription>
-              Use these `npm` scripts to seed or erase your application's database from the terminal.
+              Use these `npm` scripts to seed or migrate your application's database from the terminal.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
@@ -47,6 +47,25 @@ export default function SeedPage() {
               <div className="p-4 bg-muted rounded-md font-mono text-sm flex items-center gap-2">
                   <Terminal className="h-4 w-4"/>
                   <span>npm run db:seed</span>
+              </div>
+          </div>
+          
+           <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Data Structure Migrations</h3>
+              <p className="text-sm text-muted-foreground">Run these commands if you have older data that needs to be updated to the latest application format.</p>
+              <div className="space-y-2">
+                  <div className="p-4 bg-muted rounded-md font-mono text-sm flex items-center gap-2">
+                      <Terminal className="h-4 w-4"/>
+                      <span>npm run db:migrate-categories</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground pl-2">Updates old `rationLists` in Campaigns and Leads to the new `itemCategories` format.</p>
+              </div>
+               <div className="space-y-2">
+                  <div className="p-4 bg-muted rounded-md font-mono text-sm flex items-center gap-2">
+                      <Terminal className="h-4 w-4"/>
+                      <span>npm run db:migrate-beneficiaries</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground pl-2">Syncs any beneficiaries from Campaign/Lead subcollections to the master beneficiary list.</p>
               </div>
           </div>
 
