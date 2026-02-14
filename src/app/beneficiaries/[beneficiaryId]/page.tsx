@@ -1,16 +1,16 @@
 
 'use client';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { updateDoc, doc, collection, getDoc } from 'firebase/firestore';
+import { updateDoc, doc, collection, getDocs, getDoc, collectionGroup, query, where } from 'firebase/firestore';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
-import { ArrowLeft, Save, Edit, ShieldAlert, FolderKanban, Lightbulb, UserCheck, Check, Hourglass } from 'lucide-react';
+import { ArrowLeft, Save, Edit, ShieldAlert, FolderKanban, Lightbulb, UserCheck, Check, Hourglass, Loader2 } from 'lucide-react';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,7 +22,7 @@ interface LinkedInitiative {
     id: string;
     name: string;
     type: 'Campaign' | 'Lead';
-    status: 'Upcoming' | 'Active' | 'Completed';
+    status: Campaign['status'] | Lead['status'];
     kitAmount: number;
     beneficiaryStatus: 'Given' | 'Pending' | 'Hold' | 'Need More Details' | 'Verified';
 }
@@ -46,59 +46,62 @@ export default function BeneficiaryDetailsPage() {
 
   const { data: beneficiary, isLoading: isBeneficiaryLoading } = useDoc<Beneficiary>(beneficiaryDocRef);
   
-  const campaignsCollectionRef = useMemo(() => firestore ? collection(firestore, 'campaigns') : null, [firestore]);
-  const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
-
-  const leadsCollectionRef = useMemo(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
-  const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
-  
   const [linkedInitiatives, setLinkedInitiatives] = useState<LinkedInitiative[]>([]);
   const [isLinksLoading, setIsLinksLoading] = useState(true);
 
-  useEffect(() => {
-      if (!firestore || !beneficiary || (!campaigns && !leads)) {
-          if (!areCampaignsLoading && !areLeadsLoading) {
-              setIsLinksLoading(false);
-          }
-          return;
-      }
+  const fetchLinkedInitiatives = useCallback(async () => {
+    if (!firestore || !beneficiary) return;
+    setIsLinksLoading(true);
 
-      const findLinks = async () => {
-          setIsLinksLoading(true);
-          const allItems = [
-              ...(campaigns || []).map(c => ({ ...c, itemType: 'Campaign' as const })),
-              ...(leads || []).map(l => ({ ...l, itemType: 'Lead' as const }))
-          ];
+    try {
+        const beneficiarySubcollectionDocs = await getDocs(
+            query(collectionGroup(firestore, 'beneficiaries'), where('id', '==', beneficiary.id))
+        );
 
-          const checkPromises = allItems.map(async (item) => {
-            const subcollectionPath = item.itemType === 'Campaign' ? 'campaigns' : 'leads';
-            const benRef = doc(firestore, subcollectionPath, item.id, 'beneficiaries', beneficiary.id);
-            try {
-              const benSnap = await getDoc(benRef);
-              if (benSnap.exists()) {
-                const benData = benSnap.data() as Beneficiary;
+        if (beneficiarySubcollectionDocs.empty) {
+            setLinkedInitiatives([]);
+            setIsLinksLoading(false);
+            return;
+        }
+
+        const initiativePromises = beneficiarySubcollectionDocs.docs.map(async (benDoc) => {
+            const parentRef = benDoc.ref.parent.parent;
+            if (!parentRef) return null;
+
+            const benData = benDoc.data() as Beneficiary;
+            const parentSnap = await getDoc(parentRef);
+
+            if (parentSnap.exists()) {
+                const parentData = parentSnap.data() as (Campaign | Lead);
+                const initiativeType = parentRef.path.startsWith('campaigns') ? 'Campaign' : 'Lead';
+                
                 return {
-                  id: item.id,
-                  name: item.name,
-                  type: item.itemType,
-                  status: item.status,
-                  kitAmount: benData.kitAmount || 0,
-                  beneficiaryStatus: benData.status || 'Pending'
+                    id: parentRef.id,
+                    name: parentData.name,
+                    type: initiativeType,
+                    status: parentData.status,
+                    kitAmount: benData.kitAmount || 0,
+                    beneficiaryStatus: benData.status || 'Pending'
                 };
-              }
-            } catch (e) {
-              console.warn(`Could not check link for beneficiary in ${subcollectionPath}/${item.id}:`, e);
             }
             return null;
-          });
+        });
 
-          const results = await Promise.all(checkPromises);
-          setLinkedInitiatives(results.filter((link): link is LinkedInitiative => link !== null));
-          setIsLinksLoading(false);
-      };
+        const results = await Promise.all(initiativePromises);
+        setLinkedInitiatives(results.filter((link): link is LinkedInitiative => link !== null));
+    } catch (e) {
+        console.error("Error fetching linked initiatives:", e);
+        toast({ title: "Error", description: "Could not fetch linked initiatives for this beneficiary.", variant: 'destructive'});
+    } finally {
+        setIsLinksLoading(false);
+    }
+  }, [firestore, beneficiary, toast]);
 
-      findLinks();
-  }, [firestore, beneficiary, campaigns, leads, areCampaignsLoading, areLeadsLoading]);
+  useEffect(() => {
+    if (beneficiary) {
+        fetchLinkedInitiatives();
+    }
+  }, [beneficiary, fetchLinkedInitiatives]);
 
   const canUpdate = currentUserProfile?.role === 'Admin' || !!currentUserProfile?.permissions?.beneficiaries?.update;
 
@@ -130,7 +133,7 @@ export default function BeneficiaryDetailsPage() {
     setIsEditMode(false);
   };
 
-  const isLoading = isBeneficiaryLoading || isProfileLoading || areCampaignsLoading || areLeadsLoading;
+  const isLoading = isBeneficiaryLoading || isProfileLoading;
 
   if (isLoading) {
     return (
@@ -224,16 +227,16 @@ export default function BeneficiaryDetailsPage() {
         </CardContent>
       </Card>
 
-      <Card className="max-w-2xl mx-auto animate-fade-in-zoom" style={{animationDelay: '200ms'}}>
+      <Card className="max-w-2xl mx-auto animate-fade-in-zoom" style={{ animationDelay: '200ms'}}>
         <CardHeader>
             <CardTitle>Linked To</CardTitle>
             <CardDescription>This beneficiary is linked to the following initiatives.</CardDescription>
         </CardHeader>
         <CardContent>
             {isLinksLoading ? (
-                <div className="space-y-2">
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
+                <div className="flex justify-center items-center py-4">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <span className="ml-2">Scanning initiatives...</span>
                 </div>
             ) : linkedInitiatives.length > 0 ? (
                 <div className="border rounded-lg overflow-hidden">

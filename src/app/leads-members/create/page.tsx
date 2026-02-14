@@ -178,7 +178,7 @@ export default function CreateLeadPage() {
       shopName: '',
       shopContact: '',
       shopAddress: '',
-      itemCategories: [{ id: 'general', name: 'General', items: [] }],
+      itemCategories: [{ id: 'item-price-list', name: 'Item Price List', items: [] }],
       seriousness: data.seriousness || null,
     };
 

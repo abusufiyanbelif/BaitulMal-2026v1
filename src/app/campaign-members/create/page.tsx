@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -136,7 +137,7 @@ export default function CreateCampaignPage() {
       shopName: '',
       shopContact: '',
       shopAddress: '',
-      itemCategories: data.category === 'Ration' ? [{ id: 'general', name: 'General Item List', items: [] }] : [],
+      itemCategories: data.category === 'Ration' ? [{ id: 'item-price-list', name: 'Item Price List', items: [] }] : [],
     };
 
     setDoc(newCampaignRef, newCampaignData)

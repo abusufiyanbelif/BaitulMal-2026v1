@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -107,23 +108,34 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
             return items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
         };
         
-        if (isReadOnly) return; // Don't auto-update if viewing details.
+        if (isReadOnly || !rationLists || rationLists.length === 0) return;
 
         const members = membersValue || 0;
 
-        if (rationLists && rationLists.length > 0) {
-            const generalCategory = rationLists.find(cat => cat.name === 'General Item List');
-            
-            const specificCategory = rationLists.find(
-                cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
-            );
-            
-            const appliedCategory = specificCategory || generalCategory;
+        const matchingCategories = rationLists.filter(
+            cat => cat.name !== 'Item Price List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
+        );
 
-            if (appliedCategory) {
-                const kitAmount = calculateTotal(appliedCategory.items);
-                setValue('kitAmount', kitAmount, { shouldValidate: true, shouldDirty: true });
-            }
+        let appliedCategory: ItemCategory | undefined = undefined;
+
+        if (matchingCategories.length > 1) {
+            matchingCategories.sort((a, b) => {
+                const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
+                const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
+                if (rangeA !== rangeB) {
+                    return rangeA - rangeB; // Smaller range is more specific
+                }
+                // If ranges are equal, prefer the one with a higher minimum
+                return (b.minMembers ?? 0) - (a.minMembers ?? 0);
+            });
+            appliedCategory = matchingCategories[0];
+        } else if (matchingCategories.length === 1) {
+            appliedCategory = matchingCategories[0];
+        }
+
+        if (appliedCategory) {
+            const kitAmount = calculateTotal(appliedCategory.items);
+            setValue('kitAmount', kitAmount, { shouldValidate: true, shouldDirty: true });
         }
     }, [membersValue, rationLists, setValue, isReadOnly]);
 
