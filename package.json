@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.0.0",
-    "@google-cloud/resource-manager": "^5.0.1",
     "@hookform/resolvers": "3.3.4",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
@@ -52,8 +51,8 @@
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
     "embla-carousel-react": "^8.1.6",
-    "firebase": "12.8.0",
-    "firebase-admin": "^13.6.0",
+    "firebase": "10.12.3",
+    "firebase-admin": "^12.0.0",
     "genkit": "^1.0.0",
     "handlebars": "^4.7.8",
     "html2canvas": "^1.4.1",
