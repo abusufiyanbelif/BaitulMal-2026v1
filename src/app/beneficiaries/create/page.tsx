@@ -29,7 +29,7 @@ export default function CreateBeneficiaryPage() {
     setIsSubmitting(true);
 
     const result = await createMasterBeneficiaryAction(
-        { ...data, addedDate: new Date().toISOString().split('T')[0] }, 
+        { ...data, addedDate: new Date().toISOString().split('T')[0] },
         { id: userProfile.id, name: userProfile.name }
     );
     

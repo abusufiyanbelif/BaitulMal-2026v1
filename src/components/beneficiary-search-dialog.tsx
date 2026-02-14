@@ -117,5 +117,3 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
     </Dialog>
   );
 }
-
-    
