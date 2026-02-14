@@ -112,8 +112,12 @@ const config = {
           '100%': { transform: 'translateX(100%)' },
         },
         'zoom-in-out': {
-          '0%, 100%': { transform: 'scale(0.95)', opacity: '0.8' },
-          '50%': { transform: 'scale(1.05)', opacity: '1' },
+          '0%, 100%': {
+            transform: 'scale(0.95)',
+          },
+          '50%': {
+            transform: 'scale(1.05)',
+          },
         },
       },
       animation: {
@@ -124,7 +128,7 @@ const config = {
         'fade-in-up': 'fade-in-up 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'fade-in-zoom': 'fade-in-zoom 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'shimmer': 'shimmer 2s infinite',
-        'zoom-in-out': 'zoom-in-out 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'zoom-in-out': 'zoom-in-out 4s ease-in-out infinite',
       },
     },
   },

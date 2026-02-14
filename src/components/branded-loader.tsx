@@ -29,10 +29,11 @@ export function BrandedLoader() {
         return <div className="fixed inset-0 z-[9999] bg-background"></div>;
     }
     
-    const logoWidth = brandingSettings?.logoWidth || 150;
-    const logoHeight = brandingSettings?.logoHeight || 75;
+    // Determine the size for the logo container
+    const logoContainerWidth = validLogoUrl ? (brandingSettings?.logoWidth || 150) : 160; // 160px matches w-40
+    const logoContainerHeight = validLogoUrl ? (brandingSettings?.logoHeight || 75) : 160; // 160px matches h-40
     
-    const animationContainerSize = Math.max(logoWidth, logoHeight) * 1.5;
+    const animationContainerSize = Math.max(logoContainerWidth, logoContainerHeight) * 1.5;
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background">
@@ -40,16 +41,16 @@ export function BrandedLoader() {
                 <div 
                     className="animate-zoom-in-out flex items-center justify-center"
                     style={{ 
-                        width: `${logoWidth}px`, 
-                        height: `${logoHeight}px`
+                        width: `${logoContainerWidth}px`, 
+                        height: `${logoContainerHeight}px`
                     }}
                 >
                     {validLogoUrl ? (
                          <Image
                             src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                             alt="Logo"
-                            width={logoWidth}
-                            height={logoHeight}
+                            width={logoContainerWidth}
+                            height={logoContainerHeight}
                             className="object-contain"
                             priority
                          />
