@@ -1,0 +1,147 @@
+'use client';
+
+import { useMemo } from 'react';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
+import type { Campaign, Lead, Donation, DonationCategory } from '@/lib/types';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Target, TrendingUp } from 'lucide-react';
+import {
+  RadialBarChart,
+  RadialBar,
+  PolarAngleAxis,
+  Tooltip
+} from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+
+export function OverallFundingSummary() {
+  const firestore = useFirestore();
+
+  const campaignsCollectionRef = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'campaigns'), where('status', 'in', ['Active', 'Upcoming']));
+  }, [firestore]);
+
+  const leadsCollectionRef = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'leads'), where('status', 'in', ['Active', 'Upcoming']));
+  }, [firestore]);
+  
+  const donationsCollectionRef = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
+  }, [firestore]);
+
+  const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
+  const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
+  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
+
+  const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading;
+
+  const summaryData = useMemo(() => {
+    if (!campaigns || !leads || !donations) return null;
+
+    const totalTarget = [...campaigns, ...leads].reduce((sum, item) => sum + (item.targetAmount || 0), 0);
+    
+    // Sum up all verified donations, regardless of what they are linked to.
+    const totalRaised = donations.reduce((sum, donation) => sum + donation.amount, 0);
+
+    const progress = totalTarget > 0 ? Math.min((totalRaised / totalTarget) * 100, 100) : 0;
+    
+    const chartData = [
+      {
+        name: 'Progress',
+        value: progress,
+        fill: 'hsl(var(--primary))',
+      },
+    ];
+
+    return {
+      totalTarget,
+      totalRaised,
+      progress,
+      chartData,
+    };
+  }, [campaigns, leads, donations]);
+
+  if (isLoading) {
+    return (
+        <Card>
+            <CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader>
+            <CardContent><Skeleton className="h-48 w-full" /></CardContent>
+        </Card>
+    )
+  }
+
+  if (!summaryData) {
+    return <p>Could not load funding summary.</p>
+  }
+
+  return (
+    <Card className="animate-fade-in-up" style={{ animationDelay: '700ms', animationFillMode: 'backwards' }}>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+            <Target className="h-6 w-6 text-primary" />
+            Overall Fundraising Progress
+        </CardTitle>
+        <CardDescription>A real-time look at our total collected donations against our active goals.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            <div className="relative h-48 w-full">
+                <ChartContainer
+                    config={{
+                        progress: {
+                            label: 'Progress',
+                            color: 'hsl(var(--primary))',
+                        },
+                    }}
+                    className="mx-auto aspect-square h-full"
+                >
+                    <RadialBarChart
+                        data={summaryData.chartData}
+                        startAngle={-270}
+                        endAngle={90}
+                        innerRadius="75%"
+                        outerRadius="100%"
+                        barSize={20}
+                    >
+                    <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                    <RadialBar
+                        dataKey="value"
+                        background={{ fill: 'hsl(var(--muted))' }}
+                        cornerRadius={10}
+                    />
+                    <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent hideLabel />}
+                    />
+                    </RadialBarChart>
+                </ChartContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-4xl font-bold text-primary">
+                        {summaryData.progress.toFixed(0)}%
+                    </span>
+                    <span className="text-xs text-muted-foreground">Funded</span>
+                </div>
+            </div>
+             <div className="space-y-4 text-center md:text-left">
+                <div>
+                    <p className="text-sm text-muted-foreground">Total Raised</p>
+                    <p className="text-3xl font-bold">
+                    ₹{summaryData.totalRaised.toLocaleString('en-IN')}
+                    </p>
+                </div>
+                <div>
+                    <p className="text-sm text-muted-foreground">Combined Target</p>
+                    <p className="text-3xl font-bold">
+                    ₹{summaryData.totalTarget.toLocaleString('en-IN')}
+                    </p>
+                </div>
+            </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import dynamic from 'next/dynamic';
-import { Quote } from 'lucide-react';
+import { Quote, Target } from 'lucide-react';
 
 const WisdomAndReflection = dynamic(() => import('@/components/WisdomAndReflection').then(mod => mod.WisdomAndReflection), {
     ssr: false,
@@ -26,6 +26,22 @@ const WisdomAndReflection = dynamic(() => import('@/components/WisdomAndReflecti
         </Card>
     ),
 });
+
+const OverallFundingSummary = dynamic(() => import('@/components/overall-funding-summary').then(mod => mod.OverallFundingSummary), {
+    ssr: false,
+    loading: () => (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Target className="h-6 w-6 text-primary" />
+                    Overall Fundraising Progress
+                </CardTitle>
+            </CardHeader>
+            <CardContent><Skeleton className="h-48 w-full" /></CardContent>
+        </Card>
+    )
+});
+
 
 const DonationSummary = dynamic(() => import('@/components/donation-summary').then(mod => mod.DonationSummary), {
     ssr: false,
@@ -76,6 +92,8 @@ export default function Home() {
               </Card>
               
               <WisdomAndReflection />
+
+              <OverallFundingSummary />
 
               <LeadAndCampaignSummary />
               <DonationSummary />
