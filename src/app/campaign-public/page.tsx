@@ -49,6 +49,16 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                     </CardHeader>
                     <CardContent className="flex flex-col flex-grow space-y-4">
                         <p className="text-sm text-muted-foreground line-clamp-3 flex-grow">{campaign.description || "No description provided."}</p>
+                         {campaign.allowedDonationTypes && campaign.allowedDonationTypes.length > 0 && (
+                            <div className="space-y-2 pt-2">
+                                <h4 className="text-xs font-semibold text-muted-foreground">Accepting</h4>
+                                <div className="flex flex-wrap gap-1">
+                                    {campaign.allowedDonationTypes.map(type => (
+                                        <Badge key={type} variant="secondary">{type}</Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                          {campaign.targetAmount && campaign.targetAmount > 0 && (
                           <div className="space-y-2 pt-2">
                               <Progress value={campaign.progress} />

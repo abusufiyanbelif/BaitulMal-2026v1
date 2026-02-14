@@ -50,6 +50,7 @@ import {
 import type { ChartConfig } from '@/components/ui/chart';
 import Image from 'next/image';
 import placeholderImages from '@/app/lib/placeholder-images.json';
+import { Badge } from '@/components/ui/badge';
 
 const donationCategoryChartConfig = {
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
@@ -302,6 +303,16 @@ Your contribution, big or small, makes a huge difference.
                                 <p className="mt-1 text-lg font-semibold">{campaign.endDate}</p>
                             </div>
                         </div>
+                        {campaign.allowedDonationTypes && campaign.allowedDonationTypes.length > 0 && (
+                            <div className="space-y-2 pt-2">
+                                <h3 className="text-sm font-medium text-muted-foreground">Accepted Donation Types</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {campaign.allowedDonationTypes.map(type => (
+                                        <Badge key={type} variant="outline">{type}</Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 

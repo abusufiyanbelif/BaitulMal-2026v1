@@ -51,6 +51,18 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                     </CardHeader>
                     <CardContent className="flex flex-col flex-grow space-y-4">
                         <p className="text-sm text-muted-foreground line-clamp-3 flex-grow">{lead.description || "No description provided."}</p>
+                        
+                        {lead.allowedDonationTypes && lead.allowedDonationTypes.length > 0 && (
+                            <div className="space-y-2 pt-2">
+                                <h4 className="text-xs font-semibold text-muted-foreground">Accepting</h4>
+                                <div className="flex flex-wrap gap-1">
+                                    {lead.allowedDonationTypes.map(type => (
+                                        <Badge key={type} variant="secondary">{type}</Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                          <div className="flex justify-between text-sm text-muted-foreground pt-2">
                             <Badge variant="outline">{lead.authenticityStatus}</Badge>
                             <Badge variant="outline">{lead.publicVisibility}</Badge>
