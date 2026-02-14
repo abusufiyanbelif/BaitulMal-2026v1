@@ -59,7 +59,6 @@ import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert } from 'lucide-react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { syncDonationsAction } from './actions';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -648,148 +647,143 @@ export default function DonationsPage() {
                       ))
                       ) : (filteredAndSortedDonations && filteredAndSortedDonations.length > 0) ? (
                       filteredAndSortedDonations.map((donation, index) => {
-                          const donationLinks = donation.linkSplit || [];
-                          const linkedInitiatives = donationLinks.filter(l => l.linkType !== 'general');
+                          const linkedInitiatives = donation.linkSplit?.filter(l => l.linkType !== 'general') || [];
                           const isOpen = openRows[donation.id] || false;
                           return (
-                              <Collapsible key={donation.id} asChild>
-                                  <>
-                                      <TableRow className="bg-background hover:bg-accent/50" data-state={isOpen ? 'open' : 'closed'}>
-                                          <TableCell className="pl-4">{index + 1}</TableCell>
-                                          <TableCell>
-                                              <div className="font-medium">{donation.donorName}</div>
-                                              <div className="text-xs text-muted-foreground">{donation.donorPhone || 'No Phone'}</div>
-                                          </TableCell>
-                                          <TableCell>
-                                              <div className="font-medium">{donation.receiverName}</div>
-                                              <div className="text-xs text-muted-foreground">Ref: {donation.referral || 'N/A'}</div>
-                                          </TableCell>
-                                          <TableCell className="text-right">
-                                              <div className="font-medium font-mono">₹{donation.amount.toFixed(2)}</div>
-                                              <div className="text-xs text-muted-foreground">{donation.donationDate}</div>
-                                          </TableCell>
-                                          <TableCell>
-                                              <div className="flex flex-wrap items-center gap-1">
-                                                  {donation.typeSplit?.map(split => (
-                                                      <Badge key={split.category} variant="secondary">
-                                                          {split.category}
-                                                      </Badge>
-                                                  ))}
-                                                  <Badge variant="outline">{donation.donationType}</Badge>
-                                              </div>
-                                          </TableCell>
-                                          <TableCell>
-                                              <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge>
-                                          </TableCell>
-                                          <TableCell>
-                                          {donation.linkSplit && donation.linkSplit.length > 0 ? (
-                                              <div className="flex flex-col gap-1">
-                                              {donation.linkSplit.map(link => (
-                                                  <Link 
-                                                  key={link.linkId}
-                                                  href={link.linkType === 'campaign' ? `/campaign-members/${link.linkId}` : link.linkType === 'lead' ? `/leads-members/${link.linkId}` : '#'}
-                                                  className={cn("text-primary hover:underline text-xs", link.linkType === 'general' && "text-muted-foreground no-underline cursor-default")}
-                                                  onClick={(e) => e.stopPropagation()}
-                                                  >
-                                                  {link.linkName} {donation.linkSplit && donation.linkSplit.length > 1 ? `(₹${link.amount.toFixed(2)})` : ''}
-                                                  </Link>
+                              <React.Fragment key={donation.id}>
+                                  <TableRow className="bg-background hover:bg-accent/50 cursor-pointer" data-state={isOpen ? 'open' : 'closed'} onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
+                                      <TableCell className="pl-4">{index + 1}</TableCell>
+                                      <TableCell>
+                                          <div className="font-medium">{donation.donorName}</div>
+                                          <div className="text-xs text-muted-foreground">{donation.donorPhone || 'No Phone'}</div>
+                                      </TableCell>
+                                      <TableCell>
+                                          <div className="font-medium">{donation.receiverName}</div>
+                                          <div className="text-xs text-muted-foreground">Ref: {donation.referral || 'N/A'}</div>
+                                      </TableCell>
+                                      <TableCell className="text-right">
+                                          <div className="font-medium font-mono">₹{donation.amount.toFixed(2)}</div>
+                                          <div className="text-xs text-muted-foreground">{donation.donationDate}</div>
+                                      </TableCell>
+                                      <TableCell>
+                                          <div className="flex flex-wrap items-center gap-1">
+                                              {donation.typeSplit?.map(split => (
+                                                  <Badge key={split.category} variant="secondary">
+                                                      {split.category}
+                                                  </Badge>
                                               ))}
-                                              </div>
-                                          ) : "Unlinked"}
-                                          </TableCell>
-                                          <TableCell className="text-right pr-4">
-                                              <div className="flex items-center justify-end">
-                                                  <CollapsibleTrigger asChild onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
-                                                      <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!donation.transactions || donation.transactions.length === 0}>
-                                                          {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                                          <span className="sr-only">Toggle details</span>
+                                              <Badge variant="outline">{donation.donationType}</Badge>
+                                          </div>
+                                      </TableCell>
+                                      <TableCell>
+                                          <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                      {donation.linkSplit && donation.linkSplit.length > 0 ? (
+                                          <div className="flex flex-col gap-1">
+                                          {donation.linkSplit.map(link => (
+                                              <Link 
+                                              key={link.linkId}
+                                              href={link.linkType === 'campaign' ? `/campaign-members/${link.linkId}` : link.linkType === 'lead' ? `/leads-members/${link.linkId}` : '#'}
+                                              className={cn("text-primary hover:underline text-xs", link.linkType === 'general' && "text-muted-foreground no-underline cursor-default")}
+                                              onClick={(e) => e.stopPropagation()}
+                                              >
+                                              {link.linkName} {donation.linkSplit && donation.linkSplit.length > 1 ? `(₹${link.amount.toFixed(2)})` : ''}
+                                              </Link>
+                                          ))}
+                                          </div>
+                                      ) : "Unlinked"}
+                                      </TableCell>
+                                      <TableCell className="text-right pr-4">
+                                          <div className="flex items-center justify-end">
+                                              <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!donation.transactions || donation.transactions.length === 0}>
+                                                  {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                                  <span className="sr-only">Toggle details</span>
+                                              </Button>
+                                              <DropdownMenu>
+                                                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                          <MoreHorizontal className="h-4 w-4" />
                                                       </Button>
-                                                  </CollapsibleTrigger>
-                                                  <DropdownMenu>
-                                                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                              <MoreHorizontal className="h-4 w-4" />
-                                                          </Button>
-                                                      </DropdownMenuTrigger>
-                                                      <DropdownMenuContent align="end">
-                                                          {canUpdate && (
-                                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(donation); }}>
-                                                                  <Edit className="mr-2 h-4 w-4" /> Edit
-                                                              </DropdownMenuItem>
-                                                          )}
+                                                  </DropdownMenuTrigger>
+                                                  <DropdownMenuContent align="end">
+                                                      {canUpdate && (
+                                                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(donation); }}>
+                                                              <Edit className="mr-2 h-4 w-4" /> Edit
+                                                          </DropdownMenuItem>
+                                                      )}
 
-                                                          {linkedInitiatives.length === 0 ? (
-                                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/donations/${donation.id}`); }}>
-                                                                  <Eye className="mr-2 h-4 w-4" /> View Details
-                                                              </DropdownMenuItem>
-                                                          ) : linkedInitiatives.length === 1 ? (
-                                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/${linkedInitiatives[0].linkType === 'campaign' ? 'campaign-members' : 'leads-members'}/${linkedInitiatives[0].linkId}/donations/${donation.id}`); }}>
-                                                                  <Eye className="mr-2 h-4 w-4" /> View in "{linkedInitiatives[0].linkName}"
-                                                              </DropdownMenuItem>
-                                                          ) : (
-                                                              <DropdownMenuSub>
-                                                                  <DropdownMenuSubTrigger>
-                                                                      <Eye className="mr-2 h-4 w-4" /> View In...
-                                                                  </DropdownMenuSubTrigger>
-                                                                  <DropdownMenuPortal>
-                                                                      <DropdownMenuSubContent>
-                                                                          {linkedInitiatives.map(link => (
-                                                                              <DropdownMenuItem key={link.linkId} onClick={(e) => { e.stopPropagation(); router.push(`/${link.linkType === 'campaign' ? 'campaign-members' : 'leads-members'}/${link.linkId}/donations/${donation.id}`); }}>
-                                                                                  {link.linkName}
-                                                                              </DropdownMenuItem>
-                                                                          ))}
-                                                                      </DropdownMenuSubContent>
-                                                                  </DropdownMenuPortal>
-                                                              </DropdownMenuSub>
-                                                          )}
-                                                          {canDelete && <DropdownMenuSeparator />}
-                                                          {canDelete && (
-                                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
-                                                                  <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                              </DropdownMenuItem>
-                                                          )}
-                                                      </DropdownMenuContent>
-                                                  </DropdownMenu>
+                                                      {linkedInitiatives.length === 0 ? (
+                                                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/donations/${donation.id}`); }}>
+                                                              <Eye className="mr-2 h-4 w-4" /> View Details
+                                                          </DropdownMenuItem>
+                                                      ) : linkedInitiatives.length === 1 ? (
+                                                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/${linkedInitiatives[0].linkType === 'campaign' ? 'campaign-members' : 'leads-members'}/${linkedInitiatives[0].linkId}/donations/${donation.id}`); }}>
+                                                              <Eye className="mr-2 h-4 w-4" /> View in "{linkedInitiatives[0].linkName}"
+                                                          </DropdownMenuItem>
+                                                      ) : (
+                                                          <DropdownMenuSub>
+                                                              <DropdownMenuSubTrigger>
+                                                                  <Eye className="mr-2 h-4 w-4" /> View In...
+                                                              </DropdownMenuSubTrigger>
+                                                              <DropdownMenuPortal>
+                                                                  <DropdownMenuSubContent>
+                                                                      {linkedInitiatives.map(link => (
+                                                                          <DropdownMenuItem key={link.linkId} onClick={(e) => { e.stopPropagation(); router.push(`/${link.linkType === 'campaign' ? 'campaign-members' : 'leads-members'}/${link.linkId}/donations/${donation.id}`); }}>
+                                                                              {link.linkName}
+                                                                          </DropdownMenuItem>
+                                                                      ))}
+                                                                  </DropdownMenuSubContent>
+                                                              </DropdownMenuPortal>
+                                                          </DropdownMenuSub>
+                                                      )}
+                                                      {canDelete && <DropdownMenuSeparator />}
+                                                      {canDelete && (
+                                                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
+                                                              <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                          </DropdownMenuItem>
+                                                      )}
+                                                  </DropdownMenuContent>
+                                              </DropdownMenu>
+                                          </div>
+                                      </TableCell>
+                                  </TableRow>
+                                  {isOpen && (
+                                    <TableRow className="bg-muted/50 hover:bg-muted/50">
+                                      <TableCell colSpan={8} className="p-0">
+                                          <div className="p-2">
+                                              <h4 className="text-sm font-semibold mb-2">Transaction Details</h4>
+                                              <div className="border rounded-md bg-background">
+                                                <Table>
+                                                    <TableHeader>
+                                                        <TableRow>
+                                                            <TableHead>Amount</TableHead>
+                                                            <TableHead>Transaction ID</TableHead>
+                                                            <TableHead>Screenshot</TableHead>
+                                                        </TableRow>
+                                                    </TableHeader>
+                                                    <TableBody>
+                                                        {(donation.transactions || []).map((tx) => (
+                                                            <TableRow key={tx.id}>
+                                                                <TableCell>₹{tx.amount.toFixed(2)}</TableCell>
+                                                                <TableCell>{tx.transactionId || 'N/A'}</TableCell>
+                                                                <TableCell>
+                                                                    {tx.screenshotUrl ? (
+                                                                        <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)}>
+                                                                            <Eye className="mr-2 h-4 w-4" /> View
+                                                                        </Button>
+                                                                    ) : 'No'}
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
+                                                </Table>
                                               </div>
-                                          </TableCell>
-                                      </TableRow>
-                                      <CollapsibleContent asChild>
-                                          <TableRow className="bg-muted/50 hover:bg-muted/50">
-                                              <TableCell colSpan={8} className="p-0">
-                                                  <div className="p-2">
-                                                      <h4 className="text-sm font-semibold mb-2">Transaction Details</h4>
-                                                      <div className="border rounded-md bg-background">
-                                                        <Table>
-                                                            <TableHeader>
-                                                                <TableRow>
-                                                                    <TableHead>Amount</TableHead>
-                                                                    <TableHead>Transaction ID</TableHead>
-                                                                    <TableHead>Screenshot</TableHead>
-                                                                </TableRow>
-                                                            </TableHeader>
-                                                            <TableBody>
-                                                                {(donation.transactions || []).map((tx) => (
-                                                                    <TableRow key={tx.id}>
-                                                                        <TableCell>₹{tx.amount.toFixed(2)}</TableCell>
-                                                                        <TableCell>{tx.transactionId || 'N/A'}</TableCell>
-                                                                        <TableCell>
-                                                                            {tx.screenshotUrl ? (
-                                                                                <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)}>
-                                                                                    <Eye className="mr-2 h-4 w-4" /> View
-                                                                                </Button>
-                                                                            ) : 'No'}
-                                                                        </TableCell>
-                                                                    </TableRow>
-                                                                ))}
-                                                            </TableBody>
-                                                        </Table>
-                                                      </div>
-                                                  </div>
-                                              </TableCell>
-                                          </TableRow>
-                                      </CollapsibleContent>
-                                  </>
-                              </Collapsible>
+                                          </div>
+                                      </TableCell>
+                                    </TableRow>
+                                  )}
+                              </React.Fragment>
                           );
                       })
                       ) : (
@@ -869,5 +863,3 @@ export default function DonationsPage() {
     </>
   );
 }
-
-  
