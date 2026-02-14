@@ -155,6 +155,7 @@ export default function BeneficiaryDetailsPage() {
               isLoading={isBeneficiaryLoading}
               initialReadOnly={!isEditMode && canUpdate}
               rationLists={[]}
+              hideZakatInfo={true}
           />
         </CardContent>
       </Card>

@@ -62,9 +62,10 @@ interface BeneficiaryFormProps {
   initialReadOnly?: boolean;
   isSubmitting?: boolean;
   isLoading?: boolean;
+  hideZakatInfo?: boolean;
 }
 
-export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, initialReadOnly = false, isSubmitting = false, isLoading = false }: BeneficiaryFormProps) {
+export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, initialReadOnly = false, isSubmitting = false, isLoading = false, hideZakatInfo = false }: BeneficiaryFormProps) {
     const isEditing = !!beneficiary;
     const { toast } = useToast();
 
@@ -294,33 +295,36 @@ export function BeneficiaryForm({ beneficiary, onSubmit, onCancel, rationLists, 
                     </div>
                 </div>
                 
-                <Separator />
-
-                <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Zakat Information</h3>
-                    <div className="flex flex-row items-center justify-between rounded-lg border p-3">
-                        <div className="space-y-0.5">
-                            <Label htmlFor="isEligibleForZakat" className="text-base">Eligible for Zakat</Label>
-                            <p className="text-xs text-muted-foreground">Can this beneficiary receive funds from Zakat?</p>
-                        </div>
-                        <FormField
-                            control={control}
-                            name="isEligibleForZakat"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormControl>
-                                        <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={formIsDisabled} />
-                                    </FormControl>
-                                </FormItem>
+                {!hideZakatInfo && (
+                    <>
+                        <Separator />
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold">Zakat Information</h3>
+                            <div className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                <div className="space-y-0.5">
+                                    <Label htmlFor="isEligibleForZakat" className="text-base">Eligible for Zakat</Label>
+                                    <p className="text-xs text-muted-foreground">Can this beneficiary receive funds from Zakat?</p>
+                                </div>
+                                <FormField
+                                    control={control}
+                                    name="isEligibleForZakat"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormControl>
+                                                <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={formIsDisabled} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            {watch('isEligibleForZakat') && (
+                                <div className="animate-fade-in-zoom">
+                                    <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem><FormLabel>Zakat Allocation (₹)</FormLabel><FormControl><Input type="number" placeholder="Amount from Zakat" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
+                                </div>
                             )}
-                        />
-                    </div>
-                    {watch('isEligibleForZakat') && (
-                        <div className="animate-fade-in-zoom">
-                            <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem><FormLabel>Zakat Allocation (₹)</FormLabel><FormControl><Input type="number" placeholder="Amount from Zakat" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
                         </div>
-                    )}
-                </div>
+                    </>
+                )}
 
                 <Separator />
                 

@@ -105,6 +105,7 @@ export default function CreateBeneficiaryPage() {
                 isSubmitting={isSubmitting}
                 rationLists={[]}
                 isLoading={false}
+                hideZakatInfo={true}
             />
           </CardContent>
         </Card>
