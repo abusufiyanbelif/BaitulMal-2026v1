@@ -216,7 +216,16 @@ export default function LeadPage() {
   const isLoading = areLeadsLoading || isProfileLoading || isDeleting || areDonationsLoading;
 
   const LeadCard = ({ lead }: { lead: Lead & { collected: number; progress: number; }}) => (
-    <Card className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-zoom" onClick={() => router.push(`/leads-members/${lead.id}/summary`)}>
+    <Card className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-zoom overflow-hidden" onClick={() => router.push(`/leads-members/${lead.id}/summary`)}>
+      <div className="relative h-32 w-full bg-secondary">
+        <Image
+          src={lead.imageUrl || placeholderImages.lead_fallback}
+          alt={lead.name}
+          fill
+          className="object-cover"
+          data-ai-hint="lead background"
+        />
+      </div>
       <CardHeader>
         <div className="flex justify-between items-start gap-2">
             <CardTitle className="w-full break-words text-base">{lead.name}</CardTitle>
@@ -504,3 +513,4 @@ export default function LeadPage() {
 }
 
     
+

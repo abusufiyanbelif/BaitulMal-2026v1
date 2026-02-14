@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, Users, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, Gift, UploadCloud, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Users, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, Gift, UploadCloud, Trash2, FolderKanban, Lightbulb } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
@@ -219,7 +219,6 @@ export default function LeadSummaryPage() {
     const handleEditClick = () => setEditMode(true);
     const handleCancel = () => setEditMode(false);
 
-    // ... (summaryData, handleShare, handleDownload calculations remain the same)
     const summaryData = useMemo(() => {
         if (!beneficiaries || !allDonations || !lead) return null;
         
@@ -265,11 +264,7 @@ export default function LeadSummaryPage() {
     
     const handleShare = async () => {
         if (!lead || !summaryData) {
-            toast({
-                title: 'Error',
-                description: 'Cannot share, summary data is not available.',
-                variant: 'destructive',
-            });
+            toast({ title: 'Error', description: 'Cannot share, summary data is not available.', variant: 'destructive'});
             return;
         }
         
@@ -292,7 +287,6 @@ Your contribution, big or small, makes a huge difference.
 
 *Please donate and share this message.*
         `.trim().replace(/^\s+/gm, '');
-
 
         const dataToShare = {
             title: `Lead Summary: ${lead.name}`,
@@ -319,7 +313,6 @@ Your contribution, big or small, makes a huge difference.
 
     return (
         <main className="container mx-auto p-4 md:p-8">
-            {/* ... Header and Nav */}
             <div className="mb-4">
                 <Button variant="outline" asChild>
                     <Link href="/leads-members">
@@ -380,7 +373,7 @@ Your contribution, big or small, makes a huge difference.
               </ScrollArea>
             </div>
 
-            <div className="space-y-6 p-4 bg-background" ref={summaryRef}>
+            <div className="space-y-6" ref={summaryRef}>
                 <Card>
                     <CardHeader><CardTitle>Lead Details</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
@@ -417,15 +410,131 @@ Your contribution, big or small, makes a huge difference.
                             ) : ( <p className="mt-1 text-sm">{lead.description || 'No description provided.'}</p> )}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                           {/* ... form fields */}
+                           <div className="space-y-1">
+                                <Label>Purpose</Label>
+                                {editMode ? (
+                                    <Select value={editableLead.purpose} onValueChange={value => setEditableLead(p => ({...p, purpose: value as any}))}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                ) : <p className="font-medium">{lead.purpose}</p>}
+                            </div>
+                            {availableCategories.length > 0 && <div className="space-y-1">
+                                <Label>Category</Label>
+                                {editMode ? (
+                                    <Select value={editableLead.category} onValueChange={value => setEditableLead(p => ({...p, category: value as any}))}>
+                                        <SelectTrigger><SelectValue placeholder="Select category..."/></SelectTrigger>
+                                        <SelectContent>{availableCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                ) : <p className="font-medium">{lead.category}</p>}
+                            </div>}
+                             {editableLead.purpose === 'Other' && editMode && <div className="space-y-1"><Label>Purpose Details</Label><Input value={editableLead.purposeDetails} onChange={e => setEditableLead(p => ({...p, purposeDetails: e.target.value}))} /></div>}
+                             {editableLead.category === 'Other' && editMode && <div className="space-y-1"><Label>Category Details</Label><Input value={editableLead.categoryDetails} onChange={e => setEditableLead(p => ({...p, categoryDetails: e.target.value}))} /></div>}
+
                         </div>
 
-                        {/* ... Education/Medical sections */}
+                        {editableLead.purpose === 'Education' && (
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t pt-4">
+                                <div className="space-y-1"><Label>Degree/Class</Label>{editMode ? <Select value={editableLead.degree} onValueChange={v => setEditableLead(p => ({...p, degree: v}))}><SelectTrigger><SelectValue placeholder="Degree..." /></SelectTrigger><SelectContent>{educationDegrees.map(d=><SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select> : <p className="font-medium">{lead.degree || 'N/A'}</p>}</div>
+                                <div className="space-y-1"><Label>Year</Label>{editMode ? <Select value={editableLead.year} onValueChange={v => setEditableLead(p => ({...p, year: v}))}><SelectTrigger><SelectValue placeholder="Year..." /></SelectTrigger><SelectContent>{educationYears.map(y=><SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select> : <p className="font-medium">{lead.year || 'N/A'}</p>}</div>
+                                <div className="space-y-1"><Label>Semester</Label>{editMode ? <Select value={editableLead.semester} onValueChange={v => setEditableLead(p => ({...p, semester: v}))}><SelectTrigger><SelectValue placeholder="Semester..." /></SelectTrigger><SelectContent>{educationSemesters.map(s=><SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select> : <p className="font-medium">{lead.semester || 'N/A'}</p>}</div>
+                            </div>
+                        )}
+                        {editableLead.purpose === 'Medical' && (
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t pt-4">
+                                <div className="space-y-1"><Label>Disease Identified</Label>{editMode ? <Input value={editableLead.diseaseIdentified} onChange={e => setEditableLead(p => ({...p, diseaseIdentified: e.target.value}))} /> : <p className="font-medium">{lead.diseaseIdentified || 'N/A'}</p>}</div>
+                                <div className="space-y-1"><Label>Disease Stage</Label>{editMode ? <Input value={editableLead.diseaseStage} onChange={e => setEditableLead(p => ({...p, diseaseStage: e.target.value}))} /> : <p className="font-medium">{lead.diseaseStage || 'N/A'}</p>}</div>
+                                <div className="space-y-1"><Label>Seriousness</Label>{editMode ? <Select value={editableLead.seriousness || ''} onValueChange={v => setEditableLead(p => ({...p, seriousness: v as any}))}><SelectTrigger><SelectValue placeholder="Seriousness..." /></SelectTrigger><SelectContent>{leadSeriousnessLevels.map(s=><SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select> : <p className="font-medium">{lead.seriousness || 'N/A'}</p>}</div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
-                {/* ... Other summary cards */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Financials &amp; Status</CardTitle>
+                    </CardHeader>
+                     <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                         <div className="space-y-1"><Label>Start Date</Label>{editMode ? <Input type="date" value={editableLead.startDate || ''} onChange={e => setEditableLead(p => ({...p, startDate: e.target.value}))} /> : <p className="font-medium">{lead.startDate}</p>}</div>
+                         <div className="space-y-1"><Label>End Date</Label>{editMode ? <Input type="date" value={editableLead.endDate || ''} onChange={e => setEditableLead(p => ({...p, endDate: e.target.value}))} /> : <p className="font-medium">{lead.endDate}</p>}</div>
+                         <div className="space-y-1"><Label>Required Amount (₹)</Label>{editMode ? <Input type="number" value={editableLead.requiredAmount || ''} onChange={e => setEditableLead(p => ({...p, requiredAmount: Number(e.target.value)}))} /> : <p className="font-medium">₹{lead.requiredAmount?.toLocaleString('en-IN') || 0}</p>}</div>
+                         <div className="space-y-1"><Label>Target Amount (₹)</Label>{editMode ? <Input type="number" value={editableLead.targetAmount || ''} onChange={e => setEditableLead(p => ({...p, targetAmount: Number(e.target.value)}))} /> : <p className="font-medium">₹{lead.targetAmount?.toLocaleString('en-IN') || 0}</p>}</div>
+                         <div className="space-y-1"><Label>Authenticity</Label>{editMode ? <Select value={editableLead.authenticityStatus} onValueChange={value => setEditableLead(p => ({...p, authenticityStatus: value as any}))}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Pending Verification">Pending</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="On Hold">On Hold</SelectItem><SelectItem value="Rejected">Rejected</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent></Select> : <Badge variant="outline">{lead.authenticityStatus}</Badge>}</div>
+                         <div className="space-y-1"><Label>Visibility</Label>{editMode ? <Select value={editableLead.publicVisibility} onValueChange={value => setEditableLead(p => ({...p, publicVisibility: value as any}))}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Hold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish">Ready</SelectItem><SelectItem value="Published">Published</SelectItem></SelectContent></Select> : <Badge variant="outline">{lead.publicVisibility}</Badge>}</div>
+                         <div className="col-span-full space-y-2 pt-2"><Label>Allowed Donation Types</Label><div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2 border rounded-md">{donationCategories.map(type => (<div key={type} className="flex items-center space-x-2"><Checkbox id={`type-${type}`} disabled={!editMode} checked={editableLead.allowedDonationTypes?.includes(type)} onCheckedChange={checked => { const currentTypes = editableLead.allowedDonationTypes || []; const newTypes = checked ? [...currentTypes, type] : currentTypes.filter(t => t !== type); setEditableLead(p => ({...p, allowedDonationTypes: newTypes as any})); }} /><Label htmlFor={`type-${type}`} className="font-normal text-sm">{type}</Label></div>))}</div></div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Funding Progress</CardTitle>
+                        <CardDescription>
+                            ₹{summaryData?.totalCollectedForGoal.toLocaleString('en-IN') ?? 0} of ₹{(summaryData?.targetAmount ?? 0).toLocaleString('en-IN')} funded from selected donation types.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Progress value={summaryData?.fundingProgress || 0} />
+                        {summaryData && summaryData.pendingDonations > 0 && (
+                            <p className="mt-2 text-xs text-muted-foreground">(+ ₹{summaryData.pendingDonations.toLocaleString('en-IN')} pending verification)</p>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader>
+                        <CardContent><div className="text-2xl font-bold">{summaryData?.totalBeneficiaries ?? 0}</div></CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Collected</CardTitle><Wallet className="h-4 w-4 text-muted-foreground" /></CardHeader>
+                        <CardContent><div className="text-2xl font-bold">₹{(summaryData?.fundTotals?.grandTotal || 0).toLocaleString('en-IN')}</div></CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Kits Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader>
+                        <CardContent><div className="text-2xl font-bold">{summaryData?.beneficiariesGiven ?? 0}</div></CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Kits Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader>
+                        <CardContent><div className="text-2xl font-bold">{summaryData?.beneficiariesPending ?? 0}</div></CardContent>
+                    </Card>
+                </div>
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Fund Totals by Type</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold">₹{summaryData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <Separator className="my-2"/>
+                            <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                        </CardContent>
+                      </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Donations by Category</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
+                                <BarChart data={Object.entries(summaryData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
+                                    <CartesianGrid horizontal={false} />
+                                    <YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/>
+                                    <XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Bar dataKey="value" radius={4}>
+                                        {Object.entries(summaryData?.amountsByCategory || {}).map(([name]) => (
+                                            <Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ChartContainer>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
-            {/* ... ShareDialog */}
+            <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
         </main>
     );
 }

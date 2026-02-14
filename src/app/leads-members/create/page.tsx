@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -177,7 +178,7 @@ export default function CreateLeadPage() {
       shopName: '',
       shopContact: '',
       shopAddress: '',
-      itemCategories: data.category === 'Ration Kit' ? [{ id: 'general', name: 'General', items: [] }] : [],
+      itemCategories: [{ id: 'general', name: 'General', items: [] }],
       seriousness: data.seriousness || null,
     };
 
@@ -621,3 +622,4 @@ export default function CreateLeadPage() {
     </main>
   );
 }
+

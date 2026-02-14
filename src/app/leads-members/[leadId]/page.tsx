@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -10,9 +11,8 @@ import type { Lead, RationItem, ItemCategory, Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Plus, Trash2, Download, Edit, Save, ShieldAlert, Info, RefreshCw, Loader2, Database } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, ShieldAlert, Info, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import {
   AlertDialog,
@@ -31,14 +31,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Label } from '@/components/ui/label';
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
-const quantityTypes = ['kg', 'litre', 'gram', 'ml', 'piece', 'packet', 'dozen'];
+const quantityTypes = ['kg', 'litre', 'gram', 'ml', 'piece', 'packet', 'dozen', 'month', 'year', 'semester', 'unit', 'day', 'treatment'];
 
 export default function LeadDetailsPage() {
   const params = useParams();
@@ -53,7 +52,7 @@ export default function LeadDetailsPage() {
     return doc(firestore, 'leads', leadId) as DocumentReference<Lead>;
   }, [firestore, leadId]);
 
-  const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
+  const { data: lead, isLoading: isLeadLoading, forceRefetch: forceRefetchLead } = useDoc<Lead>(leadDocRef);
   
   const beneficiariesCollectionRef = useMemo(() => {
     if (!firestore || !leadId) return null;
@@ -74,21 +73,10 @@ export default function LeadDetailsPage() {
     }
   }, [editMode, lead]);
 
-  const isLegacyData = useMemo(() => {
-    // @ts-ignore
-    return !!(lead && !lead.itemCategories && lead.rationLists);
-  }, [lead]);
-
   const itemList = useMemo(() => {
     if (!editableLead) return [];
     if (Array.isArray(editableLead.itemCategories) && editableLead.itemCategories.length > 0) {
         return editableLead.itemCategories[0]?.items || [];
-    }
-    // Fallback for old structure for safety, though UI should prevent this state.
-    // @ts-ignore
-    if (editableLead.rationLists && !Array.isArray(editableLead.rationLists)) {
-        // @ts-ignore
-        return editableLead.rationLists['General Item List'] || [];
     }
     return [];
   }, [editableLead]);
@@ -151,21 +139,7 @@ export default function LeadDetailsPage() {
     if (!leadDocRef || !editableLead || !canUpdate) return;
     
     const saveData: Partial<Lead> = {
-        name: editableLead.name,
-        description: editableLead.description || '',
-        notes: editableLead.notes || '',
-        startDate: editableLead.startDate,
-        endDate: editableLead.endDate,
-        status: editableLead.status,
-        category: editableLead.category,
-        targetAmount: editableLead.targetAmount || 0,
-        authenticityStatus: editableLead.authenticityStatus,
-        publicVisibility: editableLead.publicVisibility,
         itemCategories: editableLead.itemCategories,
-        priceDate: editableLead.priceDate || '',
-        shopName: editableLead.shopName || '',
-        shopContact: editableLead.shopContact || '',
-        shopAddress: editableLead.shopAddress || '',
     };
     
     updateDoc(leadDocRef, saveData)
@@ -178,7 +152,7 @@ export default function LeadDetailsPage() {
             errorEmitter.emit('permission-error', permissionError);
         })
         .finally(() => {
-            toast({ title: 'Success', description: 'Lead details saved.', variant: 'success' });
+            toast({ title: 'Success', description: 'Lead item list saved.', variant: 'success' });
             setEditMode(false);
         });
   };
@@ -225,6 +199,7 @@ export default function LeadDetailsPage() {
         await batch.commit();
         toast({ title: "Sync Complete!", description: `Updated ${beneficiaries.length} beneficiaries and the lead's target amount.`, variant: 'success' });
         forceRefetchBeneficiaries();
+        forceRefetchLead();
     } catch (e: any) {
         console.error("Sync error:", e);
         errorEmitter.emit('permission-error', new FirestorePermissionError({
@@ -321,144 +296,102 @@ export default function LeadDetailsPage() {
             <ScrollBar orientation="horizontal" />
         </ScrollArea>
       </div>
-
-        {isLegacyData && (
-            <Alert variant="destructive" className="mb-4">
-              <Database className="h-4 w-4" />
-              <AlertTitle>Data Migration Required</AlertTitle>
-              <AlertDescription>
-                This lead is using an old data format. To enable editing of its item lists and full functionality, please run the migration script from your terminal: <code className="font-mono bg-destructive/20 p-1 rounded-sm">npm run db:migrate-categories</code>
-              </AlertDescription>
-            </Alert>
-        )}
       
-      <Card className="animate-fade-in-zoom mb-6">
+      <Card className="animate-fade-in-zoom">
         <CardHeader>
-           <div className="flex justify-between items-start flex-wrap gap-4">
-              <div className="flex-1">
-                  <CardTitle>Lead Details</CardTitle>
-              </div>
-              <div className="flex gap-2 flex-wrap justify-end">
-                  {canUpdate && (
-                      !editMode ? (
-                          <Button onClick={() => setEditMode(true)} disabled={isLegacyData}>
-                              <Edit className="mr-2 h-4 w-4" /> Edit Details
+          <div className="flex justify-between items-center">
+            <CardTitle>Item List & Costing</CardTitle>
+            <div className="flex gap-2">
+                {canUpdate && (
+                  !editMode ? (
+                      <Button onClick={() => setEditMode(true)}>
+                          <Edit className="mr-2 h-4 w-4" /> Edit List
+                      </Button>
+                  ) : (
+                      <div className="flex gap-2">
+                          <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+                          <Button onClick={handleSave}>
+                              <Save className="mr-2 h-4 w-4" /> Save
                           </Button>
-                      ) : (
-                          <div className="flex gap-2">
-                              <Button variant="outline" onClick={handleCancel}>Cancel</Button>
-                              <Button onClick={handleSave}>
-                                  <Save className="mr-2 h-4 w-4" /> Save
-                              </Button>
-                          </div>
-                      )
-                  )}
-              </div>
-           </div>
+                      </div>
+                  )
+                )}
+            </div>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-              <div className="space-y-1">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea id="description" value={editableLead.description || ''} onChange={(e) => handleFieldChange('description', e.target.value)} disabled={!editMode || !canUpdate} placeholder="A brief description of the lead..." />
-              </div>
-              <div className="space-y-1">
-                  <Label htmlFor="notes">Internal Notes</Label>
-                  <Textarea id="notes" value={editableLead.notes || ''} onChange={(e) => handleFieldChange('notes', e.target.value)} disabled={!editMode || !canUpdate} placeholder="Private notes about this lead..." />
-              </div>
+        <CardContent>
+          <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+            <h4 className="text-lg font-bold">Total Cost Per Beneficiary: <span className="font-mono">₹{totalKitCost.toFixed(2)}</span></h4>
+            {canUpdate && (
+                <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary">
+                    {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                    Sync All Beneficiary Amounts
+                </Button>
+            )}
+          </div>
+          <div className="w-full overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]">#</TableHead>
+                  <TableHead className="min-w-[180px]">Item Name</TableHead>
+                  <TableHead className="min-w-[100px]">Quantity</TableHead>
+                  <TableHead className="min-w-[150px]">Quantity Type</TableHead>
+                  <TableHead className="min-w-[120px]">Price per Unit (₹)</TableHead>
+                  <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>
+                  {canUpdate && editMode && <TableHead className="w-[50px] text-center">Action</TableHead>}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {itemList.map((item: RationItem, index: number) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>
+                      <Input value={item.name || ''} onChange={e => handleItemChange(item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
+                    </TableCell>
+                    <TableCell>
+                      <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
+                    </TableCell>
+                    <TableCell>
+                      <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(item.id, 'quantityType', value)} disabled={!editMode || !canUpdate}>
+                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                        <SelectContent>
+                          {quantityTypes.map(type => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Input type="number" value={item.price || ''} onChange={e => handleItemChange(item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
+                    </TableCell>
+                    <TableCell className="text-right font-mono">
+                      ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
+                    </TableCell>
+                    {canUpdate && editMode && (
+                      <TableCell className="text-center">
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteItemClick(item.id, item.name)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+                {itemList.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={canUpdate && editMode ? 7 : 6} className="text-center h-24 text-muted-foreground">
+                      No items added yet.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+            {canUpdate && editMode && (
+                <Button onClick={handleAddItem} size="sm" variant="outline" className="mt-4">
+                  <Plus className="mr-2 h-4 w-4" /> Add Item
+                </Button>
+            )}
         </CardContent>
       </Card>
-      
-      {editableLead.category === 'Ration Kit' ? (
-          <Card className="animate-fade-in-zoom">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Item List</CardTitle>
-                <div className="flex gap-2">
-                  {canUpdate && (
-                    <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary">
-                        {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                        Sync Kit Amounts
-                    </Button>
-                  )}
-                  {canUpdate && editMode && (
-                    <Button onClick={handleAddItem} size="sm">
-                      <Plus className="mr-2 h-4 w-4" /> Add Item
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
-                <h4 className="text-lg font-bold">Total Kit Cost: <span className="font-mono">₹{totalKitCost.toFixed(2)}</span></h4>
-              </div>
-              <div className="w-full overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">#</TableHead>
-                      <TableHead className="min-w-[180px]">Item Name</TableHead>
-                      <TableHead className="min-w-[100px]">Quantity</TableHead>
-                      <TableHead className="min-w-[150px]">Quantity Type</TableHead>
-                      <TableHead className="min-w-[120px]">Price per Unit (₹)</TableHead>
-                      <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>
-                      {canUpdate && editMode && <TableHead className="w-[50px] text-center">Action</TableHead>}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {itemList.map((item: RationItem, index: number) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{index + 1}</TableCell>
-                        <TableCell>
-                          <Input value={item.name || ''} onChange={e => handleItemChange(item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
-                        </TableCell>
-                        <TableCell>
-                          <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
-                        </TableCell>
-                        <TableCell>
-                          <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(item.id, 'quantityType', value)} disabled={!editMode || !canUpdate}>
-                            <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                            <SelectContent>
-                              {quantityTypes.map(type => (
-                                <SelectItem key={type} value={type}>{type}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          <Input type="number" value={item.price || ''} onChange={e => handleItemChange(item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
-                        </TableCell>
-                        <TableCell className="text-right font-mono">
-                          ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
-                        </TableCell>
-                        {canUpdate && editMode && (
-                          <TableCell className="text-center">
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItemClick(item.id, item.name)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    ))}
-                    {itemList.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={canUpdate && editMode ? 7 : 6} className="text-center h-24 text-muted-foreground">
-                          No items added yet.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-            <Alert>
-                <Info className="h-4 w-4" />
-                <AlertTitle>Not a Ration-Based Lead</AlertTitle>
-                <AlertDescription>
-                    Item lists and kit amount calculations are only applicable to leads with the 'Ration Kit' category.
-                </AlertDescription>
-            </Alert>
-        )}
     </main>
 
     <AlertDialog open={isDeleteItemDialogOpen} onOpenChange={setIsDeleteItemDialogOpen}>
