@@ -38,6 +38,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 import type { ChartConfig } from '@/components/ui/chart';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 const donationCategoryChartConfig = {
@@ -81,6 +82,11 @@ export default function CampaignSummaryPage() {
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
 
     const summaryRef = useRef<HTMLDivElement>(null);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     // Data fetching
     const campaignDocRef = useMemo(() => (firestore && campaignId) ? doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign> : null, [firestore, campaignId]);
@@ -678,65 +684,69 @@ Your contribution, big or small, makes a huge difference.
                             <CardDescription>A real-time look at the collected donations against the goal for this campaign.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                                <div className="relative h-48 w-full">
-                                    <ChartContainer
-                                        config={{
-                                            progress: {
-                                                label: 'Progress',
-                                                color: 'hsl(var(--primary))',
-                                            },
-                                        }}
-                                        className="mx-auto aspect-square h-full"
-                                    >
-                                        <RadialBarChart
-                                            data={[{ name: 'Progress', value: summaryData?.fundingProgress || 0, fill: 'hsl(var(--primary))' }]}
-                                            startAngle={-270}
-                                            endAngle={90}
-                                            innerRadius="75%"
-                                            outerRadius="100%"
-                                            barSize={20}
-                                        >
-                                        <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                        <RadialBar
-                                            dataKey="value"
-                                            background={{ fill: 'hsl(var(--muted))' }}
-                                            cornerRadius={10}
-                                        />
-                                        <ChartTooltip
-                                            cursor={false}
-                                            content={<ChartTooltipContent hideLabel />}
-                                        />
-                                        </RadialBarChart>
-                                    </ChartContainer>
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                        <span className="text-4xl font-bold text-primary">
-                                            {(summaryData?.fundingProgress || 0).toFixed(0)}%
-                                        </span>
-                                        <span className="text-xs text-muted-foreground">Funded</span>
-                                    </div>
-                                </div>
-                                <div className="space-y-4 text-center md:text-left">
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Raised for Goal</p>
-                                        <p className="text-3xl font-bold">
-                                        ₹{(summaryData?.totalCollectedForGoal || 0).toLocaleString('en-IN')}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Fundraising Target</p>
-                                        <p className="text-3xl font-bold">
-                                        ₹{(summaryData?.targetAmount || 0).toLocaleString('en-IN')}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Grand Total Received</p>
-                                        <p className="text-3xl font-bold">
-                                        ₹{(summaryData?.fundTotals.grandTotal || 0).toLocaleString('en-IN')}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                          {isClient ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                                  <div className="relative h-48 w-full">
+                                      <ChartContainer
+                                          config={{
+                                              progress: {
+                                                  label: 'Progress',
+                                                  color: 'hsl(var(--primary))',
+                                              },
+                                          }}
+                                          className="mx-auto aspect-square h-full"
+                                      >
+                                          <RadialBarChart
+                                              data={[{ name: 'Progress', value: summaryData?.fundingProgress || 0, fill: 'hsl(var(--primary))' }]}
+                                              startAngle={-270}
+                                              endAngle={90}
+                                              innerRadius="75%"
+                                              outerRadius="100%"
+                                              barSize={20}
+                                          >
+                                          <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                          <RadialBar
+                                              dataKey="value"
+                                              background={{ fill: 'hsl(var(--muted))' }}
+                                              cornerRadius={10}
+                                          />
+                                          <ChartTooltip
+                                              cursor={false}
+                                              content={<ChartTooltipContent hideLabel />}
+                                          />
+                                          </RadialBarChart>
+                                      </ChartContainer>
+                                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                          <span className="text-4xl font-bold text-primary">
+                                              {(summaryData?.fundingProgress || 0).toFixed(0)}%
+                                          </span>
+                                          <span className="text-xs text-muted-foreground">Funded</span>
+                                      </div>
+                                  </div>
+                                  <div className="space-y-4 text-center md:text-left">
+                                      <div>
+                                          <p className="text-sm text-muted-foreground">Raised for Goal</p>
+                                          <p className="text-3xl font-bold">
+                                          ₹{(summaryData?.totalCollectedForGoal || 0).toLocaleString('en-IN')}
+                                          </p>
+                                      </div>
+                                      <div>
+                                          <p className="text-sm text-muted-foreground">Fundraising Target</p>
+                                          <p className="text-3xl font-bold">
+                                          ₹{(summaryData?.targetAmount || 0).toLocaleString('en-IN')}
+                                          </p>
+                                      </div>
+                                      <div>
+                                          <p className="text-sm text-muted-foreground">Grand Total Received</p>
+                                          <p className="text-3xl font-bold">
+                                          ₹{(summaryData?.fundTotals.grandTotal || 0).toLocaleString('en-IN')}
+                                          </p>
+                                      </div>
+                                  </div>
+                              </div>
+                          ) : (
+                              <Skeleton className="w-full h-48" />
+                          )}
                         </CardContent>
                     </Card>
 
@@ -839,6 +849,7 @@ Your contribution, big or small, makes a huge difference.
                               <CardTitle>Donations by Category</CardTitle>
                           </CardHeader>
                           <CardContent>
+                            {isClient ? (
                               <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
                                   <BarChart data={Object.entries(summaryData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
                                       <CartesianGrid horizontal={false} />
@@ -852,6 +863,7 @@ Your contribution, big or small, makes a huge difference.
                                       </Bar>
                                   </BarChart>
                               </ChartContainer>
+                            ) : <Skeleton className="h-[250px] w-full" />}
                           </CardContent>
                       </Card>
 
@@ -860,6 +872,7 @@ Your contribution, big or small, makes a huge difference.
                               <CardTitle>Donations by Payment Type</CardTitle>
                           </CardHeader>
                           <CardContent>
+                              {isClient ? (
                                <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
                                   <PieChart>
                                       <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
@@ -871,6 +884,7 @@ Your contribution, big or small, makes a huge difference.
                                       <ChartLegend content={<ChartLegendContent />} />
                                   </PieChart>
                               </ChartContainer>
+                               ) : <Skeleton className="h-[250px] w-full" />}
                           </CardContent>
                       </Card>
                   </div>
@@ -923,3 +937,4 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+

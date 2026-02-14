@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -21,7 +22,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { DateRange } from 'react-day-picker';
-import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear, subMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfQuarter, endOfYear, subMonths } from 'date-fns';
 
 import type { Donation, DonationCategory, Beneficiary } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
@@ -51,6 +52,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
@@ -92,6 +94,11 @@ export default function DonationsSummaryPage() {
         from: startOfYear(new Date()),
         to: new Date(),
     });
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     const donationsCollectionRef = useMemo(() => {
         if (!firestore) return null;
@@ -329,34 +336,13 @@ export default function DonationsSummaryPage() {
                             <CardDescription>A breakdown of all collected funds by their designated purpose.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Fitra</span>
-                                <span className="font-semibold">₹{summaryData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Zakat</span>
-                                <span className="font-semibold">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Sadaqah</span>
-                                <span className="font-semibold">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Lillah</span>
-                                <span className="font-semibold">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Monthly Contribution</span>
-                                <span className="font-semibold">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Interest (for disposal)</span>
-                                <span className="font-semibold">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Loan (Qard-e-Hasana)</span>
-                                <span className="font-semibold">₹{summaryData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold">₹{summaryData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold">₹{summaryData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
                             <Separator />
                             <div className="flex justify-between items-center text-lg">
                                 <span className="font-semibold">Grand Total</span>
@@ -386,6 +372,7 @@ export default function DonationsSummaryPage() {
                             <CardTitle>All Donations by Category</CardTitle>
                         </CardHeader>
                         <CardContent>
+                          {isClient ? (
                             <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
                                 <BarChart data={Object.entries(summaryData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))}>
                                     <CartesianGrid vertical={false} />
@@ -407,6 +394,7 @@ export default function DonationsSummaryPage() {
                                     </Bar>
                                 </BarChart>
                             </ChartContainer>
+                          ) : <Skeleton className="h-[250px] w-full"/>}
                         </CardContent>
                     </Card>
                     <Card>
@@ -415,6 +403,7 @@ export default function DonationsSummaryPage() {
                             <CardDescription>Count of donations per payment type.</CardDescription>
                         </CardHeader>
                         <CardContent>
+                          {isClient ? (
                              <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
                                 <PieChart>
                                     <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
@@ -426,6 +415,7 @@ export default function DonationsSummaryPage() {
                                     <ChartLegend content={<ChartLegendContent />} />
                                 </PieChart>
                             </ChartContainer>
+                          ) : <Skeleton className="h-[250px] w-full"/>}
                         </CardContent>
                     </Card>
                 </div>
@@ -435,6 +425,7 @@ export default function DonationsSummaryPage() {
                             <CardTitle>Monthly Contributions Over Time</CardTitle>
                         </CardHeader>
                         <CardContent>
+                          {isClient ? (
                             <ChartContainer config={monthlyContributionChartConfig} className="h-[300px] w-full">
                                 <BarChart data={monthlyContributionData}>
                                 <CartesianGrid vertical={false} />
@@ -455,6 +446,7 @@ export default function DonationsSummaryPage() {
                                 <Bar dataKey="total" fill="hsl(var(--chart-1))" radius={4} />
                                 </BarChart>
                             </ChartContainer>
+                            ) : <Skeleton className="h-[300px] w-full"/>}
                         </CardContent>
                     </Card>
                 )}
@@ -462,3 +454,4 @@ export default function DonationsSummaryPage() {
         </div>
     );
 }
+
