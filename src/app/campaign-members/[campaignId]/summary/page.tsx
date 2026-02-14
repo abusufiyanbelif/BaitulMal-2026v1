@@ -567,7 +567,7 @@ Your contribution, big or small, makes a huge difference.
                         <CardContent className="space-y-4">
                             {editMode ? (
                                 <div className="space-y-2">
-                                    <Label htmlFor="imageFile">Header Image</Label>
+                                    <Label>Header Image</Label>
                                     <Input id="imageFile" type="file" accept="image/png, image/jpeg" onChange={handleImageFileChange} className="hidden" />
                                     <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
                                         {imagePreview ? (
@@ -810,20 +810,29 @@ Your contribution, big or small, makes a huge difference.
                             <div className="w-full overflow-x-auto">
                               <Table>
                                   <TableHeader>
-                                      <TableRow><TableHead>Category</TableHead><TableHead className="text-center">Beneficiaries</TableHead><TableHead className="text-right">Total Amount (₹)</TableHead></TableRow>
+                                      <TableRow>
+                                          <TableHead>Category Name</TableHead>
+                                          <TableHead className="text-center">Total Beneficiaries</TableHead>
+                                          <TableHead className="text-right">Kit Amount (per kit)</TableHead>
+                                          <TableHead className="text-right">Total Kit Amount (per category)</TableHead>
+                                      </TableRow>
                                   </TableHeader>
                                   <TableBody>
                                       {summaryData.sortedBeneficiaryCategoryKeys.map(key => {
                                           const group = summaryData.beneficiariesByCategory[key];
                                           return (
-                                              <TableRow key={key}><TableCell>{group.categoryName}</TableCell><TableCell className="text-center">{group.beneficiaries.length}</TableCell><TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell></TableRow>
+                                              <TableRow key={key}>
+                                                  <TableCell>{group.categoryName}</TableCell>
+                                                  <TableCell className="text-center">{group.beneficiaries.length}</TableCell>
+                                                  <TableCell className="text-right font-mono">₹{group.kitAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                                  <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                              </TableRow>
                                           );
                                       })}
                                   </TableBody>
                                    <TableFooter>
                                         <TableRow>
-                                            <TableCell className="font-bold">Total</TableCell>
-                                            <TableCell className="text-center font-bold">{summaryData.totalBeneficiaries}</TableCell>
+                                            <TableCell colSpan={3} className="font-bold text-right">Total</TableCell>
                                             <TableCell className="text-right font-bold font-mono">₹{Object.values(summaryData.beneficiariesByCategory).reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
                                         </TableRow>
                                     </TableFooter>

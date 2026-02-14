@@ -51,6 +51,8 @@ import {
 import type { ChartConfig } from '@/components/ui/chart';
 import Image from 'next/image';
 import placeholderImages from '@/app/lib/placeholder-images.json';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+
 
 const donationCategoryChartConfig = {
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
@@ -59,6 +61,7 @@ const donationCategoryChartConfig = {
     Interest: { label: "Interest", color: "hsl(var(--chart-3))" },
     Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
     'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-5))" },
+    Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
 } satisfies ChartConfig;
 
 
@@ -409,6 +412,7 @@ Your contribution, big or small, makes a huge difference.
                                             <TableHead className="whitespace-nowrap">Category Name</TableHead>
                                             <TableHead className="text-center whitespace-nowrap">Total Beneficiaries</TableHead>
                                             <TableHead className="text-right whitespace-nowrap">Kit Amount (per kit)</TableHead>
+                                            <TableHead className="text-right whitespace-nowrap">Total Kit Amount</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -420,7 +424,8 @@ Your contribution, big or small, makes a huge difference.
                                                 <TableRow key={memberCount}>
                                                     <TableCell className="font-medium">{memberCount} Members</TableCell>
                                                     <TableCell className="text-center">{count}</TableCell>
-                                                    <TableCell className="text-right font-mono">₹{kitAmount.toFixed(2)}</TableCell>
+                                                    <TableCell className="text-right font-mono">₹{kitAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                                    <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                                 </TableRow>
                                             )
                                         })}
@@ -430,6 +435,7 @@ Your contribution, big or small, makes a huge difference.
                                             <TableCell className="font-bold">Total</TableCell>
                                             <TableCell className="text-center font-bold">{beneficiaryData.totalBeneficiaries}</TableCell>
                                             <TableCell></TableCell>
+                                            <TableCell className="text-right font-bold font-mono">₹{Object.values(beneficiaryData.beneficiariesByCategory).reduce((sum, group) => sum + group.totalAmount, 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                         </TableRow>
                                     </TableFooter>
                                 </Table>

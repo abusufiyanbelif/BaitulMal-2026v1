@@ -65,6 +65,7 @@ const donationCategoryChartConfig = {
     Interest: { label: "Interest", color: "hsl(var(--chart-3))" },
     Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
     'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-5))" },
+    Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
 } satisfies ChartConfig;
 
 
@@ -419,36 +420,41 @@ Your contribution, big or small, makes a huge difference.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="whitespace-nowrap">Category Name</TableHead>
-                                            <TableHead className="text-center whitespace-nowrap">Total Beneficiaries</TableHead>
-                                            <TableHead className="text-right whitespace-nowrap">Kit Amount (per kit)</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {beneficiaryData.sortedBeneficiaryCategories.map(memberCount => {
-                                            const group = beneficiaryData.beneficiariesByCategory[memberCount];
-                                            const count = group.beneficiaries.length;
-                                            const kitAmount = group.beneficiaries[0]?.kitAmount || 0;
-                                            return (
-                                                <TableRow key={memberCount}>
-                                                    <TableCell className="font-medium">{memberCount} Members</TableCell>
-                                                    <TableCell className="text-center">{count}</TableCell>
-                                                    <TableCell className="text-right font-mono">₹{kitAmount.toFixed(2)}</TableCell>
-                                                </TableRow>
-                                            )
-                                        })}
-                                    </TableBody>
-                                    <TableFooter>
-                                        <TableRow>
-                                            <TableCell className="font-bold">Total</TableCell>
-                                            <TableCell className="text-center font-bold">{beneficiaryData.totalBeneficiaries}</TableCell>
-                                            <TableCell></TableCell>
-                                        </TableRow>
-                                    </TableFooter>
-                                </Table>
+                                <div className="w-full overflow-x-auto">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="whitespace-nowrap">Category Name</TableHead>
+                                                <TableHead className="text-center whitespace-nowrap">Total Beneficiaries</TableHead>
+                                                <TableHead className="text-right whitespace-nowrap">Kit Amount (per kit)</TableHead>
+                                                <TableHead className="text-right whitespace-nowrap">Total Kit Amount</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {beneficiaryData.sortedBeneficiaryCategories.map(memberCount => {
+                                                const group = beneficiaryData.beneficiariesByCategory[memberCount];
+                                                const count = group.beneficiaries.length;
+                                                const kitAmount = group.beneficiaries[0]?.kitAmount || 0;
+                                                return (
+                                                    <TableRow key={memberCount}>
+                                                        <TableCell className="font-medium">{memberCount} Members</TableCell>
+                                                        <TableCell className="text-center">{count}</TableCell>
+                                                        <TableCell className="text-right font-mono">₹{kitAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                                        <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                                    </TableRow>
+                                                )
+                                            })}
+                                        </TableBody>
+                                        <TableFooter>
+                                            <TableRow>
+                                                <TableCell className="font-bold">Total</TableCell>
+                                                <TableCell className="text-center font-bold">{beneficiaryData.totalBeneficiaries}</TableCell>
+                                                <TableCell></TableCell>
+                                                <TableCell className="text-right font-bold font-mono">₹{Object.values(beneficiaryData.beneficiariesByCategory).reduce((sum, group) => sum + group.totalAmount, 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                            </TableRow>
+                                        </TableFooter>
+                                    </Table>
+                                </div>
                             </CardContent>
                         </Card>
                     )}
