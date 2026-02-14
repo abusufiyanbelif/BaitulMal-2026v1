@@ -11,6 +11,7 @@ import wisdomData from '@/lib/wisdom.json';
 interface Wisdom {
   quran: { text: string; source: string }[];
   hadith: { text: string; source: string }[];
+  scholars?: { text: string; source: string }[];
 }
 
 const typedWisdomData: Wisdom = wisdomData;
@@ -20,13 +21,18 @@ function getRandomItem<T>(arr: T[]): T {
 }
 
 export function WisdomAndReflection() {
-  const [selectedWisdom, setSelectedWisdom] = useState<{ quran: any; hadith: any; } | null>(null);
+  const [selectedWisdom, setSelectedWisdom] = useState<{ quran: any; reflection: any; } | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
+    const reflections = [
+        ...(typedWisdomData.hadith || []),
+        ...(typedWisdomData.scholars || []),
+    ];
+
     setSelectedWisdom({
       quran: getRandomItem(typedWisdomData.quran),
-      hadith: getRandomItem(typedWisdomData.hadith),
+      reflection: reflections.length > 0 ? getRandomItem(reflections) : null,
     });
   }, [pathname]);
 
@@ -56,18 +62,22 @@ export function WisdomAndReflection() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 pl-10">
-        <blockquote className="border-l-2 pl-4 italic text-muted-foreground relative">
-            "{selectedWisdom.quran.text}"
-            <cite className="block text-right not-italic text-sm font-semibold text-foreground/80 mt-2">
-                — {selectedWisdom.quran.source}
-            </cite>
-        </blockquote>
-        <blockquote className="border-l-2 pl-4 italic text-muted-foreground relative">
-            "{selectedWisdom.hadith.text}"
-            <cite className="block text-right not-italic text-sm font-semibold text-foreground/80 mt-2">
-                — {selectedWisdom.hadith.source}
-            </cite>
-        </blockquote>
+        {selectedWisdom.quran && (
+            <blockquote className="border-l-2 pl-4 italic text-muted-foreground relative">
+                "{selectedWisdom.quran.text}"
+                <cite className="block text-right not-italic text-sm font-semibold text-foreground/80 mt-2">
+                    — {selectedWisdom.quran.source}
+                </cite>
+            </blockquote>
+        )}
+        {selectedWisdom.reflection && (
+            <blockquote className="border-l-2 pl-4 italic text-muted-foreground relative">
+                "{selectedWisdom.reflection.text}"
+                <cite className="block text-right not-italic text-sm font-semibold text-foreground/80 mt-2">
+                    — {selectedWisdom.reflection.source}
+                </cite>
+            </blockquote>
+        )}
       </CardContent>
     </Card>
   );
