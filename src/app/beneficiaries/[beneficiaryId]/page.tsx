@@ -85,7 +85,7 @@ export default function BeneficiaryDetailsPage() {
                     status: parentData.status,
                     kitAmount: benData.kitAmount || 0,
                     beneficiaryStatus: benData.status || 'Pending'
-                };
+                } as LinkedInitiative;
             }
             return null;
         });

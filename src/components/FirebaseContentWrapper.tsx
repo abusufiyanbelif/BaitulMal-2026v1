@@ -9,11 +9,11 @@ import { AlertTriangle, ExternalLink } from 'lucide-react';
 
 
 export function FirebaseContentWrapper({ children }: { children: ReactNode }) {
-  const { initializationError } = useFirebase();
+  const { userError } = useFirebase();
 
-  if (initializationError) {
-    const isFirestoreError = initializationError.message.includes("firestore");
-    const isSsrError = initializationError.message.includes("blocked on server");
+  if (userError) {
+    const isFirestoreError = userError.message.includes("firestore");
+    const isSsrError = userError.message.includes("blocked on server");
     const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
     const firestoreConsoleUrl = `https://console.firebase.google.com/project/${projectId}/firestore`;
     const firestoreApiConsoleUrl = `https://console.cloud.google.com/apis/library/firestore.googleapis.com?project=${projectId}`;
@@ -47,7 +47,7 @@ export function FirebaseContentWrapper({ children }: { children: ReactNode }) {
                                 )}
                                 {!isSsrError && !isFirestoreError && (
                                     <p className="font-mono text-xs bg-destructive/20 p-2 rounded">
-                                        {initializationError.message}
+                                        {userError.message}
                                     </p>
                                 )}
                             </div>

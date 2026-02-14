@@ -2,7 +2,8 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useCollection, useFirestore } from '@/firebase';
 import type { Lead, Donation, DonationCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';

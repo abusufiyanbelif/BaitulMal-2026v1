@@ -372,7 +372,7 @@ export default function DonationsPage() {
     return sortableItems;
   }, [donations, searchTerm, statusFilter, typeFilter, donationTypeFilter, sortConfig]);
 
-  const isLoading = isLeadLoading || areDonationsLoading || isProfileLoading || areAllCampaignsLoading || areAllLeadsLoading;
+  const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading || areAllCampaignsLoading || areAllLeadsLoading;
   
   if (isLoading) {
     return (
