@@ -191,6 +191,7 @@ export interface Donation extends DocumentData {
   donorPhone: string;
   receiverName: string;
   amount: number;
+  type: DonationCategory; // For single-category donations
   typeSplit: { category: DonationCategory; amount: number }[];
   linkSplit?: DonationLink[];
   donationType: 'Cash' | 'Online Payment' | 'Check' | 'Other';

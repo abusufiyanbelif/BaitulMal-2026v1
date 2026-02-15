@@ -1,7 +1,6 @@
 
 'use server';
 import { adminDb } from '@/lib/firebase-admin-sdk';
-import type { Donation, DonationCategory } from '@/lib/types';
 import { collection, getDocs, writeBatch, FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 

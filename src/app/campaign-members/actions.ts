@@ -53,14 +53,6 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
                     transaction.set(newBeneficiaryRef, benDoc.data());
                 });
             }
-
-            if (copyDonations) {
-                const donationsSnap = await getDocs(collection(adminDb, `campaigns/${sourceCampaignId}/donations`));
-                donationsSnap.forEach(donDoc => {
-                    const newDonationRef = doc(collection(adminDb, `campaigns/${newCampaignRef.id}/donations`));
-                    transaction.set(newDonationRef, donDoc.data());
-                });
-            }
         });
         
         revalidatePath('/campaign-members');
