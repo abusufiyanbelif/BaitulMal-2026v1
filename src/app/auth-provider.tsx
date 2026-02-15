@@ -1,3 +1,4 @@
+
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
@@ -17,21 +18,25 @@ function RouteGuard({ children }: { children: ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
 
-    const isPublicRoute = ['/', '/login', '/seed'].includes(pathname) || pathname.startsWith('/campaign-public') || pathname.startsWith('/leads-public') || pathname.startsWith('/info');
+    const isPublicRoute = ['/login', '/seed'].includes(pathname) || pathname.startsWith('/campaign-public') || pathname.startsWith('/leads-public') || pathname.startsWith('/info');
+    const isHomePage = pathname === '/';
 
     useEffect(() => {
         // This effect will now run with a stable `user` value.
-        if (!user && !isPublicRoute) {
+        if (!user && !isPublicRoute && !isHomePage) {
             router.push('/login');
         }
-    }, [user, isPublicRoute, pathname, router]);
+        if (user && isHomePage) {
+            router.push('/dashboard');
+        }
+    }, [user, isPublicRoute, isHomePage, pathname, router]);
 
     // While the redirect is happening for a protected route, show a loader.
-    if (!user && !isPublicRoute) {
+    if ((!user && !isPublicRoute && !isHomePage) || (user && isHomePage)) {
         return <BrandedLoader />;
     }
     
-    // If the route is public, or the user is authenticated, render the children.
+    // If the route is public, or the user is authenticated and on a non-root page, render the children.
     return <>{children}</>;
 }
 
