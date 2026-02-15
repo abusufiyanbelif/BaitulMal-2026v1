@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, {
@@ -107,32 +108,29 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
   );
 };
 
-export const useFirebase = (): FirebaseContextState => {
+export const useFirebase = (): FirebaseContextState | null => {
   const context = useContext(FirebaseContext);
-  if (!context) {
-    throw new Error('useFirebase must be used within FirebaseProvider.');
-  }
-  return context;
+  return context || null;
 };
 
 export const useAuth = (): Auth | null => {
-  const { auth } = useFirebase();
-  return auth;
+  const firebase = useFirebase();
+  return firebase?.auth || null;
 };
 
 export const useFirestore = (): Firestore | null => {
-  const { firestore } = useFirebase();
-  return firestore;
+  const firebase = useFirebase();
+  return firebase?.firestore || null;
 };
 
 export const useStorage = (): FirebaseStorage | null => {
-  const { storage } = useFirebase();
-  return storage;
+  const firebase = useFirebase();
+  return firebase?.storage || null;
 };
 
 export const useFirebaseApp = (): FirebaseApp | null => {
-  const { firebaseApp } = useFirebase();
-  return firebaseApp;
+  const firebase = useFirebase();
+  return firebase?.firebaseApp || null;
 };
 
 type MemoFirebase<T> = T & { __memo?: boolean };

@@ -40,7 +40,7 @@ export function BrandedLoader() {
                 <div 
                     className={cn(
                         "flex items-center justify-center",
-                        isMobile ? "animate-zoom-in-out-mobile" : "animate-zoom-in-out"
+                        "animate-zoom-in-out"
                     )}
                     style={{ 
                         width: `${logoContainerWidth}px`, 
