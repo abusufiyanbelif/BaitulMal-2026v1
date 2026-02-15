@@ -16,6 +16,12 @@ This project includes several command-line interface (CLI) scripts to help manag
     3.  It then creates or updates all necessary lookup documents in the `user_lookups` collection (`admin`, `admin_key`, phone number) that point to the admin's email.
     4.  Finally, it creates or updates the admin's user profile document in the `users` collection, ensuring the `role` is set to `Admin`.
 
+## `npm run db:migrate-numbers`
+
+-   **Purpose**: To assign sequential, human-readable numbers (`campaignNumber`, `leadNumber`) to any existing Campaigns and Leads that were created before the numbering system was implemented.
+-   **When to Run**: Run this script **once** after the feature has been deployed to backfill numbers for all your old records.
+-   **What it Does**: It safely scans all Campaigns and Leads, finds the highest existing number, and then assigns new, sequential numbers to any documents that are missing one. It does this transactionally to prevent duplicate numbers.
+
 ## `npm run db:migrate-categories`
 
 -   **Purpose**: Migrates older campaign/lead data structures to the newer, more flexible `itemCategories` format.
