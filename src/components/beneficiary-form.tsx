@@ -291,7 +291,7 @@ export function BeneficiaryForm({
                                         <p className="text-sm text-center">PDF Document Uploaded</p>
                                     </div>
                                 ) : (
-                                    <Image src={preview} alt="ID Proof Preview" fill className="object-contain" />
+                                    <Image src={preview} alt="ID Proof Preview" fill sizes="(max-width: 896px) 100vw, 896px" className="object-contain" />
                                 )}
                                 {!isReadOnly && 
                                   <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

@@ -32,33 +32,25 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
         return { success: false, message: 'Admin services are not initialized.' };
     }
     try {
-        // First, get the user's data to check for files
-        const userRef = doc(adminDb, 'users', uidToDelete);
-        const userSnap = await userRef.get();
-
-        if (userSnap.exists()) {
-            const userData = userSnap.data() as UserProfile;
-            if (userData.idProofUrl) {
-                try {
-                    // Extract file path from URL and delete from storage
-                    const filePath = new URL(userData.idProofUrl).pathname.split('/o/')[1].split('?')[0];
-                    const decodedFilePath = decodeURIComponent(filePath);
-                    const fileRef = adminStorage.bucket().file(decodedFilePath);
-                    await fileRef.delete();
-                } catch (storageError: any) {
-                    console.warn(`Could not delete user ID proof from storage: ${storageError.message}`);
-                }
+        // Delete the ID proof file from storage using a predictable path
+        const filePath = `users/${uidToDelete}/id_proof.png`;
+        const fileRef = adminStorage.bucket().file(filePath);
+        await fileRef.delete().catch((storageError: any) => {
+            // We only log a warning if the file doesn't exist, as it might not have been uploaded.
+            if (storageError.code !== 'storage/object-not-found') {
+                 console.warn(`Could not delete user ID proof from storage: ${storageError.message}`);
             }
-        }
+        });
         
         // Delete the authentication user
         await adminAuth.deleteUser(uidToDelete);
         
-        // Delete Firestore documents in a batch
+        // Note: For a robust lookup deletion, you'd fetch the user doc first,
+        // get all identifiers (loginId, phone, etc.), and delete each lookup doc.
+        // This is a simplified approach assuming client-side logic is the main source of lookups.
         const batch = writeBatch(adminDb);
+        const userRef = doc(adminDb, 'users', uidToDelete);
         batch.delete(userRef);
-        // Note: This is a simplification. A robust solution would fetch all lookups
-        // to delete them, but for now we rely on client-side knowledge which is fragile.
         
         await batch.commit();
         

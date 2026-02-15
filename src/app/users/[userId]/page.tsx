@@ -76,7 +76,9 @@ export default function UserDetailsPage() {
     let idProofUrl = user?.idProofUrl || '';
     try {
         if (data.idProofDeleted && idProofUrl) {
-            await deleteObject(storageRef(storage, idProofUrl)).catch((err: any) => {
+            // Since we use a static path, we can construct the ref directly
+            const fileRef = storageRef(storage, `users/${userId}/id_proof.png`);
+            await deleteObject(fileRef).catch((err: any) => {
                 if (err.code !== 'storage/object-not-found') {
                     console.warn("Failed to delete old ID proof:", err);
                 }
@@ -97,9 +99,7 @@ export default function UserDetailsPage() {
                 );
             });
             
-            const fileExtension = 'png';
-            const finalFileName = `id_proof.${fileExtension}`; // Consistent filename
-            const filePath = `users/${userId}/${finalFileName}`;
+            const filePath = `users/${userId}/id_proof.png`; // Static filename
             const fileRef = storageRef(storage, filePath);
 
             const uploadResult = await uploadBytes(fileRef, resizedBlob);
