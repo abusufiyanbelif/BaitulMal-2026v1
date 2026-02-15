@@ -1,4 +1,5 @@
 
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -211,9 +212,14 @@ export default function BeneficiariesPage() {
     const batch = writeBatch(firestore);
     const leadDocRef = doc(firestore, 'leads', leadId);
     
-    const newBeneficiaryId = masterId || (editingBeneficiary ? editingBeneficiary.id : doc(collection(firestore, 'beneficiaries')).id);
+    const masterBeneficiaryDocRef = masterId
+        ? doc(firestore, 'beneficiaries', masterId)
+        : editingBeneficiary
+            ? doc(firestore, 'beneficiaries', editingBeneficiary.id)
+            : doc(collection(firestore, 'beneficiaries'));
+            
+    const newBeneficiaryId = masterBeneficiaryDocRef.id;
     const leadBeneficiaryDocRef = doc(firestore, 'leads', leadId, 'beneficiaries', newBeneficiaryId);
-    const masterBeneficiaryDocRef = doc(firestore, 'beneficiaries', newBeneficiaryId);
     
     let finalData: Beneficiary;
 
@@ -232,7 +238,7 @@ export default function BeneficiariesPage() {
             const file = fileList[0];
             const { default: Resizer } = await import('react-image-file-resizer');
             const resizedBlob = await new Promise<Blob>((resolve) => {
-                Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
+                Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             const filePath = `beneficiaries/${newBeneficiaryId}/${Date.now()}.png`;
             const fileRef = storageRef(storage, filePath);
@@ -330,7 +336,7 @@ export default function BeneficiariesPage() {
         description: `${beneficiary.name}'s status has been set to ${newStatus}.`,
         variant: 'success',
       });
-    } catch (serverError) {
+    } catch (serverError: any) {
       errorEmitter.emit('permission-error', new FirestorePermissionError({
         path: beneficiaryDocRef.path,
         operation: 'update',

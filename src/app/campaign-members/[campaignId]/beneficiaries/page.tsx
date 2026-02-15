@@ -355,10 +355,15 @@ export default function BeneficiariesPage() {
   
     const batch = writeBatch(firestore);
     const campaignDocRef = doc(firestore, 'campaigns', campaignId);
-    
-    const newBeneficiaryId = masterId || (editingBeneficiary ? editingBeneficiary.id : doc(collection(firestore, 'beneficiaries')).id);
+
+    const masterBeneficiaryDocRef = masterId
+        ? doc(firestore, 'beneficiaries', masterId)
+        : editingBeneficiary
+            ? doc(firestore, 'beneficiaries', editingBeneficiary.id)
+            : doc(collection(firestore, 'beneficiaries'));
+            
+    const newBeneficiaryId = masterBeneficiaryDocRef.id;
     const campaignBeneficiaryDocRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', newBeneficiaryId);
-    const masterBeneficiaryDocRef = doc(firestore, 'beneficiaries', newBeneficiaryId);
 
     let finalData: Beneficiary;
   
