@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, ChevronDown, ChevronUp, DatabaseZap, Check, ChevronsUpDown, X } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, ChevronDown, ChevronUp, DatabaseZap, Check, ChevronsUpDown, X, Link2Off } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -106,8 +106,8 @@ export default function DonationsPage() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [donationToDelete, setDonationToDelete] = useState<string | null>(null);
+  const [isUnlinkDialogOpen, setIsUnlinkDialogOpen] = useState(false);
+  const [donationToUnlink, setDonationToUnlink] = useState<string | null>(null);
   
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [imageToView, setImageToView] = useState<string | null>(null);
@@ -165,10 +165,10 @@ export default function DonationsPage() {
     setIsFormOpen(true);
   };
 
-  const handleDeleteClick = (id: string) => {
-    if (!canDelete) return;
-    setDonationToDelete(id);
-    setIsDeleteDialogOpen(true);
+  const handleUnlinkClick = (id: string) => {
+    if (!canUpdate) return;
+    setDonationToUnlink(id);
+    setIsUnlinkDialogOpen(true);
   };
 
   const handleViewImage = (url: string) => {
@@ -178,36 +178,33 @@ export default function DonationsPage() {
     setIsImageViewerOpen(true);
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!donationToDelete || !firestore || !storage || !canDelete || !donations) return;
+  const handleUnlinkConfirm = async () => {
+    if (!donationToUnlink || !firestore || !canUpdate || !donations || !campaignId) return;
 
-    const donationData = donations.find(d => d.id === donationToDelete);
+    const donationData = donations.find(d => d.id === donationToUnlink);
     if (!donationData) return;
 
-    const docRef = doc(firestore, 'donations', donationToDelete);
-    const screenshotUrls = (donationData.transactions || []).map(t => t.screenshotUrl).filter(Boolean) as string[];
-    
-    setIsDeleteDialogOpen(false);
+    setIsUnlinkDialogOpen(false);
 
-    if (screenshotUrls.length > 0) {
-        const deletePromises = screenshotUrls.map(url => 
-            deleteObject(storageRef(storage, url)).catch((err: any) => {
-                if (err.code !== 'storage/object-not-found') {
-                    console.warn(`Failed to delete screenshot from storage: ${url}`, err);
-                }
-            })
-        );
-        await Promise.all(deletePromises);
-    }
+    const docRef = doc(firestore, 'donations', donationToUnlink);
+    const newLinkSplit = (donationData.linkSplit || []).filter(link => link.linkId !== campaignId || link.linkType !== 'campaign');
     
-    deleteDoc(docRef)
-        .catch(async (serverError: any) => {
-            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'delete' });
+    const updateData = {
+        linkSplit: newLinkSplit,
+    };
+    
+    updateDoc(docRef, updateData)
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'update',
+                requestResourceData: updateData,
+            });
             errorEmitter.emit('permission-error', permissionError);
         })
         .finally(() => {
-            toast({ title: 'Success', description: 'Donation deleted successfully.', variant: 'success' });
-            setDonationToDelete(null);
+            toast({ title: 'Success', description: 'Donation unlinked from this campaign successfully.', variant: 'success' });
+            setDonationToUnlink(null);
         });
   };
   
@@ -583,9 +580,9 @@ export default function DonationsPage() {
                                                       <Edit className="mr-2 h-4 w-4" /> Edit
                                                   </DropdownMenuItem>
                                               )}
-                                              {canDelete && (
-                                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
-                                                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                              {canUpdate && (
+                                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleUnlinkClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
+                                                      <Link2Off className="mr-2 h-4 w-4" /> Unlink from Campaign
                                                   </DropdownMenuItem>
                                               )}
                                           </DropdownMenuContent>
@@ -659,20 +656,20 @@ export default function DonationsPage() {
         </DialogContent>
       </Dialog>
       
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the donation record and its associated screenshot from storage.
+                    This will unlink the donation from this campaign. The donation record itself will not be deleted, but it will no longer contribute to this campaign's funding totals.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction 
-                    onClick={handleDeleteConfirm} 
+                    onClick={handleUnlinkConfirm} 
                     className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                        Delete
+                        Unlink
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
@@ -709,3 +706,4 @@ export default function DonationsPage() {
 }
 
     
+
