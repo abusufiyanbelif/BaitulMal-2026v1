@@ -31,7 +31,7 @@ export interface PaymentSettings extends DocumentData {
 export interface CampaignDocument {
   name: string;
   url: string;
-  isPublic: boolean;
+  uploadedAt: string;
 }
 
 export interface RationItem {

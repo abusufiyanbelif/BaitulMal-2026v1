@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, Users, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, Gift, UploadCloud, Trash2, FolderKanban, Lightbulb, Target } from 'lucide-react';
+import { ArrowLeft, Loader2, Users, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, Gift, UploadCloud, Trash2, FolderKanban, Lightbulb, Target, File } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
@@ -120,6 +120,7 @@ export default function LeadSummaryPage() {
                 diseaseStage: lead.diseaseStage || '',
                 seriousness: lead.seriousness || null,
                 imageUrl: lead.imageUrl || '',
+                documents: lead.documents || [],
             });
             setImagePreview(lead.imageUrl || null);
             setIsImageDeleted(false);
@@ -422,6 +423,23 @@ Your contribution, big or small, makes a huge difference.
                                 <Textarea id="description" value={editableLead.description} onChange={(e) => setEditableLead(p => ({...p, description: e.target.value}))} className="mt-1" rows={4} />
                             ) : ( <p className="mt-1 text-sm">{lead.description || 'No description provided.'}</p> )}
                         </div>
+
+                         {campaign.documents && campaign.documents.length > 0 && (
+                                <div>
+                                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Attached Documents</h4>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                        {campaign.documents.map((doc) => (
+                                            <Button key={doc.url} variant="outline" asChild>
+                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
+                                                    <File className="mr-2 h-4 w-4 shrink-0" />
+                                                    <span className="truncate">{doc.name}</span>
+                                                </a>
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                            <div className="space-y-1">
                                 <Label>Purpose</Label>
@@ -629,3 +647,4 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+

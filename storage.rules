@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service firebase.storage {
@@ -11,47 +12,45 @@ service firebase.storage {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function getFirestoreUser(userId) {
-      return get(/databases/(default)/documents/users/$(userId)).data;
+    function getFirestoreData(path) {
+      return get(/databases/(default)/documents/$(path)).data;
     }
 
     function isAdmin() {
-      return isSignedIn() && getFirestoreUser(request.auth.uid).role == 'Admin';
+      return isSignedIn() && getFirestoreData("users/" + request.auth.uid).role == 'Admin';
     }
 
     function hasPermission(module, permission) {
-        return isSignedIn() && getFirestoreUser(request.auth.uid).permissions[module][permission] == true;
-    }
-
-    // Admins can read and write anything.
-    match /{allPaths=**} {
-      allow write: if isAdmin();
+        return isSignedIn() && getFirestoreData("users/" + request.auth.uid).permissions[module][permission] == true;
     }
 
     match /settings/{allPaths=**} {
       allow read: if true;
+      allow write: if isAdmin();
     }
 
-    match /campaigns/{campaignId}/{allPaths=**} {
-       allow read: if get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published';
-       allow write: if isAdmin() || hasPermission('campaigns', 'update');
+    match /campaigns/{campaignId}/{path=**} {
+       allow read: if getFirestoreData("campaigns/" + campaignId).publicVisibility == 'Published'
+                    || (isSignedIn() && (isAdmin() || hasPermission('campaigns', 'read')));
+       allow write: if isSignedIn() && (isAdmin() || hasPermission('campaigns', 'create') || hasPermission('campaigns', 'update'));
     }
 
-    match /leads/{leadId}/{allPaths=**} {
-       allow read: if get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published';
-       allow write: if isAdmin() || hasPermission('leads-members', 'update');
+    match /leads/{leadId}/{path=**} {
+       allow read: if getFirestoreData("leads/" + leadId).publicVisibility == 'Published'
+                    || (isSignedIn() && (isAdmin() || hasPermission('leads-members', 'read')));
+       allow write: if isSignedIn() && (isAdmin() || hasPermission('leads-members', 'create') || hasPermission('leads-members', 'update'));
     }
     
     match /donations/{donationId}/{allPaths=**} {
-       allow read: if isAdmin() || hasPermission('donations', 'read') || isOwner(get(/databases/(default)/documents/donations/$(donationId)).data.uploadedById);
-       allow write: if isSignedIn(); // Any signed-in user can upload donation proofs
+       allow read: if isSignedIn() && (isAdmin() || hasPermission('donations', 'read') || isOwner(getFirestoreData("donations/" + donationId).uploadedById));
+       allow write: if isSignedIn();
     }
 
     match /users/{userId}/{allPaths=**} {
       allow read, write: if isOwner(userId) || isAdmin();
     }
     
-     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
+    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
       allow read, write: if isSignedIn();
     }
   }

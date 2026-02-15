@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, Target, Users, Gift, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, ChevronDown, ChevronUp, UploadCloud, Trash2, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, Target, Users, Gift, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, ChevronDown, ChevronUp, UploadCloud, Trash2, CheckCircle2, XCircle, File } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
@@ -332,7 +332,7 @@ export default function CampaignSummaryPage() {
             }
 
             if (!acc[categoryKey]) {
-              acc[categoryKey] = { categoryName, beneficiaries: [], totalAmount: 0, kitAmount: 0, minMembers: appliedCategory?.minMembers ?? 0 };
+              acc[categoryKey] = { categoryName: string, beneficiaries: [], totalAmount: 0, kitAmount: 0, minMembers: appliedCategory?.minMembers ?? 0 };
             }
             acc[categoryKey].beneficiaries.push(ben);
             acc[categoryKey].totalAmount += ben.kitAmount || 0;
@@ -624,6 +624,23 @@ Your contribution, big or small, makes a huge difference.
                                     <p className="mt-1 text-sm">{campaign.description || 'No description provided.'}</p>
                                 )}
                             </div>
+
+                            {campaign.documents && campaign.documents.length > 0 && (
+                                <div>
+                                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Attached Documents</h4>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                        {campaign.documents.map((doc) => (
+                                            <Button key={doc.url} variant="outline" asChild>
+                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
+                                                    <File className="mr-2 h-4 w-4 shrink-0" />
+                                                    <span className="truncate">{doc.name}</span>
+                                                </a>
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <Label htmlFor="startDate">Start Date</Label>
@@ -944,3 +961,4 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+

@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -15,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Loader2, ShieldAlert, UploadCloud, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, ShieldAlert, UploadCloud, Trash2, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +27,7 @@ import type { Lead } from '@/lib/types';
 import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters } from '@/lib/modules';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { FileUploader } from '@/components/file-uploader';
 
 const leadSchema = z.object({
   name: z.string().min(3, 'Lead name must be at least 3 characters.'),
@@ -82,6 +84,7 @@ export default function CreateLeadPage() {
   const [isDuplicateAlertOpen, setIsDuplicateAlertOpen] = useState(false);
   const [leadDataToCreate, setLeadDataToCreate] = useState<LeadFormValues | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [documentsToUpload, setDocumentsToUpload] = useState<File[]>([]);
 
   const leadsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -139,7 +142,7 @@ export default function CreateLeadPage() {
   };
 
   const handleCreateLead = async (data: LeadFormValues) => {
-    if (!firestore || !canCreate || !userProfile) return;
+    if (!firestore || !canCreate || !userProfile || !storage) return;
     setIsLoading(true);
 
     const { imageFile, ...leadCoreData } = data;
@@ -166,10 +169,21 @@ export default function CreateLeadPage() {
             return;
         }
     }
+    
+    // Handle document uploads
+    const documentUploadPromises = documentsToUpload.map(async (file) => {
+        const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+        const fileRef = storageRef(storage, `leads/${newLeadId}/documents/${safeFileName}`);
+        await uploadBytes(fileRef, file);
+        const url = await getDownloadURL(fileRef);
+        return { name: file.name, url: url, uploadedAt: new Date().toISOString() };
+    });
+    const documents = await Promise.all(documentUploadPromises);
 
-    const newLeadData = {
+    const newLeadData: Omit<Lead, 'id'> = {
       ...leadCoreData,
       imageUrl,
+      documents,
       requiredAmount: data.requiredAmount || 0,
       targetAmount: data.targetAmount || 0,
       description: data.description || '',
@@ -180,7 +194,7 @@ export default function CreateLeadPage() {
       shopName: '',
       shopContact: '',
       shopAddress: '',
-      itemCategories: [{ id: 'item-price-list', name: 'Item Price List', items: [] }],
+      itemCategories: [{ id: 'general', name: 'General', items: [] }],
       seriousness: data.seriousness || null,
     };
 
@@ -260,35 +274,12 @@ export default function CreateLeadPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Lead Name *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Lead for new initiative" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="A brief description of the lead and its objectives."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="name" render={({ field }) => (
+                <FormItem><FormLabel>Lead Name *</FormLabel><FormControl><Input placeholder="e.g. Lead for new initiative" {...field} /></FormControl><FormMessage /></FormItem>
+              )}/>
+              <FormField control={form.control} name="description" render={({ field }) => (
+                <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="A brief description of the lead and its objectives." {...field} /></FormControl><FormMessage /></FormItem>
+              )}/>
                 <FormItem>
                     <FormLabel>Header Image</FormLabel>
                     <FormControl>
@@ -314,48 +305,25 @@ export default function CreateLeadPage() {
                     </label>
                     <FormMessage />
                 </FormItem>
+                 <FormItem>
+                    <FormLabel>Lead Documents</FormLabel>
+                    <FormControl>
+                        <FileUploader
+                            onFilesChange={setDocumentsToUpload}
+                            multiple={true}
+                            acceptedFileTypes="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
+                        />
+                    </FormControl>
+                    <FormDescription>Upload any relevant documents for this lead (e.g., proposals, reports).</FormDescription>
+                </FormItem>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="purpose"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Purpose *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a purpose" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormField control={form.control} name="purpose" render={({ field }) => (
+                    <FormItem><FormLabel>Purpose *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a purpose" /></SelectTrigger></FormControl><SelectContent>{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                )}/>
                 {availableCategories.length > 0 && (
-                  <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Category *</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a category" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {availableCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="category" render={({ field }) => (
+                      <FormItem><FormLabel>Category *</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent>{availableCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                  )}/>
                 )}
               </div>
               
@@ -397,220 +365,52 @@ export default function CreateLeadPage() {
                     <FormField control={form.control} name="diseaseStage" render={({ field }) => (
                         <FormItem><FormLabel>Disease Stage</FormLabel><FormControl><Input placeholder="e.g. Initial" {...field} /></FormControl><FormMessage /></FormItem>
                     )}/>
-                    <FormField
-                      control={form.control}
-                      name="seriousness"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Seriousness</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger><SelectValue placeholder="Select level..."/></SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {leadSeriousnessLevels.map(level => <SelectItem key={level} value={level}>{level}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <FormField control={form.control} name="seriousness" render={({ field }) => (
+                        <FormItem><FormLabel>Seriousness</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select level..."/></SelectTrigger></FormControl><SelectContent>{leadSeriousnessLevels.map(level => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                    )}/>
                   </div>
                 </div>
               )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                    control={form.control}
-                    name="requiredAmount"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Required Amount (₹)</FormLabel>
-                        <FormControl>
-                            <Input type="number" placeholder="e.g. 125000" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="targetAmount"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Target Amount (₹)</FormLabel>
-                        <FormControl>
-                            <Input type="number" placeholder="e.g. 100000" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
+                    <FormField control={form.control} name="requiredAmount" render={({ field }) => (<FormItem><FormLabel>Required Amount (₹)</FormLabel><FormControl><Input type="number" placeholder="e.g. 125000" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="targetAmount" render={({ field }) => (<FormItem><FormLabel>Target Amount (₹)</FormLabel><FormControl><Input type="number" placeholder="e.g. 100000" {...field} /></FormControl><FormMessage /></FormItem>)}/>
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="allowedDonationTypes"
-                  render={() => (
+                <FormField control={form.control} name="allowedDonationTypes" render={() => (
                     <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">Donation Types for Fundraising</FormLabel>
-                        <FormDescription>
-                          Select which donation types should be counted towards the fundraising goal.
-                        </FormDescription>
-                      </div>
+                      <div className="mb-4"><FormLabel className="text-base">Donation Types for Fundraising</FormLabel><FormDescription>Select which donation types should be counted towards the fundraising goal.</FormDescription></div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-md">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="select-all-types-lead"
-                            checked={form.watch('allowedDonationTypes')?.length === donationCategories.length}
-                            onCheckedChange={(checked) => {
-                              form.setValue('allowedDonationTypes', checked ? [...donationCategories] : []);
-                            }}
-                          />
-                          <Label htmlFor="select-all-types-lead" className="font-bold">Any</Label>
-                        </div>
+                        <div className="flex items-center space-x-2"><Checkbox id="select-all-types-lead" checked={form.watch('allowedDonationTypes')?.length === donationCategories.length} onCheckedChange={(checked) => { form.setValue('allowedDonationTypes', checked ? [...donationCategories] : []); }} /><Label htmlFor="select-all-types-lead" className="font-bold">Any</Label></div>
                         {donationCategories.map((type) => (
-                          <FormField
-                            key={type}
-                            control={form.control}
-                            name="allowedDonationTypes"
-                            render={({ field }) => {
-                              return (
-                                <FormItem
-                                  key={type}
-                                  className="flex flex-row items-start space-x-3 space-y-0"
-                                >
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(type)}
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([...(field.value || []), type])
-                                          : field.onChange(
-                                              (field.value || []).filter(
-                                                (value) => value !== type
-                                              )
-                                            )
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    {type}
-                                  </FormLabel>
-                                </FormItem>
-                              )
-                            }}
-                          />
+                          <FormField key={type} control={form.control} name="allowedDonationTypes" render={({ field }) => (
+                            <FormItem key={type} className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl><Checkbox checked={field.value?.includes(type)} onCheckedChange={(checked) => { return checked ? field.onChange([...(field.value || []), type]) : field.onChange((field.value || []).filter((value) => value !== type))}} /></FormControl>
+                                <FormLabel className="font-normal">{type}</FormLabel>
+                            </FormItem>
+                          )} />
                         ))}
                       </div>
                       <FormMessage />
                     </FormItem>
-                  )}
-                />
+                )}/>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField
-                  control={form.control}
-                  name="startDate"
-                  render={({ field }) => (
-                      <FormItem>
-                      <FormLabel>Start Date *</FormLabel>
-                      <FormControl>
-                          <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                      </FormItem>
-                  )}
-                  />
-                  <FormField
-                  control={form.control}
-                  name="endDate"
-                  render={({ field }) => (
-                      <FormItem>
-                      <FormLabel>End Date *</FormLabel>
-                      <FormControl>
-                          <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                      </FormItem>
-                  )}
-                  />
+                  <FormField control={form.control} name="startDate" render={({ field }) => (<FormItem><FormLabel>Start Date *</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                  <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem><FormLabel>End Date *</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)}/>
               </div>
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                      <FormItem>
-                      <FormLabel>Status *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                          <SelectTrigger>
-                              <SelectValue placeholder="Select a status" />
-                          </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                          <SelectItem value="Upcoming">Upcoming</SelectItem>
-                          <SelectItem value="Active">Active</SelectItem>
-                          <SelectItem value="Completed">Completed</SelectItem>
-                          </SelectContent>
-                      </Select>
-                      <FormMessage />
-                      </FormItem>
-                  )}
-                  />
-                  <FormField
-                  control={form.control}
-                  name="authenticityStatus"
-                  render={({ field }) => (
-                      <FormItem>
-                      <FormLabel>Authenticity *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                          <SelectTrigger>
-                              <SelectValue placeholder="Select authenticity" />
-                          </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                              <SelectItem value="Pending Verification">Pending Verification</SelectItem>
-                              <SelectItem value="Verified">Verified</SelectItem>
-                              <SelectItem value="On Hold">On Hold</SelectItem>
-                              <SelectItem value="Rejected">Rejected</SelectItem>
-                              <SelectItem value="Need More Details">Need More Details</SelectItem>
-                          </SelectContent>
-                      </Select>
-                      <FormMessage />
-                      </FormItem>
-                  )}
-                  />
+                  <FormField control={form.control} name="status" render={({ field }) => (<FormItem><FormLabel>Status *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Upcoming">Upcoming</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem></SelectContent></Select><FormMessage /></FormItem>)}/>
+                  <FormField control={form.control} name="authenticityStatus" render={({ field }) => (
+                      <FormItem><FormLabel>Authenticity *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select authenticity" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Pending Verification">Pending Verification</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="On Hold">On Hold</SelectItem><SelectItem value="Rejected">Rejected</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                  )}/>
               </div>
-              <FormField
-                control={form.control}
-                name="publicVisibility"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Public Visibility *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select visibility" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Hold">Hold (Private)</SelectItem>
-                        <SelectItem value="Ready to Publish">Ready to Publish</SelectItem>
-                        <SelectItem value="Published">Published</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex justify-end">
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Create Lead
-                </Button>
+              <FormField control={form.control} name="publicVisibility" render={({ field }) => (
+                  <FormItem><FormLabel>Public Visibility *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select visibility" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Hold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish">Ready to Publish</SelectItem><SelectItem value="Published">Published</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+              )}/>
+              <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={() => router.push('/leads-members')} disabled={isLoading}>Cancel</Button>
+                  <Button type="button" variant="secondary" onClick={() => { form.reset(); setDocumentsToUpload([]); }} disabled={isLoading}><RotateCcw className="mr-2 h-4 w-4"/>Reset</Button>
+                  <Button type="submit" disabled={isLoading}>{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create Lead</Button>
               </div>
             </form>
           </Form>
@@ -641,4 +441,3 @@ export default function CreateLeadPage() {
   );
 }
 
-    
