@@ -5,7 +5,7 @@
  * - runDiagnosticCheck - Function to check Gemini API connectivity.
  */
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
 const RunDiagnosticOutputSchema = z.object({
   ok: z.boolean(),
