@@ -331,6 +331,38 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
             <TableCell colSpan={5} className="p-0 h-2 bg-background"></TableCell>
           </TableRow>
           
+          <TableRow>
+            <TableCell className="font-medium">Beneficiaries (Master)</TableCell>
+            <TableCell className="text-center">
+              <Checkbox
+                checked={!!getNestedValue(permissions, 'beneficiaries.create', false)}
+                onCheckedChange={handleCheckedChange('beneficiaries.create')}
+                disabled={isDisabled}
+              />
+            </TableCell>
+            <TableCell className="text-center">
+              <Checkbox
+                checked={!!getNestedValue(permissions, 'beneficiaries.read', false)}
+                onCheckedChange={handleCheckedChange('beneficiaries.read')}
+                disabled={isDisabled}
+              />
+            </TableCell>
+            <TableCell className="text-center">
+              <Checkbox
+                checked={!!getNestedValue(permissions, 'beneficiaries.update', false)}
+                onCheckedChange={handleCheckedChange('beneficiaries.update')}
+                disabled={isDisabled}
+              />
+            </TableCell>
+            <TableCell className="text-center">
+              <Checkbox
+                checked={!!getNestedValue(permissions, 'beneficiaries.delete', false)}
+                onCheckedChange={handleCheckedChange('beneficiaries.delete')}
+                disabled={isDisabled}
+              />
+            </TableCell>
+          </TableRow>
+          
           {/* Global Donations */}
           <TableRow>
             <TableCell className="font-medium">Donations (Global)</TableCell>

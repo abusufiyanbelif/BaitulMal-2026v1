@@ -128,7 +128,7 @@ export interface Beneficiary extends DocumentData {
     earningMembers?: number;
     male?: number;
     female?: number;
-    addedDate?: string;
+    addedDate: string;
     idProofType?: string;
     idNumber?: string;
     referralBy?: string;
@@ -205,7 +205,6 @@ export interface Donation extends DocumentData {
   transactions?: TransactionDetail[];
   
   // Legacy fields for migration
-  type?: string; 
   campaignId?: string;
   campaignName?: string;
   transactionId?: string;

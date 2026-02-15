@@ -13,9 +13,21 @@ service cloud.firestore {
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
+
+    function getUserData() {
+        return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
     
     function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+      return isSignedIn() && getUserData().role == 'Admin';
+    }
+
+    function hasPermission(module, permission) {
+        return isSignedIn() && getUserData().permissions[module][permission] == true;
+    }
+
+    function hasSubmodulePermission(module, submodule, permission) {
+        return isSignedIn() && getUserData().permissions[module][submodule][permission] == true;
     }
 
     function isUserProfileDataConsistent(userId) {
@@ -55,8 +67,8 @@ service cloud.firestore {
     // ----------------------------------------------------------------------
     
     match /settings/{settingId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || hasPermission('settings', 'update');
     }
 
     match /user_lookups/{lookupId} {
@@ -65,42 +77,54 @@ service cloud.firestore {
     }
 
     match /campaigns/{campaignId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow get: if resource.data.publicVisibility == 'Published' || isAdmin() || hasPermission('campaigns', 'read');
+      allow list: if isAdmin() || hasPermission('campaigns', 'read');
+      allow create: if isAdmin() || hasPermission('campaigns', 'create');
+      allow update: if isAdmin() || hasPermission('campaigns', 'update');
+      allow delete: if isAdmin() || hasPermission('campaigns', 'delete');
 
       match /beneficiaries/{beneficiaryId} {
-        allow read: if isAdmin() || get(/databases/$(database)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published';
-        allow write: if isAdmin();
+        allow list, get: if isAdmin() || hasSubmodulePermission('campaigns', 'beneficiaries', 'read') || get(/databases/$(database)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published';
+        allow create: if isAdmin() || hasSubmodulePermission('campaigns', 'beneficiaries', 'create');
+        allow update: if isAdmin() || hasSubmodulePermission('campaigns', 'beneficiaries', 'update');
+        allow delete: if isAdmin() || hasSubmodulePermission('campaigns', 'beneficiaries', 'delete');
       }
     }
     
     match /leads/{leadId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow get: if resource.data.publicVisibility == 'Published' || isAdmin() || hasPermission('leads-members', 'read');
+      allow list: if isAdmin() || hasPermission('leads-members', 'read');
+      allow create: if isAdmin() || hasPermission('leads-members', 'create');
+      allow update: if isAdmin() || hasPermission('leads-members', 'update');
+      allow delete: if isAdmin() || hasPermission('leads-members', 'delete');
 
        match /beneficiaries/{beneficiaryId} {
-        allow read: if isAdmin() || get(/databases/$(database)/documents/leads/$(leadId)).data.publicVisibility == 'Published';
-        allow write: if isAdmin();
+        allow list, get: if isAdmin() || hasSubmodulePermission('leads-members', 'beneficiaries', 'read') || get(/databases/$(database)/documents/leads/$(leadId)).data.publicVisibility == 'Published';
+        allow create: if isAdmin() || hasSubmodulePermission('leads-members', 'beneficiaries', 'create');
+        allow update: if isAdmin() || hasSubmodulePermission('leads-members', 'beneficiaries', 'update');
+        allow delete: if isAdmin() || hasSubmodulePermission('leads-members', 'beneficiaries', 'delete');
       }
     }
     
     match /donations/{donationId} {
-      allow read: if true;
-      allow write: if isSignedIn() || isAdmin();
+      allow get: if isSignedIn() && (isOwner(request.resource.data.uploadedById) || hasPermission('donations', 'read')) || isAdmin();
+      allow list: if hasPermission('donations', 'read') || isAdmin();
+      allow create: if isSignedIn();
+      allow update: if isOwner(request.resource.data.uploadedById) || hasPermission('donations', 'update') || isAdmin();
+      allow delete: if isOwner(request.resource.data.uploadedById) || hasPermission('donations', 'delete') || isAdmin();
     }
     
     match /beneficiaries/{beneficiaryId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow read: if isSignedIn() && (hasPermission('beneficiaries', 'read') || isAdmin());
+      allow write: if isSignedIn() && (hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update') || hasPermission('beneficiaries', 'delete') || isAdmin());
     }
 
     match /users/{userId} {
-      allow read, write: if isAdmin();
-      
-      allow get: if isOwner(userId);
-      allow create: if isOwner(userId) && isUserProfileDataConsistent(userId);
-      allow update: if isOwner(userId) && isUserProfileIdImmutable();
-      allow delete: if isAdmin() && request.auth.uid != userId;
+      allow get: if isOwner(userId) || hasPermission('users', 'read') || isAdmin();
+      allow list: if hasPermission('users', 'read') || isAdmin();
+      allow create: if (isOwner(userId) && isUserProfileDataConsistent(userId)) || hasPermission('users', 'create') || isAdmin();
+      allow update: if (isOwner(userId) && isUserProfileIdImmutable()) || hasPermission('users', 'update') || isAdmin();
+      allow delete: if (request.auth.uid != userId && hasPermission('users', 'delete')) || (isAdmin() && request.auth.uid != userId);
 
       match /documents/{documentId} {
         allow get, list: if isOwner(userId) || isAdmin();

@@ -11,9 +11,16 @@ service firebase.storage {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    function getFirestoreUser(userId) {
+      return get(/databases/(default)/documents/users/$(userId)).data;
+    }
+
     function isAdmin() {
-      return exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
-             get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+      return isSignedIn() && getFirestoreUser(request.auth.uid).role == 'Admin';
+    }
+
+    function hasPermission(module, permission) {
+        return isSignedIn() && getFirestoreUser(request.auth.uid).permissions[module][permission] == true;
     }
 
     // Admins can read and write anything.
@@ -26,15 +33,17 @@ service firebase.storage {
     }
 
     match /campaigns/{campaignId}/{allPaths=**} {
-       allow read: if true;
+       allow read: if get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published';
+       allow write: if isAdmin() || hasPermission('campaigns', 'update');
     }
 
     match /leads/{leadId}/{allPaths=**} {
-       allow read: if true;
+       allow read: if get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published';
+       allow write: if isAdmin() || hasPermission('leads-members', 'update');
     }
     
     match /donations/{donationId}/{allPaths=**} {
-       allow read: if true;
+       allow read: if isAdmin() || hasPermission('donations', 'read') || isOwner(get(/databases/(default)/documents/donations/$(donationId)).data.uploadedById);
        allow write: if isSignedIn(); // Any signed-in user can upload donation proofs
     }
 
