@@ -4,7 +4,7 @@
 import { ReactNode, Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@/app/auth-provider';
-import { FirebaseClientProvider } from '@/firebase';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { AppFooter } from '@/components/app-footer';
 import { Toaster } from '@/components/ui/toaster';
 import { DocuExtractHeader } from '@/components/docu-extract-header';
