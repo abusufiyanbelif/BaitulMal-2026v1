@@ -37,6 +37,11 @@ Welcome to the developer guide for the DocuExtract application. This document se
     -   Solving Client-Side Exceptions
     -   Debugging Permission Denied Errors
 
+7.  [**Storage & File Management**](./07-storage-and-file-management.md)
+    -   Folder Structure Philosophy
+    -   Detailed Folder Layout
+    -   A Note on Migration
+
 ## Project Overview
 
 This application is a Next.js-based platform designed for managing community support initiatives. It leverages Firebase for its backend services, including Authentication, Firestore (database), and Storage. The application is designed with a role-based access control system, distinguishing between regular users and administrators with full system access.
