@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, getDocs, limit, type QueryDocumentSnapshot } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit, QueryDocumentSnapshot } from 'firebase/firestore';
 import type { Beneficiary } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';

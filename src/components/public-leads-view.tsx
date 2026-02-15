@@ -114,6 +114,8 @@ export function PublicLeadsView() {
   
   const leadData = useMemo(() => {
     if (!leads || !donations) return [];
+    const leadsById = new Map(leads.map(l => [l.id, l]));
+
     return leads.map(lead => {
         const relevantDonations = donations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id));
         const collected = relevantDonations.reduce((sum, donation) => {
@@ -242,5 +244,3 @@ export function PublicLeadsView() {
     </div>
   );
 }
-
-    

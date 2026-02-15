@@ -1,10 +1,9 @@
 
-
 'use client';
 
 import { useMemo } from 'react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, query } from 'firebase/firestore';
 import type { Campaign, Lead } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { FolderKanban, Lightbulb } from 'lucide-react';
@@ -50,7 +49,7 @@ export function LeadAndCampaignSummary() {
   const leadSummary = useMemo(() => {
     if (!leads) return null;
     const counts = leads.reduce((acc, l) => {
-      const category = l.category || 'Other';
+      const category = l.purpose || 'Other';
       acc[category] = (acc[category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -136,5 +135,3 @@ export function LeadAndCampaignSummary() {
     </div>
   );
 }
-
-    

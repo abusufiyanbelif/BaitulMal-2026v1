@@ -1,10 +1,9 @@
 
-
 'use client';
 
 import { useMemo } from 'react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, query } from 'firebase/firestore';
 import type { Donation, DonationCategory, Campaign, Lead } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Wallet, PieChart as PieChartIcon, Target, Calendar } from 'lucide-react';
@@ -238,5 +237,3 @@ export function DonationSummary() {
     </div>
   );
 }
-
-    
