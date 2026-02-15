@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, Lightbulb } from 'lucide-react';
-import { useCollection, useFirestore, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useCollection, useFirestore, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import type { Lead, Beneficiary, Donation, DonationCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -50,13 +50,13 @@ export default function LeadPage() {
   
   const { userProfile, isLoading: isProfileLoading } = useSession();
 
-  const leadsCollectionRef = useMemo(() => {
+  const leadsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return collection(firestore, 'leads');
   }, [firestore]);
   const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
 
-  const donationsCollectionRef = useMemo(() => {
+  const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
   }, [firestore]);
@@ -524,5 +524,6 @@ export default function LeadPage() {
     </>
   );
 }
+
 
 

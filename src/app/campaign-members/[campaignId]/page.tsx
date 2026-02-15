@@ -3,7 +3,7 @@
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection } from '@/firebase';
+import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
@@ -70,14 +70,14 @@ export default function CampaignDetailsPage() {
   const { userProfile, isLoading: isProfileLoading } = useSession();
   const { brandingSettings } = useBranding();
   
-  const campaignDocRef = useMemo(() => {
+  const campaignDocRef = useMemoFirebase(() => {
     if (!firestore || !campaignId) return null;
     return doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign>;
   }, [firestore, campaignId]);
 
   const { data: campaign, isLoading: isCampaignLoading, forceRefetch: forceRefetchCampaign } = useDoc<Campaign>(campaignDocRef);
   
-  const beneficiariesCollectionRef = useMemo(() => {
+  const beneficiariesCollectionRef = useMemoFirebase(() => {
     if (!firestore || !campaignId) return null;
     return collection(firestore, `campaigns/${campaignId}/beneficiaries`);
   }, [firestore, campaignId]);

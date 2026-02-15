@@ -12,30 +12,25 @@ service firebase.storage {
     }
 
     function isAdmin() {
-      // Note: This makes a cross-service call to Firestore.
-      // Ensure Firestore rules allow admins to read their own user document.
       return exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
              get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
 
     // Admins can read and write anything.
     match /{allPaths=**} {
-      allow read, write: if isAdmin();
+      allow write: if isAdmin();
     }
 
     match /settings/{allPaths=**} {
       allow read: if true;
-      // write is covered by global admin rule
     }
 
     match /campaigns/{campaignId}/{allPaths=**} {
        allow read: if true;
-       // write is covered by global admin rule
     }
 
     match /leads/{leadId}/{allPaths=**} {
        allow read: if true;
-       // write is covered by global admin rule
     }
     
     match /donations/{donationId}/{allPaths=**} {
@@ -44,13 +39,11 @@ service firebase.storage {
     }
 
     match /users/{userId}/{allPaths=**} {
-      // Users can manage their own files. Admin access is handled by the global rule.
-      allow read, write: if isOwner(userId);
+      allow read, write: if isOwner(userId) || isAdmin();
     }
     
      match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      // Only admins can manage master beneficiary files.
-      allow read, write: if isAdmin();
+      allow read, write: if isSignedIn();
     }
   }
 }

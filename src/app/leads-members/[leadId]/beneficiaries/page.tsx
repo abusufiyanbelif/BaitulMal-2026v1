@@ -2,7 +2,7 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
-import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, deleteDoc, doc, serverTimestamp, setDoc, DocumentReference, writeBatch, updateDoc } from 'firebase/firestore';
@@ -70,13 +70,13 @@ export default function BeneficiariesPage() {
   const { toast } = useToast();
   const { userProfile, isLoading: isProfileLoading } = useSession();
   
-  const leadDocRef = useMemo(() => {
+  const leadDocRef = useMemoFirebase(() => {
     if (!firestore || !leadId) return null;
     return doc(firestore, 'leads', leadId) as DocumentReference<Lead>;
   }, [firestore, leadId]);
   const { data: lead, isLoading: isLeadLoading, forceRefetch: forceRefetchLead } = useDoc<Lead>(leadDocRef);
   
-  const beneficiariesCollectionRef = useMemo(() => {
+  const beneficiariesCollectionRef = useMemoFirebase(() => {
     if (!firestore || !leadId) return null;
     return collection(firestore, 'leads', leadId, 'beneficiaries');
   }, [firestore, leadId]);
