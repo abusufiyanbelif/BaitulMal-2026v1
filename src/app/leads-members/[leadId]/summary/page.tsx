@@ -2,9 +2,9 @@
 
 'use client';
 
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useFirestore, useDoc, useCollection, errorEmitter, FirestorePermissionError, useStorage } from '@/firebase';
+import { useFirestore, useDoc, useCollection, errorEmitter, FirestorePermissionError, useStorage, useMemoFirebase } from '@/firebase';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import type { SecurityRuleContext } from '@/firebase';
@@ -83,15 +83,15 @@ export default function LeadSummaryPage() {
         setIsClient(true);
     }, []);
 
-    const leadDocRef = useMemo(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
-    const beneficiariesCollectionRef = useMemo(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
-    const allDonationsCollectionRef = useMemo(() => (firestore) ? collection(firestore, 'donations') : null, [firestore]);
+    const leadDocRef = useMemoFirebase(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
+    const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
+    const allDonationsCollectionRef = useMemoFirebase(() => (firestore) ? collection(firestore, 'donations') : null, [firestore]);
 
     const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
     const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
     const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
-
-    const availableCategories = useMemo(() => {
+    
+    const availableCategories = React.useMemo(() => {
         const selectedPurpose = leadPurposesConfig.find(p => p.id === editableLead.purpose);
         return selectedPurpose?.categories || [];
     }, [editableLead.purpose]);
@@ -227,7 +227,7 @@ export default function LeadSummaryPage() {
     const handleEditClick = () => setEditMode(true);
     const handleCancel = () => setEditMode(false);
 
-    const summaryData = useMemo(() => {
+    const summaryData = React.useMemo(() => {
         if (!beneficiaries || !allDonations || !lead) return null;
         
         const donations = allDonations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id));
