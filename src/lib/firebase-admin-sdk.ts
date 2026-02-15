@@ -2,10 +2,12 @@
 import { initializeApp, getApps, App, cert, ServiceAccount } from 'firebase-admin/app';
 import { getAuth, Auth } from 'firebase-admin/auth';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
+import { getStorage, Storage } from 'firebase-admin/storage';
 
 let adminApp: App | undefined;
 let adminAuth: Auth | null = null;
 let adminDb: Firestore | null = null;
+let adminStorage: Storage | null = null;
 
 try {
   if (getApps().length) {
@@ -35,11 +37,13 @@ if (adminApp) {
   try {
     adminAuth = getAuth(adminApp);
     adminDb = getFirestore(adminApp);
+    adminStorage = getStorage(adminApp);
   } catch (e: any) {
     console.error("Failed to get Firebase Admin services:", e.message);
     adminAuth = null;
     adminDb = null;
+    adminStorage = null;
   }
 }
 
-export { adminApp, adminAuth, adminDb };
+export { adminApp, adminAuth, adminDb, adminStorage };

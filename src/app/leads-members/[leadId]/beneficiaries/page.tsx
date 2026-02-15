@@ -162,14 +162,9 @@ export default function BeneficiariesPage() {
     batch.delete(beneficiaryDocRef);
     batch.update(leadDocRef, { targetAmount: newTargetAmount });
     
-    if (beneficiaryData.idProofUrl) {
-        const fileRef = storageRef(storage, beneficiaryData.idProofUrl);
-        await deleteObject(fileRef).catch(err => {
-            if (err.code !== 'storage/object-not-found') {
-                console.warn("Failed to delete ID proof from storage, but Firestore transaction will proceed:", err);
-            }
-        });
-    }
+    // IMPORTANT: Do NOT delete the ID proof file from storage here.
+    // This is an "unlink" operation from the lead, not a "deep delete".
+    // The master beneficiary record and its file should persist.
 
     try {
         await batch.commit();
@@ -190,8 +185,10 @@ export default function BeneficiariesPage() {
     if (!firestore || !storage || !leadId || !userProfile || !lead) return;
     if (editingBeneficiary && !canUpdate) return;
     if (!editingBeneficiary && !canCreate) return;
+    
+    const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : undefined;
 
-    if (!editingBeneficiary) {
+    if (!editingBeneficiary && !masterId) {
         const isDuplicate = beneficiaries && beneficiaries.some(b => 
             b.name.trim().toLowerCase() === data.name.trim().toLowerCase() &&
             (b.phone || '') === (data.phone || '')
@@ -209,8 +206,6 @@ export default function BeneficiariesPage() {
     setIsFormOpen(false);
     setEditingBeneficiary(null);
     
-    const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : undefined;
-
     const batch = writeBatch(firestore);
     const leadDocRef = doc(firestore, 'leads', leadId);
     
@@ -255,6 +250,7 @@ export default function BeneficiariesPage() {
             id: newBeneficiaryId,
             idProofUrl,
             ...(!editingBeneficiary && !masterId && {
+                addedDate: new Date().toISOString().split('T')[0],
                 createdAt: serverTimestamp(),
                 createdById: userProfile.id,
                 createdByName: userProfile.name,

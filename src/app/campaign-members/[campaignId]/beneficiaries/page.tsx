@@ -295,26 +295,17 @@ export default function BeneficiariesPage() {
 
     const batch = writeBatch(firestore);
     const beneficiaryDocRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiaryToDelete);
-    const masterBeneficiaryDocRef = doc(firestore, 'beneficiaries', beneficiaryToDelete);
     const campaignDocRef = doc(firestore, 'campaigns', campaignId);
     
     const amountToSubtract = beneficiaryData.kitAmount || 0;
     const newTargetAmount = (campaign.targetAmount || 0) - amountToSubtract;
 
     batch.delete(beneficiaryDocRef);
-    // Note: We are not deleting from the master list on campaign-specific deletion.
-    // batch.delete(masterBeneficiaryDocRef);
-
     batch.update(campaignDocRef, { targetAmount: newTargetAmount });
 
-    if (beneficiaryData.idProofUrl) {
-        const fileRef = storageRef(storage, beneficiaryData.idProofUrl);
-        await deleteObject(fileRef).catch((err: any) => {
-            if (err.code !== 'storage/object-not-found') {
-                console.warn("Failed to delete ID proof from storage, but Firestore transaction will proceed:", err);
-            }
-        });
-    }
+    // IMPORTANT: Do NOT delete the ID proof file from storage here.
+    // This is an "unlink" operation from the campaign, not a "deep delete".
+    // The master beneficiary record and its file should persist.
     
     try {
         await batch.commit();
@@ -335,8 +326,10 @@ export default function BeneficiariesPage() {
     if (!firestore || !storage || !userProfile || !campaign) return;
     if (editingBeneficiary && !canUpdate) return;
     if (!editingBeneficiary && !canCreate) return;
-  
-    if (!editingBeneficiary) {
+    
+    const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : undefined;
+
+    if (!editingBeneficiary && !masterId) {
       const isDuplicate = beneficiaries && beneficiaries.some(b =>
         b.name.trim().toLowerCase() === data.name.trim().toLowerCase() &&
         (b.phone || '') === (data.phone || '')
@@ -352,8 +345,6 @@ export default function BeneficiariesPage() {
     }
   
     setIsSubmitting(true);
-    
-    const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : undefined;
   
     const batch = writeBatch(firestore);
     const campaignDocRef = doc(firestore, 'campaigns', campaignId);
@@ -399,6 +390,7 @@ export default function BeneficiariesPage() {
         id: newBeneficiaryId,
         idProofUrl,
         ...(!editingBeneficiary && !masterId && {
+          addedDate: new Date().toISOString().split('T')[0],
           createdAt: serverTimestamp(),
           createdById: userProfile.id,
           createdByName: userProfile.name,
