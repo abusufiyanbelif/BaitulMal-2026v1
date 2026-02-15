@@ -51,7 +51,8 @@ service firebase.storage {
     }
     
     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn() && (isAdmin() || hasPermission('beneficiaries', 'read'));
+      allow write: if isSignedIn() && (isAdmin() || hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update'));
     }
   }
 }
