@@ -53,6 +53,7 @@ export interface ItemCategory {
 
 export interface Campaign extends DocumentData {
   id: string;
+  campaignNumber?: number;
   name: string;
   imageUrl?: string;
   imageUrlFilename?: string;
@@ -79,6 +80,7 @@ export interface Campaign extends DocumentData {
 
 export interface Lead extends DocumentData {
   id: string;
+  leadNumber?: number;
   name: string;
   imageUrl?: string;
   imageUrlFilename?: string;

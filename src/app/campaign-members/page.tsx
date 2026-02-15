@@ -45,7 +45,6 @@ import { CopyCampaignDialog } from '@/components/copy-campaign-dialog';
 import { copyCampaignAction, deleteCampaignAction } from './actions';
 import { getNestedValue } from '@/lib/utils';
 import Image from 'next/image';
-import placeholderImages from '@/app/lib/placeholder-images.json';
 
 
 export default function CampaignPage() {
@@ -263,7 +262,9 @@ export default function CampaignPage() {
       </div>
       <CardHeader>
         <div className="flex justify-between items-start gap-2">
-            <CardTitle className="w-full break-words text-base">{campaign.name}</CardTitle>
+            <CardTitle className="w-full break-words text-base">
+                {campaign.campaignNumber && <span className="text-primary font-bold">#{campaign.campaignNumber} </span>}{campaign.name}
+            </CardTitle>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
