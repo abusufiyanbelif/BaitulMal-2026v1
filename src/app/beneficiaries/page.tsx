@@ -1,8 +1,6 @@
-
-
 'use client';
 import React, { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useFirestore, useCollection, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, doc, updateDoc } from 'firebase/firestore';
@@ -48,6 +46,7 @@ import { BeneficiaryImportDialog, type ProcessedRecord } from '@/components/bene
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 type SortKey = keyof Beneficiary | 'srNo';
 type BeneficiaryStatus = Beneficiary['status'];
@@ -178,6 +177,7 @@ export default function BeneficiariesPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
+  const pathname = usePathname();
 
   const { userProfile, isLoading: isProfileLoading } = useSession();
 
@@ -217,7 +217,7 @@ export default function BeneficiariesPage() {
 
   const uniqueReferrals = useMemo(() => {
     if (!beneficiaries) return [];
-    const referrals = new Set(beneficiaries.map(b => b.referralBy).filter(Boolean));
+    const referrals = new Set(beneficiaries.map(b => b.referralBy).filter(Boolean) as string[]);
     return [...Array.from(referrals).sort()];
   }, [beneficiaries]);
 
@@ -427,6 +427,21 @@ export default function BeneficiariesPage() {
                   Back to Home
               </Link>
           </Button>
+      </div>
+      
+      <div className="border-b mb-4">
+        <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex w-max space-x-2">
+                <Link href="/beneficiaries/summary" className={cn(
+                    "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    pathname === '/beneficiaries/summary' ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                )}>Summary</Link>
+                <Link href="/beneficiaries" className={cn(
+                    "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    pathname === '/beneficiaries' ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                )}>Beneficiary List</Link>
+            </div>
+        </ScrollArea>
       </div>
 
       <Card className="animate-fade-in-zoom">

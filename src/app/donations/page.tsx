@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -405,183 +404,157 @@ export default function DonationsPage() {
 
   return (
     <>
-      <div className="container mx-auto p-4">
-        <div className="mb-4">
-            <Button variant="outline" asChild>
-                <Link href="/dashboard">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Dashboard
-                </Link>
-            </Button>
-        </div>
-
-        <div className="border-b mb-4">
-            <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex w-max space-x-2">
-                    <Link href="/donations/summary" className={cn(
-                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        pathname === '/donations/summary' ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                    )}>Donation Summary</Link>
-                    <Link href="/donations" className={cn(
-                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        pathname === '/donations' ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                    )}>Donation List</Link>
-                </div>
-                <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-        </div>
+      
         
-        <Card className="animate-fade-in-zoom">
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-3">
-              <div className="flex-1 space-y-1.5">
-                <CardTitle>Donation List ({filteredAndSortedDonations.length})</CardTitle>
-              </div>
-              <div className="flex flex-wrap gap-2">
+            
+                
+                    
+                    Back to Dashboard
+                
+            
+        
+
+        
+            
+                
+                    
+                        Donation Summary
+                        Donation List
+                    
+                
+            
+        
+        
+          
+            
+              
+                
+                  Donation List ({filteredAndSortedDonations.length})
+                
+              
+              
                 {canUpdate && (
-                    <Button onClick={handleSync} disabled={isSyncing} variant="secondary">
-                        {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <DatabaseZap className="mr-2 h-4 w-4" />}
+                    
+                        
                         Sync Data
-                    </Button>
+                    
                 )}
                 {canCreate && (
-                    <Button onClick={handleAdd}>
-                        <PlusCircle className="mr-2 h-4 w-4" />
+                    
+                        
                         Add Donation
-                    </Button>
+                    
                 )}
-              </div>
-            </div>
-            <div className="flex flex-col gap-2 pt-4">
-              <div className="flex flex-wrap items-center gap-2">
-                  <Input
-                      placeholder="Search donations..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="max-w-sm"
-                  />
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-auto md:w-[180px]">
-                          <SelectValue placeholder="Filter by status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                          <SelectItem value="All">All Statuses</SelectItem>
-                          <SelectItem value="Verified">Verified</SelectItem>
-                          <SelectItem value="Pending">Pending</SelectItem>
-                          <SelectItem value="Canceled">Canceled</SelectItem>
-                      </SelectContent>
-                  </Select>
-                  <Select value={typeFilter} onValueChange={setTypeFilter}>
-                      <SelectTrigger className="w-auto md:w-[180px]">
-                          <SelectValue placeholder="Filter by category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                          <SelectItem value="All">All Categories</SelectItem>
-                          <SelectItem value="Zakat">Zakat</SelectItem>
-                          <SelectItem value="Sadaqah">Sadaqah</SelectItem>
-                          <SelectItem value="Interest">Interest</SelectItem>
-                          <SelectItem value="Lillah">Lillah</SelectItem>
-                          <SelectItem value="Loan">Loan</SelectItem>
-                          <SelectItem value="Monthly Contribution">Monthly Contribution</SelectItem>
-                      </SelectContent>
-                  </Select>
-                  <Select value={donationTypeFilter} onValueChange={setDonationTypeFilter}>
-                      <SelectTrigger className="w-auto md:w-[180px]">
-                          <SelectValue placeholder="Filter by donation type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                          <SelectItem value="All">All Donation Types</SelectItem>
-                          <SelectItem value="Cash">Cash</SelectItem>
-                          <SelectItem value="Online Payment">Online Payment</SelectItem>
-                          <SelectItem value="Check">Check</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                  </Select>
-                   <Popover open={openLinkFilter} onOpenChange={(isOpen) => {
-                       setOpenLinkFilter(isOpen);
+              
+            
+            
+              
+                  
+                      
+                          
+                      
+                      
+                          
+                              
+                          
+                          
+                              
+                                  
+                                  
+                                  
+                                  
+                              
+                          
+                      
+                      
+                          
+                              
+                          
+                          
+                              
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                              
+                          
+                      
+                       openLinkFilter(isOpen);
                        if (isOpen) {
                            setTempLinkFilter(linkFilter);
                        }
                    }}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={openLinkFilter}
-                          className="w-auto md:w-[250px] justify-between"
-                        >
-                          <span className="truncate">
+                      
+                        
+                          
                             {linkFilter.length > 0
                               ? `${linkFilter.length} linked initiative(s)`
                               : "Filter by linked initiative..."}
-                          </span>
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[300px] p-0">
-                        <Command>
-                          <CommandInput placeholder="Search initiative..." />
-                          <CommandList>
-                            <CommandEmpty>No initiative found.</CommandEmpty>
-                            <CommandGroup heading="Status">
-                                <CommandItem
-                                    key="unlinked"
-                                    value="Unlinked Donations"
-                                    onSelect={() => {
+                          
+                          
+                        
+                      
+                      
+                          
+                            
+                              
+                                
+                                    
+                                    
+                                        
                                       setTempLinkFilter(prev => prev.includes('unlinked') ? prev.filter((l) => l !== 'unlinked') : [...prev, 'unlinked']);
                                     }}
                                 >
-                                    <Check className={cn("mr-2 h-4 w-4", tempLinkFilter.includes('unlinked') ? "opacity-100" : "opacity-0")} />
+                                    
                                     Unlinked Donations
-                                </CommandItem>
-                            </CommandGroup>
-                            <CommandGroup heading="Campaigns">
-                              {campaigns?.map((campaign) => (
-                                <CommandItem
-                                  key={campaign.id}
-                                  value={campaign.name}
-                                  onSelect={() => {
-                                    const filterId = `campaign_${campaign.id}`;
-                                    setTempLinkFilter(prev => prev.includes(filterId) ? prev.filter((l) => l !== filterId) : [...prev, filterId]);
-                                  }}
-                                >
-                                  <Check className={cn("mr-2 h-4 w-4", tempLinkFilter.includes(`campaign_${campaign.id}`) ? "opacity-100" : "opacity-0")} />
-                                  {campaign.name}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                            <CommandGroup heading="Leads">
-                              {leads?.map((lead) => (
-                                <CommandItem
-                                  key={lead.id}
-                                  value={lead.name}
-                                  onSelect={() => {
-                                    const filterId = `lead_${lead.id}`;
-                                    setTempLinkFilter(prev => prev.includes(filterId) ? prev.filter((l) => l !== filterId) : [...prev, filterId]);
-                                  }}
-                                >
-                                  <Check className={cn("mr-2 h-4 w-4", tempLinkFilter.includes(`lead_${lead.id}`) ? "opacity-100" : "opacity-0")} />
-                                  {lead.name}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                        <div className="p-2 border-t flex justify-end gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => {
-                                setTempLinkFilter([]);
-                                setLinkFilter([]);
-                            }}>Clear All</Button>
-                            <Button size="sm" onClick={() => {
+                                
+                            
+                                
+                                  {campaigns?.map((campaign) => (
+                                    
+                                      value={campaign.name}
+                                      onSelect={() => {
+                                        const filterId = `campaign_${campaign.id}`;
+                                        setTempLinkFilter(prev => prev.includes(filterId) ? prev.filter((l) => l !== filterId) : [...prev, filterId]);
+                                      }}
+                                    >
+                                      
+                                      {campaign.name}
+                                    
+                                  ))}
+                                
+                                
+                                  {leads?.map((lead) => (
+                                    
+                                      value={lead.name}
+                                      onSelect={() => {
+                                        const filterId = `lead_${lead.id}`;
+                                        setTempLinkFilter(prev => prev.includes(filterId) ? prev.filter((l) => l !== filterId) : [...prev, filterId]);
+                                      }}
+                                    >
+                                      
+                                      {lead.name}
+                                    
+                                  ))}
+                                
+                              
+                            
+                            
+                                
+                                    setTempLinkFilter([]);
+                                    setLinkFilter([]);
+                                }}>Clear All
                                 setLinkFilter(tempLinkFilter);
                                 setOpenLinkFilter(false);
-                            }}>Apply</Button>
-                        </div>
-                      </PopoverContent>
-                  </Popover>
-              </div>
+                            }}>Apply
+                        
+                      
+                  
+              
               {linkFilter.length > 0 && (
-                <div className="pt-2 flex flex-wrap gap-1 items-center">
+                
                     {linkFilter.map((filter) => {
                         let label = 'Unknown';
                         if (filter === 'unlinked') {
@@ -593,254 +566,223 @@ export default function DonationsPage() {
                             if(item) label = item.name;
                         }
                         return (
-                            <Badge
-                                key={filter}
-                                variant="secondary"
-                                className="flex items-center gap-1"
-                            >
+                            
                                 {label}
-                                <button
-                                    type="button"
-                                    aria-label={`Remove ${label} filter`}
-                                    onClick={() => setLinkFilter(linkFilter.filter((l) => l !== filter))}
-                                    className="ml-1 rounded-full p-0.5 hover:bg-background/50 focus:outline-none focus:ring-1 focus:ring-ring"
-                                >
-                                    <X className="h-3 w-3" />
-                                </button>
-                            </Badge>
+                                
+                                    
+                                    
+                                
+                            
                         );
                     })}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto py-0.5 px-1 text-xs text-muted-foreground hover:bg-transparent"
-                        onClick={() => setLinkFilter([])}
-                    >
+                      
                         Clear all
-                    </Button>
-                </div>
+                    
+                
               )}
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="w-full overflow-x-auto">
-              <Table className="table-fixed">
-                  <TableHeader>
-                      <TableRow>
-                          <TableHead className="w-[50px] pl-4">#</TableHead>
-                          <TableHead className="w-[200px]">Donor</TableHead>
-                          <TableHead className="w-[200px]">Receiver</TableHead>
-                          <TableHead className="w-[150px] text-right">Amount & Date</TableHead>
-                          <TableHead className="w-[200px]">Category & Type</TableHead>
-                          <TableHead className="w-[120px]">Status</TableHead>
-                          <TableHead className="w-[200px]">Linked To</TableHead>
-                          <TableHead className="w-[100px] text-right pr-4">Actions</TableHead>
-                      </TableRow>
-                  </TableHeader>
-                  <TableBody>
+            
+          
+          
+            
+              
+                  
+                      
+                          
+                          
+                          
+                          
+                          
+                          
+                          
+                      
+                  
+                  
                       {isLoading ? (
                       [...Array(5)].map((_, i) => (
-                          <TableRow key={i}>
-                              <TableCell colSpan={8}><Skeleton className="h-12 w-full" /></TableCell>
-                          </TableRow>
+                          
+                              
+                          
                       ))
                       ) : (filteredAndSortedDonations && filteredAndSortedDonations.length > 0) ? (
                       filteredAndSortedDonations.map((donation, index) => {
                           const linkedInitiatives = donation.linkSplit?.filter(l => l.linkType !== 'general') || [];
                           const isOpen = openRows[donation.id] || false;
                           return (
-                              <React.Fragment key={donation.id}>
-                                  <TableRow className="bg-background hover:bg-accent/50 cursor-pointer" data-state={isOpen ? 'open' : 'closed'} onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
-                                      <TableCell className="pl-4">{index + 1}</TableCell>
-                                      <TableCell>
-                                          <div className="font-medium">{donation.donorName}</div>
-                                          <div className="text-xs text-muted-foreground">{donation.donorPhone || 'No Phone'}</div>
-                                      </TableCell>
-                                      <TableCell>
-                                          <div className="font-medium">{donation.receiverName}</div>
-                                          <div className="text-xs text-muted-foreground">Ref: {donation.referral || 'N/A'}</div>
-                                      </TableCell>
-                                      <TableCell className="text-right">
-                                          <div className="font-medium font-mono">₹{donation.amount.toFixed(2)}</div>
-                                          <div className="text-xs text-muted-foreground">{donation.donationDate}</div>
-                                      </TableCell>
-                                      <TableCell>
-                                          <div className="flex flex-wrap items-center gap-1">
-                                              {donation.typeSplit?.map(split => (
-                                                  <Badge key={split.category} variant="secondary">
-                                                      {split.category}
-                                                  </Badge>
-                                              ))}
-                                              <Badge variant="outline">{donation.donationType}</Badge>
-                                          </div>
-                                      </TableCell>
-                                      <TableCell>
-                                          <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge>
-                                      </TableCell>
-                                      <TableCell>
-                                      {donation.linkSplit && donation.linkSplit.length > 0 ? (
-                                          <div className="flex flex-col gap-1">
-                                          {donation.linkSplit.map(link => (
-                                              <Link 
-                                              key={link.linkId}
-                                              href={link.linkType === 'campaign' ? `/campaign-members/${link.linkId}` : link.linkType === 'lead' ? `/leads-members/${link.linkId}` : '#'}
-                                              className={cn("text-primary hover:underline text-xs", link.linkType === 'general' && "text-muted-foreground no-underline cursor-default")}
-                                              onClick={(e) => e.stopPropagation()}
-                                              >
-                                              {link.linkName} {donation.linkSplit && donation.linkSplit.length > 1 ? `(₹${link.amount.toFixed(2)})` : ''}
-                                              </Link>
+                              
+                                  
+                                      
+                                          {index + 1}
+                                      
+                                      
+                                          
+                                              {donation.donorName}
+                                          
+                                          {donation.donorPhone || 'No Phone'}
+                                      
+                                      
+                                          
+                                              {donation.receiverName}
+                                          
+                                          Ref: {donation.referral || 'N/A'}
+                                      
+                                      
+                                          ₹{donation.amount.toFixed(2)}
+                                          {donation.donationDate}
+                                      
+                                      
+                                          {donation.typeSplit?.map(split => (
+                                              
+                                                  {split.category}
+                                              
                                           ))}
-                                          </div>
+                                          
+                                      
+                                      
+                                          {donation.status}
+                                      
+                                      {donation.linkSplit && donation.linkSplit.length > 0 ? (
+                                          
+                                          {donation.linkSplit.map(link => (
+                                              
+                                              
+                                              {link.linkName} {donation.linkSplit && donation.linkSplit.length > 1 ? `(₹${link.amount.toFixed(2)})` : ''}
+                                              
+                                          ))}
+                                          
                                       ) : "Unlinked"}
-                                      </TableCell>
-                                      <TableCell className="text-right pr-4">
-                                          <div className="flex items-center justify-end">
-                                              <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!donation.transactions || donation.transactions.length === 0}>
-                                                  {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                                  <span className="sr-only">Toggle details</span>
-                                              </Button>
-                                              <DropdownMenu>
-                                                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                          <MoreHorizontal className="h-4 w-4" />
-                                                      </Button>
-                                                  </DropdownMenuTrigger>
-                                                  <DropdownMenuContent align="end">
-                                                      {canUpdate && (
-                                                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(donation); }}>
-                                                              <Edit className="mr-2 h-4 w-4" /> Edit
-                                                          </DropdownMenuItem>
-                                                      )}
+                                      
+                                          
+                                              
+                                                  
+                                                      Toggle details
+                                                  
+                                                  
+                                                      
+                                                          
+                                                               Edit
+                                                          
+                                                      
 
                                                       {linkedInitiatives.length === 0 ? (
-                                                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/donations/${donation.id}`); }}>
-                                                              <Eye className="mr-2 h-4 w-4" /> View Details
-                                                          </DropdownMenuItem>
+                                                          
+                                                               View Details
+                                                          
                                                       ) : linkedInitiatives.length === 1 ? (
-                                                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/${linkedInitiatives[0].linkType === 'campaign' ? 'campaign-members' : 'leads-members'}/${linkedInitiatives[0].linkId}/donations/${donation.id}`); }}>
-                                                              <Eye className="mr-2 h-4 w-4" /> View in "{linkedInitiatives[0].linkName}"
-                                                          </DropdownMenuItem>
+                                                          
+                                                               View in "{linkedInitiatives[0].linkName}"
+                                                          
                                                       ) : (
-                                                          <DropdownMenuSub>
-                                                              <DropdownMenuSubTrigger>
-                                                                  <Eye className="mr-2 h-4 w-4" /> View In...
-                                                              </DropdownMenuSubTrigger>
-                                                              <DropdownMenuPortal>
-                                                                  <DropdownMenuSubContent>
-                                                                      {linkedInitiatives.map(link => (
-                                                                          <DropdownMenuItem key={link.linkId} onClick={(e) => { e.stopPropagation(); router.push(`/${link.linkType === 'campaign' ? 'campaign-members' : 'leads-members'}/${link.linkId}/donations/${donation.id}`); }}>
-                                                                              {link.linkName}
-                                                                          </DropdownMenuItem>
-                                                                      ))}
-                                                                  </DropdownMenuSubContent>
-                                                              </DropdownMenuPortal>
-                                                          </DropdownMenuSub>
+                                                          
+                                                              View In...
+                                                              
+                                                              
+                                                              {linkedInitiatives.map(link => (
+                                                                      {link.linkName}
+                                                              ))}
+                                                              
+                                                          
                                                       )}
-                                                      {canDelete && <DropdownMenuSeparator />}
-                                                      {canDelete && (
-                                                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
-                                                              <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                          </DropdownMenuItem>
-                                                      )}
-                                                  </DropdownMenuContent>
-                                              </DropdownMenu>
-                                          </div>
-                                      </TableCell>
-                                  </TableRow>
+                                                      
+                                                          
+                                                      
+                                                      
+                                                          
+                                                              Delete
+                                                          
+                                                      
+                                                  
+                                              
+                                          
+                                      
+                                  
                                   {isOpen && (
-                                    <TableRow className="bg-muted/50 hover:bg-muted/50">
-                                      <TableCell colSpan={8} className="p-0">
-                                          <div className="p-2">
-                                              <h4 className="text-sm font-semibold mb-2">Transaction Details</h4>
-                                              <div className="border rounded-md bg-background">
-                                                <Table>
-                                                    <TableHeader>
-                                                        <TableRow>
-                                                            <TableHead>Amount</TableHead>
-                                                            <TableHead>Transaction ID</TableHead>
-                                                            <TableHead>Screenshot</TableHead>
-                                                        </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
+                                    
+                                      
+                                          
+                                              
+                                              
+                                              Transaction Details
+                                              
+                                                
+                                                    
+                                                        
+                                                            
+                                                            
+                                                        
+                                                    
+                                                    
                                                         {(donation.transactions || []).map((tx) => (
-                                                            <TableRow key={tx.id}>
-                                                                <TableCell>₹{tx.amount.toFixed(2)}</TableCell>
-                                                                <TableCell>{tx.transactionId || 'N/A'}</TableCell>
-                                                                <TableCell>
-                                                                    {tx.screenshotUrl ? (
-                                                                        <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)}>
-                                                                            <Eye className="mr-2 h-4 w-4" /> View
-                                                                        </Button>
-                                                                    ) : 'No'}
-                                                                </TableCell>
-                                                            </TableRow>
+                                                            
+                                                                ₹{tx.amount.toFixed(2)}
+                                                                {tx.transactionId || 'N/A'}
+                                                                {tx.screenshotUrl ? (
+                                                                     View
+                                                                ) : 'No'}
+                                                            
                                                         ))}
-                                                    </TableBody>
-                                                </Table>
-                                              </div>
-                                          </div>
-                                      </TableCell>
-                                    </TableRow>
+                                                    
+                                                
+                                              
+                                          
+                                      
+                                    
                                   )}
-                              </React.Fragment>
+                              
                           );
                       })
                       ) : (
-                      <TableRow>
-                          <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
+                      
+                          
                               No donations found.
-                          </TableCell>
-                      </TableRow>
+                          
+                      
                       )}
-                  </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-                <DialogTitle>{editingDonation ? 'Edit' : 'Add'} Donation</DialogTitle>
-            </DialogHeader>
-            <DonationForm
-                donation={editingDonation}
-                onSubmit={handleFormSubmit}
-                onCancel={() => setIsFormOpen(false)}
-                campaigns={campaigns || []}
-                leads={leads || []}
-            />
-        </DialogContent>
-      </Dialog>
+                  
+              
+            
+          
+        
       
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the donation record and its associated screenshots from storage.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction 
-                    onClick={handleDeleteConfirm} 
-                    className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                        Delete
-                </AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
-      <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-        <DialogContent className="max-w-4xl">
-            <DialogHeader>
-                <DialogTitle>Donation Screenshot</DialogTitle>
-            </DialogHeader>
+      
+        
+            
+                {editingDonation ? 'Edit' : 'Add'} Donation
+            
+            
+                
+                    onSubmit={handleFormSubmit}
+                    onCancel={() => setIsFormOpen(false)}
+                    campaigns={campaigns || []}
+                    leads={leads || []}
+                
+            
+        
+      
+      
+        
+            
+                Are you sure?
+                This action cannot be undone. This will permanently delete the donation record and its associated screenshots from storage.
+            
+            
+                Cancel
+                
+                    Delete
+                
+            
+        
+      
+
+      
+        
+            
+                Donation Screenshot
+            
             {imageToView && (
-                <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
-                     <Image
+                
+                     
+                        
                         src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
                         alt="Donation screenshot"
                         fill
@@ -848,17 +790,19 @@ export default function DonationsPage() {
                         className="object-contain transition-transform duration-200 ease-out origin-center"
                         style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
                         unoptimized
-                    />
-                </div>
+                    
+                
             )}
-             <DialogFooter className="sm:justify-center pt-4">
-                <Button variant="outline" onClick={() => setZoom(z => z * 1.2)}><ZoomIn className="mr-2"/> Zoom In</Button>
-                <Button variant="outline" onClick={() => setZoom(z => z / 1.2)}><ZoomOut className="mr-2"/> Zoom Out</Button>
-                <Button variant="outline" onClick={() => setRotation(r => r + 90)}><RotateCw className="mr-2"/> Rotate</Button>
-                <Button variant="outline" onClick={() => { setZoom(1); setRotation(0); }}><RefreshCw className="mr-2"/> Reset</Button>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
+             
+                
+                    Zoom In
+                    Zoom Out
+                    Rotate
+                    Reset
+                
+            
+        
+      
     </>
   );
 }
