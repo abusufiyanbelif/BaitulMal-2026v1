@@ -10,7 +10,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { DocuExtractHeader } from '@/components/docu-extract-header';
 import { Watermark } from '@/components/watermark';
 import { cn } from '@/lib/utils';
-import { ProgressBar } from '@/components/progress-bar';
 
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -18,9 +17,6 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <FirebaseProvider>
-      <Suspense fallback={null}>
-        <ProgressBar />
-      </Suspense>
       <AuthProvider>
           <div className="relative">
             <div className="relative z-10 flex min-h-screen flex-col">
