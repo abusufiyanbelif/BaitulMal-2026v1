@@ -89,10 +89,7 @@ export default function DonationsSummaryPage() {
     const { userProfile, isLoading: isProfileLoading } = useSession();
     const { toast } = useToast();
 
-    const [date, setDate] = useState<DateRange | undefined>({
-        from: startOfYear(new Date()),
-        to: new Date(),
-    });
+    const [date, setDate] = useState<DateRange | undefined>(undefined);
     const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
@@ -290,7 +287,7 @@ export default function DonationsSummaryPage() {
                             format(date.from, "LLL dd, y")
                             )
                         ) : (
-                            <span>Pick a date</span>
+                            <span>All time</span>
                         )}
                         </Button>
                     </PopoverTrigger>
@@ -308,16 +305,24 @@ export default function DonationsSummaryPage() {
                  <Select
                     onValueChange={(value) => {
                         const now = new Date();
-                        if (value === 'this_month') setDate({ from: startOfMonth(now), to: endOfMonth(now) });
-                        else if (value === 'this_quarter') setDate({ from: startOfQuarter(now), to: endOfQuarter(now) });
-                        else if (value === 'this_year') setDate({ from: startOfYear(now), to: endOfYear(now) });
-                        else if (value === 'last_3_months') setDate({ from: subMonths(now, 3), to: now });
+                        if (value === 'all_time') {
+                            setDate(undefined);
+                        } else if (value === 'this_month') {
+                            setDate({ from: startOfMonth(now), to: endOfMonth(now) });
+                        } else if (value === 'this_quarter') {
+                            setDate({ from: startOfQuarter(now), to: endOfQuarter(now) });
+                        } else if (value === 'this_year') {
+                            setDate({ from: startOfYear(now), to: endOfYear(now) });
+                        } else if (value === 'last_3_months') {
+                            setDate({ from: subMonths(now, 3), to: now });
+                        }
                     }}
                     >
                     <SelectTrigger className="w-full sm:w-[180px]">
                         <SelectValue placeholder="Quick Select" />
                     </SelectTrigger>
                     <SelectContent>
+                        <SelectItem value="all_time">All Time</SelectItem>
                         <SelectItem value="this_month">This Month</SelectItem>
                         <SelectItem value="this_quarter">This Quarter</SelectItem>
                         <SelectItem value="this_year">This Year</SelectItem>

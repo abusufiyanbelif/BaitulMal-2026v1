@@ -1,3 +1,56 @@
-error TS2688: Cannot find type definition file for 'firebase'.
-  The file is in the program because:
-    Entry point for implicit type library 'firebase'
+src/ai/flows/create-education-story.ts(60,10): error TS7006: Parameter 'input' implicitly has an 'any' type.
+src/ai/flows/create-lead-story.ts(60,10): error TS7006: Parameter 'input' implicitly has an 'any' type.
+src/ai/flows/extract-and-correct-text.ts(51,10): error TS7006: Parameter 'input' implicitly has an 'any' type.
+src/ai/flows/extract-billing-data.ts(66,10): error TS7006: Parameter 'input' implicitly has an 'any' type.
+src/ai/flows/extract-dynamic-form.ts(81,10): error TS7006: Parameter 'input' implicitly has an 'any' type.
+src/ai/flows/extract-education-findings.ts(66,10): error TS7006: Parameter 'input' implicitly has an 'any' type.
+src/ai/flows/extract-key-info-identity.ts(61,10): error TS7006: Parameter 'input' implicitly has an 'any' type.
+src/ai/flows/extract-medical-findings.ts(65,10): error TS7006: Parameter 'input' implicitly has an 'any' type.
+src/ai/flows/scan-payment.ts(63,10): error TS7006: Parameter 'input' implicitly has an 'any' type.
+src/ai/genkit.ts(2,10): error TS2305: Module '"@genkit-ai/core"' has no exported member 'genkit'.
+src/app/beneficiaries/actions.ts(7,10): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'collection'.
+src/app/beneficiaries/actions.ts(7,22): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'getDocs'.
+src/app/beneficiaries/actions.ts(7,31): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'doc'.
+src/app/beneficiaries/actions.ts(7,36): error TS2724: '"firebase-admin/firestore"' has no exported member named 'writeBatch'. Did you mean 'WriteBatch'?
+src/app/beneficiaries/actions.ts(7,48): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'serverTimestamp'.
+src/app/beneficiaries/actions.ts(7,65): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'addDoc'.
+src/app/beneficiaries/actions.ts(7,73): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'updateDoc'.
+src/app/beneficiaries/actions.ts(7,84): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'deleteDoc'.
+src/app/beneficiaries/actions.ts(7,146): error TS2724: '"firebase-admin/firestore"' has no exported member named 'query'. Did you mean 'Query'?
+src/app/beneficiaries/actions.ts(7,153): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'where'.
+src/app/beneficiaries/actions.ts(7,160): error TS2724: '"firebase-admin/firestore"' has no exported member named 'collectionGroup'. Did you mean 'CollectionGroup'?
+src/app/beneficiaries/actions.ts(65,41): error TS7006: Parameter 'docSnap' implicitly has an 'any' type.
+src/app/beneficiaries/actions.ts(107,68): error TS7006: Parameter 'd' implicitly has an 'any' type.
+src/app/beneficiaries/page.tsx(511,65): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(997,65): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/app/campaign-members/actions.ts(7,10): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'collection'.
+src/app/campaign-members/actions.ts(7,22): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'getDocs'.
+src/app/campaign-members/actions.ts(7,31): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'doc'.
+src/app/campaign-members/actions.ts(7,36): error TS2724: '"firebase-admin/firestore"' has no exported member named 'writeBatch'. Did you mean 'WriteBatch'?
+src/app/campaign-members/actions.ts(7,48): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'serverTimestamp'.
+src/app/campaign-members/actions.ts(7,65): error TS2724: '"firebase-admin/firestore"' has no exported member named 'runTransaction'. Did you mean 'Transaction'?
+src/app/campaign-members/actions.ts(25,46): error TS7006: Parameter 'transaction' implicitly has an 'any' type.
+src/app/campaign-members/actions.ts(51,43): error TS7006: Parameter 'benDoc' implicitly has an 'any' type.
+src/app/campaign-members/actions.ts(83,35): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/app/donations/actions.ts(4,10): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'collection'.
+src/app/donations/actions.ts(4,22): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'getDocs'.
+src/app/donations/actions.ts(4,31): error TS2724: '"firebase-admin/firestore"' has no exported member named 'writeBatch'. Did you mean 'WriteBatch'?
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(307,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/app/leads-members/actions.ts(7,10): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'collection'.
+src/app/leads-members/actions.ts(7,22): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'doc'.
+src/app/leads-members/actions.ts(7,27): error TS2724: '"firebase-admin/firestore"' has no exported member named 'writeBatch'. Did you mean 'WriteBatch'?
+src/app/leads-members/actions.ts(7,39): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'serverTimestamp'.
+src/app/leads-members/actions.ts(7,56): error TS2724: '"firebase-admin/firestore"' has no exported member named 'runTransaction'. Did you mean 'Transaction'?
+src/app/leads-members/actions.ts(7,72): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'getDocs'.
+src/app/leads-members/actions.ts(24,46): error TS7006: Parameter 'transaction' implicitly has an 'any' type.
+src/app/leads-members/actions.ts(50,43): error TS7006: Parameter 'benDoc' implicitly has an 'any' type.
+src/app/leads-members/actions.ts(81,35): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/app/users/actions.ts(6,10): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'doc'.
+src/app/users/actions.ts(6,15): error TS2724: '"firebase-admin/firestore"' has no exported member named 'writeBatch'. Did you mean 'WriteBatch'?
+src/components/FirebaseContentWrapper.tsx(12,11): error TS2339: Property 'userError' does not exist on type 'FirebaseContextState | null'.
+src/firebase/auth/use-user.tsx(5,11): error TS2339: Property 'user' does not exist on type 'FirebaseContextState | null'.
+src/firebase/auth/use-user.tsx(5,17): error TS2339: Property 'isUserLoading' does not exist on type 'FirebaseContextState | null'.
+src/firebase/auth/use-user.tsx(5,32): error TS2339: Property 'userError' does not exist on type 'FirebaseContextState | null'.
