@@ -116,6 +116,7 @@ export default function CampaignSummaryPage() {
                 publicVisibility: campaign.publicVisibility || 'Hold',
                 allowedDonationTypes: campaign.allowedDonationTypes || [...donationCategories],
                 imageUrl: campaign.imageUrl || '',
+                imageUrlFilename: campaign.imageUrlFilename || '',
             });
             setImagePreview(campaign.imageUrl || null);
             setIsImageDeleted(false);
@@ -167,11 +168,14 @@ export default function CampaignSummaryPage() {
         if (!campaignDocRef || !userProfile || !canUpdate) return;
         
         let imageUrl = editableCampaign.imageUrl || '';
+        let imageUrlFilename = editableCampaign.imageUrlFilename || '';
+
         if (isImageDeleted && imageUrl && storage) {
             try {
                 await deleteObject(storageRef(storage, imageUrl));
             } catch (e: any) { console.warn("Old image deletion failed, it might not exist.", e) }
             imageUrl = '';
+            imageUrlFilename = '';
         } else if (imageFile && storage) {
             try {
                 if (imageUrl) { // Delete old image if a new one is uploaded
@@ -185,6 +189,8 @@ export default function CampaignSummaryPage() {
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
                 imageUrl = await getDownloadURL(fileRef);
+                const dateStr = new Date().toISOString().split('T')[0];
+                imageUrlFilename = `campaign_${editableCampaign.name?.replace(/\s+/g, '_')}_${dateStr}.png`;
             } catch (uploadError) {
                 toast({ title: 'Image Upload Failed', description: 'Changes were not saved.', variant: 'destructive'});
                 return;
@@ -203,6 +209,7 @@ export default function CampaignSummaryPage() {
             publicVisibility: editableCampaign.publicVisibility || 'Hold',
             allowedDonationTypes: editableCampaign.allowedDonationTypes,
             imageUrl: imageUrl,
+            imageUrlFilename: imageUrlFilename,
         };
 
         updateDoc(campaignDocRef, saveData)

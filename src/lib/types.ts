@@ -1,3 +1,4 @@
+
 import type { DocumentData, Timestamp } from 'firebase/firestore';
 import type { UserPermissions } from './modules';
 import { donationCategories } from './modules';
@@ -54,6 +55,7 @@ export interface Campaign extends DocumentData {
   id: string;
   name: string;
   imageUrl?: string;
+  imageUrlFilename?: string;
   category: 'Ration' | 'Relief' | 'General';
   description?: string;
   targetAmount?: number;
@@ -79,6 +81,7 @@ export interface Lead extends DocumentData {
   id: string;
   name: string;
   imageUrl?: string;
+  imageUrlFilename?: string;
   purpose: 'Relief' | 'General' | 'Education' | 'Medical' | 'Other';
   category: string;
   purposeDetails?: string;
@@ -130,6 +133,7 @@ export interface Beneficiary extends DocumentData {
     kitAmount?: number;
     status?: 'Given' | 'Pending' | 'Hold' | 'Need More Details' | 'Verified';
     idProofUrl?: string;
+    idProofFilename?: string;
     idProofIsPublic?: boolean;
     notes?: string;
     isEligibleForZakat?: boolean;
@@ -157,6 +161,7 @@ export interface UserProfile extends DocumentData {
   idProofType?: string;
   idNumber?: string;
   idProofUrl?: string;
+  idProofFilename?: string;
   createdAt?: Timestamp;
   createdById?: string;
   createdByName?: string;
@@ -174,6 +179,7 @@ export interface TransactionDetail {
   amount: number;
   transactionId?: string;
   screenshotUrl?: string;
+  screenshotFilename?: string;
   screenshotIsPublic?: boolean;
 }
 
