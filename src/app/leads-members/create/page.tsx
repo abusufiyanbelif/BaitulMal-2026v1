@@ -3,7 +3,7 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -82,7 +82,7 @@ export default function CreateLeadPage() {
   const [leadDataToCreate, setLeadDataToCreate] = useState<LeadFormValues | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const leadsCollectionRef = useMemo(() => {
+  const leadsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return collection(firestore, 'leads');
   }, [firestore]);

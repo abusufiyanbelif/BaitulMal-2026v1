@@ -3,7 +3,7 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -57,7 +57,7 @@ export default function CreateCampaignPage() {
   const [campaignDataToCreate, setCampaignDataToCreate] = useState<CampaignFormValues | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const campaignsCollectionRef = useMemo(() => {
+  const campaignsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return collection(firestore, 'campaigns');
   }, [firestore]);
