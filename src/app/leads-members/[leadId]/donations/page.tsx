@@ -4,10 +4,10 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, where, setDoc, DocumentReference } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, where, setDoc, DocumentReference, deleteField } from 'firebase/firestore';
 import type { Donation, Lead, Campaign, TransactionDetail } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -72,13 +72,13 @@ export default function DonationsPage() {
   const { toast } = useToast();
   const { userProfile, isLoading: isProfileLoading } = useSession();
   
-  const leadDocRef = useMemo(() => {
+  const leadDocRef = useMemoFirebase(() => {
     if (!firestore || !leadId) return null;
     return doc(firestore, 'leads', leadId) as DocumentReference<Lead>;
   }, [firestore, leadId]);
   const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
   
-  const allDonationsCollectionRef = useMemo(() => {
+  const allDonationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return collection(firestore, 'donations');
   }, [firestore]);
@@ -89,10 +89,10 @@ export default function DonationsPage() {
     return allDonations.filter(d => d.linkSplit?.some(link => link.linkId === leadId));
   }, [allDonations, leadId]);
 
-  const allCampaignsCollectionRef = useMemo(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
+  const allCampaignsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
   const { data: allCampaigns, isLoading: areAllCampaignsLoading } = useCollection<Campaign>(allCampaignsCollectionRef);
 
-  const allLeadsCollectionRef = useMemo(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
+  const allLeadsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
   const { data: allLeads, isLoading: areAllLeadsLoading } = useCollection<Lead>(allLeadsCollectionRef);
 
 
@@ -580,9 +580,9 @@ export default function DonationsPage() {
                               </TableCell>
                             </TableRow>
                           )}
-                      </React.Fragment>
-                  );
-              })
+                        </React.Fragment>
+                      );
+                  })
                   ) : (
                   <TableRow>
                       <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
@@ -643,6 +643,7 @@ export default function DonationsPage() {
                         src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
                         alt="Donation screenshot"
                         fill
+                        sizes="(max-width: 896px) 100vw, 896px"
                         className="object-contain transition-transform duration-200 ease-out origin-center"
                         style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
                         unoptimized

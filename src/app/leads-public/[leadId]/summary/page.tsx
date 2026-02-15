@@ -4,7 +4,7 @@
 
 import React, { useMemo, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useFirestore, useDoc, useCollection } from '@/firebase';
+import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { doc, collection, query, where, DocumentReference } from 'firebase/firestore';
@@ -26,7 +26,7 @@ import {
   PolarAngleAxis,
 } from 'recharts';
 
-import type { Lead, Beneficiary, Donation, DonationCategory } from '@/lib/types';
+import type { Lead, Beneficiary, Donation, DonationCategory, ItemCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -81,10 +81,10 @@ export default function PublicLeadSummaryPage() {
     const summaryRef = useRef<HTMLDivElement>(null);
 
     // Data fetching
-    const leadDocRef = useMemo(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
-    const beneficiariesCollectionRef = useMemo(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
+    const leadDocRef = useMemoFirebase(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
+    const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
     
-    const allDonationsCollectionRef = useMemo(() => {
+    const allDonationsCollectionRef = useMemoFirebase(() => {
         if (!firestore) return null;
         return collection(firestore, 'donations');
     }, [firestore]);
@@ -441,6 +441,40 @@ Your contribution, big or small, makes a huge difference.
                             </ChartContainer>
                         </CardContent>
                     </Card>
+
+                    {beneficiaryData && beneficiaryData.totalBeneficiaries > 0 && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Beneficiaries by Category</CardTitle>
+                                <CardDescription>
+                                    Summary of beneficiaries grouped by family size.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="w-full overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="whitespace-nowrap">Category Name</TableHead>
+                                            <TableHead className="text-center whitespace-nowrap">Total Beneficiaries</TableHead>
+                                            <TableHead className="text-right whitespace-nowrap">Kit Amount (per kit)</TableHead>
+                                            <TableHead className="text-right whitespace-nowrap">Total Kit Amount</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                    </TableBody>
+                                    <TableFooter>
+                                        <TableRow>
+                                            <TableCell className="font-bold">Total</TableCell>
+                                            <TableCell className="text-center font-bold">{beneficiaryData.totalBeneficiaries}</TableCell>
+                                            <TableCell></TableCell>
+                                        </TableRow>
+                                    </TableFooter>
+                                </Table>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
 
