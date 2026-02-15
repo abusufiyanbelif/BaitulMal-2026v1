@@ -30,7 +30,7 @@ import type { Lead, Beneficiary, Donation, DonationCategory } from '@/lib/types'
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift, Target } from 'lucide-react';
+import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift, Target, Lightbulb } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
@@ -93,6 +93,21 @@ export default function PublicLeadSummaryPage() {
     const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
     const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
     
+     const sanitizedRationLists = useMemo(() => {
+        if (!lead?.itemCategories) return [];
+        if (Array.isArray(lead.itemCategories)) return lead.itemCategories;
+        // Hotfix for old object format
+        return [
+          {
+            id: 'general',
+            name: 'General Item List',
+            minMembers: 0,
+            maxMembers: 0,
+            items: (lead.itemCategories as any)['General Item List'] || []
+          }
+        ];
+    }, [lead?.itemCategories]);
+
     const fundingData = useMemo(() => {
         if (!allDonations || !lead) return null;
 
@@ -228,16 +243,20 @@ Your contribution, big or small, makes a huge difference.
                 </Button>
             </div>
             
-            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6">
-                <Image
-                    src={lead.imageUrl || placeholderImages.lead_fallback}
-                    alt={lead.name}
-                    fill
-                    sizes="100vw"
-                    className="object-cover"
-                    data-ai-hint="lead background"
-                    priority
-                />
+            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center">
+                {lead.imageUrl ? (
+                    <Image
+                        src={lead.imageUrl}
+                        alt={lead.name}
+                        fill
+                        sizes="100vw"
+                        className="object-cover"
+                        data-ai-hint="lead background"
+                        priority
+                    />
+                ) : (
+                    <Lightbulb className="w-24 h-24 text-muted-foreground" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-6">
                     <h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{lead.name}</h1>

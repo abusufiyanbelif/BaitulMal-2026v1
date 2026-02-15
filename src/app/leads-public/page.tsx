@@ -1,9 +1,10 @@
 
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Lightbulb } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { Lead, Donation, DonationCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,15 +29,19 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {leads.map(lead => (
                 <Card key={lead.id} className="flex flex-col hover:shadow-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 cursor-pointer overflow-hidden" onClick={() => router.push(`/leads-public/${lead.id}/summary`)}>
-                    <div className="relative h-40 w-full bg-secondary">
-                        <Image
-                          src={lead.imageUrl || placeholderImages.lead_fallback}
-                          alt={lead.name}
-                          fill
-                          sizes="100vw"
-                          className="object-cover"
-                          data-ai-hint="lead background"
-                        />
+                    <div className="relative h-40 w-full bg-secondary flex items-center justify-center">
+                        {lead.imageUrl ? (
+                            <Image
+                              src={lead.imageUrl}
+                              alt={lead.name}
+                              fill
+                              sizes="100vw"
+                              className="object-cover"
+                              data-ai-hint="lead background"
+                            />
+                        ) : (
+                            <Lightbulb className="h-16 w-16 text-muted-foreground" />
+                        )}
                     </div>
                     <CardHeader>
                         <div className="flex justify-between items-start gap-2">

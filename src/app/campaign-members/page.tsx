@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy } from 'lucide-react';
+import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, FolderKanban } from 'lucide-react';
 import { useCollection, useFirestore, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/types';
@@ -247,15 +247,19 @@ export default function CampaignPage() {
   
   const CampaignCard = ({ campaign }: { campaign: Campaign & { collected: number; progress: number; }}) => (
     <Card className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-zoom overflow-hidden" onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}>
-       <div className="relative h-32 w-full bg-secondary">
-        <Image
-          src={campaign.imageUrl || placeholderImages.campaign_fallback}
-          alt={campaign.name}
-          fill
-          sizes="100vw"
-          className="object-cover"
-          data-ai-hint="campaign background"
-        />
+      <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
+        {campaign.imageUrl ? (
+            <Image
+              src={campaign.imageUrl}
+              alt={campaign.name}
+              fill
+              sizes="100vw"
+              className="object-cover"
+              data-ai-hint="campaign background"
+            />
+        ) : (
+            <FolderKanban className="h-12 w-12 text-muted-foreground" />
+        )}
       </div>
       <CardHeader>
         <div className="flex justify-between items-start gap-2">

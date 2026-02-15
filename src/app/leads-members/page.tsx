@@ -225,15 +225,19 @@ export default function LeadPage() {
 
   const LeadCard = ({ lead }: { lead: Lead & { collected: number; progress: number; }}) => (
     <Card className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-zoom overflow-hidden" onClick={() => router.push(`/leads-members/${lead.id}/summary`)}>
-      <div className="relative h-32 w-full bg-secondary">
-        <Image
-          src={lead.imageUrl || placeholderImages.lead_fallback}
-          alt={lead.name}
-          fill
-          sizes="100vw"
-          className="object-cover"
-          data-ai-hint="lead background"
-        />
+      <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
+        {lead.imageUrl ? (
+            <Image
+              src={lead.imageUrl}
+              alt={lead.name}
+              fill
+              sizes="100vw"
+              className="object-cover"
+              data-ai-hint="lead background"
+            />
+        ) : (
+            <Lightbulb className="h-12 w-12 text-muted-foreground" />
+        )}
       </div>
       <CardHeader>
         <div className="flex justify-between items-start gap-2">
@@ -520,4 +524,5 @@ export default function LeadPage() {
     </>
   );
 }
+
 
