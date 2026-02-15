@@ -32,6 +32,11 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
         return { success: false, message: 'Admin services are not initialized.' };
     }
     try {
+        // Fetch user doc first to get all identifiers for lookup deletion
+        const userRef = doc(adminDb, 'users', uidToDelete);
+        const userSnap = await userRef.get();
+        const userData = userSnap.data() as UserProfile | undefined;
+
         // Delete the ID proof file from storage using a predictable path
         const filePath = `users/${uidToDelete}/id_proof.png`;
         const fileRef = adminStorage.bucket().file(filePath);
@@ -45,13 +50,21 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
         // Delete the authentication user
         await adminAuth.deleteUser(uidToDelete);
         
-        // Note: For a robust lookup deletion, you'd fetch the user doc first,
-        // get all identifiers (loginId, phone, etc.), and delete each lookup doc.
-        // This is a simplified approach assuming client-side logic is the main source of lookups.
         const batch = writeBatch(adminDb);
-        const userRef = doc(adminDb, 'users', uidToDelete);
+        // Delete main user document
         batch.delete(userRef);
         
+        // Delete all associated lookup documents
+        if (userData?.loginId) {
+            batch.delete(doc(adminDb, 'user_lookups', userData.loginId));
+        }
+        if (userData?.phone) {
+            batch.delete(doc(adminDb, 'user_lookups', userData.phone));
+        }
+        if (userData?.userKey) {
+            batch.delete(doc(adminDb, 'user_lookups', userData.userKey));
+        }
+
         await batch.commit();
         
         revalidatePath('/users');

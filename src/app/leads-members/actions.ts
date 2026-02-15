@@ -1,7 +1,7 @@
 
 'use server';
 
-import { adminDb } from '@/lib/firebase-admin-sdk';
+import { adminDb, adminStorage } from '@/lib/firebase-admin-sdk';
 import type { Lead } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { collection, doc, writeBatch, serverTimestamp, runTransaction, getDocs } from 'firebase-admin/firestore';
@@ -64,13 +64,18 @@ export async function copyLeadAction(options: CopyLeadOptions): Promise<{ succes
 }
 
 export async function deleteLeadAction(leadId: string): Promise<{ success: boolean; message: string }> {
-    if (!adminDb) {
-        return { success: false, message: 'Database service not available.' };
+    if (!adminDb || !adminStorage) {
+        return { success: false, message: 'Database or Storage service is not initialized.' };
     }
     
     try {
         const batch = writeBatch(adminDb);
         const leadRef = doc(adminDb, 'leads', leadId);
+
+        // Delete all files in the lead's storage folder
+        const bucket = adminStorage.bucket();
+        const prefix = `leads/${leadId}/`;
+        await bucket.deleteFiles({ prefix });
         
         const beneficiariesSnap = await getDocs(collection(adminDb, `leads/${leadId}/beneficiaries`));
         beneficiariesSnap.forEach(doc => batch.delete(doc.ref));
@@ -80,7 +85,7 @@ export async function deleteLeadAction(leadId: string): Promise<{ success: boole
         await batch.commit();
 
         revalidatePath('/leads-members');
-        return { success: true, message: 'Lead and its associated data deleted successfully.' };
+        return { success: true, message: 'Lead and its associated data and files deleted successfully.' };
 
     } catch (error: any) {
         console.error('Error deleting lead:', error);

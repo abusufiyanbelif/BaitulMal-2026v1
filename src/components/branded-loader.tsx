@@ -1,3 +1,4 @@
+
 'use client';
 import { useBranding } from '@/hooks/use-branding';
 import { TempLogo } from '@/components/temp-logo';
@@ -40,7 +41,7 @@ export function BrandedLoader() {
                 <div 
                     className={cn(
                         "flex items-center justify-center",
-                        "animate-zoom-in-out"
+                        isMobile ? "animate-zoom-in-out-mobile" : "animate-zoom-in-out"
                     )}
                     style={{ 
                         width: `${logoContainerWidth}px`, 

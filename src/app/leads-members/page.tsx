@@ -236,7 +236,14 @@ export default function LeadPage() {
               data-ai-hint="lead background"
             />
         ) : (
-            <Lightbulb className="h-12 w-12 text-muted-foreground" />
+            <Image
+              src={placeholderImages.lead_fallback}
+              alt={lead.name}
+              fill
+              sizes="100vw"
+              className="object-cover"
+              data-ai-hint="lead background"
+            />
         )}
       </div>
       <CardHeader>
@@ -524,6 +531,7 @@ export default function LeadPage() {
     </>
   );
 }
+
 
 
 

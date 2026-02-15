@@ -45,6 +45,7 @@ import { CopyCampaignDialog } from '@/components/copy-campaign-dialog';
 import { copyCampaignAction, deleteCampaignAction } from './actions';
 import { getNestedValue } from '@/lib/utils';
 import Image from 'next/image';
+import placeholderImages from '@/app/lib/placeholder-images.json';
 
 
 export default function CampaignPage() {
@@ -201,7 +202,7 @@ export default function CampaignPage() {
         .then(() => {
             toast({ title: 'Success', description: `Campaign '${campaignToUpdate.name}' has been updated.`, variant: 'success' });
         })
-        .catch(async (serverError: any) => {
+        .catch(async (serverError) => {
             const permissionError = new FirestorePermissionError({
                 path: docRef.path,
                 operation: 'update',
@@ -257,7 +258,14 @@ export default function CampaignPage() {
               data-ai-hint="campaign background"
             />
         ) : (
-            <FolderKanban className="h-12 w-12 text-muted-foreground" />
+            <Image
+              src={placeholderImages.campaign_fallback}
+              alt={campaign.name}
+              fill
+              sizes="100vw"
+              className="object-cover"
+              data-ai-hint="campaign background"
+            />
         )}
       </div>
       <CardHeader>

@@ -1,7 +1,7 @@
 
 'use server';
 
-import { adminDb } from '@/lib/firebase-admin-sdk';
+import { adminDb, adminStorage } from '@/lib/firebase-admin-sdk';
 import type { Campaign, Beneficiary, Donation } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { collection, getDocs, doc, writeBatch, serverTimestamp, runTransaction } from 'firebase-admin/firestore';
@@ -19,7 +19,7 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
         return { success: false, message: 'Database service not available.' };
     }
     
-    const { sourceCampaignId, newName, copyBeneficiaries, copyDonations, copyRationLists } = options;
+    const { sourceCampaignId, newName, copyBeneficiaries, copyRationLists } = options;
 
     try {
         await runTransaction(adminDb, async (transaction) => {
@@ -65,31 +65,29 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
 }
 
 export async function deleteCampaignAction(campaignId: string): Promise<{ success: boolean; message: string }> {
-    if (!adminDb) {
-        return { success: false, message: 'Database service not available.' };
+    if (!adminDb || !adminStorage) {
+        return { success: false, message: 'Database or Storage service is not initialized.' };
     }
     
     try {
         const batch = writeBatch(adminDb);
         const campaignRef = doc(adminDb, 'campaigns', campaignId);
         
-        // Note: For a production app, deleting subcollections requires a more robust solution
-        // like a Firebase Function, as client-side/server-action deletes can be slow and timeout.
-        // This is a simplified version for demonstration.
-        
+        // Delete all files in the campaign's storage folder
+        const bucket = adminStorage.bucket();
+        const prefix = `campaigns/${campaignId}/`;
+        await bucket.deleteFiles({ prefix });
+
+        // Delete all documents in the beneficiaries subcollection
         const beneficiariesSnap = await getDocs(collection(adminDb, `campaigns/${campaignId}/beneficiaries`));
         beneficiariesSnap.forEach(doc => batch.delete(doc.ref));
-        
-        // This is not the correct path for donations, they are in a root collection
-        // const donationsSnap = await getDocs(collection(adminDb, `campaigns/${campaignId}/donations`));
-        // donationsSnap.forEach(doc => batch.delete(doc.ref));
 
         batch.delete(campaignRef);
         
         await batch.commit();
 
         revalidatePath('/campaign-members');
-        return { success: true, message: 'Campaign and its associated data deleted successfully.' };
+        return { success: true, message: 'Campaign and all its associated data and files deleted successfully.' };
 
     } catch (error: any) {
         console.error('Error deleting campaign:', error);
