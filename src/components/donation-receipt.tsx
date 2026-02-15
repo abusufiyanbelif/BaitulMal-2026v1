@@ -11,7 +11,6 @@ import { Lightbulb, FolderKanban } from 'lucide-react';
 
 interface DonationReceiptProps {
   donation: Donation;
-  campaign?: Campaign | Lead | null;
 }
 
 const ReceiptRow = ({ label, value, isMono = false }: { label: string; value: React.ReactNode, isMono?: boolean }) => (
@@ -22,7 +21,7 @@ const ReceiptRow = ({ label, value, isMono = false }: { label: string; value: Re
 );
 
 export const DonationReceipt = React.forwardRef<HTMLDivElement, DonationReceiptProps>(
-  ({ donation, campaign }, ref) => {
+  ({ donation }, ref) => {
     
     const typeSplit = donation.typeSplit && donation.typeSplit.length > 0
       ? donation.typeSplit
@@ -53,7 +52,7 @@ export const DonationReceipt = React.forwardRef<HTMLDivElement, DonationReceiptP
                             <ReceiptRow label="Receiver Name" value={donation.receiverName} />
                             <ReceiptRow label="Total Amount" value={`₹${donation.amount.toFixed(2)}`} isMono />
                             <ReceiptRow label="Payment Type" value={<Badge variant="outline">{donation.donationType}</Badge>} />
-                            {donation.transactionId && <ReceiptRow label="Transaction ID" value={donation.transactionId} isMono />}
+                            {donation.transactions && donation.transactions[0]?.transactionId && <ReceiptRow label="Transaction ID" value={donation.transactions[0].transactionId} isMono />}
                         </div>
                         <Separator />
                         <div className="space-y-2">

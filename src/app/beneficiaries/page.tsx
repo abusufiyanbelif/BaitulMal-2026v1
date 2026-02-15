@@ -52,6 +52,128 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 type SortKey = keyof Beneficiary | 'srNo';
 type BeneficiaryStatus = Beneficiary['status'];
 
+function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
+    const isSorted = sortConfig?.key === sortKey;
+    return (
+        <TableHead className={cn("cursor-pointer hover:bg-muted/50", className)} onClick={() => handleSort(sortKey)}>
+            <div className="flex items-center gap-2">
+                {children}
+                {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
+            </div>
+        </TableHead>
+    );
+};
+
+function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, onStatusChange, onZakatToggle }: {
+    beneficiary: Beneficiary;
+    index: number;
+    canUpdate?: boolean;
+    canDelete?: boolean;
+    onView: (beneficiary: Beneficiary) => void;
+    onEdit: (beneficiary: Beneficiary) => void;
+    onDelete: (id: string) => void;
+    onStatusChange: (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => void;
+    onZakatToggle: (beneficiary: Beneficiary) => void;
+}) {
+    const [isOpen, setIsOpen] = useState(false);
+
+    const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
+        <div>
+            <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">{label}</p>
+            <p className="text-sm font-medium pt-1">{value || 'N/A'}</p>
+        </div>
+    );
+    
+    return (
+        <React.Fragment>
+            <TableRow className="bg-background hover:bg-accent/50 data-[state=open]:bg-accent/50 cursor-pointer" onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? 'open' : 'closed'}>
+                <TableCell className="w-[100px]">
+                     <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 data-[state=open]:bg-accent" data-state={isOpen ? 'open' : 'closed'}>
+                            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
+                        <span>{index}</span>
+                    </div>
+                </TableCell>
+                <TableCell className="font-medium">{beneficiary.name}</TableCell>
+                <TableCell>{beneficiary.phone}</TableCell>
+                <TableCell className="truncate max-w-xs">{beneficiary.address}</TableCell>
+                <TableCell>
+                    <Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'}>{beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}</Badge>
+                </TableCell>
+                <TableCell>
+                    <Badge variant={beneficiary.status === 'Verified' ? 'success' : beneficiary.status === 'Pending' ? 'secondary' : 'outline'}>{beneficiary.status}</Badge>
+                </TableCell>
+                {(canUpdate || canDelete) && (
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onView(beneficiary)}><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
+                            {canUpdate && <DropdownMenuItem onClick={() => onEdit(beneficiary)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
+                            {canUpdate && <DropdownMenuSeparator />}
+                             {canUpdate && (
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger>
+                                        <ChevronsUpDown className="mr-2 h-4 w-4" />
+                                        <span>Change Status</span>
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuRadioGroup
+                                                value={beneficiary.status}
+                                                onValueChange={(newStatus) => onStatusChange(beneficiary, newStatus as BeneficiaryStatus)}
+                                            >
+                                                <DropdownMenuRadioItem value="Pending"><Hourglass className="mr-2"/>Pending</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2"/>Verified</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2"/>Given</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2"/>Hold</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2"/>Need More Details</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
+                                </DropdownMenuSub>
+                            )}
+                             {canUpdate && (
+                                <DropdownMenuItem onClick={() => onZakatToggle(beneficiary)}>
+                                    {beneficiary.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                                    <span>{beneficiary.isEligibleForZakat ? 'Mark as Not Eligible' : 'Mark as Zakat Eligible'}</span>
+                                </DropdownMenuItem>
+                            )}
+                            {canDelete && <DropdownMenuSeparator />}
+                            {canDelete && (
+                                <DropdownMenuItem onClick={() => onDelete(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                </DropdownMenuItem>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </TableCell>
+                )}
+            </TableRow>
+             {isOpen && (
+                 <TableRow className="bg-muted/20 hover:bg-muted/30">
+                    <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="p-0">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 p-4">
+                            <DetailItem label="Address" value={beneficiary.address} />
+                            <DetailItem label="Occupation" value={beneficiary.occupation} />
+                            <DetailItem label="Family" value={`Total: ${beneficiary.members}, Earning: ${beneficiary.earningMembers}, M: ${beneficiary.male}, F: ${beneficiary.female}`} />
+                            <DetailItem label="ID Proof" value={`${beneficiary.idProofType || 'N/A'} - ${beneficiary.idNumber || 'N/A'}`} />
+                            <DetailItem label="Date Added" value={beneficiary.addedDate} />
+                            {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-3"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
+                        </div>
+                    </TableCell>
+                </TableRow>
+            )}
+        </React.Fragment>
+    );
+}
+
 export default function BeneficiariesPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -261,18 +383,6 @@ export default function BeneficiariesPage() {
         }
     };
   
-  const SortableHeader = ({ sortKey, children, className }: { sortKey: SortKey, children: React.ReactNode, className?: string }) => {
-    const isSorted = sortConfig?.key === sortKey;
-    return (
-        <TableHead className={cn("cursor-pointer hover:bg-muted/50", className)} onClick={() => handleSort(sortKey)}>
-            <div className="flex items-center gap-2">
-                {children}
-                {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
-            </div>
-        </TableHead>
-    );
-  };
-  
   if (isLoading) {
     return (
         <main className="container mx-auto p-4 md:p-8">
@@ -469,12 +579,12 @@ export default function BeneficiariesPage() {
               <Table>
                   <TableHeader>
                       <TableRow className="bg-muted/50">
-                          <SortableHeader sortKey="srNo" className="w-[100px]">#</SortableHeader>
-                          <SortableHeader sortKey="name">Name</SortableHeader>
-                          <SortableHeader sortKey="phone">Phone</SortableHeader>
-                          <SortableHeader sortKey="address">Address</SortableHeader>
-                           <SortableHeader sortKey="isEligibleForZakat">Zakat</SortableHeader>
-                          <SortableHeader sortKey="status">Status</SortableHeader>
+                          <SortableHeader sortKey="srNo" className="w-[100px]" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
+                          <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>
+                          <SortableHeader sortKey="phone" sortConfig={sortConfig} handleSort={handleSort}>Phone</SortableHeader>
+                          <SortableHeader sortKey="address" sortConfig={sortConfig} handleSort={handleSort}>Address</SortableHeader>
+                           <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort}>Zakat</SortableHeader>
+                          <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
                           {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right">Actions</TableHead>}
                       </TableRow>
                   </TableHeader>
@@ -551,116 +661,4 @@ export default function BeneficiariesPage() {
       </AlertDialog>
     </main>
   );
-}
-
-interface BeneficiaryRowProps {
-    beneficiary: Beneficiary;
-    index: number;
-    canUpdate?: boolean;
-    canDelete?: boolean;
-    onView: (beneficiary: Beneficiary) => void;
-    onEdit: (beneficiary: Beneficiary) => void;
-    onDelete: (id: string) => void;
-    onStatusChange: (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => void;
-    onZakatToggle: (beneficiary: Beneficiary) => void;
-}
-
-const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, onStatusChange, onZakatToggle }) => {
-    const [isOpen, setIsOpen] = useState(false);
-
-    const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
-        <div>
-            <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">{label}</p>
-            <p className="text-sm font-medium pt-1">{value || 'N/A'}</p>
-        </div>
-    );
-    
-    return (
-        <React.Fragment>
-            <TableRow className="bg-background hover:bg-accent/50 data-[state=open]:bg-accent/50 cursor-pointer" onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? 'open' : 'closed'}>
-                <TableCell className="w-[100px]">
-                     <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 data-[state=open]:bg-accent" data-state={isOpen ? 'open' : 'closed'}>
-                            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </Button>
-                        <span>{index}</span>
-                    </div>
-                </TableCell>
-                <TableCell className="font-medium">{beneficiary.name}</TableCell>
-                <TableCell>{beneficiary.phone}</TableCell>
-                <TableCell className="truncate max-w-xs">{beneficiary.address}</TableCell>
-                <TableCell>
-                    <Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'}>{beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}</Badge>
-                </TableCell>
-                <TableCell>
-                    <Badge variant={beneficiary.status === 'Verified' ? 'success' : beneficiary.status === 'Pending' ? 'secondary' : 'outline'}>{beneficiary.status}</Badge>
-                </TableCell>
-                {(canUpdate || canDelete) && (
-                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => onView(beneficiary)}><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
-                            {canUpdate && <DropdownMenuItem onClick={() => onEdit(beneficiary)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
-                            {canUpdate && <DropdownMenuSeparator />}
-                             {canUpdate && (
-                                <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger>
-                                        <ChevronsUpDown className="mr-2 h-4 w-4" />
-                                        <span>Change Status</span>
-                                    </DropdownMenuSubTrigger>
-                                    <DropdownMenuPortal>
-                                        <DropdownMenuSubContent>
-                                            <DropdownMenuRadioGroup
-                                                value={beneficiary.status}
-                                                onValueChange={(newStatus) => onStatusChange(beneficiary, newStatus as BeneficiaryStatus)}
-                                            >
-                                                <DropdownMenuRadioItem value="Pending"><Hourglass className="mr-2"/>Pending</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2"/>Verified</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2"/>Given</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2"/>Hold</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2"/>Need More Details</DropdownMenuRadioItem>
-                                            </DropdownMenuRadioGroup>
-                                        </DropdownMenuSubContent>
-                                    </DropdownMenuPortal>
-                                </DropdownMenuSub>
-                            )}
-                             {canUpdate && (
-                                <DropdownMenuItem onClick={() => onZakatToggle(beneficiary)}>
-                                    {beneficiary.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
-                                    <span>{beneficiary.isEligibleForZakat ? 'Mark as Not Eligible' : 'Mark as Zakat Eligible'}</span>
-                                </DropdownMenuItem>
-                            )}
-                            {canDelete && <DropdownMenuSeparator />}
-                            {canDelete && (
-                                <DropdownMenuItem onClick={() => onDelete(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Delete
-                                </DropdownMenuItem>
-                            )}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </TableCell>
-                )}
-            </TableRow>
-             {isOpen && (
-                 <TableRow className="bg-muted/20 hover:bg-muted/30">
-                    <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="p-0">
-                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 p-4">
-                            <DetailItem label="Address" value={beneficiary.address} />
-                            <DetailItem label="Occupation" value={beneficiary.occupation} />
-                            <DetailItem label="Family" value={`Total: ${beneficiary.members}, Earning: ${beneficiary.earningMembers}, M: ${beneficiary.male}, F: ${beneficiary.female}`} />
-                            <DetailItem label="ID Proof" value={`${beneficiary.idProofType || 'N/A'} - ${beneficiary.idNumber || 'N/A'}`} />
-                            <DetailItem label="Date Added" value={beneficiary.addedDate} />
-                            {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-3"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
-                        </div>
-                    </TableCell>
-                </TableRow>
-            )}
-        </React.Fragment>
-    );
 }

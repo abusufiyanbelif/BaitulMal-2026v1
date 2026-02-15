@@ -441,40 +441,6 @@ Your contribution, big or small, makes a huge difference.
                             </ChartContainer>
                         </CardContent>
                     </Card>
-
-                    {beneficiaryData && beneficiaryData.totalBeneficiaries > 0 && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Beneficiaries by Category</CardTitle>
-                                <CardDescription>
-                                    Summary of beneficiaries grouped by family size.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="w-full overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="whitespace-nowrap">Category Name</TableHead>
-                                            <TableHead className="text-center whitespace-nowrap">Total Beneficiaries</TableHead>
-                                            <TableHead className="text-right whitespace-nowrap">Kit Amount (per kit)</TableHead>
-                                            <TableHead className="text-right whitespace-nowrap">Total Kit Amount</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                    </TableBody>
-                                    <TableFooter>
-                                        <TableRow>
-                                            <TableCell className="font-bold">Total</TableCell>
-                                            <TableCell className="text-center font-bold">{beneficiaryData.totalBeneficiaries}</TableCell>
-                                            <TableCell></TableCell>
-                                        </TableRow>
-                                    </TableFooter>
-                                </Table>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
                 </div>
             </div>
 
@@ -486,3 +452,4 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+

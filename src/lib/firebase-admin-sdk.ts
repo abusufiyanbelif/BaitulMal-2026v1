@@ -3,6 +3,8 @@ import { initializeApp, getApps, App, cert, ServiceAccount } from 'firebase-admi
 import { getAuth, Auth } from 'firebase-admin/auth';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getStorage, Storage } from 'firebase-admin/storage';
+import * as fs from 'fs';
+import * as path from 'path';
 
 let adminApp: App | undefined;
 let adminAuth: Auth | null = null;
@@ -12,19 +14,25 @@ let adminStorage: Storage | null = null;
 try {
   if (getApps().length) {
     adminApp = getApps()[0];
-  } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    // Standard ADC flow for production (e.g., App Hosting)
-    adminApp = initializeApp();
-  } else if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-    // Fallback for local development using a .env variable
-    const serviceAccount: ServiceAccount = JSON.parse(
-      process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-    );
-    adminApp = initializeApp({
-      credential: cert(serviceAccount),
-    });
   } else {
-    console.warn("Firebase Admin SDK not initialized. Server-side actions will be disabled. Please set either GOOGLE_APPLICATION_CREDENTIALS (for production) or FIREBASE_SERVICE_ACCOUNT_KEY (for local dev).");
+    // Check for serviceAccountKey.json for local development
+    const serviceAccountPath = path.resolve(process.cwd(), 'serviceAccountKey.json');
+    
+    if (fs.existsSync(serviceAccountPath)) {
+      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+      adminApp = initializeApp({
+        credential: cert(serviceAccount),
+      });
+    } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      // Standard ADC flow for production (e.g., App Hosting)
+      adminApp = initializeApp();
+    } else {
+      console.warn(
+        "Firebase Admin SDK not initialized. Server-side actions will be disabled. " +
+        "For local development, create a 'serviceAccountKey.json' file in your project root. " +
+        "For production, ensure GOOGLE_APPLICATION_CREDENTIALS is set."
+      );
+    }
   }
 } catch (e: any) {
   console.error(

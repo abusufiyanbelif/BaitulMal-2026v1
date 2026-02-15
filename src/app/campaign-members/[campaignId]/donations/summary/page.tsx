@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -113,15 +114,23 @@ export default function DonationsSummaryPage() {
     }
     return donations.reduce((acc, donation) => {
       const status = donation.status || 'Pending';
+      let amountForThisCampaign = 0;
+      const campaignLink = donation.linkSplit?.find(l => l.linkId === campaignId && l.linkType === 'campaign');
+      if (campaignLink) {
+          amountForThisCampaign = campaignLink.amount;
+      } else if ((!donation.linkSplit || donation.linkSplit.length === 0) && donation.campaignId === campaignId) {
+          amountForThisCampaign = donation.amount;
+      }
+
       if (status === 'Verified') {
         acc.verified.count += 1;
-        acc.verified.amount += donation.amount;
+        acc.verified.amount += amountForThisCampaign;
       } else if (status === 'Pending') {
         acc.pending.count += 1;
-        acc.pending.amount += donation.amount;
+        acc.pending.amount += amountForThisCampaign;
       } else if (status === 'Canceled') {
         acc.canceled.count += 1;
-        acc.canceled.amount += donation.amount;
+        acc.canceled.amount += amountForThisCampaign;
       }
       return acc;
     }, {
@@ -129,7 +138,7 @@ export default function DonationsSummaryPage() {
       pending: { count: 0, amount: 0 },
       canceled: { count: 0, amount: 0 },
     });
-  }, [donations]);
+  }, [donations, campaignId]);
 
   const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading;
 

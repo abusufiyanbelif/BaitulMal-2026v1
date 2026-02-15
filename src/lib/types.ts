@@ -209,7 +209,4 @@ export interface Donation extends DocumentData {
   // Legacy fields for migration
   campaignId?: string;
   campaignName?: string;
-  transactionId?: string;
-  screenshotUrl?: string;
-  screenshotIsPublic?: boolean;
 }

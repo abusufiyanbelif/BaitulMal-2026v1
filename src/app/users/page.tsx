@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -39,6 +40,18 @@ import { cn } from '@/lib/utils';
 import { getNestedValue } from '@/lib/utils';
 
 type SortKey = keyof UserProfile | 'srNo';
+
+function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
+    const isSorted = sortConfig?.key === sortKey;
+    return (
+        <TableHead className={cn("cursor-pointer hover:bg-muted/50", className)} onClick={() => handleSort(sortKey)}>
+            <div className="flex items-center gap-2">
+                {children}
+                {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
+            </div>
+        </TableHead>
+    );
+};
 
 export default function UsersPage() {
   const firestore = useFirestore();
@@ -110,7 +123,7 @@ export default function UsersPage() {
         .then(() => {
             toast({ title: 'Success', description: `${userToUpdate.name}'s account is now ${newStatus}.`, variant: 'success' });
         })
-        .catch(async (serverError: any) => {
+        .catch(async (serverError) => {
             const permissionError = new FirestorePermissionError({
                 path: docRef.path,
                 operation: 'update',
@@ -215,18 +228,6 @@ export default function UsersPage() {
 
   const isLoading = areUsersLoading || isProfileLoading;
   
-  const SortableHeader = ({ sortKey, children, className }: { sortKey: SortKey, children: React.ReactNode, className?: string }) => {
-    const isSorted = sortConfig?.key === sortKey;
-    return (
-        <TableHead className={cn("cursor-pointer hover:bg-muted/50", className)} onClick={() => handleSort(sortKey)}>
-            <div className="flex items-center gap-2">
-                {children}
-                {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
-            </div>
-        </TableHead>
-    );
-  };
-  
   if (isLoading) {
     return (
         <main className="container mx-auto p-4 md:p-8">
@@ -330,14 +331,14 @@ export default function UsersPage() {
               <Table>
                   <TableHeader>
                       <TableRow className="bg-muted/50">
-                          <SortableHeader sortKey="srNo">#</SortableHeader>
-                          <SortableHeader sortKey="name">Name</SortableHeader>
-                          <SortableHeader sortKey="email">Email</SortableHeader>
-                          <SortableHeader sortKey="phone">Phone</SortableHeader>
-                          <SortableHeader sortKey="loginId">Login ID</SortableHeader>
-                          <SortableHeader sortKey="userKey">User Key</SortableHeader>
-                          <SortableHeader sortKey="role">Role</SortableHeader>
-                          <SortableHeader sortKey="status">Status</SortableHeader>
+                          <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
+                          <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>
+                          <SortableHeader sortKey="email" sortConfig={sortConfig} handleSort={handleSort}>Email</SortableHeader>
+                          <SortableHeader sortKey="phone" sortConfig={sortConfig} handleSort={handleSort}>Phone</SortableHeader>
+                          <SortableHeader sortKey="loginId" sortConfig={sortConfig} handleSort={handleSort}>Login ID</SortableHeader>
+                          <SortableHeader sortKey="userKey" sortConfig={sortConfig} handleSort={handleSort}>User Key</SortableHeader>
+                          <SortableHeader sortKey="role" sortConfig={sortConfig} handleSort={handleSort}>Role</SortableHeader>
+                          <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
                             {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right">Actions</TableHead>}
                       </TableRow>
                   </TableHeader>
@@ -456,3 +457,4 @@ export default function UsersPage() {
     </main>
   );
 }
+
