@@ -186,7 +186,7 @@ export default function BeneficiariesPage() {
     }
   };
   
-  const handleFormSubmit = async (data: BeneficiaryFormData, masterId?: string) => {
+  const handleFormSubmit = async (data: BeneficiaryFormData, masterIdOrEvent?: string | React.BaseSyntheticEvent) => {
     if (!firestore || !storage || !leadId || !userProfile || !lead) return;
     if (editingBeneficiary && !canUpdate) return;
     if (!editingBeneficiary && !canCreate) return;
@@ -208,6 +208,8 @@ export default function BeneficiariesPage() {
 
     setIsFormOpen(false);
     setEditingBeneficiary(null);
+    
+    const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : undefined;
 
     const batch = writeBatch(firestore);
     const leadDocRef = doc(firestore, 'leads', leadId);
@@ -728,5 +730,3 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
         </>
     );
 };
-
-    

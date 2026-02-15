@@ -331,7 +331,7 @@ export default function BeneficiariesPage() {
     }
   };
   
-  const handleFormSubmit = async (data: BeneficiaryFormData, masterId?: string) => {
+  const handleFormSubmit = async (data: BeneficiaryFormData, masterIdOrEvent?: string | React.BaseSyntheticEvent) => {
     if (!firestore || !storage || !userProfile || !campaign) return;
     if (editingBeneficiary && !canUpdate) return;
     if (!editingBeneficiary && !canCreate) return;
@@ -352,6 +352,8 @@ export default function BeneficiariesPage() {
     }
   
     setIsSubmitting(true);
+    
+    const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : undefined;
   
     const batch = writeBatch(firestore);
     const campaignDocRef = doc(firestore, 'campaigns', campaignId);
