@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -11,8 +10,9 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Loader2, ShieldAlert, UploadCloud, Trash2 } from 'lucide-react';
@@ -29,6 +29,7 @@ import { Label } from '@/components/ui/label';
 
 const leadSchema = z.object({
   name: z.string().min(3, 'Lead name must be at least 3 characters.'),
+  description: z.string().optional(),
   purpose: z.enum(['Relief', 'General', 'Education', 'Medical', 'Other']),
   purposeDetails: z.string().optional(),
   category: z.string().optional(),
@@ -94,6 +95,7 @@ export default function CreateLeadPage() {
     resolver: zodResolver(leadSchema),
     defaultValues: {
       name: '',
+      description: '',
       purpose: 'Relief',
       category: '',
       status: 'Upcoming',
@@ -150,14 +152,14 @@ export default function CreateLeadPage() {
             const file = imageFile[0];
             const { default: Resizer } = await import('react-image-file-resizer');
             const resizedBlob = await new Promise<Blob>((resolve) => {
-                Resizer.imageFileResizer(file, 1280, 400, 'PNG', 85, 0, blob => resolve(blob as Blob), 'blob');
+                Resizer.imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             
             const filePath = `leads/${newLeadId}/background.png`;
             const fileRef = storageRef(storage, filePath);
             await uploadBytes(fileRef, resizedBlob);
             imageUrl = await getDownloadURL(fileRef);
-        } catch (uploadError) {
+        } catch (uploadError: any) {
             console.error("Image upload failed:", uploadError);
             toast({ title: 'Image Upload Failed', description: 'Lead was not created.', variant: 'destructive'});
             setIsLoading(false);
@@ -170,7 +172,7 @@ export default function CreateLeadPage() {
       imageUrl,
       requiredAmount: data.requiredAmount || 0,
       targetAmount: data.targetAmount || 0,
-      description: '',
+      description: data.description || '',
       createdAt: serverTimestamp(),
       createdById: userProfile.id,
       createdByName: userProfile.name,
@@ -266,6 +268,22 @@ export default function CreateLeadPage() {
                     <FormLabel>Lead Name *</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g. Lead for new initiative" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="A brief description of the lead and its objectives."
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -623,3 +641,4 @@ export default function CreateLeadPage() {
   );
 }
 
+    
