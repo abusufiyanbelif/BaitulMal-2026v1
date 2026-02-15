@@ -117,16 +117,16 @@ export interface Lead extends DocumentData {
 export interface Beneficiary extends DocumentData {
     id: string;
     name: string;
-    address: string;
-    phone: string;
+    address?: string;
+    phone?: string;
     occupation?: string;
     members: number;
     earningMembers: number;
     male: number;
     female: number;
     addedDate: string;
-    idProofType: string;
-    idNumber: string;
+    idProofType?: string;
+    idNumber?: string;
     referralBy: string;
     kitAmount: number;
     status: 'Given' | 'Pending' | 'Hold' | 'Need More Details' | 'Verified';

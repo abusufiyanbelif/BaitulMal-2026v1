@@ -4,7 +4,7 @@
 import { ReactNode, Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@/app/auth-provider';
-import { FirebaseProvider } from '@/firebase/provider';
+import { FirebaseClientProvider } from '@/firebase';
 import { AppFooter } from '@/components/app-footer';
 import { Toaster } from '@/components/ui/toaster';
 import { DocuExtractHeader } from '@/components/docu-extract-header';
@@ -16,7 +16,7 @@ export function Providers({ children }: { children: ReactNode }) {
   const isLoginPage = pathname === '/login';
 
   return (
-    <FirebaseProvider>
+    <FirebaseClientProvider>
       <AuthProvider>
           <div className="relative">
             <div className="relative z-10 flex min-h-screen flex-col">
@@ -30,6 +30,6 @@ export function Providers({ children }: { children: ReactNode }) {
           </div>
       </AuthProvider>
       <Toaster />
-    </FirebaseProvider>
+    </FirebaseClientProvider>
   );
 }

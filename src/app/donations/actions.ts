@@ -2,7 +2,7 @@
 'use server';
 import { adminDb } from '@/lib/firebase-admin-sdk';
 import type { Donation, DonationCategory } from '@/lib/types';
-import { collection, getDocs, writeBatch } from 'firebase-admin/firestore';
+import { collection, getDocs, writeBatch, FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 
 export async function syncDonationsAction(): Promise<{ success: boolean; message: string; updatedCount: number; }> {
@@ -33,8 +33,8 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
                 // We cannot use deleteField in client-side code, but it's fine in server actions
                 batch.update(docSnap.ref, { 
                     linkSplit: newLinkSplit,
-                    campaignId: adminDb.FieldValue.delete(),
-                    campaignName: adminDb.FieldValue.delete()
+                    campaignId: FieldValue.delete(),
+                    campaignName: FieldValue.delete()
                 });
                 updatedCount++;
             }

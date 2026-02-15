@@ -10,34 +10,27 @@ import React, {
   useEffect,
 } from 'react';
 
-import { FirebaseApp, initializeApp, getApps, getApp } from 'firebase/app';
-import { Firestore, getFirestore } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged, getAuth } from 'firebase/auth';
-import { FirebaseStorage, getStorage } from 'firebase/storage';
+import { FirebaseApp } from 'firebase/app';
+import { Firestore } from 'firebase/firestore';
+import { Auth, User, onAuthStateChanged } from 'firebase/auth';
+import { FirebaseStorage } from 'firebase/storage';
 
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
-import { BrandedLoader } from '@/components/branded-loader';
-import { firebaseConfig } from '@/firebase/config';
-
-/* -------------------------------------------------------------------------- */
-/*                                   TYPES                                    */
-/* -------------------------------------------------------------------------- */
 
 interface FirebaseProviderProps {
   children: ReactNode;
+  services: {
+    firebaseApp: FirebaseApp;
+    auth: Auth;
+    firestore: Firestore | null;
+    storage: FirebaseStorage | null;
+  }
 }
 
 interface UserAuthState {
   user: User | null;
   isUserLoading: boolean;
   userError: Error | null;
-}
-
-interface FirebaseServices {
-  firebaseApp: FirebaseApp;
-  auth: Auth;
-  firestore: Firestore | null;
-  storage: FirebaseStorage | null;
 }
 
 export interface FirebaseContextState {
@@ -50,69 +43,26 @@ export interface FirebaseContextState {
   userError: Error | null;
 }
 
-/* -------------------------------------------------------------------------- */
-/*                                  CONTEXT                                   */
-/* -------------------------------------------------------------------------- */
-
 export const FirebaseContext = createContext<
   FirebaseContextState | undefined
 >(undefined);
 
-/* -------------------------------------------------------------------------- */
-/*                          INITIALIZE FIREBASE CLIENT                        */
-/* -------------------------------------------------------------------------- */
-
-function initializeFirebaseClient(): FirebaseServices | null {
-  if (typeof window === 'undefined') return null;
-
-  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-
-  let firestore: Firestore | null = null;
-  let storage: FirebaseStorage | null = null;
-
-  try {
-    firestore = getFirestore(app);
-  } catch (e) {
-    console.warn('Firestore initialization failed:', e);
-  }
-
-  try {
-    storage = getStorage(app);
-  } catch (e) {
-    console.warn('Storage initialization failed:', e);
-  }
-
-  return {
-    firebaseApp: app,
-    auth: getAuth(app),
-    firestore,
-    storage,
-  };
-}
-
-/* -------------------------------------------------------------------------- */
-/*                              PROVIDER COMPONENT                            */
-/* -------------------------------------------------------------------------- */
-
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
   children,
+  services
 }) => {
-  const [services, setServices] = useState<FirebaseServices | null>(null);
   const [userAuthState, setUserAuthState] = useState<UserAuthState>({
     user: null,
     isUserLoading: true,
     userError: null,
   });
 
-  /* ---------- Initialize Firebase once on client ---------- */
-  useEffect(() => {
-    const firebaseServices = initializeFirebaseClient();
-    setServices(firebaseServices);
-  }, []);
-
   /* ---------- Listen to Auth changes ---------- */
   useEffect(() => {
-    if (!services?.auth) return;
+    if (!services?.auth) {
+        setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Auth service not available.") });
+        return;
+    };
 
     const unsubscribe = onAuthStateChanged(
       services.auth,
@@ -148,12 +98,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     }),
     [services, userAuthState]
   );
-
-  /* ---------- SAFE LOADING GATE ---------- */
-  if (!services || userAuthState.isUserLoading) {
-    return <BrandedLoader />;
-  }
-
+  
   return (
     <FirebaseContext.Provider value={contextValue}>
       <FirebaseErrorListener />
@@ -161,10 +106,6 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     </FirebaseContext.Provider>
   );
 };
-
-/* -------------------------------------------------------------------------- */
-/*                                   HOOKS                                    */
-/* -------------------------------------------------------------------------- */
 
 export const useFirebase = (): FirebaseContextState => {
   const context = useContext(FirebaseContext);
@@ -193,15 +134,6 @@ export const useFirebaseApp = (): FirebaseApp | null => {
   const { firebaseApp } = useFirebase();
   return firebaseApp;
 };
-
-export const useUser = () => {
-  const { user, isUserLoading, userError } = useFirebase();
-  return { user, isUserLoading, userError };
-};
-
-/* -------------------------------------------------------------------------- */
-/*                            MEMO UTILITY (UNCHANGED)                        */
-/* -------------------------------------------------------------------------- */
 
 type MemoFirebase<T> = T & { __memo?: boolean };
 

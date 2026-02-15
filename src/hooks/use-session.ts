@@ -1,7 +1,7 @@
+
 'use client';
 import { useContext } from 'react';
 import { SessionContext } from '@/components/session-provider';
-import { useFirebase } from '@/firebase';
 
 export const useSession = () => {
   const context = useContext(SessionContext);
