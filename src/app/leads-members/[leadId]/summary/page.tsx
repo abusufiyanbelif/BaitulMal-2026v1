@@ -165,7 +165,7 @@ export default function LeadSummaryPage() {
         if (isImageDeleted && imageUrl && storage) {
             try {
                 await deleteObject(storageRef(storage, imageUrl));
-            } catch (e) { console.warn("Old image deletion failed, it might not exist.", e) }
+            } catch (e: any) { console.warn("Old image deletion failed, it might not exist.", e) }
             imageUrl = '';
         } else if (imageFile && storage) {
             try {
@@ -174,7 +174,7 @@ export default function LeadSummaryPage() {
                 }
                 const { default: Resizer } = await import('react-image-file-resizer');
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                    Resizer.imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, blob => resolve(blob as Blob), 'blob');
+                    Resizer.imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = `leads/${leadId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
@@ -424,11 +424,11 @@ Your contribution, big or small, makes a huge difference.
                             ) : ( <p className="mt-1 text-sm">{lead.description || 'No description provided.'}</p> )}
                         </div>
 
-                         {campaign.documents && campaign.documents.length > 0 && (
+                         {lead.documents && lead.documents.length > 0 && (
                                 <div>
                                     <h4 className="text-sm font-medium text-muted-foreground mb-2">Attached Documents</h4>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                        {campaign.documents.map((doc) => (
+                                        {lead.documents.map((doc) => (
                                             <Button key={doc.url} variant="outline" asChild>
                                                 <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
                                                     <File className="mr-2 h-4 w-4 shrink-0" />
@@ -647,4 +647,5 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+
 

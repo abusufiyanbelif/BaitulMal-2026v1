@@ -332,7 +332,7 @@ export default function CampaignSummaryPage() {
             }
 
             if (!acc[categoryKey]) {
-              acc[categoryKey] = { categoryName: string, beneficiaries: [], totalAmount: 0, kitAmount: 0, minMembers: appliedCategory?.minMembers ?? 0 };
+              acc[categoryKey] = { categoryName: '', beneficiaries: [], totalAmount: 0, kitAmount: 0, minMembers: appliedCategory?.minMembers ?? 0 };
             }
             acc[categoryKey].beneficiaries.push(ben);
             acc[categoryKey].totalAmount += ben.kitAmount || 0;
@@ -961,4 +961,5 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+
 
