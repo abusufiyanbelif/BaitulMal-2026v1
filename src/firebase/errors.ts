@@ -1,6 +1,6 @@
 
 'use client';
-import { getAuth, type User } from 'firebase/auth';
+import { getAuth, type User, type UserInfo } from 'firebase/auth';
 
 type SecurityRuleContext = {
   path: string;
@@ -52,7 +52,7 @@ function buildAuthObject(currentUser: User | null): FirebaseAuthObject | null {
     phone_number: currentUser.phoneNumber,
     sub: currentUser.uid,
     firebase: {
-      identities: currentUser.providerData.reduce((acc: Record<string, any>, p) => {
+      identities: currentUser.providerData.reduce((acc: Record<string, string[]>, p: UserInfo) => {
         if (p.providerId) {
           acc[p.providerId] = [p.uid];
         }
