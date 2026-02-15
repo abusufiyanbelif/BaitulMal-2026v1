@@ -1,4 +1,5 @@
 
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -535,7 +536,7 @@ export default function BeneficiariesPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the beneficiary and all of their associated data.
+                    This action cannot be undone. This will permanently delete the beneficiary from the master list AND remove them from all campaigns and leads they are associated with.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

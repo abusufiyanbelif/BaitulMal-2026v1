@@ -173,7 +173,7 @@ export default function BeneficiariesPage() {
 
     try {
         await batch.commit();
-        toast({ title: 'Success', description: 'Beneficiary deleted and lead total updated.', variant: 'success' });
+        toast({ title: 'Success', description: 'Beneficiary removed from this lead.', variant: 'success' });
         forceRefetch();
         forceRefetchLead();
     } catch (serverError) {
@@ -585,7 +585,7 @@ export default function BeneficiariesPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the beneficiary record.
+                    This will remove the beneficiary from this lead, but their record will remain in the master list. This action cannot be undone.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

@@ -1,4 +1,5 @@
 
+
 import type { DocumentData, Timestamp } from 'firebase/firestore';
 import type { UserPermissions } from './modules';
 import { donationCategories } from './modules';
@@ -191,7 +192,7 @@ export interface Donation extends DocumentData {
   donorPhone: string;
   receiverName: string;
   amount: number;
-  type: DonationCategory; // For single-category donations
+  type?: DonationCategory; // For single-category donations
   typeSplit: { category: DonationCategory; amount: number }[];
   linkSplit?: DonationLink[];
   donationType: 'Cash' | 'Online Payment' | 'Check' | 'Other';

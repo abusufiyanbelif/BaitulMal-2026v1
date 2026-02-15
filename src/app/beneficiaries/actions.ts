@@ -4,9 +4,9 @@
 import { adminDb } from '@/lib/firebase-admin-sdk';
 import type { Beneficiary } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
-import { collection, getDocs, doc, writeBatch, serverTimestamp, addDoc, updateDoc, deleteDoc, type DocumentData, type QuerySnapshot, FieldValue } from 'firebase-admin/firestore';
+import { collection, getDocs, doc, writeBatch, serverTimestamp, addDoc, updateDoc, deleteDoc, type DocumentData, type QuerySnapshot, FieldValue, query, where, collectionGroup } from 'firebase-admin/firestore';
 
-export async function createMasterBeneficiaryAction(data: Omit<Beneficiary, 'id' | 'createdAt' | 'createdById' | 'createdByName' | 'updatedAt' | 'updatedByName' | 'addedDate'>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
+export async function createMasterBeneficiaryAction(data: Omit<Beneficiary, 'id' | 'createdAt' | 'createdById' | 'createdByName'>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
     if (!adminDb) {
         return { success: false, message: "Database service is not initialized." };
     }
@@ -52,10 +52,36 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
     return { success: false, message: 'Database service is not initialized.' };
   }
   try {
-    // This action only deletes from the master list. Deletion from campaigns/leads is handled there.
-    await deleteDoc(doc(adminDb, 'beneficiaries', beneficiaryId));
+    const batch = writeBatch(adminDb);
+
+    // Find all instances of this beneficiary in subcollections (campaigns and leads)
+    const allBeneficiaryInstancesQuery = query(
+      collectionGroup(adminDb, 'beneficiaries'),
+      where('id', '==', beneficiaryId)
+    );
+    const allBeneficiaryInstancesSnap = await getDocs(allBeneficiaryInstancesQuery);
+
+    allBeneficiaryInstancesSnap.forEach(docSnap => {
+      // Add each subcollection instance to the delete batch
+      batch.delete(docSnap.ref);
+    });
+
+    // Also delete the master document
+    const masterBeneficiaryRef = doc(adminDb, 'beneficiaries', beneficiaryId);
+    batch.delete(masterBeneficiaryRef);
+
+    // Note: ID proof file deletion from storage is not handled here as it requires
+    // a more complex process to retrieve file paths from URLs and is better suited
+    // for a background cloud function to ensure robustness.
+
+    // Commit all deletions at once
+    await batch.commit();
+
     revalidatePath('/beneficiaries');
-    return { success: true, message: 'Beneficiary deleted from the master list.' };
+    revalidatePath('/campaign-members');
+    revalidatePath('/leads-members');
+
+    return { success: true, message: 'Beneficiary permanently deleted from the master list and all linked initiatives.' };
   } catch (error: any) {
     console.error('Error deleting beneficiary:', error);
     return { success: false, message: `Failed to delete beneficiary: ${error.message}` };
