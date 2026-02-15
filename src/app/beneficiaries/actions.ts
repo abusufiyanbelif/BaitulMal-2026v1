@@ -6,7 +6,7 @@ import type { Beneficiary } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { collection, getDocs, doc, writeBatch, serverTimestamp, addDoc, updateDoc, deleteDoc, type DocumentData, type QuerySnapshot, FieldValue, query, where, collectionGroup } from 'firebase-admin/firestore';
 
-export async function createMasterBeneficiaryAction(data: Omit<Beneficiary, 'id' | 'createdAt' | 'createdById' | 'createdByName'>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
+export async function createMasterBeneficiaryAction(data: Omit<Beneficiary, 'id' | 'createdAt' | 'createdById' | 'createdByName' | 'addedDate'>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
     if (!adminDb) {
         return { success: false, message: "Database service is not initialized." };
     }
