@@ -8,26 +8,25 @@ let adminAuth: Auth | null = null;
 let adminDb: Firestore | null = null;
 
 try {
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+  if (getApps().length) {
+    adminApp = getApps()[0];
+  } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    // Standard ADC flow for production (e.g., App Hosting)
+    adminApp = initializeApp();
+  } else if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    // Fallback for local development using a .env variable
     const serviceAccount: ServiceAccount = JSON.parse(
       process.env.FIREBASE_SERVICE_ACCOUNT_KEY
     );
-    
-    if (!getApps().length) {
-      adminApp = initializeApp({
-        credential: cert(serviceAccount),
-      });
-    } else {
-      adminApp = getApps()[0];
-    }
+    adminApp = initializeApp({
+      credential: cert(serviceAccount),
+    });
   } else {
-    // This is a graceful fallback for client-side rendering or environments
-    // where the admin key is not available.
-    console.warn("Firebase Admin SDK not initialized. Server-side actions will be disabled.");
+    console.warn("Firebase Admin SDK not initialized. Server-side actions will be disabled. Please set either GOOGLE_APPLICATION_CREDENTIALS (for production) or FIREBASE_SERVICE_ACCOUNT_KEY (for local dev).");
   }
 } catch (e: any) {
   console.error(
-    'Firebase Admin SDK initialization failed. This can happen if the service account key is malformed. Server-side actions will be disabled.',
+    'Firebase Admin SDK initialization failed. Ensure your service account credentials are set correctly.',
     e.message
   );
 }

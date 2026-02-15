@@ -26,15 +26,6 @@ interface FirebaseAuthObject {
   token: FirebaseAuthToken;
 }
 
-interface SecurityRuleRequest {
-  auth: FirebaseAuthObject | null;
-  method: string;
-  path: string;
-  resource?: {
-    data: any;
-  };
-}
-
 /**
  * Builds a security-rule-compliant auth object from the Firebase User.
  * @param currentUser The currently authenticated Firebase user.

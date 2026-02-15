@@ -254,7 +254,7 @@ export default function BeneficiaryDetailsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {linkedInitiatives.map((link: LinkedInitiative) => (
+                            {linkedInitiatives.map((link) => (
                                 <TableRow key={link.id}>
                                     <TableCell>
                                         <Link href={link.type === 'Campaign' ? `/campaign-members/${link.id}/beneficiaries` : `/leads-members/${link.id}/beneficiaries`} className="font-medium text-primary hover:underline flex items-center gap-2">
