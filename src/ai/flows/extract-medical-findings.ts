@@ -62,7 +62,7 @@ const extractMedicalFindingsFlow = ai.defineFlow(
     inputSchema: ExtractMedicalFindingsInputSchema,
     outputSchema: ExtractMedicalFindingsOutputSchema,
   },
-  async (input) => {
+  async (input: ExtractMedicalFindingsInput) => {
     const { output } = await prompt(input);
     if (!output) {
       throw new Error("The AI model did not return a valid output.");

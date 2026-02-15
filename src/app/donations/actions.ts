@@ -1,7 +1,7 @@
 
 'use server';
 import { adminDb } from '@/lib/firebase-admin-sdk';
-import { collection, getDocs, writeBatch, FieldValue } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 
 export async function syncDonationsAction(): Promise<{ success: boolean; message: string; updatedCount: number; }> {
@@ -10,11 +10,11 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
     }
     
     try {
-        const batch = writeBatch(adminDb);
+        const batch = adminDb.batch();
         let updatedCount = 0;
         
-        const donationsRef = collection(adminDb, 'donations');
-        const donationsSnap = await getDocs(donationsRef);
+        const donationsRef = adminDb.collection('donations');
+        const donationsSnap = await donationsRef.get();
         
         for (const docSnap of donationsSnap.docs) {
             const donation = docSnap.data() as any; // Use any to access legacy fields

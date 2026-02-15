@@ -57,7 +57,7 @@ const createLeadStoryFlow = ai.defineFlow(
     inputSchema: CreateLeadStoryInputSchema,
     outputSchema: CreateLeadStoryOutputSchema,
   },
-  async (input) => {
+  async (input: CreateLeadStoryInput) => {
     const { output } = await prompt(input);
     if (!output) {
       throw new Error("The AI model did not return a valid output.");

@@ -3,14 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 9002 --hostname 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@genkit-ai/core": "^1.0.0",
     "@genkit-ai/google-genai": "^1.0.0",
     "@hookform/resolvers": "^3.6.0",
     "@radix-ui/react-accordion": "^1.1.2",
@@ -40,6 +39,7 @@
     "embla-carousel-react": "^8.1.5",
     "firebase": "^10.12.2",
     "firebase-admin": "^12.1.1",
+    "genkit": "^1.0.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
     "lottie-react": "^2.4.0",

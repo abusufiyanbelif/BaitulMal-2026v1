@@ -48,7 +48,7 @@ const extractAndCorrectTextFlow = ai.defineFlow(
     inputSchema: ExtractAndCorrectTextInputSchema,
     outputSchema: ExtractAndCorrectTextOutputSchema,
   },
-  async (input) => {
+  async (input: ExtractAndCorrectTextInput) => {
     const { output } = await extractTextPrompt(input);
 
     if (!output || !output.extractedText) {

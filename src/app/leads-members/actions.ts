@@ -4,7 +4,7 @@
 import { adminDb, adminStorage } from '@/lib/firebase-admin-sdk';
 import type { Lead } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
-import { collection, doc, writeBatch, serverTimestamp, runTransaction, getDocs } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 
 interface CopyLeadOptions {
   sourceLeadId: string;
@@ -21,21 +21,21 @@ export async function copyLeadAction(options: CopyLeadOptions): Promise<{ succes
     const { sourceLeadId, newName, copyBeneficiaries, copyRationLists } = options;
 
     try {
-        await runTransaction(adminDb, async (transaction) => {
-            const sourceLeadRef = doc(adminDb, 'leads', sourceLeadId);
+        await adminDb.runTransaction(async (transaction) => {
+            const sourceLeadRef = adminDb.collection('leads').doc(sourceLeadId);
             const sourceLeadSnap = await transaction.get(sourceLeadRef);
-            if (!sourceLeadSnap.exists()) {
+            if (!sourceLeadSnap.exists) {
                 throw new Error('Source lead not found.');
             }
             
             const sourceData = sourceLeadSnap.data() as Lead;
             
-            const newLeadRef = doc(collection(adminDb, 'leads'));
+            const newLeadRef = adminDb.collection('leads').doc();
             const newLeadData: Partial<Lead> = {
                 ...sourceData,
                 name: newName,
                 status: 'Upcoming',
-                createdAt: serverTimestamp(),
+                createdAt: FieldValue.serverTimestamp(),
                 targetAmount: 0, 
             };
 
@@ -46,9 +46,9 @@ export async function copyLeadAction(options: CopyLeadOptions): Promise<{ succes
             transaction.set(newLeadRef, newLeadData);
 
             if (copyBeneficiaries) {
-                const beneficiariesSnap = await getDocs(collection(adminDb, `leads/${sourceLeadId}/beneficiaries`));
+                const beneficiariesSnap = await adminDb.collection(`leads/${sourceLeadId}/beneficiaries`).get();
                 beneficiariesSnap.forEach(benDoc => {
-                    const newBeneficiaryRef = doc(adminDb, `leads/${newLeadRef.id}/beneficiaries`, benDoc.id);
+                    const newBeneficiaryRef = adminDb.collection(`leads/${newLeadRef.id}/beneficiaries`).doc(benDoc.id);
                     transaction.set(newBeneficiaryRef, benDoc.data());
                 });
             }
@@ -69,15 +69,15 @@ export async function deleteLeadAction(leadId: string): Promise<{ success: boole
     }
     
     try {
-        const batch = writeBatch(adminDb);
-        const leadRef = doc(adminDb, 'leads', leadId);
+        const batch = adminDb.batch();
+        const leadRef = adminDb.collection('leads').doc(leadId);
 
         // Delete all files in the lead's storage folder
         const bucket = adminStorage.bucket();
         const prefix = `leads/${leadId}/`;
         await bucket.deleteFiles({ prefix });
         
-        const beneficiariesSnap = await getDocs(collection(adminDb, `leads/${leadId}/beneficiaries`));
+        const beneficiariesSnap = await adminDb.collection(`leads/${leadId}/beneficiaries`).get();
         beneficiariesSnap.forEach(doc => batch.delete(doc.ref));
 
         batch.delete(leadRef);

@@ -57,7 +57,7 @@ const createEducationStoryFlow = ai.defineFlow(
     inputSchema: CreateEducationStoryInputSchema,
     outputSchema: CreateEducationStoryOutputSchema,
   },
-  async (input) => {
+  async (input: CreateEducationStoryInput) => {
     const { output } = await prompt(input);
     if (!output) {
       throw new Error("The AI model did not return a valid output.");

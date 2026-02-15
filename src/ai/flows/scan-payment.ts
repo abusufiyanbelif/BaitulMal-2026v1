@@ -60,7 +60,7 @@ const scanPaymentScreenshotFlow = ai.defineFlow(
     inputSchema: ScanPaymentScreenshotInputSchema,
     outputSchema: ScanPaymentScreenshotOutputSchema,
   },
-  async (input) => {
+  async (input: ScanPaymentScreenshotInput) => {
     const { output } = await prompt(input);
     if (!output) {
       throw new Error("The AI model did not return a valid output.");

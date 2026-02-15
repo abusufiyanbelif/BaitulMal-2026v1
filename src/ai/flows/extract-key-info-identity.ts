@@ -58,7 +58,7 @@ const extractKeyInfoFromAadhaarFlow = ai.defineFlow(
     inputSchema: ExtractKeyInfoFromAadhaarInputSchema,
     outputSchema: ExtractKeyInfoFromAadhaarOutputSchema,
   },
-  async (input) => {
+  async (input: ExtractKeyInfoFromAadhaarInput) => {
     const { output } = await prompt(input);
     if (!output) {
       throw new Error("The AI model did not return a valid output.");

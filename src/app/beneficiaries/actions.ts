@@ -4,17 +4,17 @@
 import { adminDb, adminStorage } from '@/lib/firebase-admin-sdk';
 import type { Beneficiary } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
-import { collection, getDocs, doc, writeBatch, serverTimestamp, addDoc, updateDoc, deleteDoc, type DocumentData, type QuerySnapshot, FieldValue, query, where, collectionGroup } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 
 export async function createMasterBeneficiaryAction(data: Omit<Beneficiary, 'id' | 'createdAt' | 'createdById' | 'createdByName' | 'addedDate'>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
     if (!adminDb) {
         return { success: false, message: "Database service is not initialized." };
     }
     try {
-        const docRef = await addDoc(collection(adminDb, 'beneficiaries'), {
+        const docRef = await adminDb.collection('beneficiaries').add({
             ...data,
             addedDate: new Date().toISOString().split('T')[0],
-            createdAt: serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
             createdById: createdBy.id,
             createdByName: createdBy.name,
         });
@@ -31,10 +31,10 @@ export async function updateMasterBeneficiaryAction(beneficiaryId: string, data:
         return { success: false, message: "Database service is not initialized." };
     }
     try {
-        const docRef = doc(adminDb, 'beneficiaries', beneficiaryId);
-        await updateDoc(docRef, {
+        const docRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
+        await docRef.update({
             ...data,
-            updatedAt: serverTimestamp(),
+            updatedAt: FieldValue.serverTimestamp(),
             updatedById: updatedBy.id,
             updatedByName: updatedBy.name,
         });
@@ -52,15 +52,12 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
     return { success: false, message: 'Database or Storage service is not initialized.' };
   }
   try {
-    const batch = writeBatch(adminDb);
-    const masterBeneficiaryRef = doc(adminDb, 'beneficiaries', beneficiaryId);
+    const batch = adminDb.batch();
+    const masterBeneficiaryRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
 
     // Find all instances of this beneficiary in subcollections (campaigns and leads)
-    const allBeneficiaryInstancesQuery = query(
-      collectionGroup(adminDb, 'beneficiaries'),
-      where('id', '==', beneficiaryId)
-    );
-    const allBeneficiaryInstancesSnap = await getDocs(allBeneficiaryInstancesQuery);
+    const allBeneficiaryInstancesQuery = adminDb.collectionGroup('beneficiaries').where('id', '==', beneficiaryId);
+    const allBeneficiaryInstancesSnap = await allBeneficiaryInstancesQuery.get();
 
     allBeneficiaryInstancesSnap.forEach(docSnap => {
       // Add each subcollection instance to the delete batch
@@ -100,18 +97,18 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
     }
     
     try {
-        const batch = writeBatch(adminDb);
+        const batch = adminDb.batch();
         let addedCount = 0;
         
-        const masterBeneficiariesSnap = await getDocs(collection(adminDb, 'beneficiaries'));
+        const masterBeneficiariesSnap = await adminDb.collection('beneficiaries').get();
         const masterIds = new Set(masterBeneficiariesSnap.docs.map(d => d.id));
 
-        const campaignsSnap = await getDocs(collection(adminDb, 'campaigns'));
+        const campaignsSnap = await adminDb.collection('campaigns').get();
         for (const campaignDoc of campaignsSnap.docs) {
-            const campaignBeneficiariesSnap = await getDocs(collection(adminDb, `campaigns/${campaignDoc.id}/beneficiaries`));
+            const campaignBeneficiariesSnap = await adminDb.collection(`campaigns/${campaignDoc.id}/beneficiaries`).get();
             for (const benDoc of campaignBeneficiariesSnap.docs) {
                 if (!masterIds.has(benDoc.id)) {
-                    const masterRef = doc(adminDb, 'beneficiaries', benDoc.id);
+                    const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
                     batch.set(masterRef, benDoc.data());
                     masterIds.add(benDoc.id); // Avoid re-adding if found in another campaign
                     addedCount++;
@@ -119,12 +116,12 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
             }
         }
         
-        const leadsSnap = await getDocs(collection(adminDb, 'leads'));
+        const leadsSnap = await adminDb.collection('leads').get();
         for (const leadDoc of leadsSnap.docs) {
-            const leadBeneficiariesSnap = await getDocs(collection(adminDb, `leads/${leadDoc.id}/beneficiaries`));
+            const leadBeneficiariesSnap = await adminDb.collection(`leads/${leadDoc.id}/beneficiaries`).get();
             for (const benDoc of leadBeneficiariesSnap.docs) {
                 if (!masterIds.has(benDoc.id)) {
-                    const masterRef = doc(adminDb, 'beneficiaries', benDoc.id);
+                    const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
                     batch.set(masterRef, benDoc.data());
                     masterIds.add(benDoc.id);
                     addedCount++;

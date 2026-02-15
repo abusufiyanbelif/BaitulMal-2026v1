@@ -3,7 +3,6 @@
 
 import { adminDb, adminAuth, adminStorage } from '@/lib/firebase-admin-sdk';
 import { revalidatePath } from 'next/cache';
-import { doc, writeBatch } from 'firebase-admin/firestore';
 import type { UserFormData } from '@/components/user-form';
 import type { UserProfile } from '@/lib/types';
 
@@ -33,7 +32,7 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
     }
     try {
         // Fetch user doc first to get all identifiers for lookup deletion
-        const userRef = doc(adminDb, 'users', uidToDelete);
+        const userRef = adminDb.collection('users').doc(uidToDelete);
         const userSnap = await userRef.get();
         const userData = userSnap.data() as UserProfile | undefined;
 
@@ -50,19 +49,19 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
         // Delete the authentication user
         await adminAuth.deleteUser(uidToDelete);
         
-        const batch = writeBatch(adminDb);
+        const batch = adminDb.batch();
         // Delete main user document
         batch.delete(userRef);
         
         // Delete all associated lookup documents
         if (userData?.loginId) {
-            batch.delete(doc(adminDb, 'user_lookups', userData.loginId));
+            batch.delete(adminDb.collection('user_lookups').doc(userData.loginId));
         }
         if (userData?.phone) {
-            batch.delete(doc(adminDb, 'user_lookups', userData.phone));
+            batch.delete(adminDb.collection('user_lookups').doc(userData.phone));
         }
         if (userData?.userKey) {
-            batch.delete(doc(adminDb, 'user_lookups', userData.userKey));
+            batch.delete(adminDb.collection('user_lookups').doc(userData.userKey));
         }
 
         await batch.commit();

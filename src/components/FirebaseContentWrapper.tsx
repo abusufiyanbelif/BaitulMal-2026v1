@@ -9,7 +9,8 @@ import { AlertTriangle, ExternalLink } from 'lucide-react';
 
 
 export function FirebaseContentWrapper({ children }: { children: ReactNode }) {
-  const { userError } = useFirebase();
+  const firebase = useFirebase();
+  const userError = firebase?.userError;
 
   if (userError) {
     const isFirestoreError = userError.message.includes("firestore");

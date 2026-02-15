@@ -78,7 +78,7 @@ const extractDynamicFormFlow = ai.defineFlow(
     inputSchema: ExtractDynamicFormInputSchema,
     outputSchema: ExtractDynamicFormOutputSchema,
   },
-  async (input) => {
+  async (input: ExtractDynamicFormInput) => {
     const { output } = await prompt(input);
     if (!output) {
       throw new Error("The AI model did not return a valid output.");

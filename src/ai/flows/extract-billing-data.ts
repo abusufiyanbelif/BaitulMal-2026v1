@@ -63,7 +63,7 @@ const extractBillingDataFlow = ai.defineFlow(
     inputSchema: ExtractBillingDataInputSchema,
     outputSchema: ExtractBillingDataOutputSchema,
   },
-  async (input) => {
+  async (input: ExtractBillingDataInput) => {
     const { output } = await prompt(input);
     if (!output) {
       throw new Error("The AI model did not return a valid output.");

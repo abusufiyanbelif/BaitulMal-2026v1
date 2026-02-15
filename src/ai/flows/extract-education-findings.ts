@@ -63,7 +63,7 @@ const extractEducationFindingsFlow = ai.defineFlow(
     inputSchema: ExtractEducationFindingsInputSchema,
     outputSchema: ExtractEducationFindingsOutputSchema,
   },
-  async (input) => {
+  async (input: ExtractEducationFindingsInput) => {
     const { output } = await prompt(input);
     if (!output) {
       throw new Error("The AI model did not return a valid output.");

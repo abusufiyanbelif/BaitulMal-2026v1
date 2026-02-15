@@ -2,9 +2,9 @@
 'use server';
 
 import { adminDb, adminStorage } from '@/lib/firebase-admin-sdk';
-import type { Campaign, Beneficiary, Donation } from '@/lib/types';
+import type { Campaign } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
-import { collection, getDocs, doc, writeBatch, serverTimestamp, runTransaction } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 
 interface CopyCampaignOptions {
   sourceCampaignId: string;
@@ -22,8 +22,8 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
     const { sourceCampaignId, newName, copyBeneficiaries, copyRationLists } = options;
 
     try {
-        await runTransaction(adminDb, async (transaction) => {
-            const sourceCampaignRef = doc(adminDb, 'campaigns', sourceCampaignId);
+        await adminDb.runTransaction(async (transaction) => {
+            const sourceCampaignRef = adminDb.collection('campaigns').doc(sourceCampaignId);
             const sourceCampaignSnap = await transaction.get(sourceCampaignRef);
             if (!sourceCampaignSnap.exists) {
                 throw new Error('Source campaign not found.');
@@ -31,12 +31,12 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
             
             const sourceData = sourceCampaignSnap.data() as Campaign;
             
-            const newCampaignRef = doc(collection(adminDb, 'campaigns'));
+            const newCampaignRef = adminDb.collection('campaigns').doc();
             const newCampaignData: Partial<Campaign> = {
                 ...sourceData,
                 name: newName,
                 status: 'Upcoming',
-                createdAt: serverTimestamp(),
+                createdAt: FieldValue.serverTimestamp(),
                 // Reset financial data
                 targetAmount: 0, 
             };
@@ -47,9 +47,9 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
             transaction.set(newCampaignRef, newCampaignData);
 
             if (copyBeneficiaries) {
-                const beneficiariesSnap = await getDocs(collection(adminDb, `campaigns/${sourceCampaignId}/beneficiaries`));
+                const beneficiariesSnap = await adminDb.collection(`campaigns/${sourceCampaignId}/beneficiaries`).get();
                 beneficiariesSnap.forEach(benDoc => {
-                    const newBeneficiaryRef = doc(adminDb, `campaigns/${newCampaignRef.id}/beneficiaries`, benDoc.id);
+                    const newBeneficiaryRef = adminDb.collection(`campaigns/${newCampaignRef.id}/beneficiaries`).doc(benDoc.id);
                     transaction.set(newBeneficiaryRef, benDoc.data());
                 });
             }
@@ -70,8 +70,8 @@ export async function deleteCampaignAction(campaignId: string): Promise<{ succes
     }
     
     try {
-        const batch = writeBatch(adminDb);
-        const campaignRef = doc(adminDb, 'campaigns', campaignId);
+        const batch = adminDb.batch();
+        const campaignRef = adminDb.collection('campaigns').doc(campaignId);
         
         // Delete all files in the campaign's storage folder
         const bucket = adminStorage.bucket();
@@ -79,7 +79,7 @@ export async function deleteCampaignAction(campaignId: string): Promise<{ succes
         await bucket.deleteFiles({ prefix });
 
         // Delete all documents in the beneficiaries subcollection
-        const beneficiariesSnap = await getDocs(collection(adminDb, `campaigns/${campaignId}/beneficiaries`));
+        const beneficiariesSnap = await adminDb.collection(`campaigns/${campaignId}/beneficiaries`).get();
         beneficiariesSnap.forEach(doc => batch.delete(doc.ref));
 
         batch.delete(campaignRef);
