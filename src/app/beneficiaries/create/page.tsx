@@ -33,7 +33,7 @@ export default function CreateBeneficiaryPage() {
     const { idProofFile, idProofDeleted, ...beneficiaryData } = data;
 
     const result = await createMasterBeneficiaryAction(
-        { ...beneficiaryData, addedDate: new Date().toISOString().split('T')[0] },
+        beneficiaryData,
         { id: userProfile.id, name: userProfile.name }
     );
     

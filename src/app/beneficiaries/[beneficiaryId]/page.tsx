@@ -92,7 +92,7 @@ export default function BeneficiaryDetailsPage() {
         });
 
         const results = (await Promise.all(initiativePromises));
-        setLinkedInitiatives(results.filter((link): link is LinkedInitiative => link !== null));
+        setLinkedInitiatives(results.filter((link: LinkedInitiative | null): link is LinkedInitiative => link !== null));
     } catch (e: any) {
         console.error("Error fetching linked initiatives:", e);
         toast({ title: "Error", description: "Could not fetch linked initiatives for this beneficiary.", variant: 'destructive'});

@@ -13,6 +13,7 @@ export async function createMasterBeneficiaryAction(data: Omit<Beneficiary, 'id'
     try {
         const docRef = await addDoc(collection(adminDb, 'beneficiaries'), {
             ...data,
+            addedDate: new Date().toISOString().split('T')[0],
             createdAt: serverTimestamp(),
             createdById: createdBy.id,
             createdByName: createdBy.name,
