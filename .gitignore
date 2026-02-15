@@ -35,3 +35,4 @@ yarn-error.log*
 
 # Firebase
 serviceAccountKey.json
+src/serviceAccountKey.json
