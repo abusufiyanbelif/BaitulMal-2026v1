@@ -5,7 +5,7 @@ import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { collection, collectionGroup, query, DocumentData } from 'firebase/firestore';
+import { collection, query, DocumentData } from 'firebase/firestore';
 import Link from 'next/link';
 import {
   BarChart,
@@ -23,11 +23,11 @@ import {
 import { DateRange } from 'react-day-picker';
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfYear, subMonths, startOfYear, endOfQuarter } from 'date-fns';
 
-import type { Donation, DonationCategory, Beneficiary } from '@/lib/types';
+import type { Donation, DonationCategory, Campaign, Lead } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Wallet, PieChart as PieChartIcon, BarChart as BarChartIcon, Calendar as CalendarIcon } from 'lucide-react';
+import { ArrowLeft, Loader2, Wallet, PieChart as PieChartIcon, BarChart as BarChartIcon, Calendar as CalendarIcon, TrendingUp, FolderKanban, Lightbulb } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -52,6 +52,7 @@ import { cn } from '@/lib/utils';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
@@ -102,6 +103,18 @@ export default function DonationsSummaryPage() {
     }, [firestore]);
     const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
     
+    const campaignsCollectionRef = useMemoFirebase(() => {
+      if (!firestore) return null;
+      return collection(firestore, 'campaigns');
+    }, [firestore]);
+    const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
+
+    const leadsCollectionRef = useMemoFirebase(() => {
+      if (!firestore) return null;
+      return collection(firestore, 'leads');
+    }, [firestore]);
+    const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
+
     const canRead = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.read;
 
     const filteredDonations = useMemo(() => {
@@ -134,7 +147,7 @@ export default function DonationsSummaryPage() {
     }, [donations, date]);
 
     const summaryData = useMemo(() => {
-        if (!filteredDonations) return null;
+        if (!filteredDonations || !campaigns || !leads) return null;
         
         const allocatedCount = filteredDonations.filter(d => d.linkSplit && d.linkSplit.length > 0).length;
         const unallocatedCount = filteredDonations.length - allocatedCount;
@@ -174,6 +187,58 @@ export default function DonationsSummaryPage() {
         const monthlyContributionTotal = amountsByCategory['Monthly Contribution'] || 0;
         const grandTotal = fitraTotal + zakatTotal + loanTotal + interestTotal + sadaqahTotal + lillahTotal + monthlyContributionTotal;
 
+        const initiativeTotals: Record<string, { name: string; type: 'campaign' | 'lead' | 'general'; amount: number; count: number }> = {};
+        
+        campaigns?.forEach(c => {
+            initiativeTotals[`campaign_${c.id}`] = { name: c.name, type: 'campaign', amount: 0, count: 0 };
+        });
+        leads?.forEach(l => {
+            initiativeTotals[`lead_${l.id}`] = { name: l.name, type: 'lead', amount: 0, count: 0 };
+        });
+        initiativeTotals.unallocated = { name: 'Unallocated', type: 'general', amount: 0, count: 0 };
+
+        const donationsPerInitiative: Record<string, Set<string>> = {};
+
+        filteredDonations.forEach(donation => {
+            const links = donation.linkSplit && donation.linkSplit.length > 0 ? donation.linkSplit : [];
+
+            if (links.length === 0) {
+                const legacyCampaignId = (donation as any).campaignId;
+                if (legacyCampaignId) {
+                    const key = `campaign_${legacyCampaignId}`;
+                    if (initiativeTotals[key]) {
+                        initiativeTotals[key].amount += donation.amount;
+                        if (!donationsPerInitiative[key]) donationsPerInitiative[key] = new Set();
+                        donationsPerInitiative[key].add(donation.id);
+                    }
+                } else {
+                    initiativeTotals.unallocated.amount += donation.amount;
+                    if (!donationsPerInitiative.unallocated) donationsPerInitiative.unallocated = new Set();
+                    donationsPerInitiative.unallocated.add(donation.id);
+                }
+            } else {
+                links.forEach(link => {
+                    const key = link.linkType === 'general' ? 'unallocated' : `${link.linkType}_${link.linkId}`;
+                    if (initiativeTotals[key]) {
+                        initiativeTotals[key].amount += link.amount;
+                        if (!donationsPerInitiative[key]) donationsPerInitiative[key] = new Set();
+                        donationsPerInitiative[key].add(donation.id);
+                    }
+                });
+            }
+        });
+
+        Object.keys(donationsPerInitiative).forEach(key => {
+            if(initiativeTotals[key]) {
+                initiativeTotals[key].count = donationsPerInitiative[key].size;
+            }
+        });
+
+        const sortedInitiatives = Object.values(initiativeTotals)
+            .filter(item => item.amount > 0 || item.count > 0)
+            .sort((a, b) => b.amount - a.amount);
+
+
         return {
             allocatedCount,
             unallocatedCount,
@@ -191,9 +256,10 @@ export default function DonationsSummaryPage() {
                 lillah: lillahTotal,
                 monthlyContribution: monthlyContributionTotal,
                 grandTotal: grandTotal,
-            }
+            },
+            sortedInitiatives
         };
-    }, [filteredDonations]);
+    }, [filteredDonations, campaigns, leads]);
     
     const monthlyContributionData = useMemo(() => {
         if (!filteredDonations) return null;
@@ -214,7 +280,7 @@ export default function DonationsSummaryPage() {
             .sort((a, b) => a.month.localeCompare(b.month));
     }, [filteredDonations]);
 
-    const isLoading = areDonationsLoading || isProfileLoading;
+    const isLoading = areDonationsLoading || isProfileLoading || areCampaignsLoading || areLeadsLoading;
 
     if (isLoading) {
         return (
@@ -332,7 +398,51 @@ export default function DonationsSummaryPage() {
             </div>
             
             <div className="space-y-6 animate-fade-in-zoom">
-                 {/* ... other cards */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <TrendingUp className="h-6 w-6 text-primary" />
+                            Donations by Initiative
+                        </CardTitle>
+                        <CardDescription>
+                            Total donation amounts allocated to each campaign and lead.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {isLoading ? (
+                            <Skeleton className="h-48 w-full" />
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Initiative</TableHead>
+                                        <TableHead className="text-right">Donation Count</TableHead>
+                                        <TableHead className="text-right">Total Amount</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {summaryData?.sortedInitiatives.map((initiative) => (
+                                        <TableRow key={`${initiative.type}_${initiative.name}`}>
+                                            <TableCell className="font-medium flex items-center gap-2">
+                                                {initiative.type === 'campaign' ? <FolderKanban className="h-4 w-4 text-muted-foreground" /> : initiative.type === 'lead' ? <Lightbulb className="h-4 w-4 text-muted-foreground" /> : <Wallet className="h-4 w-4 text-muted-foreground" />}
+                                                {initiative.name}
+                                            </TableCell>
+                                            <TableCell className="text-right">{initiative.count}</TableCell>
+                                            <TableCell className="text-right font-mono">₹{initiative.amount.toLocaleString('en-IN')}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                    {summaryData?.sortedInitiatives.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="text-center h-24 text-muted-foreground">
+                                                No specific initiative allocations in this period.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </CardContent>
+                </Card>
                 <div className="grid gap-6 lg:grid-cols-2">
                     <Card>
                         <CardHeader>
