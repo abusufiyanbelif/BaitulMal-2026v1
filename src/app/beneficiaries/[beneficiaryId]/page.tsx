@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { collection, getDocs, getDoc, collectionGroup, query, where, doc, type QueryDocumentSnapshot, type DocumentData } from 'firebase/firestore';
+import { collection, getDocs, getDoc, collectionGroup, query, where, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
@@ -90,7 +90,7 @@ export default function BeneficiaryDetailsPage() {
         });
 
         const results = (await Promise.all(initiativePromises));
-        setLinkedInitiatives(results.filter((link: LinkedInitiative | null): link is LinkedInitiative => link !== null));
+        setLinkedInitiatives(results.filter((link): link is LinkedInitiative => link !== null));
     } catch (e: any) {
         console.error("Error fetching linked initiatives:", e);
         toast({ title: "Error", description: "Could not fetch linked initiatives for this beneficiary.", variant: 'destructive'});

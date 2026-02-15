@@ -16,9 +16,18 @@ let firebaseServices: FirebaseServices | null = null;
 
 export function initializeFirebase(): FirebaseServices {
   if (typeof window === 'undefined') {
-    // This function should only be called on the client.
-    // We'll throw an error to make it clear during development.
-    throw new Error("Firebase cannot be initialized on the server.");
+    // On the server, we don't want to initialize Firebase client SDK.
+    // We return a "null" version of the services.
+    // Components should be robust enough to handle this.
+    console.warn("Firebase client SDK cannot be initialized on the server. This is expected during SSR.");
+    // This is not a real Firebase App, but it satisfies the type for the server.
+    const mockApp = { name: 'mock', options: {}, automaticDataCollectionEnabled: false };
+    return {
+        firebaseApp: mockApp as FirebaseApp,
+        auth: {} as Auth,
+        firestore: null,
+        storage: null
+    };
   }
 
   if (firebaseServices) {

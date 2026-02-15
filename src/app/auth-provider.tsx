@@ -1,10 +1,9 @@
-
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
 import { SessionProvider } from '@/components/session-provider';
-import { useUser } from '@/firebase';
+import { useUser } from '@/firebase/auth/use-user';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
