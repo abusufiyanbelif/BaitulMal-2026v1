@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useMemo as useReactMemo, ReactNode } from 'react';
@@ -49,5 +50,3 @@ export function SessionProvider({ authUser, children }: { authUser?: User | null
     </SessionContext.Provider>
   );
 }
-
-    

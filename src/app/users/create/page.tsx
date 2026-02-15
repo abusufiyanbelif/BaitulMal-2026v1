@@ -15,6 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { UserProfile } from '@/lib/types';
 import { UserForm, type UserFormData } from '@/components/user-form';
 import { createUserAuthAction } from '../actions';
+import { setDoc } from 'firebase/firestore';
 
 export default function CreateUserPage() {
   const router = useRouter();

@@ -937,6 +937,3 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
-
-
-    

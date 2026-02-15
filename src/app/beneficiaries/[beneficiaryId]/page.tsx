@@ -16,7 +16,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { updateMasterBeneficiaryAction } from '../actions';
 
 interface LinkedInitiative {
@@ -253,7 +252,7 @@ export default function BeneficiaryDetailsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {linkedInitiatives.map((link) => (
+                            {linkedInitiatives.map((link: LinkedInitiative) => (
                                 <TableRow key={link.id}>
                                     <TableCell>
                                         <Link href={link.type === 'Campaign' ? `/campaign-members/${link.id}/beneficiaries` : `/leads-members/${link.id}/beneficiaries`} className="font-medium text-primary hover:underline flex items-center gap-2">

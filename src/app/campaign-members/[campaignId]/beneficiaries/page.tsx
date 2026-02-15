@@ -1361,12 +1361,3 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
         </>
     );
 }
-
-    
-
-    
-
-  
-
-
-    

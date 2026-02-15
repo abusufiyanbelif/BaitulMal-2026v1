@@ -113,7 +113,7 @@ export default function ProfilePage() {
                 forceRefetchUser();
                 setIsEditMode(false);
             })
-            .catch((serverError) => {
+            .catch((serverError: any) => {
                 errorEmitter.emit('permission-error', new FirestorePermissionError({
                     path: userDocRef.path,
                     operation: 'update',
@@ -184,7 +184,7 @@ export default function ProfilePage() {
                             />
                             
                             <ProfileDetail 
-                                icon={userProfile.status === 'Active' ? <CheckCircle className="text-success" /> : <XCircle className="text-destructive" />} 
+                                icon={userProfile.status === 'Active' ? <CheckCircle className="text-success-foreground" /> : <XCircle className="text-destructive" />} 
                                 label="Status" 
                                 value={<Badge variant={userProfile.status === 'Active' ? 'default' : 'outline'}>{userProfile.status}</Badge>} 
                             />

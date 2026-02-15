@@ -2,7 +2,7 @@
 'use client';
 import { getAuth, type User, type UserInfo } from 'firebase/auth';
 
-type SecurityRuleContext = {
+export type SecurityRuleContext = {
   path: string;
   operation: 'get' | 'list' | 'create' | 'update' | 'delete' | 'write';
   requestResourceData?: any;
@@ -15,7 +15,7 @@ interface FirebaseAuthToken {
   phone_number: string | null;
   sub: string;
   firebase: {
-    identities: Record<string, string[]>;
+    identities: Record<string, any[]>;
     sign_in_provider: string;
     tenant: string | null;
   };
@@ -52,12 +52,12 @@ function buildAuthObject(currentUser: User | null): FirebaseAuthObject | null {
     phone_number: currentUser.phoneNumber,
     sub: currentUser.uid,
     firebase: {
-      identities: currentUser.providerData.reduce((acc: Record<string, string[]>, p: UserInfo) => {
+      identities: currentUser.providerData.reduce((acc: Record<string, any[]>, p: UserInfo) => {
         if (p.providerId) {
           acc[p.providerId] = [p.uid];
         }
         return acc;
-      }, {} as Record<string, string[]>),
+      }, {} as Record<string, any[]>),
       sign_in_provider: currentUser.providerData[0]?.providerId || 'custom',
       tenant: currentUser.tenantId,
     },

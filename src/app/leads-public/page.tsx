@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { Lead, Donation, DonationCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -96,7 +96,7 @@ export default function PublicLeadPage() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [purposeFilter, setPurposeFilter] = useState('All');
 
-  const leadsCollectionRef = useMemo(() => {
+  const leadsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'leads'),
         where('authenticityStatus', '==', 'Verified'),
@@ -106,7 +106,7 @@ export default function PublicLeadPage() {
 
   const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
   
-  const donationsCollectionRef = useMemo(() => {
+  const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
   }, [firestore]);
@@ -114,24 +114,10 @@ export default function PublicLeadPage() {
   
   const leadData = useMemo(() => {
     if (!leads || !donations) return [];
-
-    // Create a map of donations by lead ID for efficient lookup
-    const donationsByLead = new Map<string, Donation[]>();
-    donations.forEach(donation => {
-        if (donation.linkSplit) {
-            donation.linkSplit.forEach(link => {
-                if (link.linkType === 'lead') {
-                    if (!donationsByLead.has(link.linkId)) {
-                        donationsByLead.set(link.linkId, []);
-                    }
-                    donationsByLead.get(link.linkId)!.push(donation);
-                }
-            });
-        }
-    });
+    const leadsById = new Map(leads.map(l => [l.id, l]));
 
     return leads.map(lead => {
-        const relevantDonations = donationsByLead.get(lead.id) || [];
+        const relevantDonations = donations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id));
         const collected = relevantDonations.reduce((sum, donation) => {
             const leadLink = donation.linkSplit?.find(l => l.linkId === lead.id);
             if (!leadLink) return sum;

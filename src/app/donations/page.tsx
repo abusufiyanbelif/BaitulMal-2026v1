@@ -174,7 +174,7 @@ export default function DonationsPage() {
         .then(() => {
             if (screenshotUrls.length > 0) {
                 const deletePromises = screenshotUrls.map(url => 
-                    deleteObject(storageRef(storage, url)).catch(err => {
+                    deleteObject(storageRef(storage, url)).catch((err: any) => {
                         if (err.code !== 'storage/object-not-found') {
                             console.warn(`Failed to delete screenshot from storage: ${url}`, err);
                         }
@@ -186,7 +186,7 @@ export default function DonationsPage() {
         .then(() => {
              toast({ title: 'Success', description: 'Donation deleted successfully.', variant: 'success' });
         })
-        .catch(async (serverError) => {
+        .catch(async (serverError: any) => {
             const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'delete' });
             errorEmitter.emit('permission-error', permissionError);
         })
@@ -283,7 +283,7 @@ export default function DonationsPage() {
             .then(() => {
                 toast({ title: 'Success', description: `Donation ${editingDonation ? 'updated' : 'added'}.`, variant: 'success' });
             })
-            .catch(error => {
+            .catch((error: any) => {
                 const permissionError = new FirestorePermissionError({
                     path: docRef.path,
                     operation: editingDonation ? 'update' : 'create',

@@ -5,7 +5,7 @@ import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { collection, collectionGroup, query } from 'firebase/firestore';
+import { collection, collectionGroup, query, DocumentData } from 'firebase/firestore';
 import Link from 'next/link';
 import {
   BarChart,

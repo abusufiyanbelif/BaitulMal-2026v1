@@ -96,7 +96,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
       suggestions: donation?.suggestions || '',
       isTypeSplit: (donation?.typeSplit?.length ?? 0) > 1,
       typeSplit: donation?.typeSplit && donation.typeSplit.length > 0 ? donation.typeSplit : [{ category: 'Sadaqah', amount: donation?.amount || 0 }],
-      transactions: donation?.transactions && donation.transactions.length > 0 ? donation.transactions : [{ id: `tx_${Date.now()}`, amount: donation?.amount || 0, transactionId: donation?.transactionId }],
+      transactions: donation?.transactions && donation.transactions.length > 0 ? donation.transactions.map(tx => ({...tx, amount: Number(tx.amount) })) : [{ id: `tx_${Date.now()}`, amount: donation?.amount || 0, transactionId: (donation as any)?.transactionId }],
       isSplit: (donation?.linkSplit?.length ?? 0) > 1,
       linkSplit: donation?.linkSplit?.map(l => ({ linkId: `${l.linkType}_${l.linkId}`, amount: l.amount })) || (defaultLinkId ? [{linkId: defaultLinkId, amount: donation?.amount || 0}] : []),
     },
