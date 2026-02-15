@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "preinstall": "rm -rf node_modules/.next-*",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -57,7 +58,7 @@
   "devDependencies": {
     "@types/node": "20.14.9",
     "@types/react": "18.3.1",
-    "@types/react-dom": "18.3.0",
+    "@types/react-dom": "18.3.1",
     "postcss": "8.4.38",
     "tailwindcss": "3.4.4",
     "typescript": "5.4.5"
