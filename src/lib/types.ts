@@ -190,3 +190,21 @@ export interface Donation extends DocumentData {
   campaignId?: string;
   campaignName?: string;
 }
+
+export interface UserProfile extends DocumentData {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  loginId: string;
+  userKey: string;
+  role: 'Admin' | 'User';
+  status: 'Active' | 'Inactive';
+  permissions: UserPermissions;
+  createdAt?: Timestamp;
+  createdById?: string;
+  createdByName?: string;
+  idProofType?: string;
+  idNumber?: string;
+  idProofUrl?: string;
+}
