@@ -12,16 +12,22 @@ service firebase.storage {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function getFirestoreData(path) {
-      return get(/databases/(default)/documents/$(path)).data;
-    }
-
     function isAdmin() {
-      return isSignedIn() && getFirestoreData("users/" + request.auth.uid).role == 'Admin';
+      let userDocPath = /databases/(default)/documents/users/$(request.auth.uid);
+      return isSignedIn() &&
+             exists(userDocPath) &&
+             get(userDocPath).data.role == 'Admin';
     }
 
     function hasPermission(module, permission) {
-        return isSignedIn() && getFirestoreData("users/" + request.auth.uid).permissions[module][permission] == true;
+        let userDocPath = /databases/(default)/documents/users/$(request.auth.uid);
+        // Safely check for the existence of nested properties
+        return isSignedIn() &&
+               exists(userDocPath) &&
+               'permissions' in get(userDocPath).data &&
+               module in get(userDocPath).data.permissions &&
+               permission in get(userDocPath).data.permissions[module] &&
+               get(userDocPath).data.permissions[module][permission] == true;
     }
 
     // Admin has full read/write access to the entire bucket.
@@ -36,7 +42,7 @@ service firebase.storage {
     }
 
     match /campaigns/{campaignId}/{path=**} {
-       allow read: if getFirestoreData("campaigns/" + campaignId).publicVisibility == 'Published'
+       allow read: if get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published'
                     || (isSignedIn() && hasPermission('campaigns', 'read'));
        // Write and delete are handled by the global admin rule for admins.
        // Non-admins need specific permissions.
@@ -45,7 +51,7 @@ service firebase.storage {
     }
 
     match /leads/{leadId}/{path=**} {
-       allow read: if getFirestoreData("leads/" + leadId).publicVisibility == 'Published'
+       allow read: if get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published'
                     || (isSignedIn() && hasPermission('leads-members', 'read'));
        allow write: if isSignedIn() && (hasPermission('leads-members', 'create') || hasPermission('leads-members', 'update'));
        allow delete: if isSignedIn() && hasPermission('leads-members', 'delete');
