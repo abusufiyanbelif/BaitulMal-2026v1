@@ -554,6 +554,8 @@ const sortedGroupKeys = useMemo(() => {
     );
   }
 
+  const kitAmountLabel = campaign.category === 'Ration' ? 'Ration Kit Amount (₹)' : 'Aid Amount (₹)';
+
   const handleAdd = () => {
     if (!canCreate) return;
     setEditingBeneficiary(null);
@@ -748,7 +750,6 @@ const sortedGroupKeys = useMemo(() => {
     }
     setSortConfig({ key, direction });
   };
-  const kitAmountLabel = campaign.category === 'Ration' ? 'Ration Kit Amount (₹)' : 'Aid Amount (₹)';
 
   return (
     <>

@@ -248,16 +248,6 @@ export default function BeneficiariesPage() {
     return items.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 0)), 0);
   }, [lead]);
 
-  const kitAmountLabel = useMemo(() => {
-      if (!lead) return undefined;
-      switch (lead.purpose) {
-          case 'Medical': return 'Medical Cost (₹)';
-          case 'Education': return 'Educational Fees (₹)';
-          case 'Relief': return 'Relief Aid Amount (₹)';
-          default: return 'Required Amount (₹)';
-      }
-  }, [lead]);
-
   const handleAdd = () => {
     if (!canCreate) return;
     setEditingBeneficiary(null);
@@ -547,6 +537,15 @@ export default function BeneficiariesPage() {
         </main>
     );
   }
+
+  const kitAmountLabel = (() => {
+    switch (lead.purpose) {
+        case 'Medical': return 'Medical Cost (₹)';
+        case 'Education': return 'Educational Fees (₹)';
+        case 'Relief': return 'Relief Aid Amount (₹)';
+        default: return 'Required Amount (₹)';
+    }
+  })();
 
   return (
     <>
