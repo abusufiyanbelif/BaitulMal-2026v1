@@ -89,13 +89,13 @@ export default function PublicCampaignSummaryPage() {
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && campaignId) ? collection(firestore, `campaigns/${campaignId}/beneficiaries`) : null, [firestore, campaignId]);
     
     const allDonationsCollectionRef = useMemoFirebase(() => {
-        if (!firestore || !userProfile) return null; // Only fetch if user is logged in
+        if (!firestore) return null;
         return collection(firestore, 'donations');
-    }, [firestore, userProfile]);
+    }, [firestore]);
 
-    const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
-    const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
-    const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
+    const { data: campaign, isLoading: isCampaignLoading, error: campaignError } = useDoc<Campaign>(campaignDocRef);
+    const { data: beneficiaries, isLoading: areBeneficiariesLoading, error: beneficiariesError } = useCollection<Beneficiary>(beneficiariesCollectionRef);
+    const { data: allDonations, isLoading: areDonationsLoading, error: donationsError } = useCollection<Donation>(allDonationsCollectionRef);
     
      const sanitizedRationLists = useMemo(() => {
         if (!campaign?.itemCategories) return [];
@@ -232,7 +232,7 @@ export default function PublicCampaignSummaryPage() {
         let shareText = `
 *Assalamualaikum Warahmatullahi Wabarakatuh*
 
-🙏 *We Need Your Support!* 🙏
+*We Need Your Support!*
 
 Join us for the *${campaign.name}* campaign as we work to provide essential aid to our community.
 
@@ -436,17 +436,17 @@ Your contribution, big or small, makes a huge difference.
                         </CardContent>
                     </Card>
                 ) : (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Target className="h-6 w-6 text-primary" />
-                                Fundraising Progress
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-muted-foreground">Login to view detailed fundraising progress.</p>
-                        </CardContent>
-                    </Card>
+                   <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Target className="h-6 w-6 text-primary" />
+                            Fundraising Progress
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {areDonationsLoading ? <Skeleton className="h-24" /> : <p className="text-muted-foreground">Login to view detailed fundraising progress.</p>}
+                      </CardContent>
+                   </Card>
                 )}
 
 

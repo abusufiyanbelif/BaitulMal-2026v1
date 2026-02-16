@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Copy, Mail, MessageSquare, Send } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 
 interface ShareDialogProps {
   open: boolean;
@@ -43,6 +45,14 @@ export function ShareDialog({ open, onOpenChange, shareData }: ShareDialogProps)
   const { toast } = useToast();
   const { title, text, url } = shareData;
 
+  const [message, setMessage] = useState(text);
+
+  useEffect(() => {
+    if (open) {
+      setMessage(text);
+    }
+  }, [open, text]);
+
   const copyToClipboard = (content: string, message: string) => {
     navigator.clipboard.writeText(content).then(() => {
       toast({
@@ -70,6 +80,17 @@ export function ShareDialog({ open, onOpenChange, shareData }: ShareDialogProps)
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 pt-4">
+             <div className="space-y-2">
+              <Label htmlFor="share-message" className="text-sm font-medium">
+                Share Message
+              </Label>
+              <Textarea
+                id="share-message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={8}
+              />
+            </div>
             <div className="space-y-2">
                 <Label htmlFor="share-url" className="text-sm font-medium">
                     Shareable Link
@@ -86,7 +107,7 @@ export function ShareDialog({ open, onOpenChange, shareData }: ShareDialogProps)
 
             <div className="flex flex-wrap justify-center gap-2">
                 <Button asChild variant="outline" className="flex-1">
-                    <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n\n' + url)}`} target="_blank" rel="noopener noreferrer" >
+                    <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(message + '\n\n' + url)}`} target="_blank" rel="noopener noreferrer" >
                         <WhatsAppIcon /> <span className="ml-2">WhatsApp</span>
                     </a>
                 </Button>
@@ -101,26 +122,26 @@ export function ShareDialog({ open, onOpenChange, shareData }: ShareDialogProps)
                     </a>
                 </Button>
                 <Button asChild variant="outline" className="flex-1">
-                    <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&summary=${encodeURIComponent(text)}`} target="_blank" rel="noopener noreferrer">
+                    <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&summary=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">
                         <LinkedInIcon /> <span className="ml-2">LinkedIn</span>
                     </a>
                 </Button>
                 <Button asChild variant="outline" className="flex-1">
-                    <a href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`} target="_blank" rel="noopener noreferrer">
+                    <a href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">
                         <Send className="mr-2" /> Telegram
                     </a>
                 </Button>
                 <Button asChild variant="outline" className="flex-1">
-                    <a href={`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text + '\n\n' + url)}`} target="_blank" rel="noopener noreferrer">
+                    <a href={`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(message + '\n\n' + url)}`} target="_blank" rel="noopener noreferrer">
                         <Mail className="mr-2" /> Email
                     </a>
                 </Button>
                 <Button asChild variant="outline" className="flex-1">
-                    <a href={`sms:?body=${encodeURIComponent(text + '\n\n' + url)}`}>
+                    <a href={`sms:?body=${encodeURIComponent(message + '\n\n' + url)}`}>
                         <MessageSquare className="mr-2" /> SMS
                     </a>
                 </Button>
-                 <Button variant="outline" onClick={() => copyToClipboard(text, 'Summary text copied!')} className="flex-1">
+                 <Button variant="outline" onClick={() => copyToClipboard(message, 'Summary text copied!')} className="flex-1">
                     <Copy className="mr-2" /> Copy Text
                 </Button>
             </div>

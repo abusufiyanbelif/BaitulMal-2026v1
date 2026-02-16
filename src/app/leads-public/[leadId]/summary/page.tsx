@@ -89,13 +89,13 @@ export default function PublicLeadSummaryPage() {
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
     
     const allDonationsCollectionRef = useMemoFirebase(() => {
-        if (!firestore || !userProfile) return null; // Only fetch if user is logged in
+        if (!firestore) return null;
         return collection(firestore, 'donations');
-    }, [firestore, userProfile]);
+    }, [firestore]);
 
-    const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
-    const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
-    const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
+    const { data: lead, isLoading: isLeadLoading, error: leadError } = useDoc<Lead>(leadDocRef);
+    const { data: beneficiaries, isLoading: areBeneficiariesLoading, error: beneficiariesError } = useCollection<Beneficiary>(beneficiariesCollectionRef);
+    const { data: allDonations, isLoading: areDonationsLoading, error: donationsError } = useCollection<Donation>(allDonationsCollectionRef);
     
      const sanitizedRationLists = useMemo(() => {
         if (!lead?.itemCategories) return [];
@@ -184,7 +184,7 @@ export default function PublicLeadSummaryPage() {
         let shareText = `
 *Assalamualaikum Warahmatullahi Wabarakatuh*
 
-🙏 *We Need Your Support!* 🙏
+*We Need Your Support!*
 
 Join us for the *${lead.name}* campaign as we work to provide essential aid to our community.
 

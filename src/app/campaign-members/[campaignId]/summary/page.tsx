@@ -97,9 +97,9 @@ export default function CampaignSummaryPage() {
         return collection(firestore, 'donations');
     }, [firestore]);
 
-    const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
-    const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
-    const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
+    const { data: campaign, isLoading: isCampaignLoading, error: campaignError } = useDoc<Campaign>(campaignDocRef);
+    const { data: beneficiaries, isLoading: areBeneficiariesLoading, error: beneficiariesError } = useCollection<Beneficiary>(beneficiariesCollectionRef);
+    const { data: allDonations, isLoading: areDonationsLoading, error: donationsError } = useCollection<Donation>(allDonationsCollectionRef);
     
     // Set editable campaign data when not in edit mode
     useEffect(() => {
@@ -315,28 +315,42 @@ export default function CampaignSummaryPage() {
         const beneficiariesByCategory = beneficiaries.reduce((acc, ben) => {
             const members = ben.members || 0;
             const generalCategory = sanitizedRationLists.find(cat => cat.name === 'General Item List');
-            const specificCategory = sanitizedRationLists.find(cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999));
             
-            const appliedCategory = specificCategory || generalCategory;
+            // Find the best matching specific category
+            const matchingCategories = sanitizedRationLists.filter(cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999));
             
+            let appliedCategory = specificCategory || generalCategory;
+            if (matchingCategories.length > 1) {
+                matchingCategories.sort((a, b) => {
+                    const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
+                    const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
+                    if(rangeA !== rangeB) return rangeA - rangeB;
+                    return (b.minMembers ?? 0) - (a.minMembers ?? 0);
+                });
+                appliedCategory = matchingCategories[0];
+            } else if (matchingCategories.length === 1) {
+                appliedCategory = matchingCategories[0];
+            }
+
+
             let categoryName = 'Uncategorized';
             let categoryKey = 'uncategorized';
 
             if (appliedCategory) {
               categoryName = appliedCategory.name === 'General Item List'
                   ? 'General'
-                  : appliedCategory.minMembers === appliedCategory.maxMembers
+                  : (appliedCategory.minMembers === undefined || appliedCategory.maxMembers === undefined || appliedCategory.minMembers === appliedCategory.maxMembers)
                       ? `${appliedCategory.name} (${appliedCategory.minMembers})`
                       : `${appliedCategory.name} (${appliedCategory.minMembers}-${appliedCategory.maxMembers})`;
               categoryKey = appliedCategory.id;
             }
 
             if (!acc[categoryKey]) {
-              acc[categoryKey] = { categoryName: '', beneficiaries: [], totalAmount: 0, kitAmount: 0, minMembers: appliedCategory?.minMembers ?? 0 };
+              acc[categoryKey] = { categoryName: categoryName, beneficiaries: [], totalAmount: 0, kitAmount: 0, minMembers: appliedCategory?.minMembers ?? 0 };
             }
             acc[categoryKey].beneficiaries.push(ben);
             acc[categoryKey].totalAmount += ben.kitAmount || 0;
-            acc[categoryKey].kitAmount = ben.kitAmount || 0; // Assuming kitAmount is consistent per category
+            acc[categoryKey].kitAmount = ben.kitAmount || 0;
             return acc;
         }, {} as Record<string, { categoryName: string, beneficiaries: Beneficiary[], totalAmount: number, kitAmount: number, minMembers: number }>);
 
@@ -409,7 +423,7 @@ export default function CampaignSummaryPage() {
         const shareText = `
 *Assalamualaikum Warahmatullahi Wabarakatuh*
 
-🙏 *We Need Your Support!* 🙏
+*We Need Your Support!*
 
 Join us for the *${campaign.name}* campaign as we work to provide essential aid to our community.
 
@@ -451,6 +465,23 @@ Your contribution, big or small, makes a huge difference.
         return (
             <main className="container mx-auto p-4 md:p-8">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </main>
+        );
+    }
+    
+    if (campaignError || beneficiariesError || donationsError) {
+        return (
+             <main className="container mx-auto p-4 md:p-8">
+                <Alert variant="destructive">
+                    <ShieldAlert className="h-4 w-4" />
+                    <AlertTitle>Error Loading Data</AlertTitle>
+                    <AlertDescription>
+                        <p>There was a problem fetching the required data for this page. This could be due to network issues or insufficient permissions.</p>
+                        <pre className="mt-2 text-xs bg-destructive/10 p-2 rounded-md font-mono">
+                            {campaignError?.message || beneficiariesError?.message || donationsError?.message}
+                        </pre>
+                    </AlertDescription>
+                </Alert>
             </main>
         );
     }
@@ -961,5 +992,6 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+
 
 

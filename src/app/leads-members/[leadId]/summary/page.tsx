@@ -87,9 +87,9 @@ export default function LeadSummaryPage() {
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
     const allDonationsCollectionRef = useMemoFirebase(() => (firestore) ? collection(firestore, 'donations') : null, [firestore]);
 
-    const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
-    const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
-    const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
+    const { data: lead, isLoading: isLeadLoading, error: leadError } = useDoc<Lead>(leadDocRef);
+    const { data: beneficiaries, isLoading: areBeneficiariesLoading, error: beneficiariesError } = useCollection<Beneficiary>(beneficiariesCollectionRef);
+    const { data: allDonations, isLoading: areDonationsLoading, error: donationsError } = useCollection<Donation>(allDonationsCollectionRef);
     
     const availableCategories = React.useMemo(() => {
         const selectedPurpose = leadPurposesConfig.find(p => p.id === editableLead.purpose);
@@ -212,12 +212,11 @@ export default function LeadSummaryPage() {
 
         updateDoc(leadDocRef, saveData)
             .catch(async (serverError) => {
-                const permissionError = new FirestorePermissionError({
+                errorEmitter.emit('permission-error', new FirestorePermissionError({
                     path: leadDocRef.path,
                     operation: 'update',
                     requestResourceData: saveData,
-                });
-                errorEmitter.emit('permission-error', permissionError);
+                }));
             })
             .finally(() => {
                 toast({ title: 'Success', description: 'Lead summary updated.', variant: 'success' });
@@ -285,15 +284,15 @@ export default function LeadSummaryPage() {
         const shareText = `
 *Assalamualaikum Warahmatullahi Wabarakatuh*
 
-🙏 *We Need Your Support!* 🙏
+*We Need Your Support!*
 
-Join us for the *${lead.name}* campaign as we work to provide essential aid to our community.
+Join us for the *${lead.name}* initiative as we work to provide essential aid to our community.
 
 *Our Goal:*
 ${lead.description || 'To support those in need.'}
 
 *Financial Update:*
-🎯 Target for Kits: ₹${summaryData.targetAmount.toLocaleString('en-IN')}
+🎯 Target: ₹${summaryData.targetAmount.toLocaleString('en-IN')}
 ✅ Collected (Verified): ₹${summaryData.totalCollectedForGoal.toLocaleString('en-IN')}
 ⏳ Remaining: *₹${summaryData.remainingToCollect.toLocaleString('en-IN')}*
 
@@ -323,6 +322,24 @@ Your contribution, big or small, makes a huge difference.
     };
     
     if (isLoading) { return <main className="container mx-auto p-4 md:p-8"><Loader2 className="h-8 w-8 animate-spin" /></main> }
+    
+    if (leadError || beneficiariesError || donationsError) {
+        return (
+            <main className="container mx-auto p-4 md:p-8">
+                <Alert variant="destructive">
+                    <ShieldAlert className="h-4 w-4" />
+                    <AlertTitle>Error Loading Data</AlertTitle>
+                    <AlertDescription>
+                        <p>There was a problem fetching required data for this page. This may be due to network issues or permissions.</p>
+                        <pre className="mt-2 text-xs bg-destructive/10 p-2 rounded-md font-mono">
+                            {leadError?.message || beneficiariesError?.message || donationsError?.message}
+                        </pre>
+                    </AlertDescription>
+                </Alert>
+            </main>
+        )
+    }
+
     if (!lead) { return <main className="container mx-auto p-4 md:p-8 text-center"><p>Lead not found.</p></main> }
 
     return (
@@ -647,5 +664,6 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+
 
 
