@@ -231,7 +231,7 @@ export default function BeneficiariesPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<string | null>(null);
   const [formMode, setFormMode] = useState<'add' | 'edit' | 'view'>('add');
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -308,9 +308,19 @@ export default function BeneficiariesPage() {
   };
   
   const handleFormSubmit = async (data: BeneficiaryFormData, masterIdOrEvent?: string | React.BaseSyntheticEvent) => {
-    if (!firestore || !storage || !leadId || !userProfile || !lead) return;
-    if (editingBeneficiary && !canUpdate) return;
-    if (!editingBeneficiary && !canCreate) return;
+    setIsSubmitting(true);
+    if (!firestore || !storage || !leadId || !userProfile || !lead) {
+      setIsSubmitting(false);
+      return;
+    }
+    if (editingBeneficiary && !canUpdate) {
+      setIsSubmitting(false);
+      return;
+    }
+    if (!editingBeneficiary && !canCreate) {
+      setIsSubmitting(false);
+      return;
+    }
     
     const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : undefined;
 
@@ -325,6 +335,7 @@ export default function BeneficiariesPage() {
                 description: 'A beneficiary with the same name and phone number already exists in this lead.',
                 variant: 'destructive',
             });
+            setIsSubmitting(false);
             return;
         }
     }
@@ -345,39 +356,46 @@ export default function BeneficiariesPage() {
     const leadBeneficiaryDocRef = doc(firestore, 'leads', leadId, 'beneficiaries', newBeneficiaryId);
     
     let finalData: Beneficiary;
+    let idProofUrl = editingBeneficiary?.idProofUrl || '';
 
     try {
-        let idProofUrl = editingBeneficiary?.idProofUrl || '';
-      
-        if (data.idProofDeleted && idProofUrl) {
-            await deleteObject(storageRef(storage, idProofUrl)).catch((err: any) => {
-                if ((err as any).code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
-            });
-            idProofUrl = '';
-        }
-      
-        const fileList = data.idProofFile as FileList | undefined;
-        if (fileList && fileList.length > 0) {
-            const file = fileList[0];
-            
-            if (!file.type.startsWith('image/')) {
-                toast({
-                    title: 'Invalid File Type',
-                    description: 'Please upload an image file (e.g., PNG, JPG) for the ID proof.',
-                    variant: 'destructive',
-                });
-                return;
-            }
+      if (data.idProofDeleted && idProofUrl) {
+          await deleteObject(storageRef(storage, idProofUrl)).catch((err: any) => {
+              if ((err as any).code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
+          });
+          idProofUrl = '';
+      }
+    
+      const fileList = data.idProofFile as FileList | undefined;
+      if (fileList && fileList.length > 0) {
+          const file = fileList[0];
+          let fileToUpload: Blob | File = file;
+          let fileExtension = file.name.split('.').pop()?.toLowerCase() || 'bin';
 
-            const { default: Resizer } = await import('react-image-file-resizer');
-            const resizedBlob = await new Promise<Blob>((resolve) => {
-                Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+          if (idProofUrl) {
+            const oldFileRef = storageRef(storage, idProofUrl);
+            await deleteObject(oldFileRef).catch((err: any) => {
+                if ((err.code) !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
             });
-            const filePath = `beneficiaries/${newBeneficiaryId}/id_proof.png`;
-            const fileRef = storageRef(storage, filePath);
-            const uploadResult = await uploadBytes(fileRef, resizedBlob);
-            idProofUrl = await getDownloadURL(uploadResult.ref);
-        }
+          }
+
+          if (file.type.startsWith('image/')) {
+              const { default: Resizer } = await import('react-image-file-resizer');
+              fileToUpload = await new Promise<Blob>((resolve) => {
+                  Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+              });
+              fileExtension = 'png';
+          } else if (file.type !== 'application/pdf') {
+              toast({ title: 'Invalid File Type', description: 'Please upload an image or PDF file.', variant: 'destructive' });
+              setIsSubmitting(false);
+              return;
+          }
+
+          const filePath = `beneficiaries/${newBeneficiaryId}/id_proof.${fileExtension}`;
+          const fileRef = storageRef(storage, filePath);
+          const uploadResult = await uploadBytes(fileRef, fileToUpload);
+          idProofUrl = await getDownloadURL(uploadResult.ref);
+      }
 
         const { idProofFile, idProofDeleted, ...restData } = data;
 
@@ -425,6 +443,8 @@ export default function BeneficiariesPage() {
         } else {
             toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
         }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -699,6 +719,7 @@ export default function BeneficiariesPage() {
                 kitAmountLabel={kitAmountLabel}
                 defaultKitAmount={totalLeadAmount}
                 isReadOnly={formMode === 'view'}
+                isSubmitting={isSubmitting}
             />
         </DialogContent>
       </Dialog>

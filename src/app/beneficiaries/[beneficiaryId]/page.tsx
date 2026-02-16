@@ -145,24 +145,35 @@ export default function BeneficiaryDetailsPage() {
         const fileList = data.idProofFile as FileList | undefined;
         if (fileList && fileList.length > 0) {
             const file = fileList[0];
-            
-            if (!file.type.startsWith('image/')) {
+            let fileToUpload: Blob | File = file;
+            let fileExtension = file.name.split('.').pop()?.toLowerCase() || 'bin';
+
+            if(idProofUrl) {
+                const oldFileRef = storageRef(storage, idProofUrl);
+                await deleteObject(oldFileRef).catch((err: any) => {
+                    if (err.code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
+                });
+            }
+
+            if (file.type.startsWith('image/')) {
+                const { default: Resizer } = await import('react-image-file-resizer');
+                fileToUpload = await new Promise<Blob>((resolve) => {
+                    Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                });
+                fileExtension = 'png';
+            } else if (file.type !== 'application/pdf') {
                 toast({
                     title: 'Invalid File Type',
-                    description: 'Please upload an image file (e.g., PNG, JPG) for the ID proof.',
+                    description: 'Please upload an image or PDF file for the ID proof.',
                     variant: 'destructive',
                 });
                 setIsSubmitting(false);
                 return;
             }
 
-            const { default: Resizer } = await import('react-image-file-resizer');
-            const resizedBlob = await new Promise<Blob>((resolve) => {
-                Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
-            });
-            const filePath = `beneficiaries/${beneficiaryId}/id_proof.png`;
+            const filePath = `beneficiaries/${beneficiaryId}/id_proof.${fileExtension}`;
             const newFileRef = storageRef(storage, filePath);
-            const uploadResult = await uploadBytes(newFileRef, resizedBlob);
+            const uploadResult = await uploadBytes(newFileRef, fileToUpload);
             idProofUrl = await getDownloadURL(uploadResult.ref);
         }
     } catch (uploadError: any) {

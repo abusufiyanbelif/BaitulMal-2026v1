@@ -76,11 +76,10 @@ export default function UserDetailsPage() {
     let idProofUrl = user?.idProofUrl || '';
     try {
         if (data.idProofDeleted && idProofUrl) {
-            // Since we use a static path, we can construct the ref directly
-            const fileRef = storageRef(storage, `users/${userId}/id_proof.png`);
-            await deleteObject(fileRef).catch((err: any) => {
+            const fileRefToDelete = storageRef(storage, idProofUrl);
+            await deleteObject(fileRefToDelete).catch((err: any) => {
                 if (err.code !== 'storage/object-not-found') {
-                    console.warn("Failed to delete old ID proof:", err);
+                    console.warn("Old ID proof deletion failed:", err);
                 }
             });
             idProofUrl = '';
@@ -89,31 +88,35 @@ export default function UserDetailsPage() {
         const fileList = data.idProofFile as FileList | undefined;
         if (fileList && fileList.length > 0) {
             const file = fileList[0];
+            let fileToUpload: Blob | File = file;
+            let fileExtension = file.name.split('.').pop()?.toLowerCase() || 'bin';
             
-            if (!file.type.startsWith('image/')) {
+            if (idProofUrl) {
+                const fileRefToDelete = storageRef(storage, idProofUrl);
+                await deleteObject(fileRefToDelete).catch((err: any) => {
+                    if (err.code !== 'storage/object-not-found') console.warn("Old ID proof deletion failed:", err);
+                });
+            }
+
+            if (file.type.startsWith('image/')) {
+                const { default: Resizer } = await import('react-image-file-resizer');
+                fileToUpload = await new Promise<Blob>((resolve) => {
+                     Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                });
+                fileExtension = 'png';
+            } else if (file.type !== 'application/pdf') {
                 toast({
                     title: 'Invalid File Type',
-                    description: 'Please upload an image file (e.g., PNG, JPG) for the ID proof.',
+                    description: 'Please upload an image or PDF file for the ID proof.',
                     variant: 'destructive',
                 });
                 setIsSubmitting(false);
                 return;
             }
-
-            const { default: Resizer } = await import('react-image-file-resizer');
-            const resizedBlob = await new Promise<Blob>((resolve) => {
-                 Resizer.imageFileResizer(
-                    file, 1024, 1024, 'PNG', 100, 0,
-                    (blob: any) => {
-                        resolve(blob as Blob);
-                    }, 'blob'
-                );
-            });
             
-            const filePath = `users/${userId}/id_proof.png`; // Static filename
+            const filePath = `users/${userId}/id_proof.${fileExtension}`;
             const fileRef = storageRef(storage, filePath);
-
-            const uploadResult = await uploadBytes(fileRef, resizedBlob);
+            const uploadResult = await uploadBytes(fileRef, fileToUpload);
             idProofUrl = await getDownloadURL(uploadResult.ref);
         }
     } catch (uploadError: any) {
