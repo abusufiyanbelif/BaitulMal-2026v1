@@ -28,9 +28,8 @@ export function BrandedLoader() {
         }
     }, [loadingAnimationUrl]);
     
-    // Conditional sizes based on mobile view
-    const logoContainerWidth = isMobile ? 300 : 500;
-    const logoContainerHeight = isMobile ? 300 : 500;
+    const logoContainerWidth = 200;
+    const logoContainerHeight = 200;
     
     const animationContainerSize = Math.max(logoContainerWidth, logoContainerHeight) * 1.5;
 
