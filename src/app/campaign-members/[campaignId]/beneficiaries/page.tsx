@@ -748,7 +748,7 @@ const sortedGroupKeys = useMemo(() => {
     }
     setSortConfig({ key, direction });
   };
-
+  
   const kitAmountLabel = campaign.category === 'Ration' ? 'Ration Kit Amount (₹)' : 'Aid Amount (₹)';
 
   return (
@@ -1054,14 +1054,14 @@ const sortedGroupKeys = useMemo(() => {
                                                     </TableRow>
 
                                                     {!subGroupIsCollapsed && beneficiariesInSubGroup.map((beneficiary, index) => (
-                                                        <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={onZakatToggle} isSubRow={true} />
+                                                        <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} isSubRow={true} />
                                                     ))}
                                                 </React.Fragment>
                                             );
                                         })}
                                         {!categoryIsCollapsed && !categoryIsEffectivelyRanged && (
                                             Object.values(beneficiariesByMemberCount).flat().map((beneficiary, index) => (
-                                                 <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={onZakatToggle} isSubRow={true} />
+                                                 <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} isSubRow={true} />
                                             ))
                                         )}
                                     </React.Fragment>
@@ -1160,4 +1160,3 @@ const sortedGroupKeys = useMemo(() => {
     </>
   );
 }
-
