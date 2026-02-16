@@ -1,9 +1,8 @@
-src/app/donations/page.tsx(617,15): error TS17002: Expected corresponding JSX closing tag for 'CardHeader'.
-src/app/donations/page.tsx(618,13): error TS17002: Expected corresponding JSX closing tag for 'Card'.
-src/app/donations/page.tsx(784,11): error TS17002: Expected corresponding JSX closing tag for 'main'.
-src/app/donations/page.tsx(785,9): error TS17015: Expected corresponding closing tag for JSX fragment.
-src/app/donations/page.tsx(787,7): error TS2657: JSX expressions must have one parent element.
-src/app/donations/page.tsx(847,5): error TS1128: Declaration or statement expected.
-src/app/donations/page.tsx(847,7): error TS1109: Expression expected.
-src/app/donations/page.tsx(848,3): error TS1109: Expression expected.
-src/app/donations/page.tsx(850,5): error TS1005: '}' expected.
+src/app/donations/page.tsx(586,15): error TS17002: Expected corresponding JSX closing tag for 'CardHeader'.
+src/app/donations/page.tsx(587,13): error TS17002: Expected corresponding JSX closing tag for 'Card'.
+src/app/donations/page.tsx(753,11): error TS17002: Expected corresponding JSX closing tag for 'main'.
+src/app/donations/page.tsx(754,9): error TS17015: Expected corresponding closing tag for JSX fragment.
+src/app/donations/page.tsx(756,7): error TS2657: JSX expressions must have one parent element.
+src/app/donations/page.tsx(816,5): error TS1128: Declaration or statement expected.
+src/app/donations/page.tsx(816,7): error TS1109: Expression expected.
+src/app/donations/page.tsx(817,3): error TS1109: Expression expected.
