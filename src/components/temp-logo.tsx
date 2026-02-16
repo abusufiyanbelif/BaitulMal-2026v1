@@ -1,3 +1,4 @@
+
 export function TempLogo() {
   return (
     <svg
@@ -10,10 +11,10 @@ export function TempLogo() {
       <circle cx="50" cy="50" r="45" stroke="hsl(var(--foreground))" fill="none" strokeWidth="2" />
       <text
         x="50%"
-        y="45%"
+        y="30%"
         dominantBaseline="middle"
         textAnchor="middle"
-        fontSize="12"
+        fontSize="10"
         fill="hsl(var(--foreground))"
         fontFamily="sans-serif"
         fontWeight="bold"
@@ -22,15 +23,39 @@ export function TempLogo() {
       </text>
        <text
         x="50%"
+        y="45%"
+        dominantBaseline="middle"
+        textAnchor="middle"
+        fontSize="10"
+        fill="hsl(var(--foreground))"
+        fontFamily="sans-serif"
+        fontWeight="bold"
+      >
+        Samajik
+      </text>
+       <text
+        x="50%"
         y="60%"
         dominantBaseline="middle"
         textAnchor="middle"
-        fontSize="12"
+        fontSize="10"
         fill="hsl(var(--foreground))"
         fontFamily="sans-serif"
         fontWeight="bold"
       >
         Sanstha
+      </text>
+       <text
+        x="50%"
+        y="75%"
+        dominantBaseline="middle"
+        textAnchor="middle"
+        fontSize="10"
+        fill="hsl(var(--foreground))"
+        fontFamily="sans-serif"
+        fontWeight="bold"
+      >
+        Solapur
       </text>
     </svg>
   );
