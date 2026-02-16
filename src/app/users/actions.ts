@@ -3,7 +3,7 @@
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { revalidatePath } from 'next/cache';
-import type { UserFormData } from '@/components/user-form';
+import type { UserFormData } from '@/lib/schemas';
 import type { UserProfile } from '@/lib/types';
 
 export async function createUserAuthAction(data: UserFormData): Promise<{ success: boolean; message: string; uid?: string; }> {

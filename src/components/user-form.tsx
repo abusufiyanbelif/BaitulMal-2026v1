@@ -27,9 +27,10 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/firebase';
+import { useAuth } from '@/firebase/provider';
 import { createAdminPermissions, type UserPermissions } from '@/lib/modules';
 import type { UserProfile } from '@/lib/types';
+import { userFormSchema, type UserFormData } from '@/lib/schemas';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { Loader2, Send, Replace, Trash2, FileIcon, ScanLine } from 'lucide-react';
 import { PermissionsTable } from './permissions-table';
@@ -37,36 +38,6 @@ import { set } from '@/lib/utils';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const formSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  email: z.string().email({ message: "Please enter a valid email address."}).optional().or(z.literal('')),
-  phone: z.string().regex(/^\d{10}$/, { message: "Phone must be 10 digits." }).optional().or(z.literal('')),
-  loginId: z.string().min(3, { message: "Login ID must be at least 3 characters." }).regex(/^[a-z0-9_.]+$/, { message: 'Login ID can only contain lowercase letters, numbers, underscores, and periods.' }),
-  userKey: z.string().min(1, { message: 'User Key is required.'}),
-  role: z.enum(['Admin', 'User']),
-  status: z.enum(['Active', 'Inactive']),
-  idProofType: z.string().optional(),
-  idNumber: z.string().optional(),
-  idProofFile: z.any().optional(),
-  idProofDeleted: z.boolean().optional(),
-  password: z.string().optional(),
-  _isEditing: z.boolean(),
-})
-.refine((data) => data.email || data.phone, {
-  message: 'Either an Email or a Phone Number is required.',
-  path: ['email'],
-})
-.refine((data) => {
-  if (!data._isEditing) {
-    return data.password && data.password.length >= 6;
-  }
-  return true;
-}, {
-  message: 'Password is required and must be at least 6 characters for new users.',
-  path: ['password'],
-});
-
-export type UserFormData = z.infer<typeof formSchema> & { permissions: UserPermissions };
 
 interface UserFormProps {
   user?: UserProfile | null;
@@ -88,8 +59,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
   const [permissionsChanged, setPermissionsChanged] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof userFormSchema>>({
+    resolver: zodResolver(userFormSchema),
     defaultValues: {
       name: user?.name || '',
       email: user?.email?.includes('@docdataextract.app') ? '' : user?.email || '',
@@ -278,7 +249,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
     reader.readAsDataURL(file);
   };
 
-  const finalSubmitHandler = (formData: z.infer<typeof formSchema>) => {
+  const finalSubmitHandler = (formData: z.infer<typeof userFormSchema>) => {
       const dataWithPermissions: UserFormData = {
           ...formData,
           permissions: permissions,
