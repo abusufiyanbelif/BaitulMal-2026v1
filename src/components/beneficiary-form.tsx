@@ -73,7 +73,7 @@ export function BeneficiaryForm({
     onSubmit, 
     onCancel, 
     itemCategories, 
-    kitAmountLabel = 'Required Amount (₹)',
+    kitAmountLabel: kitAmountLabelProp,
     defaultKitAmount,
     isReadOnly = false, 
     isSubmitting = false, 
@@ -82,6 +82,8 @@ export function BeneficiaryForm({
 }: BeneficiaryFormProps) {
     const isEditing = !!beneficiary?.id;
     const { toast } = useToast();
+
+    const kitAmountLabel = kitAmountLabelProp || 'Required Amount (₹)';
 
     const form = useForm<BeneficiaryFormData>({
         resolver: zodResolver(formSchema),
@@ -211,7 +213,7 @@ export function BeneficiaryForm({
                     setValue('idProofType', 'Aadhaar', { shouldValidate: true });
                     toast({ title: "Autofill Successful", description: "Beneficiary details populated.", variant: "success" });
                 }
-            } catch (error) {
+            } catch (error: any) {
                 toast({ title: "Scan Failed", description: "Could not automatically read the document.", variant: "destructive" });
             } finally {
                 setIsScanning(false);
