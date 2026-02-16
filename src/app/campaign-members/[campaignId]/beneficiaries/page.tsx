@@ -554,8 +554,6 @@ const sortedGroupKeys = useMemo(() => {
     );
   }
 
-  const kitAmountLabel = campaign.category === 'Ration' ? 'Ration Kit Amount (₹)' : 'Aid Amount (₹)';
-
   const handleAdd = () => {
     if (!canCreate) return;
     setEditingBeneficiary(null);
@@ -717,7 +715,7 @@ const sortedGroupKeys = useMemo(() => {
         female: beneficiaryData.female,
         idProofType: beneficiaryData.idProofType,
         idNumber: beneficiaryData.idNumber,
-        referralBy: beneficiaryData.referralBy,
+        referralBy: beneficiaryData.referralBy || '',
         kitAmount: 0,
         status: 'Pending',
         notes: beneficiaryData.notes,
@@ -750,6 +748,8 @@ const sortedGroupKeys = useMemo(() => {
     }
     setSortConfig({ key, direction });
   };
+
+  const kitAmountLabel = campaign.category === 'Ration' ? 'Ration Kit Amount (₹)' : 'Aid Amount (₹)';
 
   return (
     <>
@@ -1054,14 +1054,14 @@ const sortedGroupKeys = useMemo(() => {
                                                     </TableRow>
 
                                                     {!subGroupIsCollapsed && beneficiariesInSubGroup.map((beneficiary, index) => (
-                                                        <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} isSubRow={true} />
+                                                        <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={onZakatToggle} isSubRow={true} />
                                                     ))}
                                                 </React.Fragment>
                                             );
                                         })}
                                         {!categoryIsCollapsed && !categoryIsEffectivelyRanged && (
                                             Object.values(beneficiariesByMemberCount).flat().map((beneficiary, index) => (
-                                                 <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} isSubRow={true} />
+                                                 <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={onZakatToggle} isSubRow={true} />
                                             ))
                                         )}
                                     </React.Fragment>
@@ -1094,7 +1094,7 @@ const sortedGroupKeys = useMemo(() => {
                 isReadOnly={formMode === 'view'}
                 isSubmitting={isSubmitting}
                 isLoading={isLoading}
-                kitAmountLabel={kitAmountLabel || 'Aid Amount (₹)'}
+                kitAmountLabel={kitAmountLabel}
             />
         </DialogContent>
       </Dialog>
@@ -1160,3 +1160,4 @@ const sortedGroupKeys = useMemo(() => {
     </>
   );
 }
+

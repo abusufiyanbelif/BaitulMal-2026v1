@@ -426,7 +426,7 @@ export default function BeneficiariesPage() {
         female: beneficiaryData.female,
         idProofType: beneficiaryData.idProofType,
         idNumber: beneficiaryData.idNumber,
-        referralBy: beneficiaryData.referralBy,
+        referralBy: beneficiaryData.referralBy || '',
         kitAmount: 0,
         status: 'Pending',
         notes: beneficiaryData.notes,
@@ -682,7 +682,7 @@ export default function BeneficiariesPage() {
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
                 itemCategories={lead?.itemCategories || []}
-                kitAmountLabel={kitAmountLabel || 'Required Amount (₹)'}
+                kitAmountLabel={kitAmountLabel}
                 defaultKitAmount={totalLeadAmount}
                 isReadOnly={formMode === 'view'}
             />

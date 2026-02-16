@@ -1,4 +1,4 @@
 src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(720,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
-src/app/leads-members/[leadId]/beneficiaries/page.tsx(435,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(429,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
