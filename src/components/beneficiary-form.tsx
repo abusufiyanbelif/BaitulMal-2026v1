@@ -106,7 +106,7 @@ export function BeneficiaryForm({
         },
     });
 
-    const { control, handleSubmit, watch, setValue, getValues, register } = form;
+    const { control, handleSubmit, watch, setValue, getValues, register, formState: { isDirty } } = form;
     
     const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
     const [isScanning, setIsScanning] = useState(false);
@@ -386,7 +386,7 @@ export function BeneficiaryForm({
                     ) : (
                         <>
                             <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>Cancel</Button>
-                            <Button type="submit" disabled={isSubmitting}>
+                            <Button type="submit" disabled={isSubmitting || (isEditing && !isDirty)}>
                                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 {isSubmitting ? 'Saving...' : 'Save Beneficiary'}
                             </Button>
@@ -397,3 +397,5 @@ export function BeneficiaryForm({
         </Form>
     );
 }
+
+    

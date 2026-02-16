@@ -1,0 +1,10 @@
+src/app/donations/page.tsx(617,15): error TS17002: Expected corresponding JSX closing tag for 'CardHeader'.
+src/app/donations/page.tsx(618,13): error TS17002: Expected corresponding JSX closing tag for 'Card'.
+src/app/donations/page.tsx(784,11): error TS17002: Expected corresponding JSX closing tag for 'main'.
+src/app/donations/page.tsx(785,9): error TS17015: Expected corresponding closing tag for JSX fragment.
+src/app/donations/page.tsx(787,7): error TS2657: JSX expressions must have one parent element.
+src/app/donations/page.tsx(847,5): error TS1128: Declaration or statement expected.
+src/app/donations/page.tsx(847,7): error TS1109: Expression expected.
+src/app/donations/page.tsx(848,3): error TS1109: Expression expected.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(598,26): error TS17008: JSX element 'Button' has no corresponding closing tag.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(601,31): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?

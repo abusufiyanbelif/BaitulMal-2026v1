@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -598,7 +599,7 @@ export default function BeneficiariesPage() {
                         <Button onClick={handleAdd}>
                             <PlusCircle className="mr-2 h-4 w-4" />
                             Add New
-                        Button>
+                        </Button>
                     </div>
                 )}
             </div>
@@ -724,3 +725,5 @@ export default function BeneficiariesPage() {
     </>
   );
 }
+
+    
