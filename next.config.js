@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    allowedDevOrigins: ["https://*.cloudworkstations.dev"],
+  },
   images: {
     remotePatterns: [
       {
