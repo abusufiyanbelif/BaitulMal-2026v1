@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -332,6 +333,72 @@ export default function BeneficiariesPage() {
   }, [beneficiaries]);
   
   const filteredAndSortedBeneficiaries = useMemo(() => {
+    if (!beneficiaries) return [];
+    let sortableItems = [...beneficiaries];
+
+    // Filtering
+    if (statusFilter !== 'All') {
+        sortableItems = sortableItems.filter(b => b.status === statusFilter);
+    }
+    if (zakatFilter !== 'All') {
+        const isEligible = zakatFilter === 'Eligible';
+        sortableItems = sortableItems.filter(b => !!b.isEligibleForZakat === isEligible);
+    }
+    if (referralFilter.length > 0) {
+        sortableItems = sortableItems.filter(b => b.referralBy && referralFilter.includes(b.referralBy));
+    }
+    if (searchTerm) {
+        const lowercasedTerm = searchTerm.toLowerCase();
+        sortableItems = sortableItems.filter(b => 
+            (b.name || '').toLowerCase().includes(lowercasedTerm) ||
+            (b.phone || '').toLowerCase().includes(lowercasedTerm) ||
+            (b.address || '').toLowerCase().includes(lowercasedTerm) ||
+            (b.referralBy || '').toLowerCase().includes(lowercasedTerm)
+        );
+    }
+
+    // Sorting
+    if (sortConfig !== null) {
+        sortableItems.sort((a, b) => {
+            if (sortConfig.key === 'srNo') return 0;
+            const aValue = a[sortConfig.key as keyof Beneficiary] ?? '';
+            const bValue = b[sortConfig.key as keyof Beneficiary] ?? '';
+            
+            if (sortConfig.key === 'kitAmount') {
+                 return sortConfig.direction === 'ascending' ? (aValue as number) - (bValue as number) : (bValue as number) - (aValue as number);
+            }
+            if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
+                 return sortConfig.direction === 'ascending' ? (aValue === bValue ? 0 : aValue ? -1 : 1) : (aValue === bValue ? 0 : aValue ? 1 : -1);
+            }
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+                 if (aValue < bValue) {
+                    return sortConfig.direction === 'ascending' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === 'ascending' ? 1 : -1;
+                }
+            }
+            return 0;
+        });
+    }
+
+    return sortableItems;
+  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, referralFilter, sortConfig]);
+
+  const statusCounts = useMemo(() => {
+    const counts = { Total: 0, Given: 0, Verified: 0, Pending: 0, Hold: 0, 'Need More Details': 0 };
+    if (!filteredAndSortedBeneficiaries) return counts;
+    counts.Total = filteredAndSortedBeneficiaries.length;
+    for (const b of filteredAndSortedBeneficiaries) {
+        const status = b.status || 'Pending';
+        if (counts.hasOwnProperty(status)) {
+            counts[status as keyof typeof counts]++;
+        }
+    }
+    return counts;
+  }, [filteredAndSortedBeneficiaries]);
+
+  const groupedBeneficiaries = useMemo(() => {
     if (!filteredAndSortedBeneficiaries || !sanitizedItemCategories || sanitizedItemCategories.length === 0) return {};
 
     return filteredAndSortedBeneficiaries.reduce((acc, beneficiary) => {
@@ -481,6 +548,19 @@ const sortedGroupKeys = useMemo(() => {
         </main>
     );
   }
+
+  const handleAdd = () => {};
+  const handleExportData = () => {};
+  const handleFormSubmit = async (data: BeneficiaryFormData) => {};
+  const handleDeleteConfirm = () => {};
+  const handleSelectExisting = (beneficiary: Beneficiary) => {};
+  const handleProcessImportFile = () => {};
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {};
+  const handleCommitImport = async (records: ProcessedRecord[]) => {};
+  const handleView = (beneficiary: Beneficiary) => {};
+  const handleEdit = (beneficiary: Beneficiary) => {};
+  const handleDeleteClick = (id: string) => {};
+  const handleSort = (key: SortKey) => {};
 
   return (
     <>
@@ -890,3 +970,4 @@ const sortedGroupKeys = useMemo(() => {
     </>
   );
 }
+
