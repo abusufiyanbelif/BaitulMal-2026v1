@@ -1,33 +1,10 @@
-src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(798,30): error TS2739: Type '{ children: string; sortKey: string; className: string; }' is missing the following properties from type '{ sortKey: SortKey; children: ReactNode; className?: string | undefined; sortConfig: { key: SortKey; direction: "ascending" | "descending"; } | null; handleSort: (key: SortKey) => void; }': sortConfig, handleSort
-src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(799,30): error TS2739: Type '{ children: string; sortKey: string; }' is missing the following properties from type '{ sortKey: SortKey; children: ReactNode; className?: string | undefined; sortConfig: { key: SortKey; direction: "ascending" | "descending"; } | null; handleSort: (key: SortKey) => void; }': sortConfig, handleSort
-src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(800,30): error TS2739: Type '{ children: string; sortKey: string; }' is missing the following properties from type '{ sortKey: SortKey; children: ReactNode; className?: string | undefined; sortConfig: { key: SortKey; direction: "ascending" | "descending"; } | null; handleSort: (key: SortKey) => void; }': sortConfig, handleSort
-src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(801,30): error TS2739: Type '{ children: string; sortKey: string; }' is missing the following properties from type '{ sortKey: SortKey; children: ReactNode; className?: string | undefined; sortConfig: { key: SortKey; direction: "ascending" | "descending"; } | null; handleSort: (key: SortKey) => void; }': sortConfig, handleSort
-src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(802,30): error TS2739: Type '{ children: string; sortKey: string; className: string; }' is missing the following properties from type '{ sortKey: SortKey; children: ReactNode; className?: string | undefined; sortConfig: { key: SortKey; direction: "ascending" | "descending"; } | null; handleSort: (key: SortKey) => void; }': sortConfig, handleSort
-src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(803,30): error TS2739: Type '{ children: string; sortKey: string; }' is missing the following properties from type '{ sortKey: SortKey; children: ReactNode; className?: string | undefined; sortConfig: { key: SortKey; direction: "ascending" | "descending"; } | null; handleSort: (key: SortKey) => void; }': sortConfig, handleSort
-src/app/campaign-members/[campaignId]/summary/page.tsx(322,35): error TS2304: Cannot find name 'specificCategory'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(475,18): error TS2552: Cannot find name 'Alert'. Did you mean 'alert'?
-src/app/campaign-members/[campaignId]/summary/page.tsx(476,22): error TS2304: Cannot find name 'ShieldAlert'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(477,22): error TS2304: Cannot find name 'AlertTitle'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(477,53): error TS2304: Cannot find name 'AlertTitle'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(478,22): error TS2552: Cannot find name 'AlertDescription'. Did you mean 'CardDescription'?
-src/app/campaign-members/[campaignId]/summary/page.tsx(483,23): error TS2552: Cannot find name 'AlertDescription'. Did you mean 'CardDescription'?
-src/app/campaign-members/[campaignId]/summary/page.tsx(484,19): error TS2552: Cannot find name 'Alert'. Did you mean 'alert'?
 src/app/campaign-members/actions.ts(26,39): error TS18047: 'adminDb' is possibly 'null'.
 src/app/campaign-members/actions.ts(34,36): error TS18047: 'adminDb' is possibly 'null'.
-src/app/campaign-members/actions.ts(39,17): error TS2739: Type 'FieldValue' is missing the following properties from type 'Timestamp': seconds, nanoseconds, toDate, toMillis, toJSON
 src/app/campaign-members/actions.ts(50,49): error TS18047: 'adminDb' is possibly 'null'.
 src/app/campaign-members/actions.ts(52,47): error TS18047: 'adminDb' is possibly 'null'.
 src/app/leads-members/[leadId]/beneficiaries/page.tsx(440,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
-src/app/leads-members/[leadId]/summary/page.tsx(329,18): error TS2552: Cannot find name 'Alert'. Did you mean 'alert'?
-src/app/leads-members/[leadId]/summary/page.tsx(330,22): error TS2304: Cannot find name 'ShieldAlert'.
-src/app/leads-members/[leadId]/summary/page.tsx(331,22): error TS2304: Cannot find name 'AlertTitle'.
-src/app/leads-members/[leadId]/summary/page.tsx(331,53): error TS2304: Cannot find name 'AlertTitle'.
-src/app/leads-members/[leadId]/summary/page.tsx(332,22): error TS2304: Cannot find name 'AlertDescription'.
-src/app/leads-members/[leadId]/summary/page.tsx(337,23): error TS2304: Cannot find name 'AlertDescription'.
-src/app/leads-members/[leadId]/summary/page.tsx(338,19): error TS2304: Cannot find name 'Alert'.
 src/app/leads-members/actions.ts(25,35): error TS18047: 'adminDb' is possibly 'null'.
 src/app/leads-members/actions.ts(33,32): error TS18047: 'adminDb' is possibly 'null'.
-src/app/leads-members/actions.ts(38,17): error TS2322: Type 'FieldValue' is not assignable to type 'Timestamp'.
 src/app/leads-members/actions.ts(49,49): error TS18047: 'adminDb' is possibly 'null'.
 src/app/leads-members/actions.ts(51,47): error TS18047: 'adminDb' is possibly 'null'.

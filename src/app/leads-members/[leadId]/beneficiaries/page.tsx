@@ -242,7 +242,7 @@ export default function BeneficiariesPage() {
     return items.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 0)), 0);
   }, [lead]);
 
-  const kitAmountLabel = useMemo(() => {
+  const kitAmountLabel = useMemo((): string => {
       switch (lead?.purpose) {
           case 'Medical': return 'Medical Cost (₹)';
           case 'Education': return 'Educational Fees (₹)';
@@ -690,7 +690,7 @@ export default function BeneficiariesPage() {
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
                 itemCategories={lead?.itemCategories || []}
-                kitAmountLabel={kitAmountLabel || 'Required Amount (₹)'}
+                kitAmountLabel={kitAmountLabel}
                 defaultKitAmount={totalLeadAmount}
                 initialReadOnly={formMode === 'view'}
             />
@@ -725,5 +725,3 @@ export default function BeneficiariesPage() {
     </>
   );
 }
-
-    
