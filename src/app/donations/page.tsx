@@ -724,7 +724,7 @@ export default function DonationsPage() {
                                               {canDelete && (
                                                 <>
                                                   <DropdownMenuSeparator />
-                                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
+                                                  <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleDeleteClick(donation.id);}} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
                                                       <Trash2 className="mr-2 h-4 w-4" /> Delete
                                                   </DropdownMenuItem>
                                                 </>
@@ -846,6 +846,5 @@ export default function DonationsPage() {
       </Dialog>
     </>
   );
-}
 
     
