@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -694,7 +693,7 @@ export default function BeneficiariesPage() {
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
                 itemCategories={lead?.itemCategories || []}
-                kitAmountLabel={kitAmountLabel || 'Required Amount (₹)'}
+                kitAmountLabel={kitAmountLabel}
                 defaultKitAmount={totalLeadAmount}
                 isReadOnly={formMode === 'view'}
             />
