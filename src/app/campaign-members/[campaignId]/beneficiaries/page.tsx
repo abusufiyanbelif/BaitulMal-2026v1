@@ -549,18 +549,198 @@ const sortedGroupKeys = useMemo(() => {
     );
   }
 
-  const handleAdd = () => {};
+  const handleAdd = () => {
+    if (!canCreate) return;
+    setEditingBeneficiary(null);
+    setFormMode('add');
+    setIsFormOpen(true);
+  };
   const handleExportData = () => {};
-  const handleFormSubmit = async (data: BeneficiaryFormData) => {};
-  const handleDeleteConfirm = () => {};
-  const handleSelectExisting = (beneficiary: Beneficiary) => {};
+  const handleFormSubmit = async (data: BeneficiaryFormData, masterIdOrEvent?: string | React.BaseSyntheticEvent) => {
+    if (!firestore || !storage || !campaignId || !userProfile || !campaign) return;
+    if (editingBeneficiary && !canUpdate) return;
+    if (!editingBeneficiary && !canCreate) return;
+    
+    const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : undefined;
+
+    if (!editingBeneficiary && !masterId) {
+        const isDuplicate = beneficiaries && beneficiaries.some(b => 
+            b.name.trim().toLowerCase() === data.name.trim().toLowerCase() &&
+            (b.phone || '') === (data.phone || '')
+        );
+        if (isDuplicate) {
+            toast({
+                title: 'Duplicate Beneficiary',
+                description: 'A beneficiary with the same name and phone number already exists in this campaign.',
+                variant: 'destructive',
+            });
+            return;
+        }
+    }
+
+    setIsFormOpen(false);
+    setEditingBeneficiary(null);
+    
+    const batch = writeBatch(firestore);
+    const campaignDocRef = doc(firestore, 'campaigns', campaignId);
+    
+    const masterBeneficiaryDocRef = masterId
+        ? doc(firestore, 'beneficiaries', masterId)
+        : editingBeneficiary
+            ? doc(firestore, 'beneficiaries', editingBeneficiary.id)
+            : doc(collection(firestore, 'beneficiaries'));
+            
+    const newBeneficiaryId = masterBeneficiaryDocRef.id;
+    const campaignBeneficiaryDocRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', newBeneficiaryId);
+    
+    let finalData: Beneficiary;
+
+    try {
+        let idProofUrl = editingBeneficiary?.idProofUrl || '';
+      
+        if (data.idProofDeleted && idProofUrl) {
+            await deleteObject(storageRef(storage, idProofUrl)).catch((err: any) => {
+                if (err.code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
+            });
+            idProofUrl = '';
+        }
+      
+        const fileList = data.idProofFile as FileList | undefined;
+        if (fileList && fileList.length > 0) {
+            const file = fileList[0];
+            const { default: Resizer } = await import('react-image-file-resizer');
+            const resizedBlob = await new Promise<Blob>((resolve) => {
+                Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+            });
+            const filePath = `beneficiaries/${newBeneficiaryId}/id_proof.png`;
+            const fileRef = storageRef(storage, filePath);
+            const uploadResult = await uploadBytes(fileRef, resizedBlob);
+            idProofUrl = await getDownloadURL(uploadResult.ref);
+        }
+
+        const { idProofFile, idProofDeleted, ...restData } = data;
+
+        finalData = {
+            ...restData,
+            id: newBeneficiaryId,
+            idProofUrl,
+            ...(!editingBeneficiary && !masterId && {
+                addedDate: new Date().toISOString().split('T')[0],
+                createdAt: serverTimestamp(),
+                createdById: userProfile.id,
+                createdByName: userProfile.name,
+            }),
+             ...(editingBeneficiary && {
+                updatedAt: serverTimestamp(),
+                updatedById: userProfile.id,
+                updatedByName: userProfile.name,
+            }),
+        } as Beneficiary;
+
+        const oldKitAmount = editingBeneficiary?.kitAmount || 0;
+        const newKitAmount = data.kitAmount || 0;
+        const amountDifference = newKitAmount - oldKitAmount;
+        const newTargetAmount = (campaign.targetAmount || 0) + (editingBeneficiary ? amountDifference : newKitAmount);
+
+        batch.set(masterBeneficiaryDocRef, finalData, { merge: true });
+        batch.set(campaignBeneficiaryDocRef, finalData, { merge: true });
+        batch.update(campaignDocRef, { targetAmount: newTargetAmount });
+        
+        await batch.commit();
+        
+        toast({ title: 'Success', description: `Beneficiary ${editingBeneficiary ? 'updated' : 'added'} and campaign total updated.`, variant: 'success' });
+        forceRefetch();
+        forceRefetchCampaign();
+
+    } catch (error: any) {
+        console.warn("Error during form submission:", error);
+        if (error.code === 'permission-denied') {
+             const permissionError = new FirestorePermissionError({
+                path: campaignBeneficiaryDocRef.path,
+                operation: editingBeneficiary ? 'create' : 'create',
+                requestResourceData: data,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        } else {
+            toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
+        }
+    }
+  };
+  const handleDeleteConfirm = async () => {
+    if (!beneficiaryToDelete || !firestore || !storage || !campaignId || !canDelete || !beneficiaries || !campaign) return;
+
+    const beneficiaryData = beneficiaries.find(b => b.id === beneficiaryToDelete);
+    if (!beneficiaryData) return;
+    
+    setIsDeleteDialogOpen(false);
+
+    const batch = writeBatch(firestore);
+    const beneficiaryDocRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiaryToDelete);
+    const campaignDocRef = doc(firestore, 'campaigns', campaignId);
+
+    const amountToSubtract = beneficiaryData.kitAmount || 0;
+    const newTargetAmount = (campaign.targetAmount || 0) - amountToSubtract;
+
+    batch.delete(beneficiaryDocRef);
+    batch.update(campaignDocRef, { targetAmount: newTargetAmount });
+    
+    try {
+        await batch.commit();
+        toast({ title: 'Success', description: 'Beneficiary removed from this campaign.', variant: 'success' });
+        forceRefetch();
+        forceRefetchCampaign();
+    } catch (serverError: any) {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: `Batch operation on campaigns/${campaignId}`,
+            operation: 'write'
+        }));
+    } finally {
+        setBeneficiaryToDelete(null);
+    }
+  };
+  const handleSelectExisting = (beneficiaryData: Beneficiary) => {
+    const dataToSubmit: BeneficiaryFormData = {
+        name: beneficiaryData.name,
+        address: beneficiaryData.address,
+        phone: beneficiaryData.phone,
+        occupation: beneficiaryData.occupation,
+        members: beneficiaryData.members,
+        earningMembers: beneficiaryData.earningMembers,
+        male: beneficiaryData.male,
+        female: beneficiaryData.female,
+        idProofType: beneficiaryData.idProofType,
+        idNumber: beneficiaryData.idNumber,
+        referralBy: beneficiaryData.referralBy,
+        kitAmount: 0,
+        status: 'Pending',
+        notes: beneficiaryData.notes,
+        isEligibleForZakat: beneficiaryData.isEligibleForZakat,
+        zakatAllocation: beneficiaryData.zakatAllocation,
+    };
+    handleFormSubmit(dataToSubmit, beneficiaryData.id);
+  };
   const handleProcessImportFile = () => {};
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {};
   const handleCommitImport = async (records: ProcessedRecord[]) => {};
-  const handleView = (beneficiary: Beneficiary) => {};
-  const handleEdit = (beneficiary: Beneficiary) => {};
-  const handleDeleteClick = (id: string) => {};
-  const handleSort = (key: SortKey) => {};
+  const handleView = (beneficiary: Beneficiary) => {
+    router.push(`/beneficiaries/${beneficiary.id}`);
+  };
+  const handleEdit = (beneficiary: Beneficiary) => {
+    if (!canUpdate) return;
+    router.push(`/beneficiaries/${beneficiary.id}`);
+  };
+  const handleDeleteClick = (id: string) => {
+    if (!canDelete) return;
+    setBeneficiaryToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+  const handleSort = (key: SortKey) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+        direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
 
   return (
     <>
