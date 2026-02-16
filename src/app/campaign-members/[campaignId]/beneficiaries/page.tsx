@@ -1094,7 +1094,7 @@ const sortedGroupKeys = useMemo(() => {
                 isReadOnly={formMode === 'view'}
                 isSubmitting={isSubmitting}
                 isLoading={isLoading}
-                kitAmountLabel={kitAmountLabel}
+                kitAmountLabel={kitAmountLabel || 'Aid Amount (₹)'}
             />
         </DialogContent>
       </Dialog>
