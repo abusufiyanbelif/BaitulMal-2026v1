@@ -33,19 +33,22 @@ service firebase.storage {
        allow read: if getFirestoreData("campaigns/" + campaignId).publicVisibility == 'Published'
                     || (isSignedIn() && (isAdmin() || hasPermission('campaigns', 'read')));
        allow write: if isSignedIn() && (isAdmin() || hasPermission('campaigns', 'create') || hasPermission('campaigns', 'update'));
+       allow delete: if isSignedIn() && (isAdmin() || hasPermission('campaigns', 'delete'));
     }
 
     match /leads/{leadId}/{path=**} {
        allow read: if getFirestoreData("leads/" + leadId).publicVisibility == 'Published'
                     || (isSignedIn() && (isAdmin() || hasPermission('leads-members', 'read')));
        allow write: if isSignedIn() && (isAdmin() || hasPermission('leads-members', 'create') || hasPermission('leads-members', 'update'));
+       allow delete: if isSignedIn() && (isAdmin() || hasPermission('leads-members', 'delete'));
     }
     
     match /donations/{donationId}/{allPaths=**} {
-       // The previous read rule was preventing writes for new donations.
-       // This simplified rule allows any authenticated user to read/write donation files.
-       // This is safe because file URLs are not guessable and Firestore rules protect the document data itself.
-       allow read, write: if isSignedIn();
+       // Only authenticated users can create (upload files for new donations).
+       // Reading and deleting files requires specific permissions or admin role.
+       allow create: if isSignedIn();
+       allow read: if isSignedIn() && (isAdmin() || hasPermission('donations', 'read'));
+       allow delete: if isSignedIn() && (isAdmin() || hasPermission('donations', 'delete'));
     }
 
     match /users/{userId}/{allPaths=**} {
@@ -55,6 +58,7 @@ service firebase.storage {
     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
       allow read: if isSignedIn() && (isAdmin() || hasPermission('beneficiaries', 'read'));
       allow write: if isSignedIn() && (isAdmin() || hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update'));
+      allow delete: if isSignedIn() && (isAdmin() || hasPermission('beneficiaries', 'delete'));
     }
   }
 }
