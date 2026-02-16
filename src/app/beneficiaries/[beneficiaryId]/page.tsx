@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { collection, getDocs, getDoc, collectionGroup, query, where, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
@@ -53,45 +53,57 @@ export default function BeneficiaryDetailsPage() {
   const fetchLinkedInitiatives = useCallback(async () => {
     if (!firestore || !beneficiary) return;
     setIsLinksLoading(true);
+    setLinkedInitiatives([]);
 
     try {
-        const beneficiarySubcollectionDocs = await getDocs(
-            query(collectionGroup(firestore, 'beneficiaries'), where('id', '==', beneficiary.id))
-        );
+        const initiatives: LinkedInitiative[] = [];
 
-        if (beneficiarySubcollectionDocs.empty) {
-            setLinkedInitiatives([]);
-            setIsLinksLoading(false);
-            return;
+        // Fetch Campaigns
+        const campaignsCollectionRef = collection(firestore, 'campaigns');
+        const campaignsSnapshot = await getDocs(campaignsCollectionRef);
+
+        for (const campaignDoc of campaignsSnapshot.docs) {
+            const beneficiaryDocRef = doc(firestore, `campaigns/${campaignDoc.id}/beneficiaries`, beneficiary.id);
+            const beneficiarySnap = await getDoc(beneficiaryDocRef);
+
+            if (beneficiarySnap.exists()) {
+                const campaignData = campaignDoc.data() as Campaign;
+                const beneficiaryData = beneficiarySnap.data() as Beneficiary;
+                initiatives.push({
+                    id: campaignDoc.id,
+                    name: campaignData.name,
+                    type: 'Campaign',
+                    status: campaignData.status,
+                    kitAmount: beneficiaryData.kitAmount || 0,
+                    beneficiaryStatus: beneficiaryData.status || 'Pending'
+                });
+            }
         }
 
-        const initiativePromises = beneficiarySubcollectionDocs.docs.map(async (benDoc: QueryDocumentSnapshot<DocumentData>) => {
-            if (benDoc.ref.path.startsWith('beneficiaries/')) return null;
+        // Fetch Leads
+        const leadsCollectionRef = collection(firestore, 'leads');
+        const leadsSnapshot = await getDocs(leadsCollectionRef);
 
-            const parentRef = benDoc.ref.parent.parent;
-            if (!parentRef) return null;
-
-            const benData = benDoc.data() as Beneficiary;
-            const parentSnap = await getDoc(parentRef);
-
-            if (parentSnap.exists()) {
-                const parentData = parentSnap.data() as (Campaign | Lead);
-                const initiativeType = parentRef.path.startsWith('campaigns') ? 'Campaign' : 'Lead';
-                
-                return {
-                    id: parentRef.id,
-                    name: parentData.name,
-                    type: initiativeType,
-                    status: parentData.status,
-                    kitAmount: benData.kitAmount || 0,
-                    beneficiaryStatus: benData.status || 'Pending'
-                } as LinkedInitiative;
+        for (const leadDoc of leadsSnapshot.docs) {
+            const beneficiaryDocRef = doc(firestore, `leads/${leadDoc.id}/beneficiaries`, beneficiary.id);
+            const beneficiarySnap = await getDoc(beneficiaryDocRef);
+            
+            if (beneficiarySnap.exists()) {
+                const leadData = leadDoc.data() as Lead;
+                const beneficiaryData = beneficiarySnap.data() as Beneficiary;
+                 initiatives.push({
+                    id: leadDoc.id,
+                    name: leadData.name,
+                    type: 'Lead',
+                    status: leadData.status,
+                    kitAmount: beneficiaryData.kitAmount || 0,
+                    beneficiaryStatus: beneficiaryData.status || 'Pending'
+                });
             }
-            return null;
-        });
+        }
 
-        const results = (await Promise.all(initiativePromises));
-        setLinkedInitiatives(results.filter((link: LinkedInitiative | null): link is LinkedInitiative => link !== null));
+        setLinkedInitiatives(initiatives);
+
     } catch (e: any) {
         console.error("Error fetching linked initiatives:", e);
         toast({ title: "Error", description: "Could not fetch linked initiatives for this beneficiary.", variant: 'destructive'});
@@ -99,6 +111,7 @@ export default function BeneficiaryDetailsPage() {
         setIsLinksLoading(false);
     }
   }, [firestore, beneficiary, toast]);
+
 
   useEffect(() => {
     if (beneficiary) {
