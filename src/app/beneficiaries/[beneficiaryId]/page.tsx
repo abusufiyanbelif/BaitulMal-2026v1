@@ -44,7 +44,7 @@ export default function BeneficiaryDetailsPage() {
     return doc(firestore, 'beneficiaries', beneficiaryId);
   }, [firestore, beneficiaryId]);
 
-  const { data: beneficiary, isLoading: isBeneficiaryLoading, forceRefetch } = useDoc<Beneficiary>(beneficiaryDocRef);
+  const { data: beneficiary, isLoading: isBeneficiaryLoading, error: beneficiaryError, forceRefetch } = useDoc<Beneficiary>(beneficiaryDocRef);
   
   const [linkedInitiatives, setLinkedInitiatives] = useState<LinkedInitiative[]>([]);
   const [isLinksLoading, setIsLinksLoading] = useState(true);
@@ -156,6 +156,35 @@ export default function BeneficiaryDetailsPage() {
                 </CardContent>
             </Card>
         </main>
+    )
+  }
+
+  if (beneficiaryError) {
+    return (
+      <main className="container mx-auto p-4 md:p-8">
+        <div className="mb-4">
+          <Button variant="outline" asChild>
+            <Link href="/beneficiaries">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Beneficiaries
+            </Link>
+          </Button>
+        </div>
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader>
+            <CardTitle>Error</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Alert variant="destructive">
+              <ShieldAlert className="h-4 w-4" />
+              <AlertTitle>Could not load beneficiary data.</AlertTitle>
+              <AlertDescription>
+                <p>This may be due to a network issue or you may not have permission to view this beneficiary.</p>
+                <pre className="mt-2 whitespace-pre-wrap text-xs bg-destructive/10 p-2 rounded-md font-code">{beneficiaryError.message}</pre>
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      </main>
     )
   }
 
