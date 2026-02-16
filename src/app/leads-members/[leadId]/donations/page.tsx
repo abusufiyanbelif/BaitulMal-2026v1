@@ -1,10 +1,12 @@
 
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase/provider';
+import { useFirestore, useStorage, useMemoFirebase } from '@/firebase/provider';
+import { useCollection } from '@/firebase/firestore/use-collection';
+import { useDoc } from '@/firebase/firestore/use-doc';
+import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, where, setDoc, DocumentReference, deleteField } from 'firebase/firestore';
@@ -12,7 +14,7 @@ import type { Donation, Lead, Campaign, TransactionDetail } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -358,16 +360,6 @@ export default function DonationsPage() {
     return sortableItems;
   }, [donations, searchTerm, statusFilter, typeFilter, donationTypeFilter, sortConfig]);
 
-  const totalFilteredDonations = useMemo(() => {
-    return filteredAndSortedDonations.reduce((total, donation) => {
-      const leadLink = donation.linkSplit?.find(l => l.linkId === leadId && l.linkType === 'lead');
-      if (leadLink) {
-        return total + leadLink.amount;
-      }
-      return total;
-    }, 0);
-  }, [filteredAndSortedDonations, leadId]);
-
   const isLoading = isLeadLoading || areDonationsLoading || isProfileLoading || areAllCampaignsLoading || areAllLeadsLoading;
   
   if (isLoading) {
@@ -443,7 +435,7 @@ export default function DonationsPage() {
               <div className="flex-1 space-y-1.5">
                 <CardTitle>Donation List ({filteredAndSortedDonations.length})</CardTitle>
                 <CardDescription>
-                  Total for filtered donations: <span className="font-bold text-foreground">₹{totalFilteredDonations.toFixed(2)}</span>
+                  Total for filtered donations: <span className="font-bold text-foreground">₹{donations.reduce((sum, d) => sum + d.amount, 0).toFixed(2)}</span>
                 </CardDescription>
               </div>
                <div className="flex flex-wrap gap-2">
@@ -697,7 +689,3 @@ export default function DonationsPage() {
     </>
   );
 }
-
-    
-
-    
