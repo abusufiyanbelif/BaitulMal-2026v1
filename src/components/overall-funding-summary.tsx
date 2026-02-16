@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useMemo } from 'react';
@@ -22,12 +21,12 @@ export function OverallFundingSummary() {
 
   const campaignsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'campaigns'), where('status', 'in', ['Active', 'Upcoming']));
+    return collection(firestore, 'campaigns');
   }, [firestore]);
 
   const leadsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'leads'), where('status', 'in', ['Active', 'Upcoming']));
+    return collection(firestore, 'leads');
   }, [firestore]);
   
   const donationsCollectionRef = useMemoFirebase(() => {
@@ -187,5 +186,3 @@ export function OverallFundingSummary() {
     </Card>
   );
 }
-
-    
