@@ -902,6 +902,7 @@ const sortedGroupKeys = useMemo(() => {
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
                 itemCategories={sanitizedItemCategories}
+                kitAmountLabel="Kit Amount (₹)"
                 initialReadOnly={formMode === 'view'}
                 isSubmitting={isSubmitting}
                 isLoading={isLoading}

@@ -690,7 +690,7 @@ export default function BeneficiariesPage() {
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
                 itemCategories={lead?.itemCategories || []}
-                kitAmountLabel={kitAmountLabel ?? 'Required Amount (₹)'}
+                kitAmountLabel={kitAmountLabel}
                 defaultKitAmount={totalLeadAmount}
                 initialReadOnly={formMode === 'view'}
             />

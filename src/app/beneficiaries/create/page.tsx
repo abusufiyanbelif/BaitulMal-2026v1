@@ -101,6 +101,7 @@ export default function CreateBeneficiaryPage() {
                 itemCategories={[]}
                 isLoading={false}
                 hideZakatInfo={true}
+                kitAmountLabel="Kit Amount (₹)"
             />
           </CardContent>
         </Card>

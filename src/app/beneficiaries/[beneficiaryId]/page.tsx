@@ -255,6 +255,7 @@ export default function BeneficiaryDetailsPage() {
               isLoading={isBeneficiaryLoading}
               initialReadOnly={!isEditMode && canUpdate}
               itemCategories={[]}
+              kitAmountLabel="Kit Amount (₹)"
           />
         </CardContent>
       </Card>
