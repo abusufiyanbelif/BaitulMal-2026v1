@@ -128,7 +128,7 @@ export interface Beneficiary extends DocumentData {
     earningMembers?: number;
     male?: number;
     female?: number;
-    addedDate: string;
+    addedDate?: string;
     idProofType?: string;
     idNumber?: string;
     referralBy?: string;

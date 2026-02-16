@@ -113,7 +113,7 @@ export default function ProfilePage() {
                 forceRefetchUser();
                 setIsEditMode(false);
             })
-            .catch((serverError) => {
+            .catch((serverError: any) => {
                 errorEmitter.emit('permission-error', new FirestorePermissionError({
                     path: userDocRef.path,
                     operation: 'update',

@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -64,7 +65,7 @@ export default function BeneficiaryDetailsPage() {
             return;
         }
 
-        const initiativePromises = beneficiarySubcollectionDocs.docs.map(async (benDoc) => {
+        const initiativePromises = beneficiarySubcollectionDocs.docs.map(async (benDoc: QueryDocumentSnapshot<DocumentData>) => {
             if (benDoc.ref.path.startsWith('beneficiaries/')) return null;
 
             const parentRef = benDoc.ref.parent.parent;
@@ -90,7 +91,7 @@ export default function BeneficiaryDetailsPage() {
         });
 
         const results = (await Promise.all(initiativePromises));
-        setLinkedInitiatives(results.filter((link): link is LinkedInitiative => link !== null));
+        setLinkedInitiatives(results.filter((link: LinkedInitiative | null): link is LinkedInitiative => link !== null));
     } catch (e: any) {
         console.error("Error fetching linked initiatives:", e);
         toast({ title: "Error", description: "Could not fetch linked initiatives for this beneficiary.", variant: 'destructive'});
