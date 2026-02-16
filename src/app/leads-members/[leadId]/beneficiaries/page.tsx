@@ -200,11 +200,11 @@ export default function BeneficiariesPage() {
   const pathname = usePathname();
   const router = useRouter();
   const leadId =
-    typeof params.leadId === 'string'
+    typeof params?.leadId === "string"
       ? params.leadId
-      : Array.isArray(params.leadId)
+      : Array.isArray(params?.leadId)
       ? params.leadId[0]
-      : '';
+      : "";
   const firestore = useFirestore();
   const storage = useStorage();
   const { toast } = useToast();
@@ -249,7 +249,7 @@ export default function BeneficiariesPage() {
   }, [lead]);
 
   const kitAmountLabel = useMemo(() => {
-      if (!lead) return 'Required Amount (₹)';
+      if (!lead) return undefined;
       switch (lead.purpose) {
           case 'Medical': return 'Medical Cost (₹)';
           case 'Education': return 'Educational Fees (₹)';
@@ -603,7 +603,7 @@ export default function BeneficiariesPage() {
                         </Button>
                         <Button onClick={handleAdd}>
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            Add New
+                            Add New Beneficiary
                         </Button>
                     </div>
                 )}

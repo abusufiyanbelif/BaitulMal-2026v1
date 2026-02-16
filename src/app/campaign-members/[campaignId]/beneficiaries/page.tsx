@@ -225,11 +225,11 @@ export default function BeneficiariesPage() {
   const router = useRouter();
   const pathname = usePathname();
   const campaignId =
-    typeof params.campaignId === 'string'
+    typeof params?.campaignId === "string"
       ? params.campaignId
-      : Array.isArray(params.campaignId)
+      : Array.isArray(params?.campaignId)
       ? params.campaignId[0]
-      : '';
+      : "";
   const firestore = useFirestore();
   const storage = useStorage();
   const { toast } = useToast();
@@ -818,7 +818,7 @@ const sortedGroupKeys = useMemo(() => {
                         </Button>
                         <Button onClick={handleAdd}>
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            Add New
+                            Add New Beneficiary
                         </Button>
                     </div>
                 )}
@@ -1089,7 +1089,7 @@ const sortedGroupKeys = useMemo(() => {
                 beneficiary={editingBeneficiary}
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
-                itemCategories={sanitizedEditableItemCategories}
+                itemCategories={sanitizedItemCategories}
                 isReadOnly={formMode === 'view'}
                 isSubmitting={isSubmitting}
                 isLoading={isLoading}
