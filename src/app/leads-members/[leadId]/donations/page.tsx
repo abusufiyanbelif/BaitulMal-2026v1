@@ -12,11 +12,11 @@ import type { Donation, Lead, Campaign, TransactionDetail } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DollarSign, CheckCircle2, Hourglass, XCircle, DatabaseZap, ChevronDown, ChevronUp, Link2Off } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, Check, ChevronsUpDown, X, Link2Off } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,8 +24,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuPortal,
   DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -58,7 +58,9 @@ import {
 } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
 import { getNestedValue } from '@/lib/utils';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { syncDonationsAction } from '@/app/donations/actions';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 type SortKey = keyof Donation | 'srNo';
 
@@ -86,7 +88,7 @@ export default function DonationsPage() {
 
   const donations = useMemo(() => {
     if (!allDonations) return [];
-    return allDonations.filter(d => d.linkSplit?.some(link => link.linkId === leadId));
+    return allDonations.filter(d => d.linkSplit?.some(link => link.linkId === leadId && link.linkType === 'lead'));
   }, [allDonations, leadId]);
 
   const allCampaignsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
@@ -94,7 +96,6 @@ export default function DonationsPage() {
 
   const allLeadsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
   const { data: allLeads, isLoading: areAllLeadsLoading } = useCollection<Lead>(allLeadsCollectionRef);
-
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
@@ -112,6 +113,7 @@ export default function DonationsPage() {
   const [donationTypeFilter, setDonationTypeFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
+  const [isSyncing, setIsSyncing] = useState(false);
   
   const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
   const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
@@ -121,12 +123,34 @@ export default function DonationsPage() {
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.update', false);
   const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.delete', false);
 
+  const handleSync = async () => {
+    if (!canUpdate) {
+        toast({ title: "Permission Denied", description: "You don't have permission to sync data.", variant: "destructive"});
+        return;
+    }
+    setIsSyncing(true);
+    toast({ title: 'Syncing Donations...', description: 'Please wait while old donation records are updated to the new format.' });
+
+    try {
+        const result = await syncDonationsAction();
+        if (result.success) {
+            toast({ title: 'Sync Complete', description: result.message, variant: 'success' });
+        } else {
+            toast({ title: 'Sync Failed', description: result.message, variant: 'destructive' });
+        }
+    } catch (error: any) {
+         toast({ title: 'Sync Error', description: 'An unexpected client-side error occurred.', variant: 'destructive' });
+    }
+
+    setIsSyncing(false);
+  };
+
   const handleAdd = () => {
     if (!canCreate) return;
     setEditingDonation(null);
     setIsFormOpen(true);
   };
-
+  
   const handleEdit = (donation: Donation) => {
     if (!canUpdate) return;
     setEditingDonation(donation);
@@ -134,7 +158,7 @@ export default function DonationsPage() {
   };
 
   const handleUnlinkClick = (id: string) => {
-    if (!canUpdate) return; // Unlinking is an update operation
+    if (!canUpdate) return;
     setDonationToUnlink(id);
     setIsUnlinkDialogOpen(true);
   };
@@ -160,13 +184,13 @@ export default function DonationsPage() {
     const updateData = {
         linkSplit: newLinkSplit,
     };
-
+    
     updateDoc(docRef, updateData)
         .catch(async (serverError) => {
             const permissionError = new FirestorePermissionError({
                 path: docRef.path,
                 operation: 'update',
-                requestResourceData: updateData
+                requestResourceData: updateData,
             });
             errorEmitter.emit('permission-error', permissionError);
         })
@@ -333,6 +357,16 @@ export default function DonationsPage() {
     return sortableItems;
   }, [donations, searchTerm, statusFilter, typeFilter, donationTypeFilter, sortConfig]);
 
+  const totalFilteredDonations = useMemo(() => {
+    return filteredAndSortedDonations.reduce((total, donation) => {
+      const leadLink = donation.linkSplit?.find(l => l.linkId === leadId && l.linkType === 'lead');
+      if (leadLink) {
+        return total + leadLink.amount;
+      }
+      return total;
+    }, 0);
+  }, [filteredAndSortedDonations, leadId]);
+
   const isLoading = isLeadLoading || areDonationsLoading || isProfileLoading || areAllCampaignsLoading || areAllLeadsLoading;
   
   if (isLoading) {
@@ -404,6 +438,9 @@ export default function DonationsPage() {
             <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
               <div className="flex-1 space-y-1.5">
                 <CardTitle>Donation List ({filteredAndSortedDonations.length})</CardTitle>
+                <CardDescription>
+                  Total for filtered donations: <span className="font-bold text-foreground">₹{totalFilteredDonations.toFixed(2)}</span>
+                </CardDescription>
               </div>
                <div className="flex flex-wrap gap-2">
                     {canCreate && (
@@ -514,7 +551,7 @@ export default function DonationsPage() {
                                   <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge>
                               </TableCell>
                               <TableCell className="text-right pr-4">
-                                  <div className="flex items-center justify-end">
+                                    <div className="flex items-center justify-end">
                                       <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!donation.transactions || donation.transactions.length === 0}>
                                           {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                           <span className="sr-only">Toggle details</span>
@@ -658,4 +695,5 @@ export default function DonationsPage() {
     </>
   );
 }
+
 
