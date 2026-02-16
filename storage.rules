@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service firebase.storage {
@@ -34,10 +35,10 @@ service firebase.storage {
                getUserData().permissions[module][permission] == true;
     }
 
-    // Settings are public read, but only admin write.
+    // Settings are public read, but only admin or users with permission can write.
     match /settings/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isAdmin() || hasPermission('settings', 'update');
     }
 
     match /campaigns/{campaignId}/{path=**} {
@@ -68,9 +69,10 @@ service firebase.storage {
       allow read, write: if isOwner(userId) || isAdmin();
     }
     
-    // Beneficiary ID proofs
+    // Beneficiary ID proofs require specific permissions
     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      allow read, write: if isSignedIn();
+      allow read: if (isSignedIn() && hasPermission('beneficiaries', 'read')) || isAdmin();
+      allow write: if (isSignedIn() && (hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update'))) || isAdmin();
     }
   }
 }
