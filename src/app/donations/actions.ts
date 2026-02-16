@@ -76,12 +76,12 @@ export async function deleteDonationAction(donationId: string): Promise<{ succes
                 // Extract path from URL: https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{path}?alt=media
                 try {
                     const path = decodeURIComponent(url.split('/o/')[1].split('?')[0]);
-                    return bucket.file(path).delete().catch(err => {
+                    return bucket.file(path).delete().catch((err: any) => {
                          if (err.code !== 404) { // 404 is "Not Found", which is fine.
                              console.warn(`Failed to delete screenshot ${path}:`, err.message);
                          }
                     });
-                } catch (e) {
+                } catch (e: any) {
                     console.warn(`Could not parse screenshot URL to delete: ${url}`);
                     return Promise.resolve();
                 }

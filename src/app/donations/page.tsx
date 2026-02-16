@@ -529,7 +529,7 @@ export default function DonationsPage() {
                             {donation.linkSplit && donation.linkSplit.length > 0 ? (
                                 <div className="flex flex-col gap-1">
                                     {donation.linkSplit.map(link => (
-                                        <Badge key={link.linkId} variant="outline" className="w-fit">
+                                        <Badge key={`${link.linkType}_${link.linkId}`} variant="outline" className="w-fit">
                                             {link.linkName} {donation.linkSplit && donation.linkSplit.length > 1 ? `(₹${link.amount.toFixed(2)})` : ''}
                                         </Badge>
                                     ))}
@@ -583,4 +583,5 @@ export default function DonationsPage() {
     </>
   );
 }
+
     
