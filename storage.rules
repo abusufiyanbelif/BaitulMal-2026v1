@@ -56,11 +56,9 @@ service firebase.storage {
     }
     
     match /donations/{donationId}/{allPaths=**} {
-      // A user can create a file if they are the owner specified in the metadata.
       allow create: if request.auth.uid == request.resource.customMetadata.ownerId || isAdmin();
-      
       allow read: if (isSignedIn() && hasPermission('donations', 'read')) || isAdmin();
-      allow update: if (isSignedIn() && hasPermission('donations', 'update')) || isAdmin(); // For metadata updates
+      allow update: if (isSignedIn() && hasPermission('donations', 'update')) || isAdmin(); 
       allow delete: if (isSignedIn() && hasPermission('donations', 'delete')) || isAdmin();
     }
 
@@ -69,7 +67,6 @@ service firebase.storage {
       allow read, write: if isOwner(userId) || isAdmin();
     }
     
-    // Beneficiary ID proofs require specific permissions
     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
       allow read: if (isSignedIn() && hasPermission('beneficiaries', 'read')) || isAdmin();
       allow write: if (isSignedIn() && (hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update'))) || isAdmin();
