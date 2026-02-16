@@ -1,10 +1,2 @@
-src/app/campaign-members/actions.ts(26,39): error TS18047: 'adminDb' is possibly 'null'.
-src/app/campaign-members/actions.ts(34,36): error TS18047: 'adminDb' is possibly 'null'.
-src/app/campaign-members/actions.ts(50,49): error TS18047: 'adminDb' is possibly 'null'.
-src/app/campaign-members/actions.ts(52,47): error TS18047: 'adminDb' is possibly 'null'.
 src/app/leads-members/[leadId]/beneficiaries/page.tsx(440,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
-src/app/leads-members/actions.ts(25,35): error TS18047: 'adminDb' is possibly 'null'.
-src/app/leads-members/actions.ts(33,32): error TS18047: 'adminDb' is possibly 'null'.
-src/app/leads-members/actions.ts(49,49): error TS18047: 'adminDb' is possibly 'null'.
-src/app/leads-members/actions.ts(51,47): error TS18047: 'adminDb' is possibly 'null'.

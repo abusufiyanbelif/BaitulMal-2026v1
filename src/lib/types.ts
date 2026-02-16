@@ -150,25 +150,6 @@ export interface Beneficiary extends DocumentData {
     updatedByName?: string;
 }
 
-export interface UserProfile extends DocumentData {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  loginId: string;
-  userKey: string;
-  role: 'Admin' | 'User';
-  status: 'Active' | 'Inactive';
-  permissions?: UserPermissions;
-  idProofType?: string;
-  idNumber?: string;
-  idProofUrl?: string;
-  idProofFilename?: string;
-  createdAt?: Timestamp;
-  createdById?: string;
-  createdByName?: string;
-}
-
 export interface DonationLink {
   linkId: string;
   linkName: string;

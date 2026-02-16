@@ -6,7 +6,7 @@ import type { Beneficiary } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FieldValue } from 'firebase-admin/firestore';
 
-export async function createMasterBeneficiaryAction(data: Omit<Beneficiary, 'id' | 'createdAt' | 'createdById' | 'createdByName' | 'addedDate'>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
+export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
     if (!adminDb) {
         return { success: false, message: "Database service is not initialized." };
     }
