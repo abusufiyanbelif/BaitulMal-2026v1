@@ -36,7 +36,7 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
                 ...sourceData,
                 name: newName,
                 status: 'Upcoming',
-                createdAt: FieldValue.serverTimestamp(),
+                createdAt: FieldValue.serverTimestamp() as any,
                 // Reset financial data
                 targetAmount: 0, 
             };

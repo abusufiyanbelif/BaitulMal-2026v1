@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, Users, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, Gift, UploadCloud, Trash2, FolderKanban, Lightbulb, Target, File } from 'lucide-react';
+import { ArrowLeft, Loader2, Users, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, Gift, UploadCloud, Trash2, FolderKanban, Lightbulb, Target, File, ShieldAlert } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
@@ -37,6 +37,7 @@ import type { ChartConfig } from '@/components/ui/chart';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
 const donationCategoryChartConfig = {
@@ -211,7 +212,7 @@ export default function LeadSummaryPage() {
         };
 
         updateDoc(leadDocRef, saveData)
-            .catch(async (serverError) => {
+            .catch(async (serverError: any) => {
                 errorEmitter.emit('permission-error', new FirestorePermissionError({
                     path: leadDocRef.path,
                     operation: 'update',
@@ -578,7 +579,7 @@ Your contribution, big or small, makes a huge difference.
                                 </div>
                             </div>
                         </div>
-                      ) : <Skeleton className="h-48 w-full" />}
+                      ) : <Skeleton className="w-full h-48" />}
                     </CardContent>
                 </Card>
 
@@ -664,6 +665,7 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+
 
 
 

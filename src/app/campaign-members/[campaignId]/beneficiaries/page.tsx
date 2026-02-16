@@ -795,12 +795,12 @@ const sortedGroupKeys = useMemo(() => {
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-muted/50">
-                            <SortableHeader sortKey="srNo" className="w-[120px]">#</SortableHeader>
-                            <SortableHeader sortKey="name">Name &amp; Phone</SortableHeader>
-                            <SortableHeader sortKey="status">Status</SortableHeader>
-                            <SortableHeader sortKey="isEligibleForZakat">Zakat</SortableHeader>
-                            <SortableHeader sortKey="kitAmount" className="text-right">Kit Amount (₹)</SortableHeader>
-                            <SortableHeader sortKey="referralBy">Referred By</SortableHeader>
+                            <SortableHeader sortKey="srNo" className="w-[120px]" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
+                            <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name &amp; Phone</SortableHeader>
+                            <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
+                            <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort}>Zakat</SortableHeader>
+                            <SortableHeader sortKey="kitAmount" className="text-right" sortConfig={sortConfig} handleSort={handleSort}>Kit Amount (₹)</SortableHeader>
+                            <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort}>Referred By</SortableHeader>
                             {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right">Actions</TableHead>}
                         </TableRow>
                     </TableHeader>
@@ -970,4 +970,3 @@ const sortedGroupKeys = useMemo(() => {
     </>
   );
 }
-

@@ -35,7 +35,7 @@ export async function copyLeadAction(options: CopyLeadOptions): Promise<{ succes
                 ...sourceData,
                 name: newName,
                 status: 'Upcoming',
-                createdAt: FieldValue.serverTimestamp(),
+                createdAt: FieldValue.serverTimestamp() as any,
                 targetAmount: 0, 
             };
 

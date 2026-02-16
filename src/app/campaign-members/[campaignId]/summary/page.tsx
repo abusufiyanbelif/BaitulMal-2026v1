@@ -14,7 +14,7 @@ import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'fi
 import Link from 'next/link';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 
-import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/types';
+import type { Campaign, Beneficiary, Donation, DonationCategory, ItemCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -39,6 +39,8 @@ import type { ChartConfig } from '@/components/ui/chart';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ShieldAlert } from 'lucide-react';
 
 
 const donationCategoryChartConfig = {
@@ -316,10 +318,9 @@ export default function CampaignSummaryPage() {
             const members = ben.members || 0;
             const generalCategory = sanitizedRationLists.find(cat => cat.name === 'General Item List');
             
-            // Find the best matching specific category
             const matchingCategories = sanitizedRationLists.filter(cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999));
             
-            let appliedCategory = specificCategory || generalCategory;
+            let specificCategory: ItemCategory | null = null;
             if (matchingCategories.length > 1) {
                 matchingCategories.sort((a, b) => {
                     const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
@@ -327,10 +328,12 @@ export default function CampaignSummaryPage() {
                     if(rangeA !== rangeB) return rangeA - rangeB;
                     return (b.minMembers ?? 0) - (a.minMembers ?? 0);
                 });
-                appliedCategory = matchingCategories[0];
+                specificCategory = matchingCategories[0];
             } else if (matchingCategories.length === 1) {
-                appliedCategory = matchingCategories[0];
+                specificCategory = matchingCategories[0];
             }
+
+            const appliedCategory = specificCategory || generalCategory;
 
 
             let categoryName = 'Uncategorized';
@@ -518,7 +521,7 @@ Your contribution, big or small, makes a huge difference.
                        <Input
                             id="name"
                             value={editableCampaign.name || ''}
-                            onChange={(e) => setEditableCampaign(p => ({...p, name: e.target.value}))}
+                            onChange={(e: any) => setEditableCampaign(p => ({...p, name: e.target.value}))}
                             className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0"
                         />
                     ) : (
@@ -992,6 +995,7 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+
 
 
 
