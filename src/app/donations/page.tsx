@@ -4,9 +4,9 @@ import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
-import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, setDoc, deleteField } from 'firebase/firestore';
-import type { Donation, Campaign, Lead, TransactionDetail } from '@/lib/types';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, addDoc, updateDoc, doc, serverTimestamp, setDoc, deleteField } from 'firebase/firestore';
+import type { Donation, Campaign, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DollarSign, CheckCircle2, Hourglass, XCircle, DatabaseZap, Check, ChevronsUpDown, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, Check, ChevronsUpDown, X, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,8 +39,6 @@ import {
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
@@ -58,7 +56,7 @@ import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert } from 'lucide-react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { syncDonationsAction } from './actions';
+import { syncDonationsAction, deleteDonationAction } from './actions';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
@@ -169,46 +167,20 @@ export default function DonationsPage() {
     setIsImageViewerOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
-    if (!donationToDelete || !firestore || !storage || !canDelete || !donations) return;
-
-    const donationData = donations.find(d => d.id === donationToDelete);
-    if (!donationData) return;
-
-    const docRef = doc(firestore, 'donations', donationToDelete);
-    
-    // Collect all screenshot URLs from all transactions
-    const screenshotUrls = (donationData.transactions || []).map(t => t.screenshotUrl).filter(Boolean) as string[];
-
+  const handleDeleteConfirm = async () => {
+    if (!donationToDelete) return;
     setIsDeleteDialogOpen(false);
-    
-    deleteDoc(docRef)
-        .then(() => {
-            if (screenshotUrls.length > 0) {
-                const deletePromises = screenshotUrls.map(url => 
-                    deleteObject(storageRef(storage, url)).catch((err: any) => {
-                        if (err.code !== 'storage/object-not-found') {
-                            console.warn(`Failed to delete screenshot from storage: ${url}`, err);
-                        }
-                    })
-                );
-                return Promise.all(deletePromises);
-            }
-        })
-        .then(() => {
-             toast({ title: 'Success', description: 'Donation deleted successfully.', variant: 'success' });
-        })
-        .catch(async (serverError: any) => {
-            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'delete' });
-            errorEmitter.emit('permission-error', permissionError);
-        })
-        .finally(() => {
-            setDonationToDelete(null);
-        });
+    const result = await deleteDonationAction(donationToDelete);
+    if (result.success) {
+      toast({ title: "Success", description: result.message, variant: "success" });
+    } else {
+      toast({ title: "Error", description: result.message, variant: "destructive" });
+    }
+    setDonationToDelete(null);
   };
   
   const handleFormSubmit = async (data: DonationFormData) => {
-    if (!firestore || !storage || !userProfile) return;
+    if (!firestore || !storage || !userProfile || !campaigns || !leads) return;
     if (editingDonation && !canUpdate) return;
     if (!editingDonation && !canCreate) return;
 
@@ -224,19 +196,17 @@ export default function DonationsPage() {
     try {
         const transactionPromises = data.transactions.map(async (transaction) => {
             let screenshotUrl = transaction.screenshotUrl || '';
-            // @ts-ignore
-            if (transaction.screenshotFile) {
-                const file = (transaction.screenshotFile as FileList)[0];
-                if(file) {
-                    const { default: Resizer } = await import('react-image-file-resizer');
-                    const resizedBlob = await new Promise<Blob>((resolve) => {
-                         Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
-                    });
-                    const filePath = `donations/${docRef.id}/${transaction.id}.png`;
-                    const fileRef = storageRef(storage, filePath);
-                    const uploadResult = await uploadBytes(fileRef, resizedBlob);
-                    screenshotUrl = await getDownloadURL(uploadResult.ref);
-                }
+            const fileList = transaction.screenshotFile as FileList | undefined;
+            if (fileList && fileList.length > 0) {
+                const file = fileList[0];
+                const { default: Resizer } = await import('react-image-file-resizer');
+                const resizedBlob = await new Promise<Blob>((resolve) => {
+                     Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                });
+                const filePath = `donations/${docRef.id}/${transaction.id}.png`;
+                const fileRef = storageRef(storage, filePath);
+                const uploadResult = await uploadBytes(fileRef, resizedBlob);
+                screenshotUrl = await getDownloadURL(uploadResult.ref);
             }
             return {
                 id: transaction.id,
@@ -322,12 +292,11 @@ export default function DonationsPage() {
     if (!donations) return [];
     let sortableItems = [...donations];
 
-    // Filtering logic
     if (statusFilter !== 'All') {
         sortableItems = sortableItems.filter(d => d.status === statusFilter);
     }
     if (typeFilter !== 'All') {
-        sortableItems = sortableItems.filter(d => d.typeSplit.some(s => s.category === typeFilter));
+        sortableItems = sortableItems.filter(d => d.typeSplit?.some(s => s.category === typeFilter));
     }
     if (donationTypeFilter !== 'All') {
         sortableItems = sortableItems.filter(d => d.donationType === donationTypeFilter);
@@ -846,5 +815,4 @@ export default function DonationsPage() {
       </Dialog>
     </>
   );
-
-    
+}

@@ -1,6 +1,6 @@
 
 'use server';
-import { adminDb } from '@/lib/firebase-admin-sdk';
+import { adminDb, adminStorage } from '@/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 
@@ -49,5 +49,54 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
     } catch (error: any) {
         console.error("Error syncing donations:", error);
         return { success: false, message: `Sync failed: ${error.message}`, updatedCount: 0 };
+    }
+}
+
+export async function deleteDonationAction(donationId: string): Promise<{ success: boolean; message: string }> {
+    if (!adminDb || !adminStorage) {
+        return { success: false, message: 'Database or Storage service is not initialized.' };
+    }
+    try {
+        const docRef = adminDb.collection('donations').doc(donationId);
+        const docSnap = await docRef.get();
+
+        if (!docSnap.exists) {
+            return { success: false, message: 'Donation not found.' };
+        }
+
+        const donationData = docSnap.data();
+        const screenshotUrls: string[] = (donationData?.transactions || [])
+            .map((t: any) => t.screenshotUrl)
+            .filter(Boolean);
+        
+        // Delete screenshots from storage
+        if (screenshotUrls.length > 0) {
+            const bucket = adminStorage.bucket();
+            const deletePromises = screenshotUrls.map(url => {
+                // Extract path from URL: https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{path}?alt=media
+                try {
+                    const path = decodeURIComponent(url.split('/o/')[1].split('?')[0]);
+                    return bucket.file(path).delete().catch(err => {
+                         if (err.code !== 404) { // 404 is "Not Found", which is fine.
+                             console.warn(`Failed to delete screenshot ${path}:`, err.message);
+                         }
+                    });
+                } catch (e) {
+                    console.warn(`Could not parse screenshot URL to delete: ${url}`);
+                    return Promise.resolve();
+                }
+            });
+            await Promise.all(deletePromises);
+        }
+
+        // Delete Firestore document
+        await docRef.delete();
+
+        revalidatePath('/donations');
+        return { success: true, message: 'Donation permanently deleted.' };
+
+    } catch (error: any) {
+        console.error('Error deleting donation:', error);
+        return { success: false, message: `Failed to delete donation: ${error.message}` };
     }
 }
