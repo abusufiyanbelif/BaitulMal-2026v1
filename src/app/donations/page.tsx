@@ -583,5 +583,4 @@ export default function DonationsPage() {
     </>
   );
 }
-
     
