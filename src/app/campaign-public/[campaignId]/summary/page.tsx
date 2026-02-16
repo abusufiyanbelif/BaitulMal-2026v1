@@ -30,7 +30,7 @@ import type { Campaign, Beneficiary, Donation, DonationCategory, ItemCategory } 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift, Target, FolderKanban } from 'lucide-react';
+import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift, Target, HandHelping } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
@@ -315,7 +315,7 @@ Your contribution, big or small, makes a huge difference.
                         priority
                     />
                 ) : (
-                    <FolderKanban className="w-24 h-24 text-muted-foreground" />
+                    <HandHelping className="w-24 h-24 text-muted-foreground" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-6">

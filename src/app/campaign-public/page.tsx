@@ -4,7 +4,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, FolderKanban, Loader2 } from 'lucide-react';
+import { ArrowLeft, HandHelping, Loader2 } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { Campaign, Donation, DonationCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -38,7 +38,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                               data-ai-hint="campaign background"
                             />
                         ) : (
-                            <FolderKanban className="h-16 w-16 text-muted-foreground" />
+                            <HandHelping className="h-16 w-16 text-muted-foreground" />
                         )}
                     </div>
                     <CardHeader>

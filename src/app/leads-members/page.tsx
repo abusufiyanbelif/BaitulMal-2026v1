@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping } from 'lucide-react';
 import { useCollection, useFirestore, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import type { Lead, Beneficiary, Donation, DonationCategory } from '@/lib/types';
@@ -234,7 +234,7 @@ export default function LeadPage() {
               data-ai-hint="lead background"
             />
         ) : (
-            <Lightbulb className="h-16 w-16 text-muted-foreground" />
+            <HandHelping className="h-16 w-16 text-muted-foreground" />
         )}
       </div>
       <CardHeader>
@@ -522,6 +522,7 @@ export default function LeadPage() {
     </>
   );
 }
+
 
 
 

@@ -30,7 +30,7 @@ import type { Lead, Beneficiary, Donation, DonationCategory, ItemCategory } from
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift, Target, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift, Target, HandHelping } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
@@ -55,6 +55,8 @@ import Image from 'next/image';
 import placeholderImages from '@/app/lib/placeholder-images.json';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/use-session';
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 const donationCategoryChartConfig = {
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
@@ -265,7 +267,7 @@ Your contribution, big or small, makes a huge difference.
                         priority
                     />
                 ) : (
-                    <Lightbulb className="w-24 h-24 text-muted-foreground" />
+                    <HandHelping className="w-24 h-24 text-muted-foreground" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-6">
@@ -324,7 +326,7 @@ Your contribution, big or small, makes a huge difference.
                     </CardContent>
                 </Card>
 
-                 {fundingData ? (
+                {fundingData ? (
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">

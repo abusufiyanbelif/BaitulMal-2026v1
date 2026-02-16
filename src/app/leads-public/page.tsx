@@ -4,7 +4,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, Lightbulb } from 'lucide-react';
+import { ArrowLeft, HandHelping, Loader2 } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { Lead, Donation, DonationCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -40,7 +40,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                               data-ai-hint="lead background"
                             />
                         ) : (
-                            <Lightbulb className="h-16 w-16 text-muted-foreground" />
+                            <HandHelping className="h-16 w-16 text-muted-foreground" />
                         )}
                     </div>
                     <CardHeader>

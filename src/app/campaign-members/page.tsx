@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, FolderKanban } from 'lucide-react';
+import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping } from 'lucide-react';
 import { useCollection, useFirestore, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/types';
@@ -256,7 +256,7 @@ export default function CampaignPage() {
               data-ai-hint="campaign background"
             />
         ) : (
-            <FolderKanban className="h-16 w-16 text-muted-foreground" />
+            <HandHelping className="h-16 w-16 text-muted-foreground" />
         )}
       </div>
       <CardHeader>
@@ -546,3 +546,4 @@ export default function CampaignPage() {
 }
 
     
+

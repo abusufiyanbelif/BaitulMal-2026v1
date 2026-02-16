@@ -317,3 +317,6 @@ export default function BeneficiariesSummaryPage() {
                     </CardContent>
                  </Card>
             </div>
+        </div>
+    );
+}
