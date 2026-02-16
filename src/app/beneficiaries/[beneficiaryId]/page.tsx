@@ -57,14 +57,12 @@ export default function BeneficiaryDetailsPage() {
 
     try {
         const initiatives: LinkedInitiative[] = [];
-
-        // Fetch Campaigns
         const campaignsCollectionRef = collection(firestore, 'campaigns');
         const campaignsSnapshot = await getDocs(campaignsCollectionRef);
 
         for (const campaignDoc of campaignsSnapshot.docs) {
-            const beneficiaryDocRef = doc(firestore, `campaigns/${campaignDoc.id}/beneficiaries`, beneficiary.id);
-            const beneficiarySnap = await getDoc(beneficiaryDocRef);
+            const beneficiarySubDocRef = doc(firestore, `campaigns/${campaignDoc.id}/beneficiaries`, beneficiary.id);
+            const beneficiarySnap = await getDoc(beneficiarySubDocRef);
 
             if (beneficiarySnap.exists()) {
                 const campaignData = campaignDoc.data() as Campaign;
@@ -80,13 +78,12 @@ export default function BeneficiaryDetailsPage() {
             }
         }
 
-        // Fetch Leads
         const leadsCollectionRef = collection(firestore, 'leads');
         const leadsSnapshot = await getDocs(leadsCollectionRef);
 
         for (const leadDoc of leadsSnapshot.docs) {
-            const beneficiaryDocRef = doc(firestore, `leads/${leadDoc.id}/beneficiaries`, beneficiary.id);
-            const beneficiarySnap = await getDoc(beneficiaryDocRef);
+            const beneficiarySubDocRef = doc(firestore, `leads/${leadDoc.id}/beneficiaries`, beneficiary.id);
+            const beneficiarySnap = await getDoc(beneficiarySubDocRef);
             
             if (beneficiarySnap.exists()) {
                 const leadData = leadDoc.data() as Lead;
@@ -266,7 +263,7 @@ export default function BeneficiaryDetailsPage() {
               onCancel={handleCancel}
               isSubmitting={isSubmitting}
               isLoading={isBeneficiaryLoading}
-              initialReadOnly={!isEditMode && canUpdate}
+              isReadOnly={!isEditMode}
               itemCategories={[]}
               kitAmountLabel="Kit Amount (₹)"
           />

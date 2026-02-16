@@ -62,7 +62,7 @@ interface BeneficiaryFormProps {
   itemCategories: ItemCategory[];
   kitAmountLabel: string;
   defaultKitAmount?: number;
-  initialReadOnly?: boolean;
+  isReadOnly?: boolean;
   isSubmitting?: boolean;
   isLoading?: boolean;
   hideZakatInfo?: boolean;
@@ -75,7 +75,7 @@ export function BeneficiaryForm({
     itemCategories, 
     kitAmountLabel,
     defaultKitAmount,
-    initialReadOnly = false, 
+    isReadOnly = false, 
     isSubmitting = false, 
     isLoading = false, 
     hideZakatInfo = false 
@@ -108,7 +108,6 @@ export function BeneficiaryForm({
 
     const { control, handleSubmit, watch, setValue, getValues, register, formState: { isDirty } } = form;
     
-    const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
     const [isScanning, setIsScanning] = useState(false);
     
     const idProofFile = watch('idProofFile');
@@ -377,25 +376,16 @@ export function BeneficiaryForm({
                     </div>
                 )}
                 
-                <div className="flex justify-end gap-2 pt-4">
-                    {isReadOnly ? (
-                        <>
-                            <Button type="button" variant="outline" onClick={onCancel}>Close</Button>
-                            <Button type="button" onClick={() => setIsReadOnly(false)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
-                        </>
-                    ) : (
-                        <>
-                            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>Cancel</Button>
-                            <Button type="submit" disabled={isSubmitting || (isEditing && !isDirty)}>
-                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                {isSubmitting ? 'Saving...' : 'Save Beneficiary'}
-                            </Button>
-                        </>
-                    )}
-                </div>
+                {!isReadOnly && (
+                    <div className="flex justify-end gap-2 pt-4">
+                        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>Cancel</Button>
+                        <Button type="submit" disabled={isSubmitting || (isEditing && !isDirty)}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {isSubmitting ? 'Saving...' : 'Save Beneficiary'}
+                        </Button>
+                    </div>
+                )}
             </form>
         </Form>
     );
 }
-
-    
