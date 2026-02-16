@@ -224,7 +224,12 @@ export default function BeneficiariesPage() {
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
-  const campaignId = params.campaignId as string;
+  const campaignId =
+    typeof params.campaignId === 'string'
+      ? params.campaignId
+      : Array.isArray(params.campaignId)
+      ? params.campaignId[0]
+      : '';
   const firestore = useFirestore();
   const storage = useStorage();
   const { toast } = useToast();
@@ -743,6 +748,7 @@ const sortedGroupKeys = useMemo(() => {
     }
     setSortConfig({ key, direction });
   };
+  const kitAmountLabel = campaign.category === 'Ration' ? 'Ration Kit Amount (₹)' : 'Aid Amount (₹)';
 
   return (
     <>
@@ -1083,11 +1089,11 @@ const sortedGroupKeys = useMemo(() => {
                 beneficiary={editingBeneficiary}
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
-                itemCategories={sanitizedItemCategories}
+                itemCategories={sanitizedEditableItemCategories}
                 isReadOnly={formMode === 'view'}
                 isSubmitting={isSubmitting}
                 isLoading={isLoading}
-                kitAmountLabel={campaign.category === 'Ration' ? 'Ration Kit Amount (₹)' : 'Aid Amount (₹)'}
+                kitAmountLabel={kitAmountLabel}
             />
         </DialogContent>
       </Dialog>

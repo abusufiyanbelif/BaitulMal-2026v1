@@ -199,7 +199,12 @@ export default function BeneficiariesPage() {
   const params = useParams();
   const pathname = usePathname();
   const router = useRouter();
-  const leadId = params.leadId as string;
+  const leadId =
+    typeof params.leadId === 'string'
+      ? params.leadId
+      : Array.isArray(params.leadId)
+      ? params.leadId[0]
+      : '';
   const firestore = useFirestore();
   const storage = useStorage();
   const { toast } = useToast();
@@ -244,7 +249,7 @@ export default function BeneficiariesPage() {
   }, [lead]);
 
   const kitAmountLabel = useMemo(() => {
-      if (!lead) return undefined;
+      if (!lead) return 'Required Amount (₹)';
       switch (lead.purpose) {
           case 'Medical': return 'Medical Cost (₹)';
           case 'Education': return 'Educational Fees (₹)';
