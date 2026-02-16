@@ -357,7 +357,7 @@ export default function BeneficiariesPage() {
         let idProofUrl = editingBeneficiary?.idProofUrl || '';
       
         if (data.idProofDeleted && idProofUrl) {
-            await deleteObject(storageRef(storage, idProofUrl)).catch((err: any) => {
+            await deleteObject(storageRef(storage, idProofUrl)).catch((err) => {
                 if ((err as any).code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
             });
             idProofUrl = '';
@@ -690,7 +690,7 @@ export default function BeneficiariesPage() {
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
                 itemCategories={lead?.itemCategories || []}
-                kitAmountLabel={kitAmountLabel || 'Required Amount (₹)'}
+                kitAmountLabel={kitAmountLabel}
                 defaultKitAmount={totalLeadAmount}
                 isReadOnly={formMode === 'view'}
             />
@@ -725,5 +725,3 @@ export default function BeneficiariesPage() {
     </>
   );
 }
-
-    

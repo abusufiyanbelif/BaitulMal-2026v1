@@ -60,7 +60,7 @@ interface BeneficiaryFormProps {
   onSubmit: (data: BeneficiaryFormData) => void;
   onCancel: () => void;
   itemCategories: ItemCategory[];
-  kitAmountLabel: string;
+  kitAmountLabel?: string;
   defaultKitAmount?: number;
   isReadOnly?: boolean;
   isSubmitting?: boolean;
@@ -73,7 +73,7 @@ export function BeneficiaryForm({
     onSubmit, 
     onCancel, 
     itemCategories, 
-    kitAmountLabel,
+    kitAmountLabel = 'Required Amount (₹)',
     defaultKitAmount,
     isReadOnly = false, 
     isSubmitting = false, 
