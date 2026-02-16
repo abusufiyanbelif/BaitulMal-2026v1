@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useStorage, useMemoFirebase } from '@/firebase';
+import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useStorage, useMemoFirebase } from '@/firebase/provider';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import { updateDoc, doc, writeBatch, DocumentReference } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
@@ -89,6 +89,17 @@ export default function UserDetailsPage() {
         const fileList = data.idProofFile as FileList | undefined;
         if (fileList && fileList.length > 0) {
             const file = fileList[0];
+            
+            if (!file.type.startsWith('image/')) {
+                toast({
+                    title: 'Invalid File Type',
+                    description: 'Please upload an image file (e.g., PNG, JPG) for the ID proof.',
+                    variant: 'destructive',
+                });
+                setIsSubmitting(false);
+                return;
+            }
+
             const { default: Resizer } = await import('react-image-file-resizer');
             const resizedBlob = await new Promise<Blob>((resolve) => {
                  Resizer.imageFileResizer(
