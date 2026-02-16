@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
@@ -32,7 +33,7 @@ export default function BeneficiaryDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
-  const beneficiaryId = params.beneficiaryId as string;
+  const beneficiaryId = String(params.beneficiaryId || '');
   const redirectUrl = searchParams.get('redirect');
 
   const firestore = useFirestore();
