@@ -2,10 +2,11 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { useFirestore, useMemoFirebase } from '@/firebase/provider';
+import { useFirestore, useMemoFirebase, useStorage } from '@/firebase/provider';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { useSession } from '@/hooks/use-session';
 import { collection, getDocs, getDoc, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,7 @@ export default function BeneficiaryDetailsPage() {
   const redirectUrl = searchParams.get('redirect');
 
   const firestore = useFirestore();
+  const storage = useStorage();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -122,15 +124,47 @@ export default function BeneficiaryDetailsPage() {
   const canUpdate = currentUserProfile?.role === 'Admin' || !!currentUserProfile?.permissions?.beneficiaries?.update;
 
   const handleSave = async (data: BeneficiaryFormData) => {
-    if (!beneficiaryId || !canUpdate || !currentUserProfile) {
+    if (!beneficiaryId || !canUpdate || !currentUserProfile || !storage) {
         toast({ title: 'Error', description: 'You do not have permission or services are unavailable.', variant: 'destructive' });
         return;
     };
     setIsSubmitting(true);
     
+    let idProofUrl = beneficiary?.idProofUrl || '';
+
+    try {
+        if (data.idProofDeleted && idProofUrl) {
+            const oldFileRef = storageRef(storage, idProofUrl);
+            await deleteObject(oldFileRef).catch((err: any) => {
+                if (err.code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
+            });
+            idProofUrl = '';
+        }
+
+        const fileList = data.idProofFile as FileList | undefined;
+        if (fileList && fileList.length > 0) {
+            const file = fileList[0];
+            const { default: Resizer } = await import('react-image-file-resizer');
+            const resizedBlob = await new Promise<Blob>((resolve) => {
+                Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+            });
+            const filePath = `beneficiaries/${beneficiaryId}/id_proof.png`;
+            const newFileRef = storageRef(storage, filePath);
+            const uploadResult = await uploadBytes(newFileRef, resizedBlob);
+            idProofUrl = await getDownloadURL(uploadResult.ref);
+        }
+    } catch (uploadError: any) {
+        console.error("File handling error:", uploadError);
+        toast({ title: 'File Error', description: 'Could not process the ID proof file.', variant: 'destructive' });
+        setIsSubmitting(false);
+        return;
+    }
+
+    const { idProofFile, idProofDeleted, ...beneficiaryData } = data;
+    
     const result = await updateMasterBeneficiaryAction(
         beneficiaryId, 
-        data,
+        { ...beneficiaryData, idProofUrl },
         { id: currentUserProfile.id, name: currentUserProfile.name }
     );
     
