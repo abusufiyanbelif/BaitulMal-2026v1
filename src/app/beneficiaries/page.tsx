@@ -580,12 +580,6 @@ export default function BeneficiariesPage() {
                     {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
                     Sync Master List
                 </Button>
-                {canCreate && (
-                    <Button onClick={handleAdd} disabled={areBeneficiariesLoading}>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Add Beneficiary
-                    </Button>
-                )}
             </div>
           </div>
         </CardHeader>

@@ -1,5 +1,3 @@
-
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -74,6 +72,152 @@ const parseBoolean = (value: any): boolean => {
     const lower = String(value).toLowerCase().trim();
     return lower === 'true' || lower === '1';
 };
+
+function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
+    const isSorted = sortConfig?.key === sortKey;
+    return (
+        <TableHead className={cn("cursor-pointer hover:bg-muted/50", className)} onClick={() => handleSort(sortKey)}>
+            <div className="flex items-center gap-2 whitespace-nowrap">
+                {children}
+                {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
+            </div>
+        </TableHead>
+    );
+};
+
+interface BeneficiaryRowProps {
+    beneficiary: Beneficiary;
+    index: number;
+    canUpdate?: boolean;
+    canDelete?: boolean;
+    onView: (beneficiary: Beneficiary) => void;
+    onEdit: (beneficiary: Beneficiary) => void;
+    onDelete: (id: string) => void;
+    onStatusChange: (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => void;
+    onZakatToggle: (beneficiary: Beneficiary) => void;
+    isSubRow?: boolean;
+}
+
+const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, onStatusChange, onZakatToggle, isSubRow = false }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
+        <div>
+            <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">{label}</p>
+            <p className="text-sm font-medium pt-1">{value || 'N/A'}</p>
+        </div>
+    );
+    
+    return (
+        <>
+            <TableRow className="bg-background hover:bg-accent/50 data-[state=open]:bg-accent/50 cursor-pointer" onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? 'open' : 'closed'}>
+                <TableCell className="w-[120px]">
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 data-[state=open]:bg-accent" data-state={isOpen ? 'open' : 'closed'}>
+                            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
+                        <span className={cn(isSubRow && "pl-8")}>{index}</span>
+                    </div>
+                </TableCell>
+                <TableCell className="font-medium">
+                    <div>{beneficiary.name}</div>
+                    <div className="text-xs text-muted-foreground font-mono">{beneficiary.phone}</div>
+                </TableCell>
+                <TableCell>
+                    <Badge variant={
+                        beneficiary.status === 'Given' || beneficiary.status === 'Verified' ? 'success' :
+                        beneficiary.status === 'Pending' ? 'secondary' :
+                        beneficiary.status === 'Hold' ? 'destructive' : 'outline'
+                    }>{beneficiary.status}</Badge>
+                </TableCell>
+                <TableCell>
+                    <Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'}>{beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}</Badge>
+                </TableCell>
+                <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
+                <TableCell>{beneficiary.referralBy}</TableCell>
+
+                {(canUpdate || canDelete) && (
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onView(beneficiary)}><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
+                            {canUpdate && <DropdownMenuItem onClick={() => onEdit(beneficiary)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
+                            
+                            {canUpdate && <DropdownMenuSeparator />}
+                            
+                            {canUpdate && beneficiary.status !== 'Given' && (
+                                <DropdownMenuItem onClick={() => onStatusChange(beneficiary, 'Given')}>
+                                    <CheckCircle2 className="mr-2 h-4 w-4 text-success-foreground" />
+                                    <span>Mark as Given</span>
+                                </DropdownMenuItem>
+                            )}
+                            {canUpdate && beneficiary.status === 'Given' && (
+                                <DropdownMenuItem onClick={() => onStatusChange(beneficiary, 'Pending')}>
+                                    <Hourglass className="mr-2 h-4 w-4" />
+                                    <span>Mark as Pending</span>
+                                </DropdownMenuItem>
+                            )}
+                            
+                            {canUpdate && (
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger>
+                                        <ChevronsUpDown className="mr-2 h-4 w-4" />
+                                        <span>Change Status</span>
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuRadioGroup
+                                                value={beneficiary.status}
+                                                onValueChange={(newStatus) => onStatusChange(beneficiary, newStatus as BeneficiaryStatus)}
+                                            >
+                                                <DropdownMenuRadioItem value="Pending"><Hourglass className="mr-2"/>Pending</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2"/>Verified</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2"/>Given</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2"/>Hold</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2"/>Need More Details</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
+                                </DropdownMenuSub>
+                            )}
+
+                            {canUpdate && (
+                                <DropdownMenuItem onClick={() => onZakatToggle(beneficiary)}>
+                                    {beneficiary.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                                    <span>{beneficiary.isEligibleForZakat ? 'Mark as Not Eligible' : 'Mark as Zakat Eligible'}</span>
+                                </DropdownMenuItem>
+                            )}
+                            
+                            {canDelete && <DropdownMenuSeparator />}
+                            {canDelete && <DropdownMenuItem onClick={() => onDelete(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </TableCell>
+            )}
+            </TableRow>
+            {isOpen && (
+                 <TableRow className="bg-muted/20 hover:bg-muted/30">
+                    <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="p-0">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 p-4">
+                            <DetailItem label="Address" value={beneficiary.address} />
+                            <DetailItem label="Occupation" value={beneficiary.occupation} />
+                            <DetailItem label="Family" value={`Total: ${beneficiary.members}, Earning: ${beneficiary.earningMembers}, M: ${beneficiary.male}, F: ${beneficiary.female}`} />
+                            <DetailItem label="ID Proof" value={`${beneficiary.idProofType || 'N/A'} - ${beneficiary.idNumber || 'N/A'}`} />
+                            <DetailItem label="Date Added" value={beneficiary.addedDate} />
+                             {beneficiary.isEligibleForZakat && (
+                                <DetailItem label="Zakat Allocation" value={`₹${(beneficiary.zakatAllocation || 0).toFixed(2)}`} />
+                             )}
+                            {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-3"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
+                        </div>
+                    </TableCell>
+                </TableRow>
+            )}
+        </>
+    );
+}
 
 export default function BeneficiariesPage() {
   const params = useParams();
@@ -183,480 +327,11 @@ export default function BeneficiariesPage() {
 
   const uniqueReferrals = useMemo(() => {
     if (!beneficiaries) return [];
-    const referrals = new Set(beneficiaries.map(b => b.referralBy).filter(Boolean));
+    const referrals = new Set(beneficiaries.map(b => b.referralBy).filter(Boolean) as string[]);
     return [...Array.from(referrals).sort()];
   }, [beneficiaries]);
   
   const filteredAndSortedBeneficiaries = useMemo(() => {
-    if (!beneficiaries) return [];
-    let sortableItems = [...beneficiaries];
-    
-    // Filtering
-    if (statusFilter !== 'All') {
-        sortableItems = sortableItems.filter(b => b.status === statusFilter);
-    }
-    if (zakatFilter !== 'All') {
-        const isEligible = zakatFilter === 'Eligible';
-        sortableItems = sortableItems.filter(b => !!b.isEligibleForZakat === isEligible);
-    }
-    if (referralFilter.length > 0) {
-        sortableItems = sortableItems.filter(b => b.referralBy && referralFilter.includes(b.referralBy));
-    }
-    if (searchTerm) {
-        const lowercasedTerm = searchTerm.toLowerCase();
-        sortableItems = sortableItems.filter(b => 
-            (b.name || '').toLowerCase().includes(lowercasedTerm) ||
-            (b.phone || '').toLowerCase().includes(lowercasedTerm) ||
-            (b.address || '').toLowerCase().includes(lowercasedTerm) ||
-            (b.referralBy || '').toLowerCase().includes(lowercasedTerm)
-        );
-    }
-
-    // Sorting
-    if (sortConfig !== null) {
-        sortableItems.sort((a, b) => {
-            if (sortConfig.key === 'srNo') return 0; // Keep original order for srNo
-            const aValue = a[sortConfig.key as keyof Beneficiary] ?? '';
-            const bValue = b[sortConfig.key as keyof Beneficiary] ?? '';
-            
-            if (typeof aValue === 'number' && typeof bValue === 'number') {
-                return sortConfig.direction === 'ascending' ? aValue - bValue : bValue - aValue;
-            }
-            if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
-                 return sortConfig.direction === 'ascending' ? (aValue === bValue ? 0 : aValue ? -1 : 1) : (aValue === bValue ? 0 : aValue ? 1 : -1);
-            }
-            if (typeof aValue === 'string' && typeof bValue === 'string') {
-                 if (aValue < bValue) {
-                    return sortConfig.direction === 'ascending' ? -1 : 1;
-                }
-                if (aValue > bValue) {
-                    return sortConfig.direction === 'ascending' ? 1 : -1;
-                }
-            }
-            return 0;
-        });
-    }
-
-    return sortableItems;
-  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, referralFilter, sortConfig]);
-
-  const statusCounts = useMemo(() => {
-    const listToCount = filteredAndSortedBeneficiaries || [];
-
-    const counts = listToCount.reduce((acc, b) => {
-      const status = b.status || 'Pending';
-      acc[status] = (acc[status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return {
-      Total: listToCount.length,
-      Given: counts.Given || 0,
-      Verified: counts.Verified || 0,
-      Pending: counts.Pending || 0,
-      Hold: counts.Hold || 0,
-      'Need More Details': counts['Need More Details'] || 0,
-    };
-  }, [filteredAndSortedBeneficiaries]);
-
-  const handleAdd = () => {
-    if (!canCreate) return;
-    setEditingBeneficiary(null);
-    setFormMode('add');
-    setIsFormOpen(true);
-  };
-
-  const handleView = (beneficiary: Beneficiary) => {
-    setEditingBeneficiary(beneficiary);
-    setFormMode('view');
-    setIsFormOpen(true);
-  };
-
-  const handleEdit = (beneficiary: Beneficiary) => {
-    if (!canUpdate) return;
-    setEditingBeneficiary(beneficiary);
-    setFormMode('edit');
-    setIsFormOpen(true);
-  };
-
-  const handleDeleteClick = (id: string) => {
-    if (!canDelete) return;
-    setBeneficiaryToDelete(id);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!beneficiaryToDelete || !firestore || !storage || !campaignId || !canDelete || !beneficiaries || !campaign) return;
-
-    const beneficiaryData = beneficiaries.find(b => b.id === beneficiaryToDelete);
-    if (!beneficiaryData) return;
-
-    setIsDeleteDialogOpen(false);
-
-    const batch = writeBatch(firestore);
-    const beneficiaryDocRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiaryToDelete);
-    const campaignDocRef = doc(firestore, 'campaigns', campaignId);
-    
-    const amountToSubtract = beneficiaryData.kitAmount || 0;
-    const newTargetAmount = (campaign.targetAmount || 0) - amountToSubtract;
-
-    batch.delete(beneficiaryDocRef);
-    batch.update(campaignDocRef, { targetAmount: newTargetAmount });
-
-    // IMPORTANT: Do NOT delete the ID proof file from storage here.
-    // This is an "unlink" operation from the campaign, not a "deep delete".
-    // The master beneficiary record and its file should persist.
-    
-    try {
-        await batch.commit();
-        toast({ title: 'Success', description: 'Beneficiary removed from campaign and campaign total updated.', variant: 'success' });
-        forceRefetch();
-        forceRefetchCampaign();
-    } catch (serverError: any) {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: `Batch operation on campaigns/${campaignId}`,
-            operation: 'write'
-        }));
-    } finally {
-        setBeneficiaryToDelete(null);
-    }
-  };
-  
-  const handleFormSubmit = async (data: BeneficiaryFormData, masterIdOrEvent?: string | React.BaseSyntheticEvent) => {
-    if (!firestore || !storage || !userProfile || !campaign) return;
-    if (editingBeneficiary && !canUpdate) return;
-    if (!editingBeneficiary && !canCreate) return;
-    
-    const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : undefined;
-
-    if (!editingBeneficiary && !masterId) {
-      const isDuplicate = beneficiaries && beneficiaries.some(b =>
-        b.name.trim().toLowerCase() === data.name.trim().toLowerCase() &&
-        (b.phone || '') === (data.phone || '')
-      );
-      if (isDuplicate) {
-        toast({
-          title: 'Duplicate Beneficiary',
-          description: 'A beneficiary with the same name and phone number already exists in this campaign.',
-          variant: 'destructive',
-        });
-        return;
-      }
-    }
-  
-    setIsSubmitting(true);
-  
-    const batch = writeBatch(firestore);
-    const campaignDocRef = doc(firestore, 'campaigns', campaignId);
-
-    const masterBeneficiaryDocRef = masterId
-        ? doc(firestore, 'beneficiaries', masterId)
-        : editingBeneficiary
-            ? doc(firestore, 'beneficiaries', editingBeneficiary.id)
-            : doc(collection(firestore, 'beneficiaries'));
-            
-    const newBeneficiaryId = masterBeneficiaryDocRef.id;
-    const campaignBeneficiaryDocRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', newBeneficiaryId);
-
-    let finalData: Beneficiary;
-  
-    try {
-      let idProofUrl = editingBeneficiary?.idProofUrl || (masterId ? (await getDoc(masterBeneficiaryDocRef)).data()?.idProofUrl : '');
-      
-      if (data.idProofDeleted && idProofUrl) {
-          await deleteObject(storageRef(storage, idProofUrl)).catch((err: any) => {
-              if (err.code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
-          });
-          idProofUrl = '';
-      }
-      
-      const fileList = data.idProofFile as FileList | undefined;
-      if (fileList && fileList.length > 0) {
-        const file = fileList[0];
-        const { default: Resizer } = await import('react-image-file-resizer');
-        const resizedBlob = await new Promise<Blob>((resolve) => {
-          Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
-        });
-        const filePath = `beneficiaries/${newBeneficiaryId}/${Date.now()}.png`;
-        const fileRef = storageRef(storage, filePath);
-        const uploadResult = await uploadBytes(fileRef, resizedBlob);
-        idProofUrl = await getDownloadURL(uploadResult.ref);
-      }
-  
-      const { idProofFile, idProofDeleted, ...restData } = data;
-
-      finalData = {
-        ...restData,
-        id: newBeneficiaryId,
-        idProofUrl,
-        ...(!editingBeneficiary && !masterId && {
-          addedDate: new Date().toISOString().split('T')[0],
-          createdAt: serverTimestamp(),
-          createdById: userProfile.id,
-          createdByName: userProfile.name,
-        }),
-        ...(editingBeneficiary && {
-          updatedAt: serverTimestamp(),
-          updatedById: userProfile.id,
-          updatedByName: userProfile.name,
-        }),
-      } as Beneficiary;
-
-      const oldKitAmount = editingBeneficiary?.kitAmount || 0;
-      const newKitAmount = data.kitAmount || 0;
-      
-      let amountDifference;
-      if (masterId) { // Adding existing beneficiary
-        amountDifference = newKitAmount;
-      } else if (editingBeneficiary) { // Editing existing beneficiary in campaign
-        amountDifference = newKitAmount - oldKitAmount;
-      } else { // Adding brand new beneficiary
-        amountDifference = newKitAmount;
-      }
-
-      const newTargetAmount = (campaign.targetAmount || 0) + amountDifference;
-
-      batch.set(masterBeneficiaryDocRef, finalData, { merge: true });
-      batch.set(campaignBeneficiaryDocRef, finalData, { merge: true });
-      batch.update(campaignDocRef, { targetAmount: newTargetAmount });
-
-      await batch.commit();
-  
-      toast({ title: 'Success', description: `Beneficiary ${editingBeneficiary ? 'updated' : 'added'} and campaign total updated.`, variant: 'success' });
-      forceRefetch();
-      forceRefetchCampaign();
-      setIsFormOpen(false);
-      setEditingBeneficiary(null);
-
-    } catch (error: any) {
-      console.warn("Error during form submission:", error);
-      if (error.code === 'permission-denied') {
-        const permissionError = new FirestorePermissionError({
-          path: `Batch operation on campaigns/${campaignId}`,
-          operation: editingBeneficiary ? 'update' : 'create',
-          requestResourceData: data,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-      } else {
-        toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
-      }
-    } finally {
-        setIsSubmitting(false);
-    }
-  };
-
-  const handleSelectExisting = async (beneficiaryToCopy: Beneficiary) => {
-    if (!canCreate || !userProfile) return;
-
-     const isDuplicate = beneficiaries && beneficiaries.some(b => b.id === beneficiaryToCopy.id);
-     if(isDuplicate) {
-         toast({ title: 'Already Exists', description: 'This beneficiary is already in the current campaign.', variant: 'destructive' });
-         return;
-     }
-
-    setIsSearchOpen(false);
-    
-    // We pass the full beneficiary object including its original master ID
-    await handleFormSubmit(beneficiaryToCopy as BeneficiaryFormData, beneficiaryToCopy.id);
-  };
-
-  const handleExportData = async () => {
-    if (!beneficiaries || beneficiaries.length === 0) {
-        toast({ title: 'No Data', description: 'There are no beneficiaries to export.' });
-        return;
-    }
-    const XLSX = await import('xlsx');
-    const headers = [
-        'id', 'name', 'address', 'phone', 'occupation', 'members', 'earningMembers', 'male', 'female',
-        'idProofType', 'idNumber', 'referralBy', 'kitAmount', 'status', 'notes',
-        'isEligibleForZakat', 'zakatAllocation'
-    ];
-
-    const dataToExport = beneficiaries.map(b => ({
-        id: b.id,
-        name: b.name || '',
-        address: b.address || '',
-        phone: b.phone || '',
-        occupation: b.occupation || '',
-        members: b.members || 0,
-        earningMembers: b.earningMembers || 0,
-        male: b.male || 0,
-        female: b.female || 0,
-        idProofType: b.idProofType || '',
-        idNumber: b.idNumber || '',
-        referralBy: b.referralBy || '',
-        kitAmount: b.kitAmount || 0,
-        status: b.status || 'Pending',
-        isEligibleForZakat: b.isEligibleForZakat || false,
-        zakatAllocation: b.zakatAllocation || 0,
-        notes: b.notes || '',
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(dataToExport, { header: headers });
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Beneficiaries');
-    XLSX.writeFile(wb, `${campaign?.name || 'beneficiaries'}_export.xlsx`);
-  };
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-        setSelectedFile(event.target.files[0]);
-    }
-  };
-
-  const handleProcessImportFile = async () => {
-    if (!selectedFile || !firestore || !campaignId || !canCreate || !userProfile || !beneficiaries) return;
-    setIsImporting(true);
-
-    const reader = new FileReader();
-    reader.onload = async (e: any) => {
-        try {
-            const XLSX = await import('xlsx');
-            const data = e.target?.result;
-            const workbook = XLSX.read(data, { type: 'array' });
-            const sheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[sheetName];
-            const json: any[] = XLSX.utils.sheet_to_json(worksheet, { raw: false, defval: '' });
-
-            if (json.length === 0) throw new Error("The file is empty.");
-
-            const requiredHeaders = ['name', 'referralBy'];
-            const actualHeaders = Object.keys(json[0] || {});
-            if (!requiredHeaders.every(h => actualHeaders.includes(h))) {
-                 throw new Error(`File is missing required headers. Required: ${requiredHeaders.join(', ')}`);
-            }
-
-            const validStatuses: BeneficiaryStatus[] = ['Given', 'Pending', 'Hold', 'Need More Details', 'Verified'];
-            
-            const processedRecords: ProcessedRecord[] = [];
-            const existingBeneficiaryIds = new Set(beneficiaries.map(b => b.id));
-            const existingNamePhoneSet = new Set(beneficiaries.map(b => `${(b.name || '').trim().toLowerCase()}|${(b.phone || '').trim()}`));
-
-            json.forEach((row, index) => {
-                const importedStatusString = String(row.status || '').trim();
-                const status: BeneficiaryStatus = validStatuses.includes(importedStatusString as BeneficiaryStatus) ? importedStatusString as BeneficiaryStatus : 'Pending';
-
-                const beneficiaryData: Partial<Beneficiary> = {
-                    id: String(row.id || '').trim(),
-                    name: String(row.name || '').trim(),
-                    phone: String(row.phone || '').trim(),
-                    address: String(row.address || '').trim(),
-                    occupation: String(row.occupation || '').trim(),
-                    members: Number(row.members || 0),
-                    earningMembers: Number(row.earningMembers || 0),
-                    male: Number(row.male || 0),
-                    female: Number(row.female || 0),
-                    idProofType: String(row.idProofType || '').trim(),
-                    idNumber: String(row.idNumber || '').trim(),
-                    referralBy: String(row.referralBy || '').trim(),
-                    kitAmount: Number(row.kitAmount || 0),
-                    status: status,
-                    notes: String(row.notes || '').trim(),
-                    isEligibleForZakat: parseBoolean(row.isEligibleForZakat),
-                    zakatAllocation: Number(row.zakatAllocation || 0),
-                };
-                
-                if (!beneficiaryData.name) {
-                  processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'invalid', reason: `Missing required 'name' field.` });
-                  return;
-                }
-                if (!beneficiaryData.referralBy) {
-                  processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'invalid', reason: `Missing required 'referralBy' field.` });
-                  return;
-                }
-
-                const recordKey = `${beneficiaryData.name?.toLowerCase()}|${beneficiaryData.phone}`;
-
-                if (beneficiaryData.id && existingBeneficiaryIds.has(beneficiaryData.id)) {
-                    processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'duplicate-id', reason: `A beneficiary with this ID already exists.` });
-                } else if (existingNamePhoneSet.has(recordKey)) {
-                    processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'duplicate-name-phone', reason: `A beneficiary with this Name & Phone already exists.` });
-                } else {
-                    processedRecords.push({ row: index + 2, data: beneficiaryData, status: 'new' });
-                }
-            });
-
-            setImportData(processedRecords);
-
-        } catch (error: any) {
-             toast({ title: 'Import Failed', description: error.message || "An error occurred during import.", variant: 'destructive' });
-        } finally {
-            setIsImporting(false);
-            setIsImportOpen(false); // Close the upload dialog
-        }
-    };
-    reader.onerror = (error: any) => {
-        toast({ title: 'File Error', description: 'Could not read the file.', variant: 'destructive'});
-        setIsImporting(false);
-    }
-    reader.readAsArrayBuffer(selectedFile!);
-  };
-  
-  const handleCommitImport = async (recordsToImport: ProcessedRecord[]) => {
-    if (!recordsToImport || recordsToImport.length === 0 || !firestore || !campaignId || !userProfile || !campaign) return;
-
-    setIsImporting(true);
-    const batch = writeBatch(firestore);
-    const campaignDocRef = doc(firestore, 'campaigns', campaignId);
-
-    let totalAmountFromImport = 0;
-
-    recordsToImport.forEach(record => {
-        const newBeneficiaryId = doc(collection(firestore, 'beneficiaries')).id;
-        const masterRef = doc(firestore, 'beneficiaries', newBeneficiaryId);
-        const campaignRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, newBeneficiaryId);
-        
-        const { id, ...dataToSave } = record.data;
-        const fullData = {
-            ...dataToSave,
-            id: newBeneficiaryId,
-            addedDate: new Date().toISOString().split('T')[0],
-            createdAt: serverTimestamp(),
-            createdById: userProfile.id,
-            createdByName: userProfile.name,
-        };
-        totalAmountFromImport += Number(fullData.kitAmount || 0);
-
-        batch.set(masterRef, fullData);
-        batch.set(campaignRef, fullData);
-    });
-
-    const newTargetAmount = (campaign.targetAmount || 0) + totalAmountFromImport;
-    batch.update(campaignDocRef, { targetAmount: newTargetAmount });
-
-
-    try {
-        await batch.commit();
-        toast({
-            title: 'Import Successful',
-            description: `${recordsToImport.length} new beneficiaries have been added.`,
-            variant: 'success',
-        });
-        forceRefetch(); // Force a refetch of the beneficiary data
-        forceRefetchCampaign(); // Refetch campaign data
-    } catch (serverError: any) {
-        const permissionError = new FirestorePermissionError({
-            path: `campaigns/${campaignId}/beneficiaries`,
-            operation: 'write',
-            requestResourceData: { note: `${recordsToImport.length} beneficiaries to import` }
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    } finally {
-        setIsImporting(false);
-        setImportData([]);
-        setSelectedFile(null);
-    }
-};
-
-  const handleSort = (key: SortKey) => {
-    let direction: 'ascending' | 'descending' = 'ascending';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
-        direction = 'descending';
-    }
-    setSortConfig({ key, direction });
-  };
-  
-  const groupedBeneficiaries = useMemo(() => {
     if (!filteredAndSortedBeneficiaries || !sanitizedItemCategories || sanitizedItemCategories.length === 0) return {};
 
     return filteredAndSortedBeneficiaries.reduce((acc, beneficiary) => {
@@ -719,18 +394,6 @@ const sortedGroupKeys = useMemo(() => {
   }, [filteredAndSortedBeneficiaries]);
 
   const isLoading = isCampaignLoading || areBeneficiariesLoading || isProfileLoading;
-  
-  const SortableHeader = ({ sortKey, children, className }: { sortKey: SortKey, children: React.ReactNode, className?: string }) => {
-    const isSorted = sortConfig?.key === sortKey;
-    return (
-        <TableHead className={cn("cursor-pointer hover:bg-muted/50", className)} onClick={() => handleSort(sortKey)}>
-            <div className="flex items-center gap-2 whitespace-nowrap">
-                {children}
-                {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
-            </div>
-        </TableHead>
-    );
-  };
   
   const handleStatusChange = async (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => {
     if (!firestore || !campaignId || !canUpdate) return;
@@ -1053,7 +716,7 @@ const sortedGroupKeys = useMemo(() => {
                     <TableHeader>
                         <TableRow className="bg-muted/50">
                             <SortableHeader sortKey="srNo" className="w-[120px]">#</SortableHeader>
-                            <SortableHeader sortKey="name">Name & Phone</SortableHeader>
+                            <SortableHeader sortKey="name">Name &amp; Phone</SortableHeader>
                             <SortableHeader sortKey="status">Status</SortableHeader>
                             <SortableHeader sortKey="isEligibleForZakat">Zakat</SortableHeader>
                             <SortableHeader sortKey="kitAmount" className="text-right">Kit Amount (₹)</SortableHeader>
@@ -1226,138 +889,4 @@ const sortedGroupKeys = useMemo(() => {
       />
     </>
   );
-}
-
-interface BeneficiaryRowProps {
-    beneficiary: Beneficiary;
-    index: number;
-    canUpdate?: boolean;
-    canDelete?: boolean;
-    onView: (beneficiary: Beneficiary) => void;
-    onEdit: (beneficiary: Beneficiary) => void;
-    onDelete: (id: string) => void;
-    onStatusChange: (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => void;
-    onZakatToggle: (beneficiary: Beneficiary) => void;
-    isSubRow?: boolean;
-}
-
-const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, onStatusChange, onZakatToggle, isSubRow = false }) => {
-    const [isOpen, setIsOpen] = useState(false);
-
-    const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
-        <div>
-            <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">{label}</p>
-            <p className="text-sm font-medium pt-1">{value || 'N/A'}</p>
-        </div>
-    );
-    
-    return (
-        <>
-            <TableRow className="bg-background hover:bg-accent/50 data-[state=open]:bg-accent/50 cursor-pointer" onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? 'open' : 'closed'}>
-                <TableCell className="w-[120px]">
-                    <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 data-[state=open]:bg-accent" data-state={isOpen ? 'open' : 'closed'}>
-                            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </Button>
-                        <span className={cn(isSubRow && "pl-8")}>{index}</span>
-                    </div>
-                </TableCell>
-                <TableCell className="font-medium">
-                    <div>{beneficiary.name}</div>
-                    <div className="text-xs text-muted-foreground font-mono">{beneficiary.phone}</div>
-                </TableCell>
-                <TableCell>
-                    <Badge variant={
-                        beneficiary.status === 'Given' || beneficiary.status === 'Verified' ? 'success' :
-                        beneficiary.status === 'Pending' ? 'secondary' :
-                        beneficiary.status === 'Hold' ? 'destructive' : 'outline'
-                    }>{beneficiary.status}</Badge>
-                </TableCell>
-                <TableCell>
-                    <Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'}>{beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}</Badge>
-                </TableCell>
-                <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
-                <TableCell>{beneficiary.referralBy}</TableCell>
-
-                {(canUpdate || canDelete) && (
-                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => onView(beneficiary)}><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
-                            {canUpdate && <DropdownMenuItem onClick={() => onEdit(beneficiary)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
-                            
-                            {canUpdate && <DropdownMenuSeparator />}
-                            
-                            {canUpdate && beneficiary.status !== 'Given' && (
-                                <DropdownMenuItem onClick={() => onStatusChange(beneficiary, 'Given')}>
-                                    <CheckCircle2 className="mr-2 h-4 w-4 text-success-foreground" />
-                                    <span>Mark as Given</span>
-                                </DropdownMenuItem>
-                            )}
-                            {canUpdate && beneficiary.status === 'Given' && (
-                                <DropdownMenuItem onClick={() => onStatusChange(beneficiary, 'Pending')}>
-                                    <Hourglass className="mr-2 h-4 w-4" />
-                                    <span>Mark as Pending</span>
-                                </DropdownMenuItem>
-                            )}
-                            
-                            {canUpdate && (
-                                <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger>
-                                        <ChevronsUpDown className="mr-2 h-4 w-4" />
-                                        <span>Change Status</span>
-                                    </DropdownMenuSubTrigger>
-                                    <DropdownMenuPortal>
-                                        <DropdownMenuSubContent>
-                                            <DropdownMenuRadioGroup
-                                                value={beneficiary.status}
-                                                onValueChange={(newStatus) => onStatusChange(beneficiary, newStatus as BeneficiaryStatus)}
-                                            >
-                                                <DropdownMenuRadioItem value="Pending"><Hourglass className="mr-2"/>Pending</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2"/>Verified</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2"/>Given</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2"/>Hold</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2"/>Need More Details</DropdownMenuRadioItem>
-                                            </DropdownMenuRadioGroup>
-                                        </DropdownMenuSubContent>
-                                    </DropdownMenuPortal>
-                                </DropdownMenuSub>
-                            )}
-
-                            {canUpdate && (
-                                <DropdownMenuItem onClick={() => onZakatToggle(beneficiary)}>
-                                    {beneficiary.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
-                                    <span>{beneficiary.isEligibleForZakat ? 'Mark as Not Eligible' : 'Mark as Zakat Eligible'}</span>
-                                </DropdownMenuItem>
-                            )}
-                            
-                            {canDelete && <DropdownMenuSeparator />}
-                            {canDelete && <DropdownMenuItem onClick={() => onDelete(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </TableCell>
-            )}
-            </TableRow>
-            {isOpen && (
-                 <TableRow className="bg-muted/20 hover:bg-muted/30">
-                    <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="p-0">
-                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 p-4">
-                            <DetailItem label="Address" value={beneficiary.address} />
-                            <DetailItem label="Occupation" value={beneficiary.occupation} />
-                            <DetailItem label="Family" value={`Total: ${beneficiary.members}, Earning: ${beneficiary.earningMembers}, M: ${beneficiary.male}, F: ${beneficiary.female}`} />
-                            <DetailItem label="ID Proof" value={`${beneficiary.idProofType || 'N/A'} - ${beneficiary.idNumber || 'N/A'}`} />
-                            <DetailItem label="Date Added" value={beneficiary.addedDate} />
-                             {beneficiary.isEligibleForZakat && (
-                                <DetailItem label="Zakat Allocation" value={`₹${(beneficiary.zakatAllocation || 0).toFixed(2)}`} />
-                             )}
-                            {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-3"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
-                        </div>
-                    </TableCell>
-                </TableRow>
-            )}
-        </>
-    );
 }
