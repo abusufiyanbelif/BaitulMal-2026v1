@@ -32,17 +32,13 @@ export function BrandedLoader() {
     const logoContainerWidth = isMobile ? 300 : 500;
     const logoContainerHeight = isMobile ? 300 : 500;
     
-    const animationScale = isMobile ? 1.333 : 1.2;
-    const animationContainerSize = Math.max(logoContainerWidth, logoContainerHeight) * animationScale;
+    const animationContainerSize = Math.max(logoContainerWidth, logoContainerHeight) * 1.5;
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background">
             <div className="relative flex items-center justify-center">
                 <div 
-                    className={cn(
-                        "flex items-center justify-center",
-                        isMobile ? "animate-zoom-in-out-mobile" : "animate-zoom-in-out"
-                    )}
+                    className="flex items-center justify-center animate-zoom-in-out"
                     style={{ 
                         width: `${logoContainerWidth}px`, 
                         height: `${logoContainerHeight}px`

@@ -116,7 +116,7 @@ const config = {
             transform: 'scale(1)',
           },
           '50%': {
-            transform: 'scale(1.2)',
+            transform: 'scale(1.5)',
           },
         },
       },
