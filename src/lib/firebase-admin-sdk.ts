@@ -13,47 +13,44 @@ let adminStorage: Storage | null = null;
 
 // This code should only run on the server.
 if (typeof window === 'undefined') {
-  try {
-    if (getApps().length) {
-      adminApp = getApps()[0];
-    } else {
+  if (!getApps().length) { // Only initialize if no app instance exists.
+    try {
       // Check for serviceAccountKey.json for local development
       const serviceAccountPath = path.resolve(process.cwd(), 'serviceAccountKey.json');
       
       if (fs.existsSync(serviceAccountPath)) {
+        // Use service account file if it exists (local development)
         const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-        adminApp = initializeApp({
+        initializeApp({
           credential: cert(serviceAccount),
         });
-      } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-        // Standard ADC flow for production (e.g., App Hosting)
-        adminApp = initializeApp();
+        console.log("Firebase Admin SDK initialized with serviceAccountKey.json.");
       } else {
-        console.warn(
-          "Firebase Admin SDK not initialized. Server-side actions will be disabled. " +
-          "For local development, create a 'serviceAccountKey.json' file in your project root. " +
-          "For production, ensure GOOGLE_APPLICATION_CREDENTIALS is set."
-        );
+        // Otherwise, use Application Default Credentials (production/hosting environment)
+        initializeApp();
+        console.log("Firebase Admin SDK initialized with Application Default Credentials.");
       }
+    } catch (e: any) {
+      console.error(
+        'Firebase Admin SDK initialization failed. Ensure your service account credentials are set correctly.',
+        e.message
+      );
     }
-  } catch (e: any) {
-    console.error(
-      'Firebase Admin SDK initialization failed. Ensure your service account credentials are set correctly.',
-      e.message
-    );
   }
 
-  if (adminApp) {
+  // After attempting initialization, get the app and its services.
+  if (getApps().length > 0) {
+    adminApp = getApps()[0];
     try {
-      adminAuth = getAuth(adminApp);
-      adminDb = getFirestore(adminApp);
-      adminStorage = getStorage(adminApp);
+        adminAuth = getAuth(adminApp);
+        adminDb = getFirestore(adminApp);
+        adminStorage = getStorage(adminApp);
     } catch (e: any) {
-      console.error("Failed to get Firebase Admin services:", e.message);
-      adminAuth = null;
-      adminDb = null;
-      adminStorage = null;
+        console.error("Failed to get Firebase Admin services:", e.message);
     }
+  } else {
+     // This case should only happen if initializeApp() failed catastrophically.
+     console.error("No Firebase Admin App could be initialized.");
   }
 }
 
