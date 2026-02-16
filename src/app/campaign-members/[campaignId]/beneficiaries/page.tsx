@@ -599,7 +599,7 @@ const sortedGroupKeys = useMemo(() => {
         let idProofUrl = editingBeneficiary?.idProofUrl || '';
       
         if (data.idProofDeleted && idProofUrl) {
-            await deleteObject(storageRef(storage, idProofUrl)).catch((err) => {
+            await deleteObject(storageRef(storage, idProofUrl)).catch((err: any) => {
                 if ((err as any).code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
             });
             idProofUrl = '';
@@ -812,7 +812,7 @@ const sortedGroupKeys = useMemo(() => {
                         </Button>
                         <Button onClick={handleAdd}>
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            Add New Beneficiary
+                            Add New
                         </Button>
                     </div>
                 )}
@@ -1084,7 +1084,6 @@ const sortedGroupKeys = useMemo(() => {
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
                 itemCategories={sanitizedItemCategories}
-                kitAmountLabel="Kit Amount (₹)"
                 isReadOnly={formMode === 'view'}
                 isSubmitting={isSubmitting}
                 isLoading={isLoading}

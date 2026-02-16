@@ -244,7 +244,7 @@ export default function BeneficiariesPage() {
   }, [lead]);
 
   const kitAmountLabel = useMemo(() => {
-      if (!lead) return 'Required Amount (₹)';
+      if (!lead) return undefined;
       switch (lead.purpose) {
           case 'Medical': return 'Medical Cost (₹)';
           case 'Education': return 'Educational Fees (₹)';
@@ -598,7 +598,7 @@ export default function BeneficiariesPage() {
                         </Button>
                         <Button onClick={handleAdd}>
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            Add New Beneficiary
+                            Add New
                         </Button>
                     </div>
                 )}
@@ -690,7 +690,7 @@ export default function BeneficiariesPage() {
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
                 itemCategories={lead?.itemCategories || []}
-                kitAmountLabel={kitAmountLabel}
+                kitAmountLabel={kitAmountLabel || 'Required Amount (₹)'}
                 defaultKitAmount={totalLeadAmount}
                 isReadOnly={formMode === 'view'}
             />
