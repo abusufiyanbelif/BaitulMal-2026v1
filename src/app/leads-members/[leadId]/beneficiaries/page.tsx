@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -240,12 +241,6 @@ export default function BeneficiariesPage() {
   const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.create', false);
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.update', false);
   const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.delete', false);
-  
-  const totalLeadAmount = useMemo(() => {
-    if (!lead || !lead.itemCategories || lead.itemCategories.length === 0) return 0;
-    const items = lead.itemCategories[0]?.items || [];
-    return items.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 0)), 0);
-  }, [lead]);
 
   const handleAdd = () => {
     if (!canCreate) return;
@@ -537,14 +532,8 @@ export default function BeneficiariesPage() {
     );
   }
 
-  const kitAmountLabel = (() => {
-    switch (lead.purpose) {
-        case 'Medical': return 'Medical Cost (₹)';
-        case 'Education': return 'Educational Fees (₹)';
-        case 'Relief': return 'Relief Aid Amount (₹)';
-        default: return 'Required Amount (₹)';
-    }
-  })();
+  const totalLeadAmount = lead.itemCategories.reduce((acc, cat) => acc + cat.items.reduce((s, i) => s + i.price, 0), 0);
+  const kitAmountLabel = `${lead.purpose} Cost (₹)`;
 
   return (
     <>
@@ -693,7 +682,7 @@ export default function BeneficiariesPage() {
                 onSubmit={handleFormSubmit}
                 onCancel={() => setIsFormOpen(false)}
                 itemCategories={lead?.itemCategories || []}
-                kitAmountLabel={kitAmountLabel}
+                kitAmountLabel={kitAmountLabel || 'Required Amount (₹)'}
                 defaultKitAmount={totalLeadAmount}
                 isReadOnly={formMode === 'view'}
             />
