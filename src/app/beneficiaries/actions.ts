@@ -1,23 +1,27 @@
 
 'use server';
 
-import { adminDb, adminStorage } from '@/lib/firebase-admin-sdk';
+import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import type { Beneficiary } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FieldValue } from 'firebase-admin/firestore';
 
 export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
+    const { adminDb } = getAdminServices();
     if (!adminDb) {
         return { success: false, message: "Database service is not initialized." };
     }
     try {
-        const docRef = await adminDb.collection('beneficiaries').add({
+        const docRef = adminDb.collection('beneficiaries').doc();
+        await docRef.set({
             ...data,
+            id: docRef.id, // Explicitly set the ID in the document
             addedDate: new Date().toISOString().split('T')[0],
             createdAt: FieldValue.serverTimestamp(),
             createdById: createdBy.id,
             createdByName: createdBy.name,
         });
+
         revalidatePath('/beneficiaries');
         return { success: true, message: 'Beneficiary created successfully.', id: docRef.id };
     } catch (error: any) {
@@ -27,6 +31,7 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
 }
 
 export async function updateMasterBeneficiaryAction(beneficiaryId: string, data: Partial<Beneficiary>, updatedBy: {id: string, name: string}): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
     if (!adminDb) {
         return { success: false, message: "Database service is not initialized." };
     }
@@ -48,67 +53,69 @@ export async function updateMasterBeneficiaryAction(beneficiaryId: string, data:
 }
 
 export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ success: boolean; message: string }> {
-  if (!adminDb || !adminStorage) {
-    return { success: false, message: 'Database or Storage service is not initialized.' };
-  }
-  try {
-    const batch = adminDb.batch();
-    const masterBeneficiaryRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
+    const { adminDb, adminStorage } = getAdminServices();
+    if (!adminDb || !adminStorage) {
+        return { success: false, message: 'Database or Storage service is not initialized.' };
+    }
+    try {
+        const batch = adminDb.batch();
+        const masterBeneficiaryRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
 
-    // Find all instances of this beneficiary in subcollections (campaigns and leads)
-    const allBeneficiaryInstancesQuery = adminDb.collectionGroup('beneficiaries').where('id', '==', beneficiaryId);
-    const allBeneficiaryInstancesSnap = await allBeneficiaryInstancesQuery.get();
+        // Find all instances of this beneficiary in subcollections (campaigns and leads)
+        const allBeneficiaryInstancesQuery = adminDb.collectionGroup('beneficiaries').where('id', '==', beneficiaryId);
+        const allBeneficiaryInstancesSnap = await allBeneficiaryInstancesQuery.get();
 
-    allBeneficiaryInstancesSnap.forEach(docSnap => {
-      // Add each subcollection instance to the delete batch
-      batch.delete(docSnap.ref);
-    });
+        allBeneficiaryInstancesSnap.forEach(docSnap => {
+            // Add each subcollection instance to the delete batch
+            batch.delete(docSnap.ref);
+        });
 
-    // Also delete the master document
-    batch.delete(masterBeneficiaryRef);
+        // Also delete the master document
+        batch.delete(masterBeneficiaryRef);
 
-    // Delete the ID proof file from storage using a predictable path
-    const filePath = `beneficiaries/${beneficiaryId}/id_proof.png`;
-    const fileRef = adminStorage.bucket().file(filePath);
-    await fileRef.delete().catch((storageError: any) => {
-        // We only log a warning if the file doesn't exist, as it might not have been uploaded.
-        if (storageError.code !== 'storage/object-not-found') {
-            console.warn(`Could not delete beneficiary ID proof from storage: ${storageError.message}`);
-        }
-    });
+        // Delete the ID proof file from storage using a predictable path
+        const filePath = `beneficiaries/${beneficiaryId}/id_proof.png`;
+        const fileRef = adminStorage.bucket().file(filePath);
+        await fileRef.delete().catch((storageError: any) => {
+            // We only log a warning if the file doesn't exist, as it might not have been uploaded.
+            if (storageError.code !== 'storage/object-not-found') {
+                console.warn(`Could not delete beneficiary ID proof from storage: ${storageError.message}`);
+            }
+        });
 
-    // Commit all deletions at once
-    await batch.commit();
+        // Commit all deletions at once
+        await batch.commit();
 
-    revalidatePath('/beneficiaries');
-    revalidatePath('/campaign-members');
-    revalidatePath('/leads-members');
+        revalidatePath('/beneficiaries');
+        revalidatePath('/campaign-members');
+        revalidatePath('/leads-members');
 
-    return { success: true, message: 'Beneficiary permanently deleted from the master list and all linked initiatives.' };
-  } catch (error: any) {
-    console.error('Error deleting beneficiary:', error);
-    return { success: false, message: `Failed to delete beneficiary: ${error.message}` };
-  }
+        return { success: true, message: 'Beneficiary permanently deleted from the master list and all linked initiatives.' };
+    } catch (error: any) {
+        console.error('Error deleting beneficiary:', error);
+        return { success: false, message: `Failed to delete beneficiary: ${error.message}` };
+    }
 }
 
 export async function syncMasterBeneficiaryListAction(): Promise<{ success: boolean; message: string; addedCount: number; }> {
+    const { adminDb } = getAdminServices();
     if (!adminDb) {
         return { success: false, message: "Database service is not initialized.", addedCount: 0 };
     }
     
     try {
-        const batch = adminDb!.batch();
+        const batch = adminDb.batch();
         let addedCount = 0;
         
-        const masterBeneficiariesSnap = await adminDb!.collection('beneficiaries').get();
+        const masterBeneficiariesSnap = await adminDb.collection('beneficiaries').get();
         const masterIds = new Set(masterBeneficiariesSnap.docs.map(d => d.id));
 
-        const campaignsSnap = await adminDb!.collection('campaigns').get();
+        const campaignsSnap = await adminDb.collection('campaigns').get();
         for (const campaignDoc of campaignsSnap.docs) {
-            const campaignBeneficiariesSnap = await adminDb!.collection(`campaigns/${campaignDoc.id}/beneficiaries`).get();
+            const campaignBeneficiariesSnap = await adminDb.collection(`campaigns/${campaignDoc.id}/beneficiaries`).get();
             for (const benDoc of campaignBeneficiariesSnap.docs) {
                 if (!masterIds.has(benDoc.id)) {
-                    const masterRef = adminDb!.collection('beneficiaries').doc(benDoc.id);
+                    const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
                     batch.set(masterRef, benDoc.data());
                     masterIds.add(benDoc.id); // Avoid re-adding if found in another campaign
                     addedCount++;
@@ -116,12 +123,12 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
             }
         }
         
-        const leadsSnap = await adminDb!.collection('leads').get();
+        const leadsSnap = await adminDb.collection('leads').get();
         for (const leadDoc of leadsSnap.docs) {
-            const leadBeneficiariesSnap = await adminDb!.collection(`leads/${leadDoc.id}/beneficiaries`).get();
+            const leadBeneficiariesSnap = await adminDb.collection(`leads/${leadDoc.id}/beneficiaries`).get();
             for (const benDoc of leadBeneficiariesSnap.docs) {
                 if (!masterIds.has(benDoc.id)) {
-                    const masterRef = adminDb!.collection('beneficiaries').doc(benDoc.id);
+                    const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
                     batch.set(masterRef, benDoc.data());
                     masterIds.add(benDoc.id);
                     addedCount++;

@@ -1,7 +1,7 @@
 
 'use server';
 
-import { adminDb, adminStorage } from '@/lib/firebase-admin-sdk';
+import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import type { Campaign } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -15,6 +15,7 @@ interface CopyCampaignOptions {
 }
 
 export async function copyCampaignAction(options: CopyCampaignOptions): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
     if (!adminDb) {
         return { success: false, message: 'Database service not available.' };
     }
@@ -22,8 +23,8 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
     const { sourceCampaignId, newName, copyBeneficiaries, copyRationLists } = options;
 
     try {
-        await adminDb!.runTransaction(async (transaction) => {
-            const sourceCampaignRef = adminDb!.collection('campaigns').doc(sourceCampaignId);
+        await adminDb.runTransaction(async (transaction) => {
+            const sourceCampaignRef = adminDb.collection('campaigns').doc(sourceCampaignId);
             const sourceCampaignSnap = await transaction.get(sourceCampaignRef);
             if (!sourceCampaignSnap.exists) {
                 throw new Error('Source campaign not found.');
@@ -31,7 +32,7 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
             
             const sourceData = sourceCampaignSnap.data() as Campaign;
             
-            const newCampaignRef = adminDb!.collection('campaigns').doc();
+            const newCampaignRef = adminDb.collection('campaigns').doc();
             const newCampaignData: Partial<Campaign> = {
                 ...sourceData,
                 name: newName,
@@ -47,9 +48,9 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
             transaction.set(newCampaignRef, newCampaignData);
 
             if (copyBeneficiaries) {
-                const beneficiariesSnap = await adminDb!.collection(`campaigns/${sourceCampaignId}/beneficiaries`).get();
+                const beneficiariesSnap = await adminDb.collection(`campaigns/${sourceCampaignId}/beneficiaries`).get();
                 beneficiariesSnap.forEach(benDoc => {
-                    const newBeneficiaryRef = adminDb!.collection(`campaigns/${newCampaignRef.id}/beneficiaries`).doc(benDoc.id);
+                    const newBeneficiaryRef = adminDb.collection(`campaigns/${newCampaignRef.id}/beneficiaries`).doc(benDoc.id);
                     transaction.set(newBeneficiaryRef, benDoc.data());
                 });
             }
@@ -65,6 +66,7 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
 }
 
 export async function deleteCampaignAction(campaignId: string): Promise<{ success: boolean; message: string }> {
+    const { adminDb, adminStorage } = getAdminServices();
     if (!adminDb || !adminStorage) {
         return { success: false, message: 'Database or Storage service is not initialized.' };
     }

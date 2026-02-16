@@ -1,7 +1,7 @@
 
 'use server';
 
-import { adminDb, adminStorage } from '@/lib/firebase-admin-sdk';
+import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import type { Lead } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -14,6 +14,7 @@ interface CopyLeadOptions {
 }
 
 export async function copyLeadAction(options: CopyLeadOptions): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
     if (!adminDb) {
         return { success: false, message: 'Database service not available.' };
     }
@@ -21,8 +22,8 @@ export async function copyLeadAction(options: CopyLeadOptions): Promise<{ succes
     const { sourceLeadId, newName, copyBeneficiaries, copyRationLists } = options;
 
     try {
-        await adminDb!.runTransaction(async (transaction) => {
-            const sourceLeadRef = adminDb!.collection('leads').doc(sourceLeadId);
+        await adminDb.runTransaction(async (transaction) => {
+            const sourceLeadRef = adminDb.collection('leads').doc(sourceLeadId);
             const sourceLeadSnap = await transaction.get(sourceLeadRef);
             if (!sourceLeadSnap.exists) {
                 throw new Error('Source lead not found.');
@@ -30,7 +31,7 @@ export async function copyLeadAction(options: CopyLeadOptions): Promise<{ succes
             
             const sourceData = sourceLeadSnap.data() as Lead;
             
-            const newLeadRef = adminDb!.collection('leads').doc();
+            const newLeadRef = adminDb.collection('leads').doc();
             const newLeadData: Partial<Lead> = {
                 ...sourceData,
                 name: newName,
@@ -46,9 +47,9 @@ export async function copyLeadAction(options: CopyLeadOptions): Promise<{ succes
             transaction.set(newLeadRef, newLeadData);
 
             if (copyBeneficiaries) {
-                const beneficiariesSnap = await adminDb!.collection(`leads/${sourceLeadId}/beneficiaries`).get();
+                const beneficiariesSnap = await adminDb.collection(`leads/${sourceLeadId}/beneficiaries`).get();
                 beneficiariesSnap.forEach(benDoc => {
-                    const newBeneficiaryRef = adminDb!.collection(`leads/${newLeadRef.id}/beneficiaries`).doc(benDoc.id);
+                    const newBeneficiaryRef = adminDb.collection(`leads/${newLeadRef.id}/beneficiaries`).doc(benDoc.id);
                     transaction.set(newBeneficiaryRef, benDoc.data());
                 });
             }
@@ -64,6 +65,7 @@ export async function copyLeadAction(options: CopyLeadOptions): Promise<{ succes
 }
 
 export async function deleteLeadAction(leadId: string): Promise<{ success: boolean; message: string }> {
+    const { adminDb, adminStorage } = getAdminServices();
     if (!adminDb || !adminStorage) {
         return { success: false, message: 'Database or Storage service is not initialized.' };
     }

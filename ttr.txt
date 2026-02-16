@@ -1,2 +1,8 @@
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(713,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(1086,17): error TS2322: Type '{ beneficiary: Beneficiary | null; onSubmit: (data: { name: string; referralBy: string; kitAmount: number; status: "Given" | "Pending" | "Hold" | "Need More Details" | "Verified"; ... 13 more ...; idProofDeleted?: boolean | undefined; }, masterIdOrEvent?: string | ... 1 more ... | undefined) => Promise<...>; ... 5 m...' is not assignable to type 'IntrinsicAttributes & BeneficiaryFormProps'.
+  Property 'initialReadOnly' does not exist on type 'IntrinsicAttributes & BeneficiaryFormProps'.
 src/app/leads-members/[leadId]/beneficiaries/page.tsx(440,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(695,17): error TS2322: Type '{ beneficiary: Beneficiary | null; onSubmit: (data: { name: string; referralBy: string; kitAmount: number; status: "Given" | "Pending" | "Hold" | "Need More Details" | "Verified"; ... 13 more ...; idProofDeleted?: boolean | undefined; }, masterIdOrEvent?: string | ... 1 more ... | undefined) => Promise<...>; ... 4 m...' is not assignable to type 'IntrinsicAttributes & BeneficiaryFormProps'.
+  Property 'initialReadOnly' does not exist on type 'IntrinsicAttributes & BeneficiaryFormProps'.

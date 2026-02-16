@@ -1,8 +1,8 @@
 
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, getDocs, getDoc, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
@@ -31,7 +31,9 @@ interface LinkedInitiative {
 export default function BeneficiaryDetailsPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const beneficiaryId = params.beneficiaryId as string;
+  const redirectUrl = searchParams.get('redirect');
 
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -133,8 +135,12 @@ export default function BeneficiaryDetailsPage() {
     
     if (result.success) {
         toast({ title: 'Success', description: result.message, variant: 'success' });
-        forceRefetch();
-        setIsEditMode(false);
+        if (redirectUrl) {
+            router.push(redirectUrl);
+        } else {
+            forceRefetch();
+            setIsEditMode(false);
+        }
     } else {
         toast({ title: 'Update Failed', description: result.message, variant: 'destructive' });
     }
@@ -147,6 +153,7 @@ export default function BeneficiaryDetailsPage() {
   };
 
   const isLoading = isBeneficiaryLoading || isProfileLoading;
+  const backHref = redirectUrl || '/beneficiaries';
 
   if (isLoading) {
     return (
@@ -175,8 +182,8 @@ export default function BeneficiaryDetailsPage() {
       <main className="container mx-auto p-4 md:p-8">
         <div className="mb-4">
           <Button variant="outline" asChild>
-            <Link href="/beneficiaries">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Beneficiaries
+            <Link href={backHref}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back
             </Link>
           </Button>
         </div>
@@ -204,9 +211,9 @@ export default function BeneficiaryDetailsPage() {
         <main className="container mx-auto p-4 md:p-8">
             <div className="mb-4">
                 <Button variant="outline" asChild>
-                    <Link href="/beneficiaries">
+                    <Link href={backHref}>
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Beneficiaries
+                        Back
                     </Link>
                 </Button>
             </div>
@@ -226,9 +233,9 @@ export default function BeneficiaryDetailsPage() {
     <main className="container mx-auto p-4 md:p-8 space-y-6">
       <div className="mb-4">
         <Button variant="outline" asChild>
-          <Link href="/beneficiaries">
+          <Link href={backHref}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Beneficiaries
+            Back
           </Link>
         </Button>
       </div>
@@ -240,10 +247,24 @@ export default function BeneficiaryDetailsPage() {
                   <CardTitle>Beneficiary: {beneficiary.name}</CardTitle>
                   <CardDescription>View beneficiary details or switch to edit mode.</CardDescription>
               </div>
-              {canUpdate && !isEditMode && (
-                  <Button onClick={() => setIsEditMode(true)}>
-                      <Edit className="mr-2 h-4 w-4" /> Edit
-                  </Button>
+              {canUpdate && (
+                  !isEditMode ? (
+                    <Button onClick={() => setIsEditMode(true)}><Edit className="mr-2 h-4 w-4"/>Edit</Button>
+                  ) : (
+                    <div className="flex gap-2">
+                        <Button variant="outline" onClick={handleCancel} disabled={isSubmitting}>Cancel</Button>
+                        <Button onClick={() => {
+                            // We need to trigger the form validation before calling handleSave
+                            const formElement = document.querySelector('form');
+                            if (formElement) {
+                                formElement.requestSubmit();
+                            }
+                        }} disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            Save
+                        </Button>
+                    </div>
+                  )
               )}
           </div>
         </CardHeader>

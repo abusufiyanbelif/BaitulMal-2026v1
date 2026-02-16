@@ -723,11 +723,13 @@ const sortedGroupKeys = useMemo(() => {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {};
   const handleCommitImport = async (records: ProcessedRecord[]) => {};
   const handleView = (beneficiary: Beneficiary) => {
-    router.push(`/beneficiaries/${beneficiary.id}`);
+    const redirectUrl = `/campaign-members/${campaignId}/beneficiaries`;
+    router.push(`/beneficiaries/${beneficiary.id}?redirect=${encodeURIComponent(redirectUrl)}`);
   };
   const handleEdit = (beneficiary: Beneficiary) => {
     if (!canUpdate) return;
-    router.push(`/beneficiaries/${beneficiary.id}`);
+    const redirectUrl = `/campaign-members/${campaignId}/beneficiaries`;
+    router.push(`/beneficiaries/${beneficiary.id}?redirect=${encodeURIComponent(redirectUrl)}`);
   };
   const handleDeleteClick = (id: string) => {
     if (!canDelete) return;
@@ -1083,7 +1085,7 @@ const sortedGroupKeys = useMemo(() => {
                 onCancel={() => setIsFormOpen(false)}
                 itemCategories={sanitizedItemCategories}
                 kitAmountLabel="Kit Amount (₹)"
-                initialReadOnly={formMode === 'view'}
+                isReadOnly={formMode === 'view'}
                 isSubmitting={isSubmitting}
                 isLoading={isLoading}
             />

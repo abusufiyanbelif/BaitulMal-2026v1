@@ -1,12 +1,13 @@
 
 'use server';
 
-import { adminDb, adminAuth, adminStorage } from '@/lib/firebase-admin-sdk';
+import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { revalidatePath } from 'next/cache';
 import type { UserFormData } from '@/components/user-form';
 import type { UserProfile } from '@/lib/types';
 
 export async function createUserAuthAction(data: UserFormData): Promise<{ success: boolean; message: string; uid?: string; }> {
+    const { adminAuth } = getAdminServices();
     if (!adminAuth) {
         return { success: false, message: 'Authentication service is not initialized.' };
     }
@@ -27,6 +28,7 @@ export async function createUserAuthAction(data: UserFormData): Promise<{ succes
 }
 
 export async function deleteUserAction(uidToDelete: string): Promise<{ success: boolean; message: string }> {
+    const { adminAuth, adminDb, adminStorage } = getAdminServices();
     if (!adminAuth || !adminDb || !adminStorage) {
         return { success: false, message: 'Admin services are not initialized.' };
     }
@@ -76,6 +78,7 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
 
 
 export async function updateUserAuthAction(uid: string, updates: { email?: string; password?: string }): Promise<{ success: boolean, message: string }> {
+    const { adminAuth } = getAdminServices();
     if (!adminAuth) {
         return { success: false, message: 'Authentication service is not initialized.' };
     }

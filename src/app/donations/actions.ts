@@ -1,10 +1,11 @@
 
 'use server';
-import { adminDb, adminStorage } from '@/lib/firebase-admin-sdk';
+import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 
 export async function syncDonationsAction(): Promise<{ success: boolean; message: string; updatedCount: number; }> {
+    const { adminDb } = getAdminServices();
     if (!adminDb) {
         return { success: false, message: "Database service is not initialized.", updatedCount: 0 };
     }
@@ -53,6 +54,7 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
 }
 
 export async function deleteDonationAction(donationId: string): Promise<{ success: boolean; message: string }> {
+    const { adminDb, adminStorage } = getAdminServices();
     if (!adminDb || !adminStorage) {
         return { success: false, message: 'Database or Storage service is not initialized.' };
     }

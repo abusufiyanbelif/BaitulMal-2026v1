@@ -198,6 +198,7 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
 export default function BeneficiariesPage() {
   const params = useParams();
   const pathname = usePathname();
+  const router = useRouter();
   const leadId = params.leadId as string;
   const firestore = useFirestore();
   const storage = useStorage();
@@ -259,16 +260,14 @@ export default function BeneficiariesPage() {
   };
 
   const handleView = (beneficiary: Beneficiary) => {
-    setEditingBeneficiary(beneficiary);
-    setFormMode('view');
-    setIsFormOpen(true);
+    const redirectUrl = `/leads-members/${leadId}/beneficiaries`;
+    router.push(`/beneficiaries/${beneficiary.id}?redirect=${encodeURIComponent(redirectUrl)}`);
   };
 
   const handleEdit = (beneficiary: Beneficiary) => {
     if (!canUpdate) return;
-    setEditingBeneficiary(beneficiary);
-    setFormMode('edit');
-    setIsFormOpen(true);
+    const redirectUrl = `/leads-members/${leadId}/beneficiaries`;
+    router.push(`/beneficiaries/${beneficiary.id}?redirect=${encodeURIComponent(redirectUrl)}`);
   };
 
   const handleDeleteClick = (id: string) => {
@@ -692,7 +691,7 @@ export default function BeneficiariesPage() {
                 itemCategories={lead?.itemCategories || []}
                 kitAmountLabel={kitAmountLabel}
                 defaultKitAmount={totalLeadAmount}
-                initialReadOnly={formMode === 'view'}
+                isReadOnly={formMode === 'view'}
             />
         </DialogContent>
       </Dialog>
