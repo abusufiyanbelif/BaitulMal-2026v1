@@ -1,7 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  allowedDevOrigins: ["https://*.cloudworkstations.dev"],
+  allowedDevOrigins: [
+    "http://*.cloudworkstations.dev",
+    "https://*.cloudworkstations.dev"
+  ],
   images: {
     remotePatterns: [
       {
