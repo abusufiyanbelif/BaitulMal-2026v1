@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, Check, ChevronsUpDown, X, Link2Off } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, Check, ChevronsUpDown, X, Link2Off, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -420,16 +420,19 @@ export default function DonationsPage() {
 
         {canReadDonations && (
             <div className="border-b mb-4">
-              <div className="flex flex-wrap items-center">
-                  <Link href={`/leads-members/${leadId}/donations/summary`} className={cn(
-                      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      pathname === `/leads-members/${leadId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                  )}>Donation Summary</Link>
-                  <Link href={`/leads-members/${leadId}/donations`} className={cn(
-                      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      pathname === `/leads-members/${leadId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                  )}>Donation List</Link>
-              </div>
+              <ScrollArea className="w-full whitespace-nowrap">
+                  <div className="flex w-max space-x-2">
+                      <Link href={`/leads-members/${leadId}/donations/summary`} className={cn(
+                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          pathname === `/leads-members/${leadId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                      )}>Donation Summary</Link>
+                      <Link href={`/leads-members/${leadId}/donations`} className={cn(
+                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          pathname === `/leads-members/${leadId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                      )}>Donation List</Link>
+                  </div>
+                  <ScrollBar orientation="horizontal" />
+              </ScrollArea>
             </div>
         )}
 
@@ -521,6 +524,8 @@ export default function DonationsPage() {
                   ) : (filteredAndSortedDonations && filteredAndSortedDonations.length > 0) ? (
                   filteredAndSortedDonations.map((donation, index) => {
                       const isOpen = openRows[donation.id] || false;
+                      const leadLink = donation.linkSplit?.find(l => l.linkId === leadId && l.linkType === 'lead');
+                      const amountForThisLead = leadLink?.amount || 0;
                       return (
                         <React.Fragment key={donation.id}>
                           <TableRow className="bg-background hover:bg-accent/50 cursor-pointer" data-state={isOpen ? 'open' : 'closed'} onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
@@ -534,16 +539,12 @@ export default function DonationsPage() {
                                 <div className="text-xs text-muted-foreground">Ref: {donation.referral || 'N/A'}</div>
                               </TableCell>
                               <TableCell className="text-right">
-                                  <div className="font-medium font-mono">₹{donation.amount.toFixed(2)}</div>
+                                  <div className="font-medium font-mono">₹{amountForThisLead.toFixed(2)}</div>
                                   <div className="text-xs text-muted-foreground">{donation.donationDate}</div>
                               </TableCell>
                               <TableCell>
                                   <div className="flex flex-wrap items-center gap-1">
-                                      {donation.typeSplit?.map(split => (
-                                          <Badge key={split.category} variant="secondary">
-                                              {split.category}
-                                          </Badge>
-                                      ))}
+                                      {donation.typeSplit?.map(split => (<Badge key={split.category} variant="secondary">{split.category}</Badge>))}
                                       <Badge variant="outline">{donation.donationType}</Badge>
                                   </div>
                               </TableCell>
@@ -696,4 +697,4 @@ export default function DonationsPage() {
   );
 }
 
-
+    
