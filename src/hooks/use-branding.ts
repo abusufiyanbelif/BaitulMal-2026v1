@@ -1,5 +1,7 @@
+
 'use client';
-import { useMemoFirebase, useFirestore, useDoc } from '@/firebase';
+import { useMemoFirebase, useFirestore } from '@/firebase/provider';
+import { useDoc } from '@/firebase/firestore/use-doc';
 import { doc, DocumentReference } from 'firebase/firestore';
 import type { BrandingSettings } from '@/lib/types';
 

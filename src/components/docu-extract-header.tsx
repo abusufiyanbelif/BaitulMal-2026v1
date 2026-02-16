@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { LogOut, User, LogIn, Settings, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuth } from '@/firebase';
+import { useAuth } from '@/firebase/provider';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { signOut } from '@/lib/auth';
