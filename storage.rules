@@ -68,10 +68,9 @@ service firebase.storage {
       allow read, write: if isOwner(userId) || isAdmin();
     }
     
+    // Beneficiary ID proofs
     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      allow read: if (isSignedIn() && hasPermission('beneficiaries', 'read')) || isAdmin();
-      allow write: if (isSignedIn() && (hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update'))) || isAdmin();
-      allow delete: if (isSignedIn() && hasPermission('beneficiaries', 'delete')) || isAdmin();
+      allow read, write: if isSignedIn();
     }
   }
 }
