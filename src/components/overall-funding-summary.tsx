@@ -21,16 +21,27 @@ export function OverallFundingSummary() {
 
   const campaignsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
-    return collection(firestore, 'campaigns');
+    // Filter for verified and published campaigns
+    return query(
+      collection(firestore, 'campaigns'),
+      where('authenticityStatus', '==', 'Verified'),
+      where('publicVisibility', '==', 'Published')
+    );
   }, [firestore]);
 
   const leadsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
-    return collection(firestore, 'leads');
+    // Filter for verified and published leads
+    return query(
+      collection(firestore, 'leads'),
+      where('authenticityStatus', '==', 'Verified'),
+      where('publicVisibility', '==', 'Published')
+    );
   }, [firestore]);
   
   const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
+    // This correctly gets all verified donations, which is needed for "Grand Total"
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
   }, [firestore]);
 
@@ -43,8 +54,11 @@ export function OverallFundingSummary() {
   const summaryData = useMemo(() => {
     if (!campaigns || !leads || !donations) return null;
 
+    // allItems will now only contain verified and published items due to the query changes
     const allItems = [...campaigns, ...leads];
+    // totalTarget is now correctly calculated from only verified/published items
     const totalTarget = allItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
+    // grandTotalRaised is the sum of ALL verified donations, which is correct.
     const grandTotalRaised = donations.reduce((sum, d) => sum + d.amount, 0);
 
     const collectedAmounts = new Map<string, number>();
@@ -56,6 +70,7 @@ export function OverallFundingSummary() {
         : (donation as any).campaignId ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] : [];
       
       links.forEach(link => {
+        // We only care about donations linked to our filtered (verified/published) items
         const item = itemsById.get(link.linkId);
         if (!item) return;
 
@@ -120,7 +135,7 @@ export function OverallFundingSummary() {
             <Target className="h-6 w-6 text-primary" />
             Overall Fundraising Progress
         </CardTitle>
-        <CardDescription>A real-time look at our total collected donations against our active goals.</CardDescription>
+        <CardDescription>A real-time look at our total collected donations against our published and verified goals.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
