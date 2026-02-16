@@ -357,8 +357,8 @@ export default function BeneficiariesPage() {
         let idProofUrl = editingBeneficiary?.idProofUrl || '';
       
         if (data.idProofDeleted && idProofUrl) {
-            await deleteObject(storageRef(storage, idProofUrl)).catch((err: any) => {
-                if (err.code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
+            await deleteObject(storageRef(storage, idProofUrl)).catch((err) => {
+                if ((err as any).code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
             });
             idProofUrl = '';
         }
@@ -598,7 +598,7 @@ export default function BeneficiariesPage() {
                         </Button>
                         <Button onClick={handleAdd}>
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            Add New
+                            Add New Beneficiary
                         </Button>
                     </div>
                 )}

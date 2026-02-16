@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -580,6 +581,12 @@ export default function BeneficiariesPage() {
                     {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
                     Sync Master List
                 </Button>
+                {canCreate && (
+                    <Button onClick={handleAdd}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Create Beneficiary
+                    </Button>
+                )}
             </div>
           </div>
         </CardHeader>
