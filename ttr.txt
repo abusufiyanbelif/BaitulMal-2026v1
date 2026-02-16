@@ -1,8 +1,2 @@
 src/app/leads-members/[leadId]/beneficiaries/page.tsx(440,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
-src/app/users/[userId]/page.tsx(10,15): error TS2305: Module '"@/lib/types"' has no exported member 'UserProfile'.
-src/app/users/actions.ts(7,15): error TS2305: Module '"@/lib/types"' has no exported member 'UserProfile'.
-src/app/users/create/page.tsx(26,15): error TS2305: Module '"@/lib/types"' has no exported member 'UserProfile'.
-src/app/users/page.tsx(8,15): error TS2305: Module '"@/lib/types"' has no exported member 'UserProfile'.
-src/components/session-provider.tsx(8,15): error TS2305: Module '"@/lib/types"' has no exported member 'UserProfile'.
-src/components/user-form.tsx(32,15): error TS2305: Module '"@/lib/types"' has no exported member 'UserProfile'.
