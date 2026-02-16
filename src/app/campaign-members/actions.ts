@@ -22,8 +22,8 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
     const { sourceCampaignId, newName, copyBeneficiaries, copyRationLists } = options;
 
     try {
-        await adminDb.runTransaction(async (transaction) => {
-            const sourceCampaignRef = adminDb.collection('campaigns').doc(sourceCampaignId);
+        await adminDb!.runTransaction(async (transaction) => {
+            const sourceCampaignRef = adminDb!.collection('campaigns').doc(sourceCampaignId);
             const sourceCampaignSnap = await transaction.get(sourceCampaignRef);
             if (!sourceCampaignSnap.exists) {
                 throw new Error('Source campaign not found.');
@@ -31,7 +31,7 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
             
             const sourceData = sourceCampaignSnap.data() as Campaign;
             
-            const newCampaignRef = adminDb.collection('campaigns').doc();
+            const newCampaignRef = adminDb!.collection('campaigns').doc();
             const newCampaignData: Partial<Campaign> = {
                 ...sourceData,
                 name: newName,
@@ -47,9 +47,9 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
             transaction.set(newCampaignRef, newCampaignData);
 
             if (copyBeneficiaries) {
-                const beneficiariesSnap = await adminDb.collection(`campaigns/${sourceCampaignId}/beneficiaries`).get();
+                const beneficiariesSnap = await adminDb!.collection(`campaigns/${sourceCampaignId}/beneficiaries`).get();
                 beneficiariesSnap.forEach(benDoc => {
-                    const newBeneficiaryRef = adminDb.collection(`campaigns/${newCampaignRef.id}/beneficiaries`).doc(benDoc.id);
+                    const newBeneficiaryRef = adminDb!.collection(`campaigns/${newCampaignRef.id}/beneficiaries`).doc(benDoc.id);
                     transaction.set(newBeneficiaryRef, benDoc.data());
                 });
             }

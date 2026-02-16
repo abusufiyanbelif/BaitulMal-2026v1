@@ -97,18 +97,18 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
     }
     
     try {
-        const batch = adminDb.batch();
+        const batch = adminDb!.batch();
         let addedCount = 0;
         
-        const masterBeneficiariesSnap = await adminDb.collection('beneficiaries').get();
+        const masterBeneficiariesSnap = await adminDb!.collection('beneficiaries').get();
         const masterIds = new Set(masterBeneficiariesSnap.docs.map(d => d.id));
 
-        const campaignsSnap = await adminDb.collection('campaigns').get();
+        const campaignsSnap = await adminDb!.collection('campaigns').get();
         for (const campaignDoc of campaignsSnap.docs) {
-            const campaignBeneficiariesSnap = await adminDb.collection(`campaigns/${campaignDoc.id}/beneficiaries`).get();
+            const campaignBeneficiariesSnap = await adminDb!.collection(`campaigns/${campaignDoc.id}/beneficiaries`).get();
             for (const benDoc of campaignBeneficiariesSnap.docs) {
                 if (!masterIds.has(benDoc.id)) {
-                    const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
+                    const masterRef = adminDb!.collection('beneficiaries').doc(benDoc.id);
                     batch.set(masterRef, benDoc.data());
                     masterIds.add(benDoc.id); // Avoid re-adding if found in another campaign
                     addedCount++;
@@ -116,12 +116,12 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
             }
         }
         
-        const leadsSnap = await adminDb.collection('leads').get();
+        const leadsSnap = await adminDb!.collection('leads').get();
         for (const leadDoc of leadsSnap.docs) {
-            const leadBeneficiariesSnap = await adminDb.collection(`leads/${leadDoc.id}/beneficiaries`).get();
+            const leadBeneficiariesSnap = await adminDb!.collection(`leads/${leadDoc.id}/beneficiaries`).get();
             for (const benDoc of leadBeneficiariesSnap.docs) {
                 if (!masterIds.has(benDoc.id)) {
-                    const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
+                    const masterRef = adminDb!.collection('beneficiaries').doc(benDoc.id);
                     batch.set(masterRef, benDoc.data());
                     masterIds.add(benDoc.id);
                     addedCount++;
