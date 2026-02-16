@@ -444,6 +444,9 @@ export default function DonationsPage() {
             <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
               <div className="flex-1 space-y-1.5">
                 <CardTitle>Donation List ({filteredAndSortedDonations.length})</CardTitle>
+                <CardDescription>
+                  Total for filtered donations: <span className="font-bold text-foreground">₹{donations.reduce((sum, d) => sum + d.amount, 0).toFixed(2)}</span>
+                </CardDescription>
               </div>
               <div className="flex flex-wrap gap-2">
                 {canUpdate && (
