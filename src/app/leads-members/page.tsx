@@ -26,8 +26,6 @@ import { copyLeadAction, deleteLeadAction } from './actions';
 import { getNestedValue } from '@/lib/utils';
 import { leadPurposesConfig } from '@/lib/modules';
 import Image from 'next/image';
-import placeholderImages from '@/app/lib/placeholder-images.json';
-
 
 export default function LeadPage() {
   const router = useRouter();
@@ -236,14 +234,7 @@ export default function LeadPage() {
               data-ai-hint="lead background"
             />
         ) : (
-            <Image
-              src={placeholderImages.lead_fallback}
-              alt={lead.name}
-              fill
-              sizes="100vw"
-              className="object-cover"
-              data-ai-hint="lead background"
-            />
+            <Lightbulb className="h-16 w-16 text-muted-foreground" />
         )}
       </div>
       <CardHeader>
@@ -531,6 +522,7 @@ export default function LeadPage() {
     </>
   );
 }
+
 
 
 

@@ -45,8 +45,6 @@ import { CopyCampaignDialog } from '@/components/copy-campaign-dialog';
 import { copyCampaignAction, deleteCampaignAction } from './actions';
 import { getNestedValue } from '@/lib/utils';
 import Image from 'next/image';
-import placeholderImages from '@/app/lib/placeholder-images.json';
-
 
 export default function CampaignPage() {
   const router = useRouter();
@@ -258,14 +256,7 @@ export default function CampaignPage() {
               data-ai-hint="campaign background"
             />
         ) : (
-            <Image
-              src={placeholderImages.campaign_fallback}
-              alt={campaign.name}
-              fill
-              sizes="100vw"
-              className="object-cover"
-              data-ai-hint="campaign background"
-            />
+            <FolderKanban className="h-16 w-16 text-muted-foreground" />
         )}
       </div>
       <CardHeader>

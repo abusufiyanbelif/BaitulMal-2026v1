@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { FolderKanban, Loader2 } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { Campaign, Donation, DonationCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,7 +14,6 @@ import { Badge } from '@/components/ui/badge';
 import { collection, query, where } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
-import placeholderImages from '@/app/lib/placeholder-images.json';
 
 export function PublicCampaignsView() {
   const firestore = useFirestore();
@@ -159,15 +158,19 @@ export function PublicCampaignsView() {
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCampaigns.map(campaign => (
                   <Card key={campaign.id} className="flex flex-col hover:shadow-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 cursor-pointer" onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}>
-                      <div className="relative h-40 w-full bg-secondary">
-                          <Image
-                              src={campaign.imageUrl || placeholderImages.campaign_fallback}
-                              alt={campaign.name}
-                              fill
-                              sizes="100vw"
-                              className="object-cover"
-                              data-ai-hint="campaign background"
-                          />
+                      <div className="relative h-40 w-full bg-secondary flex items-center justify-center">
+                          {campaign.imageUrl ? (
+                              <Image
+                                  src={campaign.imageUrl}
+                                  alt={campaign.name}
+                                  fill
+                                  sizes="100vw"
+                                  className="object-cover"
+                                  data-ai-hint="campaign background"
+                              />
+                          ) : (
+                              <FolderKanban className="h-16 w-16 text-muted-foreground" />
+                          )}
                       </div>
                       <CardHeader>
                           <div className="flex justify-between items-start gap-2">
