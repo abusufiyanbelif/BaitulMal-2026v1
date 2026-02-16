@@ -12,70 +12,67 @@ service firebase.storage {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    // Use `exists` to prevent errors on non-existent user docs
+    function userExists() {
+      return exists(/databases/(default)/documents/users/$(request.auth.uid));
+    }
+
+    function getUserData() {
+      return get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+
     function isAdmin() {
-      let userDocPath = /databases/(default)/documents/users/$(request.auth.uid);
-      return isSignedIn() &&
-             exists(userDocPath) &&
-             get(userDocPath).data.role == 'Admin';
+      return isSignedIn() && userExists() && getUserData().role == 'Admin';
     }
 
+    // Use `userExists` to make this safer
     function hasPermission(module, permission) {
-        let userDocPath = /databases/(default)/documents/users/$(request.auth.uid);
-        // Safely check for the existence of nested properties
         return isSignedIn() &&
-               exists(userDocPath) &&
-               'permissions' in get(userDocPath).data &&
-               module in get(userDocPath).data.permissions &&
-               permission in get(userDocPath).data.permissions[module] &&
-               get(userDocPath).data.permissions[module][permission] == true;
+               userExists() &&
+               'permissions' in getUserData() &&
+               module in getUserData().permissions &&
+               permission in getUserData().permissions[module] &&
+               getUserData().permissions[module][permission] == true;
     }
 
-    // Admin has full read/write access to the entire bucket.
-    // This rule is checked first. If true, access is granted immediately.
-    match /{allPaths=**} {
-      allow read, write: if isAdmin();
-    }
-
+    // Settings are public read, but only admin write.
     match /settings/{allPaths=**} {
       allow read: if true;
-      // Write is handled by the global admin rule.
+      allow write: if isAdmin();
     }
 
     match /campaigns/{campaignId}/{path=**} {
        allow read: if get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published'
-                    || (isSignedIn() && hasPermission('campaigns', 'read'));
-       // Write and delete are handled by the global admin rule for admins.
-       // Non-admins need specific permissions.
-       allow write: if isSignedIn() && (hasPermission('campaigns', 'create') || hasPermission('campaigns', 'update'));
-       allow delete: if isSignedIn() && hasPermission('campaigns', 'delete');
+                    || (isSignedIn() && hasPermission('campaigns', 'read')) || isAdmin();
+       allow write: if (isSignedIn() && (hasPermission('campaigns', 'create') || hasPermission('campaigns', 'update'))) || isAdmin();
+       allow delete: if (isSignedIn() && hasPermission('campaigns', 'delete')) || isAdmin();
     }
 
     match /leads/{leadId}/{path=**} {
        allow read: if get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published'
-                    || (isSignedIn() && hasPermission('leads-members', 'read'));
-       allow write: if isSignedIn() && (hasPermission('leads-members', 'create') || hasPermission('leads-members', 'update'));
-       allow delete: if isSignedIn() && hasPermission('leads-members', 'delete');
+                    || (isSignedIn() && hasPermission('leads-members', 'read')) || isAdmin();
+       allow write: if (isSignedIn() && (hasPermission('leads-members', 'create') || hasPermission('leads-members', 'update'))) || isAdmin();
+       allow delete: if (isSignedIn() && hasPermission('leads-members', 'delete')) || isAdmin();
     }
     
     match /donations/{donationId}/{allPaths=**} {
-       // Any signed-in user can write (create/update) for new donation uploads.
-       // Admins have access via the global rule.
-       allow write: if isSignedIn();
-       // Reading and deleting are still permission-based for non-admins.
-       allow read: if isSignedIn() && hasPermission('donations', 'read');
-       allow delete: if isSignedIn() && hasPermission('donations', 'delete');
+       // Any signed-in user can upload a new file.
+       allow create: if isSignedIn();
+       // Only users with permission or admins can read, update, or delete.
+       allow read: if (isSignedIn() && hasPermission('donations', 'read')) || isAdmin();
+       allow update: if (isSignedIn() && hasPermission('donations', 'update')) || isAdmin();
+       allow delete: if (isSignedIn() && hasPermission('donations', 'delete')) || isAdmin();
     }
 
     match /users/{userId}/{allPaths=**} {
-      // Admins are covered by the global rule.
-      // Non-admins can only read/write their own files.
-      allow read, write: if isOwner(userId);
+      // Admins have access, non-admins can only access their own files.
+      allow read, write: if isOwner(userId) || isAdmin();
     }
     
     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      allow read: if isSignedIn() && hasPermission('beneficiaries', 'read');
-      allow write: if isSignedIn() && (hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update'));
-      allow delete: if isSignedIn() && hasPermission('beneficiaries', 'delete');
+      allow read: if (isSignedIn() && hasPermission('beneficiaries', 'read')) || isAdmin();
+      allow write: if (isSignedIn() && (hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update'))) || isAdmin();
+      allow delete: if (isSignedIn() && hasPermission('beneficiaries', 'delete')) || isAdmin();
     }
   }
 }
