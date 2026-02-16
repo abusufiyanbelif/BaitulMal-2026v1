@@ -23,5 +23,3 @@ export function useBranding() {
     error,
   };
 }
-
-    

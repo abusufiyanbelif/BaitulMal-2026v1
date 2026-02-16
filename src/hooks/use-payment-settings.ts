@@ -23,5 +23,3 @@ export function usePaymentSettings() {
     error,
   };
 }
-
-    
