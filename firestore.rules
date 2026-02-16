@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -19,7 +20,9 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-      return isSignedIn() && getUserData().role == 'Admin';
+      return isSignedIn() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
 
     function hasPermission(module, permission) {
@@ -67,56 +70,55 @@ service cloud.firestore {
     // ----------------------------------------------------------------------
     
     match /settings/{settingId} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow write: if isAdmin() || hasPermission('settings', 'update');
     }
 
     match /user_lookups/{lookupId} {
         allow read: if true;
-        allow write: if isSignedIn() || isAdmin();
+        allow write: if true;
     }
 
     match /campaigns/{campaignId} {
-      allow get: if resource.data.publicVisibility == 'Published' || isAdmin() || hasPermission('campaigns', 'read');
-      allow list: if isSignedIn();
-      allow create: if isAdmin() || hasPermission('campaigns', 'create');
-      allow update: if isAdmin() || hasPermission('campaigns', 'update');
-      allow delete: if isAdmin() || hasPermission('campaigns', 'delete');
+      allow read: if true;
+      allow create: if isSignedIn() && (isAdmin() || hasPermission('campaigns', 'create'));
+      allow update: if isSignedIn() && (isAdmin() || hasPermission('campaigns', 'update'));
+      allow delete: if isSignedIn() && (isAdmin() || hasPermission('campaigns', 'delete'));
 
       match /beneficiaries/{beneficiaryId} {
-        allow list, get: if isAdmin() || hasSubmodulePermission('campaigns', 'beneficiaries', 'read') || get(/databases/$(database)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published';
-        allow create: if isAdmin() || hasSubmodulePermission('campaigns', 'beneficiaries', 'create');
-        allow update: if isAdmin() || hasSubmodulePermission('campaigns', 'beneficiaries', 'update');
-        allow delete: if isAdmin() || hasSubmodulePermission('campaigns', 'beneficiaries', 'delete');
+        allow read: if true;
+        allow create: if isSignedIn() && (isAdmin() || hasSubmodulePermission('campaigns', 'beneficiaries', 'create'));
+        allow update: if isSignedIn() && (isAdmin() || hasSubmodulePermission('campaigns', 'beneficiaries', 'update'));
+        allow delete: if isSignedIn() && (isAdmin() || hasSubmodulePermission('campaigns', 'beneficiaries', 'delete'));
       }
     }
     
     match /leads/{leadId} {
-      allow get: if resource.data.publicVisibility == 'Published' || isAdmin() || hasPermission('leads-members', 'read');
-      allow list: if isSignedIn();
-      allow create: if isAdmin() || hasPermission('leads-members', 'create');
-      allow update: if isAdmin() || hasPermission('leads-members', 'update');
-      allow delete: if isAdmin() || hasPermission('leads-members', 'delete');
+      allow read: if true;
+      allow create: if isSignedIn() && (isAdmin() || hasPermission('leads-members', 'create'));
+      allow update: if isSignedIn() && (isAdmin() || hasPermission('leads-members', 'update'));
+      allow delete: if isSignedIn() && (isAdmin() || hasPermission('leads-members', 'delete'));
 
        match /beneficiaries/{beneficiaryId} {
-        allow list, get: if isAdmin() || hasSubmodulePermission('leads-members', 'beneficiaries', 'read') || get(/databases/$(database)/documents/leads/$(leadId)).data.publicVisibility == 'Published';
-        allow create: if isAdmin() || hasSubmodulePermission('leads-members', 'beneficiaries', 'create');
-        allow update: if isAdmin() || hasSubmodulePermission('leads-members', 'beneficiaries', 'update');
-        allow delete: if isAdmin() || hasSubmodulePermission('leads-members', 'beneficiaries', 'delete');
+        allow read: if true;
+        allow create: if isSignedIn() && (isAdmin() || hasSubmodulePermission('leads-members', 'beneficiaries', 'create'));
+        allow update: if isSignedIn() && (isAdmin() || hasSubmodulePermission('leads-members', 'beneficiaries', 'update'));
+        allow delete: if isSignedIn() && (isAdmin() || hasSubmodulePermission('leads-members', 'beneficiaries', 'delete'));
       }
     }
     
     match /donations/{donationId} {
-      allow get: if isSignedIn() && (isOwner(request.resource.data.uploadedById) || hasPermission('donations', 'read')) || isAdmin();
-      allow list: if isSignedIn();
+      allow read: if true;
       allow create: if isSignedIn();
-      allow update: if isOwner(request.resource.data.uploadedById) || hasPermission('donations', 'update') || isAdmin();
-      allow delete: if isOwner(request.resource.data.uploadedById) || hasPermission('donations', 'delete') || isAdmin();
+      allow update: if isSignedIn() && (isOwner(request.resource.data.uploadedById) || hasPermission('donations', 'update') || isAdmin());
+      allow delete: if isSignedIn() && (isOwner(resource.data.uploadedById) || hasPermission('donations', 'delete') || isAdmin());
     }
     
     match /beneficiaries/{beneficiaryId} {
-      allow read: if isSignedIn() && (hasPermission('beneficiaries', 'read') || isAdmin());
-      allow write: if isSignedIn() && (hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update') || hasPermission('beneficiaries', 'delete') || isAdmin());
+      allow read: if true;
+      allow create: if isSignedIn() && (hasPermission('beneficiaries', 'create') || isAdmin());
+      allow update: if isSignedIn() && (hasPermission('beneficiaries', 'update') || isAdmin());
+      allow delete: if isSignedIn() && (hasPermission('beneficiaries', 'delete') || isAdmin());
     }
 
     match /users/{userId} {
@@ -127,26 +129,26 @@ service cloud.firestore {
       allow delete: if (request.auth.uid != userId && hasPermission('users', 'delete')) || (isAdmin() && request.auth.uid != userId);
 
       match /documents/{documentId} {
-        allow get, list: if isOwner(userId) || isAdmin();
+        allow read: if true;
         allow create: if (isOwner(userId) && isDocumentDataConsistent(userId)) || isAdmin();
         allow update: if (isOwner(userId) && isDocumentUserIdImmutable()) || isAdmin();
         allow delete: if isOwner(userId) || isAdmin();
 
         match /identityProofExtractions/{extractionId} {
-          allow get, list: if isOwner(userId) || isAdmin();
+          allow read: if true;
           allow create: if (isOwner(userId) && isExtractionDataConsistent(documentId)) || isAdmin();
           allow update: if (isOwner(userId) && isExtractionDocIdImmutable()) || isAdmin();
           allow delete: if isOwner(userId) || isAdmin();
         }
 
         match /billingExtractions/{extractionId} {
-          allow get, list: if isOwner(userId) || isAdmin();
+          allow read: if true;
           allow create: if (isOwner(userId) && isExtractionDataConsistent(documentId)) || isAdmin();
           allow update: if (isOwner(userId) && isExtractionDocIdImmutable()) || isAdmin();
           allow delete: if isOwner(userId) || isAdmin();
 
           match /lineItems/{lineItemId} {
-            allow get, list: if isOwner(userId) || isAdmin();
+            allow read: if true;
             allow create: if (isOwner(userId) && isLineItemDataConsistent(extractionId)) || isAdmin();
             allow update: if (isOwner(userId) && isLineItemExtractionIdImmutable()) || isAdmin();
             allow delete: if isOwner(userId) || isAdmin();
@@ -154,7 +156,7 @@ service cloud.firestore {
         }
 
         match /medicalReportExtractions/{extractionId} {
-          allow get, list: if isOwner(userId) || isAdmin();
+          allow read: if true;
           allow create: if (isOwner(userId) && isExtractionDataConsistent(documentId)) || isAdmin();
           allow update: if (isOwner(userId) && isExtractionDocIdImmutable()) || isAdmin();
           allow delete: if isOwner(userId) || isAdmin();
