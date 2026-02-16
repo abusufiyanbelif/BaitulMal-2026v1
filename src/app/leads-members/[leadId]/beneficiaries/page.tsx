@@ -2,8 +2,8 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
-import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
-import type { SecurityRuleContext } from '@/firebase';
+import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase/provider';
+import type { SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, deleteDoc, doc, serverTimestamp, setDoc, DocumentReference, writeBatch, updateDoc } from 'firebase/firestore';
 import type { Beneficiary, Lead } from '@/lib/types';
@@ -417,19 +417,19 @@ export default function BeneficiariesPage() {
   const handleSelectExisting = (beneficiaryData: Beneficiary) => {
     const dataToSubmit: BeneficiaryFormData = {
         name: beneficiaryData.name,
-        address: beneficiaryData.address,
-        phone: beneficiaryData.phone,
-        occupation: beneficiaryData.occupation,
+        address: beneficiaryData.address || '',
+        phone: beneficiaryData.phone || '',
+        occupation: beneficiaryData.occupation || '',
         members: beneficiaryData.members,
         earningMembers: beneficiaryData.earningMembers,
         male: beneficiaryData.male,
         female: beneficiaryData.female,
-        idProofType: beneficiaryData.idProofType,
-        idNumber: beneficiaryData.idNumber,
+        idProofType: beneficiaryData.idProofType || '',
+        idNumber: beneficiaryData.idNumber || '',
         referralBy: beneficiaryData.referralBy || '',
         kitAmount: 0,
         status: 'Pending',
-        notes: beneficiaryData.notes,
+        notes: beneficiaryData.notes || '',
         isEligibleForZakat: beneficiaryData.isEligibleForZakat,
         zakatAllocation: beneficiaryData.zakatAllocation,
     };
