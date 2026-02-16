@@ -1,17 +1,18 @@
 
+
 'use client';
 
 import { useMemo, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase } from '@/firebase/provider';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { doc, DocumentReference, setDoc, serverTimestamp, collection, deleteField } from 'firebase/firestore';
 import Link from 'next/link';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useStorage } from '@/firebase';
+import { useStorage } from '@/firebase/provider';
 
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
@@ -88,9 +89,10 @@ export default function UnlinkedDonationDetailsPage() {
                         const resizedBlob = await new Promise<Blob>((resolve) => {
                             Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
                         });
+                        const metadata = { customMetadata: { 'ownerId': userProfile.id } };
                         const filePath = `donations/${docRef.id}/${transaction.id}.png`;
                         const fileRef = storageRef(storage, filePath);
-                        const uploadResult = await uploadBytes(fileRef, resizedBlob);
+                        const uploadResult = await uploadBytes(fileRef, resizedBlob, metadata);
                         screenshotUrl = await getDownloadURL(uploadResult.ref);
                     }
                 }
@@ -398,3 +400,5 @@ export default function UnlinkedDonationDetailsPage() {
         </main>
     );
 }
+
+    
