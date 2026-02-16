@@ -78,7 +78,7 @@ service cloud.firestore {
 
     match /campaigns/{campaignId} {
       allow get: if resource.data.publicVisibility == 'Published' || isAdmin() || hasPermission('campaigns', 'read');
-      allow list: if isAdmin() || hasPermission('campaigns', 'read');
+      allow list: if isSignedIn();
       allow create: if isAdmin() || hasPermission('campaigns', 'create');
       allow update: if isAdmin() || hasPermission('campaigns', 'update');
       allow delete: if isAdmin() || hasPermission('campaigns', 'delete');
@@ -93,7 +93,7 @@ service cloud.firestore {
     
     match /leads/{leadId} {
       allow get: if resource.data.publicVisibility == 'Published' || isAdmin() || hasPermission('leads-members', 'read');
-      allow list: if isAdmin() || hasPermission('leads-members', 'read');
+      allow list: if isSignedIn();
       allow create: if isAdmin() || hasPermission('leads-members', 'create');
       allow update: if isAdmin() || hasPermission('leads-members', 'update');
       allow delete: if isAdmin() || hasPermission('leads-members', 'delete');
@@ -108,7 +108,7 @@ service cloud.firestore {
     
     match /donations/{donationId} {
       allow get: if isSignedIn() && (isOwner(request.resource.data.uploadedById) || hasPermission('donations', 'read')) || isAdmin();
-      allow list: if hasPermission('donations', 'read') || isAdmin();
+      allow list: if isSignedIn();
       allow create: if isSignedIn();
       allow update: if isOwner(request.resource.data.uploadedById) || hasPermission('donations', 'update') || isAdmin();
       allow delete: if isOwner(request.resource.data.uploadedById) || hasPermission('donations', 'delete') || isAdmin();

@@ -54,6 +54,7 @@ import type { ChartConfig } from '@/components/ui/chart';
 import Image from 'next/image';
 import placeholderImages from '@/app/lib/placeholder-images.json';
 import { Badge } from '@/components/ui/badge';
+import { useSession } from '@/hooks/use-session';
 
 const donationCategoryChartConfig = {
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
@@ -72,6 +73,7 @@ export default function PublicLeadSummaryPage() {
     const leadId = params.leadId as string;
     const firestore = useFirestore();
     const { toast } = useToast();
+    const { userProfile } = useSession();
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
     
@@ -85,9 +87,9 @@ export default function PublicLeadSummaryPage() {
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
     
     const allDonationsCollectionRef = useMemoFirebase(() => {
-        if (!firestore) return null;
+        if (!firestore || !userProfile) return null; // Only fetch if user is logged in
         return collection(firestore, 'donations');
-    }, [firestore]);
+    }, [firestore, userProfile]);
 
     const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
     const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
@@ -168,7 +170,7 @@ export default function PublicLeadSummaryPage() {
     const isLoading = isLeadLoading || areDonationsLoading || areBeneficiariesLoading || isBrandingLoading || isPaymentLoading;
     
     const handleShare = async () => {
-        if (!lead || !fundingData) {
+        if (!lead) {
             toast({
                 title: 'Error',
                 description: 'Cannot share, summary data is not available.',
@@ -177,7 +179,7 @@ export default function PublicLeadSummaryPage() {
             return;
         }
         
-        const shareText = `
+        let shareText = `
 *Assalamualaikum Warahmatullahi Wabarakatuh*
 
 🙏 *We Need Your Support!* 🙏
@@ -186,11 +188,19 @@ Join us for the *${lead.name}* campaign as we work to provide essential aid to o
 
 *Our Goal:*
 ${lead.description || 'To support those in need.'}
+        `.trim().replace(/^\s+/gm, '');
+
+        if(fundingData) {
+             shareText += `
 
 *Financial Update:*
 🎯 Target for Kits: ₹${fundingData.targetAmount.toLocaleString('en-IN')}
 ✅ Collected (Verified): ₹${fundingData.totalCollectedForGoal.toLocaleString('en-IN')}
 ⏳ Remaining: *₹${fundingData.remainingToCollect.toLocaleString('en-IN')}*
+            `
+        }
+
+        shareText += `
 
 Your contribution, big or small, makes a huge difference.
 
@@ -313,70 +323,86 @@ Your contribution, big or small, makes a huge difference.
                         )}
                     </CardContent>
                 </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Target className="h-6 w-6 text-primary" />
-                            Fundraising Progress
-                        </CardTitle>
-                        <CardDescription>A real-time look at our collected donations against the goal for this initiative.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                            <div className="relative h-48 w-full">
-                                <ChartContainer
-                                    config={{
-                                        progress: {
-                                            label: 'Progress',
-                                            color: 'hsl(var(--primary))',
-                                        },
-                                    }}
-                                    className="mx-auto aspect-square h-full"
-                                >
-                                    <RadialBarChart
-                                        data={[{ name: 'Progress', value: fundingData?.fundingProgress || 0, fill: 'hsl(var(--primary))' }]}
-                                        startAngle={-270}
-                                        endAngle={90}
-                                        innerRadius="75%"
-                                        outerRadius="100%"
-                                        barSize={20}
+
+                 {fundingData ? (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Target className="h-6 w-6 text-primary" />
+                                Fundraising Progress
+                            </CardTitle>
+                            <CardDescription>A real-time look at our collected donations against the goal for this initiative.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                                <div className="relative h-48 w-full">
+                                    <ChartContainer
+                                        config={{
+                                            progress: {
+                                                label: 'Progress',
+                                                color: 'hsl(var(--primary))',
+                                            },
+                                        }}
+                                        className="mx-auto aspect-square h-full"
                                     >
-                                    <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                    <RadialBar
-                                        dataKey="value"
-                                        background={{ fill: 'hsl(var(--muted))' }}
-                                        cornerRadius={10}
-                                    />
-                                    <ChartTooltip
-                                        cursor={false}
-                                        content={<ChartTooltipContent hideLabel />}
-                                    />
-                                    </RadialBarChart>
-                                </ChartContainer>
-                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-4xl font-bold text-primary">
-                                        {(fundingData?.fundingProgress || 0).toFixed(0)}%
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">Funded</span>
+                                        <RadialBarChart
+                                            data={[{ name: 'Progress', value: fundingData.fundingProgress || 0, fill: 'hsl(var(--primary))' }]}
+                                            startAngle={-270}
+                                            endAngle={90}
+                                            innerRadius="75%"
+                                            outerRadius="100%"
+                                            barSize={20}
+                                        >
+                                        <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                        <RadialBar
+                                            dataKey="value"
+                                            background={{ fill: 'hsl(var(--muted))' }}
+                                            cornerRadius={10}
+                                        />
+                                        <ChartTooltip
+                                            cursor={false}
+                                            content={<ChartTooltipContent hideLabel />}
+                                        />
+                                        </RadialBarChart>
+                                    </ChartContainer>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                        <span className="text-4xl font-bold text-primary">
+                                            {(fundingData.fundingProgress || 0).toFixed(0)}%
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">Funded</span>
+                                    </div>
+                                </div>
+                                <div className="space-y-4 text-center md:text-left">
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Collected for Goal</p>
+                                        <p className="text-3xl font-bold">
+                                        ₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Fundraising Target</p>
+                                        <p className="text-3xl font-bold">
+                                        ₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="space-y-4 text-center md:text-left">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Collected for Goal</p>
-                                    <p className="text-3xl font-bold">
-                                    ₹{(fundingData?.totalCollectedForGoal || 0).toLocaleString('en-IN')}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Fundraising Target</p>
-                                    <p className="text-3xl font-bold">
-                                    ₹{(fundingData?.targetAmount || 0).toLocaleString('en-IN')}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Target className="h-6 w-6 text-primary" />
+                                Fundraising Progress
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground">Login to view detailed fundraising progress.</p>
+                        </CardContent>
+                    </Card>
+                )}
+
 
                 <div className="grid gap-6 sm:grid-cols-3">
                     <Card>
@@ -408,40 +434,42 @@ Your contribution, big or small, makes a huge difference.
                     </Card>
                 </div>
                 
-                <div className="grid gap-6 lg:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>All Donations by Category</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                <BarChart
-                                    data={Object.entries(fundingData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))}
-                                    layout="vertical"
-                                    margin={{ right: 20 }}
-                                >
-                                    <CartesianGrid horizontal={false} />
-                                    <YAxis
-                                        dataKey="name"
-                                        type="category"
-                                        tickLine={false}
-                                        tickMargin={10}
-                                        axisLine={false}
-                                        tick={{ fontSize: 12 }}
-                                        width={120}
-                                    />
-                                    <XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
-                                    <ChartTooltip content={<ChartTooltipContent />} />
-                                    <Bar dataKey="value" radius={4}>
-                                        {Object.entries(fundingData?.amountsByCategory || {}).map(([name,]) => (
-                                            <Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ChartContainer>
-                        </CardContent>
-                    </Card>
-                </div>
+                {fundingData && (
+                    <div className="grid gap-6 lg:grid-cols-2">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>All Donations by Category</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
+                                    <BarChart
+                                        data={Object.entries(fundingData.amountsByCategory || {}).map(([name, value]) => ({ name, value }))}
+                                        layout="vertical"
+                                        margin={{ right: 20 }}
+                                    >
+                                        <CartesianGrid horizontal={false} />
+                                        <YAxis
+                                            dataKey="name"
+                                            type="category"
+                                            tickLine={false}
+                                            tickMargin={10}
+                                            axisLine={false}
+                                            tick={{ fontSize: 12 }}
+                                            width={120}
+                                        />
+                                        <XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
+                                        <ChartTooltip content={<ChartTooltipContent />} />
+                                        <Bar dataKey="value" radius={4}>
+                                            {Object.entries(fundingData.amountsByCategory || {}).map(([name,]) => (
+                                                <Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ChartContainer>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
             </div>
 
             <ShareDialog 
@@ -452,4 +480,3 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
-
