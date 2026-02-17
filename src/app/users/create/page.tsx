@@ -71,7 +71,12 @@ export default function CreateUserPage() {
             }
         } catch (uploadError: any) {
             console.error("Error during file upload on create:", uploadError);
-            toast({ title: 'File Upload Error', description: 'User account was created, but ID proof failed to upload. Please edit the user to add it.', variant: 'destructive', duration: 9000 });
+            toast({ 
+                title: 'File Upload Error', 
+                description: `User account was created, but ID proof failed to upload: ${uploadError.message}. Please edit the user later to add it.`, 
+                variant: 'destructive', 
+                duration: 9000 
+            });
         }
     }
 

@@ -119,12 +119,17 @@ export default function UserDetailsPage() {
             
             const filePath = `users/${userId}/id_proof.${fileExtension}`;
             const fileRef = storageRef(storage, filePath);
-            const uploadResult = await uploadBytes(fileRef, fileToUpload);
-            idProofUrl = await getDownloadURL(uploadResult.ref);
+            await uploadBytes(fileRef, fileToUpload);
+            idProofUrl = await getDownloadURL(fileRef);
         }
     } catch (uploadError: any) {
          console.error("Error during file upload:", uploadError);
-         toast({ title: 'File Upload Error', description: 'Could not upload ID proof file. Other details were not saved.', variant: 'destructive' });
+         toast({ 
+             title: 'File Upload Error', 
+             description: `Could not upload ID proof file: ${uploadError.message}. Other details were not saved.`, 
+             variant: 'destructive',
+             duration: 9000
+        });
          setIsSubmitting(false);
          return;
     }
