@@ -27,16 +27,19 @@ cd <project_directory>
 npm install
 ```
 
-### Step 2: Set Up Firebase Credentials
+### Step 2: Set Up Local Environment Configuration (`.env.local`)
 
-The application requires two sets of Firebase credentials to function correctly: one for the client-side application and one for the server-side admin tasks (like database seeding).
+To run the app locally, you need to store your secret keys and project configuration in an environment file. Next.js uses a special file called `.env.local` for this purpose, which is **never** committed to your version control, keeping your secrets safe.
 
-#### A. Client-Side Configuration (`.env` file)
+#### A. Create the `.env.local` file
 
-1.  **Create the `.env` file**: In the root of your project, create a file named `.env`.
-2.  **Get Firebase Config**: Navigate to your [Firebase Console](https://console.firebase.google.com/), select your project, go to **Project Settings** (click the gear icon), and under the "General" tab, find the "Your apps" section.
-3.  **Copy Config**: Click on the "Web app" (`</>`) you've registered. Under "Firebase SDK snippet", select the "Config" option. This will display a configuration object.
-4.  **Populate `.env`**: Copy the key-value pairs from the Firebase config object into your `.env` file. It should look like this:
+In the root of your project, create a file named `.env.local`.
+
+#### B. Get Firebase Configuration
+
+1.  Navigate to your [Firebase Console](https://console.firebase.google.com/), select your project, go to **Project Settings** (click the gear icon), and under the "General" tab, find the "Your apps" section.
+2.  Click on the "Web app" (`</>`) you've registered. Under "Firebase SDK snippet", select the "Config" option.
+3.  Copy the key-value pairs from the Firebase config object into your `.env.local` file. It should look like this:
 
     ```env
     NEXT_PUBLIC_FIREBASE_API_KEY="AIza..."
@@ -48,24 +51,28 @@ The application requires two sets of Firebase credentials to function correctly:
     NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="G-..."
     ```
 
-#### B. Admin SDK Configuration (Service Account)
+    **Note**: The `NEXT_PUBLIC_` prefix is important. It tells Next.js that it's safe to expose these variables to the browser.
 
-The server-side scripts (for seeding, migration, etc.) require admin privileges.
-
-1.  **Generate Private Key**: In the Firebase Console, go to **Project Settings** > **Service accounts**.
-2.  Click the **"Generate new private key"** button. A JSON file will be downloaded.
-3.  **Rename and Move**: Rename the downloaded file to `serviceAccountKey.json` and place it in the **root directory** of your project. **This file is sensitive and should NOT be committed to version control.** The project's `.gitignore` file is already configured to ignore it.
-
-### Step 3: Set Up Gemini API Key
+#### C. Get Gemini API Key
 
 The AI features of this application use Google's Gemini models via Genkit.
 
-1.  **Get API Key**: Visit [Google AI Studio](https://aistudio.google.com/app/apikey) to create and copy your API key.
-2.  **Add to `.env`**: Add the key to your `.env` file:
+1.  Visit [Google AI Studio](https://aistudio.google.com/app/apikey) to create and copy your API key.
+2.  Add the key to your `.env.local` file:
 
     ```env
     GEMINI_API_KEY="your_gemini_api_key"
     ```
+
+    This key is **not** prefixed with `NEXT_PUBLIC_`, so it will only be available on the server-side, which is more secure.
+
+### Step 3: Set Up Admin SDK Configuration (Service Account)
+
+The server-side scripts (for seeding, migration, etc.) require admin privileges.
+
+1.  In the Firebase Console, go to **Project Settings** > **Service accounts**.
+2.  Click the **"Generate new private key"** button. A JSON file will be downloaded.
+3.  Rename the downloaded file to `serviceAccountKey.json` and place it in the **root directory** of your project. The project's `.gitignore` file is already configured to ignore this sensitive file.
 
 ## Running the Application
 
