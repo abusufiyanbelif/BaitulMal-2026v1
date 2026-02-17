@@ -89,7 +89,7 @@ export const DonationReceipt = React.forwardRef<HTMLDivElement, DonationReceiptP
                                         </TableHeader>
                                         <TableBody>
                                             {donation.linkSplit.map((link) => (
-                                                <TableRow key={link.linkId}>
+                                                <TableRow key={`${link.linkType}-${link.linkId}`}>
                                                     <TableCell className="py-1 flex items-center gap-2">
                                                         {link.linkType === 'campaign' ? <FolderKanban className="h-4 w-4 text-muted-foreground" /> : <Lightbulb className="h-4 w-4 text-muted-foreground" />}
                                                         <div>

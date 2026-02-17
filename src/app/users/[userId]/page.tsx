@@ -4,7 +4,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useStorage, useMemoFirebase } from '@/firebase/provider';
+import { useFirestore, useStorage, useMemoFirebase } from '@/firebase/provider';
+import { useDoc } from '@/firebase/firestore/use-doc';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import { updateDoc, doc, writeBatch, DocumentReference } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
@@ -94,7 +97,7 @@ export default function UserDetailsPage() {
             if (idProofUrl) {
                 const fileRefToDelete = storageRef(storage, idProofUrl);
                 await deleteObject(fileRefToDelete).catch((err: any) => {
-                    if (err.code !== 'storage/object-not-found') console.warn("Old ID proof deletion failed:", err);
+                    if ((err.code !== 'storage/object-not-found')) console.warn("Old ID proof deletion failed:", err);
                 });
             }
 
@@ -116,7 +119,7 @@ export default function UserDetailsPage() {
             
             const filePath = `users/${userId}/id_proof.${fileExtension}`;
             const fileRef = storageRef(storage, filePath);
-            const uploadResult = await uploadBytes(fileRef, fileToUpload);
+            const uploadResult = await uploadBytes(fileRef, fileToUpload, { customMetadata: { 'ownerId': user.id } });
             idProofUrl = await getDownloadURL(uploadResult.ref);
         }
     } catch (uploadError: any) {
