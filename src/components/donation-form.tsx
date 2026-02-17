@@ -28,12 +28,13 @@ import {
 } from "@/components/ui/select";
 import type { Donation, DonationCategory, Campaign, Lead, TransactionDetail as TransactionDetailType } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
-import { Loader2, ScanLine, Replace, Trash2, Plus, DollarSign } from 'lucide-react';
+import { Loader2, ScanLine, Replace, Trash2, Plus, DollarSign, ZoomIn, ZoomOut, RotateCw, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const linkSplitSchema = z.array(z.object({
     linkId: z.string(),
@@ -81,6 +82,9 @@ interface DonationFormProps {
 
 const TransactionItem = ({ control, index, remove, register, setValue, canRemove }: { control: Control<DonationFormData>, index: number, remove: (index: number) => void, register: UseFormRegister<DonationFormData>, setValue: UseFormSetValue<DonationFormData>, canRemove: boolean }) => {
     const [preview, setPreview] = useState<string | null>(null);
+    const [isViewerOpen, setIsViewerOpen] = useState(false);
+    const [zoom, setZoom] = useState(1);
+    const [rotation, setRotation] = useState(0);
 
     const fileList = useWatch({ control, name: `transactions.${index}.screenshotFile` });
     const existingUrl = useWatch({ control, name: `transactions.${index}.screenshotUrl` });
@@ -104,6 +108,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, canRemove
         setValue(`transactions.${index}.screenshotFile`, null, { shouldDirty: true });
         setValue(`transactions.${index}.screenshotUrl`, '', { shouldDirty: true });
         setPreview(null);
+        setIsViewerOpen(false);
     };
 
     return (
@@ -146,26 +151,47 @@ const TransactionItem = ({ control, index, remove, register, setValue, canRemove
             <div className="space-y-2">
                 <Label>Screenshot</Label>
                 {preview ? (
-                    <div className="relative group w-full h-32 rounded-md border bg-secondary/30">
-                        <Image
-                            src={preview.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(preview)}` : preview}
-                            alt={`Screenshot preview ${index + 1}`}
-                            fill
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            className="object-contain"
-                        />
-                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button type="button" size="icon" variant="outline" onClick={() => document.getElementById(`tx-screenshot-upload-${index}`)?.click()}>
-                                <Replace className="h-5 w-5"/>
-                                <span className="sr-only">Replace Screenshot</span>
-                            </Button>
-                            <Button type="button" size="icon" variant="destructive" onClick={handleRemoveImage}>
-                                <Trash2 className="h-5 w-5"/>
-                                <span className="sr-only">Remove Screenshot</span>
-                            </Button>
-                            <Input id={`tx-screenshot-upload-${index}`} type="file" className="hidden" {...register(`transactions.${index}.screenshotFile`)} />
-                        </div>
-                    </div>
+                    <>
+                        <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
+                            <DialogTrigger asChild>
+                                <div className="relative group w-full h-32 rounded-md border bg-secondary/30 cursor-pointer">
+                                    <Image
+                                        src={preview.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(preview)}` : preview}
+                                        alt={`Screenshot preview ${index + 1}`}
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                        className="object-contain"
+                                    />
+                                </div>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl">
+                                <DialogHeader>
+                                    <DialogTitle>Screenshot Viewer</DialogTitle>
+                                </DialogHeader>
+                                <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
+                                    <Image
+                                        src={preview.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(preview)}` : preview}
+                                        alt="Screenshot"
+                                        fill
+                                        sizes="(max-width: 896px) 100vw, 896px"
+                                        className="object-contain transition-transform duration-200 ease-out origin-center"
+                                        style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
+                                        unoptimized
+                                    />
+                                </div>
+                                <DialogFooter className="sm:justify-center pt-4 flex-wrap">
+                                    <Button variant="outline" onClick={() => setZoom(z => z * 1.2)}><ZoomIn className="mr-2"/> Zoom In</Button>
+                                    <Button variant="outline" onClick={() => setZoom(z => z / 1.2)}><ZoomOut className="mr-2"/> Zoom Out</Button>
+                                    <Button variant="outline" onClick={() => setRotation(r => r + 90)}><RotateCw className="mr-2"/> Rotate</Button>
+                                    <Button variant="outline" onClick={() => { setZoom(1); setRotation(0); }}><RefreshCw className="mr-2"/> Reset View</Button>
+                                    <Separator orientation="vertical" className="h-auto hidden sm:block"/>
+                                    <Button variant="outline" onClick={() => document.getElementById(`tx-screenshot-upload-${index}`)?.click()}><Replace className="mr-2"/> Replace</Button>
+                                    <Button variant="destructive" onClick={handleRemoveImage}><Trash2 className="mr-2"/> Remove</Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                        <Input id={`tx-screenshot-upload-${index}`} type="file" className="hidden" {...register(`transactions.${index}.screenshotFile`)} />
+                    </>
                 ) : (
                     <FormField
                         control={control}
