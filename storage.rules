@@ -52,9 +52,11 @@ service firebase.storage {
       allow write: if isAdmin() || hasPermission('settings', 'update');
     }
 
-    // Users can only access their own files, unless the requester is an admin.
+    // Users can only access their own files, unless the requester is an admin
+    // or has specific user management permissions.
     match /users/{userId}/{allPaths=**} {
-      allow read, write: if isOwner(userId) || isAdmin();
+      allow read: if isOwner(userId) || isAdmin() || hasPermission('users', 'read');
+      allow write: if isOwner(userId) || isAdmin() || hasPermission('users', 'create') || hasPermission('users', 'update');
     }
     
     // Beneficiary file access is tied to the 'beneficiaries' module permissions.
