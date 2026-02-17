@@ -57,20 +57,21 @@ service firebase.storage {
     match /users/{userId}/{allPaths=**} {
       allow read: if isOwner(userId) || isAdmin() || hasPermission('users', 'read');
       allow write: if isOwner(userId) || isAdmin() || hasPermission('users', 'create') || hasPermission('users', 'update');
+      allow delete: if isOwner(userId) || isAdmin() || hasPermission('users', 'delete');
     }
     
     // Beneficiary file access is tied to the 'beneficiaries' module permissions.
     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
       allow read: if (isSignedIn() && hasPermission('beneficiaries', 'read')) || isAdmin();
       allow write: if (isSignedIn() && (hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update'))) || isAdmin();
+      allow delete: if (isSignedIn() && hasPermission('beneficiaries', 'delete')) || isAdmin();
     }
     
     // Access to donation files is governed by the 'donations' module permissions.
-    // 'create' is allowed if the user has 'create' or 'update' permission on donations.
     match /donations/{donationId}/{allPaths=**} {
       allow create: if (isSignedIn() && (hasPermission('donations', 'create') || hasPermission('donations', 'update'))) || isAdmin();
       allow read: if (isSignedIn() && hasPermission('donations', 'read')) || isAdmin();
-      allow update: if (isSignedIn() && hasPermission('donations', 'update')) || isAdmin(); // Metadata updates
+      allow update: if (isSignedIn() && hasPermission('donations', 'update')) || isAdmin();
       allow delete: if (isSignedIn() && hasPermission('donations', 'delete')) || isAdmin();
     }
 
