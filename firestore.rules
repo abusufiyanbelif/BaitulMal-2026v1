@@ -14,6 +14,10 @@ service cloud.firestore {
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
+    
+    function userExists() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
 
     function getUserData() {
         return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
@@ -21,49 +25,26 @@ service cloud.firestore {
     
     function isAdmin() {
       return isSignedIn() && 
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             'role' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.lower() == 'admin';
+             userExists() &&
+             'role' in getUserData() &&
+             getUserData().role.lower() == 'admin';
     }
 
     function hasPermission(module, permission) {
-        return isSignedIn() && getUserData().permissions[module][permission] == true;
+        return isSignedIn() && 
+               userExists() &&
+               'permissions' in getUserData() &&
+               module in getUserData().permissions &&
+               getUserData().permissions[module][permission] == true;
     }
 
     function hasSubmodulePermission(module, submodule, permission) {
-        return isSignedIn() && getUserData().permissions[module][submodule][permission] == true;
-    }
-
-    function isUserProfileDataConsistent(userId) {
-      return request.resource.data.id == userId;
-    }
-
-    function isUserProfileIdImmutable() {
-      return request.resource.data.id == resource.data.id;
-    }
-
-    function isDocumentDataConsistent(userId) {
-      return request.resource.data.userId == userId;
-    }
-
-    function isDocumentUserIdImmutable() {
-      return request.resource.data.userId == resource.data.userId;
-    }
-    
-    function isExtractionDataConsistent(documentId) {
-      return request.resource.data.documentId == documentId;
-    }
-
-    function isExtractionDocIdImmutable() {
-      return request.resource.data.documentId == resource.data.documentId;
-    }
-
-    function isLineItemDataConsistent(billingExtractionId) {
-      return request.resource.data.billingExtractionId == billingExtractionId;
-    }
-
-    function isLineItemExtractionIdImmutable() {
-      return request.resource.data.billingExtractionId == resource.data.billingExtractionId;
+        return isSignedIn() && 
+               userExists() &&
+               'permissions' in getUserData() &&
+               module in getUserData().permissions &&
+               submodule in getUserData().permissions[module] &&
+               getUserData().permissions[module][submodule][permission] == true;
     }
 
     // ----------------------------------------------------------------------
@@ -125,41 +106,41 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isOwner(userId) || hasPermission('users', 'read') || isAdmin();
       allow list: if hasPermission('users', 'read') || isAdmin();
-      allow create: if (isOwner(userId) && isUserProfileDataConsistent(userId)) || hasPermission('users', 'create') || isAdmin();
-      allow update: if (isOwner(userId) && isUserProfileIdImmutable()) || hasPermission('users', 'update') || isAdmin();
+      allow create: if isOwner(userId) || hasPermission('users', 'create') || isAdmin();
+      allow update: if isOwner(userId) || hasPermission('users', 'update') || isAdmin();
       allow delete: if (request.auth.uid != userId && hasPermission('users', 'delete')) || (isAdmin() && request.auth.uid != userId);
 
       match /documents/{documentId} {
         allow read: if true;
-        allow create: if (isOwner(userId) && isDocumentDataConsistent(userId)) || isAdmin();
-        allow update: if (isOwner(userId) && isDocumentUserIdImmutable()) || isAdmin();
+        allow create: if isOwner(userId) || isAdmin();
+        allow update: if isOwner(userId) || isAdmin();
         allow delete: if isOwner(userId) || isAdmin();
 
         match /identityProofExtractions/{extractionId} {
           allow read: if true;
-          allow create: if (isOwner(userId) && isExtractionDataConsistent(documentId)) || isAdmin();
-          allow update: if (isOwner(userId) && isExtractionDocIdImmutable()) || isAdmin();
+          allow create: if isOwner(userId) || isAdmin();
+          allow update: if isOwner(userId) || isAdmin();
           allow delete: if isOwner(userId) || isAdmin();
         }
 
         match /billingExtractions/{extractionId} {
           allow read: if true;
-          allow create: if (isOwner(userId) && isExtractionDataConsistent(documentId)) || isAdmin();
-          allow update: if (isOwner(userId) && isExtractionDocIdImmutable()) || isAdmin();
+          allow create: if isOwner(userId) || isAdmin();
+          allow update: if isOwner(userId) || isAdmin();
           allow delete: if isOwner(userId) || isAdmin();
 
           match /lineItems/{lineItemId} {
             allow read: if true;
-            allow create: if (isOwner(userId) && isLineItemDataConsistent(extractionId)) || isAdmin();
-            allow update: if (isOwner(userId) && isLineItemExtractionIdImmutable()) || isAdmin();
+            allow create: if isOwner(userId) || isAdmin();
+            allow update: if isOwner(userId) || isAdmin();
             allow delete: if isOwner(userId) || isAdmin();
           }
         }
 
         match /medicalReportExtractions/{extractionId} {
           allow read: if true;
-          allow create: if (isOwner(userId) && isExtractionDataConsistent(documentId)) || isAdmin();
-          allow update: if (isOwner(userId) && isExtractionDocIdImmutable()) || isAdmin();
+          allow create: if isOwner(userId) || isAdmin();
+          allow update: if isOwner(userId) || isAdmin();
           allow delete: if isOwner(userId) || isAdmin();
         }
       }
