@@ -2,7 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   allowedDevOrigins: [
-    "http://*.cloudworkstations.dev",
     "https://*.cloudworkstations.dev"
   ],
   images: {
