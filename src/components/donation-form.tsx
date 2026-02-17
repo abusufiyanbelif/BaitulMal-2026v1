@@ -2,7 +2,7 @@
 'use client';
 
 import { z } from 'zod';
-import { useForm, useFieldArray, useWatch } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch, type Control, type UseFormRegister, type UseFormSetValue } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
@@ -33,6 +33,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 const linkSplitSchema = z.array(z.object({
     linkId: z.string(),
@@ -77,6 +78,113 @@ interface DonationFormProps {
   leads?: Lead[];
   defaultLinkId?: string;
 }
+
+const TransactionItem = ({ control, index, remove, register, setValue, canRemove }: { control: Control<DonationFormData>, index: number, remove: (index: number) => void, register: UseFormRegister<DonationFormData>, setValue: UseFormSetValue<DonationFormData>, canRemove: boolean }) => {
+    const [preview, setPreview] = useState<string | null>(null);
+
+    const fileList = useWatch({ control, name: `transactions.${index}.screenshotFile` });
+    const existingUrl = useWatch({ control, name: `transactions.${index}.screenshotUrl` });
+
+    useEffect(() => {
+        if (fileList && fileList.length > 0) {
+            const file = fileList[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        } else if (existingUrl) {
+            setPreview(existingUrl);
+        } else {
+            setPreview(null);
+        }
+    }, [fileList, existingUrl]);
+    
+    const handleRemoveImage = () => {
+        setValue(`transactions.${index}.screenshotFile`, null, { shouldDirty: true });
+        setValue(`transactions.${index}.screenshotUrl`, '', { shouldDirty: true });
+        setPreview(null);
+    };
+
+    return (
+        <div className="space-y-4 rounded-md border bg-muted/50 p-3 relative">
+            <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute top-1 right-1 h-7 w-7"
+                onClick={() => remove(index)}
+                disabled={!canRemove}
+            >
+                <Trash2 className="h-4 w-4 text-destructive"/>
+                <span className="sr-only">Remove Transaction</span>
+            </Button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                    control={control}
+                    name={`transactions.${index}.amount`}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Amount (₹)</FormLabel>
+                            <FormControl><Input type="number" placeholder="0.00" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={control}
+                    name={`transactions.${index}.transactionId`}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Transaction ID</FormLabel>
+                            <FormControl><Input placeholder="UPI ID, Check No., etc." {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+            <div className="space-y-2">
+                <Label>Screenshot</Label>
+                {preview ? (
+                    <div className="relative group w-full h-32 rounded-md border bg-secondary/30">
+                        <Image
+                            src={preview.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(preview)}` : preview}
+                            alt={`Screenshot preview ${index + 1}`}
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            className="object-contain"
+                        />
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button type="button" size="icon" variant="outline" onClick={() => document.getElementById(`tx-screenshot-upload-${index}`)?.click()}>
+                                <Replace className="h-5 w-5"/>
+                                <span className="sr-only">Replace Screenshot</span>
+                            </Button>
+                            <Button type="button" size="icon" variant="destructive" onClick={handleRemoveImage}>
+                                <Trash2 className="h-5 w-5"/>
+                                <span className="sr-only">Remove Screenshot</span>
+                            </Button>
+                            <Input id={`tx-screenshot-upload-${index}`} type="file" className="hidden" {...register(`transactions.${index}.screenshotFile`)} />
+                        </div>
+                    </div>
+                ) : (
+                    <FormField
+                        control={control}
+                        name={`transactions.${index}.screenshotFile`}
+                        render={() => (
+                            <FormItem>
+                                <FormControl>
+                                    <Input type="file" accept="image/*" {...register(`transactions.${index}.screenshotFile`)} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
+            </div>
+        </div>
+    )
+}
+
 
 export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], leads = [], defaultLinkId }: DonationFormProps) {
   const isEditing = !!donation;
@@ -193,63 +301,17 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                 Add one or more transactions that make up the total donation amount.
             </FormDescription>
             <div className="space-y-4">
-                {transactionFields.map((field, index) => (
-                    <div key={field.id} className="space-y-4 rounded-md border bg-muted/50 p-3 relative">
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-1 right-1 h-7 w-7"
-                            onClick={() => removeTransaction(index)}
-                            disabled={transactionFields.length <= 1}
-                        >
-                            <Trash2 className="h-4 w-4 text-destructive"/>
-                            <span className="sr-only">Remove Transaction</span>
-                        </Button>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <FormField
-                                control={control}
-                                name={`transactions.${index}.amount`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Amount (₹)</FormLabel>
-                                        <FormControl><Input type="number" placeholder="0.00" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={control}
-                                name={`transactions.${index}.transactionId`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Transaction ID</FormLabel>
-                                        <FormControl><Input placeholder="UPI ID, Check No., etc." {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <FormField
-                            control={control}
-                            name={`transactions.${index}.screenshotFile`}
-                            render={() => (
-                                <FormItem>
-                                    <FormLabel>Screenshot</FormLabel>
-                                    <FormControl>
-                                        <Input type="file" accept="image/*" {...register(`transactions.${index}.screenshotFile`)} />
-                                    </FormControl>
-                                    {getValues(`transactions.${index}.screenshotUrl`) && (
-                                        <FormDescription>
-                                            A screenshot is already attached. Uploading a new one will replace it.
-                                        </FormDescription>
-                                    )}
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                ))}
+               {transactionFields.map((field, index) => (
+                    <TransactionItem 
+                        key={field.id}
+                        control={control}
+                        index={index}
+                        register={register}
+                        setValue={setValue}
+                        remove={removeTransaction}
+                        canRemove={transactionFields.length > 1}
+                    />
+               ))}
             </div>
             <Button
                 type="button"
