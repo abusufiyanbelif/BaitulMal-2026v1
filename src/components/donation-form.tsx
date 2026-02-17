@@ -345,7 +345,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => appendTransaction({ id: `tx_${Date.now()}`, amount: 0, transactionId: '', screenshotUrl: '' })}
+                onClick={() => appendTransaction({ id: `tx_${Date.now()}`, amount: 0, transactionId: '' })}
             >
                 <Plus className="mr-2 h-4 w-4"/> Add another transaction
             </Button>
