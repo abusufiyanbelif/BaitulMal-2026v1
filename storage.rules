@@ -63,7 +63,7 @@ service firebase.storage {
     // Donation files can only be created by the designated owner in the metadata.
     // Read, update, and delete are governed by 'donations' module permissions.
     match /donations/{donationId}/{allPaths=**} {
-      allow create: if (request.auth.uid == request.resource.customMetadata.ownerId && hasPermission('donations', 'create')) || isAdmin();
+      allow create: if request.auth.uid == request.resource.customMetadata.ownerId || isAdmin();
       allow read: if (isSignedIn() && hasPermission('donations', 'read')) || isAdmin();
       allow update: if (isSignedIn() && hasPermission('donations', 'update')) || isAdmin(); 
       allow delete: if (isSignedIn() && hasPermission('donations', 'delete')) || isAdmin();

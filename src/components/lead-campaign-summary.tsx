@@ -4,7 +4,7 @@
 import { useMemo } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useFirestore, useMemoFirebase } from '@/firebase/provider';
-import { collection } from 'firebase/firestore';
+import { collection, type DocumentData } from 'firebase/firestore';
 import type { Campaign, Lead } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { FolderKanban, Lightbulb } from 'lucide-react';

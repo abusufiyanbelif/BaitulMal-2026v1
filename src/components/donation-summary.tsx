@@ -4,7 +4,7 @@
 import { useMemo } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useFirestore, useMemoFirebase } from '@/firebase/provider';
-import { collection, query } from 'firebase/firestore';
+import { collection, query, type DocumentData } from 'firebase/firestore';
 import type { Donation, DonationCategory, Campaign, Lead } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Wallet, PieChart as PieChartIcon, Target, Calendar } from 'lucide-react';

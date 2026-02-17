@@ -13,7 +13,7 @@ import { useMemo, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, where, type DocumentData } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
 import placeholderImages from '@/app/lib/placeholder-images.json';

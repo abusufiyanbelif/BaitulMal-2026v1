@@ -16,7 +16,6 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
         await docRef.set({
             ...data,
             id: docRef.id, // Explicitly set the ID in the document
-            addedDate: new Date().toISOString().split('T')[0],
             createdAt: FieldValue.serverTimestamp(),
             createdById: createdBy.id,
             createdByName: createdBy.name,

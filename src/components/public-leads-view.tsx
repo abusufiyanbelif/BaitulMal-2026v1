@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, where, type DocumentData } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
 import { leadPurposesConfig } from '@/lib/modules';
 import Image from 'next/image';

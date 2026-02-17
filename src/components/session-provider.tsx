@@ -4,7 +4,7 @@
 import { createContext, useMemo as useReactMemo, ReactNode } from 'react';
 import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { doc, DocumentReference } from 'firebase/firestore';
+import { doc, type DocumentReference } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import type { User } from 'firebase/auth';
 
