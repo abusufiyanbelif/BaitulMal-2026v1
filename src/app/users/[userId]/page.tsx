@@ -124,9 +124,13 @@ export default function UserDetailsPage() {
         }
     } catch (uploadError: any) {
          console.error("Error during file upload:", uploadError);
+         let description = `Could not upload ID proof file: ${uploadError.message}. Other details were not saved.`;
+         if (uploadError.code === 'storage/unauthorized') {
+            description += "\n\nThis is a permission error. The security rule for this action is: `allow write: if isOwner(userId) || isAdmin();`. Please ensure you are logged in as an administrator or the correct user.";
+         }
          toast({ 
              title: 'File Upload Error', 
-             description: `Could not upload ID proof file: ${uploadError.message}. Other details were not saved.`, 
+             description: description, 
              variant: 'destructive',
              duration: 9000
         });

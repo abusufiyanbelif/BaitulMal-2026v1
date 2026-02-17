@@ -63,17 +63,24 @@ export default function CreateUserPage() {
                 fileExtension = 'png';
             } else if (file.type !== 'application/pdf') {
                 toast({ title: 'Invalid File Type', description: 'ID Proof was not uploaded. Please edit the user to add it.', variant: 'destructive' });
-            } else {
-                 const filePath = `users/${newUserUid}/id_proof.${fileExtension}`;
+            }
+            
+            if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+                const filePath = `users/${newUserUid}/id_proof.${fileExtension}`;
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, fileToUpload);
                 idProofUrl = await getDownloadURL(fileRef);
             }
+
         } catch (uploadError: any) {
             console.error("Error during file upload on create:", uploadError);
+            let description = `User account was created, but ID proof failed to upload: ${uploadError.message}. Please edit the user later to add it.`;
+            if (uploadError.code === 'storage/unauthorized') {
+                description += "\n\nThis is a permission error. The security rule for creating user files requires admin privileges: `allow write: if isAdmin();`.";
+            }
             toast({ 
                 title: 'File Upload Error', 
-                description: `User account was created, but ID proof failed to upload: ${uploadError.message}. Please edit the user later to add it.`, 
+                description: description,
                 variant: 'destructive', 
                 duration: 9000 
             });
