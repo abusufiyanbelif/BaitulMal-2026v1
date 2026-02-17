@@ -3,7 +3,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { useFirestore, useMemoFirebase, useStorage } from '@/firebase/provider';
+import { useFirestore, useMemoFirebase, useStorage } from '@/firebase';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { useSession } from '@/hooks/use-session';
 import { collection, getDocs, getDoc, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
@@ -170,7 +170,7 @@ export default function BeneficiaryDetailsPage() {
                 setIsSubmitting(false);
                 return;
             }
-
+            
             const filePath = `beneficiaries/${beneficiaryId}/id_proof.${fileExtension}`;
             const newFileRef = storageRef(storage, filePath);
             const uploadResult = await uploadBytes(newFileRef, fileToUpload);

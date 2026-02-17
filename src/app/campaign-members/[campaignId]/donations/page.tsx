@@ -4,8 +4,8 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase/provider';
-import type { SecurityRuleContext } from '@/firebase/errors';
+import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
+import type { SecurityRuleContext } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, where, setDoc, DocumentReference, deleteField } from 'firebase/firestore';
 import type { Donation, Campaign, Lead, TransactionDetail } from '@/lib/types';
@@ -226,20 +226,18 @@ export default function DonationsPage() {
     try {
         const transactionPromises = data.transactions.map(async (transaction) => {
             let screenshotUrl = transaction.screenshotUrl || '';
-            // @ts-ignore
-            if (transaction.screenshotFile) {
-                const file = (transaction.screenshotFile as FileList)[0];
-                if(file) {
-                    const { default: Resizer } = await import('react-image-file-resizer');
-                    const resizedBlob = await new Promise<Blob>((resolve) => {
-                         Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
-                    });
-                    const metadata = { customMetadata: { 'ownerId': userProfile.id } };
-                    const filePath = `donations/${docRef.id}/${transaction.id}.png`;
-                    const fileRef = storageRef(storage, filePath);
-                    const uploadResult = await uploadBytes(fileRef, resizedBlob, metadata);
-                    screenshotUrl = await getDownloadURL(uploadResult.ref);
-                }
+            const fileList = transaction.screenshotFile as FileList | undefined;
+            if (fileList && fileList.length > 0) {
+                const file = fileList[0];
+                const { default: Resizer } = await import('react-image-file-resizer');
+                const resizedBlob = await new Promise<Blob>((resolve) => {
+                     Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                });
+                const metadata = { customMetadata: { 'ownerId': userProfile.id } };
+                const filePath = `donations/${docRef.id}/${transaction.id}.png`;
+                const fileRef = storageRef(storage, filePath);
+                const uploadResult = await uploadBytes(fileRef, resizedBlob, metadata);
+                screenshotUrl = await getDownloadURL(uploadResult.ref);
             }
             return {
                 id: transaction.id,

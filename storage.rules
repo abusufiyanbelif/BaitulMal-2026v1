@@ -4,6 +4,10 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
+    // ----------------------------------------------------------------------
+    // Helper Functions
+    // ----------------------------------------------------------------------
+
     function isSignedIn() {
       return request.auth != null;
     }
@@ -35,41 +39,52 @@ service firebase.storage {
                getUserData().permissions[module][permission] == true;
     }
 
-    // Settings are public read, but only admin or users with permission can write.
+    // ----------------------------------------------------------------------
+    // Path-based Rules
+    // ----------------------------------------------------------------------
+
+    // Settings are public read, but only admins or users with permission can write.
     match /settings/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin() || hasPermission('settings', 'update');
     }
 
-    match /campaigns/{campaignId}/{path=**} {
+    // Users can only access their own files, unless the requester is an admin.
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+    
+    // Beneficiary file access is tied to the 'beneficiaries' module permissions.
+    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
+      allow read: if (isSignedIn() && hasPermission('beneficiaries', 'read')) || isAdmin();
+      allow write: if (isSignedIn() && (hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update'))) || isAdmin();
+    }
+    
+    // Donation files can only be created by the designated owner in the metadata.
+    // Read, update, and delete are governed by 'donations' module permissions.
+    match /donations/{donationId}/{allPaths=**} {
+      allow create: if (request.auth.uid == request.resource.customMetadata.ownerId && hasPermission('donations', 'create')) || isAdmin();
+      allow read: if (isSignedIn() && hasPermission('donations', 'read')) || isAdmin();
+      allow update: if (isSignedIn() && hasPermission('donations', 'update')) || isAdmin(); 
+      allow delete: if (isSignedIn() && hasPermission('donations', 'delete')) || isAdmin();
+    }
+
+    // Campaign files are publicly readable if the campaign is published.
+    // Write access is tied to 'campaigns' module permissions.
+    match /campaigns/{campaignId}/{allPaths=**} {
        allow read: if get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published'
                     || (isSignedIn() && hasPermission('campaigns', 'read')) || isAdmin();
        allow write: if (isSignedIn() && (hasPermission('campaigns', 'create') || hasPermission('campaigns', 'update'))) || isAdmin();
        allow delete: if (isSignedIn() && hasPermission('campaigns', 'delete')) || isAdmin();
     }
 
-    match /leads/{leadId}/{path=**} {
+    // Lead files are publicly readable if the lead is published.
+    // Write access is tied to 'leads-members' module permissions.
+    match /leads/{leadId}/{allPaths=**} {
        allow read: if get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published'
                     || (isSignedIn() && hasPermission('leads-members', 'read')) || isAdmin();
        allow write: if (isSignedIn() && (hasPermission('leads-members', 'create') || hasPermission('leads-members', 'update'))) || isAdmin();
        allow delete: if (isSignedIn() && hasPermission('leads-members', 'delete')) || isAdmin();
-    }
-    
-    match /donations/{donationId}/{allPaths=**} {
-      allow create: if request.auth.uid == request.resource.customMetadata.ownerId || isAdmin();
-      allow read: if (isSignedIn() && hasPermission('donations', 'read')) || isAdmin();
-      allow update: if (isSignedIn() && hasPermission('donations', 'update')) || isAdmin(); 
-      allow delete: if (isSignedIn() && hasPermission('donations', 'delete')) || isAdmin();
-    }
-
-    match /users/{userId}/{allPaths=**} {
-      // Admins have access, non-admins can only access their own files.
-      allow read, write: if isOwner(userId) || isAdmin();
-    }
-    
-    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      allow read: if (isSignedIn() && hasPermission('beneficiaries', 'read')) || isAdmin();
-      allow write: if (isSignedIn() && (hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update'))) || isAdmin();
     }
   }
 }

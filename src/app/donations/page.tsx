@@ -4,7 +4,7 @@
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase/provider';
+import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, updateDoc, doc, serverTimestamp, setDoc, deleteField } from 'firebase/firestore';
 import type { Donation, Campaign, Lead } from '@/lib/types';
@@ -251,8 +251,8 @@ export default function DonationsPage() {
         toast({ title: 'Success', description: `Donation ${editingDonation ? 'updated' : 'added'}.`, variant: 'success' });
 
     } catch (error: any) {
-        console.warn("Error during file processing:", error);
-        toast({ title: 'Save Failed', description: error.message || 'Could not process uploaded files.', variant: 'destructive' });
+        console.error("Error during file processing or Firestore write:", error);
+        toast({ title: 'Save Failed', description: error.message || 'Could not process uploaded files or save data.', variant: 'destructive' });
     }
   };
   
