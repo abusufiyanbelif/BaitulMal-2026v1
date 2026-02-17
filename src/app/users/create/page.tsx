@@ -4,36 +4,25 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, errorEmitter, FirestorePermissionError, useStorage, useCollection } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError, useStorage } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Loader2, ShieldAlert, UploadCloud, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import type { UserFormData } from '@/lib/schemas';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import type { UserProfile } from '@/lib/types';
-import { donationCategories } from '@/lib/modules';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { UserForm, type UserFormData } from '@/components/user-form';
+import { UserForm } from '@/components/user-form';
 import { createUserAuthAction } from '../actions';
-import { setDoc } from 'firebase/firestore';
 
 export default function CreateUserPage() {
   const router = useRouter();
   const firestore = useFirestore();
+  const storage = useStorage();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { userProfile, isLoading: isProfileLoading } = useSession();
@@ -41,7 +30,7 @@ export default function CreateUserPage() {
   const canCreate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.users?.create;
 
   const handleCreateUser = async (data: UserFormData) => {
-    if (!firestore || !canCreate) {
+    if (!firestore || !storage || !canCreate) {
       toast({ title: 'Permission Denied', description: 'You do not have permission to create users.', variant: 'destructive' });
       return;
     }
@@ -57,7 +46,37 @@ export default function CreateUserPage() {
 
     const newUserUid = authResult.uid;
     
-    // Step 2: Create documents in Firestore
+    // Step 2: Handle File Upload
+    let idProofUrl = '';
+    const fileList = data.idProofFile as FileList | undefined;
+    if (fileList && fileList.length > 0 && storage) {
+        try {
+            const file = fileList[0];
+            let fileToUpload: Blob | File = file;
+            let fileExtension = file.name.split('.').pop()?.toLowerCase() || 'bin';
+
+            if (file.type.startsWith('image/')) {
+                const { default: Resizer } = await import('react-image-file-resizer');
+                fileToUpload = await new Promise<Blob>((resolve) => {
+                     Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                });
+                fileExtension = 'png';
+            } else if (file.type !== 'application/pdf') {
+                toast({ title: 'Invalid File Type', description: 'ID Proof was not uploaded. Please edit the user to add it.', variant: 'destructive' });
+            } else {
+                 const filePath = `users/${newUserUid}/id_proof.${fileExtension}`;
+                const fileRef = storageRef(storage, filePath);
+                await uploadBytes(fileRef, fileToUpload);
+                idProofUrl = await getDownloadURL(fileRef);
+            }
+        } catch (uploadError: any) {
+            console.error("Error during file upload on create:", uploadError);
+            toast({ title: 'File Upload Error', description: 'User account was created, but ID proof failed to upload. Please edit the user to add it.', variant: 'destructive', duration: 9000 });
+        }
+    }
+
+
+    // Step 3: Create documents in Firestore
     const batch = writeBatch(firestore);
     const userDocRef = doc(firestore, 'users', newUserUid);
 
@@ -71,6 +90,9 @@ export default function CreateUserPage() {
         role: data.role,
         status: data.status,
         permissions: data.permissions,
+        idProofType: data.idProofType,
+        idNumber: data.idNumber,
+        idProofUrl, // Include the URL here
         createdAt: serverTimestamp(),
         createdById: userProfile?.id || 'system',
         createdByName: userProfile?.name || 'System',

@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useMemoFirebase } from '@/firebase/provider';
+import { useFirestore, useStorage } from '@/firebase/provider';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -37,7 +37,7 @@ export default function UserDetailsPage() {
   
   const { userProfile: currentUserProfile, isLoading: isProfileLoading } = useCurrentUserSession();
   
-  const userDocRef = useMemoFirebase(() => {
+  const userDocRef = useMemo(() => {
     if (!firestore || !userId) return null;
     return doc(firestore, 'users', userId) as DocumentReference<UserProfile>;
   }, [firestore, userId]);
@@ -119,7 +119,7 @@ export default function UserDetailsPage() {
             
             const filePath = `users/${userId}/id_proof.${fileExtension}`;
             const fileRef = storageRef(storage, filePath);
-            const uploadResult = await uploadBytes(fileRef, fileToUpload, { customMetadata: { 'ownerId': user.id } });
+            const uploadResult = await uploadBytes(fileRef, fileToUpload);
             idProofUrl = await getDownloadURL(uploadResult.ref);
         }
     } catch (uploadError: any) {
