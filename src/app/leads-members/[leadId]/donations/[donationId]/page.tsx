@@ -92,10 +92,9 @@ export default function DonationDetailsPage() {
                         const resizedBlob = await new Promise<Blob>((resolve) => {
                             Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
                         });
-                        const metadata = { customMetadata: { 'ownerId': userProfile.id } };
                         const filePath = `donations/${docRef.id}/${transaction.id}.png`;
                         const fileRef = storageRef(storage, filePath);
-                        const uploadResult = await uploadBytes(fileRef, resizedBlob, metadata);
+                        const uploadResult = await uploadBytes(fileRef, resizedBlob);
                         screenshotUrl = await getDownloadURL(uploadResult.ref);
                     }
                 }
@@ -401,3 +400,5 @@ export default function DonationDetailsPage() {
         </main>
     );
 }
+
+    

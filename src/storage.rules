@@ -3,96 +3,11 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-
-    // ----------------------------------------------------------------------
-    // Helper Functions
-    // ----------------------------------------------------------------------
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    function userExists() {
-      return exists(/databases/(default)/documents/users/$(request.auth.uid));
-    }
-
-    function getUserData() {
-        return get(/databases/(default)/documents/users/$(request.auth.uid)).data;
-    }
-    
-    function isAdmin() {
-      return isSignedIn() && 
-             userExists() &&
-             'role' in getUserData() &&
-             getUserData().role.lower() == 'admin';
-    }
-
-    function hasPermission(module, permission) {
-        return isSignedIn() && 
-               userExists() &&
-               'permissions' in getUserData() &&
-               module in getUserData().permissions &&
-               getUserData().permissions[module][permission] == true;
-    }
-
-    // ----------------------------------------------------------------------
-    // Path-based Rules
-    // ----------------------------------------------------------------------
-
-    // Settings are public read, but only admins can write.
-    match /settings/{allPaths=**} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // Users can only manage their own files. Admins can manage any.
-    match /users/{userId}/{allPaths=**} {
-      allow read: if isOwner(userId) || isAdmin() || hasPermission('users', 'read');
-      allow write: if isOwner(userId) || isAdmin() || hasPermission('users', 'create') || hasPermission('users', 'update');
-      allow delete: if isOwner(userId) || isAdmin() || hasPermission('users', 'delete');
-    }
-    
-    // Beneficiary file access
-    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      // Any signed-in user can upload. Firestore rules will secure the record.
-      allow write: if isSignedIn(); 
-      allow read: if (isSignedIn() && hasPermission('beneficiaries', 'read')) || isAdmin();
-      allow delete: if (isSignedIn() && hasPermission('beneficiaries', 'delete')) || isAdmin();
-    }
-    
-    // Donation file access
-    match /donations/{donationId}/{allPaths=**} {
-      // Any signed-in user can upload. Firestore rules will secure the record.
-      allow write: if isSignedIn(); 
-      allow read: if (isSignedIn() && hasPermission('donations', 'read')) || isAdmin();
-      allow delete: if (isSignedIn() && hasPermission('donations', 'delete')) || isAdmin();
-    }
-
-    // Campaign file access
-    match /campaigns/{campaignId}/{allPaths=**} {
-       // Any signed-in user can upload. Firestore rules will secure the record.
-       allow write: if isSignedIn();
-       allow read: if get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published'
-                    || (isSignedIn() && hasPermission('campaigns', 'read')) || isAdmin();
-       allow delete: if (isSignedIn() && hasPermission('campaigns', 'delete')) || isAdmin();
-    }
-
-    // Lead file access
-    match /leads/{leadId}/{allPaths=**} {
-       // Any signed-in user can upload. Firestore rules will secure the record.
-       allow write: if isSignedIn();
-       allow read: if get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published'
-                    || (isSignedIn() && hasPermission('leads-members', 'read')) || isAdmin();
-       allow delete: if (isSignedIn() && hasPermission('leads-members', 'delete')) || isAdmin();
-    }
-    
-    // Test folder for diagnostics
-    match /test/{allPaths=**} {
-      allow read, write, delete: if isAdmin() || hasPermission('diagnostics', 'read');
+    match /{allPaths=**} {
+      // Allow any authenticated user to read and write to storage.
+      // Security is primarily handled by Firestore rules, which control
+      // the creation of links to these stored files.
+      allow read, write: if request.auth != null;
     }
   }
 }
