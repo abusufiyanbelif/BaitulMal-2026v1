@@ -4,12 +4,13 @@ import { useState, useCallback, useMemo } from 'react';
 import { useAuth, useStorage, useFirestore } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, query, limit, getDocs, doc, where, getDoc } from 'firebase/firestore';
-import { ref as storageRef, getMetadata } from 'firebase/storage';
+import { ref as storageRef, getMetadata, uploadBytes, deleteObject } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, CheckCircle2, XCircle, Loader2, PlayCircle, ExternalLink, BrainCircuit, Database, FileCog, KeyRound, DatabaseZap, FolderKanban } from 'lucide-react';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { getNestedValue } from '@/lib/utils';
 
 type TestResult = 'success' | 'failure' | 'pending' | 'skipped';
 type TestStatus = TestResult | 'running';
@@ -152,7 +153,7 @@ export default function DiagnosticsPage() {
         },
         {
             id: 'storage-connectivity',
-            name: 'Firebase Storage Connectivity',
+            name: 'Storage Connectivity',
             description: 'Attempts to read metadata from a public file to verify read access.',
             icon: <FolderKanban className="h-6 w-6 text-primary" />,
             run: async () => {
@@ -202,6 +203,44 @@ export default function DiagnosticsPage() {
                         )};
                     }
                     return { status: 'failure', details: `Storage connectivity test failed. Error: ${error.message} (Code: ${error.code})` };
+                }
+            },
+        },
+        {
+            id: 'storage-write-delete',
+            name: 'Storage Write & Delete',
+            description: 'Uploads and deletes a temporary file to verify write permissions.',
+            icon: <Database className="h-6 w-6 text-primary" />,
+            run: async () => {
+                if (!storage || !user) {
+                    return { status: 'skipped', details: 'Storage service not available or user not logged in.' };
+                }
+                if (userProfile?.role !== 'Admin' && !getNestedValue(userProfile, 'permissions.diagnostics.read', false)) {
+                    return { status: 'skipped', details: 'This test requires admin or diagnostics read permissions.' };
+                }
+        
+                const testFileName = `test/${user.uid}/diagnostic-test-${Date.now()}.txt`;
+                const testFileRef = storageRef(storage, testFileName);
+                const testFile = new Blob(['This is a test file for diagnostics.'], { type: 'text/plain' });
+        
+                try {
+                    // 1. Write Test
+                    await uploadBytes(testFileRef, testFile);
+        
+                    // 2. Read Metadata to verify upload
+                    await getMetadata(testFileRef);
+        
+                    // 3. Delete Test
+                    await deleteObject(testFileRef);
+        
+                    return { status: 'success', details: 'Successfully uploaded and deleted a test file in the /test/ directory.' };
+        
+                } catch (error: any) {
+                    let details = `Storage write/delete test failed. Error: ${error.message} (Code: ${error.code})`;
+                    if (error.code === 'storage/unauthorized') {
+                        details += ' This likely means the security rules for the /test/ path are incorrect or missing. Ensure an admin or user with diagnostic permissions can write and delete in this path.';
+                    }
+                    return { status: 'failure', details: details };
                 }
             },
         },

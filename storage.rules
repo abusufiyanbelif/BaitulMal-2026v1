@@ -86,5 +86,10 @@ service firebase.storage {
        allow write: if (isSignedIn() && (hasPermission('leads-members', 'create') || hasPermission('leads-members', 'update'))) || isAdmin();
        allow delete: if (isSignedIn() && hasPermission('leads-members', 'delete')) || isAdmin();
     }
+    
+    // New rule for the test folder
+    match /test/{allPaths=**} {
+      allow read, write, delete: if isAdmin() || hasPermission('diagnostics', 'read');
+    }
   }
 }
