@@ -26,7 +26,10 @@ service firebase.storage {
     }
 
     function isAdmin() {
-      return isSignedIn() && userExists() && getUserData().role == 'Admin';
+      return isSignedIn() &&
+             userExists() &&
+             'role' in getUserData() &&
+             getUserData().role.lower() == 'admin';
     }
 
     // Use `userExists` to make this safer
