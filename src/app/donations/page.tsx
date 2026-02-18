@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, updateDoc, doc, serverTimestamp, setDoc, deleteField } from 'firebase/firestore';
 import type { Donation, Campaign, Lead } from '@/lib/types';
@@ -81,6 +81,7 @@ export default function DonationsPage() {
   const { toast } = useToast();
   const pathname = usePathname();
   const { userProfile, isLoading: isProfileLoading } = useSession();
+  const auth = useAuth();
   
   const donationsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
   const campaignsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'campaigns') : null, [firestore]);
@@ -163,6 +164,16 @@ export default function DonationsPage() {
   };
   
   const handleFormSubmit = async (data: DonationFormData) => {
+    const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
+    if (hasFilesToUpload && !auth?.currentUser) {
+        toast({
+            title: "Authentication Error",
+            description: "User not authenticated yet. Please wait and try again.",
+            variant: "destructive",
+        });
+        return;
+    }
+
     if (!firestore || !storage || !userProfile || !campaigns || !leads) return;
     if (editingDonation && !canUpdate) return;
     if (!editingDonation && !canCreate) return;

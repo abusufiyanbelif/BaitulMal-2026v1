@@ -4,7 +4,7 @@
 import { useMemo, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, useStorage } from '@/firebase/provider';
+import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, useStorage, useAuth } from '@/firebase/provider';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
@@ -49,6 +49,7 @@ export default function DonationDetailsPage() {
     const { toast } = useToast();
     const summaryRef = useRef<HTMLDivElement>(null);
     const { download } = useDownloadAs();
+    const auth = useAuth();
 
     const { userProfile, isLoading: isProfileLoading } = useSession();
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
@@ -72,6 +73,16 @@ export default function DonationDetailsPage() {
     const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.campaigns?.donations?.update;
 
     const handleFormSubmit = async (data: DonationFormData) => {
+        const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
+        if (hasFilesToUpload && !auth?.currentUser) {
+            toast({
+                title: "Authentication Error",
+                description: "User not authenticated yet. Please wait and try again.",
+                variant: "destructive",
+            });
+            return;
+        }
+
         if (!firestore || !storage || !userProfile || !canUpdate || !donation || !allCampaigns || !allLeads) return;
 
         setIsFormOpen(false);
@@ -148,7 +159,7 @@ export default function DonationDetailsPage() {
             await setDoc(docRef, finalData, { merge: true });
             toast({ title: 'Success', description: `Donation updated.`, variant: 'success' });
         } catch (error: any) {
-            console.warn("Error during form submission:", error);
+            console.error("Error during form submission:", error);
             if (error.code === 'permission-denied') {
                 const permissionError = new FirestorePermissionError({
                     path: docRef.path,
@@ -404,3 +415,4 @@ export default function DonationDetailsPage() {
     
 
     
+

@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useMemoFirebase } from '@/firebase/provider';
+import { useFirestore, useStorage, useMemoFirebase, useAuth } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
@@ -75,6 +75,7 @@ export default function DonationsPage() {
   const storage = useStorage();
   const { toast } = useToast();
   const { userProfile, isLoading: isProfileLoading } = useSession();
+  const auth = useAuth();
   
   const leadDocRef = useMemoFirebase(() => {
     if (!firestore || !leadId) return null;
@@ -203,6 +204,16 @@ export default function DonationsPage() {
   };
   
   const handleFormSubmit = async (data: DonationFormData) => {
+    const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
+    if (hasFilesToUpload && !auth?.currentUser) {
+        toast({
+            title: "Authentication Error",
+            description: "User not authenticated yet. Please wait and try again.",
+            variant: "destructive",
+        });
+        return;
+    }
+    
     if (!firestore || !storage || !userProfile || !allCampaigns || !allLeads) return;
     
     if (editingDonation && !canUpdate) return;
@@ -220,19 +231,17 @@ export default function DonationsPage() {
     try {
        const transactionPromises = data.transactions.map(async (transaction) => {
             let screenshotUrl = transaction.screenshotUrl || '';
-            // @ts-ignore
-            if (transaction.screenshotFile) {
-                const file = (transaction.screenshotFile as FileList)[0];
-                if(file) {
-                    const { default: Resizer } = await import('react-image-file-resizer');
-                    const resizedBlob = await new Promise<Blob>((resolve) => {
-                         Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, blob => resolve(blob as Blob), 'blob');
-                    });
-                    const filePath = `donations/${docRef.id}/${transaction.id}.png`;
-                    const fileRef = storageRef(storage, filePath);
-                    const uploadResult = await uploadBytes(fileRef, resizedBlob);
-                    screenshotUrl = await getDownloadURL(uploadResult.ref);
-                }
+            const fileList = transaction.screenshotFile as FileList | undefined;
+            if (fileList && fileList.length > 0) {
+                const file = fileList[0];
+                const { default: Resizer } = await import('react-image-file-resizer');
+                const resizedBlob = await new Promise<Blob>((resolve) => {
+                     Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                });
+                const filePath = `donations/${docRef.id}/${transaction.id}.png`;
+                const fileRef = storageRef(storage, filePath);
+                const uploadResult = await uploadBytes(fileRef, resizedBlob);
+                screenshotUrl = await getDownloadURL(uploadResult.ref);
             }
             return {
                 id: transaction.id,
@@ -287,7 +296,7 @@ export default function DonationsPage() {
         toast({ title: 'Success', description: `Donation ${editingDonation ? 'updated' : 'added'}.`, variant: 'success' });
 
     } catch (error: any) {
-        console.warn("Error during form submission:", error);
+        console.error("Error during form submission:", error);
         if (error.code === 'permission-denied') {
             const permissionError = new FirestorePermissionError({
                 path: docRef.path,
