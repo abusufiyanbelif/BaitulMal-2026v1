@@ -36,6 +36,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useSession } from '@/hooks/use-session';
+import { useAuth } from '@/firebase/provider';
 
 const linkSplitSchema = z.array(z.object({
     linkId: z.string(),
@@ -216,6 +217,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, canRemove
 export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], leads = [], defaultLinkId }: DonationFormProps) {
   const isEditing = !!donation;
   const { userProfile } = useSession();
+  const auth = useAuth();
   
   const form = useForm<DonationFormData>({
     resolver: zodResolver(formSchema),

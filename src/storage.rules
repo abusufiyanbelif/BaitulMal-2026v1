@@ -3,33 +3,10 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    match /campaigns/{campaignId}/{allPaths=**} {
-      allow read, write: if isSignedIn();
-    }
-    match /leads/{leadId}/{allPaths=**} {
-      allow read, write: if isSignedIn();
-    }
-    match /users/{userId}/{allPaths=**} {
-      allow write: if isSignedIn() && request.auth.uid == userId;
-      allow read: if isSignedIn();
-    }
-    match /donations/{donationId}/{allPaths=**} {
-      allow read, write: if isSignedIn();
-    }
-     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      allow read, write: if isSignedIn();
-    }
-    match /settings/{allPaths=**} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
-    match /test/{userId}/{allPaths=**} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    match /{allPaths=**} {
+      // This is a completely public rule. Anyone can read, write, and delete.
+      // Security is delegated to the application logic and Firestore rules.
+      allow read, write: if true;
     }
   }
 }
