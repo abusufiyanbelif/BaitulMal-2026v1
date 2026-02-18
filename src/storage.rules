@@ -8,10 +8,28 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    // Default catch-all rule: allows any authenticated user to perform any action.
-    // This simplifies development but should be reviewed for production.
-    match /{allPaths=**} {
+    match /campaigns/{campaignId}/{allPaths=**} {
       allow read, write: if isSignedIn();
+    }
+    match /leads/{leadId}/{allPaths=**} {
+      allow read, write: if isSignedIn();
+    }
+    match /users/{userId}/{allPaths=**} {
+      allow write: if isSignedIn() && request.auth.uid == userId;
+      allow read: if isSignedIn();
+    }
+    match /donations/{donationId}/{allPaths=**} {
+      allow read, write: if isSignedIn();
+    }
+     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
+      allow read, write: if isSignedIn();
+    }
+    match /settings/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+    match /test/{userId}/{allPaths=**} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
   }
 }
