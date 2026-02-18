@@ -7,7 +7,9 @@ service firebase.storage {
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
+    // Default catch-all rule: allows any authenticated user to perform any action.
+    // This simplifies development but should be reviewed for production.
     match /{allPaths=**} {
       allow read, write: if isSignedIn();
     }
