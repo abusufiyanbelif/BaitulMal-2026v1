@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -56,7 +57,7 @@ export type BeneficiaryFormData = z.infer<typeof formSchema>;
 
 interface BeneficiaryFormProps {
   beneficiary?: Beneficiary | null;
-  onSubmit: (data: BeneficiaryFormData) => void;
+  onSubmit: (data: BeneficiaryFormData, masterId?: string) => void;
   onCancel: () => void;
   itemCategories: ItemCategory[];
   kitAmountLabel?: string;
