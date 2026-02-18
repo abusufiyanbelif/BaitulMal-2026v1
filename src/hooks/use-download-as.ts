@@ -45,7 +45,7 @@ export function useDownloadAs() {
     toast({ title: `Generating ${format.toUpperCase()}...`, description: 'Please wait.' });
 
     try {
-        const html2canvas = (await import('html2canvas')).default;
+        const { default: html2canvas } = await import('html2canvas');
         const canvas = await html2canvas(element, {
             scale: 2,
             useCORS: true,

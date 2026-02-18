@@ -1,13 +1,9 @@
 
-
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage } from '@/firebase/provider';
-import { useDoc } from '@/firebase/firestore/use-doc';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { useFirestore, useStorage, useDoc, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import { updateDoc, doc, writeBatch, DocumentReference } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
@@ -18,7 +14,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, Save, Edit, ShieldAlert } from 'lucide-react';
-import { UserForm, type UserFormData } from '@/components/user-form';
+import { UserForm } from '@/components/user-form';
+import type { UserFormData } from '@/lib/schemas';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { updateUserAuthAction } from '../actions';
@@ -37,7 +34,7 @@ export default function UserDetailsPage() {
   
   const { userProfile: currentUserProfile, isLoading: isProfileLoading } = useCurrentUserSession();
   
-  const userDocRef = useMemo(() => {
+  const userDocRef = useMemoFirebase(() => {
     if (!firestore || !userId) return null;
     return doc(firestore, 'users', userId) as DocumentReference<UserProfile>;
   }, [firestore, userId]);

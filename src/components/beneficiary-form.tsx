@@ -57,7 +57,7 @@ export type BeneficiaryFormData = z.infer<typeof formSchema>;
 
 interface BeneficiaryFormProps {
   beneficiary?: Beneficiary | null;
-  onSubmit: (data: BeneficiaryFormData, masterId?: string) => void;
+  onSubmit: (data: BeneficiaryFormData) => void;
   onCancel: () => void;
   itemCategories: ItemCategory[];
   kitAmountLabel?: string;

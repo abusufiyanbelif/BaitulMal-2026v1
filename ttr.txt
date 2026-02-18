@@ -1,4 +1,51 @@
-src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(720,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-src/app/leads-members/[leadId]/beneficiaries/page.tsx(429,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(7,24): error TS2305: Module '"@/firebase/provider"' has no exported member 'useCollection'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(7,39): error TS2305: Module '"@/firebase/provider"' has no exported member 'useDoc'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(7,59): error TS2305: Module '"@/firebase/provider"' has no exported member 'errorEmitter'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(7,73): error TS2305: Module '"@/firebase/provider"' has no exported member 'FirestorePermissionError'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(306,47): error TS7006: Parameter 'cat' implicitly has an 'any' type.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(337,49): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(583,65): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(708,48): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(1046,143): error TS18046: 'benList' is of type 'unknown'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(1087,107): error TS7006: Parameter 'beneficiary' implicitly has an 'any' type.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(1087,120): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(1095,71): error TS18046: 'beneficiary' is of type 'unknown'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(1095,87): error TS2322: Type 'unknown' is not assignable to type 'Beneficiary'.
+src/app/campaign-members/[campaignId]/donations/[donationId]/page.tsx(7,24): error TS2305: Module '"@/firebase/provider"' has no exported member 'useDoc'.
+src/app/campaign-members/[campaignId]/donations/[donationId]/page.tsx(7,32): error TS2305: Module '"@/firebase/provider"' has no exported member 'errorEmitter'.
+src/app/campaign-members/[campaignId]/donations/[donationId]/page.tsx(7,46): error TS2305: Module '"@/firebase/provider"' has no exported member 'FirestorePermissionError'.
+src/app/campaign-members/[campaignId]/donations/[donationId]/page.tsx(7,72): error TS2305: Module '"@/firebase/provider"' has no exported member 'useCollection'.
+src/app/campaign-members/[campaignId]/donations/[donationId]/page.tsx(138,49): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/app/campaign-members/[campaignId]/donations/[donationId]/page.tsx(303,57): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/app/campaign-members/[campaignId]/donations/[donationId]/page.tsx(319,70): error TS7006: Parameter 'link' implicitly has an 'any' type.
+src/app/campaign-members/[campaignId]/donations/[donationId]/page.tsx(349,65): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/app/campaign-members/[campaignId]/donations/page.tsx(454,18): error TS2304: Cannot find name 'CardDescription'.
+src/app/campaign-members/[campaignId]/donations/page.tsx(456,19): error TS2304: Cannot find name 'CardDescription'.
+src/app/dashboard/page.tsx(12,50): error TS2307: Cannot find module '@/components/WisdomAndReflection' or its corresponding type declarations.
+src/app/donations/[donationId]/page.tsx(7,24): error TS2305: Module '"@/firebase/provider"' has no exported member 'useDoc'.
+src/app/donations/[donationId]/page.tsx(7,32): error TS2305: Module '"@/firebase/provider"' has no exported member 'errorEmitter'.
+src/app/donations/[donationId]/page.tsx(7,46): error TS2305: Module '"@/firebase/provider"' has no exported member 'FirestorePermissionError'.
+src/app/donations/[donationId]/page.tsx(7,72): error TS2305: Module '"@/firebase/provider"' has no exported member 'useCollection'.
+src/app/donations/[donationId]/page.tsx(134,49): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/app/donations/[donationId]/page.tsx(299,57): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/app/donations/[donationId]/page.tsx(315,70): error TS7006: Parameter 'link' implicitly has an 'any' type.
+src/app/donations/[donationId]/page.tsx(345,65): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/app/leads-members/[leadId]/donations/[donationId]/page.tsx(7,24): error TS2305: Module '"@/firebase/provider"' has no exported member 'useDoc'.
+src/app/leads-members/[leadId]/donations/[donationId]/page.tsx(7,32): error TS2305: Module '"@/firebase/provider"' has no exported member 'errorEmitter'.
+src/app/leads-members/[leadId]/donations/[donationId]/page.tsx(7,46): error TS2305: Module '"@/firebase/provider"' has no exported member 'FirestorePermissionError'.
+src/app/leads-members/[leadId]/donations/[donationId]/page.tsx(7,72): error TS2305: Module '"@/firebase/provider"' has no exported member 'useCollection'.
+src/app/leads-members/[leadId]/donations/[donationId]/page.tsx(138,49): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/app/leads-members/[leadId]/donations/[donationId]/page.tsx(302,57): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/app/leads-members/[leadId]/donations/[donationId]/page.tsx(318,70): error TS7006: Parameter 'link' implicitly has an 'any' type.
+src/app/leads-members/[leadId]/donations/[donationId]/page.tsx(348,65): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/app/page.tsx(11,50): error TS2307: Cannot find module '@/components/WisdomAndReflection' or its corresponding type declarations.
+src/app/page.tsx(30,52): error TS2307: Cannot find module '@/components/overall-funding-summary' or its corresponding type declarations.
+src/app/page.tsx(46,46): error TS2307: Cannot find module '@/components/donation-summary' or its corresponding type declarations.
+src/app/page.tsx(62,53): error TS2307: Cannot find module '@/components/lead-campaign-summary' or its corresponding type declarations.
+src/app/users/[userId]/page.tsx(21,25): error TS2724: '"@/components/user-form"' has no exported member named 'UserFormData'. Did you mean 'UserForm'?
+src/components/beneficiary-form.tsx(229,42): error TS2345: Argument of type '(data: { status: "Verified" | "Need More Details" | "Hold" | "Given" | "Pending"; name: string; referralBy: string; kitAmount: number; address?: string | undefined; notes?: string | undefined; ... 11 more ...; idProofDeleted?: boolean | undefined; }, masterId?: string | undefined) => void' is not assignable to parameter of type 'SubmitHandler<{ status: "Verified" | "Need More Details" | "Hold" | "Given" | "Pending"; name: string; referralBy: string; kitAmount: number; address?: string | undefined; notes?: string | undefined; ... 11 more ...; idProofDeleted?: boolean | undefined; }>'.
+  Types of parameters 'masterId' and 'event' are incompatible.
+    Type 'BaseSyntheticEvent<object, any, any> | undefined' is not assignable to type 'string | undefined'.
+      Type 'BaseSyntheticEvent<object, any, any>' is not assignable to type 'string'.
+src/hooks/use-download-as.ts(49,30): error TS2349: This expression is not callable.
+  Type 'typeof import("/home/user/studio/node_modules/html2canvas/dist/types/index")' has no call signatures.

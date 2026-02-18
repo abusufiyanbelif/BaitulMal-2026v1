@@ -11,11 +11,11 @@ import type { Donation, Campaign, Lead, TransactionDetail } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, ChevronDown, ChevronUp, DatabaseZap, Check, ChevronsUpDown, X, Link2Off } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Upload, Download, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, ChevronDown, ChevronUp, DatabaseZap, Check, ChevronsUpDown, X, Link2Off } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -378,11 +378,11 @@ export default function DonationsPage() {
     return sortableItems;
   }, [donations, searchTerm, statusFilter, typeFilter, donationTypeFilter, sortConfig]);
 
-  const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading || areAllCampaignsLoading || areAllLeadsLoading;
+  const isLoading = isLeadLoading || areDonationsLoading || isProfileLoading || areAllCampaignsLoading || areAllLeadsLoading;
   
   if (isLoading) {
     return (
-        <main className="container mx-auto p-4 md:p-8">
+        <main className="flex items-center justify-center min-h-screen">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </main>
     );
@@ -393,60 +393,61 @@ export default function DonationsPage() {
       <main className="container mx-auto p-4 md:p-8">
         <div className="mb-4">
             <Button variant="outline" asChild>
-                <Link href="/campaign-members">
+                <Link href="/leads-members">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Campaigns
+                    Back to Leads
                 </Link>
             </Button>
         </div>
         <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold">{campaign?.name}</h1>
+            <h1 className="text-3xl font-bold">{lead?.name}</h1>
         </div>
         
         <div className="border-b mb-4">
-            <ScrollArea className="w-full whitespace-nowrap">
-              <div className="flex w-max space-x-2">
-                  {canReadSummary && (
-                      <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                          <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
-                      </Button>
-                  )}
-                  {canReadRation && (
-                      <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                          <Link href={`/campaign-members/${campaignId}`}>{campaign?.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
-                      </Button>
-                  )}
-                  {canReadBeneficiaries && (
-                      <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                          <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
-                      </Button>
-                  )}
-                  {canReadDonations && (
-                      <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                          <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
-                      </Button>
-                  )}
-              </div>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+          <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex w-max space-x-2">
+                {canReadSummary && (
+                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
+                    </Button>
+                )}
+                <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                    <Link href={`/leads-members/${leadId}`}>Item List</Link>
+                </Button>
+                {canReadBeneficiaries && (
+                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
+                    </Button>
+                )}
+                {canReadDonations && (
+                    <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
+                    </Button>
+                )}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
         </div>
 
         {canReadDonations && (
             <div className="border-b mb-4">
-              <div className="flex flex-wrap items-center">
-                  <Link href={`/campaign-members/${campaignId}/donations/summary`} className={cn(
-                      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      pathname === `/campaign-members/${campaignId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                  )}>Donation Summary</Link>
-                  <Link href={`/campaign-members/${campaignId}/donations`} className={cn(
-                      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                  )}>Donation List</Link>
-              </div>
+              <ScrollArea className="w-full whitespace-nowrap">
+                  <div className="flex w-max space-x-2">
+                      <Link href={`/leads-members/${leadId}/donations/summary`} className={cn(
+                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          pathname === `/leads-members/${leadId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                      )}>Donation Summary</Link>
+                      <Link href={`/leads-members/${leadId}/donations`} className={cn(
+                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          pathname === `/leads-members/${leadId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                      )}>Donation List</Link>
+                  </div>
+                  <ScrollBar orientation="horizontal" />
+              </ScrollArea>
             </div>
         )}
 
-        <Card>
+        <Card className="animate-fade-in-zoom">
           <CardHeader>
             <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
               <div className="flex-1 space-y-1.5">
@@ -455,22 +456,15 @@ export default function DonationsPage() {
                   Total for filtered donations: <span className="font-bold text-foreground">₹{donations.reduce((sum, d) => sum + d.amount, 0).toFixed(2)}</span>
                 </CardDescription>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {canUpdate && (
-                    <Button onClick={handleSync} disabled={isSyncing} variant="secondary">
-                        {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <DatabaseZap className="mr-2 h-4 w-4" />}
-                        Sync Data
-                    </Button>
-                )}
-                {canCreate && (
-                    <Button onClick={handleAdd}>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Add Donation
-                    </Button>
-                )}
-              </div>
+               <div className="flex flex-wrap gap-2">
+                    {canCreate && (
+                        <Button onClick={handleAdd}>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Add Donation
+                        </Button>
+                    )}
+                </div>
             </div>
-            
             <div className="flex flex-wrap items-center gap-2 pt-4">
                 <Input
                     placeholder="Search donor, receiver, phone, etc."
@@ -540,9 +534,11 @@ export default function DonationsPage() {
                   ))
                   ) : (filteredAndSortedDonations && filteredAndSortedDonations.length > 0) ? (
                   filteredAndSortedDonations.map((donation, index) => {
-                    const isOpen = openRows[donation.id] || false;
-                    return (
-                      <React.Fragment key={donation.id}>
+                      const isOpen = openRows[donation.id] || false;
+                      const leadLink = donation.linkSplit?.find(l => l.linkId === leadId && l.linkType === 'lead');
+                      const amountForThisLead = leadLink?.amount || 0;
+                      return (
+                        <React.Fragment key={donation.id}>
                           <TableRow className="bg-background hover:bg-accent/50 cursor-pointer" data-state={isOpen ? 'open' : 'closed'} onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
                               <TableCell className="pl-4">{index + 1}</TableCell>
                               <TableCell>
@@ -554,16 +550,12 @@ export default function DonationsPage() {
                                 <div className="text-xs text-muted-foreground">Ref: {donation.referral || 'N/A'}</div>
                               </TableCell>
                               <TableCell className="text-right">
-                                  <div className="font-medium font-mono">₹{donation.amount.toFixed(2)}</div>
+                                  <div className="font-medium font-mono">₹{amountForThisLead.toFixed(2)}</div>
                                   <div className="text-xs text-muted-foreground">{donation.donationDate}</div>
                               </TableCell>
                               <TableCell>
                                   <div className="flex flex-wrap items-center gap-1">
-                                      {donation.typeSplit?.map(split => (
-                                          <Badge key={split.category} variant="secondary">
-                                              {split.category}
-                                          </Badge>
-                                      ))}
+                                      {donation.typeSplit?.map(split => (<Badge key={split.category} variant="secondary">{split.category}</Badge>))}
                                       <Badge variant="outline">{donation.donationType}</Badge>
                                   </div>
                               </TableCell>
@@ -583,7 +575,7 @@ export default function DonationsPage() {
                                               </Button>
                                           </DropdownMenuTrigger>
                                           <DropdownMenuContent align="end">
-                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/campaign-members/${campaignId}/donations/${donation.id}`); }}>
+                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/leads-members/${leadId}/donations/${donation.id}`); }}>
                                                   <Eye className="mr-2 h-4 w-4" /> View Details
                                               </DropdownMenuItem>
                                               {canUpdate && (
@@ -593,7 +585,7 @@ export default function DonationsPage() {
                                               )}
                                               {canUpdate && (
                                                   <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleUnlinkClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
-                                                      <Link2Off className="mr-2 h-4 w-4" /> Unlink from Campaign
+                                                      <Link2Off className="mr-2 h-4 w-4" /> Unlink from Lead
                                                   </DropdownMenuItem>
                                               )}
                                           </DropdownMenuContent>
@@ -634,9 +626,9 @@ export default function DonationsPage() {
                               </TableCell>
                             </TableRow>
                           )}
-                      </React.Fragment>
-                  );
-              })
+                        </React.Fragment>
+                      );
+                  })
                   ) : (
                   <TableRow>
                       <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
@@ -662,7 +654,7 @@ export default function DonationsPage() {
                 onCancel={() => setIsFormOpen(false)}
                 campaigns={allCampaigns || []}
                 leads={allLeads || []}
-                defaultLinkId={`campaign_${campaignId}`}
+                defaultLinkId={`lead_${leadId}`}
             />
         </DialogContent>
       </Dialog>
@@ -672,7 +664,7 @@ export default function DonationsPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This will unlink the donation from this campaign. The donation record itself will not be deleted, but it will no longer contribute to this campaign's funding totals.
+                    This will unlink the donation from this lead. The donation record itself will not be deleted, but it will no longer contribute to this lead's funding.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -693,7 +685,7 @@ export default function DonationsPage() {
             </DialogHeader>
             {imageToView && (
                 <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
-                     <Image
+                    <Image
                         src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
                         alt="Donation screenshot"
                         fill
@@ -704,7 +696,7 @@ export default function DonationsPage() {
                     />
                 </div>
             )}
-             <DialogFooter className="sm:justify-center pt-4">
+             <DialogFooter className="sm:justify-center pt-4 flex-wrap">
                 <Button variant="outline" onClick={() => setZoom(z => z * 1.2)}><ZoomIn className="mr-2"/> Zoom In</Button>
                 <Button variant="outline" onClick={() => setZoom(z => z / 1.2)}><ZoomOut className="mr-2"/> Zoom Out</Button>
                 <Button variant="outline" onClick={() => setRotation(r => r + 90)}><RotateCw className="mr-2"/> Rotate</Button>
@@ -715,5 +707,3 @@ export default function DonationsPage() {
     </>
   );
 }
-
-    

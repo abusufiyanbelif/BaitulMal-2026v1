@@ -9,26 +9,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import React from 'react';
 import dynamic from 'next/dynamic';
 
-const WisdomAndReflection = dynamic(() => import('@/components/WisdomAndReflection').then(mod => mod.WisdomAndReflection), {
-    ssr: false,
-    loading: () => (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Quote className="h-6 w-6 text-primary" />
-                    Wisdom & Reflection
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6 pl-10">
-                <Skeleton className="h-8 w-4/5" />
-                <Skeleton className="h-8 w-3/4" />
-                <Skeleton className="h-8 w-4/5" />
-            </CardContent>
-        </Card>
-    ),
-});
-
-
 function HomeDashboardCard({ title, description, href, icon: Icon }: { title: string, description: string, href: string, icon: React.ComponentType<{ className?: string }> }) {
   return (
     <div className="animate-fade-in-up" style={{ animationDelay: '500ms' }}>
@@ -138,7 +118,7 @@ export default function Home() {
                 <h2 className="text-3xl font-bold tracking-tight mb-4">
                     Welcome back, {userProfile.name}!
                 </h2>
-                <WisdomAndReflection />
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
                     {visibleCards.map((card) => (
                         <HomeDashboardCard
