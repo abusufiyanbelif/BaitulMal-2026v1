@@ -39,16 +39,27 @@ export function initializeFirebase(): FirebaseServices {
   let firestore: Firestore | null = null;
   let storage: FirebaseStorage | null = null;
   
-  try {
-    firestore = getFirestore(app);
-  } catch (e: any) {
-    console.warn('Firestore initialization failed:', e);
+  // Explicitly check for projectId before initializing Firestore
+  if (firebaseConfig.projectId) {
+    try {
+      firestore = getFirestore(app);
+    } catch (e: any) {
+      console.error('Firestore initialization failed despite having a projectId:', e);
+      // In case of other errors during init
+    }
+  } else {
+    console.warn('Firestore is not configured. Missing NEXT_PUBLIC_FIREBASE_PROJECT_ID. Firestore-related features will be disabled.');
   }
 
-  try {
-    storage = getStorage(app);
-  } catch (e: any) {
-    console.warn('Storage initialization failed:', e);
+  // Explicitly check for storageBucket before initializing Storage
+  if (firebaseConfig.storageBucket) {
+    try {
+      storage = getStorage(app);
+    } catch (e: any) {
+      console.error('Storage initialization failed despite having a storageBucket:', e);
+    }
+  } else {
+    console.warn('Firebase Storage is not configured. Missing NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET. Storage-related features will be disabled.');
   }
 
   firebaseServices = {
