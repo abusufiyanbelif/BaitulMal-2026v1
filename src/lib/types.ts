@@ -75,7 +75,6 @@ export interface Campaign extends DocumentData {
   createdAt?: Timestamp;
   createdById?: string;
   createdByName?: string;
-  rationLists?: any; // Legacy
 }
 
 export interface Lead extends DocumentData {
@@ -107,7 +106,6 @@ export interface Lead extends DocumentData {
   createdAt?: Timestamp;
   createdById?: string;
   createdByName?: string;
-  rationLists?: any; // Legacy
   // Education fields
   degree?: string;
   year?: string;
@@ -185,10 +183,6 @@ export interface Donation extends DocumentData {
   uploadedById: string;
   createdAt?: Timestamp;
   transactions?: TransactionDetail[];
-  
-  // Legacy fields for migration
-  campaignId?: string;
-  campaignName?: string;
 }
 
 export interface UserProfile extends DocumentData {

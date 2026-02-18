@@ -3,11 +3,13 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // WARNING: This is a completely public rule.
-    // All users (authenticated or not) can read, write, and delete all files.
-    // Security relies on Firestore rules controlling access to download URLs.
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
     match /{allPaths=**} {
-      allow read, write: if true;
+      allow read, write: if isSignedIn();
     }
   }
 }

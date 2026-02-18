@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
-import { useStorage, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useStorage, useFirestore, errorEmitter, FirestorePermissionError, useAuth } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, writeBatch } from 'firebase/firestore';
 
@@ -44,6 +44,7 @@ export default function AppSettingsPage() {
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
     const storage = useStorage();
     const firestore = useFirestore();
+    const auth = useAuth();
     const { toast } = useToast();
     
     const [isEditMode, setIsEditMode] = useState(false);
@@ -116,6 +117,17 @@ export default function AppSettingsPage() {
         if (!firestore || !storage || !canUpdateSettings || !editableData) {
             toast({ title: 'Error', description: 'Cannot save settings.', variant: 'destructive'});
             return;
+        }
+
+        if (logoFile || qrCodeFile) {
+            if (!auth?.currentUser) {
+                toast({
+                    title: "Authentication Error",
+                    description: "User not authenticated yet. Please wait.",
+                    variant: "destructive",
+                });
+                return;
+            }
         }
 
         setIsSubmitting(true);
