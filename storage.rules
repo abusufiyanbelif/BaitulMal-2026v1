@@ -3,10 +3,10 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
+    // Allow any authenticated user to read and write to the bucket.
+    // Security is handled by Firestore rules controlling access to download URLs.
     match /{allPaths=**} {
-      allow read, write: if true;
+      allow read, write: if request.auth != null;
     }
   }
 }
-
-    

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useDoc, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
+import { useFirestore, useStorage, useDoc, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth } from '@/firebase';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import { updateDoc, doc, writeBatch, DocumentReference } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
@@ -28,6 +28,7 @@ export default function UserDetailsPage() {
 
   const firestore = useFirestore();
   const storage = useStorage();
+  const auth = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -44,7 +45,7 @@ export default function UserDetailsPage() {
   const canUpdate = currentUserProfile?.role === 'Admin' || !!currentUserProfile?.permissions?.users?.update;
 
   const handleSave = async (data: UserFormData) => {
-    if (!firestore || !storage || !user || !canUpdate) {
+    if (!firestore || !user || !canUpdate) {
         toast({ title: 'Error', description: 'You do not have permission or services are unavailable.', variant: 'destructive' });
         setIsSubmitting(false);
         return;
@@ -74,6 +75,19 @@ export default function UserDetailsPage() {
     
     // Step 2: Handle file uploads
     let idProofUrl = user?.idProofUrl || '';
+    const fileList = data.idProofFile as FileList | undefined;
+    const hasFileToUpload = fileList && fileList.length > 0;
+
+    if (hasFileToUpload && !auth?.currentUser) {
+        toast({
+            title: "Authentication Error",
+            description: "User not authenticated yet. Please wait and try again.",
+            variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+    }
+    
     try {
         if (data.idProofDeleted && idProofUrl) {
             const fileRefToDelete = storageRef(storage, idProofUrl);
@@ -85,8 +99,7 @@ export default function UserDetailsPage() {
             idProofUrl = '';
         }
 
-        const fileList = data.idProofFile as FileList | undefined;
-        if (fileList && fileList.length > 0) {
+        if (hasFileToUpload) {
             const file = fileList[0];
             let fileToUpload: Blob | File = file;
             let fileExtension = file.name.split('.').pop()?.toLowerCase() || 'bin';
@@ -98,21 +111,11 @@ export default function UserDetailsPage() {
                 });
             }
 
-            if (file.type.startsWith('image/')) {
-                const { default: Resizer } = await import('react-image-file-resizer');
-                fileToUpload = await new Promise<Blob>((resolve) => {
-                     Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
-                });
-                fileExtension = 'png';
-            } else if (file.type !== 'application/pdf') {
-                toast({
-                    title: 'Invalid File Type',
-                    description: 'Please upload an image or PDF file for the ID proof.',
-                    variant: 'destructive',
-                });
-                setIsSubmitting(false);
-                return;
-            }
+            const { default: Resizer } = await import('react-image-file-resizer');
+            fileToUpload = await new Promise<Blob>((resolve) => {
+                    Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+            });
+            fileExtension = 'png';
             
             const filePath = `users/${userId}/id_proof.${fileExtension}`;
             const fileRef = storageRef(storage, filePath);
