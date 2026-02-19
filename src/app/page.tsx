@@ -8,6 +8,10 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PublicCampaignsView } from '@/components/public-campaigns-view';
 import { PublicLeadsView } from '@/components/public-leads-view';
+import { OverallFundingSummary } from '@/components/overall-funding-summary';
+import { DonationSummary } from '@/components/donation-summary';
+import { LeadAndCampaignSummary } from '@/components/lead-campaign-summary';
+import { WisdomAndReflection } from '@/components/WisdomAndReflection';
 
 export default function Home() {
     return (
@@ -20,15 +24,20 @@ export default function Home() {
                           An overview of our organization's impact and activities.
                       </CardDescription>
                   </CardHeader>
-                  <CardContent className="flex flex-col sm:flex-row gap-4 justify-center">
-                      <Button asChild size="lg">
-                          <Link href="/campaign-public">View Public Campaigns</Link>
-                      </Button>
-                      <Button asChild variant="outline" size="lg">
-                          <Link href="/leads-public">View Public Leads</Link>
-                      </Button>
-                  </CardContent>
               </Card>
+
+              <div className="space-y-6">
+                <OverallFundingSummary />
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="lg:col-span-2">
+                      <DonationSummary />
+                  </div>
+                  <div className="lg:col-span-1">
+                      <WisdomAndReflection />
+                  </div>
+                </div>
+                <LeadAndCampaignSummary />
+              </div>
 
               <Tabs defaultValue="campaigns" className="w-full animate-fade-in-up" style={{ animationDelay: '300ms' }}>
                 <TabsList className="grid w-full grid-cols-2 max-w-lg mx-auto">
