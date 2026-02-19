@@ -5,13 +5,11 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PublicCampaignsView } from '@/components/public-campaigns-view';
-import { PublicLeadsView } from '@/components/public-leads-view';
 import { OverallFundingSummary } from '@/components/overall-funding-summary';
 import { DonationSummary } from '@/components/donation-summary';
 import { LeadAndCampaignSummary } from '@/components/lead-campaign-summary';
 import { WisdomAndReflection } from '@/components/WisdomAndReflection';
+import { cn } from '@/lib/utils';
 
 export default function Home() {
     return (
@@ -33,19 +31,18 @@ export default function Home() {
                 <DonationSummary />
                 <LeadAndCampaignSummary />
               </div>
-
-              <Tabs defaultValue="campaigns" className="w-full animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                <TabsList className="grid w-full grid-cols-2 max-w-lg mx-auto">
-                  <TabsTrigger value="campaigns">Public Campaigns</TabsTrigger>
-                  <TabsTrigger value="leads">Public Leads & Initiatives</TabsTrigger>
-                </TabsList>
-                <TabsContent value="campaigns" className="mt-6">
-                  <PublicCampaignsView />
-                </TabsContent>
-                <TabsContent value="leads" className="mt-6">
-                  <PublicLeadsView />
-                </TabsContent>
-              </Tabs>
+              
+              <div className="text-center space-y-4 py-8 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                 <p className="text-muted-foreground">Browse our ongoing and past initiatives to support the community.</p>
+                <div className="inline-flex h-auto items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
+                  <Button asChild variant="default" className="rounded-md shadow-sm">
+                    <Link href="/campaign-public">Public Campaigns</Link>
+                  </Button>
+                   <Button asChild variant="ghost">
+                     <Link href="/leads-public">Public Leads & Initiatives</Link>
+                  </Button>
+                </div>
+              </div>
             </div>
         </div>
     );
