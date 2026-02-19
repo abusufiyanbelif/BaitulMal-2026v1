@@ -1,14 +1,14 @@
 
-
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, errorEmitter, FirestorePermissionError, useStorage } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError, useStorage, useAuth } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -23,6 +23,7 @@ export default function CreateUserPage() {
   const router = useRouter();
   const firestore = useFirestore();
   const storage = useStorage();
+  const auth = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { userProfile, isLoading: isProfileLoading } = useSession();
@@ -34,6 +35,19 @@ export default function CreateUserPage() {
       toast({ title: 'Permission Denied', description: 'You do not have permission to create users.', variant: 'destructive' });
       return;
     }
+    
+    const fileList = data.idProofFile as FileList | undefined;
+    const hasFilesToUpload = fileList && fileList.length > 0;
+
+    if (hasFilesToUpload && !auth?.currentUser) {
+        toast({
+            title: "Authentication Error",
+            description: "User not authenticated yet. Please wait.",
+            variant: "destructive",
+        });
+        return;
+    }
+
     setIsSubmitting(true);
     
     // Step 1: Create user in Firebase Auth
@@ -48,8 +62,7 @@ export default function CreateUserPage() {
     
     // Step 2: Handle File Upload
     let idProofUrl = '';
-    const fileList = data.idProofFile as FileList | undefined;
-    if (fileList && fileList.length > 0 && storage) {
+    if (hasFilesToUpload && storage) {
         try {
             const file = fileList[0];
             let fileToUpload: Blob | File = file;
