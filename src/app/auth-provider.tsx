@@ -70,14 +70,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             </div>
         );
     }
-
-    if (isUserLoading) {
-        return <BrandedLoader />;
-    }
     
-    // Once loading is complete, we provide the session and then guard the routes.
+    // Pass the top-level loading state down and conditionally render the loader as an overlay.
     return (
-        <SessionProvider authUser={user}>
+        <SessionProvider authUser={user} isAuthenticating={isUserLoading}>
+            {isUserLoading && <BrandedLoader />}
             <RouteGuard>{children}</RouteGuard>
         </SessionProvider>
     );

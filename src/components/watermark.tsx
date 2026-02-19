@@ -1,12 +1,15 @@
 
 'use client';
 import { useBranding } from '@/hooks/use-branding';
+import { useSession } from '@/hooks/use-session';
+import { cn } from '@/lib/utils';
 
 export function Watermark() {
-    const { brandingSettings, isLoading } = useBranding();
+    const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
+    const { isLoading: isSessionLoading } = useSession();
     
-    // Show a fallback or nothing while loading
-    if (isLoading) {
+    // Show a fallback or nothing while loading brand settings
+    if (isBrandingLoading) {
         return null;
     }
     
@@ -23,9 +26,11 @@ export function Watermark() {
                 alt="Watermark"
                 width={500}
                 height={500}
-                className="object-contain"
+                className={cn(
+                    "object-contain transition-transform duration-300",
+                    isSessionLoading && "animate-zoom-in-out"
+                )}
             />
         </div>
     );
 }
-

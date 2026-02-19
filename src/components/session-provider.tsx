@@ -16,7 +16,7 @@ interface SessionContextType {
 
 export const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
-export function SessionProvider({ authUser, children }: { authUser?: User | null; children: ReactNode }) {
+export function SessionProvider({ authUser, children, isAuthenticating }: { authUser?: User | null; children: ReactNode; isAuthenticating: boolean; }) {
   const firestore = useFirestore();
 
   const userDocRef = useMemoFirebase(() => {
@@ -26,7 +26,9 @@ export function SessionProvider({ authUser, children }: { authUser?: User | null
 
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
   
-  const isLoading = authUser ? isProfileLoading : false;
+  // Combine the top-level authentication check with the profile document fetch.
+  // The app is "loading" if we are authenticating OR if we have a user but are still fetching their profile.
+  const isLoading = isAuthenticating || (!!authUser && isProfileLoading);
   
   // If a profile exists but permissions are missing, provide a default empty object.
   // This makes downstream permission checks more robust.
