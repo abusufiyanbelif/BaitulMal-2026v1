@@ -26,16 +26,11 @@ export default function Home() {
                   </CardHeader>
               </Card>
 
+              <WisdomAndReflection />
+
               <div className="space-y-6">
                 <OverallFundingSummary />
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  <div className="lg:col-span-2">
-                      <DonationSummary />
-                  </div>
-                  <div className="lg:col-span-1">
-                      <WisdomAndReflection />
-                  </div>
-                </div>
+                <DonationSummary />
                 <LeadAndCampaignSummary />
               </div>
 
