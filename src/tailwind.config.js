@@ -1,4 +1,3 @@
-
 /** @type {import('tailwindcss').Config} */
 const config = {
   darkMode: ['class'],
@@ -121,9 +120,9 @@ const config = {
             transform: 'scale(1.5)',
           },
         },
-        'zoom-in': { // New unused keyframe
-          '0%': { opacity: '0', transform: 'scale(0.9)' },
-          '100%': { opacity: '1', transform: 'scale(1)' },
+        'pulse-subtle': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '.85' },
         },
       },
       animation: {
@@ -135,7 +134,7 @@ const config = {
         'fade-in-zoom': 'fade-in-zoom 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'shimmer': 'shimmer 2s infinite',
         'zoom-in-out': 'zoom-in-out 4s ease-in-out infinite',
-        'zoom-in': 'zoom-in 0.6s ease-out', // New unused animation
+        'pulse-subtle': 'pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
     },
   },
