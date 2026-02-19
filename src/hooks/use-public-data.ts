@@ -1,3 +1,4 @@
+
 'use client';
 import { useMemo } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
@@ -112,7 +113,7 @@ export function usePublicData() {
     // --- Calculate Yearly and Category Summaries ---
     const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
     const amountsByCategory = donations.reduce((acc, d) => {
-      const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : [];
+      const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
       splits.forEach(split => {
         const category = split.category as DonationCategory;
         if (donationCategories.includes(category)) {

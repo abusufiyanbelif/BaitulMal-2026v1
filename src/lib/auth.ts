@@ -1,11 +1,12 @@
+
 'use client';
 import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
-  Auth,
+  type Auth,
 } from 'firebase/auth';
 import { 
-    Firestore, 
+    type Firestore, 
     doc,
     getDoc
 } from 'firebase/firestore';

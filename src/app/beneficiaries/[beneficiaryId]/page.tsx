@@ -2,8 +2,9 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { useFirestore, useMemoFirebase, useStorage, useDoc, useAuth } from '@/firebase';
-import { collection, getDocs, getDoc, doc, type QueryDocumentSnapshot, type DocumentData } from 'firebase/firestore';
+import { useFirestore, useMemoFirebase, useStorage, useAuth } from '@/firebase/provider';
+import { useDoc } from '@/firebase/firestore/use-doc';
+import { collection, getDocs, getDoc, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 
@@ -167,7 +168,7 @@ export default function BeneficiaryDetailsPage() {
             }
             
             fileToUpload = await new Promise<Blob>((resolve) => {
-                Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                Resizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             fileExtension = 'png';
             
