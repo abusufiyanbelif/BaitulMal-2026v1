@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -6,7 +7,6 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Image from 'next/image';
-import Resizer from 'react-image-file-resizer';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {

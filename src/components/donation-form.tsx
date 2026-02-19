@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { z } from 'zod';
@@ -6,7 +7,6 @@ import { useForm, useFieldArray, useWatch, type Control, type UseFormRegister, t
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
-import Resizer from 'react-image-file-resizer';
 import {
   Form,
   FormControl,
@@ -37,7 +37,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useSession } from '@/hooks/use-session';
-import { useAuth } from '@/firebase/provider';
+import { useAuth } from '@/firebase';
 
 const linkSplitSchema = z.array(z.object({
     linkId: z.string(),
@@ -219,6 +219,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   const isEditing = !!donation;
   const { userProfile } = useSession();
   const auth = useAuth();
+  const { toast } = useToast();
   
   const form = useForm<DonationFormData>({
     resolver: zodResolver(formSchema),
@@ -284,10 +285,23 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     ...campaigns.map(c => ({ id: `campaign_${c.id}`, name: c.name, type: 'Campaigns' })),
     ...leads.map(l => ({ id: `lead_${l.id}`, name: l.name, type: 'Leads' })),
   ]), [campaigns, leads]);
+
+  const handleSubmit = (data: DonationFormData) => {
+    const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
+    if (hasFilesToUpload && !auth?.currentUser) {
+        toast({
+            title: "Authentication Error",
+            description: "User not authenticated yet. Please wait.",
+            variant: "destructive",
+        });
+        return;
+    }
+    onSubmit(data);
+  };
   
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pt-4">
           <FormField
               control={control}
               name="amount"

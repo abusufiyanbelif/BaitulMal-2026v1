@@ -4,8 +4,8 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase/provider';
-import type { SecurityRuleContext } from '@/firebase/errors';
+import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth } from '@/firebase';
+import type { SecurityRuleContext } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, setDoc, DocumentReference, getDoc } from 'firebase/firestore';
 import type { Beneficiary, Campaign, RationItem, ItemCategory } from '@/lib/types';
@@ -233,6 +233,7 @@ export default function BeneficiariesPage() {
       : "";
   const firestore = useFirestore();
   const storage = useStorage();
+  const auth = useAuth();
   const { toast } = useToast();
   const { userProfile, isLoading: isProfileLoading } = useSession();
   
@@ -614,15 +615,27 @@ const sortedGroupKeys = useMemo(() => {
     let idProofUrl = editingBeneficiary?.idProofUrl || '';
 
     try {
+        const fileList = data.idProofFile as FileList | undefined;
+        const hasFileToUpload = fileList && fileList.length > 0;
+        
+        if (hasFileToUpload && !auth?.currentUser) {
+            toast({
+                title: "Authentication Error",
+                description: "User not authenticated yet. Please wait.",
+                variant: "destructive",
+            });
+            setIsSubmitting(false);
+            return;
+        }
+
         if (data.idProofDeleted && idProofUrl) {
             await deleteObject(storageRef(storage, idProofUrl)).catch((err: any) => {
-                if ((err as any).code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
+                if (err.code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
             });
             idProofUrl = '';
         }
       
-        const fileList = data.idProofFile as FileList | undefined;
-        if (fileList && fileList.length > 0) {
+        if (hasFileToUpload) {
             const file = fileList[0];
             let fileToUpload: Blob | File = file;
             let fileExtension = file.name.split('.').pop()?.toLowerCase() || 'bin';
