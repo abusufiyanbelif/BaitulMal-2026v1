@@ -22,6 +22,16 @@ export default function Home() {
                           An overview of our organization's impact and activities.
                       </CardDescription>
                   </CardHeader>
+                  <CardContent>
+                    <div className="inline-flex h-auto items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
+                      <Button asChild variant="default" className="rounded-md shadow-sm">
+                        <Link href="/campaign-public">Public Campaigns</Link>
+                      </Button>
+                       <Button asChild variant="ghost">
+                         <Link href="/leads-public">Public Leads & Initiatives</Link>
+                      </Button>
+                    </div>
+                  </CardContent>
               </Card>
 
               <WisdomAndReflection />
@@ -30,18 +40,6 @@ export default function Home() {
                 <OverallFundingSummary />
                 <DonationSummary />
                 <LeadAndCampaignSummary />
-              </div>
-              
-              <div className="text-center space-y-4 py-8 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                 <p className="text-muted-foreground">Browse our ongoing and past initiatives to support the community.</p>
-                <div className="inline-flex h-auto items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
-                  <Button asChild variant="default" className="rounded-md shadow-sm">
-                    <Link href="/campaign-public">Public Campaigns</Link>
-                  </Button>
-                   <Button asChild variant="ghost">
-                     <Link href="/leads-public">Public Leads & Initiatives</Link>
-                  </Button>
-                </div>
               </div>
             </div>
         </div>
