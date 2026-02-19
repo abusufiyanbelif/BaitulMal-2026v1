@@ -1,15 +1,13 @@
 
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import React from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import dynamic from 'next/dynamic';
-import { Quote, Target } from 'lucide-react';
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PublicCampaignsView } from '@/components/public-campaigns-view';
+import { PublicLeadsView } from '@/components/public-leads-view';
 
 export default function Home() {
     return (
@@ -31,6 +29,19 @@ export default function Home() {
                       </Button>
                   </CardContent>
               </Card>
+
+              <Tabs defaultValue="campaigns" className="w-full animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                <TabsList className="grid w-full grid-cols-2 max-w-lg mx-auto">
+                  <TabsTrigger value="campaigns">Public Campaigns</TabsTrigger>
+                  <TabsTrigger value="leads">Public Leads & Initiatives</TabsTrigger>
+                </TabsList>
+                <TabsContent value="campaigns" className="mt-6">
+                  <PublicCampaignsView />
+                </TabsContent>
+                <TabsContent value="leads" className="mt-6">
+                  <PublicLeadsView />
+                </TabsContent>
+              </Tabs>
             </div>
         </div>
     );
