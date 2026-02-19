@@ -19,6 +19,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { Badge } from '@/components/ui/badge';
 import { updateMasterBeneficiaryAction } from '../actions';
 import { useSession } from '@/hooks/use-session';
+import Resizer from 'react-image-file-resizer';
 
 interface LinkedInitiative {
     id: string;
@@ -124,7 +125,7 @@ export default function BeneficiaryDetailsPage() {
   const canUpdate = currentUserProfile?.role === 'Admin' || !!currentUserProfile?.permissions?.beneficiaries?.update;
 
   const handleSave = async (data: BeneficiaryFormData) => {
-    if (!beneficiaryId || !canUpdate || !currentUserProfile || !storage) {
+    if (!beneficiaryId || !canUpdate || !currentUserProfile || !storage || !auth) {
         toast({ title: 'Error', description: 'You do not have permission or services are unavailable.', variant: 'destructive' });
         return;
     };
@@ -134,7 +135,7 @@ export default function BeneficiaryDetailsPage() {
     const fileList = data.idProofFile as FileList | undefined;
     const hasFileToUpload = fileList && fileList.length > 0;
 
-    if (hasFileToUpload && !auth?.currentUser) {
+    if (hasFileToUpload && !auth.currentUser) {
         toast({
             title: "Authentication Error",
             description: "User not authenticated yet. Please wait and try again.",
@@ -164,8 +165,7 @@ export default function BeneficiaryDetailsPage() {
                     if (err.code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
                 });
             }
-
-            const { default: Resizer } = await import('react-image-file-resizer');
+            
             fileToUpload = await new Promise<Blob>((resolve) => {
                 Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });

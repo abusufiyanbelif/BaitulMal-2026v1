@@ -1,4 +1,5 @@
 
+
 import type { DocumentData, Timestamp } from 'firebase/firestore';
 import type { UserPermissions } from './modules';
 import { donationCategories } from './modules';
@@ -131,7 +132,7 @@ export interface Beneficiary extends DocumentData {
     idNumber?: string;
     referralBy?: string;
     kitAmount?: number;
-    status?: 'Given' | 'Pending' | 'Hold' | 'Need More Details' | 'Verified';
+    status: 'Given' | 'Pending' | 'Hold' | 'Need More Details' | 'Verified';
     idProofUrl?: string;
     idProofFilename?: string;
     idProofIsPublic?: boolean;

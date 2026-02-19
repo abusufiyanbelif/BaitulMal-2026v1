@@ -1,9 +1,11 @@
 
+
 'use client';
 
 import { RefObject } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { BrandingSettings, PaymentSettings } from '@/lib/types';
+import html2canvas from 'html2canvas';
 
 interface DownloadOptions {
   contentRef: RefObject<HTMLDivElement>;
@@ -45,7 +47,6 @@ export function useDownloadAs() {
     toast({ title: `Generating ${format.toUpperCase()}...`, description: 'Please wait.' });
 
     try {
-        const { default: html2canvas } = await import('html2canvas');
         const canvas = await html2canvas(element, {
             scale: 2,
             useCORS: true,

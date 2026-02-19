@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -9,6 +10,7 @@ import { updateDoc, doc, writeBatch, DocumentReference } from 'firebase/firestor
 import type { UserProfile } from '@/lib/types';
 import { createAdminPermissions } from '@/lib/modules';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import Resizer from 'react-image-file-resizer';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -45,7 +47,7 @@ export default function UserDetailsPage() {
   const canUpdate = currentUserProfile?.role === 'Admin' || !!currentUserProfile?.permissions?.users?.update;
 
   const handleSave = async (data: UserFormData) => {
-    if (!firestore || !user || !canUpdate) {
+    if (!firestore || !user || !canUpdate || !auth) {
         toast({ title: 'Error', description: 'You do not have permission or services are unavailable.', variant: 'destructive' });
         setIsSubmitting(false);
         return;
@@ -78,7 +80,7 @@ export default function UserDetailsPage() {
     const fileList = data.idProofFile as FileList | undefined;
     const hasFileToUpload = fileList && fileList.length > 0;
 
-    if (hasFileToUpload && !auth?.currentUser) {
+    if (hasFileToUpload && !auth.currentUser) {
         toast({
             title: "Authentication Error",
             description: "User not authenticated yet. Please wait and try again.",
@@ -111,7 +113,6 @@ export default function UserDetailsPage() {
                 });
             }
 
-            const { default: Resizer } = await import('react-image-file-resizer');
             fileToUpload = await new Promise<Blob>((resolve) => {
                     Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });

@@ -4,11 +4,45 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     
-    // This rule allows any authenticated user to read and write to any file.
-    // This is simpler for development but you may want to restrict this further
-    // for production by adding more specific rules per path.
-    match /{allPaths=**} {
-      allow read, write: if request.auth != null;
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    match /donations/{allPaths=**} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /campaigns/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /leads/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+    
+    match /beneficiaries/{allPaths=**} {
+        allow read: if true;
+        allow write: if isSignedIn();
+    }
+
+    // Settings can be read by anyone (for logo), but only written by auth'd users.
+    match /settings/{allPaths=**} {
+        allow read: if true;
+        allow write: if isSignedIn();
+    }
+
+    // User-specific files can only be written by the user themselves.
+    // Reads are open for simplicity, assuming URLs are not guessable.
+    match /users/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Diagnostics path for testing
+    match /test/{userId}/{allPaths=**} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
   }
 }
