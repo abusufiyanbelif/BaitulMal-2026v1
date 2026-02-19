@@ -13,6 +13,7 @@ import { collection, addDoc, deleteDoc, doc, serverTimestamp, setDoc, DocumentRe
 import type { Beneficiary, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
+import Resizer from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
@@ -393,7 +394,6 @@ export default function BeneficiariesPage() {
           }
 
           if (file.type.startsWith('image/')) {
-              const { default: Resizer } = await import('react-image-file-resizer');
               fileToUpload = await new Promise<Blob>((resolve) => {
                   Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
               });
@@ -767,3 +767,4 @@ export default function BeneficiariesPage() {
 }
 
     
+

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -8,6 +9,7 @@ import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useStorage, useFirestore, errorEmitter, FirestorePermissionError, useAuth } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, writeBatch } from 'firebase/firestore';
+import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -134,7 +136,6 @@ export default function AppSettingsPage() {
         toast({ title: 'Saving settings...', description: 'Please wait.' });
 
         try {
-            const { default: Resizer } = await import('react-image-file-resizer');
             const batch = writeBatch(firestore);
 
             // --- Branding Save Logic ---
