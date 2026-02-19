@@ -28,9 +28,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import dynamic from 'next/dynamic';
-
-const DynamicPieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false, loading: () => <Skeleton className="h-[200px] w-full" /> });
 
 const donationCategoryChartConfig = donationCategories.reduce((acc, category, index) => {
   acc[category.replace(/\s+/g, '')] = {
@@ -110,7 +107,7 @@ export function DonationSummary() {
         </CardHeader>
         <CardContent>
           <ChartContainer config={donationCategoryChartConfig} className="h-[200px] w-full">
-            <DynamicPieChart>
+            <PieChart>
               <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
               <Pie data={categorySummary} dataKey="value" nameKey="name" innerRadius={40} outerRadius={60} strokeWidth={2}>
                 {categorySummary.map((entry) => (
@@ -118,7 +115,7 @@ export function DonationSummary() {
                 ))}
               </Pie>
               <ChartLegend content={<ChartLegendContent nameKey="name" />} />
-            </DynamicPieChart>
+            </PieChart>
           </ChartContainer>
         </CardContent>
       </Card>
