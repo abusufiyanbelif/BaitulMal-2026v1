@@ -3,116 +3,33 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { FolderKanban, Loader2 } from 'lucide-react';
-import { useCollection } from '@/firebase/firestore/use-collection';
-import { useFirestore, useMemoFirebase } from '@/firebase/provider';
-import type { Campaign, Donation, DonationCategory } from '@/lib/types';
+import { FolderKanban } from 'lucide-react';
+import type { Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { collection, query, where, type DocumentData } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
-import placeholderImages from '@/app/lib/placeholder-images.json';
+import { usePublicData } from '@/hooks/use-public-data';
 
 export function PublicCampaignsView() {
-  const firestore = useFirestore();
   const router = useRouter();
-
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
-
-  const campaignsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'campaigns'), 
-        where('authenticityStatus', '==', 'Verified'),
-        where('publicVisibility', '==', 'Published')
-    );
-  }, [firestore]);
-  const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
-
-  const donationsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
-  }, [firestore]);
-  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
-
-  const campaignData = useMemo(() => {
-    if (!campaigns || !donations) return [];
   
-    // Create a map of donations by campaign ID for efficient lookup
-    const donationsByCampaign = new Map<string, Donation[]>();
-    donations.forEach(donation => {
-      const links = (donation.linkSplit && donation.linkSplit.length > 0)
-        ? donation.linkSplit
-        : ((donation as any).campaignId ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] : []);
-      
-      links.forEach(link => {
-        if(link.linkType === 'campaign') {
-            if (!donationsByCampaign.has(link.linkId)) {
-                donationsByCampaign.set(link.linkId, []);
-            }
-            donationsByCampaign.get(link.linkId)!.push(donation);
-        }
-      });
-    });
-  
-    return campaigns.map(campaign => {
-      const relevantDonations = donationsByCampaign.get(campaign.id) || [];
-      const collected = relevantDonations.reduce((sum, donation) => {
-        let amountForThisCampaign = 0;
-        if (donation.linkSplit && donation.linkSplit.length > 0) {
-            const campaignLink = donation.linkSplit.find(l => l.linkId === campaign.id);
-            amountForThisCampaign = campaignLink?.amount || 0;
-        } else {
-            amountForThisCampaign = donation.amount;
-        }
-        
-        if (amountForThisCampaign === 0) return sum;
-  
-        const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
-        const proportionForThisCampaign = amountForThisCampaign / totalDonationAmount;
-  
-        const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
-            ? donation.typeSplit
-            : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
-        
-        const totalApplicableAmountInDonation = typeSplits.reduce((acc, split) => {
-            const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-            if (campaign.allowedDonationTypes?.includes(category as DonationCategory)) {
-                return acc + split.amount;
-            }
-            return acc;
-        }, 0);
-  
-        return sum + (totalApplicableAmountInDonation * proportionForThisCampaign);
-      }, 0);
-  
-      const progress = campaign.targetAmount && campaign.targetAmount > 0 ? (collected / campaign.targetAmount) * 100 : 0;
-      
-      return {
-        ...campaign,
-        collected,
-        progress
-      };
-    });
-  }, [campaigns, donations]);
-
+  const { isLoading, campaignsWithProgress } = usePublicData();
 
   const filteredCampaigns = useMemo(() => {
-    if (!campaignData) return [];
-    return campaignData.filter(c => 
+    if (!campaignsWithProgress) return [];
+    return campaignsWithProgress.filter(c => 
         (statusFilter === 'All' || c.status === statusFilter) &&
         (categoryFilter === 'All' || c.category === categoryFilter) &&
         (c.name.toLowerCase().includes(searchTerm.toLowerCase()))
     ).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-  }, [campaignData, searchTerm, statusFilter, categoryFilter]);
-  
-  const isLoading = areCampaignsLoading || areDonationsLoading;
+  }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter]);
 
   return (
     <div className="space-y-4">

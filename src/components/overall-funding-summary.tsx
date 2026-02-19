@@ -1,120 +1,28 @@
 
 'use client';
 
-import { useMemo } from 'react';
-import { useCollection } from '@/firebase/firestore/use-collection';
-import { useFirestore, useMemoFirebase } from '@/firebase/provider';
-import { collection, query, where, type DocumentData } from 'firebase/firestore';
-import type { Campaign, Lead, Donation, DonationCategory } from '@/lib/types';
+import { usePublicData } from '@/hooks/use-public-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from './ui/skeleton';
-import { Target, TrendingUp } from 'lucide-react';
+import { Target } from 'lucide-react';
 import {
   RadialBarChart,
   RadialBar,
   PolarAngleAxis,
-  Tooltip
 } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { useMemo } from 'react';
 
 export function OverallFundingSummary() {
-  const firestore = useFirestore();
+  const { isLoading, overallSummary } = usePublicData();
 
-  const campaignsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    // Filter for verified and published campaigns
-    return query(
-      collection(firestore, 'campaigns'),
-      where('authenticityStatus', '==', 'Verified'),
-      where('publicVisibility', '==', 'Published')
-    );
-  }, [firestore]);
-
-  const leadsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    // Filter for verified and published leads
-    return query(
-      collection(firestore, 'leads'),
-      where('authenticityStatus', '==', 'Verified'),
-      where('publicVisibility', '==', 'Published')
-    );
-  }, [firestore]);
-  
-  const donationsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    // This correctly gets all verified donations, which is needed for "Grand Total"
-    return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
-  }, [firestore]);
-
-  const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
-  const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
-  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
-
-  const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading;
-
-  const summaryData = useMemo(() => {
-    if (!campaigns || !leads || !donations) return null;
-
-    // allItems will now only contain verified and published items due to the query changes
-    const allItems = [...campaigns, ...leads];
-    // totalTarget is now correctly calculated from only verified/published items
-    const totalTarget = allItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
-    // grandTotalRaised is the sum of ALL verified donations, which is correct.
-    const grandTotalRaised = donations.reduce((sum, d) => sum + d.amount, 0);
-
-    const collectedAmounts = new Map<string, number>();
-    const itemsById = new Map(allItems.map(item => [item.id, item]));
-
-    donations.forEach(donation => {
-      const links = (donation.linkSplit && donation.linkSplit.length > 0)
-        ? donation.linkSplit
-        : (donation as any).campaignId ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] : [];
-      
-      links.forEach(link => {
-        // We only care about donations linked to our filtered (verified/published) items
-        const item = itemsById.get(link.linkId);
-        if (!item) return;
-
-        const amountForThisItem = link.amount;
-        const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
-        const proportionForThisItem = amountForThisItem / totalDonationAmount;
-
-        const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
-          ? donation.typeSplit
-          : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
-        
-        const applicableAmountInDonation = typeSplits.reduce((acc, split) => {
-          const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-          if (item.allowedDonationTypes?.includes(category as DonationCategory)) {
-            return acc + split.amount;
-          }
-          return acc;
-        }, 0);
-        
-        const currentCollected = collectedAmounts.get(link.linkId) || 0;
-        collectedAmounts.set(link.linkId, currentCollected + (applicableAmountInDonation * proportionForThisItem));
-      });
-    });
-
-    const totalCollectedForGoals = Array.from(collectedAmounts.values()).reduce((sum, amount) => sum + amount, 0);
-    const progress = totalTarget > 0 ? Math.min((totalCollectedForGoals / totalTarget) * 100, 100) : 0;
-    
-    const chartData = [
-      {
-        name: 'Progress',
-        value: progress,
-        fill: 'hsl(var(--primary))',
-      },
-    ];
-
-    return {
-      totalTarget,
-      grandTotalRaised,
-      totalCollectedForGoals,
-      progress,
-      chartData,
-    };
-  }, [campaigns, leads, donations]);
+  const chartData = useMemo(() => ([
+    {
+      name: 'Progress',
+      value: overallSummary.progress,
+      fill: 'hsl(var(--primary))',
+    },
+  ]), [overallSummary.progress]);
 
   if (isLoading) {
     return (
@@ -125,7 +33,7 @@ export function OverallFundingSummary() {
     )
   }
 
-  if (!summaryData) {
+  if (!overallSummary) {
     return <p>Could not load funding summary.</p>
   }
 
@@ -151,7 +59,7 @@ export function OverallFundingSummary() {
                     className="mx-auto aspect-square h-full"
                 >
                     <RadialBarChart
-                        data={summaryData.chartData}
+                        data={chartData}
                         startAngle={-270}
                         endAngle={90}
                         innerRadius="75%"
@@ -172,7 +80,7 @@ export function OverallFundingSummary() {
                 </ChartContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className="text-4xl font-bold text-primary">
-                        {summaryData.progress.toFixed(0)}%
+                        {overallSummary.progress.toFixed(0)}%
                     </span>
                     <span className="text-xs text-muted-foreground">Funded</span>
                 </div>
@@ -181,19 +89,19 @@ export function OverallFundingSummary() {
                 <div>
                     <p className="text-sm text-muted-foreground">Total Raised for Goals</p>
                     <p className="text-3xl font-bold">
-                    ₹{summaryData.totalCollectedForGoals.toLocaleString('en-IN')}
+                    ₹{overallSummary.totalCollectedForGoals.toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Combined Target</p>
                     <p className="text-3xl font-bold">
-                    ₹{summaryData.totalTarget.toLocaleString('en-IN')}
+                    ₹{overallSummary.totalTarget.toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Grand Total Received (All Types)</p>
                     <p className="text-3xl font-bold">
-                    ₹{summaryData.grandTotalRaised.toLocaleString('en-IN')}
+                    ₹{overallSummary.grandTotalRaised.toLocaleString('en-IN')}
                     </p>
                 </div>
             </div>

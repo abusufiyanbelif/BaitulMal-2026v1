@@ -1,11 +1,7 @@
 
 'use client';
 
-import { useMemo } from 'react';
-import { useCollection } from '@/firebase/firestore/use-collection';
-import { useFirestore, useMemoFirebase } from '@/firebase/provider';
-import { collection, type DocumentData } from 'firebase/firestore';
-import type { Campaign, Lead } from '@/lib/types';
+import { usePublicData } from '@/hooks/use-public-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { FolderKanban, Lightbulb } from 'lucide-react';
 import {
@@ -17,48 +13,36 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from './ui/skeleton';
+import { useMemo } from 'react';
 
 export function LeadAndCampaignSummary() {
-  const firestore = useFirestore();
-  const campaignsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'campaigns');
-  }, [firestore]);
-  const leadsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'leads');
-  }, [firestore]);
-  
-  const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
-  const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
-  
-  const isLoading = areCampaignsLoading || areLeadsLoading;
+  const { isLoading, campaignsWithProgress, leadsWithProgress } = usePublicData();
 
   const campaignSummary = useMemo(() => {
-    if (!campaigns) return null;
-    const counts = campaigns.reduce((acc, c) => {
+    if (!campaignsWithProgress) return null;
+    const counts = campaignsWithProgress.reduce((acc, c) => {
       const category = c.category || 'General';
       acc[category] = (acc[category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
     return {
-      total: campaigns.length,
+      total: campaignsWithProgress.length,
       chartData: Object.entries(counts).map(([name, value]) => ({ name, value })),
     }
-  }, [campaigns]);
+  }, [campaignsWithProgress]);
   
   const leadSummary = useMemo(() => {
-    if (!leads) return null;
-    const counts = leads.reduce((acc, l) => {
+    if (!leadsWithProgress) return null;
+    const counts = leadsWithProgress.reduce((acc, l) => {
       const category = l.purpose || 'Other';
       acc[category] = (acc[category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
     return {
-      total: leads.length,
+      total: leadsWithProgress.length,
       chartData: Object.entries(counts).map(([name, value]) => ({ name, value })),
     }
-  }, [leads]);
+  }, [leadsWithProgress]);
   
   if (isLoading) {
     return (
@@ -80,7 +64,7 @@ export function LeadAndCampaignSummary() {
               </CardTitle>
               <span className="text-2xl font-bold">{campaignSummary?.total || 0}</span>
           </div>
-          <CardDescription>Total campaigns recorded by category.</CardDescription>
+          <CardDescription>Total public campaigns by category.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -111,14 +95,14 @@ export function LeadAndCampaignSummary() {
             <span className="text-2xl font-bold">{leadSummary?.total || 0}</span>
           </div>
           <CardDescription>
-            Total leads being tracked by category.
+            Total public leads by purpose.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Category</TableHead>
+                <TableHead>Purpose</TableHead>
                 <TableHead className="text-right">Count</TableHead>
               </TableRow>
             </TableHeader>
