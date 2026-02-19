@@ -4,7 +4,7 @@
 import { useMemo, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, useStorage, useAuth } from '@/firebase/provider';
+import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, useStorage, useAuth } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
@@ -15,7 +15,7 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
 
-import type { Donation, Campaign, BrandingSettings, PaymentSettings, Lead } from '@/lib/types';
+import type { Donation, Campaign, BrandingSettings, PaymentSettings, Lead, DonationLink, TransactionDetail } from '@/lib/types';
 
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { Button } from '@/components/ui/button';
@@ -135,7 +135,7 @@ export default function DonationDetailsPage() {
                 const [type, id] = split.linkId.split('_');
                 const linkType = type as 'campaign' | 'lead';
                 const source = linkType === 'campaign' ? allCampaigns : allLeads;
-                const linkedItem = source?.find(item => item.id === id);
+                const linkedItem = source?.find((item: Campaign | Lead) => item.id === id);
 
                 return {
                     linkId: id,
@@ -300,7 +300,7 @@ export default function DonationDetailsPage() {
                                         <TableRow><TableHead>Category</TableHead><TableHead className="text-right">Amount</TableHead></TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {typeSplit.map((s) => (
+                                        {typeSplit.map((s: { category: string, amount: number }) => (
                                             <TableRow key={s.category}><TableCell>{s.category}</TableCell><TableCell className="text-right font-mono">₹{s.amount.toFixed(2)}</TableCell></TableRow>
                                         ))}
                                     </TableBody>
@@ -316,7 +316,7 @@ export default function DonationDetailsPage() {
                                             <TableRow><TableHead>Initiative</TableHead><TableHead className="text-right">Amount</TableHead></TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {donation.linkSplit.map((link) => (
+                                            {donation.linkSplit.map((link: DonationLink) => (
                                                 <TableRow key={link.linkId}>
                                                     <TableCell className="flex items-center gap-2">
                                                         {link.linkType === 'campaign' ? <FolderKanban className="h-4 w-4 text-muted-foreground" /> : <Lightbulb className="h-4 w-4 text-muted-foreground" />}
@@ -346,7 +346,7 @@ export default function DonationDetailsPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {donation.transactions.map((tx) => (
+                                    {donation.transactions.map((tx: TransactionDetail) => (
                                         <TableRow key={tx.id}>
                                             <TableCell className="font-mono">₹{tx.amount.toFixed(2)}</TableCell>
                                             <TableCell>{tx.transactionId || 'N/A'}</TableCell>
@@ -411,8 +411,3 @@ export default function DonationDetailsPage() {
         </main>
     );
 }
-
-    
-
-    
-

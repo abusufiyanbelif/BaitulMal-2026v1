@@ -47,7 +47,7 @@ export default function UserDetailsPage() {
   const canUpdate = currentUserProfile?.role === 'Admin' || !!currentUserProfile?.permissions?.users?.update;
 
   const handleSave = async (data: UserFormData) => {
-    if (!firestore || !user || !canUpdate || !auth) {
+    if (!firestore || !storage || !user || !canUpdate || !auth) {
         toast({ title: 'Error', description: 'You do not have permission or services are unavailable.', variant: 'destructive' });
         setIsSubmitting(false);
         return;
