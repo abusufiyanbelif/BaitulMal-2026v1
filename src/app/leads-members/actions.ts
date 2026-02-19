@@ -6,6 +6,8 @@ import type { Lead } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FieldValue } from 'firebase-admin/firestore';
 
+const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
+
 interface CopyLeadOptions {
   sourceLeadId: string;
   newName: string;
@@ -16,7 +18,7 @@ interface CopyLeadOptions {
 export async function copyLeadAction(options: CopyLeadOptions): Promise<{ success: boolean; message: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) {
-        return { success: false, message: 'Database service not available.' };
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     
     const { sourceLeadId, newName, copyBeneficiaries, copyRationLists } = options;
@@ -67,7 +69,7 @@ export async function copyLeadAction(options: CopyLeadOptions): Promise<{ succes
 export async function deleteLeadAction(leadId: string): Promise<{ success: boolean; message: string }> {
     const { adminDb, adminStorage } = getAdminServices();
     if (!adminDb || !adminStorage) {
-        return { success: false, message: 'Database or Storage service is not initialized.' };
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     
     try {

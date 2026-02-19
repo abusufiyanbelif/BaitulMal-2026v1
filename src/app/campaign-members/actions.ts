@@ -6,6 +6,8 @@ import type { Campaign } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FieldValue } from 'firebase-admin/firestore';
 
+const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
+
 interface CopyCampaignOptions {
   sourceCampaignId: string;
   newName: string;
@@ -17,7 +19,7 @@ interface CopyCampaignOptions {
 export async function copyCampaignAction(options: CopyCampaignOptions): Promise<{ success: boolean; message: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) {
-        return { success: false, message: 'Database service not available.' };
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     
     const { sourceCampaignId, newName, copyBeneficiaries, copyRationLists } = options;
@@ -68,7 +70,7 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
 export async function deleteCampaignAction(campaignId: string): Promise<{ success: boolean; message: string }> {
     const { adminDb, adminStorage } = getAdminServices();
     if (!adminDb || !adminStorage) {
-        return { success: false, message: 'Database or Storage service is not initialized.' };
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     
     try {

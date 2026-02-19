@@ -6,10 +6,12 @@ import type { Beneficiary } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FieldValue } from 'firebase-admin/firestore';
 
+const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
+
 export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) {
-        return { success: false, message: "Database service is not initialized." };
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     try {
         const docRef = adminDb.collection('beneficiaries').doc();
@@ -32,7 +34,7 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
 export async function updateMasterBeneficiaryAction(beneficiaryId: string, data: Partial<Beneficiary>, updatedBy: {id: string, name: string}): Promise<{ success: boolean; message: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) {
-        return { success: false, message: "Database service is not initialized." };
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     try {
         const docRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
@@ -54,7 +56,7 @@ export async function updateMasterBeneficiaryAction(beneficiaryId: string, data:
 export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ success: boolean; message: string }> {
     const { adminDb, adminStorage } = getAdminServices();
     if (!adminDb || !adminStorage) {
-        return { success: false, message: 'Database or Storage service is not initialized.' };
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     try {
         const batch = adminDb.batch();
@@ -99,7 +101,7 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
 export async function syncMasterBeneficiaryListAction(): Promise<{ success: boolean; message: string; addedCount: number; }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) {
-        return { success: false, message: "Database service is not initialized.", addedCount: 0 };
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, addedCount: 0 };
     }
     
     try {

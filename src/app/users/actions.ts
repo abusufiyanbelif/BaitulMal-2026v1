@@ -6,10 +6,12 @@ import { revalidatePath } from 'next/cache';
 import type { UserFormData } from '@/lib/schemas';
 import type { UserProfile } from '@/lib/types';
 
+const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
+
 export async function createUserAuthAction(data: UserFormData): Promise<{ success: boolean; message: string; uid?: string; }> {
     const { adminAuth } = getAdminServices();
     if (!adminAuth) {
-        return { success: false, message: 'Authentication service is not initialized.' };
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     try {
         const userRecord = await adminAuth.createUser({
@@ -30,7 +32,7 @@ export async function createUserAuthAction(data: UserFormData): Promise<{ succes
 export async function deleteUserAction(uidToDelete: string): Promise<{ success: boolean; message: string }> {
     const { adminAuth, adminDb, adminStorage } = getAdminServices();
     if (!adminAuth || !adminDb || !adminStorage) {
-        return { success: false, message: 'Admin services are not initialized.' };
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     try {
         // Fetch user doc first to get all identifiers for lookup deletion
@@ -80,7 +82,7 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
 export async function updateUserAuthAction(uid: string, updates: { email?: string; password?: string }): Promise<{ success: boolean, message: string }> {
     const { adminAuth } = getAdminServices();
     if (!adminAuth) {
-        return { success: false, message: 'Authentication service is not initialized.' };
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     try {
         await adminAuth.updateUser(uid, updates);

@@ -4,10 +4,12 @@ import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 
+const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
+
 export async function syncDonationsAction(): Promise<{ success: boolean; message: string; updatedCount: number; }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) {
-        return { success: false, message: "Database service is not initialized.", updatedCount: 0 };
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, updatedCount: 0 };
     }
     
     try {
@@ -56,7 +58,7 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
 export async function deleteDonationAction(donationId: string): Promise<{ success: boolean; message: string }> {
     const { adminDb, adminStorage } = getAdminServices();
     if (!adminDb || !adminStorage) {
-        return { success: false, message: 'Database or Storage service is not initialized.' };
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     try {
         const docRef = adminDb.collection('donations').doc(donationId);
@@ -102,5 +104,3 @@ export async function deleteDonationAction(donationId: string): Promise<{ succes
         return { success: false, message: `Failed to delete donation: ${error.message}` };
     }
 }
-
-    
