@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -13,7 +12,7 @@ import { doc, collection, updateDoc, query, where, DocumentReference } from 'fir
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import Link from 'next/link';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
-
+import Resizer from 'react-image-file-resizer';
 import type { Campaign, Beneficiary, Donation, DonationCategory, ItemCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -194,7 +193,6 @@ export default function CampaignSummaryPage() {
                 if (imageUrl) { // Delete old image if a new one is uploaded
                      await deleteObject(storageRef(storage, imageUrl)).catch(e => console.warn("Old image deletion failed, it might not exist.", e));
                 }
-                const { default: Resizer } = await import('react-image-file-resizer');
                 const resizedBlob = await new Promise<Blob>((resolve) => {
                     Resizer.imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
@@ -483,7 +481,7 @@ Your contribution, big or small, makes a huge difference.
         );
     }
     
-    if (campaignError || beneficiariesError || donationsError) {
+    if (leadError || beneficiariesError || donationsError) {
         return (
              <main className="container mx-auto p-4 md:p-8">
                 <Alert variant="destructive">
@@ -492,7 +490,7 @@ Your contribution, big or small, makes a huge difference.
                     <AlertDescription>
                         <p>There was a problem fetching the required data for this page. This could be due to network issues or insufficient permissions.</p>
                         <pre className="mt-2 text-xs bg-destructive/10 p-2 rounded-md font-mono">
-                            {campaignError?.message || beneficiariesError?.message || donationsError?.message}
+                            {leadError?.message || beneficiariesError?.message || donationsError?.message}
                         </pre>
                     </AlertDescription>
                 </Alert>
@@ -1006,8 +1004,3 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
-
-
-
-
-

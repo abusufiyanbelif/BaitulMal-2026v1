@@ -38,6 +38,7 @@ import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import Resizer from 'react-image-file-resizer';
 
 
 const donationCategoryChartConfig = {
@@ -184,7 +185,6 @@ export default function LeadSummaryPage() {
                 if (imageUrl) {
                      await deleteObject(storageRef(storage, imageUrl)).catch(e => console.warn("Old image deletion failed, it might not exist.", e));
                 }
-                const { default: Resizer } = await import('react-image-file-resizer');
                 const resizedBlob = await new Promise<Blob>((resolve) => {
                     Resizer.imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
@@ -666,7 +666,7 @@ Your contribution, big or small, makes a huge difference.
                                         ))}
                                     </Bar>
                                 </BarChart>
-                            </ChartContainer>
+                              </ChartContainer>
                           ) : <Skeleton className="h-[250px] w-full" />}
                         </CardContent>
                     </Card>
@@ -676,8 +676,3 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
-
-
-
-
-
