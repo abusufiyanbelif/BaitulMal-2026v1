@@ -11,7 +11,7 @@ import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { doc, DocumentReference, setDoc, serverTimestamp, collection, deleteField } from 'firebase/firestore';
 import Link from 'next/link';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import Resizer from 'react-image-file-resizer';
+import * as Resizer from 'react-image-file-resizer';
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
 

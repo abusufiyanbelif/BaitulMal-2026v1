@@ -10,7 +10,7 @@ import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, 
 import type { Donation, Campaign, Lead, TransactionDetail } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
-import Resizer from 'react-image-file-resizer';
+import * as Resizer from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
