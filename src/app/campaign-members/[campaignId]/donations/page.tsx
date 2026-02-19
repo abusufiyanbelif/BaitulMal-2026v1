@@ -70,6 +70,7 @@ export default function DonationsPage() {
   const campaignId = params.campaignId as string;
   const firestore = useFirestore();
   const storage = useStorage();
+  console.log("Storage instance in Campaign Donations:", storage);
   const { toast } = useToast();
   const { userProfile, isLoading: isProfileLoading } = useSession();
   const auth = useAuth();
@@ -378,11 +379,11 @@ export default function DonationsPage() {
     return sortableItems;
   }, [donations, searchTerm, statusFilter, typeFilter, donationTypeFilter, sortConfig]);
 
-  const isLoading = isLeadLoading || areDonationsLoading || isProfileLoading || areAllCampaignsLoading || areAllLeadsLoading;
+  const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading || areAllCampaignsLoading || areAllLeadsLoading;
   
   if (isLoading) {
     return (
-        <main className="flex items-center justify-center min-h-screen">
+        <main className="container mx-auto p-4 md:p-8">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </main>
     );
@@ -393,35 +394,37 @@ export default function DonationsPage() {
       <main className="container mx-auto p-4 md:p-8">
         <div className="mb-4">
             <Button variant="outline" asChild>
-                <Link href="/leads-members">
+                <Link href="/campaign-members">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Leads
+                    Back to Campaigns
                 </Link>
             </Button>
         </div>
         <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold">{lead?.name}</h1>
+            <h1 className="text-3xl font-bold">{campaign?.name}</h1>
         </div>
         
         <div className="border-b mb-4">
           <ScrollArea className="w-full whitespace-nowrap">
             <div className="flex w-max space-x-2">
                 {canReadSummary && (
-                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
+                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
                     </Button>
                 )}
-                <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                    <Link href={`/leads-members/${leadId}`}>Item List</Link>
-                </Button>
+                {canReadRation && (
+                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                         <Link href={`/campaign-members/${campaignId}`}>{campaign?.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
+                    </Button>
+                )}
                 {canReadBeneficiaries && (
-                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
+                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
                     </Button>
                 )}
                 {canReadDonations && (
-                    <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
+                    <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
+                        <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
                     </Button>
                 )}
             </div>
@@ -433,13 +436,13 @@ export default function DonationsPage() {
             <div className="border-b mb-4">
               <ScrollArea className="w-full whitespace-nowrap">
                   <div className="flex w-max space-x-2">
-                      <Link href={`/leads-members/${leadId}/donations/summary`} className={cn(
+                      <Link href={`/campaign-members/${campaignId}/donations/summary`} className={cn(
                           "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          pathname === `/leads-members/${leadId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                          pathname === `/campaign-members/${campaignId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
                       )}>Donation Summary</Link>
-                      <Link href={`/leads-members/${leadId}/donations`} className={cn(
+                      <Link href={`/campaign-members/${campaignId}/donations`} className={cn(
                           "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          pathname === `/leads-members/${leadId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                          pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
                       )}>Donation List</Link>
                   </div>
                   <ScrollBar orientation="horizontal" />
@@ -535,8 +538,8 @@ export default function DonationsPage() {
                   ) : (filteredAndSortedDonations && filteredAndSortedDonations.length > 0) ? (
                   filteredAndSortedDonations.map((donation, index) => {
                       const isOpen = openRows[donation.id] || false;
-                      const leadLink = donation.linkSplit?.find(l => l.linkId === leadId && l.linkType === 'lead');
-                      const amountForThisLead = leadLink?.amount || 0;
+                      const campaignLink = donation.linkSplit?.find(l => l.linkId === campaignId && l.linkType === 'campaign');
+                      const amountForThisCampaign = campaignLink?.amount || 0;
                       return (
                         <React.Fragment key={donation.id}>
                           <TableRow className="bg-background hover:bg-accent/50 cursor-pointer" data-state={isOpen ? 'open' : 'closed'} onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
@@ -550,7 +553,7 @@ export default function DonationsPage() {
                                 <div className="text-xs text-muted-foreground">Ref: {donation.referral || 'N/A'}</div>
                               </TableCell>
                               <TableCell className="text-right">
-                                  <div className="font-medium font-mono">₹{amountForThisLead.toFixed(2)}</div>
+                                  <div className="font-medium font-mono">₹{amountForThisCampaign.toFixed(2)}</div>
                                   <div className="text-xs text-muted-foreground">{donation.donationDate}</div>
                               </TableCell>
                               <TableCell>
@@ -575,7 +578,7 @@ export default function DonationsPage() {
                                               </Button>
                                           </DropdownMenuTrigger>
                                           <DropdownMenuContent align="end">
-                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/leads-members/${leadId}/donations/${donation.id}`); }}>
+                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/campaign-members/${campaignId}/donations/${donation.id}`); }}>
                                                   <Eye className="mr-2 h-4 w-4" /> View Details
                                               </DropdownMenuItem>
                                               {canUpdate && (
@@ -585,7 +588,7 @@ export default function DonationsPage() {
                                               )}
                                               {canUpdate && (
                                                   <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleUnlinkClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
-                                                      <Link2Off className="mr-2 h-4 w-4" /> Unlink from Lead
+                                                      <Link2Off className="mr-2 h-4 w-4" /> Unlink from Campaign
                                                   </DropdownMenuItem>
                                               )}
                                           </DropdownMenuContent>
@@ -654,7 +657,7 @@ export default function DonationsPage() {
                 onCancel={() => setIsFormOpen(false)}
                 campaigns={allCampaigns || []}
                 leads={allLeads || []}
-                defaultLinkId={`lead_${leadId}`}
+                defaultLinkId={`campaign_${campaignId}`}
             />
         </DialogContent>
       </Dialog>
@@ -664,7 +667,7 @@ export default function DonationsPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This will unlink the donation from this lead. The donation record itself will not be deleted, but it will no longer contribute to this lead's funding.
+                    This will unlink the donation from this campaign. The donation record itself will not be deleted, but it will no longer contribute to this campaign's funding.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -707,3 +710,5 @@ export default function DonationsPage() {
     </>
   );
 }
+
+    

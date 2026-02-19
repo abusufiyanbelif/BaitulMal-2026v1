@@ -78,6 +78,7 @@ export default function DonationsPage() {
   const router = useRouter();
   const firestore = useFirestore();
   const storage = useStorage();
+  console.log("Storage instance:", storage);
   const { toast } = useToast();
   const pathname = usePathname();
   const { userProfile, isLoading: isProfileLoading } = useSession();
@@ -594,5 +595,7 @@ export default function DonationsPage() {
     </>
   );
 }
+
+    
 
     
