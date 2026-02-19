@@ -169,7 +169,7 @@ export default function DonationsPage() {
     if (hasFilesToUpload && !auth?.currentUser) {
         toast({
             title: "Authentication Error",
-            description: "User not authenticated yet. Please wait and try again.",
+            description: "User is not authenticated. Please wait for the session to load or log in again.",
             variant: "destructive",
         });
         return;
@@ -189,7 +189,7 @@ export default function DonationsPage() {
     let finalData: any;
 
     try {
-        const transactionPromises = data.transactions.map(async (transaction) => {
+       const transactionPromises = data.transactions.map(async (transaction) => {
             let screenshotUrl = transaction.screenshotUrl || '';
             const fileList = transaction.screenshotFile as FileList | undefined;
             if (fileList && fileList.length > 0) {
@@ -198,7 +198,7 @@ export default function DonationsPage() {
                 const resizedBlob = await new Promise<Blob>((resolve) => {
                      Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
-                const filePath = `donations/${docRef.id}/${transaction.id}.png`;
+                const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
                 const fileRef = storageRef(storage, filePath);
                 const uploadResult = await uploadBytes(fileRef, resizedBlob);
                 screenshotUrl = await getDownloadURL(uploadResult.ref);
@@ -595,7 +595,3 @@ export default function DonationsPage() {
     </>
   );
 }
-
-    
-
-    

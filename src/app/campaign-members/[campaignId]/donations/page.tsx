@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Upload, Download, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, ChevronDown, ChevronUp, DatabaseZap, Check, ChevronsUpDown, X, Link2Off } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Upload, Download, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, Check, ChevronsUpDown, X, Link2Off } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -214,7 +214,7 @@ export default function DonationsPage() {
     if (hasFilesToUpload && !auth?.currentUser) {
         toast({
             title: "Authentication Error",
-            description: "User not authenticated yet. Please wait and try again.",
+            description: "User is not authenticated. Please wait for the session to load or log in again.",
             variant: "destructive",
         });
         return;
@@ -244,7 +244,7 @@ export default function DonationsPage() {
                 const resizedBlob = await new Promise<Blob>((resolve) => {
                      Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
-                const filePath = `donations/${docRef.id}/${transaction.id}.png`;
+                const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
                 const fileRef = storageRef(storage, filePath);
                 const uploadResult = await uploadBytes(fileRef, resizedBlob);
                 screenshotUrl = await getDownloadURL(uploadResult.ref);
@@ -710,5 +710,3 @@ export default function DonationsPage() {
     </>
   );
 }
-
-    
