@@ -124,6 +124,10 @@ const config = {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '.85' },
         },
+        'spin-reverse': {
+          'from': { transform: 'rotate(360deg)' },
+          'to': { transform: 'rotate(0deg)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
