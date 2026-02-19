@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Quote } from 'lucide-react';
@@ -22,9 +21,9 @@ function getRandomItem<T>(arr: T[]): T {
 
 export function WisdomAndReflection() {
   const [selectedWisdom, setSelectedWisdom] = useState<{ quran: any; reflection: any; } | null>(null);
-  const pathname = usePathname();
 
   useEffect(() => {
+    // This effect now runs only once after the component mounts on the client.
     const reflections = [
         ...(typedWisdomData.hadith || []),
         ...(typedWisdomData.scholars || []),
@@ -34,7 +33,7 @@ export function WisdomAndReflection() {
       quran: getRandomItem(typedWisdomData.quran),
       reflection: reflections.length > 0 ? getRandomItem(reflections) : null,
     });
-  }, [pathname]);
+  }, []); // Empty dependency array ensures this runs only once.
 
   if (!selectedWisdom) {
     return (
