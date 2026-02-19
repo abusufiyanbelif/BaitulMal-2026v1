@@ -3,7 +3,7 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage, useMemoFirebase } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage, useMemoFirebase, useAuth } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -52,6 +52,7 @@ export default function CreateCampaignPage() {
   const router = useRouter();
   const firestore = useFirestore();
   const storage = useStorage();
+  const auth = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const { userProfile, isLoading: isProfileLoading } = useSession();
@@ -107,11 +108,19 @@ export default function CreateCampaignPage() {
     setIsLoading(true);
 
     const { imageFile, ...campaignCoreData } = data;
+    
+    const hasImageToUpload = imageFile && imageFile.length > 0;
+    if (hasImageToUpload && !auth?.currentUser) {
+        toast({ title: 'Authentication Error', description: 'User not authenticated yet. Please wait.', variant: 'destructive' });
+        setIsLoading(false);
+        return;
+    }
+    
     const newCampaignRef = doc(collection(firestore, 'campaigns'));
     const newCampaignId = newCampaignRef.id;
 
     let imageUrl = '';
-    if (imageFile && imageFile.length > 0 && storage) {
+    if (hasImageToUpload && storage) {
         try {
             const file = imageFile[0];
             const { default: Resizer } = await import('react-image-file-resizer');
@@ -347,4 +356,5 @@ export default function CreateCampaignPage() {
     </>
   );
 }
+
 

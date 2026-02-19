@@ -3,7 +3,7 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage, useMemoFirebase } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage, useMemoFirebase, useAuth } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -77,6 +77,7 @@ export default function CreateLeadPage() {
   const router = useRouter();
   const firestore = useFirestore();
   const storage = useStorage();
+  const auth = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const { userProfile, isLoading: isProfileLoading } = useSession();
@@ -146,11 +147,19 @@ export default function CreateLeadPage() {
     setIsLoading(true);
 
     const { imageFile, ...leadCoreData } = data;
+    
+    const hasImageToUpload = imageFile && imageFile.length > 0;
+    if (hasImageToUpload && !auth?.currentUser) {
+        toast({ title: 'Authentication Error', description: 'User not authenticated yet. Please wait.', variant: 'destructive' });
+        setIsLoading(false);
+        return;
+    }
+    
     const newLeadRef = doc(collection(firestore, 'leads'));
     const newLeadId = newLeadRef.id;
 
     let imageUrl = '';
-    if (imageFile && imageFile.length > 0 && storage) {
+    if (hasImageToUpload && storage) {
         try {
             const file = imageFile[0];
             const { default: Resizer } = await import('react-image-file-resizer');
@@ -440,4 +449,5 @@ export default function CreateLeadPage() {
     </main>
   );
 }
+
 

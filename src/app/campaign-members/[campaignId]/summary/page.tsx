@@ -4,7 +4,7 @@
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useFirestore, useDoc, useCollection, errorEmitter, FirestorePermissionError, useStorage, useMemoFirebase } from '@/firebase';
+import { useFirestore, useDoc, useCollection, errorEmitter, FirestorePermissionError, useStorage, useMemoFirebase, useAuth } from '@/firebase';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import type { SecurityRuleContext } from '@/firebase';
@@ -67,6 +67,7 @@ export default function CampaignSummaryPage() {
     const campaignId = params.campaignId as string;
     const firestore = useFirestore();
     const storage = useStorage();
+    const auth = useAuth();
     const { toast } = useToast();
     const { userProfile, isLoading: isProfileLoading } = useSession();
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
@@ -169,6 +170,16 @@ export default function CampaignSummaryPage() {
     const handleSave = async () => {
         if (!campaignDocRef || !userProfile || !canUpdate) return;
         
+        const hasFileToUpload = !!imageFile;
+        if (hasFileToUpload && !auth?.currentUser) {
+            toast({
+                title: "Authentication Error",
+                description: "User not authenticated yet. Please wait.",
+                variant: "destructive",
+            });
+            return;
+        }
+
         let imageUrl = editableCampaign.imageUrl || '';
         let imageUrlFilename = editableCampaign.imageUrlFilename || '';
 
@@ -995,6 +1006,7 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+
 
 
 

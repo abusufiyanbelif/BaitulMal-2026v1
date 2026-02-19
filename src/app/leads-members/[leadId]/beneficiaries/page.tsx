@@ -3,7 +3,7 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
-import { useFirestore, useStorage, useMemoFirebase } from '@/firebase/provider';
+import { useFirestore, useStorage, useMemoFirebase, useAuth } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -211,6 +211,7 @@ export default function BeneficiariesPage() {
       : "";
   const firestore = useFirestore();
   const storage = useStorage();
+  const auth = useAuth();
   const { toast } = useToast();
   const { userProfile, isLoading: isProfileLoading } = useSession();
   
@@ -359,6 +360,19 @@ export default function BeneficiariesPage() {
     let idProofUrl = editingBeneficiary?.idProofUrl || '';
 
     try {
+      const fileList = data.idProofFile as FileList | undefined;
+      const hasFileToUpload = fileList && fileList.length > 0;
+
+      if (hasFileToUpload && !auth?.currentUser) {
+          toast({
+              title: "Authentication Error",
+              description: "User not authenticated yet. Please wait and try again.",
+              variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+      }
+      
       if (data.idProofDeleted && idProofUrl) {
           await deleteObject(storageRef(storage, idProofUrl)).catch((err: any) => {
               if ((err as any).code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
@@ -366,8 +380,7 @@ export default function BeneficiariesPage() {
           idProofUrl = '';
       }
     
-      const fileList = data.idProofFile as FileList | undefined;
-      if (fileList && fileList.length > 0) {
+      if (hasFileToUpload) {
           const file = fileList[0];
           let fileToUpload: Blob | File = file;
           let fileExtension = file.name.split('.').pop()?.toLowerCase() || 'bin';
