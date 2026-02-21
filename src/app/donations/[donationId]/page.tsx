@@ -12,7 +12,7 @@ import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { doc, DocumentReference, setDoc, serverTimestamp, collection, deleteField } from 'firebase/firestore';
 import Link from 'next/link';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import imageFileResizer from 'react-image-file-resizer';
+import Resizer from 'react-image-file-resizer';
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
 
@@ -97,7 +97,7 @@ export default function UnlinkedDonationDetailsPage() {
                     const file = (transaction.screenshotFile as FileList)[0];
                     if(file) {
                         const resizedBlob = await new Promise<Blob>((resolve) => {
-                            imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                            Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                         });
                         const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
                         const fileRef = storageRef(storage, filePath);
