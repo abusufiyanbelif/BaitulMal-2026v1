@@ -21,7 +21,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { Badge } from '@/components/ui/badge';
 import { updateMasterBeneficiaryAction } from '../actions';
 import { useSession } from '@/hooks/use-session';
-import Resizer from 'react-image-file-resizer';
+import * as Resizer from 'react-image-file-resizer';
 import { useMemoFirebase } from '@/firebase/provider';
 
 interface LinkedInitiative {
