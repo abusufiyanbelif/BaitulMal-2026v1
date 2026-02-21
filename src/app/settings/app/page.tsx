@@ -10,7 +10,7 @@ import { useStorage, useFirestore, useAuth } from '@/firebase/provider';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, writeBatch } from 'firebase/firestore';
-import { imageFileResizer } from 'react-image-file-resizer';
+import imageFileResizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

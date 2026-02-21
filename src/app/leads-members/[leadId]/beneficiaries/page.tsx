@@ -11,7 +11,7 @@ import { collection, addDoc, deleteDoc, doc, serverTimestamp, setDoc, DocumentRe
 import type { Beneficiary, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
-import { imageFileResizer } from 'react-image-file-resizer';
+import imageFileResizer from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
@@ -387,13 +387,16 @@ export default function BeneficiariesPage() {
           if (idProofUrl) {
             const oldFileRef = storageRef(storage, idProofUrl);
             await deleteObject(oldFileRef).catch((err: any) => {
-                if ((err.code) !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
+                if ((err.code !== 'storage/object-not-found')) console.warn("Failed to delete old ID proof:", err);
             });
           }
 
           if (file.type.startsWith('image/')) {
-              fileToUpload = await new Promise<Blob>((resolve) => {
-                  imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+              await new Promise<void>((resolve) => {
+                  imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
+                    fileToUpload = blob as Blob;
+                    resolve();
+                  }, 'blob');
               });
               fileExtension = 'png';
           } else if (file.type !== 'application/pdf') {

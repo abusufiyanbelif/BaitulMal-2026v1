@@ -1,27 +1,24 @@
-
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
-import { errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage, useMemoFirebase, useAuth } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Image from 'next/image';
-import { imageFileResizer } from 'react-image-file-resizer';
+import imageFileResizer from 'react-image-file-resizer';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Loader2, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Loader2, ShieldAlert, UploadCloud, Trash2, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
 import type { UserFormData } from '@/lib/schemas';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UserForm } from '@/components/user-form';
 import { createUserAuthAction } from '../actions';
-import { useCollection, useMemoFirebase } from '@/firebase';
+import { useCollection as useCollectionHook } from '@/firebase';
 
 export default function CreateUserPage() {
   const router = useRouter();
