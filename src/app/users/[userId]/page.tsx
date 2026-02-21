@@ -11,8 +11,8 @@ import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import { updateDoc, doc, writeBatch, DocumentReference } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { createAdminPermissions } from '@/lib/modules';
+import { imageFileResizer } from 'react-image-file-resizer';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import Resizer from 'react-image-file-resizer';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -116,7 +116,7 @@ export default function UserDetailsPage() {
             }
 
             fileToUpload = await new Promise<Blob>((resolve) => {
-                    (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             fileExtension = 'png';
             

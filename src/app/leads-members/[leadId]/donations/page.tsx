@@ -1,17 +1,18 @@
 
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
-import { useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { useCollection, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, where, setDoc, DocumentReference, deleteField } from 'firebase/firestore';
 import type { Donation, Lead, Campaign, TransactionDetail } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
-import Resizer from 'react-image-file-resizer';
+import { imageFileResizer } from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
@@ -62,7 +63,6 @@ import { getNestedValue } from '@/lib/utils';
 import { syncDonationsAction } from '@/app/donations/actions';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { errorEmitter, FirestorePermissionError } from '@/firebase';
 
 type SortKey = keyof Donation | 'srNo';
 
@@ -235,7 +235,7 @@ export default function DonationsPage() {
             if (fileList && fileList.length > 0) {
                 const file = fileList[0];
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                     (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                     imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
                 const fileRef = storageRef(storage, filePath);

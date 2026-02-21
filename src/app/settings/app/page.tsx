@@ -10,7 +10,7 @@ import { useStorage, useFirestore, useAuth } from '@/firebase/provider';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, writeBatch } from 'firebase/firestore';
-import Resizer from 'react-image-file-resizer';
+import { imageFileResizer } from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -143,7 +143,7 @@ export default function AppSettingsPage() {
             let newLogoUrl = editableData.logoUrl;
             if (logoFile) {
                  const resizedBlob = await new Promise<Blob>((resolve) => {
-                    (Resizer as any).imageFileResizer(logoFile, 800, 800, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    imageFileResizer(logoFile, 800, 800, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = 'settings/logo';
                 const fileRef = storageRef(storage, filePath);
@@ -162,7 +162,7 @@ export default function AppSettingsPage() {
             let newQrCodeUrl = editableData.qrCodeUrl;
             if (qrCodeFile) {
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                    (Resizer as any).imageFileResizer(qrCodeFile, 800, 800, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    imageFileResizer(qrCodeFile, 800, 800, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = 'settings/payment_qr';
                 const fileRef = storageRef(storage, filePath);

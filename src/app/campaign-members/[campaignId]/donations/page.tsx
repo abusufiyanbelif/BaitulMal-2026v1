@@ -1,4 +1,5 @@
 
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -10,7 +11,7 @@ import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, 
 import type { Donation, Campaign, Lead, TransactionDetail } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
-import * as Resizer from 'react-image-file-resizer';
+import { imageFileResizer } from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
@@ -242,7 +243,7 @@ export default function DonationsPage() {
             if (fileList && fileList.length > 0) {
                 const file = fileList[0];
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                     Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                     imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
                 const fileRef = storageRef(storage, filePath);

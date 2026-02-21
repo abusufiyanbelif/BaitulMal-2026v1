@@ -21,7 +21,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { Badge } from '@/components/ui/badge';
 import { updateMasterBeneficiaryAction } from '../actions';
 import { useSession } from '@/hooks/use-session';
-import Resizer from 'react-image-file-resizer';
+import { imageFileResizer } from 'react-image-file-resizer';
 import { useMemoFirebase } from '@/firebase/provider';
 
 interface LinkedInitiative {
@@ -170,7 +170,7 @@ export default function BeneficiaryDetailsPage() {
             }
             
             fileToUpload = await new Promise<Blob>((resolve) => {
-                (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             fileExtension = 'png';
             

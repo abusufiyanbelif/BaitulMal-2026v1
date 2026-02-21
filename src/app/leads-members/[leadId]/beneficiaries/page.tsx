@@ -4,15 +4,14 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
-import { useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { errorEmitter, FirestorePermissionError } from '@/firebase/errors';
+import { useCollection, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, deleteDoc, doc, serverTimestamp, setDoc, DocumentReference, writeBatch, updateDoc } from 'firebase/firestore';
 import type { Beneficiary, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
-import Resizer from 'react-image-file-resizer';
+import { imageFileResizer } from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
@@ -394,7 +393,7 @@ export default function BeneficiariesPage() {
 
           if (file.type.startsWith('image/')) {
               fileToUpload = await new Promise<Blob>((resolve) => {
-                  (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                  imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
               });
               fileExtension = 'png';
           } else if (file.type !== 'application/pdf') {
