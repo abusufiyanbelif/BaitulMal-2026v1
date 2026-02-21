@@ -9,7 +9,7 @@ import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/fires
 import { useToast } from '@/hooks/use-toast';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Image from 'next/image';
-import imageFileResizer from 'react-image-file-resizer';
+import Resizer from 'react-image-file-resizer';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -111,7 +111,7 @@ export default function CreateCampaignPage() {
     const { imageFile, ...campaignCoreData } = data;
     
     const hasImageToUpload = imageFile && imageFile.length > 0;
-    if (hasImageToUpload && !auth?.currentUser) {
+    if ((hasImageToUpload || documentsToUpload.length > 0) && !auth?.currentUser) {
         toast({ title: 'Authentication Error', description: 'User not authenticated yet. Please wait.', variant: 'destructive' });
         setIsLoading(false);
         return;
@@ -125,7 +125,7 @@ export default function CreateCampaignPage() {
         try {
             const file = imageFile[0];
             const resizedBlob = await new Promise<Blob>((resolve) => {
-                imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                (Resizer as any).imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             
             const filePath = `campaigns/${newCampaignId}/background.png`;
@@ -146,7 +146,7 @@ export default function CreateCampaignPage() {
         const fileRef = storageRef(storage, `campaigns/${newCampaignId}/documents/${safeFileName}`);
         await uploadBytes(fileRef, file);
         const url = await getDownloadURL(fileRef);
-        return { name: file.name, url: url, uploadedAt: new Date().toISOString() };
+        return { name: file.name, url: url, uploadedAt: new Date().toISOString(), isPublic: false };
     });
 
     const documents = await Promise.all(documentUploadPromises);
@@ -276,7 +276,7 @@ export default function CreateCampaignPage() {
                     <FormMessage />
                 </FormItem>
                  <FormItem>
-                    <FormLabel>Campaign Documents</FormLabel>
+                    <FormLabel>Campaign Documents &amp; Artifacts</FormLabel>
                     <FormControl>
                         <FileUploader
                             onFilesChange={setDocumentsToUpload}
@@ -284,7 +284,7 @@ export default function CreateCampaignPage() {
                             acceptedFileTypes="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
                         />
                     </FormControl>
-                    <FormDescription>Upload any relevant documents for this campaign (e.g., proposals, reports).</FormDescription>
+                    <FormDescription>Upload any relevant documents for this campaign (e.g., proposals, reports, photos).</FormDescription>
                 </FormItem>
                  <FormField control={form.control} name="category" render={({ field }) => (
                     <FormItem><FormLabel>Campaign Category *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select><FormMessage /></FormItem>
@@ -356,6 +356,7 @@ export default function CreateCampaignPage() {
     </>
   );
 }
+
 
 
 

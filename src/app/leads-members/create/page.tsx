@@ -9,7 +9,7 @@ import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/fires
 import { useToast } from '@/hooks/use-toast';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Image from 'next/image';
-import imageFileResizer from 'react-image-file-resizer';
+import Resizer from 'react-image-file-resizer';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -150,7 +150,7 @@ export default function CreateLeadPage() {
     const { imageFile, ...leadCoreData } = data;
     
     const hasImageToUpload = imageFile && imageFile.length > 0;
-    if (hasImageToUpload && !auth?.currentUser) {
+    if ((hasImageToUpload || documentsToUpload.length > 0) && !auth?.currentUser) {
         toast({ title: 'Authentication Error', description: 'User not authenticated yet. Please wait.', variant: 'destructive' });
         setIsLoading(false);
         return;
@@ -164,7 +164,7 @@ export default function CreateLeadPage() {
         try {
             const file = imageFile[0];
             const resizedBlob = await new Promise<Blob>((resolve) => {
-                imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                (Resizer as any).imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             
             const filePath = `leads/${newLeadId}/background.png`;
@@ -185,7 +185,7 @@ export default function CreateLeadPage() {
         const fileRef = storageRef(storage, `leads/${newLeadId}/documents/${safeFileName}`);
         await uploadBytes(fileRef, file);
         const url = await getDownloadURL(fileRef);
-        return { name: file.name, url: url, uploadedAt: new Date().toISOString() };
+        return { name: file.name, url: url, uploadedAt: new Date().toISOString(), isPublic: false };
     });
     const documents = await Promise.all(documentUploadPromises);
 
@@ -315,7 +315,7 @@ export default function CreateLeadPage() {
                     <FormMessage />
                 </FormItem>
                  <FormItem>
-                    <FormLabel>Lead Documents</FormLabel>
+                    <FormLabel>Lead Artifacts</FormLabel>
                     <FormControl>
                         <FileUploader
                             onFilesChange={setDocumentsToUpload}
@@ -323,7 +323,7 @@ export default function CreateLeadPage() {
                             acceptedFileTypes="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
                         />
                     </FormControl>
-                    <FormDescription>Upload any relevant documents for this lead (e.g., proposals, reports).</FormDescription>
+                    <FormDescription>Upload any relevant documents for this lead (e.g., proposals, reports, photos).</FormDescription>
                 </FormItem>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField control={form.control} name="purpose" render={({ field }) => (
@@ -449,5 +449,6 @@ export default function CreateLeadPage() {
     </main>
   );
 }
+
 
 

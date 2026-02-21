@@ -14,8 +14,8 @@ import { doc, collection, updateDoc, query, where, DocumentReference } from 'fir
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import Link from 'next/link';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
-import imageFileResizer from 'react-image-file-resizer';
-import type { Campaign, Beneficiary, Donation, DonationCategory, ItemCategory } from '@/lib/types';
+import Resizer from 'react-image-file-resizer';
+import type { Campaign, Beneficiary, Donation, DonationCategory, ItemCategory, CampaignDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -43,6 +43,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert } from 'lucide-react';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { FileUploader } from '@/components/file-uploader';
+import { Switch } from '@/components/ui/switch';
 
 
 const donationCategoryChartConfig = {
@@ -82,6 +84,9 @@ export default function CampaignSummaryPage() {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isImageDeleted, setIsImageDeleted] = useState(false);
+
+    const [newDocuments, setNewDocuments] = useState<File[]>([]);
+    const [existingDocuments, setExistingDocuments] = useState<CampaignDocument[]>([]);
     
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
@@ -123,9 +128,13 @@ export default function CampaignSummaryPage() {
                 imageUrl: campaign.imageUrl || '',
                 imageUrlFilename: campaign.imageUrlFilename || '',
             });
+            setExistingDocuments(campaign.documents || []);
             setImagePreview(campaign.imageUrl || null);
             setIsImageDeleted(false);
             setImageFile(null);
+            setNewDocuments([]);
+        } else if (campaign && editMode) {
+            setExistingDocuments(campaign.documents || []);
         }
     }, [campaign, editMode]);
 
@@ -146,6 +155,14 @@ export default function CampaignSummaryPage() {
         setImageFile(null);
         setImagePreview(null);
         setIsImageDeleted(true);
+    };
+
+    const handleRemoveExistingDocument = (urlToRemove: string) => {
+        setExistingDocuments(prev => prev.filter(doc => doc.url !== urlToRemove));
+    };
+
+    const handleToggleDocumentPublic = (urlToToggle: string) => {
+        setExistingDocuments(prev => prev.map(doc => doc.url === urlToToggle ? { ...doc, isPublic: !doc.isPublic } : doc));
     };
 
     const sanitizedRationLists = useMemo(() => {
@@ -170,9 +187,9 @@ export default function CampaignSummaryPage() {
     const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.update', false) || getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
 
     const handleSave = async () => {
-        if (!campaignDocRef || !userProfile || !canUpdate) return;
+        if (!campaignDocRef || !userProfile || !canUpdate || !storage) return;
         
-        const hasFileToUpload = !!imageFile;
+        const hasFileToUpload = !!imageFile || newDocuments.length > 0;
         if (hasFileToUpload && !auth?.currentUser) {
             toast({
                 title: "Authentication Error",
@@ -185,19 +202,19 @@ export default function CampaignSummaryPage() {
         let imageUrl = editableCampaign.imageUrl || '';
         let imageUrlFilename = editableCampaign.imageUrlFilename || '';
 
-        if (isImageDeleted && imageUrl && storage) {
+        if (isImageDeleted && imageUrl) {
             try {
                 await deleteObject(storageRef(storage, imageUrl));
-            } catch (e) { console.warn("Old image deletion failed, it might not exist.", e) }
+            } catch (e: any) { console.warn("Old image deletion failed, it might not exist.", e) }
             imageUrl = '';
             imageUrlFilename = '';
-        } else if (imageFile && storage) {
+        } else if (imageFile) {
             try {
-                if (imageUrl) { // Delete old image if a new one is uploaded
+                if (imageUrl) {
                      await deleteObject(storageRef(storage, imageUrl)).catch(e => console.warn("Old image deletion failed, it might not exist.", e));
                 }
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                    imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    (Resizer as any).imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = `campaigns/${campaignId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
@@ -208,6 +225,31 @@ export default function CampaignSummaryPage() {
             } catch (uploadError) {
                 toast({ title: 'Image Upload Failed', description: 'Changes were not saved.', variant: 'destructive'});
                 return;
+            }
+        }
+        
+        // Handle artifact uploads
+        const documentUploadPromises = newDocuments.map(async (file) => {
+            const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+            const fileRef = storageRef(storage, `campaigns/${campaignId}/documents/${safeFileName}`);
+            await uploadBytes(fileRef, file);
+            const url = await getDownloadURL(fileRef);
+            return { name: file.name, url, uploadedAt: new Date().toISOString(), isPublic: false };
+        });
+
+        const uploadedDocuments = await Promise.all(documentUploadPromises);
+        const finalDocuments = [...existingDocuments, ...uploadedDocuments];
+
+        // Handle artifact deletions
+        const originalDocuments = campaign?.documents || [];
+        const existingUrls = existingDocuments.map(d => d.url);
+        const docsToDelete = originalDocuments.filter(d => !existingUrls.includes(d.url));
+
+        for (const docToDelete of docsToDelete) {
+            try {
+                await deleteObject(storageRef(storage, docToDelete.url));
+            } catch (e: any) {
+                console.warn(`Could not delete artifact ${docToDelete.url}. It may have already been deleted.`, e);
             }
         }
 
@@ -224,6 +266,7 @@ export default function CampaignSummaryPage() {
             allowedDonationTypes: editableCampaign.allowedDonationTypes,
             imageUrl: imageUrl,
             imageUrlFilename: imageUrlFilename,
+            documents: finalDocuments,
         };
 
         updateDoc(campaignDocRef, saveData)
@@ -670,10 +713,45 @@ Your contribution, big or small, makes a huge difference.
                                     <p className="mt-1 text-sm">{campaign.description || 'No description provided.'}</p>
                                 )}
                             </div>
+                        </CardContent>
+                    </Card>
 
-                            {campaign.documents && campaign.documents.length > 0 && (
-                                <div>
-                                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Attached Documents</h4>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Campaign Artifacts</CardTitle>
+                            <CardDescription>Photos, receipts, or other documents related to this campaign.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {editMode ? (
+                                <div className="space-y-4">
+                                    <Label>Upload New Artifacts</Label>
+                                    <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/*,application/pdf,.doc,.docx,.xls,.xlsx" />
+                                    <Separator />
+                                    <Label>Manage Existing Artifacts</Label>
+                                    {existingDocuments.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {existingDocuments.map((doc) => (
+                                                <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md">
+                                                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm font-medium hover:underline truncate">
+                                                        <File className="h-4 w-4 shrink-0" />
+                                                        <span className="truncate">{doc.name}</span>
+                                                    </a>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} id={`public-${doc.url}`} />
+                                                            <Label htmlFor={`public-${doc.url}`} className="text-xs">Public</Label>
+                                                        </div>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleRemoveExistingDocument(doc.url)}>
+                                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : <p className="text-sm text-muted-foreground">No artifacts uploaded yet.</p>}
+                                </div>
+                            ) : (
+                                campaign.documents && campaign.documents.length > 0 ? (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                                         {campaign.documents.map((doc) => (
                                             <Button key={doc.url} variant="outline" asChild>
@@ -684,64 +762,8 @@ Your contribution, big or small, makes a huge difference.
                                             </Button>
                                         ))}
                                     </div>
-                                </div>
+                                ) : <p className="text-sm text-muted-foreground">No artifacts uploaded yet.</p>
                             )}
-
-                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <Label htmlFor="startDate">Start Date</Label>
-                                    <Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e: any) => setEditableCampaign(p => ({...p, startDate: e.target.value}))} disabled={!editMode}/>
-                                </div>
-                                <div>
-                                    <Label htmlFor="endDate">End Date</Label>
-                                    <Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e: any) => setEditableCampaign(p => ({...p, endDate: e.target.value}))} disabled={!editMode}/>
-                                </div>
-                                <div>
-                                    <Label htmlFor="category">Category</Label>
-                                    <Select value={editableCampaign.category} onValueChange={value => setEditableCampaign(p => ({...p, category: value as any}))} disabled={!editMode}>
-                                        <SelectTrigger><SelectValue/></SelectTrigger>
-                                        <SelectContent><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <Label htmlFor="targetAmount">Target Amount (₹)</Label>
-                                    <Input id="targetAmount" type="number" value={editableCampaign.targetAmount || ''} onChange={(e: any) => setEditableCampaign(p => ({...p, targetAmount: Number(e.target.value)}))} disabled={!editMode}/>
-                                </div>
-                                <div>
-                                    <Label htmlFor="authenticityStatus">Authenticity</Label>
-                                    <Select value={editableCampaign.authenticityStatus} onValueChange={value => setEditableCampaign(p => ({...p, authenticityStatus: value as any}))} disabled={!editMode}>
-                                        <SelectTrigger><SelectValue/></SelectTrigger>
-                                        <SelectContent><SelectItem value="Pending Verification">Pending Verification</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="On Hold">On Hold</SelectItem><SelectItem value="Rejected">Rejected</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <Label htmlFor="publicVisibility">Visibility</Label>
-                                    <Select value={editableCampaign.publicVisibility} onValueChange={value => setEditableCampaign(p => ({...p, publicVisibility: value as any}))} disabled={!editMode}>
-                                        <SelectTrigger><SelectValue/></SelectTrigger>
-                                        <SelectContent><SelectItem value="Hold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish">Ready to Publish</SelectItem><SelectItem value="Published">Published</SelectItem></SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            <div>
-                                <Label>Allowed Donation Types</Label>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2 border rounded-md mt-1">
-                                    {donationCategories.map(type => (
-                                        <div key={type} className="flex items-center space-x-2">
-                                            <Checkbox
-                                                id={`type-${type}`}
-                                                disabled={!editMode}
-                                                checked={editableCampaign.allowedDonationTypes?.includes(type)}
-                                                onCheckedChange={checked => {
-                                                    const currentTypes = editableCampaign.allowedDonationTypes || [];
-                                                    const newTypes = checked ? [...currentTypes, type] : currentTypes.filter(t => t !== type);
-                                                    setEditableCampaign(p => ({...p, allowedDonationTypes: newTypes as any}));
-                                                }}
-                                            />
-                                            <Label htmlFor={`type-${type}`} className="font-normal text-sm">{type}</Label>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
                         </CardContent>
                     </Card>
                 

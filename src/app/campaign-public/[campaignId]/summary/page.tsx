@@ -30,7 +30,7 @@ import type { Campaign, Beneficiary, Donation, DonationCategory, ItemCategory } 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift, Target, HandHelping } from 'lucide-react';
+import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift, Target, HandHelping, File } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
@@ -480,8 +480,29 @@ Your contribution, big or small, makes a huge difference.
                     </Card>
                 </div>
                 
-                <div className="grid gap-6 lg:grid-cols-2">
-                    {fundingData && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Public Artifacts</CardTitle>
+                        <CardDescription>View photos, receipts, or other public documents related to this campaign.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {campaign.documents && campaign.documents.filter(d => d.isPublic).length > 0 ? (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                {campaign.documents.filter(d => d.isPublic).map((doc) => (
+                                    <Button key={doc.url} variant="outline" asChild>
+                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
+                                            <File className="mr-2 h-4 w-4 shrink-0" />
+                                            <span className="truncate">{doc.name}</span>
+                                        </a>
+                                    </Button>
+                                ))}
+                            </div>
+                        ) : <p className="text-sm text-muted-foreground">No public artifacts have been shared for this campaign yet.</p>}
+                    </CardContent>
+                </Card>
+
+                {fundingData && (
+                    <div className="grid gap-6 lg:grid-cols-2">
                         <Card>
                             <CardHeader>
                                 <CardTitle>All Donations by Category</CardTitle>
@@ -514,55 +535,8 @@ Your contribution, big or small, makes a huge difference.
                                 </ChartContainer>
                             </CardContent>
                         </Card>
-                    )}
-
-                    {beneficiaryData && beneficiaryData.sortedBeneficiaryCategoryKeys.length > 0 && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Beneficiaries by Category</CardTitle>
-                                <CardDescription>
-                                    Summary of beneficiaries grouped by family size.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="w-full overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="whitespace-nowrap">Category Name</TableHead>
-                                            <TableHead className="text-center whitespace-nowrap">Total Beneficiaries</TableHead>
-                                            <TableHead className="text-right whitespace-nowrap">Kit Amount (per kit)</TableHead>
-                                            <TableHead className="text-right whitespace-nowrap">Total Kit Amount</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {beneficiaryData.sortedBeneficiaryCategoryKeys.map(key => {
-                                            const group = beneficiaryData.beneficiariesByCategory[key];
-                                            if (!group) return null;
-                                            return (
-                                                <TableRow key={key}>
-                                                    <TableCell className="font-medium">{group.categoryName}</TableCell>
-                                                    <TableCell className="text-center">{group.beneficiaries.length}</TableCell>
-                                                    <TableCell className="text-right font-mono">₹{group.kitAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                                    <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
-                                                </TableRow>
-                                            )
-                                        })}
-                                    </TableBody>
-                                    <TableFooter>
-                                        <TableRow>
-                                            <TableCell className="font-bold">Total</TableCell>
-                                            <TableCell className="text-center font-bold">{beneficiaryData.totalBeneficiaries}</TableCell>
-                                            <TableCell></TableCell>
-                                            <TableCell className="text-right font-bold font-mono">₹{Object.values(beneficiaryData.beneficiariesByCategory).reduce((sum, group) => sum + group.totalAmount, 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                        </TableRow>
-                                    </TableFooter>
-                                </Table>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
 
             <ShareDialog 

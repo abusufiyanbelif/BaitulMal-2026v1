@@ -1,5 +1,4 @@
 
-
 import type { DocumentData, Timestamp } from 'firebase/firestore';
 import type { UserPermissions } from './modules';
 import { donationCategories } from './modules';
@@ -33,6 +32,7 @@ export interface CampaignDocument {
   name: string;
   url: string;
   uploadedAt: string;
+  isPublic?: boolean;
 }
 
 export interface RationItem {

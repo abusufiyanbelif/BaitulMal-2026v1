@@ -30,7 +30,7 @@ import type { Lead, Beneficiary, Donation, DonationCategory, ItemCategory } from
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift, Target, HandHelping } from 'lucide-react';
+import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift, Target, HandHelping, File } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
@@ -169,7 +169,7 @@ export default function PublicLeadSummaryPage() {
         }
     }, [beneficiaries]);
 
-    const isLoading = isLeadLoading || areDonationsLoading || areBeneficiariesLoading || isBrandingLoading || isPaymentLoading;
+    const isLoading = isLeadLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
     
     const handleShare = async () => {
         if (!lead) {
@@ -436,6 +436,27 @@ Your contribution, big or small, makes a huge difference.
                     </Card>
                 </div>
                 
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Public Artifacts</CardTitle>
+                        <CardDescription>View photos, receipts, or other public documents related to this lead.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {lead.documents && lead.documents.filter(d => d.isPublic).length > 0 ? (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                {lead.documents.filter(d => d.isPublic).map((doc) => (
+                                    <Button key={doc.url} variant="outline" asChild>
+                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
+                                            <File className="mr-2 h-4 w-4 shrink-0" />
+                                            <span className="truncate">{doc.name}</span>
+                                        </a>
+                                    </Button>
+                                ))}
+                            </div>
+                        ) : <p className="text-sm text-muted-foreground">No public artifacts have been shared for this lead yet.</p>}
+                    </CardContent>
+                </Card>
+
                 {fundingData && (
                     <div className="grid gap-6 lg:grid-cols-2">
                         <Card>
