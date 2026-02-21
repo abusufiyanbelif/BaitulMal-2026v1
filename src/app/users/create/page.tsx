@@ -73,7 +73,7 @@ export default function CreateUserPage() {
 
             if (file.type.startsWith('image/')) {
                 fileToUpload = await new Promise<Blob>((resolve) => {
-                     Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                     (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 fileExtension = 'png';
             } else if (file.type !== 'application/pdf') {

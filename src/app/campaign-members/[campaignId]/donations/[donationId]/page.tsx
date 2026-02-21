@@ -100,7 +100,7 @@ export default function DonationDetailsPage() {
                     const file = (transaction.screenshotFile as FileList)[0];
                     if(file) {
                         const resizedBlob = await new Promise<Blob>((resolve) => {
-                            Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                            (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                         });
                         const filePath = `donations/${docRef.id}/${transaction.id}.png`;
                         const fileRef = storageRef(storage, filePath);

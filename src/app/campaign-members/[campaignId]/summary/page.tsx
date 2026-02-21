@@ -14,7 +14,7 @@ import { doc, collection, updateDoc, query, where, DocumentReference } from 'fir
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import Link from 'next/link';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
-import imageFileResizer from 'react-image-file-resizer';
+import * as Resizer from 'react-image-file-resizer';
 import type { Campaign, Beneficiary, Donation, DonationCategory, ItemCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -197,7 +197,7 @@ export default function CampaignSummaryPage() {
                      await deleteObject(storageRef(storage, imageUrl)).catch(e => console.warn("Old image deletion failed, it might not exist.", e));
                 }
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                    imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    (Resizer as any).imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = `campaigns/${campaignId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
