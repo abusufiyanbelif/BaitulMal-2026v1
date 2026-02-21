@@ -186,7 +186,7 @@ export default function LeadSummaryPage() {
                      await deleteObject(storageRef(storage, imageUrl)).catch(e => console.warn("Old image deletion failed, it might not exist.", e));
                 }
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                    Resizer.imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    (Resizer as any).imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = `leads/${leadId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
@@ -344,7 +344,7 @@ Your contribution, big or small, makes a huge difference.
                     <AlertDescription>
                         <p>There was a problem fetching required data for this page. This may be due to network issues or permissions.</p>
                         <pre className="mt-2 text-xs bg-destructive/10 p-2 rounded-md font-mono">
-                            {leadError?.message || beneficiariesError?.message || donationsError?.message}
+                            {(leadError || beneficiariesError || donationsError)?.message}
                         </pre>
                     </AlertDescription>
                 </Alert>

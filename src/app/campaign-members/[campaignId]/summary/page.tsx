@@ -527,7 +527,7 @@ Your contribution, big or small, makes a huge difference.
         );
     }
     
-    if (leadError || beneficiariesError || donationsError) {
+    if (campaignError || beneficiariesError || donationsError) {
         return (
              <main className="container mx-auto p-4 md:p-8">
                 <Alert variant="destructive">
@@ -536,7 +536,7 @@ Your contribution, big or small, makes a huge difference.
                     <AlertDescription>
                         <p>There was a problem fetching the required data for this page. This could be due to network issues or insufficient permissions.</p>
                         <pre className="mt-2 text-xs bg-destructive/10 p-2 rounded-md font-mono">
-                            {(leadError || beneficiariesError || donationsError)?.message}
+                            {(campaignError || beneficiariesError || donationsError)?.message}
                         </pre>
                     </AlertDescription>
                 </Alert>
