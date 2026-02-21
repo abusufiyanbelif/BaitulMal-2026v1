@@ -172,7 +172,7 @@ export interface Donation extends DocumentData {
   receiverName: string;
   amount: number;
   type?: DonationCategory; // For single-category donations
-  typeSplit: { category: DonationCategory; amount: number }[];
+  typeSplit: { category: DonationCategory; amount: number, forFundraising?: boolean }[];
   linkSplit?: DonationLink[];
   donationType: 'Cash' | 'Online Payment' | 'Check' | 'Other';
   referral: string;

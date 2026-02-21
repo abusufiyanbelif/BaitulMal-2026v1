@@ -214,7 +214,7 @@ export default function CampaignSummaryPage() {
                      await deleteObject(storageRef(storage, imageUrl)).catch(e => console.warn("Old image deletion failed, it might not exist.", e));
                 }
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                    Resizer.imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    (Resizer as any).imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = `campaigns/${campaignId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
@@ -322,11 +322,14 @@ export default function CampaignSummaryPage() {
 
             const splits = d.typeSplit && d.typeSplit.length > 0
                 ? d.typeSplit
-                : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
+                : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
             
             splits.forEach(split => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                if (amountsByCategory.hasOwnProperty(category)) {
+
+                const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
+
+                if (amountsByCategory.hasOwnProperty(category) && isForFundraising) {
                     amountsByCategory[category as DonationCategory] += split.amount * proportionForThisCampaign;
                 }
             });

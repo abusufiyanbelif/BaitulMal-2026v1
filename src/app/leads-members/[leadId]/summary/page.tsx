@@ -285,20 +285,24 @@ export default function LeadSummaryPage() {
         
         const donations = allDonations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id));
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
+        
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
+        
         verifiedDonationsList.forEach(d => {
             const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id);
             if (!leadAllocation) return;
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
             const allocationProportion = leadAllocation.amount / totalDonationAmount;
-            const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
+            const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
             splits.forEach(split => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                if (amountsByCategory.hasOwnProperty(category)) {
+                const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
+                if (amountsByCategory.hasOwnProperty(category) && isForFundraising) {
                     amountsByCategory[category as DonationCategory] += split.amount * allocationProportion;
                 }
             });
         });
+
         const totalCollectedForGoal = Object.entries(amountsByCategory).filter(([category]) => lead.allowedDonationTypes?.includes(category as DonationCategory)).reduce((sum, [, amount]) => sum + amount, 0);
         const fundingGoal = lead.targetAmount || 0;
         const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;

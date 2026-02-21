@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useMemo } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
@@ -76,11 +77,12 @@ export function usePublicData() {
 
         const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
           ? donation.typeSplit
-          : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
+          : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount, forFundraising: true }] : []);
         
         const applicableAmountInDonation = typeSplits.reduce((acc, split) => {
           const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-          if (item.allowedDonationTypes?.includes(category as DonationCategory)) {
+          const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
+          if (item.allowedDonationTypes?.includes(category as DonationCategory) && isForFundraising) {
             return acc + split.amount;
           }
           return acc;

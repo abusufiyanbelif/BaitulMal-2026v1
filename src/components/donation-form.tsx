@@ -7,7 +7,7 @@ import { useForm, useFieldArray, useWatch, type Control, type UseFormRegister, t
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
-import imageFileResizer from 'react-image-file-resizer';
+import Resizer from 'react-image-file-resizer';
 import {
   Form,
   FormControl,
@@ -54,6 +54,7 @@ const formSchema = z.object({
   typeSplit: z.array(z.object({
     category: z.enum(donationCategories),
     amount: z.coerce.number().min(0, { message: 'Amount cannot be negative.' }),
+    forFundraising: z.boolean().optional(),
   })).min(1, { message: 'At least one donation category is required.'}),
   donationType: z.enum(['Cash', 'Online Payment', 'Check', 'Other']),
   donationDate: z.string().min(1, { message: "Donation date is required."}),
@@ -236,7 +237,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
       comments: donation?.comments || '',
       suggestions: donation?.suggestions || '',
       isTypeSplit: (donation?.typeSplit?.length ?? 0) > 1,
-      typeSplit: donation?.typeSplit && donation.typeSplit.length > 0 ? donation.typeSplit : [{ category: 'Sadaqah', amount: donation?.amount || 0 }],
+      typeSplit: donation?.typeSplit && donation.typeSplit.length > 0 ? donation.typeSplit.map(ts => ({...ts, forFundraising: ts.forFundraising ?? true})) : [{ category: 'Sadaqah', amount: donation?.amount || 0, forFundraising: true }],
       transactions: donation?.transactions && donation.transactions.length > 0 ? donation.transactions.map(tx => ({...tx, amount: Number(tx.amount) })) : [{ id: `tx_${Date.now()}`, amount: donation?.amount || 0, transactionId: (donation as any)?.transactionId }],
       isSplit: (donation?.linkSplit?.length ?? 0) > 1,
       linkSplit: donation?.linkSplit?.map(l => ({ linkId: `${l.linkType}_${l.linkId}`, amount: l.amount })) || (defaultLinkId ? [{linkId: defaultLinkId, amount: donation?.amount || 0}] : []),
@@ -269,7 +270,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     if (!isTypeSplit) {
       const currentSplits = getValues('typeSplit');
       const firstCategory = currentSplits.length > 0 ? currentSplits[0].category : 'Sadaqah';
-      replaceTypeSplit([{ category: firstCategory, amount: totalAmount }]);
+      replaceTypeSplit([{ category: firstCategory, amount: totalAmount, forFundraising: true }]);
     }
   }, [isTypeSplit, totalAmount, replaceTypeSplit, getValues]);
   
@@ -483,23 +484,47 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
           {isTypeSplit ? (
             <div className="space-y-3 pl-6">
                 {typeSplitFields.map((field, index) => (
-                    <div key={field.id} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
-                        <FormField control={control} name={`typeSplit.${index}.category`} render={({ field }) => (
-                            <FormItem><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{donationCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></FormItem>
-                        )}/>
-                        <FormField control={control} name={`typeSplit.${index}.amount`} render={({ field }) => (
-                            <FormItem><FormControl><Input type="number" placeholder="Amount" {...field}/></FormControl></FormItem>
-                        )}/>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeTypeSplit(index)} disabled={typeSplitFields.length <= 1}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                    <div key={field.id} className="space-y-2">
+                        <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-start">
+                            <FormField control={control} name={`typeSplit.${index}.category`} render={({ field }) => (
+                                <FormItem><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{donationCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></FormItem>
+                            )}/>
+                            <FormField control={control} name={`typeSplit.${index}.amount`} render={({ field }) => (
+                                <FormItem><FormControl><Input type="number" placeholder="Amount" {...field}/></FormControl></FormItem>
+                            )}/>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeTypeSplit(index)} disabled={typeSplitFields.length <= 1}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                        </div>
+                        {watch(`typeSplit.${index}.category`) === 'Zakat' && (
+                             <FormField control={control} name={`typeSplit.${index}.forFundraising`}
+                                render={({ field: checkboxField }) => (
+                                    <FormItem className="flex flex-row items-center space-x-2 space-y-0 pl-2">
+                                        <FormControl><Checkbox checked={checkboxField.value} onCheckedChange={checkboxField.onChange} defaultChecked={true} /></FormControl>
+                                        <FormLabel className="text-xs font-normal text-muted-foreground">Include in fundraising goal for linked initiatives</FormLabel>
+                                    </FormItem>
+                                )}
+                            />
+                        )}
                     </div>
                 ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => appendTypeSplit({ category: 'Sadaqah', amount: 0 })}><Plus className="mr-2 h-4 w-4"/> Add Category</Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => appendTypeSplit({ category: 'Sadaqah', amount: 0, forFundraising: true })}><Plus className="mr-2 h-4 w-4"/> Add Category</Button>
                 <FormMessage>{errors.typeSplit?.root?.message}</FormMessage>
             </div>
           ) : (
-            <FormField control={control} name={`typeSplit.0.category`} render={({ field }) => (
-                <FormItem className="pl-6"><FormLabel>Category *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{donationCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-            )}/>
+            <div className="pl-6 space-y-2">
+                <FormField control={control} name={`typeSplit.0.category`} render={({ field }) => (
+                    <FormItem><FormLabel>Category *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{donationCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                )}/>
+                {watch('typeSplit.0.category') === 'Zakat' && (
+                    <FormField control={control} name="typeSplit.0.forFundraising"
+                        render={({ field: checkboxField }) => (
+                           <FormItem className="flex flex-row items-center space-x-2 space-y-0 pt-2">
+                            <FormControl><Checkbox checked={checkboxField.value} onCheckedChange={checkboxField.onChange} defaultChecked={true} /></FormControl>
+                            <FormLabel className="text-sm font-normal text-muted-foreground">Include this Zakat amount in fundraising goal</FormLabel>
+                          </FormItem>
+                        )}
+                    />
+                )}
+            </div>
           )}
         </div>
 
