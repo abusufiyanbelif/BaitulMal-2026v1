@@ -9,7 +9,7 @@ import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/fires
 import { useToast } from '@/hooks/use-toast';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Image from 'next/image';
-import Resizer from 'react-image-file-resizer';
+import imageFileResizer from 'react-image-file-resizer';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -164,7 +164,7 @@ export default function CreateLeadPage() {
         try {
             const file = imageFile[0];
             const resizedBlob = await new Promise<Blob>((resolve) => {
-                Resizer.imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             
             const filePath = `leads/${newLeadId}/background.png`;

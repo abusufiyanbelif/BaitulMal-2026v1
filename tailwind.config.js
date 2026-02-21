@@ -1,6 +1,7 @@
 
 /** @type {import('tailwindcss').Config} */
 const config = {
+  // Force cache invalidation by adding a comment.
   darkMode: ['class'],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -109,7 +110,9 @@ const config = {
             '100%': { opacity: '1', transform: 'scale(1)' },
         },
         'shimmer': {
-          '100%': { transform: 'translateX(100%)' },
+          '100%': {
+            transform: 'translateX(100%)',
+          },
         },
       },
       animation: {

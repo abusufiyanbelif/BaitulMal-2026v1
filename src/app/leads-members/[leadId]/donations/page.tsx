@@ -12,7 +12,7 @@ import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, 
 import type { Donation, Lead, Campaign, TransactionDetail } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
-import { imageFileResizer } from 'react-image-file-resizer';
+import imageFileResizer from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
@@ -190,7 +190,7 @@ export default function DonationsPage() {
     };
     
     updateDoc(docRef, updateData)
-        .catch(async (serverError) => {
+        .catch(async (serverError: any) => {
             errorEmitter.emit('permission-error', new FirestorePermissionError({
                 path: docRef.path,
                 operation: 'update',

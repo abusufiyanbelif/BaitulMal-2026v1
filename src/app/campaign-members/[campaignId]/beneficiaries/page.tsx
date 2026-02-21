@@ -12,7 +12,7 @@ import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBa
 import type { Beneficiary, Campaign, RationItem, ItemCategory } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
-import * as Resizer from 'react-image-file-resizer';
+import imageFileResizer from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
@@ -651,7 +651,7 @@ const sortedGroupKeys = useMemo(() => {
 
             if (file.type.startsWith('image/')) {
                 await new Promise<void>((resolve) => {
-                    (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
+                    imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
                         fileToUpload = blob as Blob;
                         resolve();
                     }, 'blob');
