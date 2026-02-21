@@ -4,7 +4,8 @@
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useFirestore, useDoc, useCollection, errorEmitter, FirestorePermissionError, useStorage, useMemoFirebase, useAuth } from '@/firebase';
+import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
+import { useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import type { SecurityRuleContext } from '@/firebase';
@@ -41,6 +42,7 @@ import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert } from 'lucide-react';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 
 const donationCategoryChartConfig = {
@@ -195,7 +197,7 @@ export default function CampaignSummaryPage() {
                      await deleteObject(storageRef(storage, imageUrl)).catch(e => console.warn("Old image deletion failed, it might not exist.", e));
                 }
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                    Resizer.imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    (Resizer as any).imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = `campaigns/${campaignId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
@@ -226,12 +228,11 @@ export default function CampaignSummaryPage() {
 
         updateDoc(campaignDocRef, saveData)
             .catch(async (serverError: any) => {
-                const permissionError = new FirestorePermissionError({
+                errorEmitter.emit('permission-error', new FirestorePermissionError({
                     path: campaignDocRef.path,
                     operation: 'update',
                     requestResourceData: saveData,
-                });
-                errorEmitter.emit('permission-error', permissionError);
+                }));
             })
             .finally(() => {
                 toast({ title: 'Success', description: 'Campaign summary updated.', variant: 'success' });
@@ -332,6 +333,7 @@ export default function CampaignSummaryPage() {
             
             let specificCategory: ItemCategory | null = null;
             if (matchingCategories.length > 1) {
+                // If multiple categories match, find the most specific one (smallest range)
                 matchingCategories.sort((a, b) => {
                     const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
                     const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
@@ -491,7 +493,7 @@ Your contribution, big or small, makes a huge difference.
                     <AlertDescription>
                         <p>There was a problem fetching the required data for this page. This could be due to network issues or insufficient permissions.</p>
                         <pre className="mt-2 text-xs bg-destructive/10 p-2 rounded-md font-mono">
-                            {leadError?.message || beneficiariesError?.message || donationsError?.message}
+                            {(leadError || beneficiariesError || donationsError)?.message}
                         </pre>
                     </AlertDescription>
                 </Alert>

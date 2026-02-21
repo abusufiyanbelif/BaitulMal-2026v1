@@ -4,7 +4,8 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, errorEmitter, FirestorePermissionError, useStorage, useAuth } from '@/firebase';
+import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
+import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +21,7 @@ import type { UserFormData } from '@/lib/schemas';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UserForm } from '@/components/user-form';
 import { createUserAuthAction } from '../actions';
+import { useCollection, useMemoFirebase } from '@/firebase';
 
 export default function CreateUserPage() {
   const router = useRouter();
@@ -72,7 +74,7 @@ export default function CreateUserPage() {
 
             if (file.type.startsWith('image/')) {
                 fileToUpload = await new Promise<Blob>((resolve) => {
-                     Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                     (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 fileExtension = 'png';
             } else if (file.type !== 'application/pdf') {

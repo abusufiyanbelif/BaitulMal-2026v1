@@ -4,7 +4,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useDoc, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth } from '@/firebase';
+import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
+import { useDoc, useMemoFirebase } from '@/firebase';
+import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import { updateDoc, doc, writeBatch, DocumentReference } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
@@ -114,14 +116,14 @@ export default function UserDetailsPage() {
             }
 
             fileToUpload = await new Promise<Blob>((resolve) => {
-                    Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             fileExtension = 'png';
             
             const filePath = `users/${userId}/id_proof.${fileExtension}`;
             const fileRef = storageRef(storage, filePath);
-            await uploadBytes(fileRef, fileToUpload);
-            idProofUrl = await getDownloadURL(fileRef);
+            const uploadResult = await uploadBytes(fileRef, fileToUpload);
+            idProofUrl = await getDownloadURL(uploadResult.ref);
         }
     } catch (uploadError: any) {
          console.error("Error during file upload:", uploadError);

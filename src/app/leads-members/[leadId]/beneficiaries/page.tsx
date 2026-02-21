@@ -3,11 +3,10 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
-import { useFirestore, useStorage, useMemoFirebase, useAuth } from '@/firebase/provider';
-import { useCollection } from '@/firebase/firestore/use-collection';
-import { useDoc } from '@/firebase/firestore/use-doc';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
+import { useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { errorEmitter, FirestorePermissionError } from '@/firebase/errors';
+import type { SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, deleteDoc, doc, serverTimestamp, setDoc, DocumentReference, writeBatch, updateDoc } from 'firebase/firestore';
 import type { Beneficiary, Lead } from '@/lib/types';
@@ -395,7 +394,7 @@ export default function BeneficiariesPage() {
 
           if (file.type.startsWith('image/')) {
               fileToUpload = await new Promise<Blob>((resolve) => {
-                  Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                  (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
               });
               fileExtension = 'png';
           } else if (file.type !== 'application/pdf') {
@@ -447,12 +446,11 @@ export default function BeneficiariesPage() {
     } catch (error: any) {
         console.warn("Error during form submission:", error);
         if (error.code === 'permission-denied') {
-             const permissionError = new FirestorePermissionError({
+             errorEmitter.emit('permission-error', new FirestorePermissionError({
                 path: leadBeneficiaryDocRef.path,
                 operation: editingBeneficiary ? 'update' : 'create',
                 requestResourceData: data,
-            });
-            errorEmitter.emit('permission-error', permissionError);
+            }));
         } else {
             toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
         }
@@ -767,4 +765,3 @@ export default function BeneficiariesPage() {
 }
 
     
-

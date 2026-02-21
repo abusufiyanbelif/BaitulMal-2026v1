@@ -4,7 +4,8 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useCollection, useDoc, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth } from '@/firebase';
+import { useFirestore, useStorage, errorEmitter, FirestorePermissionError, useAuth } from '@/firebase';
+import { useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, setDoc, DocumentReference, getDoc } from 'firebase/firestore';
@@ -650,7 +651,7 @@ const sortedGroupKeys = useMemo(() => {
 
             if (file.type.startsWith('image/')) {
                 fileToUpload = await new Promise<Blob>((resolve) => {
-                    Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 fileExtension = 'png';
             } else if (file.type !== 'application/pdf') {

@@ -3,7 +3,8 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useMemoFirebase, useAuth, useCollection, useDoc, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
+import { useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, where, setDoc, DocumentReference, deleteField } from 'firebase/firestore';
@@ -61,6 +62,7 @@ import { getNestedValue } from '@/lib/utils';
 import { syncDonationsAction } from '@/app/donations/actions';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { errorEmitter, FirestorePermissionError } from '@/firebase';
 
 type SortKey = keyof Donation | 'srNo';
 
@@ -189,12 +191,11 @@ export default function DonationsPage() {
     
     updateDoc(docRef, updateData)
         .catch(async (serverError) => {
-            const permissionError = new FirestorePermissionError({
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
                 path: docRef.path,
                 operation: 'update',
                 requestResourceData: updateData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
+            }));
         })
         .finally(() => {
             toast({ title: 'Success', description: 'Donation unlinked from this lead successfully.', variant: 'success' });
@@ -234,7 +235,7 @@ export default function DonationsPage() {
             if (fileList && fileList.length > 0) {
                 const file = fileList[0];
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                     Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                     (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
                 const fileRef = storageRef(storage, filePath);
@@ -296,12 +297,11 @@ export default function DonationsPage() {
     } catch (error: any) {
         console.error("Error during form submission:", error);
         if (error.code === 'permission-denied') {
-            const permissionError = new FirestorePermissionError({
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
                 path: docRef.path,
                 operation: editingDonation ? 'update' : 'create',
                 requestResourceData: finalData,
-            } satisfies SecurityRuleContext);
-            errorEmitter.emit('permission-error', permissionError);
+            } satisfies SecurityRuleContext));
         } else {
             toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
         }

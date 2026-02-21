@@ -1,8 +1,9 @@
 
+
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { useFirestore, useMemoFirebase, useStorage, useAuth } from '@/firebase/provider';
+import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { collection, getDocs, getDoc, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -21,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { updateMasterBeneficiaryAction } from '../actions';
 import { useSession } from '@/hooks/use-session';
 import Resizer from 'react-image-file-resizer';
+import { useMemoFirebase } from '@/firebase/provider';
 
 interface LinkedInitiative {
     id: string;
@@ -168,7 +170,7 @@ export default function BeneficiaryDetailsPage() {
             }
             
             fileToUpload = await new Promise<Blob>((resolve) => {
-                Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             fileExtension = 'png';
             
