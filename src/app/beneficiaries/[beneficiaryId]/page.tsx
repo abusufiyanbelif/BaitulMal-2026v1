@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { collection, getDocs, getDoc, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, QueryDocumentSnapshot, DocumentData, DocumentReference } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 
@@ -21,7 +21,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { Badge } from '@/components/ui/badge';
 import { updateMasterBeneficiaryAction } from '../actions';
 import { useSession } from '@/hooks/use-session';
-import imageFileResizer from 'react-image-file-resizer';
+import Resizer from 'react-image-file-resizer';
 import { useMemoFirebase } from '@/firebase/provider';
 
 interface LinkedInitiative {
@@ -51,7 +51,7 @@ export default function BeneficiaryDetailsPage() {
   
   const beneficiaryDocRef = useMemoFirebase(() => {
     if (!firestore || !beneficiaryId) return null;
-    return doc(firestore, 'beneficiaries', beneficiaryId);
+    return doc(firestore, 'beneficiaries', beneficiaryId) as DocumentReference<Beneficiary>;
   }, [firestore, beneficiaryId]);
 
   const { data: beneficiary, isLoading: isBeneficiaryLoading, error: beneficiaryError, forceRefetch } = useDoc<Beneficiary>(beneficiaryDocRef);
@@ -170,7 +170,7 @@ export default function BeneficiaryDetailsPage() {
             }
             
             await new Promise<void>((resolve) => {
-                imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
+                Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
                   fileToUpload = blob as Blob;
                   resolve();
                 }, 'blob');

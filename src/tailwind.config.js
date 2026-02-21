@@ -1,7 +1,7 @@
 
 /** @type {import('tailwindcss').Config} */
 const config = {
-  // Force cache invalidation
+  // Force cache invalidation by adding a comment
   darkMode: ['class'],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -109,26 +109,10 @@ const config = {
             '0%': { opacity: '0', transform: 'scale(0.95)' },
             '100%': { opacity: '1', transform: 'scale(1)' },
         },
-        shimmer: {
+        'shimmer': {
           '100%': {
             transform: 'translateX(100%)',
           },
-        },
-        'zoom-in-out': {
-          '0%, 100%': {
-            transform: 'scale(1)',
-          },
-          '50%': {
-            transform: 'scale(1.5)',
-          },
-        },
-        'pulse-subtle': {
-          '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '.85' },
-        },
-        'spin-reverse': {
-          'from': { transform: 'rotate(360deg)' },
-          'to': { transform: 'rotate(0deg)' },
         },
       },
       animation: {
@@ -139,8 +123,6 @@ const config = {
         'fade-in-up': 'fade-in-up 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'fade-in-zoom': 'fade-in-zoom 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'shimmer': 'shimmer 2s infinite',
-        'zoom-in-out': 'zoom-in-out 4s ease-in-out infinite',
-        'pulse-subtle': 'pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
     },
   },
