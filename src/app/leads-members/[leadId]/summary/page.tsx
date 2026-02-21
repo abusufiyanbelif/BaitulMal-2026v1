@@ -14,7 +14,7 @@ import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'fi
 import Link from 'next/link';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 import Resizer from 'react-image-file-resizer';
-import type { Lead, Beneficiary, Donation, DonationCategory } from '@/lib/types';
+import type { Lead, Beneficiary, Donation, DonationCategory, CampaignDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -39,6 +39,8 @@ import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { FileUploader } from '@/components/file-uploader';
+import { Switch } from '@/components/ui/switch';
 
 
 const donationCategoryChartConfig = {
@@ -77,6 +79,9 @@ export default function LeadSummaryPage() {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isImageDeleted, setIsImageDeleted] = useState(false);
     
+    const [newDocuments, setNewDocuments] = useState<File[]>([]);
+    const [existingDocuments, setExistingDocuments] = useState<CampaignDocument[]>([]);
+
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
     const summaryRef = useRef<HTMLDivElement>(null);
@@ -125,9 +130,13 @@ export default function LeadSummaryPage() {
                 imageUrl: lead.imageUrl || '',
                 documents: lead.documents || [],
             });
+            setExistingDocuments(lead.documents || []);
             setImagePreview(lead.imageUrl || null);
             setIsImageDeleted(false);
             setImageFile(null);
+            setNewDocuments([]);
+        } else if (lead && editMode) {
+            setExistingDocuments(lead.documents || []);
         }
     }, [lead, editMode]);
 
@@ -156,15 +165,23 @@ export default function LeadSummaryPage() {
         setIsImageDeleted(true);
     };
 
+    const handleRemoveExistingDocument = (urlToRemove: string) => {
+        setExistingDocuments(prev => prev.filter(doc => doc.url !== urlToRemove));
+    };
+
+    const handleToggleDocumentPublic = (urlToToggle: string) => {
+        setExistingDocuments(prev => prev.map(doc => doc.url === urlToToggle ? { ...doc, isPublic: !doc.isPublic } : doc));
+    };
+
     const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
     const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
     const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
     const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.update', false) || getNestedValue(userProfile, 'permissions.leads-members.summary.update', false);
 
     const handleSave = async () => {
-        if (!leadDocRef || !userProfile || !canUpdate) return;
+        if (!leadDocRef || !userProfile || !canUpdate || !storage) return;
         
-        const hasFileToUpload = !!imageFile;
+        const hasFileToUpload = !!imageFile || newDocuments.length > 0;
         if (hasFileToUpload && !auth?.currentUser) {
             toast({
                 title: "Authentication Error",
@@ -198,6 +215,29 @@ export default function LeadSummaryPage() {
             }
         }
         
+        const documentUploadPromises = newDocuments.map(async (file) => {
+            const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+            const fileRef = storageRef(storage, `leads/${leadId}/documents/${safeFileName}`);
+            await uploadBytes(fileRef, file);
+            const url = await getDownloadURL(fileRef);
+            return { name: file.name, url, uploadedAt: new Date().toISOString(), isPublic: false };
+        });
+
+        const uploadedDocuments = await Promise.all(documentUploadPromises);
+        const finalDocuments = [...existingDocuments, ...uploadedDocuments];
+
+        const originalDocuments = lead?.documents || [];
+        const existingUrls = existingDocuments.map(d => d.url);
+        const docsToDelete = originalDocuments.filter(d => !existingUrls.includes(d.url));
+
+        for (const docToDelete of docsToDelete) {
+            try {
+                await deleteObject(storageRef(storage, docToDelete.url));
+            } catch (e: any) {
+                console.warn(`Could not delete artifact ${docToDelete.url}. It may have already been deleted.`, e);
+            }
+        }
+
         const saveData: Partial<Lead> = {
             name: editableLead.name || '',
             description: editableLead.description || '',
@@ -220,6 +260,7 @@ export default function LeadSummaryPage() {
             diseaseStage: editableLead.diseaseStage || '',
             seriousness: editableLead.seriousness || null,
             imageUrl: imageUrl,
+            documents: finalDocuments,
         };
 
         updateDoc(leadDocRef, saveData)
@@ -452,65 +493,64 @@ Your contribution, big or small, makes a huge difference.
                                 <Textarea id="description" value={editableLead.description} onChange={(e) => setEditableLead(p => ({...p, description: e.target.value}))} className="mt-1" rows={4} />
                             ) : ( <p className="mt-1 text-sm">{lead.description || 'No description provided.'}</p> )}
                         </div>
+                    </CardContent>
+                </Card>
 
-                         {lead.documents && lead.documents.length > 0 && (
-                                <div>
-                                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Attached Documents</h4>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                        {lead.documents.map((doc) => (
-                                            <Button key={doc.url} variant="outline" asChild>
-                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
-                                                    <File className="mr-2 h-4 w-4 shrink-0" />
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Lead Artifacts</CardTitle>
+                        <CardDescription>Photos, receipts, or other documents related to this lead.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {editMode ? (
+                            <div className="space-y-4">
+                                <Label>Upload New Artifacts</Label>
+                                <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/*,application/pdf,.doc,.docx,.xls,.xlsx" />
+                                <Separator />
+                                <Label>Manage Existing Artifacts</Label>
+                                {existingDocuments.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {existingDocuments.map((doc) => (
+                                            <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md">
+                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm font-medium hover:underline truncate">
+                                                    <File className="h-4 w-4 shrink-0" />
                                                     <span className="truncate">{doc.name}</span>
                                                 </a>
-                                            </Button>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} id={`public-${doc.url}`} />
+                                                        <Label htmlFor={`public-${doc.url}`} className="text-xs">Public</Label>
+                                                    </div>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleRemoveExistingDocument(doc.url)}>
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                </div>
+                                            </div>
                                         ))}
                                     </div>
+                                ) : <p className="text-sm text-muted-foreground">No artifacts uploaded yet.</p>}
+                            </div>
+                        ) : (
+                            lead.documents && lead.documents.length > 0 ? (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                    {lead.documents.map((doc) => (
+                                        <Button key={doc.url} variant="outline" asChild>
+                                            <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
+                                                <File className="mr-2 h-4 w-4 shrink-0" />
+                                                <span className="truncate">{doc.name}</span>
+                                            </a>
+                                        </Button>
+                                    ))}
                                 </div>
-                            )}
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                           <div className="space-y-1">
-                                <Label>Purpose</Label>
-                                {editMode ? (
-                                    <Select value={editableLead.purpose} onValueChange={value => setEditableLead(p => ({...p, purpose: value as any}))}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-                                    </Select>
-                                ) : <p className="font-medium">{lead.purpose}</p>}
-                            </div>
-                            {availableCategories.length > 0 && <div className="space-y-1">
-                                <Label>Category</Label>
-                                {editMode ? (
-                                    <Select value={editableLead.category} onValueChange={value => setEditableLead(p => ({...p, category: value as any}))}>
-                                        <SelectTrigger><SelectValue placeholder="Select category..."/></SelectTrigger>
-                                        <SelectContent>{availableCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                                    </Select>
-                                ) : <p className="font-medium">{lead.category}</p>}
-                            </div>}
-                             {editableLead.purpose === 'Other' && editMode && <div className="space-y-1"><Label>Purpose Details</Label><Input value={editableLead.purposeDetails} onChange={e => setEditableLead(p => ({...p, purposeDetails: e.target.value}))} /></div>}
-                             {editableLead.category === 'Other' && editMode && <div className="space-y-1"><Label>Category Details</Label><Input value={editableLead.categoryDetails} onChange={e => setEditableLead(p => ({...p, categoryDetails: e.target.value}))} /></div>}
-
-                        </div>
-
-                        {editableLead.purpose === 'Education' && (
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t pt-4">
-                                <div className="space-y-1"><Label>Degree/Class</Label>{editMode ? <Select value={editableLead.degree} onValueChange={v => setEditableLead(p => ({...p, degree: v}))}><SelectTrigger><SelectValue placeholder="Degree..." /></SelectTrigger><SelectContent>{educationDegrees.map(d=><SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select> : <p className="font-medium">{lead.degree || 'N/A'}</p>}</div>
-                                <div className="space-y-1"><Label>Year</Label>{editMode ? <Select value={editableLead.year} onValueChange={v => setEditableLead(p => ({...p, year: v}))}><SelectTrigger><SelectValue placeholder="Year..." /></SelectTrigger><SelectContent>{educationYears.map(y=><SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select> : <p className="font-medium">{lead.year || 'N/A'}</p>}</div>
-                                <div className="space-y-1"><Label>Semester</Label>{editMode ? <Select value={editableLead.semester} onValueChange={v => setEditableLead(p => ({...p, semester: v}))}><SelectTrigger><SelectValue placeholder="Semester..." /></SelectTrigger><SelectContent>{educationSemesters.map(s=><SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select> : <p className="font-medium">{lead.semester || 'N/A'}</p>}</div>
-                            </div>
-                        )}
-                        {editableLead.purpose === 'Medical' && (
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t pt-4">
-                                <div className="space-y-1"><Label>Disease Identified</Label>{editMode ? <Input value={editableLead.diseaseIdentified} onChange={e => setEditableLead(p => ({...p, diseaseIdentified: e.target.value}))} /> : <p className="font-medium">{lead.diseaseIdentified || 'N/A'}</p>}</div>
-                                <div className="space-y-1"><Label>Disease Stage</Label>{editMode ? <Input value={editableLead.diseaseStage} onChange={e => setEditableLead(p => ({...p, diseaseStage: e.target.value}))} /> : <p className="font-medium">{lead.diseaseStage || 'N/A'}</p>}</div>
-                                <div className="space-y-1"><Label>Seriousness</Label>{editMode ? <Select value={editableLead.seriousness || ''} onValueChange={v => setEditableLead(p => ({...p, seriousness: v as any}))}><SelectTrigger><SelectValue placeholder="Seriousness..." /></SelectTrigger><SelectContent>{leadSeriousnessLevels.map(s=><SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select> : <p className="font-medium">{lead.seriousness || 'N/A'}</p>}</div>
-                            </div>
+                            ) : <p className="text-sm text-muted-foreground">No artifacts uploaded yet.</p>
                         )}
                     </CardContent>
                 </Card>
+
                 <Card>
-                    <CardHeader><CardTitle>Financials &amp; Status</CardTitle></CardHeader>
+                    <CardHeader>
+                        <CardTitle>Financials &amp; Status</CardTitle>
+                    </CardHeader>
                      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                          <div className="space-y-1"><Label>Start Date</Label>{editMode ? <Input type="date" value={editableLead.startDate || ''} onChange={e => setEditableLead(p => ({...p, startDate: e.target.value}))} /> : <p className="font-medium">{lead.startDate}</p>}</div>
                          <div className="space-y-1"><Label>End Date</Label>{editMode ? <Input type="date" value={editableLead.endDate || ''} onChange={e => setEditableLead(p => ({...p, endDate: e.target.value}))} /> : <p className="font-medium">{lead.endDate}</p>}</div>
@@ -521,6 +561,7 @@ Your contribution, big or small, makes a huge difference.
                          <div className="col-span-full space-y-2 pt-2"><Label>Allowed Donation Types</Label><div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2 border rounded-md">{donationCategories.map(type => (<div key={type} className="flex items-center space-x-2"><Checkbox id={`type-${type}`} disabled={!editMode} checked={editableLead.allowedDonationTypes?.includes(type)} onCheckedChange={checked => { const currentTypes = editableLead.allowedDonationTypes || []; const newTypes = checked ? [...currentTypes, type] : currentTypes.filter(t => t !== type); setEditableLead(p => ({...p, allowedDonationTypes: newTypes as any})); }} /><Label htmlFor={`type-${type}`} className="font-normal text-sm">{type}</Label></div>))}</div></div>
                     </CardContent>
                 </Card>
+                
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
