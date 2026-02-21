@@ -168,7 +168,7 @@ export default function BeneficiaryDetailsPage() {
             }
             
             fileToUpload = await new Promise<Blob>((resolve) => {
-                Resizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             fileExtension = 'png';
             
