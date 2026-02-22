@@ -12,18 +12,40 @@ service firebase.storage {
       return isSignedIn() && request.auth.uid == userId;
     }
     
-    function getUserDoc() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    function userDocRef() {
+        return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+    
+    function userExists() {
+        return exists(userDocRef());
+    }
+
+    function getUserData() {
+        return get(userDocRef()).data;
     }
     
     function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserDoc().data.role == 'Admin';
+      return isSignedIn() &&
+             userExists() &&
+             'role' in getUserData() &&
+             getUserData().role == 'Admin';
     }
     
-    // Check for a top-level permission
     function hasPermission(module, permission) {
-      let userDoc = getUserDoc();
-      return isSignedIn() && userDoc.exists && module in userDoc.data.permissions && userDoc.data.permissions[module][permission] == true;
+      return isSignedIn() && 
+             userExists() &&
+             'permissions' in getUserData() &&
+             module in getUserData().permissions &&
+             getUserData().permissions[module][permission] == true;
+    }
+    
+    function hasSubmodulePermission(module, submodule, permission) {
+      return isSignedIn() && 
+             userExists() &&
+             'permissions' in getUserData() &&
+             module in getUserData().permissions &&
+             submodule in getUserData().permissions[module] &&
+             getUserData().permissions[module][submodule][permission] == true;
     }
 
     // Rules for donations: anyone signed in can upload (create). Reading is public.
