@@ -5,10 +5,9 @@ import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
-import { useCollection } from '@/firebase/firestore/use-collection';
-import { useDoc } from '@/firebase/firestore/use-doc';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { useCollection, useDoc } from '@/firebase/firestore/use-collection';
+import { errorEmitter, FirestorePermissionError } from '@/firebase/error-emitter';
+import type { SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, setDoc, DocumentReference, getDoc } from 'firebase/firestore';
 import type { Beneficiary, Campaign, RationItem, ItemCategory } from '@/lib/types';
@@ -857,10 +856,6 @@ const sortedGroupKeys = useMemo(() => {
                 </div>
                 {canCreate && (
                     <div className="flex flex-wrap gap-2 shrink-0">
-                        <Button variant="outline" onClick={handleExportData}>
-                            <Download className="mr-2 h-4 w-4" />
-                            Export Data
-                        </Button>
                         <Button variant="outline" onClick={() => setIsImportOpen(true)}>
                             <Upload className="mr-2 h-4 w-4" />
                             Import Data
@@ -879,27 +874,45 @@ const sortedGroupKeys = useMemo(() => {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 pt-4">
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Total</CardTitle><Users className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">{statusCounts.Total}</div></CardContent>
+                    <CardContent className="p-2">
+                        <div className="text-2xl font-bold">{statusCounts.Total}</div>
+                        <p className="text-xs text-muted-foreground">All beneficiaries</p>
+                    </CardContent>
                 </Card>
-                <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Given</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">{statusCounts.Given}</div></CardContent>
+                 <Card>
+                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                    <CardContent className="p-2">
+                        <div className="text-2xl font-bold">{statusCounts.Pending}</div>
+                         <p className="text-xs text-muted-foreground">Awaiting verification</p>
+                    </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified</CardTitle><BadgeCheck className="h-4 w-4 text-primary"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">{statusCounts.Verified}</div></CardContent>
+                    <CardContent className="p-2">
+                        <div className="text-2xl font-bold">{statusCounts.Verified}</div>
+                        <p className="text-xs text-muted-foreground">Need confirmed</p>
+                    </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">{statusCounts.Pending}</div></CardContent>
+                    <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Given</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
+                    <CardContent className="p-2">
+                        <div className="text-2xl font-bold">{statusCounts.Given}</div>
+                        <p className="text-xs text-muted-foreground">Kits distributed</p>
+                    </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Hold</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">{statusCounts.Hold}</div></CardContent>
+                    <CardContent className="p-2">
+                        <div className="text-2xl font-bold">{statusCounts.Hold}</div>
+                         <p className="text-xs text-muted-foreground">Temporarily on hold</p>
+                    </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Need Details</CardTitle><Info className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                    <CardContent className="p-2"><div className="text-2xl font-bold">{statusCounts['Need More Details']}</div></CardContent>
+                    <CardContent className="p-2">
+                        <div className="text-2xl font-bold">{statusCounts['Need More Details']}</div>
+                        <p className="text-xs text-muted-foreground">More info needed</p>
+                    </CardContent>
                 </Card>
             </div>
             <div className="flex flex-col gap-2 pt-4">
