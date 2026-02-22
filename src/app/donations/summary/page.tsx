@@ -4,7 +4,8 @@
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useMemoFirebase } from '@/firebase/provider';
+import { useCollection } from '@/firebase/firestore/use-collection';
 import { useSession } from '@/hooks/use-session';
 import { collection, query, DocumentData } from 'firebase/firestore';
 import Link from 'next/link';
@@ -271,7 +272,7 @@ export default function DonationsSummaryPage() {
                 try {
                     const month = format(new Date(d.donationDate), 'yyyy-MM');
                     acc[month] = (acc[month] || 0) + contribution.amount;
-                } catch(e) { /* ignore invalid dates */ }
+                } catch(e) { /* ignore */ }
             }
             return acc;
         }, {} as Record<string, number>);

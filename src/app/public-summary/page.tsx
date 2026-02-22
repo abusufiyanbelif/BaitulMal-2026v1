@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FolderKanban, Lightbulb } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PublicCampaignsView } from '@/components/public-campaigns-view';
 import { PublicLeadsView } from '@/components/public-leads-view';
@@ -21,8 +21,8 @@ export default function PublicSummaryPage() {
       </div>
       <Tabs defaultValue="campaigns" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="campaigns">Public Campaigns View</TabsTrigger>
-          <TabsTrigger value="leads">Public Leads View</TabsTrigger>
+          <TabsTrigger value="campaigns"><FolderKanban className="mr-2 h-4 w-4" /> Public Campaigns</TabsTrigger>
+          <TabsTrigger value="leads"><Lightbulb className="mr-2 h-4 w-4" /> Public Leads</TabsTrigger>
         </TabsList>
         <TabsContent value="campaigns" className="mt-4">
           <PublicCampaignsView />
