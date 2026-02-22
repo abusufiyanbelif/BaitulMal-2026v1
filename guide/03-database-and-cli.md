@@ -34,6 +34,17 @@ This project includes several command-line interface (CLI) scripts to help manag
 -   **When to Run**: Run this script **once** to ensure all older donations are compatible with the latest features that allow linking a single donation to multiple campaigns or leads.
 -   **What it Does**: It scans all documents in the `donations` collection. For any donation that has a `campaignId` but no `linkSplit`, it creates a new `linkSplit` array containing the original campaign information and removes the old, redundant fields.
 
+## `npm run db:check-structure`
+
+-   **Purpose**: To inspect and report on the current structure of your Firestore database and Firebase Storage bucket.
+-   **When to Run**:
+    -   When you want to verify that the expected collections and folders exist.
+    -   When debugging to see the top-level organization of your data and files.
+-   **What it Does**:
+    -   Lists all root-level collections in your Firestore database.
+    -   Lists all root-level folders in your Firebase Storage bucket.
+    -   This script is **read-only** and does not make any changes to your data or files.
+
 ## `npm run db:erase`
 
 -   **Purpose**: To completely wipe all application-specific data from your Firestore database and all files from Firebase Storage.
