@@ -514,6 +514,10 @@ export default function BeneficiariesPage() {
                           <CommandEmpty>No referral found.</CommandEmpty>
                           <CommandGroup>
                             <CommandItem
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }}
                                 onSelect={() => {
                                     if (areAllReferralsSelected) {
                                         setTempReferralFilter([]);
@@ -532,13 +536,17 @@ export default function BeneficiariesPage() {
                               <CommandItem
                                 key={referral}
                                 value={referral}
-                                onSelect={(currentValue) => {
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }}
+                                onSelect={() => {
                                   setTempReferralFilter(prev => {
-                                      const selected = prev.includes(currentValue);
+                                      const selected = prev.includes(referral);
                                       if (selected) {
-                                          return prev.filter((r) => r !== currentValue);
+                                          return prev.filter((r) => r !== referral);
                                       } else {
-                                          return [...prev, currentValue];
+                                          return [...prev, referral];
                                       }
                                   });
                                 }}
@@ -698,4 +706,5 @@ export default function BeneficiariesPage() {
     </main>
   );
 }
+
 

@@ -633,7 +633,7 @@ const sortedGroupKeys = useMemo(() => {
         }
 
         if (data.idProofDeleted && idProofUrl) {
-            await deleteObject(storageRef(storage, idProofUrl)).catch((err: any) => {
+            await deleteObject(storageRef(storage, idProofUrl)).catch((err) => {
                 if (err.code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
             });
             idProofUrl = '';
@@ -646,7 +646,7 @@ const sortedGroupKeys = useMemo(() => {
 
             if (idProofUrl) {
                 const oldFileRef = storageRef(storage, idProofUrl);
-                await deleteObject(oldFileRef).catch((err: any) => {
+                await deleteObject(oldFileRef).catch((err) => {
                     if ((err.code) !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
                 });
             }
@@ -959,6 +959,10 @@ const sortedGroupKeys = useMemo(() => {
                           <CommandEmpty>No referral found.</CommandEmpty>
                           <CommandGroup>
                             <CommandItem
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }}
                                 onSelect={() => {
                                     if (areAllReferralsSelected) {
                                         setTempReferralFilter([]);
@@ -977,13 +981,17 @@ const sortedGroupKeys = useMemo(() => {
                               <CommandItem
                                 key={referral}
                                 value={referral}
-                                onSelect={(currentValue) => {
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }}
+                                onSelect={() => {
                                   setTempReferralFilter(prev => {
-                                      const selected = prev.includes(currentValue);
+                                      const selected = prev.includes(referral);
                                       if (selected) {
-                                          return prev.filter((r) => r !== currentValue);
+                                          return prev.filter((r) => r !== referral);
                                       } else {
-                                          return [...prev, currentValue];
+                                          return [...prev, referral];
                                       }
                                   });
                                 }}
@@ -1223,3 +1231,4 @@ const sortedGroupKeys = useMemo(() => {
     </>
   );
 }
+

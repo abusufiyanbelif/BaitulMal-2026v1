@@ -489,20 +489,24 @@ export default function DonationsPage() {
                         <CommandList>
                           <CommandEmpty>No initiatives found.</CommandEmpty>
                           <CommandGroup>
-                             <CommandItem onSelect={() => {
+                             <CommandItem 
+                                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                onSelect={() => {
                                  if (areAllLinksSelected) {
                                      setTempLinkFilter([]);
                                  } else {
                                      setTempLinkFilter([...allLinkFilterOptions]);
                                  }
-                             }}>
+                                }}>
                                 <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", areAllLinksSelected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
                                   <Check className={cn("h-4 w-4")} />
                                 </div>
                                 Select All
                             </CommandItem>
                             <Separator className="my-1"/>
-                             <CommandItem onSelect={() => setTempLinkFilter(prev => prev.includes('unlinked') ? prev.filter(l => l !== 'unlinked') : [...prev, 'unlinked'])}>
+                             <CommandItem 
+                                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                onSelect={() => setTempLinkFilter(prev => prev.includes('unlinked') ? prev.filter(l => l !== 'unlinked') : [...prev, 'unlinked'])}>
                                 <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", tempLinkFilter.includes('unlinked') ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
                                   <Check className={cn("h-4 w-4")} />
                                 </div>
@@ -510,7 +514,9 @@ export default function DonationsPage() {
                             </CommandItem>
                             <CommandGroup heading="Campaigns">
                               {campaigns?.map((campaign) => (
-                                <CommandItem key={`campaign_${campaign.id}`} value={campaign.name} onSelect={() => {
+                                <CommandItem key={`campaign_${campaign.id}`} value={campaign.name} 
+                                    onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                    onSelect={() => {
                                     const filterId = `campaign_${campaign.id}`;
                                     setTempLinkFilter(prev => prev.includes(filterId) ? prev.filter(l => l !== filterId) : [...prev, filterId]);
                                 }}>
@@ -523,7 +529,9 @@ export default function DonationsPage() {
                             </CommandGroup>
                             <CommandGroup heading="Leads">
                               {leads?.map((lead) => (
-                                <CommandItem key={`lead_${lead.id}`} value={lead.name} onSelect={() => {
+                                <CommandItem key={`lead_${lead.id}`} value={lead.name}
+                                    onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                    onSelect={() => {
                                     const filterId = `lead_${lead.id}`;
                                     setTempLinkFilter(prev => prev.includes(filterId) ? prev.filter(l => l !== filterId) : [...prev, filterId]);
                                 }}>
@@ -639,3 +647,4 @@ export default function DonationsPage() {
     </>
   );
 }
+
