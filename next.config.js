@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Force a reload by adding a comment.
   reactStrictMode: true,
   allowedDevOrigins: [
     "https://*.cloudworkstations.dev"
