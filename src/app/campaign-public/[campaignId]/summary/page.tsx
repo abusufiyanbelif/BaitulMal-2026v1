@@ -4,7 +4,9 @@
 
 import React, { useMemo, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { useDoc } from '@/firebase/firestore/use-doc';
+import { useCollection } from '@/firebase/firestore/use-collection';
+import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { doc, collection, query, where, DocumentReference } from 'firebase/firestore';

@@ -2,7 +2,8 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useCollection } from '@/firebase/firestore/use-collection';
+import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { collection } from 'firebase/firestore';
 import type { Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
