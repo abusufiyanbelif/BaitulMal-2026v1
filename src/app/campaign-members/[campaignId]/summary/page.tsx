@@ -362,9 +362,18 @@ export default function CampaignSummaryPage() {
             canceled: { count: 0, amount: 0 },
         });
 
+        const zakatAllocated = beneficiaries
+            .filter(b => b.isEligibleForZakat && b.zakatAllocation)
+            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
+
         const totalCollectedForGoal = Object.entries(amountsByCategory)
             .filter(([category]) => campaign.allowedDonationTypes?.includes(category as DonationCategory))
-            .reduce((sum, [, amount]) => sum + amount, 0);
+            .reduce((sum, [category, amount]) => {
+                if (category === 'Zakat') {
+                    return sum + Math.max(0, amount - zakatAllocated);
+                }
+                return sum + amount;
+            }, 0);
 
         const pendingDonations = donationStatusStats.pending.amount;
 
@@ -437,10 +446,6 @@ export default function CampaignSummaryPage() {
         const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
         const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
         
-        const zakatAllocated = beneficiaries
-            .filter(b => b.isEligibleForZakat && b.zakatAllocation)
-            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
-
         return {
             totalCollectedForGoal,
             pendingDonations,
@@ -907,16 +912,16 @@ Your contribution, big or small, makes a huge difference.
                         </CardHeader>
                         <CardContent className="space-y-3">
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Total Zakat Collected</span>
+                                <span className="text-muted-foreground">Total Zakat Collected for Campaign</span>
                                 <span className="font-semibold font-mono">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Total Zakat Allocated</span>
+                                <span className="text-muted-foreground">Zakat Allocated as Cash-in-Hand</span>
                                 <span className="font-semibold font-mono">₹{(summaryData?.zakatAllocated || 0).toLocaleString('en-IN')}</span>
                             </div>
                             <Separator />
                             <div className="flex justify-between items-center text-base">
-                                <span className="font-bold">Zakat Balance</span>
+                                <span className="font-bold">Zakat Balance for Goal</span>
                                 <span className="font-bold text-primary font-mono">₹{((summaryData?.fundTotals.zakat || 0) - (summaryData?.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
                             </div>
                         </CardContent>

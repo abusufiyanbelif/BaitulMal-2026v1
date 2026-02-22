@@ -303,16 +303,26 @@ export default function LeadSummaryPage() {
             });
         });
 
-        const totalCollectedForGoal = Object.entries(amountsByCategory).filter(([category]) => lead.allowedDonationTypes?.includes(category as DonationCategory)).reduce((sum, [, amount]) => sum + amount, 0);
+        const zakatAllocated = beneficiaries
+            .filter(b => b.isEligibleForZakat && b.zakatAllocation)
+            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
+
+        const totalCollectedForGoal = Object.entries(amountsByCategory)
+            .filter(([category]) => lead.allowedDonationTypes?.includes(category as DonationCategory))
+            .reduce((sum, [category, amount]) => {
+                if (category === 'Zakat') {
+                    return sum + Math.max(0, amount - zakatAllocated);
+                }
+                return sum + amount;
+            }, 0);
+
         const fundingGoal = lead.targetAmount || 0;
         const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
         const pendingDonations = donations.filter(d => d.status === 'Pending').reduce((sum, d) => { const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id); return sum + (leadAllocation?.amount || 0);}, 0);
         const paymentTypeData = donations.reduce((acc, d) => { const key = d.donationType || 'Other'; acc[key] = (acc[key] || 0) + 1; return acc; }, {} as Record<string, number>);
         const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
         const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
-        const zakatAllocated = beneficiaries
-            .filter(b => b.isEligibleForZakat && b.zakatAllocation)
-            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
+        
         const fitraTotal = amountsByCategory['Fitra'] || 0;
         const zakatTotal = amountsByCategory['Zakat'] || 0;
         const loanTotal = amountsByCategory['Loan'] || 0;
@@ -550,21 +560,6 @@ Your contribution, big or small, makes a huge difference.
                         )}
                     </CardContent>
                 </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Financials &amp; Status</CardTitle>
-                    </CardHeader>
-                     <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                         <div className="space-y-1"><Label>Start Date</Label>{editMode ? <Input type="date" value={editableLead.startDate || ''} onChange={e => setEditableLead(p => ({...p, startDate: e.target.value}))} /> : <p className="font-medium">{lead.startDate}</p>}</div>
-                         <div className="space-y-1"><Label>End Date</Label>{editMode ? <Input type="date" value={editableLead.endDate || ''} onChange={e => setEditableLead(p => ({...p, endDate: e.target.value}))} /> : <p className="font-medium">{lead.endDate}</p>}</div>
-                         <div className="space-y-1"><Label>Required Amount (₹)</Label>{editMode ? <Input type="number" value={editableLead.requiredAmount || ''} onChange={e => setEditableLead(p => ({...p, requiredAmount: Number(e.target.value)}))} /> : <p className="font-medium">₹{lead.requiredAmount?.toLocaleString('en-IN') || 0}</p>}</div>
-                         <div className="space-y-1"><Label>Target Amount (₹)</Label>{editMode ? <Input type="number" value={editableLead.targetAmount || ''} onChange={e => setEditableLead(p => ({...p, targetAmount: Number(e.target.value)}))} /> : <p className="font-medium">₹{lead.targetAmount?.toLocaleString('en-IN') || 0}</p>}</div>
-                         <div className="space-y-1"><Label>Authenticity</Label>{editMode ? <Select value={editableLead.authenticityStatus} onValueChange={value => setEditableLead(p => ({...p, authenticityStatus: value as any}))}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Pending Verification">Pending</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="On Hold">On Hold</SelectItem><SelectItem value="Rejected">Rejected</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent></Select> : <Badge variant="outline">{lead.authenticityStatus}</Badge>}</div>
-                         <div className="space-y-1"><Label>Visibility</Label>{editMode ? <Select value={editableLead.publicVisibility} onValueChange={value => setEditableLead(p => ({...p, publicVisibility: value as any}))}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Hold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish">Ready</SelectItem><SelectItem value="Published">Published</SelectItem></SelectContent></Select> : <Badge variant="outline">{lead.publicVisibility}</Badge>}</div>
-                         <div className="col-span-full space-y-2 pt-2"><Label>Allowed Donation Types</Label><div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2 border rounded-md">{donationCategories.map(type => (<div key={type} className="flex items-center space-x-2"><Checkbox id={`type-${type}`} disabled={!editMode} checked={editableLead.allowedDonationTypes?.includes(type)} onCheckedChange={checked => { const currentTypes = editableLead.allowedDonationTypes || []; const newTypes = checked ? [...currentTypes, type] : currentTypes.filter(t => t !== type); setEditableLead(p => ({...p, allowedDonationTypes: newTypes as any})); }} /><Label htmlFor={`type-${type}`} className="font-normal text-sm">{type}</Label></div>))}</div></div>
-                    </CardContent>
-                </Card>
                 
                 <Card>
                     <CardHeader>
@@ -662,16 +657,16 @@ Your contribution, big or small, makes a huge difference.
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div className="flex justify-between items-center text-sm">
-                            <span className="text-muted-foreground">Total Zakat Collected</span>
+                            <span className="text-muted-foreground">Total Zakat Collected for Lead</span>
                             <span className="font-semibold font-mono">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
-                            <span className="text-muted-foreground">Total Zakat Allocated</span>
+                            <span className="text-muted-foreground">Zakat Allocated as Cash-in-Hand</span>
                             <span className="font-semibold font-mono">₹{(summaryData?.zakatAllocated || 0).toLocaleString('en-IN')}</span>
                         </div>
                         <Separator />
                         <div className="flex justify-between items-center text-base">
-                            <span className="font-bold">Zakat Balance</span>
+                            <span className="font-bold">Zakat Balance for Goal</span>
                             <span className="font-bold text-primary font-mono">₹{((summaryData?.fundTotals.zakat || 0) - (summaryData?.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
                         </div>
                     </CardContent>
