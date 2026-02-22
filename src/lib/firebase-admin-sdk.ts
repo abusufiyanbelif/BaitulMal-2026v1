@@ -29,12 +29,15 @@ function initializeAdmin(): AdminServices {
             const serviceAccountPath = path.resolve(process.cwd(), 'serviceAccountKey.json');
             if (fs.existsSync(serviceAccountPath)) {
                 initializeApp({
-                    credential: cert(serviceAccountPath)
+                    credential: cert(serviceAccountPath),
+                    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
                 });
                 console.log("Firebase Admin SDK initialized with serviceAccountKey.json for local development.");
             } else {
                 // This will use Application Default Credentials in a GCP environment (like Firebase App Hosting)
-                initializeApp();
+                initializeApp({
+                    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+                });
                 console.log("Firebase Admin SDK initialized with Application Default Credentials (production mode).");
             }
         } catch (e: any) {
