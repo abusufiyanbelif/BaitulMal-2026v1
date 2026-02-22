@@ -1,8 +1,10 @@
 
+
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage, useMemoFirebase, useAuth } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError, useStorage, useAuth, useMemoFirebase } from '@/firebase';
+import { useCollection } from '@/firebase/firestore/use-collection';
 import { useSession } from '@/hooks/use-session';
 import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -124,7 +126,7 @@ export default function CreateCampaignPage() {
         try {
             const file = imageFile[0];
             const resizedBlob = await new Promise<Blob>((resolve) => {
-                (Resizer as any).imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                Resizer.imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             
             const filePath = `campaigns/${newCampaignId}/background.png`;

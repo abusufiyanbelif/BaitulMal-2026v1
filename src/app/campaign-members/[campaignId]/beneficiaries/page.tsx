@@ -4,9 +4,11 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
+import { useCollection } from '@/firebase/firestore/use-collection';
+import { useDoc } from '@/firebase/firestore/use-doc';
 import { errorEmitter } from '@/firebase/error-emitter';
-import type { SecurityRuleContext } from '@/firebase/errors';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, setDoc, DocumentReference, getDoc } from 'firebase/firestore';
 import type { Beneficiary, Campaign, RationItem, ItemCategory } from '@/lib/types';
@@ -625,7 +627,7 @@ const sortedGroupKeys = useMemo(() => {
         }
 
         if (data.idProofDeleted && idProofUrl) {
-            await deleteObject(storageRef(storage, idProofUrl)).catch((err) => {
+            await deleteObject(storageRef(storage, idProofUrl)).catch((err: any) => {
                 if (err.code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
             });
             idProofUrl = '';
@@ -638,7 +640,7 @@ const sortedGroupKeys = useMemo(() => {
 
             if (idProofUrl) {
                 const oldFileRef = storageRef(storage, idProofUrl);
-                await deleteObject(oldFileRef).catch((err) => {
+                await deleteObject(oldFileRef).catch((err: any) => {
                     if ((err.code !== 'storage/object-not-found')) console.warn("Failed to delete old ID proof:", err);
                 });
             }

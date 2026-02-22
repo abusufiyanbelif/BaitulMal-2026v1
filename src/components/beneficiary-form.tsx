@@ -228,6 +228,7 @@ export function BeneficiaryForm({
     };
 
     const formIsDisabled = isReadOnly || isSubmitting || isLoading;
+    const hasFileSelected = idProofFile && idProofFile.length > 0;
   
     return (
         <Form {...form}>
@@ -387,7 +388,7 @@ export function BeneficiaryForm({
                 {!isReadOnly && (
                     <div className="flex justify-end gap-2 pt-4">
                         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>Cancel</Button>
-                        <Button type="submit" disabled={isSubmitting || isSessionLoading || (isEditing && !isDirty)}>
+                        <Button type="submit" disabled={isSubmitting || (hasFileSelected && isSessionLoading) || (isEditing && !isDirty)}>
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {isSubmitting ? 'Saving...' : 'Save Beneficiary'}
                         </Button>
