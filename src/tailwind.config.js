@@ -2,6 +2,7 @@
 /** @type {import('tailwindcss').Config} */
 const config = {
   // Force cache invalidation by adding a new comment.
+  // Force cache invalidation again.
   darkMode: ['class'],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
