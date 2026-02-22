@@ -14,10 +14,12 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { createMasterBeneficiaryAction } from '../actions';
 import type { Beneficiary } from '@/lib/types';
+import { useAuth } from '@/firebase';
 
 export default function CreateBeneficiaryPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { userProfile, isLoading: isProfileLoading } = useSession();
 
@@ -30,9 +32,27 @@ export default function CreateBeneficiaryPage() {
     }
     setIsSubmitting(true);
     
+    const fileList = data.idProofFile as FileList | undefined;
+    if (fileList && fileList.length > 0) {
+      if (isProfileLoading) {
+        toast({ title: 'Please wait', description: 'Authentication is still loading. Please try again in a moment.' });
+        setIsSubmitting(false);
+        return;
+      }
+      if (!auth?.currentUser) {
+          toast({
+              title: "Authentication Error",
+              description: "User not authenticated yet. Please wait.",
+              variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+      }
+    }
+
     const { idProofFile, idProofDeleted, ...beneficiaryData } = data;
 
-    const newBeneficiary: Omit<Beneficiary, "id" | "createdAt" | "createdById" | "createdByName" | "updatedAt" | "updatedById" | "updatedByName"> = {
+    const newBeneficiary: Omit<Beneficiary, "id" | "createdAt" | "createdById" | "createdByName" | "updatedAt" | "updatedById" | "updatedByName" | "idProofUrl"> = {
         ...beneficiaryData,
         addedDate: new Date().toISOString().split('T')[0],
     };
@@ -107,6 +127,7 @@ export default function CreateBeneficiaryPage() {
                 isLoading={false}
                 hideZakatInfo={true}
                 kitAmountLabel="Kit Amount (₹)"
+                isSessionLoading={isProfileLoading}
             />
           </CardContent>
         </Card>

@@ -4,9 +4,9 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc } from '@/firebase';
+import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc, FirestorePermissionError } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import type { SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, setDoc, DocumentReference, getDoc } from 'firebase/firestore';
 import type { Beneficiary, Campaign, RationItem, ItemCategory } from '@/lib/types';
@@ -607,14 +607,21 @@ const sortedGroupKeys = useMemo(() => {
         const fileList = data.idProofFile as FileList | undefined;
         const hasFileToUpload = fileList && fileList.length > 0;
         
-        if (hasFileToUpload && !auth?.currentUser) {
-            toast({
-                title: "Authentication Error",
-                description: "User not authenticated yet. Please wait.",
-                variant: "destructive",
-            });
-            setIsSubmitting(false);
-            return;
+        if (hasFileToUpload) {
+            if (isProfileLoading) {
+                toast({ title: 'Please wait', description: 'Authentication is still loading. Please try again in a moment.' });
+                setIsSubmitting(false);
+                return;
+            }
+            if (!auth?.currentUser) {
+                toast({
+                    title: "Authentication Error",
+                    description: "User not authenticated yet. Please wait.",
+                    variant: "destructive",
+                });
+                setIsSubmitting(false);
+                return;
+            }
         }
 
         if (data.idProofDeleted && idProofUrl) {
@@ -1085,14 +1092,14 @@ const sortedGroupKeys = useMemo(() => {
                                                     </TableRow>
 
                                                     {!subGroupIsCollapsed && beneficiariesInSubGroup.map((beneficiary, index) => (
-                                                        <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} isSubRow={true} />
+                                                        <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={() => handleDeleteClick(beneficiary.id)} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} isSubRow={true} />
                                                     ))}
                                                 </React.Fragment>
                                             );
                                         })}
                                         {!categoryIsCollapsed && !categoryIsEffectivelyRanged && (
                                             Object.values(beneficiariesByMemberCount).flat().map((beneficiary, index) => (
-                                                 <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} isSubRow={true} />
+                                                 <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={() => handleDeleteClick(beneficiary.id)} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} isSubRow={true} />
                                             ))
                                         )}
                                     </React.Fragment>
@@ -1125,6 +1132,7 @@ const sortedGroupKeys = useMemo(() => {
                 isSubmitting={isSubmitting}
                 isLoading={isLoading}
                 kitAmountLabel={kitAmountLabel}
+                isSessionLoading={isProfileLoading}
             />
         </DialogContent>
       </Dialog>

@@ -364,14 +364,21 @@ export default function BeneficiariesPage() {
       const fileList = data.idProofFile as FileList | undefined;
       const hasFileToUpload = fileList && fileList.length > 0;
 
-      if (hasFileToUpload && !auth?.currentUser) {
-          toast({
-              title: "Authentication Error",
-              description: "User not authenticated yet. Please wait and try again.",
-              variant: "destructive",
-          });
-          setIsSubmitting(false);
-          return;
+      if (hasFileToUpload) {
+          if (isProfileLoading) {
+            toast({ title: 'Please wait', description: 'Authentication is still loading. Please try again in a moment.' });
+            setIsSubmitting(false);
+            return;
+          }
+          if (!auth?.currentUser) {
+              toast({
+                  title: "Authentication Error",
+                  description: "User not authenticated yet. Please wait and try again.",
+                  variant: "destructive",
+              });
+              setIsSubmitting(false);
+              return;
+          }
       }
       
       if (data.idProofDeleted && idProofUrl) {
@@ -395,7 +402,7 @@ export default function BeneficiariesPage() {
 
           if (file.type.startsWith('image/')) {
               await new Promise<void>((resolve) => {
-                  (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
+                  (Resizer.imageFileResizer as any)(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
                     fileToUpload = blob as Blob;
                     resolve();
                   }, 'blob');
@@ -735,6 +742,7 @@ export default function BeneficiariesPage() {
                 defaultKitAmount={totalLeadAmount}
                 isReadOnly={formMode === 'view'}
                 isSubmitting={isSubmitting}
+                isSessionLoading={isProfileLoading}
             />
         </DialogContent>
       </Dialog>

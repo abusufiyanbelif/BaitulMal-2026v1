@@ -139,15 +139,23 @@ export default function BeneficiaryDetailsPage() {
     const fileList = data.idProofFile as FileList | undefined;
     const hasFileToUpload = fileList && fileList.length > 0;
 
-    if (hasFileToUpload && !auth.currentUser) {
-        toast({
-            title: "Authentication Error",
-            description: "User not authenticated yet. Please wait and try again.",
-            variant: "destructive",
-        });
-        setIsSubmitting(false);
-        return;
+    if (hasFileToUpload) {
+        if (isProfileLoading) {
+            toast({ title: 'Please wait', description: 'Authentication is still loading. Please try again in a moment.' });
+            setIsSubmitting(false);
+            return;
+        }
+        if (!auth.currentUser) {
+            toast({
+                title: "Authentication Error",
+                description: "User not authenticated yet. Please wait and try again.",
+                variant: "destructive",
+            });
+            setIsSubmitting(false);
+            return;
+        }
     }
+
 
     try {
         if (data.idProofDeleted && idProofUrl) {
@@ -171,7 +179,7 @@ export default function BeneficiaryDetailsPage() {
             }
             
             await new Promise<void>((resolve) => {
-                (Resizer as any)(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
+                (Resizer.imageFileResizer as any)(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
                   fileToUpload = blob as Blob;
                   resolve();
                 }, 'blob');
@@ -330,24 +338,8 @@ export default function BeneficiaryDetailsPage() {
                   <CardTitle>Beneficiary: {beneficiary.name}</CardTitle>
                   <CardDescription>View beneficiary details or switch to edit mode.</CardDescription>
               </div>
-              {canUpdate && (
-                  !isEditMode ? (
-                    <Button onClick={() => setIsEditMode(true)}><Edit className="mr-2 h-4 w-4"/>Edit</Button>
-                  ) : (
-                    <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleCancel} disabled={isSubmitting}>Cancel</Button>
-                        <Button onClick={() => {
-                            // We need to trigger the form validation before calling handleSave
-                            const formElement = document.querySelector('form');
-                            if (formElement) {
-                                formElement.requestSubmit();
-                            }
-                        }} disabled={isSubmitting}>
-                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                            Save
-                        </Button>
-                    </div>
-                  )
+              {canUpdate && !isEditMode && (
+                  <Button onClick={() => setIsEditMode(true)}><Edit className="mr-2 h-4 w-4"/>Edit</Button>
               )}
           </div>
         </CardHeader>
@@ -370,6 +362,7 @@ export default function BeneficiaryDetailsPage() {
               isReadOnly={!isEditMode}
               itemCategories={[]}
               kitAmountLabel="Kit Amount (₹)"
+              isSessionLoading={isProfileLoading}
           />
         </CardContent>
       </Card>
