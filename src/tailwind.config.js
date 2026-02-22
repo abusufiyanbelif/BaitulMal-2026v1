@@ -1,7 +1,7 @@
 
 /** @type {import('tailwindcss').Config} */
 const config = {
-  // Force cache invalidation by adding a new comment.
+  // Force cache invalidation by adding a comment.
   // Force cache invalidation again.
   darkMode: ['class'],
   content: [
@@ -115,6 +115,10 @@ const config = {
             transform: 'translateX(100%)',
           },
         },
+        'zoom-in-out': {
+            '0%, 100%': { transform: 'scale(1)' },
+            '50%': { transform: 'scale(1.5)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -124,6 +128,7 @@ const config = {
         'fade-in-up': 'fade-in-up 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'fade-in-zoom': 'fade-in-zoom 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'shimmer': 'shimmer 2s infinite',
+        'zoom-in-out': 'zoom-in-out 2.5s ease-in-out infinite',
       },
     },
   },
