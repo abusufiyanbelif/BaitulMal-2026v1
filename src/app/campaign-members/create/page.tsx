@@ -8,7 +8,7 @@ import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/fires
 import { useToast } from '@/hooks/use-toast';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Image from 'next/image';
-import imageFileResizer from 'react-image-file-resizer';
+import Resizer from 'react-image-file-resizer';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -124,7 +124,7 @@ export default function CreateCampaignPage() {
         try {
             const file = imageFile[0];
             const resizedBlob = await new Promise<Blob>((resolve) => {
-                imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                (Resizer as any).imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             
             const filePath = `campaigns/${newCampaignId}/background.png`;
@@ -171,7 +171,7 @@ export default function CreateCampaignPage() {
         toast({ title: 'Success', description: 'Campaign created successfully.', variant: 'success' });
         router.push(`/campaign-members`);
       })
-      .catch((serverError) => {
+      .catch((serverError: any) => {
         const permissionError = new FirestorePermissionError({
             path: 'campaigns',
             operation: 'create',
