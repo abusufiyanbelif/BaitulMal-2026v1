@@ -41,7 +41,7 @@ export function WisdomAndReflection() {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Quote className="h-6 w-6 text-primary" />
-                    Wisdom & Reflection
+                    Hikmat aur Fikr
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 pl-10">
@@ -57,7 +57,7 @@ export function WisdomAndReflection() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Quote className="h-6 w-6 text-primary" />
-          Wisdom & Reflection
+          Hikmat aur Fikr
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 pl-10">
