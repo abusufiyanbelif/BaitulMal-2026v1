@@ -63,6 +63,7 @@ import { getNestedValue } from '@/lib/utils';
 import { syncDonationsAction } from '@/app/donations/actions';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Separator } from '@/components/ui/separator';
 
 type SortKey = keyof Donation | 'srNo';
 
@@ -73,7 +74,6 @@ export default function DonationsPage() {
   const campaignId = params.campaignId as string;
   const firestore = useFirestore();
   const storage = useStorage();
-  console.log("Storage bucket:", storage?.app?.options?.storageBucket);
   const { toast } = useToast();
   const { userProfile, isLoading: isProfileLoading } = useSession();
   const auth = useAuth();

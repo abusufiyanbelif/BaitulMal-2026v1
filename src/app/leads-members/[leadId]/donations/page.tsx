@@ -73,7 +73,6 @@ export default function DonationsPage() {
   const leadId = params.leadId as string;
   const firestore = useFirestore();
   const storage = useStorage();
-  console.log("Storage bucket:", storage?.app?.options?.storageBucket);
   const { toast } = useToast();
   const { userProfile, isLoading: isProfileLoading } = useSession();
   const auth = useAuth();
