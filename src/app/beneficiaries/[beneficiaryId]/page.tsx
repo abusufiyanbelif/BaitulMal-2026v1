@@ -23,6 +23,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { Badge } from '@/components/ui/badge';
 import { updateMasterBeneficiaryAction, updateBeneficiaryStatusInInitiativeAction } from '../actions';
 import { useSession } from '@/hooks/use-session';
+import { BrandedLoader } from '@/components/branded-loader';
 
 interface LinkedInitiative {
     id: string;
@@ -247,25 +248,7 @@ export default function BeneficiaryDetailsPage() {
   const backHref = redirectUrl || '/beneficiaries';
 
   if (isLoading) {
-    return (
-        <main className="container mx-auto p-4 md:p-8">
-            <div className="mb-4">
-                <Skeleton className="h-10 w-32" />
-            </div>
-            <Card className="max-w-2xl mx-auto">
-                <CardHeader>
-                    <Skeleton className="h-8 w-48" />
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-6 pt-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-24 w-full" />
-                    </div>
-                </CardContent>
-            </Card>
-        </main>
-    )
+    return <BrandedLoader />;
   }
 
   if (beneficiaryError) {

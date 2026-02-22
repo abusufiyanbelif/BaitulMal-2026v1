@@ -4,6 +4,7 @@
 import { Loader2 } from 'lucide-react';
 import { useBranding } from '@/hooks/use-branding';
 import Image from 'next/image';
+import { TempLogo } from './temp-logo';
 
 export function BrandedLoader() {
   const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
@@ -24,7 +25,9 @@ export function BrandedLoader() {
           priority
         />
       ) : (
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <div className="w-48 h-48 animate-zoom-in-out">
+            <TempLogo />
+        </div>
       )}
     </div>
   );
