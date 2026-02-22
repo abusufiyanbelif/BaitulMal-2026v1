@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -10,7 +9,7 @@ import { useCollection } from '@/firebase/firestore/use-collection';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { doc, collection, updateDoc, query, where, DocumentReference } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -484,7 +483,7 @@ Your contribution, big or small, makes a huge difference.
                          {editMode ? (
                             <div className="space-y-2">
                                 <Label>Header Image</Label>
-                                <Input id="imageFile" type="file" accept="image/png, image/jpeg" onChange={handleImageFileChange} className="hidden" />
+                                <Input id="imageFile" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} className="hidden" />
                                 <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
                                     {imagePreview ? (
                                         <>
@@ -499,7 +498,7 @@ Your contribution, big or small, makes a huge difference.
                                             <p className="mb-2 text-sm text-center text-muted-foreground">
                                                 <span className="font-semibold text-primary">Click to upload</span> or drag and drop
                                             </p>
-                                            <p className="text-xs text-muted-foreground">PNG, JPG (1280x400 recommended)</p>
+                                            <p className="text-xs text-muted-foreground">PNG, JPG, WEBP (1280x400 recommended)</p>
                                         </div>
                                     )}
                                 </label>
@@ -525,7 +524,7 @@ Your contribution, big or small, makes a huge difference.
                         {editMode ? (
                             <div className="space-y-4">
                                 <Label>Upload New Artifacts</Label>
-                                <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/*,application/pdf,.doc,.docx,.xls,.xlsx" />
+                                <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf, .doc, .docx, .xls, .xlsx" />
                                 <Separator />
                                 <Label>Manage Existing Artifacts</Label>
                                 {existingDocuments.length > 0 ? (
@@ -724,5 +723,3 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
-
-    

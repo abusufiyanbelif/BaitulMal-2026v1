@@ -17,7 +17,7 @@ interface FileUploaderProps {
 
 export function FileUploader({
   onFilesChange,
-  acceptedFileTypes = 'image/*,application/pdf',
+  acceptedFileTypes = 'image/png, image/jpeg, image/webp, application/pdf',
   multiple = false,
 }: FileUploaderProps) {
   const [previews, setPreviews] = useState<string[]>([]);
@@ -85,13 +85,7 @@ export function FileUploader({
     return file.type === 'application/pdf' || (previewUrl.startsWith('blob:') && file.name.endsWith('.pdf'));
   };
 
-  const descriptionText = acceptedFileTypes.includes('image') && acceptedFileTypes.includes('pdf')
-    ? 'Any image file or PDF'
-    : acceptedFileTypes.includes('image')
-    ? 'Image files (PNG, JPG, etc.)'
-    : acceptedFileTypes.includes('pdf')
-    ? 'PDF documents'
-    : 'Supported files';
+  const descriptionText = "PNG, JPG, WEBP, PDF files are accepted.";
 
   if (files.length > 0) {
     return (
@@ -200,5 +194,3 @@ export function FileUploader({
     </div>
   );
 }
-
-  

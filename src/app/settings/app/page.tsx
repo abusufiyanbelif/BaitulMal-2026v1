@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -318,7 +317,7 @@ export default function AppSettingsPage() {
                                             <Trash2 className="mr-2 h-4 w-4" /> Remove
                                         </Button>
                                     )}
-                                    <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/svg+xml" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
+                                    <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp, image/svg+xml" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
                                 </div>
                             )}
                         </div>
@@ -380,7 +379,7 @@ export default function AppSettingsPage() {
                                                     <Trash2 className="mr-2 h-4 w-4" /> Remove
                                                 </Button>
                                             )}
-                                            <Input id="qr-upload" type="file" className="hidden" accept="image/png, image/jpeg" onChange={(e) => e.target.files && setQrCodeFile(e.target.files[0])} />
+                                            <Input id="qr-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setQrCodeFile(e.target.files[0])} />
                                         </div>
                                     )}
                                 </div>

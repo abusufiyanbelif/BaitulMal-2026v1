@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -125,7 +124,7 @@ export default function CreateCampaignPage() {
         try {
             const file = imageFile[0];
             const resizedBlob = await new Promise<Blob>((resolve) => {
-                Resizer.imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                (Resizer as any).imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             
             const filePath = `campaigns/${newCampaignId}/background.png`;
@@ -253,7 +252,7 @@ export default function CreateCampaignPage() {
                  <FormItem>
                     <FormLabel>Header Image</FormLabel>
                     <FormControl>
-                        <Input id="imageFile" type="file" accept="image/png, image/jpeg" onChange={handleImageFileChange} className="hidden" />
+                        <Input id="imageFile" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} className="hidden" />
                     </FormControl>
                     <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
                         {imagePreview ? (
@@ -269,7 +268,7 @@ export default function CreateCampaignPage() {
                                 <p className="mb-2 text-sm text-center text-muted-foreground">
                                     <span className="font-semibold text-primary">Click to upload</span> or drag and drop
                                 </p>
-                                <p className="text-xs text-muted-foreground">PNG, JPG (1280x400 recommended)</p>
+                                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP (1280x400 recommended)</p>
                             </div>
                         )}
                     </label>
@@ -281,7 +280,7 @@ export default function CreateCampaignPage() {
                         <FileUploader
                             onFilesChange={setDocumentsToUpload}
                             multiple={true}
-                            acceptedFileTypes="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
+                            acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf, .doc, .docx, .xls, .xlsx"
                         />
                     </FormControl>
                     <FormDescription>Upload any relevant documents for this campaign (e.g., proposals, reports, photos).</FormDescription>
@@ -322,11 +321,11 @@ export default function CreateCampaignPage() {
                 <FormField control={form.control} name="publicVisibility" render={({ field }) => (
                     <FormItem><FormLabel>Public Visibility *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select visibility" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Hold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish">Ready to Publish</SelectItem><SelectItem value="Published">Published</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                 )}/>
-                <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={() => router.push('/campaign-members')} disabled={isLoading}>Cancel</Button>
-                  <Button type="button" variant="secondary" onClick={() => form.reset()} disabled={isLoading}><RotateCcw className="mr-2 h-4 w-4"/>Reset</Button>
+                  <Button type="button" variant="secondary" onClick={() => { form.reset(); setDocumentsToUpload([]); }} disabled={isLoading}><RotateCcw className="mr-2 h-4 w-4"/>Reset</Button>
                   <Button type="submit" disabled={isLoading}>{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create Campaign</Button>
-                </div>
+              </div>
               </form>
             </Form>
           </CardContent>
@@ -356,7 +355,3 @@ export default function CreateCampaignPage() {
     </>
   );
 }
-
-
-
-

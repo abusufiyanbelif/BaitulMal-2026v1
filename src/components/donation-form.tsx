@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { z } from 'zod';
@@ -276,7 +275,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>
-                        <Input id={`tx-screenshot-upload-${index}`} type="file" className="hidden" {...register(`transactions.${index}.screenshotFile`)} />
+                        <Input id={`tx-screenshot-upload-${index}`} type="file" className="hidden" accept="image/png, image/jpeg, image/webp" {...register(`transactions.${index}.screenshotFile`)} />
                     </>
                 ) : (
                     <FormField
@@ -285,7 +284,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                         render={() => (
                             <FormItem>
                                 <FormControl>
-                                    <Input type="file" accept="image/*" {...register(`transactions.${index}.screenshotFile`)} />
+                                    <Input type="file" accept="image/png, image/jpeg, image/webp" {...register(`transactions.${index}.screenshotFile`)} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

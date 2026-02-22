@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -292,7 +291,7 @@ export default function CreateLeadPage() {
                 <FormItem>
                     <FormLabel>Header Image</FormLabel>
                     <FormControl>
-                        <Input id="imageFile" type="file" accept="image/png, image/jpeg" onChange={handleImageFileChange} className="hidden" />
+                        <Input id="imageFile" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} className="hidden" />
                     </FormControl>
                     <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
                         {imagePreview ? (
@@ -308,7 +307,7 @@ export default function CreateLeadPage() {
                                 <p className="mb-2 text-sm text-center text-muted-foreground">
                                     <span className="font-semibold text-primary">Click to upload</span> or drag and drop
                                 </p>
-                                <p className="text-xs text-muted-foreground">PNG, JPG (1280x400 recommended)</p>
+                                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP (1280x400 recommended)</p>
                             </div>
                         )}
                     </label>
@@ -320,7 +319,7 @@ export default function CreateLeadPage() {
                         <FileUploader
                             onFilesChange={setDocumentsToUpload}
                             multiple={true}
-                            acceptedFileTypes="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
+                            acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf, .doc, .docx, .xls, .xlsx"
                         />
                     </FormControl>
                     <FormDescription>Upload any relevant documents for this lead (e.g., proposals, reports, photos).</FormDescription>
@@ -449,6 +448,3 @@ export default function CreateLeadPage() {
     </main>
   );
 }
-
-
-
