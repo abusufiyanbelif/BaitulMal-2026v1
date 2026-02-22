@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -25,6 +24,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -280,8 +280,9 @@ export function BeneficiaryForm({
                                 <FormItem>
                                     <FormLabel>ID Proof Document</FormLabel>
                                     <FormControl>
-                                        <Input id="beneficiary-id-proof" type="file" accept="image/*,application/pdf" {...register('idProofFile')} disabled={formIsDisabled}/>
+                                        <Input id="beneficiary-id-proof" type="file" accept="image/png, image/jpeg, image/webp, application/pdf" {...register('idProofFile')} disabled={formIsDisabled}/>
                                     </FormControl>
+                                    <FormDescription>Supported formats: PNG, JPG, WEBP, PDF.</FormDescription>
                                 </FormItem>
                             )}
                         />

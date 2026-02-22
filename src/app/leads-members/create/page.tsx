@@ -23,7 +23,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import type { Lead } from '@/lib/types';
+import type { Lead, CampaignDocument } from '@/lib/types';
 import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters } from '@/lib/modules';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -307,7 +307,7 @@ export default function CreateLeadPage() {
                                 <p className="mb-2 text-sm text-center text-muted-foreground">
                                     <span className="font-semibold text-primary">Click to upload</span> or drag and drop
                                 </p>
-                                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP (1280x400 recommended)</p>
+                                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP recommended</p>
                             </div>
                         )}
                     </label>
@@ -319,7 +319,7 @@ export default function CreateLeadPage() {
                         <FileUploader
                             onFilesChange={setDocumentsToUpload}
                             multiple={true}
-                            acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf, .doc, .docx, .xls, .xlsx"
+                            acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf"
                         />
                     </FormControl>
                     <FormDescription>Upload any relevant documents for this lead (e.g., proposals, reports, photos).</FormDescription>

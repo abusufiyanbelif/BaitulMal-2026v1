@@ -308,16 +308,17 @@ export default function AppSettingsPage() {
                                 </div>
                             </div>
                             {isEditMode && (
-                                <div className="flex gap-2 justify-center">
-                                    <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('logo-upload')?.click()} disabled={isSubmitting}>
+                                <div className="space-y-2">
+                                    <label htmlFor="logo-upload" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), "w-full cursor-pointer")}>
                                         <UploadCloud className="mr-2 h-4 w-4" /> Change Logo
-                                    </Button>
+                                    </label>
+                                    <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
+                                    <p className="text-xs text-muted-foreground text-center">Supported formats: PNG, JPG, WEBP.</p>
                                     {editableData?.logoUrl && (
-                                        <Button type="button" variant="destructive" size="sm" onClick={handleRemoveLogo} disabled={isSubmitting}>
-                                            <Trash2 className="mr-2 h-4 w-4" /> Remove
+                                        <Button type="button" variant="destructive" size="sm" className="w-full" onClick={handleRemoveLogo} disabled={isSubmitting}>
+                                            <Trash2 className="mr-2 h-4 w-4" /> Remove Logo
                                         </Button>
                                     )}
-                                    <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp, image/svg+xml" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
                                 </div>
                             )}
                         </div>
@@ -370,16 +371,17 @@ export default function AppSettingsPage() {
                                         </div>
                                     </div>
                                      {isEditMode && (
-                                        <div className="flex gap-2 justify-center">
-                                            <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('qr-upload')?.click()} disabled={isSubmitting}>
-                                                <UploadCloud className="mr-2 h-4 w-4" /> Change QR
-                                            </Button>
+                                        <div className="space-y-2 w-full text-center">
+                                            <label htmlFor="qr-upload" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), "w-full cursor-pointer")}>
+                                                <UploadCloud className="mr-2 h-4 w-4" /> Change QR Code
+                                            </label>
+                                            <Input id="qr-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setQrCodeFile(e.target.files[0])} />
+                                            <p className="text-xs text-muted-foreground">Supported formats: PNG, JPG, WEBP.</p>
                                             {editableData?.qrCodeUrl && (
-                                                <Button type="button" variant="destructive" size="sm" onClick={handleRemoveQrCode} disabled={isSubmitting}>
-                                                    <Trash2 className="mr-2 h-4 w-4" /> Remove
+                                                <Button type="button" variant="destructive" size="sm" className="w-full" onClick={handleRemoveQrCode} disabled={isSubmitting}>
+                                                    <Trash2 className="mr-2 h-4 w-4" /> Remove QR Code
                                                 </Button>
                                             )}
-                                            <Input id="qr-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setQrCodeFile(e.target.files[0])} />
                                         </div>
                                     )}
                                 </div>

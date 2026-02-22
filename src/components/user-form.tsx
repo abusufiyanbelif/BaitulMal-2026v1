@@ -385,7 +385,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <FormControl>
                                     <Input id="user-id-proof-file-input" type="file" accept="image/png, image/jpeg, image/webp, application/pdf" {...register('idProofFile')} disabled={isFormDisabled}/>
                                 </FormControl>
-                                <FormDescription>Optional. Upload an image of the ID proof.</FormDescription>
+                                <FormDescription>Supported formats: PNG, JPG, WEBP, PDF.</FormDescription>
                                 <FormMessage />
                             </FormItem>
                             {preview && (

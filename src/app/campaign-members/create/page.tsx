@@ -171,7 +171,7 @@ export default function CreateCampaignPage() {
         toast({ title: 'Success', description: 'Campaign created successfully.', variant: 'success' });
         router.push(`/campaign-members`);
       })
-      .catch((serverError: any) => {
+      .catch((serverError) => {
         const permissionError = new FirestorePermissionError({
             path: 'campaigns',
             operation: 'create',
@@ -280,7 +280,7 @@ export default function CreateCampaignPage() {
                         <FileUploader
                             onFilesChange={setDocumentsToUpload}
                             multiple={true}
-                            acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf, .doc, .docx, .xls, .xlsx"
+                            acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf"
                         />
                     </FormControl>
                     <FormDescription>Upload any relevant documents for this campaign (e.g., proposals, reports, photos).</FormDescription>

@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
 import { useDoc } from '@/firebase/firestore/use-doc';
@@ -270,7 +270,7 @@ export default function CampaignSummaryPage() {
         };
 
         updateDoc(campaignDocRef, saveData)
-            .catch(async (serverError: any) => {
+            .catch(async (serverError) => {
                 errorEmitter.emit('permission-error', new FirestorePermissionError({
                     path: campaignDocRef.path,
                     operation: 'update',
@@ -698,7 +698,7 @@ Your contribution, big or small, makes a huge difference.
                                                 <p className="mb-2 text-sm text-center text-muted-foreground">
                                                     <span className="font-semibold text-primary">Click to upload</span> or drag and drop
                                                 </p>
-                                                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP (1280x400 recommended)</p>
+                                                <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP recommended</p>
                                             </div>
                                         )}
                                     </label>
@@ -733,7 +733,7 @@ Your contribution, big or small, makes a huge difference.
                             {editMode ? (
                                 <div className="space-y-4">
                                     <Label>Upload New Artifacts</Label>
-                                    <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf, .doc, .docx, .xls, .xlsx" />
+                                    <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
                                     <Separator />
                                     <Label>Manage Existing Artifacts</Label>
                                     {existingDocuments.length > 0 ? (

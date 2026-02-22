@@ -234,7 +234,20 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                 />
             </div>
             <div className="space-y-2">
-                <Label>Screenshot</Label>
+                <FormField
+                    control={control}
+                    name={`transactions.${index}.screenshotFile`}
+                    render={() => (
+                        <FormItem>
+                            <FormLabel>Screenshot</FormLabel>
+                            <FormControl>
+                                <Input id={`tx-screenshot-upload-${index}`} type="file" accept="image/png, image/jpeg, image/webp" {...register(`transactions.${index}.screenshotFile`)} />
+                            </FormControl>
+                            <FormDescription>Supported formats: PNG, JPG, WEBP.</FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
                 {preview ? (
                     <>
                         <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
@@ -275,22 +288,8 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>
-                        <Input id={`tx-screenshot-upload-${index}`} type="file" className="hidden" accept="image/png, image/jpeg, image/webp" {...register(`transactions.${index}.screenshotFile`)} />
                     </>
-                ) : (
-                    <FormField
-                        control={control}
-                        name={`transactions.${index}.screenshotFile`}
-                        render={() => (
-                            <FormItem>
-                                <FormControl>
-                                    <Input type="file" accept="image/png, image/jpeg, image/webp" {...register(`transactions.${index}.screenshotFile`)} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                )}
+                ) : null}
                  {fileList && fileList.length > 0 && (
                     <Button type="button" onClick={handleScanScreenshot} disabled={isScanning} className="w-full mt-2">
                         {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ScanLine className="mr-2 h-4 w-4" />}

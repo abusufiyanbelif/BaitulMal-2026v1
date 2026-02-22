@@ -85,7 +85,7 @@ export function FileUploader({
     return file.type === 'application/pdf' || (previewUrl.startsWith('blob:') && file.name.endsWith('.pdf'));
   };
 
-  const descriptionText = "PNG, JPG, WEBP, PDF files are accepted.";
+  const descriptionText = "PNG, JPG, WEBP, or PDF files are accepted.";
 
   if (files.length > 0) {
     return (
