@@ -37,10 +37,18 @@ function initializeAdmin(): AdminServices {
                 console.log("Firebase Admin SDK initialized with Application Default Credentials.");
             }
         } catch (e: any) {
-            console.error('Firebase Admin SDK initialization failed:', e.message);
-            // We throw here to make it clear initialization is a fatal issue.
-            // But the getters below will return null, allowing checks in actions.
-            throw e;
+             let errorMessage = 'Firebase Admin SDK initialization failed.';
+            if (e.code === 'app/invalid-credential') {
+                errorMessage += " The service account credentials are not valid. Ensure 'serviceAccountKey.json' is correct or Application Default Credentials are set up.";
+            } else if (e.message.includes('Could not load the default credentials')) {
+                errorMessage += " Application Default Credentials could not be found. Please configure them or provide a 'serviceAccountKey.json' file.";
+            } else if (e.message.includes('IAM')) {
+                errorMessage += " There might be an IAM permission issue with the service account. Please ensure it has the 'Firebase Admin' or 'Editor' role.";
+            } else {
+                errorMessage += ` Unexpected error: ${e.message}`;
+            }
+            console.error(errorMessage, e);
+            throw new Error(errorMessage);
         }
     }
 
@@ -76,4 +84,3 @@ export function getAdminServices(): { adminDb: Firestore | null; adminAuth: Auth
         return { adminDb: null, adminAuth: null, adminStorage: null };
     }
 }
-

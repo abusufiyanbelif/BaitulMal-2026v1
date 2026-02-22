@@ -7,7 +7,8 @@ import Image from 'next/image';
 import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { errorEmitter, FirestorePermissionError, type SecurityRuleContext } from '@/firebase';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, setDoc, DocumentReference, getDoc } from 'firebase/firestore';
 import type { Beneficiary, Campaign, RationItem, ItemCategory } from '@/lib/types';
@@ -654,7 +655,7 @@ const sortedGroupKeys = useMemo(() => {
 
             if (file.type.startsWith('image/')) {
                 await new Promise<void>((resolve) => {
-                    (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
+                    Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
                         fileToUpload = blob as Blob;
                         resolve();
                     }, 'blob');
