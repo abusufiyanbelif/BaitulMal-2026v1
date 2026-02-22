@@ -12,7 +12,7 @@ import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBa
 import type { Beneficiary, Campaign, RationItem, ItemCategory } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
-import imageFileResizer from 'react-image-file-resizer';
+import Resizer from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
@@ -340,6 +340,8 @@ export default function BeneficiariesPage() {
     const referrals = new Set(beneficiaries.map(b => b.referralBy).filter(Boolean) as string[]);
     return [...Array.from(referrals).sort()];
   }, [beneficiaries]);
+
+  const areAllReferralsSelected = useMemo(() => uniqueReferrals.length > 0 && tempReferralFilter.length === uniqueReferrals.length, [tempReferralFilter, uniqueReferrals]);
   
   const filteredAndSortedBeneficiaries = useMemo(() => {
     if (!beneficiaries) return [];
@@ -651,7 +653,7 @@ const sortedGroupKeys = useMemo(() => {
 
             if (file.type.startsWith('image/')) {
                 await new Promise<void>((resolve) => {
-                    imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
+                    (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
                         fileToUpload = blob as Blob;
                         resolve();
                     }, 'blob');
@@ -956,6 +958,21 @@ const sortedGroupKeys = useMemo(() => {
                         <CommandList>
                           <CommandEmpty>No referral found.</CommandEmpty>
                           <CommandGroup>
+                            <CommandItem
+                                onSelect={() => {
+                                    if (areAllReferralsSelected) {
+                                        setTempReferralFilter([]);
+                                    } else {
+                                        setTempReferralFilter([...uniqueReferrals]);
+                                    }
+                                }}
+                            >
+                                <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", areAllReferralsSelected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
+                                  <Check className={cn("h-4 w-4")} />
+                                </div>
+                                Select All
+                            </CommandItem>
+                            <Separator className="my-1" />
                             {uniqueReferrals.map((referral) => (
                               <CommandItem
                                 key={referral}
@@ -971,23 +988,21 @@ const sortedGroupKeys = useMemo(() => {
                                   });
                                 }}
                               >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    tempReferralFilter.includes(referral) ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
+                                <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", tempReferralFilter.includes(referral) ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
+                                    <Check className={cn("h-4 w-4")} />
+                                </div>
                                 {referral}
                               </CommandItem>
                             ))}
                           </CommandGroup>
                         </CommandList>
                       </Command>
-                       <div className="p-2 border-t flex justify-end gap-2">
+                       <div className="p-2 border-t flex justify-between items-center">
                             <Button variant="ghost" size="sm" onClick={() => {
                                 setTempReferralFilter([]);
                                 setReferralFilter([]);
-                            }}>Clear All</Button>
+                                setOpenReferralPopover(false);
+                            }}>Reset</Button>
                             <Button size="sm" onClick={() => {
                                 setReferralFilter(tempReferralFilter);
                                 setOpenReferralPopover(false);

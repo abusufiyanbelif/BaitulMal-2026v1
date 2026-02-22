@@ -61,6 +61,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { syncDonationsAction, deleteDonationAction } from './actions';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Separator } from '@/components/ui/separator';
 
 type SortKey = keyof Donation | 'srNo';
 
@@ -197,7 +198,7 @@ export default function DonationsPage() {
             if (fileList && fileList.length > 0) {
                 const file = fileList[0];
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                     Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                     (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
                 const fileRef = storageRef(storage, filePath);
@@ -275,6 +276,16 @@ export default function DonationsPage() {
     setSortConfig({ key, direction });
   };
   
+  const allLinkFilterOptions = useMemo(() => {
+    if (!campaigns || !leads) return [];
+    return [
+        'unlinked',
+        ...campaigns.map(c => `campaign_${c.id}`),
+        ...leads.map(l => `lead_${l.id}`)
+    ];
+  }, [campaigns, leads]);
+  const areAllLinksSelected = useMemo(() => allLinkFilterOptions.length > 0 && tempLinkFilter.length === allLinkFilterOptions.length, [tempLinkFilter, allLinkFilterOptions]);
+
   const filteredAndSortedDonations = useMemo(() => {
     if (!donations) return [];
     let sortableItems = [...donations];
@@ -291,11 +302,17 @@ export default function DonationsPage() {
     if (linkFilter.length > 0) {
       sortableItems = sortableItems.filter(d => {
         const links = d.linkSplit || [];
-        const isUnlinked = links.length === 0 || links.every(l => l.linkType === 'general');
+        const legacyLinkId = (d as any).campaignId ? `campaign_${(d as any).campaignId}` : null;
+        
+        const isUnlinked = links.length === 0 && !legacyLinkId;
+        const hasLegacyLink = (id: string) => legacyLinkId === id && links.length === 0;
         
         return linkFilter.some(filterValue => {
           if (filterValue === 'unlinked') {
             return isUnlinked;
+          }
+          if (hasLegacyLink(filterValue)) {
+            return true;
           }
           return links.some(link => `${link.linkType}_${link.linkId}` === filterValue);
         });
@@ -445,7 +462,12 @@ export default function DonationsPage() {
                         <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                 </Select>
-                 <Popover open={openLinkFilter} onOpenChange={setOpenLinkFilter}>
+                 <Popover open={openLinkFilter} onOpenChange={(isOpen) => {
+                    setOpenLinkFilter(isOpen);
+                    if (isOpen) {
+                        setTempLinkFilter(linkFilter);
+                    }
+                 }}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -465,8 +487,23 @@ export default function DonationsPage() {
                         <CommandList>
                           <CommandEmpty>No initiatives found.</CommandEmpty>
                           <CommandGroup>
+                             <CommandItem onSelect={() => {
+                                 if (areAllLinksSelected) {
+                                     setTempLinkFilter([]);
+                                 } else {
+                                     setTempLinkFilter([...allLinkFilterOptions]);
+                                 }
+                             }}>
+                                <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", areAllLinksSelected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
+                                  <Check className={cn("h-4 w-4")} />
+                                </div>
+                                Select All
+                            </CommandItem>
+                            <Separator className="my-1"/>
                              <CommandItem onSelect={() => setTempLinkFilter(prev => prev.includes('unlinked') ? prev.filter(l => l !== 'unlinked') : [...prev, 'unlinked'])}>
-                                <Check className={cn("mr-2 h-4 w-4", tempLinkFilter.includes('unlinked') ? "opacity-100" : "opacity-0")}/>
+                                <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", tempLinkFilter.includes('unlinked') ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
+                                  <Check className={cn("h-4 w-4")} />
+                                </div>
                                 Unlinked Donations
                             </CommandItem>
                             <CommandGroup heading="Campaigns">
@@ -475,7 +512,9 @@ export default function DonationsPage() {
                                     const filterId = `campaign_${campaign.id}`;
                                     setTempLinkFilter(prev => prev.includes(filterId) ? prev.filter(l => l !== filterId) : [...prev, filterId]);
                                 }}>
-                                  <Check className={cn("mr-2 h-4 w-4", tempLinkFilter.includes(`campaign_${campaign.id}`) ? "opacity-100" : "opacity-0")}/>
+                                  <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", tempLinkFilter.includes(`campaign_${campaign.id}`) ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
+                                      <Check className={cn("h-4 w-4")} />
+                                  </div>
                                   {campaign.name}
                                 </CommandItem>
                               ))}
@@ -486,7 +525,9 @@ export default function DonationsPage() {
                                     const filterId = `lead_${lead.id}`;
                                     setTempLinkFilter(prev => prev.includes(filterId) ? prev.filter(l => l !== filterId) : [...prev, filterId]);
                                 }}>
-                                  <Check className={cn("mr-2 h-4 w-4", tempLinkFilter.includes(`lead_${lead.id}`) ? "opacity-100" : "opacity-0")}/>
+                                  <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", tempLinkFilter.includes(`lead_${lead.id}`) ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
+                                    <Check className={cn("h-4 w-4")} />
+                                  </div>
                                   {lead.name}
                                 </CommandItem>
                               ))}
@@ -494,8 +535,8 @@ export default function DonationsPage() {
                           </CommandGroup>
                         </CommandList>
                       </Command>
-                       <div className="p-2 border-t flex justify-end gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => { setTempLinkFilter([]); setLinkFilter([]); }}>Clear All</Button>
+                       <div className="p-2 border-t flex justify-between items-center">
+                            <Button variant="ghost" size="sm" onClick={() => { setTempLinkFilter([]); setLinkFilter([]); setOpenLinkFilter(false);}}>Reset</Button>
                             <Button size="sm" onClick={() => { setLinkFilter(tempLinkFilter); setOpenLinkFilter(false); }}>Apply</Button>
                         </div>
                     </PopoverContent>
@@ -510,7 +551,7 @@ export default function DonationsPage() {
                       <SortableHeader sortKey="srNo" className="w-[50px] pl-4" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
                       <SortableHeader sortKey="donorName" className="w-[200px]" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
                       <SortableHeader sortKey="amount" className="w-[150px] text-right" sortConfig={sortConfig} handleSort={handleSort}>Amount &amp; Date</SortableHeader>
-                      <SortableHeader sortKey="type" className="w-[200px]" sortConfig={sortConfig} handleSort={handleSort}>Category &amp; Type</SortableHeader>
+                      <TableHead className="w-[200px]">Category &amp; Type</TableHead>
                       <SortableHeader sortKey="status" className="w-[120px]" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
                       <TableHead className="w-[200px]">Linked To</TableHead>
                       <TableHead className="w-[100px] text-right pr-4">Actions</TableHead>

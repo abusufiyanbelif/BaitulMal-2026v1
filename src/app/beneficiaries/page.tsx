@@ -52,6 +52,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 
 type SortKey = keyof Beneficiary | 'srNo';
 type BeneficiaryStatus = Beneficiary['status'];
@@ -225,6 +226,8 @@ export default function BeneficiariesPage() {
     const referrals = new Set(beneficiaries.map(b => b.referralBy).filter(Boolean) as string[]);
     return [...Array.from(referrals).sort()];
   }, [beneficiaries]);
+
+  const areAllReferralsSelected = useMemo(() => uniqueReferrals.length > 0 && tempReferralFilter.length === uniqueReferrals.length, [tempReferralFilter, uniqueReferrals]);
 
   const handleAdd = () => {
     if (!canCreate) return;
@@ -510,6 +513,21 @@ export default function BeneficiariesPage() {
                         <CommandList>
                           <CommandEmpty>No referral found.</CommandEmpty>
                           <CommandGroup>
+                            <CommandItem
+                                onSelect={() => {
+                                    if (areAllReferralsSelected) {
+                                        setTempReferralFilter([]);
+                                    } else {
+                                        setTempReferralFilter([...uniqueReferrals]);
+                                    }
+                                }}
+                            >
+                                <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", areAllReferralsSelected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
+                                  <Check className={cn("h-4 w-4")} />
+                                </div>
+                                Select All
+                            </CommandItem>
+                            <Separator className="my-1" />
                             {uniqueReferrals.map((referral) => (
                               <CommandItem
                                 key={referral}
@@ -525,23 +543,21 @@ export default function BeneficiariesPage() {
                                   });
                                 }}
                               >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    tempReferralFilter.includes(referral) ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
+                                <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", tempReferralFilter.includes(referral) ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
+                                    <Check className={cn("h-4 w-4")} />
+                                </div>
                                 {referral}
                               </CommandItem>
                             ))}
                           </CommandGroup>
                         </CommandList>
                       </Command>
-                       <div className="p-2 border-t flex justify-end gap-2">
+                       <div className="p-2 border-t flex justify-between items-center">
                             <Button variant="ghost" size="sm" onClick={() => {
                                 setTempReferralFilter([]);
                                 setReferralFilter([]);
-                            }}>Clear All</Button>
+                                setOpenReferralPopover(false);
+                            }}>Reset</Button>
                             <Button size="sm" onClick={() => {
                                 setReferralFilter(tempReferralFilter);
                                 setOpenReferralPopover(false);
@@ -682,3 +698,4 @@ export default function BeneficiariesPage() {
     </main>
   );
 }
+
