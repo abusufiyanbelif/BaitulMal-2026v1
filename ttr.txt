@@ -1,5 +1,3 @@
-src/app/beneficiaries/[beneficiaryId]/page.tsx(174,17): error TS2349: This expression is not callable.
-  Type '{ imageFileResizer: (file: Blob, maxWidth: number, maxHeight: number, compressFormat: string, quality: number, rotation: number, responseUriFunc: (value: string | File | Blob | ProgressEvent<...>) => void, outputType?: string | undefined, minWidth?: number | undefined, minHeight?: number | undefined) => void; }' has no call signatures.
 src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(1082,232): error TS2304: Cannot find name 'handleDeleteClick'.
 src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(1089,225): error TS2304: Cannot find name 'handleDeleteClick'.
 src/app/campaign-members/create/page.tsx(127,17): error TS2349: This expression is not callable.

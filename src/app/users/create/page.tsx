@@ -4,16 +4,13 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { useCollection, useMemoFirebase } from '@/firebase/firestore/use-collection';
+import { useFirestore, errorEmitter, FirestorePermissionError, useStorage, useAuth, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Image from 'next/image';
-import imageFileResizer from 'react-image-file-resizer';
+import Resizer from 'react-image-file-resizer';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -75,7 +72,7 @@ export default function CreateUserPage() {
 
             if (file.type.startsWith('image/')) {
                 fileToUpload = await new Promise<Blob>((resolve) => {
-                     imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                     Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 fileExtension = 'png';
             } else if (file.type !== 'application/pdf') {
@@ -217,5 +214,3 @@ export default function CreateUserPage() {
     </>
   );
 }
-
-    

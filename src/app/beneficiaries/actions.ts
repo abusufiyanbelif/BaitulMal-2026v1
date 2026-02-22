@@ -126,10 +126,11 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
 }
 
 export async function syncMasterBeneficiaryListAction(): Promise<{ success: boolean; message: string; addedCount: number; }> {
-    const { adminDb } = getAdminServices();
-    if (!adminDb) {
+    const services = getAdminServices();
+    if (!services.adminDb) {
         return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, addedCount: 0 };
     }
+    const adminDb = services.adminDb;
     
     try {
         const batch = adminDb.batch();

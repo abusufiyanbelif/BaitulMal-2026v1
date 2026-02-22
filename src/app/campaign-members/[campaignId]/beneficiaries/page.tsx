@@ -4,8 +4,7 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
-import { useCollection, useDoc } from '@/firebase';
+import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -707,6 +706,13 @@ const sortedGroupKeys = useMemo(() => {
       setIsSubmitting(false);
     }
   };
+  
+  const handleDeleteClick = (id: string) => {
+    if (!canDelete) return;
+    setBeneficiaryToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+  
   const handleDeleteConfirm = async () => {
     if (!beneficiaryToDelete || !firestore || !storage || !campaignId || !canDelete || !beneficiaries || !campaign) return;
 
@@ -1147,7 +1153,7 @@ const sortedGroupKeys = useMemo(() => {
             <DialogHeader>
                 <DialogTitle>Import Beneficiaries</DialogTitle>
                 <DialogDescription>
-                    Upload an Excel (.xlsx) file with beneficiary data. Duplicates will be detected and skipped.
+                    Upload an Excel (.xlsx) or CSV (.csv) file with beneficiary data. Duplicates will be detected and skipped.
                 </DialogDescription>
             </DialogHeader>
             <div className="py-4">
@@ -1184,5 +1190,3 @@ const sortedGroupKeys = useMemo(() => {
     </>
   );
 }
-
-    
