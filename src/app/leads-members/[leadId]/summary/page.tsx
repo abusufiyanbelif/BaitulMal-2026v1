@@ -9,7 +9,8 @@ import { useDoc } from '@/firebase/firestore/use-doc';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
-import type { SecurityRuleContext } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { useSession } from '@/hooks/use-session';
 import { doc, collection, updateDoc, query, where, DocumentReference } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -41,7 +42,6 @@ import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { errorEmitter, FirestorePermissionError } from '@/firebase/errors';
 import { FileUploader } from '@/components/file-uploader';
 import { Switch } from '@/components/ui/switch';
 
@@ -567,91 +567,93 @@ Your contribution, big or small, makes a huge difference.
                     </CardContent>
                 </Card>
                 
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Target className="h-6 w-6 text-primary" />
-                            Fundraising Progress
-                        </CardTitle>
-                        <CardDescription>A real-time look at the collected donations against the goal for this initiative.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {isClient ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                            <div className="relative h-48 w-full">
-                                <ChartContainer
-                                    config={{
-                                        progress: {
-                                            label: 'Progress',
-                                            color: 'hsl(var(--primary))',
-                                        },
-                                    }}
-                                    className="mx-auto aspect-square h-full"
-                                >
-                                    <RadialBarChart
-                                        data={[{ name: 'Progress', value: summaryData?.fundingProgress || 0, fill: 'hsl(var(--primary))' }]}
-                                        startAngle={-270}
-                                        endAngle={90}
-                                        innerRadius="75%"
-                                        outerRadius="100%"
-                                        barSize={20}
-                                    >
-                                    <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                    <RadialBar
-                                        dataKey="value"
-                                        background={{ fill: 'hsl(var(--muted))' }}
-                                        cornerRadius={10}
-                                    />
-                                    <ChartTooltip
-                                        cursor={false}
-                                        content={<ChartTooltipContent hideLabel />}
-                                    />
-                                    </RadialBarChart>
-                                </ChartContainer>
-                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-4xl font-bold text-primary">
-                                        {(summaryData?.fundingProgress || 0).toFixed(0)}%
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">Funded</span>
-                                </div>
-                            </div>
-                            <div className="space-y-4 text-center md:text-left">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Raised for Goal</p>
-                                    <p className="text-3xl font-bold">
-                                    ₹{(summaryData?.totalCollectedForGoal || 0).toLocaleString('en-IN')}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Fundraising Target</p>
-                                    <p className="text-3xl font-bold">
-                                    ₹{(summaryData?.targetAmount || 0).toLocaleString('en-IN')}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Grand Total Received</p>
-                                    <p className="text-3xl font-bold">
-                                    ₹{(summaryData?.fundTotals.grandTotal || 0).toLocaleString('en-IN')}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                      ) : <Skeleton className="w-full h-48" />}
-                    </CardContent>
-                </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Target className="h-6 w-6 text-primary" />
+                                Fundraising Progress
+                            </CardTitle>
+                            <CardDescription>A real-time look at the collected donations against the goal for this initiative.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          {isClient ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                                  <div className="relative h-48 w-full">
+                                      <ChartContainer
+                                          config={{
+                                              progress: {
+                                                  label: 'Progress',
+                                                  color: 'hsl(var(--primary))',
+                                              },
+                                          }}
+                                          className="mx-auto aspect-square h-full"
+                                      >
+                                          <RadialBarChart
+                                              data={[{ name: 'Progress', value: summaryData?.fundingProgress || 0, fill: 'hsl(var(--primary))' }]}
+                                              startAngle={-270}
+                                              endAngle={90}
+                                              innerRadius="75%"
+                                              outerRadius="100%"
+                                              barSize={20}
+                                          >
+                                          <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                          <RadialBar
+                                              dataKey="value"
+                                              background={{ fill: 'hsl(var(--muted))' }}
+                                              cornerRadius={10}
+                                          />
+                                          <ChartTooltip
+                                              cursor={false}
+                                              content={<ChartTooltipContent hideLabel />}
+                                          />
+                                          </RadialBarChart>
+                                      </ChartContainer>
+                                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                          <span className="text-4xl font-bold text-primary">
+                                              {(summaryData?.fundingProgress || 0).toFixed(0)}%
+                                          </span>
+                                          <span className="text-xs text-muted-foreground">Funded</span>
+                                      </div>
+                                  </div>
+                                  <div className="space-y-4 text-center md:text-left">
+                                      <div>
+                                          <p className="text-sm text-muted-foreground">Raised for Goal</p>
+                                          <p className="text-3xl font-bold">
+                                          ₹{(summaryData?.totalCollectedForGoal || 0).toLocaleString('en-IN')}
+                                          </p>
+                                      </div>
+                                      <div>
+                                          <p className="text-sm text-muted-foreground">Fundraising Target</p>
+                                          <p className="text-3xl font-bold">
+                                          ₹{(summaryData?.targetAmount || 0).toLocaleString('en-IN')}
+                                          </p>
+                                      </div>
+                                      <div>
+                                          <p className="text-sm text-muted-foreground">Grand Total Received</p>
+                                          <p className="text-3xl font-bold">
+                                          ₹{(summaryData?.fundTotals.grandTotal || 0).toLocaleString('en-IN')}
+                                          </p>
+                                      </div>
+                                  </div>
+                              </div>
+                          ) : (
+                              <Skeleton className="w-full h-48" />
+                          )}
+                        </CardContent>
+                    </Card>
 
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader>
                         <CardContent><div className="text-2xl font-bold">{summaryData?.totalBeneficiaries ?? 0}</div></CardContent>
                     </Card>
-                     <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Collected</CardTitle><Wallet className="h-4 w-4 text-muted-foreground" /></CardHeader>
-                        <CardContent><div className="text-2xl font-bold">₹{(summaryData?.fundTotals?.grandTotal || 0).toLocaleString('en-IN')}</div></CardContent>
-                    </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Items Distributed</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader>
                         <CardContent><div className="text-2xl font-bold">{summaryData?.beneficiariesGiven ?? 0}</div></CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Pending Distribution</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader>
+                        <CardContent><div className="text-2xl font-bold">{summaryData?.beneficiariesPending ?? 0}</div></CardContent>
                     </Card>
                 </div>
                 <Card>
