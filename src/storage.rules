@@ -4,6 +4,10 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     
+    // ----------------------------------------------------------------------
+    // Helper Functions (Synced with firestore.rules)
+    // ----------------------------------------------------------------------
+
     function isSignedIn() {
       return request.auth != null;
     }
@@ -13,7 +17,9 @@ service firebase.storage {
     }
     
     function userDocRef() {
-        return /databases/$(database)/documents/users/$(request.auth.uid);
+        // Note: In Storage Rules, `database` is not a predefined variable.
+        // We must explicitly use `(default)`.
+        return /databases/(default)/documents/users/$(request.auth.uid);
     }
     
     function userExists() {
@@ -25,10 +31,10 @@ service firebase.storage {
     }
     
     function isAdmin() {
-      return isSignedIn() &&
+      return isSignedIn() && 
              userExists() &&
              'role' in getUserData() &&
-             getUserData().role == 'Admin';
+             getUserData().role.lower() == 'admin';
     }
     
     function hasPermission(module, permission) {
@@ -40,51 +46,55 @@ service firebase.storage {
     }
     
     function hasSubmodulePermission(module, submodule, permission) {
-      return isSignedIn() && 
-             userExists() &&
-             'permissions' in getUserData() &&
-             module in getUserData().permissions &&
-             submodule in getUserData().permissions[module] &&
-             getUserData().permissions[module][submodule][permission] == true;
+        return isSignedIn() && 
+               userExists() &&
+               'permissions' in getUserData() &&
+               module in getUserData().permissions &&
+               submodule in getUserData().permissions[module] &&
+               getUserData().permissions[module][submodule][permission] == true;
     }
+    
+    // ----------------------------------------------------------------------
+    // Path Rules
+    // ----------------------------------------------------------------------
 
-    // Rules for donations: anyone signed in can upload (create). Reading is public.
+    // Donations: Authenticated users can upload. Public can read (if URL is known).
     match /donations/{donationId}/{allPaths=**} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Rules for campaigns: must be admin or have campaign update permissions.
+    // Campaigns: Must be admin or have campaign update permissions to write.
     match /campaigns/{campaignId}/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin() || hasPermission('campaigns', 'update');
     }
 
-    // Rules for leads: must be admin or have lead update permissions.
+    // Leads: Must be admin or have lead update permissions to write.
     match /leads/{leadId}/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin() || hasPermission('leads-members', 'update');
     }
     
-    // Rules for master beneficiary list: must be admin or have specific beneficiary permissions.
+    // Master Beneficiaries: Must be admin or have specific beneficiary permissions to write.
     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
         allow read: if true;
         allow write: if isAdmin() || hasPermission('beneficiaries', 'update');
     }
 
-    // Settings can be read by anyone (for logo), but only written by admins/settings managers.
+    // Settings: Publicly readable (for logo), but only writable by admins/settings managers.
     match /settings/{allPaths=**} {
         allow read: if true;
         allow write: if isAdmin() || hasPermission('settings', 'update');
     }
 
-    // User-specific files (like their own ID proof). Only they or an admin can write.
+    // User-specific files: Only the owner or an admin/user with permissions can write.
     match /users/{userId}/{allPaths=**} {
       allow read: if true;
       allow write: if isOwner(userId) || isAdmin() || hasPermission('users', 'update');
     }
 
-    // Diagnostics path for testing
+    // Diagnostics path for testing: Only owner can access.
     match /test/{userId}/{allPaths=**} {
       allow read, write: if isOwner(userId);
     }
