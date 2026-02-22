@@ -10,7 +10,7 @@ import { collection, addDoc, updateDoc, doc, serverTimestamp, setDoc, deleteFiel
 import type { Donation, Campaign, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
-import Resizer from 'react-image-file-resizer';
+import imageFileResizer from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
@@ -198,7 +198,7 @@ export default function DonationsPage() {
             if (fileList && fileList.length > 0) {
                 const file = fileList[0];
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                     (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                     imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
                 const fileRef = storageRef(storage, filePath);
@@ -209,6 +209,8 @@ export default function DonationsPage() {
                 id: transaction.id,
                 amount: transaction.amount,
                 transactionId: transaction.transactionId || '',
+                date: transaction.date || '',
+                upiId: transaction.upiId || '',
                 screenshotUrl: screenshotUrl,
                 screenshotIsPublic: transaction.screenshotIsPublic || false,
             };
@@ -302,10 +304,10 @@ export default function DonationsPage() {
     if (linkFilter.length > 0) {
       sortableItems = sortableItems.filter(d => {
         const links = d.linkSplit || [];
-        const legacyLinkId = (d as any).campaignId ? `campaign_${(d as any).campaignId}` : null;
+        const legacyCampaignId = (d as any).campaignId;
         
-        const isUnlinked = links.length === 0 && !legacyLinkId;
-        const hasLegacyLink = (id: string) => legacyLinkId === id && links.length === 0;
+        const isUnlinked = links.length === 0 && !legacyCampaignId;
+        const hasLegacyLink = (id: string) => legacyCampaignId && `campaign_${legacyCampaignId}` === id && links.length === 0;
         
         return linkFilter.some(filterValue => {
           if (filterValue === 'unlinked') {
@@ -562,7 +564,7 @@ export default function DonationsPage() {
                     [...Array(5)].map((_, i) => (<TableRow key={i}><TableCell colSpan={8}><Skeleton className="h-12 w-full" /></TableCell></TableRow>))
                   ) : filteredAndSortedDonations.length > 0 ? (
                     filteredAndSortedDonations.map((donation, index) => (
-                      <TableRow key={donation.id}>
+                      <TableRow key={donation.id} onClick={() => router.push(`/donations/${donation.id}`)} className="cursor-pointer">
                         <TableCell className="pl-4">{index + 1}</TableCell>
                         <TableCell>
                           <div className="font-medium">{donation.donorName}</div>
@@ -592,7 +594,7 @@ export default function DonationsPage() {
                         </TableCell>
                         <TableCell className="text-right pr-4">
                               <DropdownMenu>
-                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={() => router.push(`/donations/${donation.id}`)}><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
                                     {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}

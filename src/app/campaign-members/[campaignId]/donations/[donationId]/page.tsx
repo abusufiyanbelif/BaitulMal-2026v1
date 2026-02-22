@@ -112,6 +112,8 @@ export default function DonationDetailsPage() {
                     id: transaction.id,
                     amount: transaction.amount,
                     transactionId: transaction.transactionId || '',
+                    date: transaction.date || '',
+                    upiId: transaction.upiId || '',
                     screenshotUrl: screenshotUrl,
                     screenshotIsPublic: transaction.screenshotIsPublic || false,
                 };
@@ -341,7 +343,9 @@ export default function DonationDetailsPage() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Amount</TableHead>
+                                        <TableHead>Date</TableHead>
                                         <TableHead>Transaction ID</TableHead>
+                                        <TableHead>UPI ID</TableHead>
                                         <TableHead>Screenshot</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -349,7 +353,9 @@ export default function DonationDetailsPage() {
                                     {donation.transactions.map((tx: TransactionDetail) => (
                                         <TableRow key={tx.id}>
                                             <TableCell className="font-mono">₹{tx.amount.toFixed(2)}</TableCell>
+                                            <TableCell>{tx.date || 'N/A'}</TableCell>
                                             <TableCell>{tx.transactionId || 'N/A'}</TableCell>
+                                            <TableCell>{tx.upiId || 'N/A'}</TableCell>
                                             <TableCell>
                                                 {tx.screenshotUrl ? (
                                                      <Button variant="outline" size="sm" asChild>

@@ -12,7 +12,7 @@ import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { doc, DocumentReference, setDoc, serverTimestamp, collection, deleteField } from 'firebase/firestore';
 import Link from 'next/link';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import Resizer from 'react-image-file-resizer';
+import imageFileResizer from 'react-image-file-resizer';
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
 
@@ -97,7 +97,7 @@ export default function UnlinkedDonationDetailsPage() {
                     const file = (transaction.screenshotFile as FileList)[0];
                     if(file) {
                         const resizedBlob = await new Promise<Blob>((resolve) => {
-                            Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                            imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                         });
                         const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
                         const fileRef = storageRef(storage, filePath);
@@ -109,6 +109,8 @@ export default function UnlinkedDonationDetailsPage() {
                     id: transaction.id,
                     amount: transaction.amount,
                     transactionId: transaction.transactionId || '',
+                    date: transaction.date || '',
+                    upiId: transaction.upiId || '',
                     screenshotUrl: screenshotUrl,
                     screenshotIsPublic: transaction.screenshotIsPublic || false,
                 };
@@ -338,7 +340,9 @@ export default function UnlinkedDonationDetailsPage() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Amount</TableHead>
+                                        <TableHead>Date</TableHead>
                                         <TableHead>Transaction ID</TableHead>
+                                        <TableHead>UPI ID</TableHead>
                                         <TableHead>Screenshot</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -346,7 +350,9 @@ export default function UnlinkedDonationDetailsPage() {
                                     {donation.transactions.map((tx: TransactionDetail) => (
                                         <TableRow key={tx.id}>
                                             <TableCell className="font-mono">₹{tx.amount.toFixed(2)}</TableCell>
+                                            <TableCell>{tx.date || 'N/A'}</TableCell>
                                             <TableCell>{tx.transactionId || 'N/A'}</TableCell>
+                                            <TableCell>{tx.upiId || 'N/A'}</TableCell>
                                             <TableCell>
                                                 {tx.screenshotUrl ? (
                                                      <Button variant="outline" size="sm" asChild>

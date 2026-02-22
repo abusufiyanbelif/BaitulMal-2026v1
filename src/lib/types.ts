@@ -1,4 +1,5 @@
 
+
 import type { DocumentData, Timestamp } from 'firebase/firestore';
 import type { UserPermissions } from './modules';
 import { donationCategories } from './modules';
@@ -163,6 +164,8 @@ export interface TransactionDetail {
   screenshotUrl?: string;
   screenshotFilename?: string;
   screenshotIsPublic?: boolean;
+  date?: string;
+  upiId?: string;
 }
 
 export interface Donation extends DocumentData {

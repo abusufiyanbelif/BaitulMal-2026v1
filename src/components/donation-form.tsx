@@ -3,11 +3,11 @@
 'use client';
 
 import { z } from 'zod';
-import { useForm, useFieldArray, useWatch, type Control, type UseFormRegister, type UseFormSetValue } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch, type Control, type UseFormRegister, type UseFormSetValue, type UseFormGetValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
-import Resizer from 'react-image-file-resizer';
+import imageFileResizer from 'react-image-file-resizer';
 import {
   Form,
   FormControl,
@@ -66,6 +66,8 @@ const formSchema = z.object({
       id: z.string(),
       amount: z.coerce.number().min(0, "Transaction amount can't be negative."),
       transactionId: z.string().optional(),
+      date: z.string().optional(),
+      upiId: z.string().optional(),
       screenshotUrl: z.string().optional(),
       screenshotIsPublic: z.boolean().optional(),
       screenshotFile: z.any().optional(),
@@ -85,9 +87,11 @@ interface DonationFormProps {
   defaultLinkId?: string;
 }
 
-const TransactionItem = ({ control, index, remove, register, setValue, canRemove }: { control: Control<DonationFormData>, index: number, remove: (index: number) => void, register: UseFormRegister<DonationFormData>, setValue: UseFormSetValue<DonationFormData>, canRemove: boolean }) => {
+const TransactionItem = ({ control, index, remove, register, setValue, canRemove, getValues }: { control: Control<DonationFormData>, index: number, remove: (index: number) => void, register: UseFormRegister<DonationFormData>, setValue: UseFormSetValue<DonationFormData>, getValues: UseFormGetValues<DonationFormData>, canRemove: boolean }) => {
+    const { toast } = useToast();
     const [preview, setPreview] = useState<string | null>(null);
     const [isViewerOpen, setIsViewerOpen] = useState(false);
+    const [isScanning, setIsScanning] = useState(false);
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
 
@@ -114,6 +118,59 @@ const TransactionItem = ({ control, index, remove, register, setValue, canRemove
         setValue(`transactions.${index}.screenshotUrl`, '', { shouldDirty: true });
         setPreview(null);
         setIsViewerOpen(false);
+    };
+    
+    const handleScanScreenshot = async () => {
+        const fileList = getValues(`transactions.${index}.screenshotFile`);
+        if (!fileList || fileList.length === 0) {
+            toast({ title: 'No Screenshot', description: 'Please upload a screenshot to scan.', variant: 'destructive' });
+            return;
+        }
+
+        setIsScanning(true);
+        toast({ title: 'Scanning screenshot...', description: 'Please wait.' });
+
+        const file = fileList[0];
+        const reader = new FileReader();
+
+        reader.onload = async (e) => {
+            const dataUri = e.target?.result as string;
+            if (!dataUri) {
+                toast({ title: "Read Error", description: "Could not read the uploaded file.", variant: "destructive" });
+                setIsScanning(false);
+                return;
+            }
+
+            try {
+                const apiResponse = await fetch('/api/scan-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ photoDataUri: dataUri }),
+                });
+
+                if (!apiResponse.ok) {
+                    const errorData = await apiResponse.json();
+                    throw new Error(errorData.error || 'The server returned an error.');
+                }
+                const response = await apiResponse.json();
+                
+                if (response.amount) setValue(`transactions.${index}.amount`, response.amount, { shouldDirty: true });
+                if (response.transactionId) setValue(`transactions.${index}.transactionId`, response.transactionId, { shouldDirty: true });
+                if (response.date) setValue(`transactions.${index}.date`, response.date, { shouldDirty: true });
+                if (response.upiId) setValue(`transactions.${index}.upiId`, response.upiId, { shouldDirty: true });
+                if (response.receiverName && !getValues('receiverName')) {
+                    setValue('receiverName', response.receiverName, { shouldDirty: true });
+                }
+
+                toast({ title: 'Scan Complete', description: 'Transaction details have been autofilled.', variant: 'success'});
+
+            } catch (error: any) {
+                toast({ title: 'Scan Failed', description: error.message || 'Could not automatically read details.', variant: 'destructive'});
+            } finally {
+                setIsScanning(false);
+            }
+        };
+        reader.readAsDataURL(file);
     };
 
     return (
@@ -143,11 +200,35 @@ const TransactionItem = ({ control, index, remove, register, setValue, canRemove
                 />
                 <FormField
                     control={control}
+                    name={`transactions.${index}.date`}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Transaction Date</FormLabel>
+                            <FormControl><Input type="date" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 <FormField
+                    control={control}
                     name={`transactions.${index}.transactionId`}
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Transaction ID</FormLabel>
                             <FormControl><Input placeholder="UPI ID, Check No., etc." {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={control}
+                    name={`transactions.${index}.upiId`}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Sender UPI ID</FormLabel>
+                            <FormControl><Input placeholder="e.g. sender@okhdfcbank" {...field} /></FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
@@ -211,6 +292,12 @@ const TransactionItem = ({ control, index, remove, register, setValue, canRemove
                         )}
                     />
                 )}
+                 {fileList && fileList.length > 0 && (
+                    <Button type="button" onClick={handleScanScreenshot} disabled={isScanning} className="w-full mt-2">
+                        {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ScanLine className="mr-2 h-4 w-4" />}
+                        Scan Screenshot
+                    </Button>
+                )}
             </div>
         </div>
     )
@@ -238,7 +325,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
       suggestions: donation?.suggestions || '',
       isTypeSplit: (donation?.typeSplit?.length ?? 0) > 1,
       typeSplit: donation?.typeSplit && donation.typeSplit.length > 0 ? donation.typeSplit.map(ts => ({...ts, forFundraising: ts.forFundraising ?? true})) : [{ category: 'Sadaqah', amount: donation?.amount || 0, forFundraising: true }],
-      transactions: donation?.transactions && donation.transactions.length > 0 ? donation.transactions.map(tx => ({...tx, amount: Number(tx.amount) })) : [{ id: `tx_${Date.now()}`, amount: donation?.amount || 0, transactionId: (donation as any)?.transactionId }],
+      transactions: donation?.transactions && donation.transactions.length > 0 ? donation.transactions.map(tx => ({...tx, amount: Number(tx.amount), date: tx.date || (donation?.donationDate || new Date().toISOString().split('T')[0]) })) : [{ id: `tx_${Date.now()}`, amount: donation?.amount || 0, transactionId: (donation as any)?.transactionId, date: donation?.donationDate || new Date().toISOString().split('T')[0] }],
       isSplit: (donation?.linkSplit?.length ?? 0) > 1,
       linkSplit: donation?.linkSplit?.map(l => ({ linkId: `${l.linkType}_${l.linkId}`, amount: l.amount })) || (defaultLinkId ? [{linkId: defaultLinkId, amount: donation?.amount || 0}] : []),
     },
@@ -355,6 +442,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                         index={index}
                         register={register}
                         setValue={setValue}
+                        getValues={getValues}
                         remove={removeTransaction}
                         canRemove={transactionFields.length > 1}
                     />
@@ -364,7 +452,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => appendTransaction({ id: `tx_${Date.now()}`, amount: 0, transactionId: '' })}
+                onClick={() => appendTransaction({ id: `tx_${Date.now()}`, amount: 0, transactionId: '', date: new Date().toISOString().split('T')[0], upiId: '' })}
             >
                 <Plus className="mr-2 h-4 w-4"/> Add another transaction
             </Button>

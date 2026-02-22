@@ -24,6 +24,7 @@ const ScanPaymentScreenshotOutputSchema = z.object({
   amount: z.number().optional().describe('The transaction amount, as a number without currency symbols.'),
   transactionId: z.string().optional().describe('The Transaction ID, UPI Transaction ID, or any other unique reference number.'),
   date: z.string().optional().describe('The date of the transaction in YYYY-MM-DD format.'),
+  upiId: z.string().optional().describe("The sender's UPI ID, if visible (e.g., something@okhdfcbank)."),
 });
 export type ScanPaymentScreenshotOutput = z.infer<typeof ScanPaymentScreenshotOutputSchema>;
 
@@ -44,6 +45,7 @@ const prompt = ai.definePrompt({
 2.  **amount**: Find the main transaction amount. It may have a currency symbol like '₹'. The value should be a number. For example, if you see '₹200', the value should be \`200\`.
 3.  **transactionId**: Find the unique transaction identifier. Look for labels like "UPI Transaction ID", "Transaction ID", "UTR", or "Ref No.". Extract the alphanumeric code associated with it.
 4.  **date**: Find the date of the transaction. If you find a date (e.g., "Jan 31, 2026", "31-01-2026"), you MUST format it as YYYY-MM-DD.
+5.  **upiId**: Extract the sender's UPI ID. Look for labels like "From", "Debited from", or a UPI ID format (e.g., something@okhdfcbank) associated with the sender.
 
 If any of these fields are not clearly visible, omit them from the output.
 
