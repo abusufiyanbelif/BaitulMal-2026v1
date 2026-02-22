@@ -1,6 +1,8 @@
 import { initializeApp } from 'firebase/app'
 import { getStorage, ref, uploadString } from 'firebase/storage'
-import 'dotenv/config'
+import dotenv from 'dotenv'
+dotenv.config({ path: '.env.local' })
+dotenv.config()
 
 const app = initializeApp({
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
