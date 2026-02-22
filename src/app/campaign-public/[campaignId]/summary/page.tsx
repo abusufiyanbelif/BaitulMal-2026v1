@@ -293,6 +293,7 @@ Your contribution, big or small, makes a huge difference.
     }
     
     const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
+    const publicDocuments = campaign.documents?.filter(d => d.isPublic) || [];
     
     return (
         <main className="container mx-auto p-4 md:p-8">
@@ -482,15 +483,15 @@ Your contribution, big or small, makes a huge difference.
                     </Card>
                 </div>
                 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Public Artifacts</CardTitle>
-                        <CardDescription>View photos, receipts, or other public documents related to this campaign.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {campaign.documents && campaign.documents.filter(d => d.isPublic).length > 0 ? (
+                {publicDocuments.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Public Artifacts</CardTitle>
+                            <CardDescription>View photos, receipts, or other public documents related to this campaign.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                {campaign.documents.filter(d => d.isPublic).map((doc) => (
+                                {publicDocuments.map((doc) => (
                                     <Button key={doc.url} variant="outline" asChild>
                                         <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
                                             <File className="mr-2 h-4 w-4 shrink-0" />
@@ -499,9 +500,9 @@ Your contribution, big or small, makes a huge difference.
                                     </Button>
                                 ))}
                             </div>
-                        ) : <p className="text-sm text-muted-foreground">No public artifacts have been shared for this campaign yet.</p>}
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {fundingData && (
                     <div className="grid gap-6 lg:grid-cols-2">

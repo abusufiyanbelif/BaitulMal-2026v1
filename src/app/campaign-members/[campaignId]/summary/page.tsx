@@ -665,7 +665,7 @@ Your contribution, big or small, makes a huge difference.
                                 <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
                             </Button>
                         )}
-                        {canReadDonations && (
+                         {canReadDonations && (
                             <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
                                 <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
                             </Button>
