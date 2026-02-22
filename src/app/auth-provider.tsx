@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
 import { SessionProvider } from '@/components/session-provider';
 import { useUser } from '@/firebase/auth/use-user';
+import { useSession } from '@/hooks/use-session';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -14,7 +15,7 @@ import { AlertTriangle } from 'lucide-react';
 // This internal component will only run AFTER the initial auth check is complete.
 // It handles route protection.
 function RouteGuard({ children }: { children: ReactNode }) {
-    const { user } = useUser(); // We can safely get the user now.
+    const { user, isLoading } = useSession(); // Use session which knows about both auth and profile loading state
     const router = useRouter();
     const pathname = usePathname();
 
@@ -22,17 +23,21 @@ function RouteGuard({ children }: { children: ReactNode }) {
     const isHomePage = pathname === '/';
 
     useEffect(() => {
-        // This effect will now run with a stable `user` value.
+        // Wait until the session loading is complete before running any redirect logic
+        if (isLoading) {
+            return;
+        }
+        
         if (!user && !isPublicRoute && !isHomePage) {
             router.push('/login');
         }
         if (user && isHomePage) {
             router.push('/dashboard');
         }
-    }, [user, isPublicRoute, isHomePage, pathname, router]);
+    }, [user, isLoading, isPublicRoute, isHomePage, pathname, router]);
 
-    // While the redirect is happening for a protected route, show a loader.
-    if ((!user && !isPublicRoute && !isHomePage) || (user && isHomePage)) {
+    // Show a loader while the session is loading OR while a redirect is imminent.
+    if (isLoading || (!user && !isPublicRoute && !isHomePage) || (user && isHomePage)) {
         return <BrandedLoader />;
     }
     
@@ -71,10 +76,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
     }
     
-    // Pass the top-level loading state down and conditionally render the loader as an overlay.
+    // SessionProvider fetches the user's profile and provides a unified 'isLoading' state.
+    // RouteGuard consumes this state to prevent premature redirects.
     return (
         <SessionProvider authUser={user} isAuthenticating={isUserLoading}>
-            {isUserLoading && <BrandedLoader />}
             <RouteGuard>{children}</RouteGuard>
         </SessionProvider>
     );
