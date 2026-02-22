@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -9,7 +10,7 @@ import { useStorage, useFirestore, useAuth } from '@/firebase/provider';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, writeBatch } from 'firebase/firestore';
-import Resizer from 'react-image-file-resizer';
+import imageFileResizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -142,7 +143,7 @@ export default function AppSettingsPage() {
             let newLogoUrl = editableData.logoUrl;
             if (logoFile) {
                  const resizedBlob = await new Promise<Blob>((resolve) => {
-                    (Resizer as any).imageFileResizer(logoFile, 800, 800, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    imageFileResizer(logoFile, 800, 800, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = 'settings/logo';
                 const fileRef = storageRef(storage, filePath);
@@ -161,7 +162,7 @@ export default function AppSettingsPage() {
             let newQrCodeUrl = editableData.qrCodeUrl;
             if (qrCodeFile) {
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                    (Resizer as any).imageFileResizer(qrCodeFile, 800, 800, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    imageFileResizer(qrCodeFile, 800, 800, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = 'settings/payment_qr';
                 const fileRef = storageRef(storage, filePath);
@@ -309,7 +310,7 @@ export default function AppSettingsPage() {
                             </div>
                             {isEditMode && (
                                 <div className="space-y-2">
-                                    <label htmlFor="logo-upload" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), "w-full cursor-pointer")}>
+                                    <label htmlFor="logo-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 w-full cursor-pointer">
                                         <UploadCloud className="mr-2 h-4 w-4" /> Change Logo
                                     </label>
                                     <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
@@ -372,7 +373,7 @@ export default function AppSettingsPage() {
                                     </div>
                                      {isEditMode && (
                                         <div className="space-y-2 w-full text-center">
-                                            <label htmlFor="qr-upload" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), "w-full cursor-pointer")}>
+                                            <label htmlFor="qr-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 w-full cursor-pointer">
                                                 <UploadCloud className="mr-2 h-4 w-4" /> Change QR Code
                                             </label>
                                             <Input id="qr-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setQrCodeFile(e.target.files[0])} />
