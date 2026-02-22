@@ -67,7 +67,13 @@ export function getAdminServices(): { adminDb: Firestore | null; adminAuth: Auth
     try {
         const { db, auth, storage } = initializeAdmin();
         return { adminDb: db, adminAuth: auth, adminStorage: storage };
-    } catch (e) {
+    } catch (e: any) {
+        console.error(
+            'CRITICAL: Firebase Admin SDK initialization failed. This is likely an environment issue. ' +
+            'Ensure the service account has the correct IAM permissions and required APIs (e.g., Identity Toolkit API) are enabled in Google Cloud.',
+            e
+        );
         return { adminDb: null, adminAuth: null, adminStorage: null };
     }
 }
+
