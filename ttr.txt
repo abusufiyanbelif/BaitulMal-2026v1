@@ -1,9 +1,19 @@
+src/app/beneficiaries/[beneficiaryId]/page.tsx(174,17): error TS2349: This expression is not callable.
+  Type '{ imageFileResizer: (file: Blob, maxWidth: number, maxHeight: number, compressFormat: string, quality: number, rotation: number, responseUriFunc: (value: string | File | Blob | ProgressEvent<...>) => void, outputType?: string | undefined, minWidth?: number | undefined, minHeight?: number | undefined) => void; }' has no call signatures.
 src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(1082,232): error TS2304: Cannot find name 'handleDeleteClick'.
 src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(1089,225): error TS2304: Cannot find name 'handleDeleteClick'.
+src/app/campaign-members/create/page.tsx(127,17): error TS2349: This expression is not callable.
+  Type '{ imageFileResizer: (file: Blob, maxWidth: number, maxHeight: number, compressFormat: string, quality: number, rotation: number, responseUriFunc: (value: string | File | Blob | ProgressEvent<...>) => void, outputType?: string | undefined, minWidth?: number | undefined, minHeight?: number | undefined) => void; }' has no call signatures.
 src/app/donations/page.tsx(201,22): error TS2349: This expression is not callable.
   Type '{ imageFileResizer: (file: Blob, maxWidth: number, maxHeight: number, compressFormat: string, quality: number, rotation: number, responseUriFunc: (value: string | File | Blob | ProgressEvent<...>) => void, outputType?: string | undefined, minWidth?: number | undefined, minHeight?: number | undefined) => void; }' has no call signatures.
-src/app/settings/app/page.tsx(312,77): error TS2304: Cannot find name 'cn'.
-src/app/settings/app/page.tsx(312,80): error TS2304: Cannot find name 'buttonVariants'.
-src/app/settings/app/page.tsx(375,83): error TS2304: Cannot find name 'cn'.
-src/app/settings/app/page.tsx(375,86): error TS2304: Cannot find name 'buttonVariants'.
+src/app/leads-members/create/page.tsx(166,17): error TS2349: This expression is not callable.
+  Type '{ imageFileResizer: (file: Blob, maxWidth: number, maxHeight: number, compressFormat: string, quality: number, rotation: number, responseUriFunc: (value: string | File | Blob | ProgressEvent<...>) => void, outputType?: string | undefined, minWidth?: number | undefined, minHeight?: number | undefined) => void; }' has no call signatures.
+src/app/settings/app/page.tsx(146,21): error TS2349: This expression is not callable.
+  Type '{ imageFileResizer: (file: Blob, maxWidth: number, maxHeight: number, compressFormat: string, quality: number, rotation: number, responseUriFunc: (value: string | File | Blob | ProgressEvent<...>) => void, outputType?: string | undefined, minWidth?: number | undefined, minHeight?: number | undefined) => void; }' has no call signatures.
+src/app/settings/app/page.tsx(165,21): error TS2349: This expression is not callable.
+  Type '{ imageFileResizer: (file: Blob, maxWidth: number, maxHeight: number, compressFormat: string, quality: number, rotation: number, responseUriFunc: (value: string | File | Blob | ProgressEvent<...>) => void, outputType?: string | undefined, minWidth?: number | undefined, minHeight?: number | undefined) => void; }' has no call signatures.
+src/app/users/[userId]/page.tsx(120,17): error TS2349: This expression is not callable.
+  Type '{ imageFileResizer: (file: Blob, maxWidth: number, maxHeight: number, compressFormat: string, quality: number, rotation: number, responseUriFunc: (value: string | File | Blob | ProgressEvent<...>) => void, outputType?: string | undefined, minWidth?: number | undefined, minHeight?: number | undefined) => void; }' has no call signatures.
 src/app/users/create/page.tsx(10,25): error TS2305: Module '"@/firebase/firestore/use-collection"' has no exported member 'useMemoFirebase'.
+src/app/users/create/page.tsx(78,22): error TS2349: This expression is not callable.
+  Type '{ imageFileResizer: (file: Blob, maxWidth: number, maxHeight: number, compressFormat: string, quality: number, rotation: number, responseUriFunc: (value: string | File | Blob | ProgressEvent<...>) => void, outputType?: string | undefined, minWidth?: number | undefined, minHeight?: number | undefined) => void; }' has no call signatures.

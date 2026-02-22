@@ -8,7 +8,7 @@ import { useDoc } from '@/firebase/firestore/use-doc';
 import { getDocs, getDoc, doc, type QueryDocumentSnapshot, type DocumentData, type DocumentReference, collection } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
-import imageFileResizer from 'react-image-file-resizer';
+import Resizer from 'react-image-file-resizer';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -171,7 +171,7 @@ export default function BeneficiaryDetailsPage() {
             }
             
             await new Promise<void>((resolve) => {
-                imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
+                (Resizer as any)(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
                   fileToUpload = blob as Blob;
                   resolve();
                 }, 'blob');

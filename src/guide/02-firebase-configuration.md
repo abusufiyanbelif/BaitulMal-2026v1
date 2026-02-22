@@ -5,8 +5,7 @@ A correct Firebase setup is critical for the application to function. This guide
 ## Table of Contents
 
 -   [Firebase Project Setup](#firebase-project-setup)
--   [Client-Side Configuration](#client-side-configuration-srcfirebaseconfigts)
--   [Admin SDK Configuration](#admin-sdk-configuration-serviceaccountkeyjson-local-vs-production)
+-   [Client-Side vs. Server-Side Configuration](#client-side-vs-server-side-configuration)
 -   [Troubleshooting Connection Issues](#troubleshooting-connection-issues)
 
 ## Firebase Project Setup
@@ -19,7 +18,7 @@ Ensure the following services are enabled for your project:
 
 1.  **Authentication**:
     -   Go to the **Authentication** section.
-    -   Under the "Sign-in method" tab, enable the **Email/Password** provider. This is required for the database seeding script to create the initial admin user.
+    -   Under the "Sign-in method" tab, enable the **Email/Password** provider.
 
 2.  **Firestore Database**:
     -   Go to the **Firestore Database** section and click **"Create database"**.
@@ -29,44 +28,40 @@ Ensure the following services are enabled for your project:
     -   Go to the **Storage** section and click **"Get started"**.
 
 In the Google Cloud Console, you must also enable the following APIs for your project:
-- **Identity Toolkit API** (for Firebase Authentication)
+- **Identity Toolkit API**
 - **Cloud Firestore API**
 - **Cloud Storage API**
-- **Generative Language API** (for AI features)
+- **Generative Language API**
 
-For details on the necessary IAM roles for your service account, see the [Permissions & Authentication](./04-permissions-and-auth.md) guide.
+## Client-Side vs. Server-Side Configuration
 
-## Client-Side Configuration (`src/firebase/config.ts`)
+The application interacts with Firebase in two distinct ways, each with its own configuration method.
 
-The client-side application connects to Firebase using configuration from your `.env` file, which is consumed by `src/firebase/config.ts`.
+### 1. Client-Side (Browser)
 
--   **Purpose**: It provides public keys and project identifiers that the Firebase SDK needs to connect from the user's browser. It is safe to expose these keys publicly, as security is enforced by your **Security Rules**.
--   **Source**: The `.env` file in your project root.
+This is how the application connects to Firebase from the user's browser.
 
-You should not need to modify `src/firebase/config.ts` directly.
+| File           | Purpose                                                                                                                                                                            | Security                                                                                             |
+| :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| `.env`         | Stores the public Firebase configuration keys (e.g., `NEXT_PUBLIC_FIREBASE_API_KEY`).                                                                                              | These keys are safe to expose publicly. They identify your Firebase project but do not grant any special access. |
+| `src/firebase/config.ts` | Consumes the variables from `.env` and exports a configuration object for the Firebase client SDK.                                                                       | Security for client-side operations is enforced by your **Firestore and Storage Security Rules**.          |
 
-## Admin SDK Configuration (`serviceAccountKey.json`): Local vs. Production
+### 2. Server-Side (Admin SDK)
 
-Server-side scripts (e.g., for database seeding) require administrative access. This is handled differently in local development versus production.
+This is how administrative scripts (like `npm run db:*`) and Server Actions connect to Firebase with elevated privileges.
 
-### Local Development
+| Environment  | Configuration Method                                                                                                                 | Why it's needed                                                                                              |
+| :----------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------- |
+| **Local Development** | Uses the **`serviceAccountKey.json`** file in your project root.                                                                 | Grants your local machine's scripts admin rights to bypass all security rules for seeding, migrations, etc.  |
+| **Production** (Firebase App Hosting) | **No file needed.** It automatically uses the Google Cloud environment's default service account credentials.      | Your deployed application's server-side code runs in a trusted environment with inherent admin access.     |
 
--   **File**: `serviceAccountKey.json`
--   **Location**: Project root directory.
--   **Purpose**: This file contains a private key that grants your local scripts administrative privileges, allowing them to bypass all security rules. This is **required** to run commands like `npm run db:seed`.
--   **Security**: **This file is highly sensitive and must never be committed to version control.**
-
-### Production (Firebase App Hosting)
-
--   **No File Needed**: You **do not** deploy the `serviceAccountKey.json` file.
--   **Mechanism**: The Admin SDK automatically authenticates using the runtime environment's default service account.
--   **Configuration**: You must ensure this service account has the correct IAM permissions in your Google Cloud project. See the [Permissions guide](./04-permissions-and-auth.md) for details.
+**The "Admin SDK initialization failed" error occurs when you run a script locally without a valid `serviceAccountKey.json` file in your project's root directory.**
 
 ## Troubleshooting Connection Issues
 
 -   **"Firebase: Error (auth/configuration-not-found)"**: The **Email/Password** sign-in provider is likely not enabled in Firebase Authentication settings.
--   **"Missing or insufficient permissions" (Firestore)**: Your Firestore Security Rules are blocking an action. Check the browser's developer console for the denied path and operation, then review `firestore.rules`.
--   **"Storage: User does not have permission to access..."**: Your Cloud Storage Security Rules are blocking an action. Review `storage.rules`.
+-   **"Missing or insufficient permissions" (Firestore)**: Your Firestore Security Rules are blocking an action.
+-   **"Storage: User does not have permission to access..."**: Your Cloud Storage Security Rules are blocking an action.
 
 ---
 
