@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useCallback, useMemo } from 'react';
-import { useAuth, useStorage, useFirestore } from '@/firebase';
+import { useAuth, useStorage, useFirestore } from '@/firebase/provider';
 import { useSession } from '@/hooks/use-session';
 import { collection, query, limit, getDocs, doc, where, getDoc } from 'firebase/firestore';
 import { ref as storageRef, getMetadata, uploadBytes, deleteObject } from 'firebase/storage';

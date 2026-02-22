@@ -4,10 +4,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useFirestore, useDoc, useCollection, errorEmitter, FirestorePermissionError, useStorage, useMemoFirebase, useAuth } from '@/firebase';
+import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
+import { useDoc, useCollection } from '@/firebase/firestore/use-doc';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
-import type { SecurityRuleContext } from '@/firebase';
+import type { SecurityRuleContext } from '@/firebase/errors';
 import { useSession } from '@/hooks/use-session';
 import { doc, collection, updateDoc, query, where, DocumentReference } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -39,6 +40,7 @@ import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { errorEmitter, FirestorePermissionError } from '@/firebase/errors';
 import { FileUploader } from '@/components/file-uploader';
 import { Switch } from '@/components/ui/switch';
 

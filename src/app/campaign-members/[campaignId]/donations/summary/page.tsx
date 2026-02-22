@@ -3,7 +3,7 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
-import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase/firestore/use-doc';
 import { collection, query, where, DocumentReference, doc } from 'firebase/firestore';
 import type { Donation, Campaign, Lead } from '@/lib/types';
 import { useSession } from '@/hooks/use-session';

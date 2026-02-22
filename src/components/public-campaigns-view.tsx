@@ -30,7 +30,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                     <div className="relative h-40 w-full bg-secondary flex items-center justify-center">
                         {campaign.imageUrl ? (
                             <Image
-                                src={campaign.imageUrl}
+                                src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`}
                                 alt={campaign.name}
                                 fill
                                 sizes="100vw"

@@ -40,11 +40,11 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
     };
   }, [userProfile]);
 
-  const contextValue = {
+  const contextValue = useReactMemo(() => ({
       user: authUser || null,
       userProfile: profileWithDefaults,
       isLoading,
-  };
+  }), [authUser, profileWithDefaults, isLoading]);
 
   return (
     <SessionContext.Provider value={contextValue}>

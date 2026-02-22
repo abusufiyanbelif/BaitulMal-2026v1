@@ -4,9 +4,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
-import { useDoc, useMemoFirebase } from '@/firebase';
-import { errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
+import { useDoc } from '@/firebase/firestore/use-doc';
+import { errorEmitter, FirestorePermissionError } from '@/firebase/errors';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import { updateDoc, doc, writeBatch, DocumentReference } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
@@ -85,7 +85,7 @@ export default function UserDetailsPage() {
     if (hasFileToUpload && !auth.currentUser) {
         toast({
             title: "Authentication Error",
-            description: "User not authenticated yet. Please wait and try again.",
+            description: "User not authenticated yet. Please wait.",
             variant: "destructive",
         });
         setIsSubmitting(false);
@@ -116,7 +116,7 @@ export default function UserDetailsPage() {
             }
 
             await new Promise<void>((resolve) => {
-                imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
+                (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
                     fileToUpload = blob as Blob;
                     resolve();
                 }, 'blob');

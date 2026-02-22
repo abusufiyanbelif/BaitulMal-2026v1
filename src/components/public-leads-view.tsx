@@ -32,7 +32,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                     <div className="relative h-40 w-full bg-secondary flex items-center justify-center">
                         {lead.imageUrl ? (
                             <Image
-                              src={lead.imageUrl}
+                              src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`}
                               alt={lead.name}
                               fill
                               sizes="100vw"
