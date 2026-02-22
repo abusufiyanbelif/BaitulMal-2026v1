@@ -5,7 +5,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
-import { useDoc, useCollection } from '@/firebase/firestore/use-collection';
+import { useDoc } from '@/firebase/firestore/use-doc';
+import { useCollection } from '@/firebase/firestore/use-collection';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import type { SecurityRuleContext } from '@/firebase/errors';
@@ -75,6 +76,7 @@ export default function LeadSummaryPage() {
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
     const { download } = useDownloadAs();
 
+    // State for edit mode and form fields
     const [editMode, setEditMode] = useState(false);
     const [editableLead, setEditableLead] = useState<Partial<Lead>>({});
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -93,8 +95,10 @@ export default function LeadSummaryPage() {
         setIsClient(true);
     }, []);
 
+    // Data fetching
     const leadDocRef = useMemoFirebase(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
+    
     const allDonationsCollectionRef = useMemoFirebase(() => (firestore) ? collection(firestore, 'donations') : null, [firestore]);
 
     const { data: lead, isLoading: isLeadLoading, error: leadError } = useDoc<Lead>(leadDocRef);
@@ -718,3 +722,5 @@ Your contribution, big or small, makes a huge difference.
         </main>
     );
 }
+
+    
