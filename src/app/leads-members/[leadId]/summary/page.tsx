@@ -394,7 +394,7 @@ Your contribution, big or small, makes a huge difference.
         });
     };
     
-    if (isLoading) { return <main className="container mx-auto p-4 md:p-8"><Loader2 className="h-8 w-8 animate-spin" /></main> }
+    if (isLoading) { return <BrandedLoader />; }
     
     if (leadError || beneficiariesError || donationsError) {
         return (
@@ -473,7 +473,6 @@ Your contribution, big or small, makes a huge difference.
                       {canReadBeneficiaries && ( <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}><Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link></Button> )}
                       {canReadDonations && ( <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}><Link href={`/leads-members/${leadId}/donations`}>Donations</Link></Button> )}
                   </div>
-                  <ScrollBar orientation="horizontal" />
               </ScrollArea>
             </div>
 
@@ -516,7 +515,7 @@ Your contribution, big or small, makes a huge difference.
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                     <CardHeader>
                         <CardTitle>Lead Artifacts</CardTitle>
                         <CardDescription>Photos, receipts, or other documents related to this lead.</CardDescription>
@@ -529,13 +528,23 @@ Your contribution, big or small, makes a huge difference.
                                 <Separator />
                                 <Label>Manage Existing Artifacts</Label>
                                 {existingDocuments.length > 0 ? (
-                                    <div className="space-y-2">
-                                        {existingDocuments.map((doc) => (
-                                            <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md">
-                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm font-medium hover:underline truncate">
-                                                    <File className="h-4 w-4 shrink-0" />
-                                                    <span className="truncate">{doc.name}</span>
-                                                </a>
+                                    <div className="space-y-3">
+                                        {existingDocuments.map((doc) => {
+                                            const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+                                            return (
+                                            <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md gap-4">
+                                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                    <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+                                                        {isImage ? (
+                                                            <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} width={48} height={48} className="object-cover h-full w-full" />
+                                                        ) : (
+                                                            <File className="h-6 w-6 text-muted-foreground" />
+                                                        )}
+                                                    </div>
+                                                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:underline truncate min-w-0">
+                                                        <p className="truncate">{doc.name}</p>
+                                                    </a>
+                                                </div>
                                                 <div className="flex items-center gap-4">
                                                     <div className="flex items-center gap-2">
                                                         <Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} id={`public-${doc.url}`} />
@@ -546,28 +555,45 @@ Your contribution, big or small, makes a huge difference.
                                                     </Button>
                                                 </div>
                                             </div>
-                                        ))}
+                                            )
+                                        })}
                                     </div>
                                 ) : <p className="text-sm text-muted-foreground">No artifacts uploaded yet.</p>}
                             </div>
                         ) : (
-                            lead.documents && lead.documents.length > 0 ? (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                    {lead.documents.map((doc) => (
-                                        <Button key={doc.url} variant="outline" asChild>
-                                            <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
-                                                <File className="mr-2 h-4 w-4 shrink-0" />
-                                                <span className="truncate">{doc.name}</span>
+                             lead.documents && lead.documents.length > 0 ? (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                    {lead.documents.map((doc) => {
+                                        const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+                                        return (
+                                            <a key={doc.url} href={doc.url} target="_blank" rel="noopener noreferrer" className="group">
+                                                <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+                                                    <CardContent className="p-0">
+                                                        <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
+                                                            {isImage ? (
+                                                                <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
+                                                            ) : (
+                                                                <File className="w-10 h-10 text-muted-foreground" />
+                                                            )}
+                                                            {!doc.isPublic && (
+                                                                <Badge variant="destructive" className="absolute top-2 right-2">Private</Badge>
+                                                            )}
+                                                        </div>
+                                                        <div className="p-2 text-center">
+                                                            <p className="text-xs font-medium truncate group-hover:underline">{doc.name}</p>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
                                             </a>
-                                        </Button>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             ) : <p className="text-sm text-muted-foreground">No artifacts uploaded yet.</p>
                         )}
                     </CardContent>
                 </Card>
                 
-                    <Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <Target className="h-6 w-6 text-primary" />
@@ -643,20 +669,20 @@ Your contribution, big or small, makes a huge difference.
                     </Card>
 
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    <Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '300ms' }}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader>
                         <CardContent><div className="text-2xl font-bold">{summaryData?.totalBeneficiaries ?? 0}</div></CardContent>
                     </Card>
-                    <Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Items Distributed</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader>
                         <CardContent><div className="text-2xl font-bold">{summaryData?.beneficiariesGiven ?? 0}</div></CardContent>
                     </Card>
-                     <Card>
+                     <Card className="animate-fade-in-up" style={{ animationDelay: '500ms' }}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Pending Distribution</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader>
                         <CardContent><div className="text-2xl font-bold">{summaryData?.beneficiariesPending ?? 0}</div></CardContent>
                     </Card>
                 </div>
-                <Card>
+                <Card className="animate-fade-in-up" style={{ animationDelay: '600ms' }}>
                     <CardHeader>
                         <CardTitle>Zakat Utilization</CardTitle>
                         <CardDescription>
@@ -680,7 +706,7 @@ Your contribution, big or small, makes a huge difference.
                     </CardContent>
                 </Card>
                 <div className="grid gap-6 lg:grid-cols-2">
-                      <Card>
+                      <Card className="animate-fade-in-up" style={{ animationDelay: '700ms' }}>
                         <CardHeader>
                             <CardTitle>Fund Totals by Type</CardTitle>
                         </CardHeader>
@@ -696,7 +722,7 @@ Your contribution, big or small, makes a huge difference.
                             <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
                         </CardContent>
                       </Card>
-                    <Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '800ms' }}>
                         <CardHeader>
                             <CardTitle>Donations by Category</CardTitle>
                         </CardHeader>

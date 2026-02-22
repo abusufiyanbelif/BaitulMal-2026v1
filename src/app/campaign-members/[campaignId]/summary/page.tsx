@@ -15,7 +15,22 @@ import { useSession } from '@/hooks/use-session';
 import { doc, collection, updateDoc, query, where, DocumentReference } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import Link from 'next/link';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  RadialBarChart,
+  RadialBar,
+  PolarAngleAxis,
+} from 'recharts';
 import Resizer from 'react-image-file-resizer';
 import type { Campaign, Beneficiary, Donation, DonationCategory, ItemCategory, CampaignDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -529,11 +544,7 @@ Your contribution, big or small, makes a huge difference.
     };
 
     if (isLoading) {
-        return (
-            <main className="container mx-auto p-4 md:p-8">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </main>
-        );
+        return <BrandedLoader />;
     }
     
     if (campaignError || beneficiariesError || donationsError) {
@@ -738,13 +749,23 @@ Your contribution, big or small, makes a huge difference.
                                     <Separator />
                                     <Label>Manage Existing Artifacts</Label>
                                     {existingDocuments.length > 0 ? (
-                                        <div className="space-y-2">
-                                            {existingDocuments.map((doc) => (
-                                                <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md">
-                                                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm font-medium hover:underline truncate">
-                                                        <File className="h-4 w-4 shrink-0" />
-                                                        <span className="truncate">{doc.name}</span>
-                                                    </a>
+                                        <div className="space-y-3">
+                                            {existingDocuments.map((doc) => {
+                                                const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+                                                return (
+                                                <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md gap-4">
+                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                        <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+                                                            {isImage ? (
+                                                                <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} width={48} height={48} className="object-cover h-full w-full" />
+                                                            ) : (
+                                                                <File className="h-6 w-6 text-muted-foreground" />
+                                                            )}
+                                                        </div>
+                                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:underline truncate min-w-0">
+                                                            <p className="truncate">{doc.name}</p>
+                                                        </a>
+                                                    </div>
                                                     <div className="flex items-center gap-4">
                                                         <div className="flex items-center gap-2">
                                                             <Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} id={`public-${doc.url}`} />
@@ -755,21 +776,38 @@ Your contribution, big or small, makes a huge difference.
                                                         </Button>
                                                     </div>
                                                 </div>
-                                            ))}
+                                                )
+                                            })}
                                         </div>
                                     ) : <p className="text-sm text-muted-foreground">No artifacts uploaded yet.</p>}
                                 </div>
                             ) : (
                                 campaign.documents && campaign.documents.length > 0 ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                        {campaign.documents.map((doc) => (
-                                            <Button key={doc.url} variant="outline" asChild>
-                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
-                                                    <File className="mr-2 h-4 w-4 shrink-0" />
-                                                    <span className="truncate">{doc.name}</span>
+                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                        {campaign.documents.map((doc) => {
+                                            const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+                                            return (
+                                                <a key={doc.url} href={doc.url} target="_blank" rel="noopener noreferrer" className="group">
+                                                    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+                                                        <CardContent className="p-0">
+                                                            <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
+                                                                {isImage ? (
+                                                                    <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
+                                                                ) : (
+                                                                    <File className="w-10 h-10 text-muted-foreground" />
+                                                                )}
+                                                                {!doc.isPublic && (
+                                                                    <Badge variant="destructive" className="absolute top-2 right-2">Private</Badge>
+                                                                )}
+                                                            </div>
+                                                            <div className="p-2 text-center">
+                                                                <p className="text-xs font-medium truncate group-hover:underline">{doc.name}</p>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
                                                 </a>
-                                            </Button>
-                                        ))}
+                                            )
+                                        })}
                                     </div>
                                 ) : <p className="text-sm text-muted-foreground">No artifacts uploaded yet.</p>
                             )}
