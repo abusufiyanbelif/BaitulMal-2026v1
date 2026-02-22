@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -38,7 +39,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
       const beneficiariesQuery = query(collection(firestore, 'beneficiaries'));
       const querySnapshot = await getDocs(beneficiariesQuery);
       const allBeneficiaries: Beneficiary[] = [];
-      querySnapshot.forEach((doc: QueryDocumentSnapshot) => {
+      querySnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
           allBeneficiaries.push({ id: doc.id, ...doc.data() } as Beneficiary);
       });
 

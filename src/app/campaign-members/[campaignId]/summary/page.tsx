@@ -61,6 +61,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert } from 'lucide-react';
 import { FileUploader } from '@/components/file-uploader';
 import { Switch } from '@/components/ui/switch';
+import { BrandedLoader } from '@/components/branded-loader';
 
 
 const donationCategoryChartConfig = {
@@ -286,7 +287,7 @@ export default function CampaignSummaryPage() {
         };
 
         updateDoc(campaignDocRef, saveData)
-            .catch(async (serverError) => {
+            .catch(async (serverError: any) => {
                 errorEmitter.emit('permission-error', new FirestorePermissionError({
                     path: campaignDocRef.path,
                     operation: 'update',

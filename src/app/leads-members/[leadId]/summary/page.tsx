@@ -44,6 +44,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { FileUploader } from '@/components/file-uploader';
 import { Switch } from '@/components/ui/switch';
+import { BrandedLoader } from '@/components/branded-loader';
 
 
 const donationCategoryChartConfig = {
@@ -206,7 +207,7 @@ export default function LeadSummaryPage() {
         } else if (imageFile && storage) {
             try {
                 if (imageUrl) {
-                     await deleteObject(storageRef(storage, imageUrl)).catch(e => console.warn("Old image deletion failed, it might not exist.", e));
+                     await deleteObject(storageRef(storage, imageUrl)).catch((e: any) => console.warn("Old image deletion failed, it might not exist.", e));
                 }
                 const resizedBlob = await new Promise<Blob>((resolve) => {
                     (Resizer as any).imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
@@ -270,7 +271,7 @@ export default function LeadSummaryPage() {
         };
 
         updateDoc(leadDocRef, saveData)
-            .catch(async (serverError) => {
+            .catch(async (serverError: any) => {
                 errorEmitter.emit('permission-error', new FirestorePermissionError({
                     path: leadDocRef.path,
                     operation: 'update',
@@ -417,7 +418,7 @@ Your contribution, big or small, makes a huge difference.
 
     return (
         <main className="container mx-auto p-4 md:p-8">
-            <div className="mb-4">
+             <div className="mb-4">
                 <Button variant="outline" asChild>
                     <Link href="/leads-members">
                         <ArrowLeft className="mr-2 h-4 w-4" />
@@ -509,7 +510,7 @@ Your contribution, big or small, makes a huge difference.
                         <div>
                             <Label htmlFor="description" className="text-sm font-medium text-muted-foreground">Description</Label>
                             {editMode && canUpdate ? (
-                                <Textarea id="description" value={editableLead.description} onChange={(e) => setEditableLead(p => ({...p, description: e.target.value}))} className="mt-1" rows={4} />
+                                <Textarea id="description" value={editableLead.description} onChange={(e: any) => setEditableLead(p => ({...p, description: e.target.value}))} className="mt-1" rows={4} />
                             ) : ( <p className="mt-1 text-sm">{lead.description || 'No description provided.'}</p> )}
                         </div>
                     </CardContent>

@@ -14,7 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { createMasterBeneficiaryAction } from '../actions';
 import type { Beneficiary } from '@/lib/types';
-import { useAuth } from '@/firebase';
+import { useAuth } from '@/firebase/provider';
 
 export default function CreateBeneficiaryPage() {
   const router = useRouter();

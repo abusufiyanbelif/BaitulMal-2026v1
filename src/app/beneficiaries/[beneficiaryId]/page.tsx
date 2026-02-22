@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { getDocs, getDoc, doc, type QueryDocumentSnapshot, type DocumentData, type DocumentReference, collection } from 'firebase/firestore';
+import { getDocs, getDoc, doc, type QueryDocumentSnapshot, type DocumentData, type DocumentReference, collection, CollectionReference } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 import Resizer from 'react-image-file-resizer';
@@ -68,7 +68,7 @@ export default function BeneficiaryDetailsPage() {
 
     try {
         const initiatives: LinkedInitiative[] = [];
-        const campaignsCollectionRef = collection(firestore, 'campaigns');
+        const campaignsCollectionRef = collection(firestore, 'campaigns') as CollectionReference<Campaign>;
         const campaignsSnapshot = await getDocs(campaignsCollectionRef);
 
         for (const campaignDoc of campaignsSnapshot.docs) {
@@ -76,7 +76,7 @@ export default function BeneficiaryDetailsPage() {
             const beneficiarySnap = await getDoc(beneficiarySubDocRef);
 
             if (beneficiarySnap.exists()) {
-                const campaignData = campaignDoc.data() as Campaign;
+                const campaignData = campaignDoc.data();
                 const beneficiaryData = beneficiarySnap.data() as Beneficiary;
                 initiatives.push({
                     id: campaignDoc.id,
@@ -89,7 +89,7 @@ export default function BeneficiaryDetailsPage() {
             }
         }
 
-        const leadsCollectionRef = collection(firestore, 'leads');
+        const leadsCollectionRef = collection(firestore, 'leads') as CollectionReference<Lead>;
         const leadsSnapshot = await getDocs(leadsCollectionRef);
 
         for (const leadDoc of leadsSnapshot.docs) {
@@ -97,7 +97,7 @@ export default function BeneficiaryDetailsPage() {
             const beneficiarySnap = await getDoc(beneficiarySubDocRef);
             
             if (beneficiarySnap.exists()) {
-                const leadData = leadDoc.data() as Lead;
+                const leadData = leadDoc.data();
                 const beneficiaryData = beneficiarySnap.data() as Beneficiary;
                  initiatives.push({
                     id: leadDoc.id,
@@ -375,7 +375,7 @@ export default function BeneficiaryDetailsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {linkedInitiatives.map((link) => (
+                            {linkedInitiatives.map((link: LinkedInitiative) => (
                                 <TableRow key={link.id}>
                                     <TableCell>
                                         <Link href={link.type === 'Campaign' ? `/campaign-members/${link.id}/beneficiaries` : `/leads-members/${link.id}/beneficiaries`} className="font-medium text-primary hover:underline flex items-center gap-2">
