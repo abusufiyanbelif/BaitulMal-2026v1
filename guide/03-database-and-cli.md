@@ -28,6 +28,12 @@ This project includes several command-line interface (CLI) scripts to help manag
 -   **When to Run**: Only if you have data from a previous version of the application that used the `rationLists` object instead of the `itemCategories` array. If you started with a fresh project, you will likely never need this.
 -   **What it Does**: It iterates through all documents in the `campaigns` and `leads` collections, converts the old `rationLists` format into the `itemCategories` array structure, and updates the documents.
 
+## `npm run db:migrate-donations`
+
+-   **Purpose**: Migrates legacy donation records from the old `campaignId` field to the new, more flexible `linkSplit` structure.
+-   **When to Run**: Run this script **once** to ensure all older donations are compatible with the latest features that allow linking a single donation to multiple campaigns or leads.
+-   **What it Does**: It scans all documents in the `donations` collection. For any donation that has a `campaignId` but no `linkSplit`, it creates a new `linkSplit` array containing the original campaign information and removes the old, redundant fields.
+
 ## `npm run db:erase`
 
 -   **Purpose**: To completely wipe all application-specific data from your Firestore database and all files from Firebase Storage.
