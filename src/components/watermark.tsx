@@ -27,8 +27,7 @@ export function Watermark() {
                 width={500}
                 height={500}
                 className={cn(
-                    "object-contain transition-transform duration-300",
-                    isSessionLoading && "animate-zoom-in-out"
+                    "object-contain transition-transform duration-300"
                 )}
             />
         </div>
