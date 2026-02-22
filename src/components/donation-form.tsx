@@ -7,7 +7,7 @@ import { useForm, useFieldArray, useWatch, type Control, type UseFormRegister, t
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
-import imageFileResizer from 'react-image-file-resizer';
+import Resizer from 'react-image-file-resizer';
 import {
   Form,
   FormControl,
@@ -87,7 +87,7 @@ interface DonationFormProps {
   defaultLinkId?: string;
 }
 
-const TransactionItem = ({ control, index, remove, register, setValue, canRemove, getValues }: { control: Control<DonationFormData>, index: number, remove: (index: number) => void, register: UseFormRegister<DonationFormData>, setValue: UseFormSetValue<DonationFormData>, getValues: UseFormGetValues<DonationFormData>, canRemove: boolean }) => {
+const TransactionItem = ({ control, index, remove, register, setValue, getValues, canRemove }: { control: Control<DonationFormData>, index: number, remove: (index: number) => void, register: UseFormRegister<DonationFormData>, setValue: UseFormSetValue<DonationFormData>, getValues: UseFormGetValues<DonationFormData>, canRemove: boolean }) => {
     const { toast } = useToast();
     const [preview, setPreview] = useState<string | null>(null);
     const [isViewerOpen, setIsViewerOpen] = useState(false);

@@ -11,7 +11,7 @@ import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import { updateDoc, doc, writeBatch, DocumentReference } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { createAdminPermissions } from '@/lib/modules';
-import imageFileResizer from 'react-image-file-resizer';
+import Resizer from 'react-image-file-resizer';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 import { Button } from '@/components/ui/button';
