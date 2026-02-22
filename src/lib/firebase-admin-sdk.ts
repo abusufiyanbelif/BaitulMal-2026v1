@@ -31,19 +31,20 @@ function initializeAdmin(): AdminServices {
                 initializeApp({
                     credential: cert(serviceAccountPath)
                 });
-                console.log("Firebase Admin SDK initialized with serviceAccountKey.json.");
+                console.log("Firebase Admin SDK initialized with serviceAccountKey.json for local development.");
             } else {
+                // This will use Application Default Credentials in a GCP environment (like Firebase App Hosting)
                 initializeApp();
-                console.log("Firebase Admin SDK initialized with Application Default Credentials.");
+                console.log("Firebase Admin SDK initialized with Application Default Credentials (production mode).");
             }
         } catch (e: any) {
              let errorMessage = 'Firebase Admin SDK initialization failed.';
             if (e.code === 'app/invalid-credential') {
                 errorMessage += " The service account credentials are not valid. Ensure 'serviceAccountKey.json' is correct or Application Default Credentials are set up.";
             } else if (e.message.includes('Could not load the default credentials')) {
-                errorMessage += " Application Default Credentials could not be found. Please configure them or provide a 'serviceAccountKey.json' file.";
+                errorMessage += " For local development, 'serviceAccountKey.json' was not found and Application Default Credentials could not be loaded. Please refer to the setup guide.";
             } else if (e.message.includes('IAM')) {
-                errorMessage += " There might be an IAM permission issue with the service account. Please ensure it has the 'Firebase Admin' or 'Editor' role.";
+                errorMessage += " There might be an IAM permission issue with the service account. Please ensure it has the 'Firebase Admin' or 'Editor' role in Google Cloud.";
             } else {
                 errorMessage += ` Unexpected error: ${e.message}`;
             }
@@ -70,17 +71,22 @@ function initializeAdmin(): AdminServices {
  */
 export function getAdminServices(): { adminDb: Firestore | null; adminAuth: Auth | null; adminStorage: Storage | null; } {
      if (typeof window !== 'undefined') {
+        console.error("getAdminServices should not be called on the client side.");
         return { adminDb: null, adminAuth: null, adminStorage: null };
     }
     try {
         const { db, auth, storage } = initializeAdmin();
         return { adminDb: db, adminAuth: auth, adminStorage: storage };
     } catch (e: any) {
+        // The detailed error is already logged in initializeAdmin, so here we provide context for the action that failed.
         console.error(
-            'CRITICAL: Firebase Admin SDK initialization failed. This is likely an environment issue. ' +
-            'Ensure the service account has the correct IAM permissions and required APIs (e.g., Identity Toolkit API) are enabled in Google Cloud.',
-            e
+            'CRITICAL: getAdminServices failed because the Admin SDK could not be initialized. ' +
+            'This means any server-side script (database seed, migration, etc.) will fail. ' +
+            'Please check the server logs for the original initialization error message.',
         );
-        return { adminDb: null, adminAuth: null, adminStorage: null };
+        // We re-throw because the calling script cannot function without these services.
+        throw new Error(
+            `Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.`
+        );
     }
 }
