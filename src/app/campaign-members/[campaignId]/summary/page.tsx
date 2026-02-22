@@ -676,7 +676,7 @@ Your contribution, big or small, makes a huge difference.
 
             <div className="space-y-6">
                  <div ref={summaryRef} className="space-y-6 p-4 bg-background">
-                    <Card>
+                    <Card className="animate-fade-in-zoom">
                         <CardHeader>
                             <CardTitle>Campaign Details</CardTitle>
                         </CardHeader>
@@ -725,7 +725,7 @@ Your contribution, big or small, makes a huge difference.
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                         <CardHeader>
                             <CardTitle>Campaign Artifacts</CardTitle>
                             <CardDescription>Photos, receipts, or other documents related to this campaign.</CardDescription>
@@ -776,7 +776,7 @@ Your contribution, big or small, makes a huge difference.
                         </CardContent>
                     </Card>
                 
-                    <Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <Target className="h-6 w-6 text-primary" />
@@ -852,7 +852,7 @@ Your contribution, big or small, makes a huge difference.
                     </Card>
 
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        <Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '300ms' }}>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle>
                                 <Users className="h-4 w-4 text-muted-foreground" />
@@ -861,7 +861,7 @@ Your contribution, big or small, makes a huge difference.
                                 <div className="text-2xl font-bold">{summaryData?.totalBeneficiaries ?? 0}</div>
                             </CardContent>
                         </Card>
-                        <Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Kits Given</CardTitle>
                                 <Gift className="h-4 w-4 text-muted-foreground" />
@@ -870,7 +870,7 @@ Your contribution, big or small, makes a huge difference.
                                 <div className="text-2xl font-bold">{summaryData?.beneficiariesGiven ?? 0}</div>
                             </CardContent>
                         </Card>
-                        <Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '500ms' }}>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Kits Pending</CardTitle>
                                 <Hourglass className="h-4 w-4 text-muted-foreground" />
@@ -881,21 +881,21 @@ Your contribution, big or small, makes a huge difference.
                         </Card>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '600ms' }}>
                             <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified Donations</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
                             <CardContent className="p-4 pt-0">
                                 <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.verified.count}</div>
                                 <p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.verified.amount.toLocaleString('en-IN')}</p>
                             </CardContent>
                         </Card>
-                        <Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '700ms' }}>
                             <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending Donations</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
                             <CardContent className="p-4 pt-0">
                                 <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.pending.count}</div>
                                 <p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.pending.amount.toLocaleString('en-IN')}</p>
                             </CardContent>
                         </Card>
-                        <Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '800ms' }}>
                             <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Canceled Donations</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
                             <CardContent className="p-4 pt-0">
                                 <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.canceled.count}</div>
@@ -904,7 +904,7 @@ Your contribution, big or small, makes a huge difference.
                         </Card>
                     </div>
                     
-                    <Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '900ms' }}>
                         <CardHeader>
                             <CardTitle>Zakat Utilization</CardTitle>
                             <CardDescription>
@@ -929,7 +929,7 @@ Your contribution, big or small, makes a huge difference.
                     </Card>
 
                     <div className="grid gap-6 lg:grid-cols-2">
-                      <Card>
+                      <Card className="animate-fade-in-up" style={{ animationDelay: '1000ms' }}>
                         <CardHeader>
                             <CardTitle>Fund Totals by Type</CardTitle>
                         </CardHeader>
@@ -945,7 +945,7 @@ Your contribution, big or small, makes a huge difference.
                             <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
                         </CardContent>
                       </Card>
-                      <Card>
+                      <Card className="animate-fade-in-up" style={{ animationDelay: '1100ms' }}>
                           <CardHeader>
                               <CardTitle>Donations by Category</CardTitle>
                           </CardHeader>
@@ -968,7 +968,7 @@ Your contribution, big or small, makes a huge difference.
                           </CardContent>
                       </Card>
 
-                      <Card>
+                      <Card className="animate-fade-in-up" style={{ animationDelay: '1200ms' }}>
                           <CardHeader>
                               <CardTitle>Donations by Payment Type</CardTitle>
                           </CardHeader>
@@ -990,7 +990,7 @@ Your contribution, big or small, makes a huge difference.
                       </Card>
                   </div>
                   {campaign.category === 'Ration' && summaryData && summaryData.sortedBeneficiaryCategoryKeys.length > 0 && (
-                      <Card>
+                      <Card className="animate-fade-in-up" style={{ animationDelay: '1300ms' }}>
                           <CardHeader><CardTitle>Beneficiary Groups</CardTitle></CardHeader>
                           <CardContent>
                             <div className="w-full overflow-x-auto">

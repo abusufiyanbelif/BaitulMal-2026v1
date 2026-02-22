@@ -10,9 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import React from 'react';
 import dynamic from 'next/dynamic';
 
-function HomeDashboardCard({ title, description, href, icon: Icon }: { title: string, description: string, href: string, icon: React.ComponentType<{ className?: string }> }) {
+function HomeDashboardCard({ title, description, href, icon: Icon, delay }: { title: string, description: string, href: string, icon: React.ComponentType<{ className?: string }>, delay: string }) {
   return (
-    <div className="animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+    <div className="animate-fade-in-up" style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
       <Link href={href} className="block group">
         <Card className="h-full p-4 transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:-translate-y-1 group-hover:border-primary active:scale-95">
           <div className="flex justify-between items-start gap-4">
@@ -121,13 +121,14 @@ export default function Home() {
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
-                    {visibleCards.map((card) => (
+                    {visibleCards.map((card, index) => (
                         <HomeDashboardCard
                             key={card.title}
                             title={card.title}
                             description={card.description}
                             href={card.href}
                             icon={card.icon}
+                            delay={`${200 + index * 50}ms`}
                         />
                     ))}
                 </div>

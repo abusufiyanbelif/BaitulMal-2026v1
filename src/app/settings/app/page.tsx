@@ -143,7 +143,7 @@ export default function AppSettingsPage() {
             let newLogoUrl = editableData.logoUrl;
             if (logoFile) {
                  const resizedBlob = await new Promise<Blob>((resolve) => {
-                    Resizer.imageFileResizer(logoFile, 800, 800, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    (Resizer as any).imageFileResizer(logoFile, 800, 800, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = 'settings/logo';
                 const fileRef = storageRef(storage, filePath);
@@ -162,7 +162,7 @@ export default function AppSettingsPage() {
             let newQrCodeUrl = editableData.qrCodeUrl;
             if (qrCodeFile) {
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                    Resizer.imageFileResizer(qrCodeFile, 800, 800, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    (Resizer as any).imageFileResizer(qrCodeFile, 800, 800, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = 'settings/payment_qr';
                 const fileRef = storageRef(storage, filePath);
@@ -272,7 +272,7 @@ export default function AppSettingsPage() {
                 )}
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-                <Card className="animate-fade-in-zoom" style={{ animationDelay: '400ms'}}>
+                <Card className="animate-slide-in-from-left" style={{ animationDelay: '200ms'}}>
                     <CardHeader>
                         <CardTitle>Branding Settings</CardTitle>
                         <CardDescription>Manage the application logo and watermark.</CardDescription>
@@ -326,7 +326,7 @@ export default function AppSettingsPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="animate-fade-in-zoom" style={{ animationDelay: '500ms'}}>
+                <Card className="animate-slide-in-from-right" style={{ animationDelay: '300ms'}}>
                     <CardHeader>
                         <CardTitle>Organization, Payment &amp; Contact Settings</CardTitle>
                         <CardDescription>Configure QR code, UPI, and contact details for receipts and the footer.</CardDescription>

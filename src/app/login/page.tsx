@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -131,8 +132,8 @@ export default function LoginPage() {
   const authUrl = `https://console.firebase.google.com/project/${firebaseProjectId}/authentication/sign-in-method`;
 
   return (
-    <div className="w-full max-w-sm animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
-        <div className="mb-4 flex">
+    <div className="w-full max-w-sm">
+        <div className="mb-4 flex animate-slide-in-from-top" style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}>
             <Button variant="outline" asChild>
                 <Link href="/">
                     <ArrowLeft className="mr-2 h-4 w-4" />
@@ -140,7 +141,7 @@ export default function LoginPage() {
                 </Link>
             </Button>
         </div>
-      <Card>
+      <Card className="animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
           <CardHeader className="text-center">
               <div className="flex justify-center items-center gap-3 mb-4">
                 {isBrandingLoading ? (

@@ -350,7 +350,7 @@ export default function BeneficiaryDetailsPage() {
         </CardContent>
       </Card>
 
-      <Card className="max-w-2xl mx-auto animate-fade-in-zoom" style={{ animationDelay: '200ms'}}>
+      <Card className="max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '200ms'}}>
         <CardHeader>
             <CardTitle>Linked To</CardTitle>
             <CardDescription>This beneficiary is linked to the following initiatives.</CardDescription>

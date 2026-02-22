@@ -1,4 +1,5 @@
 
+
 /** @type {import('tailwindcss').Config} */
 const config = {
   // Force cache invalidation by adding a comment.
@@ -102,6 +103,14 @@ const config = {
             '0%': { transform: 'translateY(20%)', opacity: '0' },
             '100%': { transform: 'translateY(0)', opacity: '1' },
         },
+        'slide-in-from-left': {
+            '0%': { transform: 'translateX(-20%)', opacity: '0' },
+            '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+        'slide-in-from-right': {
+            '0%': { transform: 'translateX(20%)', opacity: '0' },
+            '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
         'fade-in-up': {
             '0%': { opacity: '0', transform: 'translateY(15px)' },
             '100%': { opacity: '1', transform: 'translateY(0)' },
@@ -117,18 +126,20 @@ const config = {
         },
         'zoom-in-out': {
             '0%, 100%': { transform: 'scale(1)' },
-            '50%': { transform: 'scale(1.5)' },
+            '50%': { transform: 'scale(1.05)' },
         },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'slide-in-from-top': 'slide-in-from-top 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-        'slide-in-from-bottom': 'slide-in-from-bottom 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-        'fade-in-up': 'fade-in-up 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-        'fade-in-zoom': 'fade-in-zoom 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'slide-in-from-top': 'slide-in-from-top 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'slide-in-from-bottom': 'slide-in-from-bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'slide-in-from-left': 'slide-in-from-left 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'slide-in-from-right': 'slide-in-from-right 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'fade-in-up': 'fade-in-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'fade-in-zoom': 'fade-in-zoom 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'shimmer': 'shimmer 2s infinite',
-        'zoom-in-out': 'zoom-in-out 2.5s ease-in-out infinite',
+        'zoom-in-out': 'zoom-in-out 3s ease-in-out infinite',
       },
     },
   },
