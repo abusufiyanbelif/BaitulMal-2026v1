@@ -6,7 +6,8 @@ import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { errorEmitter, FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import { updateDoc, doc, writeBatch, DocumentReference } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
@@ -318,3 +319,5 @@ export default function UserDetailsPage() {
     </main>
   );
 }
+
+    

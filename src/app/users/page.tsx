@@ -3,8 +3,10 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase/firestore/use-collection';
-import { errorEmitter, FirestorePermissionError } from '@/firebase/errors';
+import { useFirestore } from '@/firebase/provider';
+import { useCollection } from '@/firebase/firestore/use-collection';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc, collection } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
@@ -39,6 +41,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { getNestedValue } from '@/lib/utils';
+import { useMemoFirebase } from '@/firebase/provider';
 
 type SortKey = keyof UserProfile | 'srNo';
 
@@ -458,3 +461,5 @@ export default function UsersPage() {
     </main>
   );
 }
+
+    

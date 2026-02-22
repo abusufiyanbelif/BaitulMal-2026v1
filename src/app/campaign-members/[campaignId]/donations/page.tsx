@@ -7,7 +7,8 @@ import Image from 'next/image';
 import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { errorEmitter, FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, where, setDoc, DocumentReference, deleteField } from 'firebase/firestore';
 import type { Donation, Campaign, Lead, TransactionDetail } from '@/lib/types';
@@ -713,3 +714,5 @@ export default function DonationsPage() {
     </>
   );
 }
+
+    

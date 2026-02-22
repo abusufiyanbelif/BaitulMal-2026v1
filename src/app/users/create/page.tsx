@@ -4,8 +4,10 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, errorEmitter, FirestorePermissionError, useStorage, useMemoFirebase, useAuth } from '@/firebase/provider';
-import { useCollection } from '@/firebase/firestore/use-collection';
+import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { useCollection, useMemoFirebase } from '@/firebase/firestore/use-collection';
 import { useSession } from '@/hooks/use-session';
 import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -215,3 +217,5 @@ export default function CreateUserPage() {
     </>
   );
 }
+
+    

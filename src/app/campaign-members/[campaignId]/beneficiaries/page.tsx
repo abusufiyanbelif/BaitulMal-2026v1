@@ -7,8 +7,8 @@ import Image from 'next/image';
 import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { errorEmitter, FirestorePermissionError } from '@/firebase/error-emitter';
-import type { SecurityRuleContext } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, setDoc, DocumentReference, getDoc } from 'firebase/firestore';
 import type { Beneficiary, Campaign, RationItem, ItemCategory } from '@/lib/types';
@@ -1247,3 +1247,5 @@ const sortedGroupKeys = useMemo(() => {
     </>
   );
 }
+
+    
