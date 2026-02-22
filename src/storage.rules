@@ -8,42 +8,63 @@ service firebase.storage {
       return request.auth != null;
     }
 
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function getUserDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserDoc().data.role == 'Admin';
+    }
+    
+    // Check for a top-level permission
+    function hasPermission(module, permission) {
+      let userDoc = getUserDoc();
+      return isSignedIn() && userDoc.exists && module in userDoc.data.permissions && userDoc.data.permissions[module][permission] == true;
+    }
+
+    // Rules for donations: anyone signed in can upload (create). Reading is public.
     match /donations/{donationId}/{allPaths=**} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    match /campaigns/{allPaths=**} {
+    // Rules for campaigns: must be admin or have campaign update permissions.
+    match /campaigns/{campaignId}/{allPaths=**} {
       allow read: if true;
-      allow write: if isSignedIn();
+      allow write: if isAdmin() || hasPermission('campaigns', 'update');
     }
 
-    match /leads/{allPaths=**} {
+    // Rules for leads: must be admin or have lead update permissions.
+    match /leads/{leadId}/{allPaths=**} {
       allow read: if true;
-      allow write: if isSignedIn();
+      allow write: if isAdmin() || hasPermission('leads-members', 'update');
     }
     
-    match /beneficiaries/{allPaths=**} {
+    // Rules for master beneficiary list: must be admin or have specific beneficiary permissions.
+    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
         allow read: if true;
-        allow write: if isSignedIn();
+        allow write: if isAdmin() || hasPermission('beneficiaries', 'update');
     }
 
-    // Settings can be read by anyone (for logo), but only written by auth'd users.
+    // Settings can be read by anyone (for logo), but only written by admins/settings managers.
     match /settings/{allPaths=**} {
         allow read: if true;
-        allow write: if isSignedIn();
+        allow write: if isAdmin() || hasPermission('settings', 'update');
     }
 
-    // User-specific files can only be written by the user themselves.
-    // Reads are open for simplicity, assuming URLs are not guessable.
+    // User-specific files (like their own ID proof). Only they or an admin can write.
     match /users/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write: if isSignedIn() && request.auth.uid == userId;
+      allow write: if isOwner(userId) || isAdmin() || hasPermission('users', 'update');
     }
 
     // Diagnostics path for testing
     match /test/{userId}/{allPaths=**} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if isOwner(userId);
     }
   }
 }
