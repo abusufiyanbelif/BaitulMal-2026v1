@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -149,7 +150,7 @@ export default function DonationsSummaryPage() {
     const summaryData = useMemo(() => {
         if (!filteredDonations || !campaigns || !leads) return null;
         
-        const allocatedCount = filteredDonations.filter(d => d.linkSplit && d.linkSplit.length > 0).length;
+        const allocatedCount = filteredDonations.filter(d => d.linkSplit && d.linkSplit.length > 0 && d.linkSplit.some(l => l.linkType !== 'general')).length;
         const unallocatedCount = filteredDonations.length - allocatedCount;
 
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
@@ -202,7 +203,7 @@ export default function DonationsSummaryPage() {
         filteredDonations.forEach(donation => {
             const links = donation.linkSplit && donation.linkSplit.length > 0 ? donation.linkSplit : [];
 
-            if (links.length === 0) {
+            if (links.length === 0 || links.every(l => l.linkType === 'general')) {
                 const legacyCampaignId = (donation as any).campaignId;
                 if (legacyCampaignId) {
                     const key = `campaign_${legacyCampaignId}`;
