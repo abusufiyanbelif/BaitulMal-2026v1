@@ -2,11 +2,12 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
+import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { collection, getDocs, getDoc, doc, QueryDocumentSnapshot, DocumentData, DocumentReference } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, type QueryDocumentSnapshot, type DocumentData, type DocumentReference } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
+import Resizer from 'react-image-file-resizer';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -21,8 +22,6 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { Badge } from '@/components/ui/badge';
 import { updateMasterBeneficiaryAction, updateBeneficiaryStatusInInitiativeAction } from '../actions';
 import { useSession } from '@/hooks/use-session';
-import Resizer from 'react-image-file-resizer';
-import { useMemoFirebase } from '@/firebase/provider';
 
 interface LinkedInitiative {
     id: string;

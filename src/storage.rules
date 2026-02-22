@@ -8,8 +8,6 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    // Only authenticated users can upload donation files.
-    // Public read access is maintained for receipt images.
     match /donations/{donationId}/{allPaths=**} {
       allow read: if true;
       allow write: if isSignedIn();

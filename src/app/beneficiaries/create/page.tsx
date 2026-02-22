@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState } from 'react';
@@ -32,7 +31,7 @@ export default function CreateBeneficiaryPage() {
     
     const { idProofFile, idProofDeleted, ...beneficiaryData } = data;
 
-    const newBeneficiary: Omit<Beneficiary, "id" | "createdAt" | "createdById" | "createdByName"> = {
+    const newBeneficiary: Omit<Beneficiary, "id" | "createdAt" | "createdById" | "createdByName" | "updatedAt" | "updatedById" | "updatedByName"> = {
         ...beneficiaryData,
         addedDate: new Date().toISOString().split('T')[0],
     };
