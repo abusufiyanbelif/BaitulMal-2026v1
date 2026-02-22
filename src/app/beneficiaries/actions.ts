@@ -37,16 +37,36 @@ export async function updateMasterBeneficiaryAction(beneficiaryId: string, data:
         return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     try {
-        const docRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
-        await docRef.update({
+        const batch = adminDb.batch();
+        const masterBeneficiaryRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
+
+        const updatePayload = {
             ...data,
             updatedAt: FieldValue.serverTimestamp(),
             updatedById: updatedBy.id,
             updatedByName: updatedBy.name,
+        };
+
+        // 1. Update the master document
+        batch.update(masterBeneficiaryRef, updatePayload);
+
+        // 2. Find and update all instances in subcollections
+        const allInstancesQuery = adminDb.collectionGroup('beneficiaries').where('id', '==', beneficiaryId);
+        const allInstancesSnap = await allInstancesQuery.get();
+        
+        allInstancesSnap.forEach(docSnap => {
+            batch.set(docSnap.ref, updatePayload, { merge: true });
         });
+
+        // 3. Commit the batch
+        await batch.commit();
+
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
         revalidatePath('/beneficiaries');
-        return { success: true, message: 'Beneficiary updated successfully.' };
+        revalidatePath('/campaign-members', 'layout');
+        revalidatePath('/leads-members', 'layout');
+
+        return { success: true, message: `Beneficiary updated successfully across the system.` };
     } catch (error: any) {
         console.error("Error updating beneficiary:", error);
         return { success: false, message: `Failed to update beneficiary: ${error.message}` };

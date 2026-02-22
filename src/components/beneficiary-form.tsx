@@ -70,6 +70,7 @@ interface BeneficiaryFormProps {
   isLoading?: boolean;
   hideZakatInfo?: boolean;
   isSessionLoading?: boolean;
+  hideKitAmount?: boolean;
 }
 
 export function BeneficiaryForm({ 
@@ -84,6 +85,7 @@ export function BeneficiaryForm({
     isLoading = false, 
     hideZakatInfo = false,
     isSessionLoading = false,
+    hideKitAmount = false,
 }: BeneficiaryFormProps) {
     const isEditing = !!beneficiary?.id;
     const { toast } = useToast();
@@ -323,19 +325,21 @@ export function BeneficiaryForm({
                     
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <FormField control={control} name="referralBy" render={({ field }) => (<FormItem><FormLabel>Referred By *</FormLabel><FormControl><Input placeholder="e.g. Local NGO" {...field} disabled={formIsDisabled} /></FormControl><FormMessage/></FormItem>)}/>
-                        <FormField
-                            control={control}
-                            name="kitAmount"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>{kitAmountLabel} *</FormLabel>
-                                <FormControl>
-                                    <Input type="number" placeholder="0.00" {...field} disabled={formIsDisabled} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        {!hideKitAmount && (
+                            <FormField
+                                control={control}
+                                name="kitAmount"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>{kitAmountLabel} *</FormLabel>
+                                    <FormControl>
+                                        <Input type="number" placeholder="0.00" {...field} disabled={formIsDisabled} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
                         <FormField control={control} name="status" render={({ field }) => (<FormItem><FormLabel>Status *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled={formIsDisabled}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Hold">Hold</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent></Select><FormMessage/></FormItem>)}/>
                     </div>
                 </div>

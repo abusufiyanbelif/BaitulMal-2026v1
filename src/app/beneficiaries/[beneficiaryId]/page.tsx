@@ -199,7 +199,7 @@ export default function BeneficiaryDetailsPage() {
         return;
     }
 
-    const { idProofFile, idProofDeleted, ...beneficiaryData } = data;
+    const { idProofFile, idProofDeleted, kitAmount, ...beneficiaryData } = data;
     
     const result = await updateMasterBeneficiaryAction(
         beneficiaryId, 
@@ -346,6 +346,7 @@ export default function BeneficiaryDetailsPage() {
               itemCategories={[]}
               kitAmountLabel="Kit Amount (₹)"
               isSessionLoading={isProfileLoading}
+              hideKitAmount={true}
           />
         </CardContent>
       </Card>
