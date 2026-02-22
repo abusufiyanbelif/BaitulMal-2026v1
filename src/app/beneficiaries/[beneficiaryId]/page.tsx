@@ -180,7 +180,7 @@ export default function BeneficiaryDetailsPage() {
             }
             
             await new Promise<void>((resolve) => {
-                (Resizer.imageFileResizer as any)(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
+                Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
                   fileToUpload = blob as Blob;
                   resolve();
                 }, 'blob');

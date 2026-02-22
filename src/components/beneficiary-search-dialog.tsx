@@ -38,7 +38,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
       const beneficiariesQuery = query(collection(firestore, 'beneficiaries'));
       const querySnapshot = await getDocs(beneficiariesQuery);
       const allBeneficiaries: Beneficiary[] = [];
-      querySnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
+      querySnapshot.forEach((doc: QueryDocumentSnapshot) => {
           allBeneficiaries.push({ id: doc.id, ...doc.data() } as Beneficiary);
       });
 

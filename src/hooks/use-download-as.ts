@@ -27,7 +27,7 @@ const fetchAsDataURL = async (url: string | null | undefined): Promise<string | 
             reader.onerror = reject;
             reader.readAsDataURL(blob);
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error("Image fetch error:", error);
         return null;
     }
