@@ -111,6 +111,8 @@ export default function DonationDetailsPage() {
                     id: transaction.id,
                     amount: transaction.amount,
                     transactionId: transaction.transactionId || '',
+                    date: transaction.date || '',
+                    upiId: transaction.upiId || '',
                     screenshotUrl: screenshotUrl,
                     screenshotIsPublic: transaction.screenshotIsPublic || false,
                 };
@@ -191,15 +193,15 @@ export default function DonationDetailsPage() {
 
     if (isLoading) {
         return (
-            <main className="flex items-center justify-center min-h-screen">
+            <div className="flex items-center justify-center min-h-screen">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </main>
+            </div>
         );
     }
     
     if (!donation || !lead) {
         return (
-            <main className="container mx-auto p-4 md:p-8 text-center">
+            <div className="text-center">
                 <p className="text-lg text-muted-foreground">Donation or Lead not found.</p>
                 <Button asChild className="mt-4">
                     <Link href="/leads-members">
@@ -207,7 +209,7 @@ export default function DonationDetailsPage() {
                         Back to Leads
                     </Link>
                 </Button>
-            </main>
+            </div>
         );
     }
     
@@ -217,7 +219,7 @@ export default function DonationDetailsPage() {
 
 
     return (
-        <main className="container mx-auto p-4 md:p-8">
+        <>
             <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
                 <Button variant="outline" asChild>
                     <Link href={`/leads-members/${leadId}/donations`}>
@@ -381,7 +383,7 @@ export default function DonationDetailsPage() {
                     </Card>
                 )}
             </div>
-
+            
             <ShareDialog 
                 open={isShareDialogOpen} 
                 onOpenChange={setIsShareDialogOpen} 
@@ -406,6 +408,6 @@ export default function DonationDetailsPage() {
                     />
                 </DialogContent>
             </Dialog>
-        </main>
+        </>
     );
 }

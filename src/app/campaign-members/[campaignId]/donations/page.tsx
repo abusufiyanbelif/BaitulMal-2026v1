@@ -4,9 +4,7 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
-import { useCollection } from '@/firebase/firestore/use-collection';
-import { useDoc } from '@/firebase/firestore/use-doc';
+import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -246,7 +244,7 @@ export default function DonationsPage() {
             if (fileList && fileList.length > 0) {
                 const file = fileList[0];
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                     Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                     (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
                 const fileRef = storageRef(storage, filePath);
@@ -387,74 +385,15 @@ export default function DonationsPage() {
   
   if (isLoading) {
     return (
-        <main className="container mx-auto p-4 md:p-8">
+        <div>
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </main>
+        </div>
     );
   }
 
   return (
     <>
-      <main className="container mx-auto p-4 md:p-8">
-        <div className="mb-4">
-            <Button variant="outline" asChild>
-                <Link href="/campaign-members">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Campaigns
-                </Link>
-            </Button>
-        </div>
-        <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold">{campaign?.name}</h1>
-        </div>
-        
-        <div className="border-b mb-4">
-          <ScrollArea className="w-full whitespace-nowrap">
-            <div className="flex w-max space-x-2">
-                {canReadSummary && (
-                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
-                    </Button>
-                )}
-                {canReadRation && (
-                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                         <Link href={`/campaign-members/${campaignId}`}>{campaign?.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
-                    </Button>
-                )}
-                {canReadBeneficiaries && (
-                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
-                    </Button>
-                )}
-                {canReadDonations && (
-                    <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
-                    </Button>
-                )}
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-        </div>
-
-        {canReadDonations && (
-            <div className="border-b mb-4">
-              <ScrollArea className="w-full whitespace-nowrap">
-                  <div className="flex w-max space-x-2">
-                      <Link href={`/campaign-members/${campaignId}/donations/summary`} className={cn(
-                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          pathname === `/campaign-members/${campaignId}/donations/summary` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                      )}>Donation Summary</Link>
-                      <Link href={`/campaign-members/${campaignId}/donations`} className={cn(
-                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                      )}>Donation List</Link>
-                  </div>
-                  <ScrollBar orientation="horizontal" />
-              </ScrollArea>
-            </div>
-        )}
-
-        <Card className="animate-fade-in-zoom">
+      <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
               <div className="flex-1 space-y-1.5">
@@ -648,7 +587,6 @@ export default function DonationsPage() {
             </div>
           </CardContent>
         </Card>
-      </main>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

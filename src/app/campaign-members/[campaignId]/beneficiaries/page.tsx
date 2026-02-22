@@ -5,8 +5,7 @@ import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
-import { useCollection } from '@/firebase/firestore/use-collection';
-import { useDoc } from '@/firebase/firestore/use-doc';
+import { useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -525,40 +524,25 @@ const sortedGroupKeys = useMemo(() => {
 
   if (isLoading && !campaign) {
     return (
-        <main className="container mx-auto p-4 md:p-8">
-             <div className="mb-4">
-                <Skeleton className="h-10 w-44" />
-            </div>
-            <Skeleton className="h-9 w-64 mb-4" />
-             <div className="flex w-max space-x-4 border-b mb-4">
-                <Skeleton className="h-10 w-24" />
-                <Skeleton className="h-10 w-32" />
-                <Skeleton className="h-10 w-36" />
-            </div>
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-8 w-1/2" />
-                    <Skeleton className="h-5 w-1/3" />
-                </CardHeader>
-                <CardContent>
-                    <Skeleton className="h-64 w-full" />
-                </CardContent>
-            </Card>
-        </main>
+        <div className="space-y-4">
+          <Card>
+              <CardHeader>
+                  <Skeleton className="h-8 w-1/2" />
+                  <Skeleton className="h-5 w-1/3" />
+              </CardHeader>
+              <CardContent>
+                  <Skeleton className="h-64 w-full" />
+              </CardContent>
+          </Card>
+        </div>
     );
   }
   
   if (!campaign) {
     return (
-        <main className="container mx-auto p-4 md:p-8 text-center">
+        <div className="text-center">
             <p className="text-lg text-muted-foreground">Campaign not found.</p>
-            <Button asChild className="mt-4">
-                <Link href="/campaign-members">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Campaigns
-                </Link>
-            </Button>
-        </main>
+        </div>
     );
   }
 
@@ -788,11 +772,6 @@ const sortedGroupKeys = useMemo(() => {
     const redirectUrl = `/campaign-members/${campaignId}/beneficiaries`;
     router.push(`/beneficiaries/${beneficiary.id}?redirect=${encodeURIComponent(redirectUrl)}`);
   };
-  const handleDeleteClick = (id: string) => {
-    if (!canDelete) return;
-    setBeneficiaryToDelete(id);
-    setIsDeleteDialogOpen(true);
-  };
   const handleSort = (key: SortKey) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -805,48 +784,7 @@ const sortedGroupKeys = useMemo(() => {
 
   return (
     <>
-      <main className="container mx-auto p-4 md:p-8">
-        <div className="mb-4">
-            <Button variant="outline" asChild>
-                <Link href="/campaign-members">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Campaigns
-                </Link>
-            </Button>
-        </div>
-        <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold">{campaign.name}</h1>
-        </div>
-        
-        <div className="border-b mb-4">
-            <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex w-max space-x-2">
-                    {canReadSummary && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
-                        </Button>
-                    )}
-                    {canReadRation && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                             <Link href={`/campaign-members/${campaignId}`}>{campaign.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
-                        </Button>
-                    )}
-                    {canReadBeneficiaries && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
-                        </Button>
-                    )}
-                    {canReadDonations && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
-                        </Button>
-                    )}
-                </div>
-                <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-        </div>
-
-        <Card>
+      <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="flex-1 space-y-1.5">
@@ -1166,8 +1104,7 @@ const sortedGroupKeys = useMemo(() => {
             </div>
           </CardContent>
         </Card>
-      </main>
-
+      
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>

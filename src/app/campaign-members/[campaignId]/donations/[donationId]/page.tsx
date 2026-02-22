@@ -195,15 +195,15 @@ export default function DonationDetailsPage() {
 
     if (isLoading) {
         return (
-            <main className="container mx-auto p-4 md:p-8">
+            <div>
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </main>
+            </div>
         );
     }
     
     if (!donation || !campaign) {
         return (
-            <main className="container mx-auto p-4 md:p-8 text-center">
+            <div className="text-center">
                 <p className="text-lg text-muted-foreground">Donation or Campaign not found.</p>
                 <Button asChild className="mt-4">
                     <Link href="/campaign-members">
@@ -211,7 +211,7 @@ export default function DonationDetailsPage() {
                         Back to Campaigns
                     </Link>
                 </Button>
-            </main>
+            </div>
         );
     }
 
@@ -221,7 +221,7 @@ export default function DonationDetailsPage() {
 
 
     return (
-        <main className="container mx-auto p-4 md:p-8">
+        <>
             <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
                 <Button variant="outline" asChild>
                     <Link href={`/campaign-members/${campaignId}/donations`}>
@@ -414,6 +414,6 @@ export default function DonationDetailsPage() {
                     />
                 </DialogContent>
             </Dialog>
-        </main>
+        </>
     );
 }

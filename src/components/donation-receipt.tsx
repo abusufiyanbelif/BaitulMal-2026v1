@@ -25,7 +25,7 @@ export const DonationReceipt = React.forwardRef<HTMLDivElement, DonationReceiptP
     
     const typeSplit = donation.typeSplit && donation.typeSplit.length > 0
       ? donation.typeSplit
-      : (donation.type ? [{ category: donation.type, amount: donation.amount }] : []);
+      : (donation.type ? [{ category: donation.type, amount: donation.amount, forFundraising: true }] : []);
 
 
     return (
