@@ -73,7 +73,7 @@ export default function DonationsPage() {
   const campaignId = params.campaignId as string;
   const firestore = useFirestore();
   const storage = useStorage();
-  console.log("Storage instance in Campaign Donations:", storage);
+  console.log("Storage bucket:", storage?.app?.options?.storageBucket);
   const { toast } = useToast();
   const { userProfile, isLoading: isProfileLoading } = useSession();
   const auth = useAuth();
@@ -654,3 +654,5 @@ export default function DonationsPage() {
 }
 
     
+
+  
