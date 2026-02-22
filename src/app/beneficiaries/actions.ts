@@ -53,6 +53,33 @@ export async function updateMasterBeneficiaryAction(beneficiaryId: string, data:
     }
 }
 
+export async function updateBeneficiaryStatusInInitiativeAction(
+    initiativeType: 'campaign' | 'lead',
+    initiativeId: string,
+    beneficiaryId: string,
+    newStatus: Beneficiary['status']
+): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) {
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    }
+
+    const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';
+    const docPath = `${collectionName}/${initiativeId}/beneficiaries/${beneficiaryId}`;
+
+    try {
+        const docRef = adminDb.doc(docPath);
+        await docRef.update({ status: newStatus });
+
+        revalidatePath(`/beneficiaries/${beneficiaryId}`);
+        return { success: true, message: 'Beneficiary status updated successfully.' };
+    } catch (error: any) {
+        console.error("Error updating beneficiary status:", error);
+        return { success: false, message: `Failed to update status: ${error.message}` };
+    }
+}
+
+
 export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ success: boolean; message: string }> {
     const { adminDb, adminStorage } = getAdminServices();
     if (!adminDb || !adminStorage) {

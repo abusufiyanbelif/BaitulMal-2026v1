@@ -12,14 +12,15 @@ import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
-import { ArrowLeft, Save, Edit, ShieldAlert, FolderKanban, Lightbulb, UserCheck, Check, Hourglass, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Edit, ShieldAlert, FolderKanban, Lightbulb, UserCheck, Check, Hourglass, Loader2, MoreHorizontal, ChevronsUpDown, BadgeCheck, Info, XCircle } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, DropdownMenuPortal, DropdownMenuRadioGroup, DropdownMenuRadioItem } from '@/components/ui/dropdown-menu';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { updateMasterBeneficiaryAction } from '../actions';
+import { updateMasterBeneficiaryAction, updateBeneficiaryStatusInInitiativeAction } from '../actions';
 import { useSession } from '@/hooks/use-session';
 import Resizer from 'react-image-file-resizer';
 import { useMemoFirebase } from '@/firebase/provider';
@@ -58,6 +59,7 @@ export default function BeneficiaryDetailsPage() {
   
   const [linkedInitiatives, setLinkedInitiatives] = useState<LinkedInitiative[]>([]);
   const [isLinksLoading, setIsLinksLoading] = useState(true);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   const fetchLinkedInitiatives = useCallback(async () => {
     if (!firestore || !beneficiary) return;
@@ -170,7 +172,7 @@ export default function BeneficiaryDetailsPage() {
             }
             
             await new Promise<void>((resolve) => {
-                Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
+                (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
                   fileToUpload = blob as Blob;
                   resolve();
                 }, 'blob');
@@ -215,6 +217,24 @@ export default function BeneficiaryDetailsPage() {
   const handleCancel = () => {
     setIsEditMode(false);
   };
+  
+  const handleInitiativeStatusChange = async (initiative: LinkedInitiative, newStatus: Beneficiary['status']) => {
+    setIsUpdatingStatus(true);
+    const result = await updateBeneficiaryStatusInInitiativeAction(
+        initiative.type,
+        initiative.id,
+        beneficiaryId,
+        newStatus
+    );
+
+    if (result.success) {
+        toast({ title: "Status Updated", description: `Status for '${initiative.name}' set to ${newStatus}.`, variant: "success"});
+        fetchLinkedInitiatives(); // refetch
+    } else {
+        toast({ title: "Update Failed", description: result.message, variant: "destructive" });
+    }
+    setIsUpdatingStatus(false);
+  }
 
   const isLoading = isBeneficiaryLoading || isProfileLoading;
   const backHref = redirectUrl || '/beneficiaries';
@@ -375,6 +395,7 @@ export default function BeneficiaryDetailsPage() {
                                 <TableHead>Type</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="text-right">Kit Amount (₹)</TableHead>
+                                {canUpdate && <TableHead className="w-[100px] text-right">Actions</TableHead>}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -394,6 +415,39 @@ export default function BeneficiaryDetailsPage() {
                                       </Badge>
                                     </TableCell>
                                     <TableCell className="text-right font-mono">₹{link.kitAmount.toFixed(2)}</TableCell>
+                                    {canUpdate && (
+                                        <TableCell className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" disabled={isUpdatingStatus}>
+                                                        {isUpdatingStatus ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    <DropdownMenuSub>
+                                                        <DropdownMenuSubTrigger>
+                                                            <ChevronsUpDown className="mr-2 h-4 w-4" />
+                                                            <span>Change Status</span>
+                                                        </DropdownMenuSubTrigger>
+                                                        <DropdownMenuPortal>
+                                                            <DropdownMenuSubContent>
+                                                                <DropdownMenuRadioGroup
+                                                                    value={link.beneficiaryStatus}
+                                                                    onValueChange={(newStatus) => handleInitiativeStatusChange(link, newStatus as Beneficiary['status'])}
+                                                                >
+                                                                    <DropdownMenuRadioItem value="Pending"><Hourglass className="mr-2"/>Pending</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2"/>Verified</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2"/>Given</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2"/>Hold</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2"/>Need More Details</DropdownMenuRadioItem>
+                                                                </DropdownMenuRadioGroup>
+                                                            </DropdownMenuSubContent>
+                                                        </DropdownMenuPortal>
+                                                    </DropdownMenuSub>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    )}
                                 </TableRow>
                             ))}
                         </TableBody>
