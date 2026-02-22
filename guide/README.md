@@ -21,9 +21,9 @@ Welcome to the developer guide for the DocuExtract application. This document se
     -   Erasing Data (`db:erase`)
 
 4.  [**Permissions & Authentication**](./04-permissions-and-auth.md)
-    -   User Roles (Admin vs. User)
-    -   Login Mechanism (`user_lookups`)
-    -   Permissions Structure
+    -   Actors & Roles (Users, Service Accounts)
+    -   Required Google Cloud APIs & IAM Roles
+    -   Login Mechanism & Security Rules
     -   Troubleshooting Access Errors
 
 5.  [**Genkit AI Flows**](./05-genkit-ai-flows.md)

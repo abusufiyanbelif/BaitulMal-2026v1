@@ -6,7 +6,7 @@ A correct Firebase setup is critical for the application to function. This guide
 
 If you haven't already, create a new project in the [Firebase Console](https://console.firebase.google.com/).
 
-### Required Services
+### Required Services & APIs
 
 Ensure the following services are enabled for your project:
 
@@ -25,6 +25,14 @@ Ensure the following services are enabled for your project:
 3.  **Storage**:
     -   Go to the **Storage** section.
     -   Click **"Get started"** and follow the prompts to enable it. Use the default security rules for now.
+
+In the Google Cloud Console, you must also enable the following APIs for your project:
+- **Identity Toolkit API** (for Firebase Authentication)
+- **Cloud Firestore API**
+- **Cloud Storage API**
+- **Generative Language API** (for AI features)
+
+For a full breakdown of the necessary IAM roles for your service account, refer to the [Permissions & Authentication](./04-permissions-and-auth.md) guide.
 
 ## Client-Side Configuration (`src/firebase/config.ts`)
 
@@ -62,7 +70,7 @@ For detailed steps on obtaining this file, refer to the [Setup and Installation]
 
 **Error: "Storage: User does not have permission to access..."**
 -   **Cause**: Your Cloud Storage Security Rules are blocking a file read or write.
--   **Solution**: Review your `storage.rules` file. Ensure that authenticated users and administrators have the correct permissions for the required paths (e.g., `users/{userId}/...`).
+-   **Solution**: Review your `storage.rules` file. Refer to the [Permissions & Authentication](./04-permissions-and-auth.md) guide for detailed troubleshooting steps.
 
 ---
 
