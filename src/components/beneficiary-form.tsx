@@ -38,6 +38,7 @@ const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   address: z.string().optional(),
   phone: z.string().optional(),
+  age: z.coerce.number().optional(),
   occupation: z.string().optional(),
   members: z.coerce.number().optional(),
   earningMembers: z.coerce.number().optional(),
@@ -98,6 +99,7 @@ export function BeneficiaryForm({
             name: beneficiary?.name || '',
             address: beneficiary?.address || '',
             phone: beneficiary?.phone || '',
+            age: beneficiary?.age || undefined,
             occupation: beneficiary?.occupation || '',
             members: beneficiary?.members || 1,
             earningMembers: beneficiary?.earningMembers || 0,
@@ -242,17 +244,25 @@ export function BeneficiaryForm({
                         <FormField control={control} name="name" render={({ field }) => (
                             <FormItem><FormLabel>Full Name *</FormLabel><FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
                         )}/>
+                        <FormField control={control} name="age" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Age</FormLabel>
+                                <FormControl><Input type="number" placeholder="e.g. 35" {...field} disabled={formIsDisabled} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}/>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField control={control} name="phone" render={({ field }) => (
                             <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="10-digit mobile number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
                         )}/>
+                        <FormField control={control} name="occupation" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Occupation</FormLabel>
+                                <FormControl><Input placeholder="e.g. Daily Wage Laborer" {...field} disabled={formIsDisabled} /></FormControl>
+                            </FormItem>
+                        )}/>
                     </div>
-                    <FormField control={control} name="occupation" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Occupation</FormLabel>
-                            <FormControl><Input placeholder="e.g. Daily Wage Laborer" {...field} disabled={formIsDisabled} /></FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}/>
                     <FormField control={control} name="address" render={({ field }) => (
                         <FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Full residential address" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
                     )}/>

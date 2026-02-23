@@ -210,6 +210,7 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                     <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="p-0">
                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 p-4">
                             <DetailItem label="Address" value={beneficiary.address} />
+                            <DetailItem label="Age" value={beneficiary.age} />
                             <DetailItem label="Occupation" value={beneficiary.occupation} />
                             <DetailItem label="Family" value={`Total: ${beneficiary.members}, Earning: ${beneficiary.earningMembers}, M: ${beneficiary.male}, F: ${beneficiary.female}`} />
                             <DetailItem label="ID Proof" value={`${beneficiary.idProofType || 'N/A'} - ${beneficiary.idNumber || 'N/A'}`} />
@@ -752,6 +753,7 @@ const sortedGroupKeys = useMemo(() => {
         name: beneficiaryData.name,
         address: beneficiaryData.address || '',
         phone: beneficiaryData.phone || '',
+        age: beneficiaryData.age,
         occupation: beneficiaryData.occupation || '',
         members: beneficiaryData.members,
         earningMembers: beneficiaryData.earningMembers,
@@ -921,7 +923,6 @@ const sortedGroupKeys = useMemo(() => {
                           <CommandEmpty>No referral found.</CommandEmpty>
                           <CommandGroup>
                             <CommandItem
-                                onMouseDown={(e) => e.preventDefault()}
                                 onSelect={() => {
                                     if (areAllReferralsSelected) {
                                         setTempReferralFilter([]);
@@ -940,7 +941,6 @@ const sortedGroupKeys = useMemo(() => {
                               <CommandItem
                                 key={referral}
                                 value={referral}
-                                onMouseDown={(e) => e.preventDefault()}
                                 onSelect={() => {
                                   setTempReferralFilter(prev => {
                                       const selected = prev.includes(referral);

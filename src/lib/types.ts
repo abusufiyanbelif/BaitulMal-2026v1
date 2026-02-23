@@ -123,6 +123,7 @@ export interface Beneficiary extends DocumentData {
     address?: string;
     phone?: string;
     occupation?: string;
+    age?: number;
     members?: number;
     earningMembers?: number;
     male?: number;
