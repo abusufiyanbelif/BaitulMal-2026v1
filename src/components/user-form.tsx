@@ -79,13 +79,38 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
     },
   });
 
-  const { watch, setValue, register, control, handleSubmit, getValues, formState: { isDirty } } = form;
+  const { watch, setValue, register, control, handleSubmit, getValues, formState: { isDirty }, reset } = form;
   const nameValue = watch('name');
   const roleValue = watch('role');
   const idProofFile = watch('idProofFile');
 
   const [preview, setPreview] = useState<string | null>(user?.idProofUrl || null);
   
+  useEffect(() => {
+    if (user) {
+      const defaultValues = {
+        name: user.name || '',
+        email: user.email?.includes('@docdataextract.app') ? '' : user.email || '',
+        phone: user.phone || '',
+        userKey: user.userKey || '',
+        loginId: user.loginId || '',
+        role: user.role || 'User',
+        status: user.status || 'Active',
+        password: '',
+        idProofType: user.idProofType || '',
+        idNumber: user.idNumber || '',
+        organizationGroup: user.organizationGroup || '',
+        organizationRole: user.organizationRole || '',
+        _isEditing: true,
+        idProofDeleted: false,
+      };
+      reset(defaultValues);
+      setPermissions(user.permissions || {});
+      setPreview(user.idProofUrl || null);
+    }
+  }, [user, isReadOnly, reset]);
+
+
   useEffect(() => {
     if (!isEditing && !getValues('userKey')) {
         setValue('userKey', `user_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`);
@@ -512,7 +537,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
             </Tabs>
             {!isReadOnly && (
               <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={onCancel} disabled={isFormDisabled}>Cancel</Button>
+                <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>Cancel</Button>
                 <Button type="submit" disabled={isSaveDisabled}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isSubmitting ? 'Saving...' : 'Save User'}
