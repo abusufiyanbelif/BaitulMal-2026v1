@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useFirestore } from '@/firebase/provider';
+import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { collection, query, getDocs, type QueryDocumentSnapshot, type DocumentData } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -42,12 +42,13 @@ export function UserSearchDialog({ open, onOpenChange, onSelectUser }: UserSearc
           allUsers.push({ id: doc.id, ...doc.data() } as UserProfile);
       });
       
-      const filtered = allUsers.filter(u => 
-        (u.name.toLowerCase().includes(lowerCaseTerm) || 
-        (u.email && u.email.toLowerCase().includes(lowerCaseTerm)) ||
-        (u.phone && u.phone.includes(searchTerm))) &&
-        !u.organizationGroup // Explicitly filter for users not in a group
-      ).slice(0, 20);
+      const filtered = allUsers.filter(u => {
+        const nameMatch = u.name ? u.name.toLowerCase().includes(lowerCaseTerm) : false;
+        const emailMatch = u.email ? u.email.toLowerCase().includes(lowerCaseTerm) : false;
+        const phoneMatch = u.phone ? u.phone.includes(searchTerm) : false;
+        
+        return (nameMatch || emailMatch || phoneMatch) && !u.organizationGroup;
+      }).slice(0, 20);
 
       setSearchResults(filtered);
     } catch (e: any) {

@@ -1,5 +1,3 @@
-
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -404,7 +402,7 @@ export default function BeneficiariesPage() {
           if (idProofUrl) {
             const oldFileRef = storageRef(storage, idProofUrl);
             await deleteObject(oldFileRef).catch((err: any) => {
-                if ((err.code !== 'storage/object-not-found')) console.warn("Failed to delete old ID proof:", err);
+                if ((err.code !== 'storage/object-not-found')) console.warn("Old ID proof deletion failed:", err);
             });
           }
 
@@ -430,12 +428,12 @@ export default function BeneficiariesPage() {
 
         const { idProofFile, idProofDeleted, ...restData } = data;
 
-        const fullData = {
+        const fullData: Beneficiary = {
             ...restData,
             id: newBeneficiaryId,
+            addedDate: new Date().toISOString().split('T')[0],
             idProofUrl,
             ...(!editingBeneficiary && !masterId && {
-                addedDate: new Date().toISOString().split('T')[0],
                 createdAt: serverTimestamp(),
                 createdById: userProfile.id,
                 createdByName: userProfile.name,
@@ -802,6 +800,7 @@ export default function BeneficiariesPage() {
         onOpenChange={setIsSearchOpen}
         onSelectBeneficiary={handleSelectExisting}
         currentLeadId={leadId}
+        initiativeType="lead"
       />
     </>
   );

@@ -1,12 +1,10 @@
-
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useFirestore, useMemoFirebase } from '@/firebase/provider';
+import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { collection, query, where, getDocs, limit, type QueryDocumentSnapshot, type DocumentData } from 'firebase/firestore';
 import type { Beneficiary } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,13 +16,26 @@ interface BeneficiarySearchDialogProps {
   onOpenChange: (open: boolean) => void;
   onSelectBeneficiary: (beneficiary: Beneficiary) => void;
   currentLeadId: string;
+  initiativeType: 'campaign' | 'lead';
 }
 
-export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiary, currentLeadId }: BeneficiarySearchDialogProps) {
+export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiary, currentLeadId, initiativeType }: BeneficiarySearchDialogProps) {
   const firestore = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<Beneficiary[]>([]);
+  
+  const existingBeneficiariesCollectionRef = useMemoFirebase(() => {
+    if (!firestore || !currentLeadId || !initiativeType) return null;
+    const collectionPath = initiativeType === 'campaign' ? 'campaigns' : 'leads';
+    return collection(firestore, `${collectionPath}/${currentLeadId}/beneficiaries`);
+  }, [firestore, currentLeadId, initiativeType]);
+
+  const { data: existingBeneficiaries } = useCollection<Beneficiary>(existingBeneficiariesCollectionRef);
+
+  const existingBeneficiaryIds = useMemo(() => {
+    return new Set(existingBeneficiaries?.map(b => b.id) || []);
+  }, [existingBeneficiaries]);
 
   const handleSearch = useCallback(async () => {
     if (!firestore || !searchTerm.trim()) {
@@ -43,10 +54,13 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
           allBeneficiaries.push({ id: doc.id, ...doc.data() } as Beneficiary);
       });
 
-      const filtered = allBeneficiaries.filter(b => 
-        b.name.toLowerCase().includes(lowerCaseTerm) || 
-        (b.phone && b.phone.includes(searchTerm))
-      ).slice(0, 20);
+      const filtered = allBeneficiaries.filter(b => {
+        const nameMatch = b.name ? b.name.toLowerCase().includes(lowerCaseTerm) : false;
+        const phoneMatch = b.phone ? b.phone.includes(searchTerm) : false;
+        const isExisting = existingBeneficiaryIds.has(b.id);
+        
+        return (nameMatch || phoneMatch) && !isExisting;
+      }).slice(0, 20);
 
       setSearchResults(filtered);
     } catch (e: any) {
@@ -54,7 +68,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
     } finally {
       setIsSearching(false);
     }
-  }, [firestore, searchTerm]);
+  }, [firestore, searchTerm, existingBeneficiaryIds]);
 
   const handleSelect = (beneficiary: Beneficiary) => {
     onSelectBeneficiary(beneficiary);
@@ -75,7 +89,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
         <DialogHeader>
           <DialogTitle>Search Existing Beneficiaries</DialogTitle>
           <DialogDescription>
-            Search by name or phone number to find and add an existing beneficiary from the master list.
+            Search by name or phone number to find and add an existing beneficiary from the master list. Beneficiaries already in this initiative will not be shown.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">

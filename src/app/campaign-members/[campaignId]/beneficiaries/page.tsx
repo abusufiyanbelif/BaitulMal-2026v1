@@ -1,5 +1,3 @@
-
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -660,12 +658,12 @@ const sortedGroupKeys = useMemo(() => {
 
         const { idProofFile, idProofDeleted, ...restData } = data;
 
-        const fullData = {
+        const fullData: Beneficiary = {
             ...restData,
             id: newBeneficiaryId,
+            addedDate: new Date().toISOString().split('T')[0],
             idProofUrl,
             ...(!editingBeneficiary && !masterId && {
-                addedDate: new Date().toISOString().split('T')[0],
                 createdAt: serverTimestamp(),
                 createdById: userProfile.id,
                 createdByName: userProfile.name,
@@ -1184,6 +1182,7 @@ const sortedGroupKeys = useMemo(() => {
         onOpenChange={setIsSearchOpen}
         onSelectBeneficiary={handleSelectExisting}
         currentLeadId={campaignId}
+        initiativeType="campaign"
       />
     </>
   );
