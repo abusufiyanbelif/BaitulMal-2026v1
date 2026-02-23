@@ -596,7 +596,6 @@ const sortedGroupKeys = useMemo(() => {
     const newBeneficiaryId = masterBeneficiaryDocRef.id;
     const campaignBeneficiaryDocRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', newBeneficiaryId);
     
-    let finalData: Beneficiary;
     let idProofUrl = editingBeneficiary?.idProofUrl || '';
 
     try {
@@ -661,7 +660,7 @@ const sortedGroupKeys = useMemo(() => {
 
         const { idProofFile, idProofDeleted, ...restData } = data;
 
-        finalData = {
+        const fullData = {
             ...restData,
             id: newBeneficiaryId,
             idProofUrl,
@@ -678,13 +677,15 @@ const sortedGroupKeys = useMemo(() => {
             }),
         } as Beneficiary;
 
+        const { status, kitAmount, ...masterBeneficiaryData } = fullData;
+
         const oldKitAmount = editingBeneficiary?.kitAmount || 0;
         const newKitAmount = data.kitAmount || 0;
         const amountDifference = newKitAmount - oldKitAmount;
         const newTargetAmount = (campaign.targetAmount || 0) + (editingBeneficiary ? amountDifference : newKitAmount);
 
-        batch.set(masterBeneficiaryDocRef, finalData, { merge: true });
-        batch.set(campaignBeneficiaryDocRef, finalData, { merge: true });
+        batch.set(masterBeneficiaryDocRef, masterBeneficiaryData, { merge: true });
+        batch.set(campaignBeneficiaryDocRef, fullData, { merge: true });
         batch.update(campaignDocRef, { targetAmount: newTargetAmount });
         
         await batch.commit();

@@ -50,9 +50,9 @@ export default function CreateBeneficiaryPage() {
       }
     }
 
-    const { idProofFile, idProofDeleted, ...beneficiaryData } = data;
+    const { idProofFile, idProofDeleted, status, ...beneficiaryData } = data;
 
-    const newBeneficiary: Omit<Beneficiary, "id" | "createdAt" | "createdById" | "createdByName" | "updatedAt" | "updatedById" | "updatedByName" | "idProofUrl"> = {
+    const newBeneficiary: Partial<Beneficiary> = {
         ...beneficiaryData,
         addedDate: new Date().toISOString().split('T')[0],
     };

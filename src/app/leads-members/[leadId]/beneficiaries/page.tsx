@@ -366,7 +366,6 @@ export default function BeneficiariesPage() {
     const newBeneficiaryId = masterBeneficiaryDocRef.id;
     const leadBeneficiaryDocRef = doc(firestore, 'leads', leadId, 'beneficiaries', newBeneficiaryId);
     
-    let finalData: Beneficiary;
     let idProofUrl = editingBeneficiary?.idProofUrl || '';
 
     try {
@@ -431,7 +430,7 @@ export default function BeneficiariesPage() {
 
         const { idProofFile, idProofDeleted, ...restData } = data;
 
-        finalData = {
+        const fullData = {
             ...restData,
             id: newBeneficiaryId,
             idProofUrl,
@@ -447,14 +446,16 @@ export default function BeneficiariesPage() {
                 updatedByName: userProfile.name,
             }),
         } as Beneficiary;
+        
+        const { status, kitAmount, ...masterBeneficiaryData } = fullData;
 
         const oldKitAmount = editingBeneficiary?.kitAmount || 0;
         const newKitAmount = data.kitAmount || 0;
         const amountDifference = newKitAmount - oldKitAmount;
         const newTargetAmount = (lead.targetAmount || 0) + (editingBeneficiary ? amountDifference : newKitAmount);
 
-        batch.set(masterBeneficiaryDocRef, finalData, { merge: true });
-        batch.set(leadBeneficiaryDocRef, finalData, { merge: true });
+        batch.set(masterBeneficiaryDocRef, masterBeneficiaryData, { merge: true });
+        batch.set(leadBeneficiaryDocRef, fullData, { merge: true });
         batch.update(leadDocRef, { targetAmount: newTargetAmount });
         
         await batch.commit();
