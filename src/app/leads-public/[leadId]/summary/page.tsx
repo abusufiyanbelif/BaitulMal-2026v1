@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useMemo, useState, useRef } from 'react';
@@ -56,6 +55,7 @@ import placeholderImages from '@/app/lib/placeholder-images.json';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/use-session';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 
 
 const donationCategoryChartConfig = {
@@ -66,6 +66,13 @@ const donationCategoryChartConfig = {
     Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
     'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-5))" },
     Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
+} satisfies ChartConfig;
+
+const donationPaymentTypeChartConfig = {
+    Cash: { label: "Cash", color: "hsl(var(--chart-1))" },
+    'Online Payment': { label: "Online Payment", color: "hsl(var(--chart-2))" },
+    Check: { label: "Check", color: "hsl(var(--chart-5))" },
+    Other: { label: "Other", color: "hsl(var(--chart-4))" },
 } satisfies ChartConfig;
 
 
@@ -147,12 +154,29 @@ export default function PublicLeadSummaryPage() {
         const fundingGoal = lead.targetAmount || 0;
         const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
         
+        const paymentTypeData = donations.reduce((acc, d) => {
+            const key = d.donationType || 'Other';
+            acc[key] = (acc[key] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+
+        const fitraTotal = amountsByCategory['Fitra'] || 0;
+        const zakatTotal = amountsByCategory['Zakat'] || 0;
+        const loanTotal = amountsByCategory['Loan'] || 0;
+        const interestTotal = amountsByCategory['Interest'] || 0;
+        const sadaqahTotal = amountsByCategory['Sadaqah'] || 0;
+        const lillahTotal = amountsByCategory['Lillah'] || 0;
+        const monthlyContributionTotal = amountsByCategory['Monthly Contribution'] || 0;
+        const grandTotal = fitraTotal + zakatTotal + loanTotal + interestTotal + sadaqahTotal + lillahTotal + monthlyContributionTotal;
+        
         return {
             totalCollectedForGoal,
             fundingProgress,
             targetAmount: fundingGoal,
             remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal),
             amountsByCategory,
+            donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
+            fundTotals: { fitra: fitraTotal, zakat: zakatTotal, loan: loanTotal, interest: interestTotal, sadaqah: sadaqahTotal, lillah: lillahTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal, }
         };
     }, [allDonations, lead]);
     
@@ -186,7 +210,7 @@ export default function PublicLeadSummaryPage() {
 
 *We Need Your Support!*
 
-Join us for the *${lead.name}* campaign as we work to provide essential aid to our community.
+Join us for the *${lead.name}* initiative as we work to provide essential aid to our community.
 
 *Our Goal:*
 ${lead.description || 'To support those in need.'}
@@ -196,7 +220,7 @@ ${lead.description || 'To support those in need.'}
              shareText += `
 
 *Financial Update:*
-🎯 Target for Kits: ₹${fundingData.targetAmount.toLocaleString('en-IN')}
+🎯 Target: ₹${fundingData.targetAmount.toLocaleString('en-IN')}
 ✅ Collected (Verified): ₹${fundingData.totalCollectedForGoal.toLocaleString('en-IN')}
 ⏳ Remaining: *₹${fundingData.remainingToCollect.toLocaleString('en-IN')}*
             `
@@ -462,33 +486,36 @@ Your contribution, big or small, makes a huge difference.
                     <div className="grid gap-6 lg:grid-cols-2">
                         <Card>
                             <CardHeader>
-                                <CardTitle>All Donations by Category</CardTitle>
+                                <CardTitle>Fund Totals by Type</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2">
+                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold font-mono">₹{fundingData.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold font-mono">₹{fundingData.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold font-mono">₹{fundingData.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold font-mono">₹{fundingData.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold font-mono">₹{fundingData.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold font-mono">₹{fundingData.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold font-mono">₹{fundingData.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                                <Separator className="my-2"/>
+                                <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{fundingData.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Donations by Payment Type</CardTitle>
+                                <CardDescription>Count of donations per payment type.</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                    <BarChart
-                                        data={Object.entries(fundingData.amountsByCategory || {}).map(([name, value]) => ({ name, value }))}
-                                        layout="vertical"
-                                        margin={{ right: 20 }}
-                                    >
-                                        <CartesianGrid horizontal={false} />
-                                        <YAxis
-                                            dataKey="name"
-                                            type="category"
-                                            tickLine={false}
-                                            tickMargin={10}
-                                            axisLine={false}
-                                            tick={{ fontSize: 12 }}
-                                            width={120}
-                                        />
-                                        <XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
-                                        <ChartTooltip content={<ChartTooltipContent />} />
-                                        <Bar dataKey="value" radius={4}>
-                                            {Object.entries(fundingData.amountsByCategory || {}).map(([name,]) => (
-                                                <Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />
+                                <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
+                                    <PieChart>
+                                        <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                        <Pie data={fundingData?.donationPaymentTypeChartData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5}>
+                                            {fundingData?.donationPaymentTypeChartData?.map((entry) => (
+                                                <Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />
                                             ))}
-                                        </Bar>
-                                    </BarChart>
+                                        </Pie>
+                                        <ChartLegend content={<ChartLegendContent />} />
+                                    </PieChart>
                                 </ChartContainer>
                             </CardContent>
                         </Card>

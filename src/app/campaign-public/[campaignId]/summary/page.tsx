@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useMemo, useState, useRef } from 'react';
@@ -540,6 +539,44 @@ Your contribution, big or small, makes a huge difference.
                         </Card>
                     </div>
                 )}
+                {campaign.category === 'Ration' && beneficiaryData && beneficiaryData.sortedBeneficiaryCategoryKeys.length > 0 && (
+                      <Card>
+                          <CardHeader><CardTitle>Beneficiary Groups</CardTitle></CardHeader>
+                          <CardContent>
+                            <div className="w-full overflow-x-auto">
+                              <Table>
+                                  <TableHeader>
+                                      <TableRow>
+                                          <TableHead>Category Name</TableHead>
+                                          <TableHead className="text-center">Total Beneficiaries</TableHead>
+                                          <TableHead className="text-right">Kit Amount (per kit)</TableHead>
+                                          <TableHead className="text-right">Total Kit Amount (per category)</TableHead>
+                                      </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                      {beneficiaryData.sortedBeneficiaryCategoryKeys.map(key => {
+                                          const group = beneficiaryData.beneficiariesByCategory[key];
+                                          return (
+                                              <TableRow key={key}>
+                                                  <TableCell>{group.categoryName}</TableCell>
+                                                  <TableCell className="text-center">{group.beneficiaries.length}</TableCell>
+                                                  <TableCell className="text-right font-mono">₹{group.kitAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                                  <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                              </TableRow>
+                                          );
+                                      })}
+                                  </TableBody>
+                                   <TableFooter>
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="font-bold text-right">Total</TableCell>
+                                            <TableCell className="text-right font-bold font-mono">₹{Object.values(beneficiaryData.beneficiariesByCategory).reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
+                                        </TableRow>
+                                    </TableFooter>
+                              </Table>
+                            </div>
+                          </CardContent>
+                      </Card>
+                  )}
             </div>
 
             <ShareDialog 
