@@ -1,5 +1,3 @@
-
-
 /** @type {import('tailwindcss').Config} */
 const config = {
   // Force cache invalidation by adding a comment.
@@ -126,7 +124,7 @@ const config = {
         },
         'zoom-in-out': {
             '0%, 100%': { transform: 'scale(1)' },
-            '50%': { transform: 'scale(1.05)' },
+            '50%': { transform: 'scale(1.5)' },
         },
       },
       animation: {

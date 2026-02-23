@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Loader2 } from 'lucide-react';
@@ -25,7 +24,7 @@ export function BrandedLoader() {
           priority
         />
       ) : (
-        <div className="w-48 h-48 animate-zoom-in-out">
+        <div className="w-[200px] h-[200px] animate-zoom-in-out">
             <TempLogo />
         </div>
       )}
