@@ -231,11 +231,10 @@ export default function CreateLeadPage() {
         router.push(`/leads-members`);
       })
       .catch((serverError: any) => {
-        const serializableData = { ...newLeadData, createdAt: 'FieldValue.serverTimestamp()' };
         const permissionError = new FirestorePermissionError({
             path: 'leads',
             operation: 'create',
-            requestResourceData: serializableData,
+            requestResourceData: { ...newLeadData, createdAt: '[SERVER_TIMESTAMP]' },
         });
         errorEmitter.emit('permission-error', permissionError);
       })

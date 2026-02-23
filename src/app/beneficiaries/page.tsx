@@ -248,7 +248,7 @@ export default function BeneficiariesPage() {
 
   const handleDeleteClick = (id: string) => {
     if (!canDelete) return;
-    setUserToDelete(id);
+    setBeneficiaryToDelete(id);
     setIsDeleteDialogOpen(true);
   };
   
@@ -699,4 +699,5 @@ export default function BeneficiariesPage() {
     </main>
   );
 }
+
 

@@ -179,7 +179,7 @@ export default function LeadPage() {
         .then(() => {
             toast({ title: 'Success', description: `Lead '${leadToUpdate.name}' has been updated.`, variant: 'success' });
         })
-        .catch(async (serverError) => {
+        .catch(async (serverError: any) => {
             const permissionError = new FirestorePermissionError({
                 path: docRef.path,
                 operation: 'update',
@@ -522,6 +522,7 @@ export default function LeadPage() {
     </>
   );
 }
+
 
 
 

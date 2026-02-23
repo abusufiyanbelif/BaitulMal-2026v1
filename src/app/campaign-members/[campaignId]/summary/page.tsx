@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -8,7 +9,7 @@ import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { doc, updateDoc, DocumentReference, collection, writeBatch } from 'firebase/firestore';
-import type { Campaign, RationItem, Beneficiary, ItemCategory, CampaignDocument } from '@/lib/types';
+import type { Campaign, RationItem, Beneficiary, ItemCategory, CampaignDocument, Donation, DonationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,7 +18,8 @@ import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, Loader2, Target, Users, Gift, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, ChevronDown, ChevronUp, UploadCloud, Trash2, CheckCircle2, XCircle, File } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
+import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
@@ -56,6 +58,7 @@ import {
 } from 'recharts';
 import Resizer from 'react-image-file-resizer';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
+import Link from 'next/link';
 
 
 const donationCategoryChartConfig = {
@@ -245,7 +248,7 @@ export default function CampaignSummaryPage() {
         } else if (imageFile) {
             try {
                 if (imageUrl) {
-                     await deleteObject(storageRef(storage, imageUrl)).catch(e => console.warn("Old image deletion failed, it might not exist.", e));
+                     await deleteObject(storageRef(storage, imageUrl)).catch((e: any) => console.warn("Old image deletion failed, it might not exist.", e));
                 }
                 const resizedBlob = await new Promise<Blob>((resolve) => {
                     (Resizer as any).imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
@@ -274,7 +277,6 @@ export default function CampaignSummaryPage() {
         const uploadedDocuments = await Promise.all(documentUploadPromises);
         const finalDocuments = [...existingDocuments, ...uploadedDocuments];
 
-        // Handle artifact deletions
         const originalDocuments = campaign?.documents || [];
         const existingUrls = existingDocuments.map(d => d.url);
         const docsToDelete = originalDocuments.filter(d => !existingUrls.includes(d.url));
@@ -336,7 +338,7 @@ export default function CampaignSummaryPage() {
 
         verifiedDonationsList.forEach(d => {
             let amountForThisCampaign = 0;
-            const campaignLink = d.linkSplit?.find(l => l.linkId === campaign.id && l.linkType === 'campaign');
+            const campaignLink = d.linkSplit?.find((l: any) => l.linkId === campaign.id && l.linkType === 'campaign');
             
             if (campaignLink) {
                 amountForThisCampaign = campaignLink.amount;
@@ -358,7 +360,7 @@ export default function CampaignSummaryPage() {
                 ? d.typeSplit
                 : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
             
-            splits.forEach(split => {
+            splits.forEach((split: any) => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
 
                 const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
@@ -372,7 +374,7 @@ export default function CampaignSummaryPage() {
         const donationStatusStats = donations.reduce((acc, donation) => {
             const status = donation.status || 'Pending';
             let amountForThisCampaign = 0;
-            const campaignLink = donation.linkSplit?.find(l => l.linkId === campaign.id && l.linkType === 'campaign');
+            const campaignLink = donation.linkSplit?.find((l: any) => l.linkId === campaign.id && l.linkType === 'campaign');
             if (campaignLink) {
                 amountForThisCampaign = campaignLink.amount;
             } else if ((!donation.linkSplit || donation.linkSplit.length === 0) && donation.campaignId === campaign.id) {
@@ -680,24 +682,24 @@ Your contribution, big or small, makes a huge difference.
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex w-max space-x-2">
                         {canReadSummary && (
-                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                                <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
-                            </Button>
+                            <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-primary-foreground shadow" : "hover:bg-accent hover:text-accent-foreground")}>
+                                Summary
+                            </Link>
                         )}
                         {canReadRation && (
-                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                                <Link href={`/campaign-members/${campaignId}`}>{campaign.category === 'Ration' ? 'Ration Details' : 'Item List'}</Link>
-                            </Button>
+                            <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow" : "hover:bg-accent hover:text-accent-foreground")}>
+                                Item Lists
+                            </Link>
                         )}
                         {canReadBeneficiaries && (
-                            <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                                <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
-                            </Button>
+                            <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "bg-primary text-primary-foreground shadow" : "hover:bg-accent hover:text-accent-foreground")}>
+                                Beneficiary List
+                            </Link>
                         )}
                          {canReadDonations && (
-                            <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                                <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
-                            </Button>
+                             <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow" : "hover:bg-accent hover:text-accent-foreground")}>
+                                Donations
+                            </Link>
                         )}
                     </div>
                 </ScrollArea>
@@ -728,7 +730,7 @@ Your contribution, big or small, makes a huge difference.
                                                 <p className="mb-2 text-sm text-center text-muted-foreground">
                                                     <span className="font-semibold text-primary">Click to upload</span> or drag and drop
                                                 </p>
-                                                <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP recommended</p>
+                                                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP recommended</p>
                                             </div>
                                         )}
                                     </label>

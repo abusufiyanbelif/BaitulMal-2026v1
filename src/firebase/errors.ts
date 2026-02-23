@@ -102,9 +102,23 @@ function buildRequestObject(context: SecurityRuleContext): SecurityRuleRequest {
  * @returns A string containing the error message and the JSON payload.
  */
 function buildErrorMessage(requestObject: SecurityRuleRequest): string {
+  // A safe stringify replacer to handle special Firestore values like FieldValue.
+  const replacer = (key: string, value: any) => {
+    if (typeof value === 'object' && value !== null) {
+      // Crude check for FieldValue types (like serverTimestamp) which don't have public properties for identification
+      // A more robust check might be needed if more FieldValue types are used.
+      // This implementation avoids crashing on circular references or non-serializable objects.
+      if (Object.keys(value).length === 0 && !(value instanceof Date)) {
+        return `[FieldValue: ${key}]`;
+      }
+    }
+    return value;
+  };
+
   return `Missing or insufficient permissions: The following request was denied by Firestore Security Rules:
-${JSON.stringify(requestObject, null, 2)}`;
+${JSON.stringify(requestObject, replacer, 2)}`;
 }
+
 
 /**
  * A custom error class designed to be consumed by an LLM for debugging.

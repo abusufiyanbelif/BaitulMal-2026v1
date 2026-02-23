@@ -1,5 +1,6 @@
 
-import type { DocumentData, Timestamp } from 'firebase/firestore';
+
+import type { DocumentData, Timestamp, FieldValue } from 'firebase/firestore';
 import type { UserPermissions } from './modules';
 import { donationCategories } from './modules';
 
@@ -73,7 +74,7 @@ export interface Campaign extends DocumentData {
   documents?: CampaignDocument[];
   itemCategories: ItemCategory[];
   allowedDonationTypes?: DonationCategory[];
-  createdAt?: Timestamp;
+  createdAt?: Timestamp | FieldValue;
   createdById?: string;
   createdByName?: string;
 }
@@ -104,7 +105,7 @@ export interface Lead extends DocumentData {
   documents?: CampaignDocument[];
   itemCategories: ItemCategory[];
   allowedDonationTypes?: DonationCategory[];
-  createdAt?: Timestamp;
+  createdAt?: Timestamp | FieldValue;
   createdById?: string;
   createdByName?: string;
   // Education fields
@@ -142,10 +143,10 @@ export interface Beneficiary extends DocumentData {
     zakatAllocation?: number;
     itemCategoryId?: string;
     itemCategoryName?: string;
-    createdAt?: Timestamp;
+    createdAt?: Timestamp | FieldValue;
     createdById?: string;
     createdByName?: string;
-    updatedAt?: Timestamp;
+    updatedAt?: Timestamp | FieldValue;
     updatedById?: string;
     updatedByName?: string;
 }
@@ -185,7 +186,7 @@ export interface Donation extends DocumentData {
   suggestions?: string;
   uploadedBy: string;
   uploadedById: string;
-  createdAt?: Timestamp;
+  createdAt?: Timestamp | FieldValue;
   transactions?: TransactionDetail[];
   campaignId?: string; // Legacy field
   campaignName?: string; // Legacy field
@@ -201,7 +202,7 @@ export interface UserProfile extends DocumentData {
   role: 'Admin' | 'User';
   status: 'Active' | 'Inactive';
   permissions: UserPermissions;
-  createdAt?: Timestamp;
+  createdAt?: Timestamp | FieldValue;
   createdById?: string;
   createdByName?: string;
   idProofType?: string;
