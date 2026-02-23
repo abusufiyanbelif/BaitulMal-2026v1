@@ -42,7 +42,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction } from './actions';
+import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterBeneficiaryAction } from './actions';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
@@ -50,7 +50,6 @@ import { getNestedValue } from '@/lib/utils';
 import { BeneficiaryImportDialog, type ProcessedRecord } from '@/components/beneficiary-import-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
@@ -170,6 +169,9 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
                             <DetailItem label="Family" value={`Total: ${beneficiary.members}, Earning: ${beneficiary.earningMembers}, M: ${beneficiary.male}, F: ${beneficiary.female}`} />
                             <DetailItem label="ID Proof" value={`${beneficiary.idProofType || 'N/A'} - ${beneficiary.idNumber || 'N/A'}`} />
                             <DetailItem label="Date Added" value={beneficiary.addedDate} />
+                            {beneficiary.isEligibleForZakat && (
+                                <DetailItem label="Zakat Allocation" value={`₹${(beneficiary.zakatAllocation || 0).toFixed(2)}`} />
+                            )}
                             {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-3"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
                         </div>
                     </TableCell>
@@ -353,41 +355,39 @@ export default function BeneficiariesPage() {
   const isLoading = areBeneficiariesLoading || isProfileLoading;
   
     const handleStatusChange = async (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => {
-        if (!firestore || !canUpdate) return;
-        const beneficiaryDocRef = doc(firestore, 'beneficiaries', beneficiary.id);
-        try {
-        await updateDoc(beneficiaryDocRef, { status: newStatus });
-        toast({
-            title: 'Status Updated',
-            description: `${beneficiary.name}'s status has been set to ${newStatus}.`,
-            variant: 'success',
-        });
-        } catch (serverError: any) {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: beneficiaryDocRef.path,
-            operation: 'update',
-            requestResourceData: { status: newStatus },
-        }));
+        if (!canUpdate || !userProfile) return;
+        const result = await updateMasterBeneficiaryAction(
+            beneficiary.id,
+            { status: newStatus },
+            { id: userProfile.id, name: userProfile.name }
+        );
+        if (result.success) {
+            toast({
+                title: 'Status Updated',
+                description: `${beneficiary.name}'s status has been set to ${newStatus}.`,
+                variant: 'success',
+            });
+        } else {
+            toast({ title: 'Update Failed', description: result.message, variant: 'destructive' });
         }
     };
   
     const handleZakatToggle = async (beneficiary: Beneficiary) => {
-        if (!firestore || !canUpdate) return;
-        const masterBeneficiaryDocRef = doc(firestore, 'beneficiaries', beneficiary.id);
+        if (!canUpdate || !userProfile) return;
         const newZakatStatus = !beneficiary.isEligibleForZakat;
-        try {
-            await updateDoc(masterBeneficiaryDocRef, { isEligibleForZakat: newZakatStatus });
+        const result = await updateMasterBeneficiaryAction(
+            beneficiary.id,
+            { isEligibleForZakat: newZakatStatus },
+            { id: userProfile.id, name: userProfile.name }
+        );
+        if (result.success) {
             toast({
                 title: 'Zakat Status Updated',
                 description: `${beneficiary.name} is now ${newZakatStatus ? 'Eligible' : 'Not Eligible'} for Zakat.`,
                 variant: 'success',
             });
-        } catch (serverError: any) {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: masterBeneficiaryDocRef.path,
-                operation: 'update',
-                requestResourceData: { isEligibleForZakat: newZakatStatus },
-            }));
+        } else {
+            toast({ title: 'Update Failed', description: result.message, variant: 'destructive' });
         }
     };
   
@@ -706,6 +706,7 @@ export default function BeneficiariesPage() {
     </main>
   );
 }
+
 
 
 

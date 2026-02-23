@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Upload, Download, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, ChevronsUpDown, CheckCircle2, BadgeCheck, Hourglass, XCircle, Info } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Upload, Download, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, ChevronsUpDown, CheckCircle2, BadgeCheck, Hourglass, XCircle, Info, Check } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,6 +62,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
+import { updateMasterBeneficiaryAction } from '@/app/beneficiaries/actions';
 
 type SortKey = keyof Beneficiary | 'srNo';
 type BeneficiaryStatus = Beneficiary['status'];
@@ -87,9 +88,10 @@ interface BeneficiaryRowProps {
     onEdit: (beneficiary: Beneficiary) => void;
     onDelete: (id: string) => void;
     onStatusChange: (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => void;
+    onZakatToggle: (beneficiary: Beneficiary) => void;
 }
 
-const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, onStatusChange }) => {
+const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, onStatusChange, onZakatToggle }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
@@ -171,6 +173,12 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                                             </DropdownMenuSubContent>
                                         </DropdownMenuPortal>
                                     </DropdownMenuSub>
+                                )}
+                                {canUpdate && (
+                                    <DropdownMenuItem onClick={() => onZakatToggle(beneficiary)}>
+                                        {beneficiary.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                                        <span>{beneficiary.isEligibleForZakat ? 'Mark as Not Eligible' : 'Mark as Zakat Eligible'}</span>
+                                    </DropdownMenuItem>
                                 )}
                                 {canDelete && <DropdownMenuSeparator />}
                                 {canDelete && <DropdownMenuItem onClick={() => onDelete(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
@@ -402,7 +410,7 @@ export default function BeneficiariesPage() {
 
           if (file.type.startsWith('image/')) {
               await new Promise<void>((resolve) => {
-                  (Resizer.imageFileResizer as any)(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
+                  (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
                     fileToUpload = blob as Blob;
                     resolve();
                   }, 'blob');
@@ -521,6 +529,25 @@ export default function BeneficiariesPage() {
     }
   };
   
+    const handleZakatToggle = async (beneficiary: Beneficiary) => {
+        if (!canUpdate || !userProfile) return;
+        const newZakatStatus = !beneficiary.isEligibleForZakat;
+        const result = await updateMasterBeneficiaryAction(
+            beneficiary.id,
+            { isEligibleForZakat: newZakatStatus },
+            { id: userProfile.id, name: userProfile.name }
+        );
+        if (result.success) {
+            toast({
+                title: 'Zakat Status Updated',
+                description: `${beneficiary.name} is now ${newZakatStatus ? 'Eligible' : 'Not Eligible'} for Zakat.`,
+                variant: 'success',
+            });
+        } else {
+            toast({ title: 'Update Failed', description: result.message, variant: 'destructive' });
+        }
+    };
+
   const filteredAndSortedBeneficiaries = useMemo(() => {
     if (!beneficiaries) return [];
     let sortableItems = [...beneficiaries];
@@ -712,6 +739,7 @@ export default function BeneficiariesPage() {
                                     onEdit={handleEdit}
                                     onDelete={handleDeleteClick}
                                     onStatusChange={handleStatusChange}
+                                    onZakatToggle={handleZakatToggle}
                                 />
                             ))
                         ) : (

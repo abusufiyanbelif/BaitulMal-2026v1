@@ -69,6 +69,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import { updateMasterBeneficiaryAction } from '@/app/beneficiaries/actions';
 
 type SortKey = keyof Beneficiary | 'srNo';
 type BeneficiaryStatus = Beneficiary['status'];
@@ -497,29 +498,21 @@ const sortedGroupKeys = useMemo(() => {
   };
 
   const handleZakatToggle = async (beneficiary: Beneficiary) => {
-    if (!firestore || !campaignId || !canUpdate) return;
-
-    const beneficiaryDocRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiary.id);
-    const masterBeneficiaryDocRef = doc(firestore, 'beneficiaries', beneficiary.id);
+    if (!canUpdate || !userProfile) return;
     const newZakatStatus = !beneficiary.isEligibleForZakat;
-
-    try {
-        const batch = writeBatch(firestore);
-        batch.update(beneficiaryDocRef, { isEligibleForZakat: newZakatStatus });
-        batch.update(masterBeneficiaryDocRef, { isEligibleForZakat: newZakatStatus });
-        await batch.commit();
-
+    const result = await updateMasterBeneficiaryAction(
+        beneficiary.id,
+        { isEligibleForZakat: newZakatStatus },
+        { id: userProfile.id, name: userProfile.name }
+    );
+    if (result.success) {
         toast({
             title: 'Zakat Status Updated',
             description: `${beneficiary.name} is now ${newZakatStatus ? 'Eligible' : 'Not Eligible'} for Zakat.`,
             variant: 'success',
         });
-    } catch (serverError: any) {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: beneficiaryDocRef.path,
-        operation: 'update',
-        requestResourceData: { isEligibleForZakat: newZakatStatus },
-      }));
+    } else {
+        toast({ title: 'Update Failed', description: result.message, variant: 'destructive' });
     }
   };
 
@@ -647,7 +640,7 @@ const sortedGroupKeys = useMemo(() => {
 
             if (file.type.startsWith('image/')) {
                 await new Promise<void>((resolve) => {
-                    Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
+                    (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
                         fileToUpload = blob as Blob;
                         resolve();
                     }, 'blob');
