@@ -88,6 +88,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
   
   useEffect(() => {
     if (user) {
+      const orgGroupValue: 'founder' | 'co-founder' | 'finance' | 'member' | 'none' = user.organizationGroup || 'none';
+      
       const defaultValues = {
         name: user.name || '',
         email: user.email?.includes('@docdataextract.app') ? '' : user.email || '',
@@ -99,17 +101,16 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
         password: '',
         idProofType: user.idProofType || '',
         idNumber: user.idNumber || '',
-        organizationGroup: user.organizationGroup || 'none',
+        organizationGroup: orgGroupValue,
         organizationRole: user.organizationRole || '',
-        _isEditing: true,
+        _isEditing: isEditing,
         idProofDeleted: false,
       };
       reset(defaultValues);
       setPermissions(user.permissions || {});
       setPreview(user.idProofUrl || null);
     }
-  }, [user, isReadOnly, reset]);
-
+  }, [user, reset, isEditing]);
 
   useEffect(() => {
     if (!isEditing && !getValues('userKey')) {
