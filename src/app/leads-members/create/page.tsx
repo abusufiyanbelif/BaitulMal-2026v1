@@ -197,6 +197,9 @@ export default function CreateLeadPage() {
       requiredAmount: data.requiredAmount || 0,
       targetAmount: data.targetAmount || 0,
       description: data.description || '',
+      purposeDetails: data.purposeDetails || '',
+      category: data.category || '',
+      categoryDetails: data.categoryDetails || '',
       createdAt: serverTimestamp(),
       createdById: userProfile.id,
       createdByName: userProfile.name,
@@ -206,6 +209,11 @@ export default function CreateLeadPage() {
       shopAddress: '',
       itemCategories: [{ id: 'general', name: 'General', items: [] }],
       seriousness: data.seriousness || null,
+      degree: data.degree || '',
+      year: data.year || '',
+      semester: data.semester || '',
+      diseaseIdentified: data.diseaseIdentified || '',
+      diseaseStage: data.diseaseStage || '',
     };
     
     if (imageUrl) {
