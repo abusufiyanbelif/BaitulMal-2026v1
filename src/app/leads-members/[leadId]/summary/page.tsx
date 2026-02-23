@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -19,14 +18,14 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Toolti
 import Resizer from 'react-image-file-resizer';
 import type { Lead, Beneficiary, Donation, DonationCategory, CampaignDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, Loader2, Users, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, Gift, UploadCloud, Trash2, FolderKanban, Lightbulb, Target, File, ShieldAlert } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
 import { Label } from '@/components/ui/label';
@@ -178,6 +177,29 @@ export default function LeadSummaryPage() {
 
     const handleToggleDocumentPublic = (urlToToggle: string) => {
         setExistingDocuments(prev => prev.map(doc => doc.url === urlToToggle ? { ...doc, isPublic: !doc.isPublic } : doc));
+    };
+
+    const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
+        if (!leadDocRef || !lead?.documents || !canUpdate) return;
+
+        const newDocuments = lead.documents.map(doc => 
+            doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc
+        );
+        
+        try {
+            await updateDoc(leadDocRef, { documents: newDocuments });
+
+            toast({
+                title: "Visibility Updated",
+                description: `'${docToToggle.name}' is now ${!docToToggle.isPublic ? 'Public' : 'Private'}.`
+            });
+        } catch (serverError: any) {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: leadDocRef.path,
+                operation: 'update',
+                requestResourceData: { documents: newDocuments },
+            }));
+        }
     };
 
     const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
@@ -499,7 +521,7 @@ Your contribution, big or small, makes a huge difference.
                                             <p className="mb-2 text-sm text-center text-muted-foreground">
                                                 <span className="font-semibold text-primary">Click to upload</span> or drag and drop
                                             </p>
-                                            <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP recommended</p>
+                                            <p className="text-xs text-muted-foreground">PNG, JPG, WEBP recommended</p>
                                         </div>
                                     )}
                                 </label>
@@ -567,8 +589,8 @@ Your contribution, big or small, makes a huge difference.
                                     {lead.documents.map((doc) => {
                                         const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
                                         return (
-                                            <a key={doc.url} href={doc.url} target="_blank" rel="noopener noreferrer" className="group">
-                                                <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+                                            <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" className="group block flex-grow">
                                                     <CardContent className="p-0">
                                                         <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
                                                             {isImage ? (
@@ -576,16 +598,29 @@ Your contribution, big or small, makes a huge difference.
                                                             ) : (
                                                                 <File className="w-10 h-10 text-muted-foreground" />
                                                             )}
-                                                            {!doc.isPublic && (
-                                                                <Badge variant="destructive" className="absolute top-2 right-2">Private</Badge>
-                                                            )}
                                                         </div>
                                                         <div className="p-2 text-center">
                                                             <p className="text-xs font-medium truncate group-hover:underline">{doc.name}</p>
                                                         </div>
                                                     </CardContent>
-                                                </Card>
-                                            </a>
+                                                </a>
+                                                <CardFooter className="p-2 border-t mt-auto">
+                                                    <div className="flex items-center justify-center w-full gap-2">
+                                                        {canUpdate ? (
+                                                            <>
+                                                                <Switch 
+                                                                    id={`quick-toggle-lead-${doc.url}`} 
+                                                                    checked={!!doc.isPublic} 
+                                                                    onCheckedChange={() => quickToggleDocumentPublic(doc)} 
+                                                                />
+                                                                <Label htmlFor={`quick-toggle-lead-${doc.url}`} className="text-xs cursor-pointer">Public</Label>
+                                                            </>
+                                                        ) : (
+                                                            <Badge variant={doc.isPublic ? "outline" : "secondary"}>{doc.isPublic ? "Public" : "Private"}</Badge>
+                                                        )}
+                                                    </div>
+                                                </CardFooter>
+                                            </Card>
                                         )
                                     })}
                                 </div>
