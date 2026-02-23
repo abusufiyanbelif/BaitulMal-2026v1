@@ -5,6 +5,7 @@ import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { revalidatePath } from 'next/cache';
 import type { UserFormData } from '@/lib/schemas';
 import type { UserProfile } from '@/lib/types';
+import { GROUP_IDS } from '@/lib/modules';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
 
@@ -103,7 +104,7 @@ export async function getPublicMembersAction(): Promise<Partial<UserProfile>[]> 
     }
 
     try {
-        const membersQuery = adminDb.collection('users').where('organizationGroup', '!=', null).where('status', '==', 'Active');
+        const membersQuery = adminDb.collection('users').where('organizationGroup', 'in', GROUP_IDS).where('status', '==', 'Active');
         const snapshot = await membersQuery.get();
         if (snapshot.empty) {
             return [];
