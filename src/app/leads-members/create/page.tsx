@@ -160,6 +160,7 @@ export default function CreateLeadPage() {
     const newLeadId = newLeadRef.id;
 
     let imageUrl = '';
+    let imageUrlFilename = '';
     if (hasImageToUpload && storage) {
         try {
             const file = imageFile[0];
@@ -171,6 +172,8 @@ export default function CreateLeadPage() {
             const fileRef = storageRef(storage, filePath);
             await uploadBytes(fileRef, resizedBlob);
             imageUrl = await getDownloadURL(fileRef);
+            const dateStr = new Date().toISOString().split('T')[0];
+            imageUrlFilename = `lead_${data.name.replace(/\s+/g, '_')}_${dateStr}.png`;
         } catch (uploadError: any) {
             console.error("Image upload failed:", uploadError);
             toast({ title: 'Image Upload Failed', description: 'Lead was not created.', variant: 'destructive'});
@@ -189,10 +192,8 @@ export default function CreateLeadPage() {
     });
     const documents = await Promise.all(documentUploadPromises);
 
-    const newLeadData: Omit<Lead, 'id'> = {
+    const newLeadData: Partial<Lead> = {
       ...leadCoreData,
-      imageUrl,
-      documents,
       requiredAmount: data.requiredAmount || 0,
       targetAmount: data.targetAmount || 0,
       description: data.description || '',
@@ -206,6 +207,15 @@ export default function CreateLeadPage() {
       itemCategories: [{ id: 'general', name: 'General', items: [] }],
       seriousness: data.seriousness || null,
     };
+    
+    if (imageUrl) {
+        newLeadData.imageUrl = imageUrl;
+        newLeadData.imageUrlFilename = imageUrlFilename;
+    }
+
+    if (documents && documents.length > 0) {
+        newLeadData.documents = documents;
+    }
 
     setDoc(newLeadRef, newLeadData)
       .then(() => {

@@ -122,6 +122,7 @@ export default function CreateCampaignPage() {
     const newCampaignId = newCampaignRef.id;
 
     let imageUrl = '';
+    let imageUrlFilename = '';
     if (hasImageToUpload && storage) {
         try {
             const file = imageFile[0];
@@ -133,6 +134,8 @@ export default function CreateCampaignPage() {
             const fileRef = storageRef(storage, filePath);
             await uploadBytes(fileRef, resizedBlob);
             imageUrl = await getDownloadURL(fileRef);
+            const dateStr = new Date().toISOString().split('T')[0];
+            imageUrlFilename = `campaign_${data.name.replace(/\s+/g, '_')}_${dateStr}.png`;
         } catch (uploadError: any) {
             console.error("Image upload failed:", uploadError);
             toast({ title: 'Image Upload Failed', description: 'Campaign was not created.', variant: 'destructive'});
@@ -152,10 +155,8 @@ export default function CreateCampaignPage() {
 
     const documents = await Promise.all(documentUploadPromises);
 
-    const newCampaignData: Omit<Campaign, 'id'> = {
+    const newCampaignData: Partial<Campaign> = {
       ...campaignCoreData,
-      imageUrl,
-      documents,
       targetAmount: data.targetAmount || 0,
       description: data.description || '',
       createdAt: serverTimestamp(),
@@ -167,6 +168,15 @@ export default function CreateCampaignPage() {
       shopAddress: '',
       itemCategories: data.category === 'Ration' ? [{ id: 'item-price-list', name: 'Item Price List', items: [] }] : [],
     };
+    
+    if (imageUrl) {
+      newCampaignData.imageUrl = imageUrl;
+      newCampaignData.imageUrlFilename = imageUrlFilename;
+    }
+
+    if (documents && documents.length > 0) {
+        newCampaignData.documents = documents;
+    }
 
     setDoc(newCampaignRef, newCampaignData)
       .then(() => {
