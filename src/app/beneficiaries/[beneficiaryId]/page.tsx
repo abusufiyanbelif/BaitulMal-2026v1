@@ -199,7 +199,7 @@ export default function BeneficiaryDetailsPage() {
         return;
     }
 
-    const { idProofFile, idProofDeleted, kitAmount, ...beneficiaryData } = data;
+    const { idProofFile, idProofDeleted, kitAmount, status, ...beneficiaryData } = data;
     
     const result = await updateMasterBeneficiaryAction(
         beneficiaryId, 
