@@ -1,4 +1,3 @@
-
 'use client';
 import { useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -28,6 +27,7 @@ export function AppFooter() {
   };
   
   const validQrCodeUrl = paymentSettings?.qrCodeUrl?.trim() ? paymentSettings.qrCodeUrl : null;
+  const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
   
   const handleDownloadQr = async () => {
     if (!validQrCodeUrl) return;
@@ -79,7 +79,24 @@ export function AppFooter() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
             {/* Org & Contact Info */}
             <div className="flex flex-col items-center text-center md:items-start md:text-left gap-2 transition-transform duration-300 ease-in-out hover:scale-105 animate-slide-in-from-bottom" style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}>
-            {isLoading ? <Skeleton className="h-6 w-2/3" /> : <h3 className="font-semibold text-base">{brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}</h3>}
+            <div className="flex items-center gap-3">
+              {isLoading ? <Skeleton className="h-10 w-10 rounded-full" /> : (
+                  validLogoUrl && (
+                      <Image
+                          src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
+                          alt={`${brandingSettings?.name || 'Organization'} Logo`}
+                          width={brandingSettings?.logoWidth || 40}
+                          height={brandingSettings?.logoHeight || 40}
+                          className="object-contain"
+                          style={{
+                              maxHeight: '2.5rem',
+                              width: 'auto'
+                          }}
+                      />
+                  )
+              )}
+              {isLoading ? <Skeleton className="h-6 w-48" /> : <h3 className="font-semibold text-base">{brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}</h3>}
+            </div>
             {isLoading ? <Skeleton className="h-4 w-full" /> : paymentSettings?.address && <p className="text-xs text-muted-foreground">{paymentSettings.address}</p>}
             <div className="text-xs text-muted-foreground space-y-1">
                     {isLoading ? <Skeleton className="h-4 w-3/4" /> : paymentSettings?.regNo && <p>Reg. No.: {paymentSettings.regNo}</p>}
