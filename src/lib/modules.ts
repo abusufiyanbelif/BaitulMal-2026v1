@@ -1,4 +1,5 @@
 
+
 import { getNestedValue, set } from "./utils";
 
 export const crudPermissions = ['create', 'read', 'update', 'delete'] as const;
@@ -26,6 +27,7 @@ export const leadSubModules = [
 
 export const settingsSubModules = [
     { id: 'app', name: 'App Settings', permissions: readUpdatePermissions },
+    { id: 'members', name: 'Organization Members', permissions: readUpdatePermissions },
     { id: 'campaign', name: 'Campaign Settings', permissions: readUpdatePermissions },
     { id: 'lead', name: 'Lead Settings', permissions: readUpdatePermissions },
     { id: 'donation', name: 'Donation Settings', permissions: readUpdatePermissions },

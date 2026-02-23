@@ -209,3 +209,15 @@ export interface UserProfile extends DocumentData {
   idNumber?: string;
   idProofUrl?: string;
 }
+
+export interface OrganizationMember {
+  id: string;
+  name: string;
+  role: string;
+  group: 'founder' | 'co-founder' | 'finance' | 'member';
+  imageUrl?: string;
+}
+
+export interface OrganizationSettings extends DocumentData {
+  members?: OrganizationMember[];
+}
