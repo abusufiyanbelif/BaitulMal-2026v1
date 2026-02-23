@@ -105,7 +105,7 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow get: if isOwner(userId) || hasPermission('users', 'read') || isAdmin();
-      allow list: if hasPermission('users', 'read') || isAdmin();
+      allow list: if hasPermission('users', 'read') || hasPermission('settings', 'update') || isAdmin();
       allow create: if isOwner(userId) || hasPermission('users', 'create') || isAdmin();
       allow update: if isOwner(userId) || hasPermission('users', 'update') || isAdmin();
       allow delete: if (request.auth.uid != userId && hasPermission('users', 'delete')) || (isAdmin() && request.auth.uid != userId);

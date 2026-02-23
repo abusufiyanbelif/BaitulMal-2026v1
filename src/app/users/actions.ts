@@ -94,3 +94,35 @@ export async function updateUserAuthAction(uid: string, updates: { email?: strin
         return { success: false, message: `Failed to update auth details: ${error.message}` };
     }
 }
+
+export async function getPublicMembersAction(): Promise<Partial<UserProfile>[]> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) {
+        console.error("Admin SDK not available for getPublicMembersAction");
+        return [];
+    }
+
+    try {
+        const membersQuery = adminDb.collection('users').where('organizationGroup', '!=', null).where('status', '==', 'Active');
+        const snapshot = await membersQuery.get();
+        if (snapshot.empty) {
+            return [];
+        }
+
+        const members: Partial<UserProfile>[] = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            members.push({
+                id: doc.id,
+                name: data.name,
+                organizationGroup: data.organizationGroup,
+                organizationRole: data.organizationRole,
+                idProofUrl: data.idProofUrl || null,
+            });
+        });
+        return members;
+    } catch (error) {
+        console.error("Error fetching public members:", error);
+        return [];
+    }
+}

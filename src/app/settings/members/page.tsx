@@ -4,8 +4,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/use-session';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc, collection, query, where } from 'firebase/firestore';
+import { getPublicMembersAction } from '@/app/users/actions';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -19,23 +18,29 @@ import { GROUPS, type GroupId } from '@/lib/modules';
 import { UserSearchDialog } from '@/components/user-search-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-
 export default function OrganizationMembersPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
-    const firestore = useFirestore();
     const router = useRouter();
     
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.members?.update;
 
-    const membersCollectionRef = useMemoFirebase(() => {
-        if (!firestore) return null;
-        // Query users that have an organization group assigned and are active
-        return query(collection(firestore, 'users'), where('organizationGroup', '!=', null), where('status', '==', 'Active'));
-    }, [firestore]);
-    
-    const { data: members, isLoading: isMembersLoading } = useCollection<UserProfile>(membersCollectionRef);
+    const [members, setMembers] = useState<Partial<UserProfile>[] | null>(null);
+    const [isMembersLoading, setIsMembersLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchMembers() {
+            setIsMembersLoading(true);
+            const result = await getPublicMembersAction();
+            setMembers(result);
+            setIsMembersLoading(false);
+        }
+        if (canUpdateSettings) {
+            fetchMembers();
+        }
+    }, [canUpdateSettings]);
+
 
     const membersByGroup = useMemo(() => {
         if (!members) {
@@ -43,7 +48,7 @@ export default function OrganizationMembersPage() {
         }
         return members.reduce((acc, member) => {
             const group = member.organizationGroup || 'member';
-            (acc[group] = acc[group] || []).push(member);
+            (acc[group as GroupId] = acc[group as GroupId] || []).push(member as UserProfile);
             return acc;
         }, {} as Record<GroupId, UserProfile[]>);
     }, [members]);
@@ -115,7 +120,7 @@ export default function OrganizationMembersPage() {
                                             <Card key={member.id} className="group relative">
                                                 <CardContent className="p-4 flex items-center gap-4">
                                                     <Avatar className="h-16 w-16">
-                                                        <AvatarImage src={member.idProofUrl} />
+                                                        <AvatarImage src={member.idProofUrl || undefined} />
                                                         <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
                                                     </Avatar>
                                                     <div className="flex-1">

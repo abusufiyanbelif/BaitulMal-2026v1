@@ -1,9 +1,7 @@
 
 'use client';
 
-import { useMemo } from 'react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { useState, useEffect, useMemo } from 'react';
 import type { UserProfile } from '@/lib/types';
 import { GROUPS, type GroupId } from '@/lib/modules';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -13,16 +11,21 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, ArrowLeft, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { getPublicMembersAction } from '@/app/users/actions';
 
 export default function PublicOrganizationMembersPage() {
-    const firestore = useFirestore();
-    
-    const membersCollectionRef = useMemoFirebase(() => {
-        if (!firestore) return null;
-        return query(collection(firestore, 'users'), where('organizationGroup', 'in', ['founder', 'co-founder', 'finance', 'member']), where('status', '==', 'Active'));
-    }, [firestore]);
-    
-    const { data: members, isLoading: isMembersLoading } = useCollection<UserProfile>(membersCollectionRef);
+    const [members, setMembers] = useState<Partial<UserProfile>[] | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchMembers() {
+            setIsLoading(true);
+            const result = await getPublicMembersAction();
+            setMembers(result);
+            setIsLoading(false);
+        }
+        fetchMembers();
+    }, []);
 
     const membersByGroup = useMemo(() => {
         if (!members) {
@@ -30,12 +33,12 @@ export default function PublicOrganizationMembersPage() {
         }
         return members.reduce((acc, member) => {
             const group = member.organizationGroup || 'member';
-            (acc[group] = acc[group] || []).push(member);
+            (acc[group as GroupId] = acc[group as GroupId] || []).push(member as UserProfile);
             return acc;
         }, {} as Record<GroupId, UserProfile[]>);
     }, [members]);
 
-    if (isMembersLoading) {
+    if (isLoading) {
         return (
             <div className="container mx-auto p-4 md:p-8">
                 <Card><CardHeader><Skeleton className="h-8 w-48" /></CardHeader><CardContent><Skeleton className="h-64 w-full" /></CardContent></Card>

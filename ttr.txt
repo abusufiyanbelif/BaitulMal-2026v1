@@ -1,21 +1,5 @@
-src/app/campaign-members/create/page.tsx(158,11): error TS2322: Type '{ targetAmount: number; description: string; createdAt: FieldValue; createdById: string; createdByName: string; priceDate: string; shopName: string; shopContact: string; shopAddress: string; ... 8 more ...; allowedDonationTypes?: string[] | undefined; }' is not assignable to type 'Partial<Campaign>'.
-  Types of property 'allowedDonationTypes' are incompatible.
-    Type 'string[] | undefined' is not assignable to type '("Fitra" | "Zakat" | "Sadaqah" | "Interest" | "Lillah" | "Loan" | "Monthly Contribution")[] | undefined'.
-      Type 'string[]' is not assignable to type '("Fitra" | "Zakat" | "Sadaqah" | "Interest" | "Lillah" | "Loan" | "Monthly Contribution")[]'.
-        Type 'string' is not assignable to type '"Fitra" | "Zakat" | "Sadaqah" | "Interest" | "Lillah" | "Loan" | "Monthly Contribution"'.
-src/app/leads-members/create/page.tsx(195,11): error TS2322: Type '{ requiredAmount: number; targetAmount: number; description: string; purposeDetails: string; category: string; categoryDetails: string; createdAt: FieldValue; createdById: string; ... 19 more ...; allowedDonationTypes?: string[] | undefined; }' is not assignable to type 'Partial<Lead>'.
-  Types of property 'allowedDonationTypes' are incompatible.
-    Type 'string[] | undefined' is not assignable to type '("Fitra" | "Zakat" | "Sadaqah" | "Interest" | "Lillah" | "Loan" | "Monthly Contribution")[] | undefined'.
-src/app/users/[userId]/page.tsx(162,9): error TS2322: Type 'string | null | undefined' is not assignable to type '"founder" | "co-founder" | "finance" | "member" | null | undefined'.
-  Type 'string' is not assignable to type '"founder" | "co-founder" | "finance" | "member" | null | undefined'.
-src/components/beneficiary-form.tsx(397,111): error TS2339: Property 'seconds' does not exist on type 'Timestamp | FieldValue'.
-  Property 'seconds' does not exist on type 'FieldValue'.
-src/components/beneficiary-form.tsx(398,142): error TS2339: Property 'seconds' does not exist on type 'Timestamp | FieldValue'.
-  Property 'seconds' does not exist on type 'FieldValue'.
-src/lib/schemas.ts(21,29): error TS2769: No overload matches this call.
-  Overload 1 of 2, '(values: readonly [string, ...string[]], params?: RawCreateParams): ZodEnum<[string, ...string[]]>', gave the following error.
-    Argument of type '[...("founder" | "co-founder" | "finance" | "member")[], string]' is not assignable to parameter of type 'readonly [string, ...string[]]'.
-      Source provides no match for required element at position 0 in target.
-  Overload 2 of 2, '(values: [string, ...string[]], params?: RawCreateParams): ZodEnum<[string, ...string[]]>', gave the following error.
-    Argument of type '[...("founder" | "co-founder" | "finance" | "member")[], string]' is not assignable to parameter of type '[string, ...string[]]'.
-      Source provides no match for required element at position 0 in target.
+src/components/user-form.tsx(107,13): error TS2345: Argument of type '{ name: string; email: string; phone: string; userKey: string; loginId: string; role: "Admin" | "User"; status: "Active" | "Inactive"; password: string; idProofType: string; idNumber: string; organizationGroup: string; organizationRole: string; _isEditing: boolean; idProofDeleted: boolean; }' is not assignable to parameter of type '{ name: string; status: "Active" | "Inactive"; loginId: string; userKey: string; role: "Admin" | "User"; _isEditing: boolean; email?: string | undefined; phone?: string | undefined; idProofType?: string | undefined; ... 5 more ...; organizationRole?: string | undefined; } | { ...; } | ResetAction<...> | undefined'.
+  Type '{ name: string; email: string; phone: string; userKey: string; loginId: string; role: "Admin" | "User"; status: "Active" | "Inactive"; password: string; idProofType: string; idNumber: string; organizationGroup: string; organizationRole: string; _isEditing: boolean; idProofDeleted: boolean; }' is not assignable to type '{ name: string; status: "Active" | "Inactive"; loginId: string; userKey: string; role: "Admin" | "User"; _isEditing: boolean; email?: string | undefined; phone?: string | undefined; idProofType?: string | undefined; ... 5 more ...; organizationRole?: string | undefined; } | { ...; }'.
+    Type '{ name: string; email: string; phone: string; userKey: string; loginId: string; role: "Admin" | "User"; status: "Active" | "Inactive"; password: string; idProofType: string; idNumber: string; organizationGroup: string; organizationRole: string; _isEditing: boolean; idProofDeleted: boolean; }' is not assignable to type '{ name?: string | undefined; status?: "Active" | "Inactive" | undefined; loginId?: string | undefined; userKey?: string | undefined; role?: "Admin" | "User" | undefined; _isEditing?: boolean | undefined; ... 8 more ...; organizationRole?: string | undefined; }'.
+      Types of property 'organizationGroup' are incompatible.
+        Type 'string' is not assignable to type '"founder" | "co-founder" | "finance" | "member" | "none" | undefined'.

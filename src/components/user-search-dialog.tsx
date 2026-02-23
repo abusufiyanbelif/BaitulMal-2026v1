@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
@@ -12,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, Search } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
+import { Badge } from './ui/badge';
 
 interface UserSearchDialogProps {
   open: boolean;
@@ -47,7 +49,7 @@ export function UserSearchDialog({ open, onOpenChange, onSelectUser }: UserSearc
         const emailMatch = u.email ? u.email.toLowerCase().includes(lowerCaseTerm) : false;
         const phoneMatch = u.phone ? u.phone.includes(searchTerm) : false;
         
-        return (nameMatch || emailMatch || phoneMatch) && !u.organizationGroup;
+        return (nameMatch || emailMatch || phoneMatch);
       }).slice(0, 20);
 
       setSearchResults(filtered);
@@ -89,7 +91,7 @@ export function UserSearchDialog({ open, onOpenChange, onSelectUser }: UserSearc
         <DialogHeader>
           <DialogTitle>Find & Add Organization Member</DialogTitle>
           <DialogDescription>
-            Search for an existing user to assign them an organizational role. Users already in a group will not appear here.
+            Search for an existing user to assign them an organizational role.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
@@ -116,6 +118,7 @@ export function UserSearchDialog({ open, onOpenChange, onSelectUser }: UserSearc
                                 <div>
                                     <p className="font-medium">{user.name}</p>
                                     <p className="text-sm text-muted-foreground">{user.email}</p>
+                                    {user.organizationGroup && <Badge variant="secondary" className="mt-1">{user.organizationGroup}</Badge>}
                                 </div>
                             </div>
                             <Button size="sm" onClick={() => handleSelect(user)}>Assign Role</Button>
