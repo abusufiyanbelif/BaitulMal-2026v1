@@ -10,6 +10,7 @@ import { DonationSummary } from '@/components/donation-summary';
 import { LeadAndCampaignSummary } from '@/components/lead-campaign-summary';
 import { WisdomAndReflection } from '@/components/WisdomAndReflection';
 import { cn } from '@/lib/utils';
+import { Eye } from 'lucide-react';
 
 export default function Home() {
     return (
@@ -23,14 +24,12 @@ export default function Home() {
                       </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="inline-flex h-auto items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
-                      <Button asChild variant="default" className="rounded-md shadow-sm">
-                        <Link href="/campaign-public">Public Campaigns</Link>
-                      </Button>
-                       <Button asChild variant="ghost">
-                         <Link href="/leads-public">Public Leads & Initiatives</Link>
-                      </Button>
-                    </div>
+                    <Button asChild size="lg">
+                        <Link href="/public-initiatives">
+                            <Eye className="mr-2 h-5 w-5" />
+                            View Public Initiatives
+                        </Link>
+                    </Button>
                   </CardContent>
               </Card>
 
