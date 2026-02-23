@@ -10,7 +10,7 @@ import { DonationSummary } from '@/components/donation-summary';
 import { LeadAndCampaignSummary } from '@/components/lead-campaign-summary';
 import { WisdomAndReflection } from '@/components/WisdomAndReflection';
 import { cn } from '@/lib/utils';
-import { Eye } from 'lucide-react';
+import { FolderKanban, Lightbulb } from 'lucide-react';
 
 export default function Home() {
     return (
@@ -24,12 +24,20 @@ export default function Home() {
                       </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button asChild size="lg">
-                        <Link href="/public-initiatives">
-                            <Eye className="mr-2 h-5 w-5" />
-                            View Public Initiatives
-                        </Link>
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <Button asChild size="lg" className="flex-1">
+                            <Link href="/campaign-public">
+                                <FolderKanban className="mr-2 h-5 w-5" />
+                                View Public Campaigns
+                            </Link>
+                        </Button>
+                        <Button asChild size="lg" variant="secondary" className="flex-1">
+                            <Link href="/leads-public">
+                                <Lightbulb className="mr-2 h-5 w-5" />
+                                View Public Leads
+                            </Link>
+                        </Button>
+                    </div>
                   </CardContent>
               </Card>
 
