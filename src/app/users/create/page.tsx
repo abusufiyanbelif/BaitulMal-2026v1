@@ -140,10 +140,11 @@ export default function CreateUserPage() {
         // If Firestore write fails, we should ideally try to delete the Auth user to clean up.
         // This is a complex operation and for this app, we'll notify the admin.
         console.error("Firestore batch failed after Auth user creation:", dbError);
+        const serializableData = { ...newUserProfile, createdAt: 'FieldValue.serverTimestamp()' };
         errorEmitter.emit('permission-error', new FirestorePermissionError({
             path: `users/${newUserUid} and lookups`,
             operation: 'create',
-            requestResourceData: newUserProfile,
+            requestResourceData: serializableData,
         }));
         toast({
             title: "Database Error",

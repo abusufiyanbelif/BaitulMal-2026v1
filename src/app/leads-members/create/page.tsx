@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -211,11 +212,12 @@ export default function CreateLeadPage() {
         toast({ title: 'Success', description: 'Lead created successfully.', variant: 'success' });
         router.push(`/leads-members`);
       })
-      .catch((serverError) => {
+      .catch((serverError: any) => {
+        const serializableData = { ...newLeadData, createdAt: 'FieldValue.serverTimestamp()' };
         const permissionError = new FirestorePermissionError({
             path: 'leads',
             operation: 'create',
-            requestResourceData: newLeadData,
+            requestResourceData: serializableData,
         });
         errorEmitter.emit('permission-error', permissionError);
       })

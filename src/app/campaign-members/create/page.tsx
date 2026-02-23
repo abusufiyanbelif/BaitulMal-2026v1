@@ -174,10 +174,11 @@ export default function CreateCampaignPage() {
         router.push(`/campaign-members`);
       })
       .catch((serverError: any) => {
+        const serializableData = { ...newCampaignData, createdAt: 'FieldValue.serverTimestamp()' };
         const permissionError = new FirestorePermissionError({
             path: 'campaigns',
             operation: 'create',
-            requestResourceData: newCampaignData,
+            requestResourceData: serializableData,
         });
         errorEmitter.emit('permission-error', permissionError);
       })
