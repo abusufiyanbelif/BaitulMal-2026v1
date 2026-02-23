@@ -1,3 +1,4 @@
+
 /** @type {import('tailwindcss').Config} */
 const config = {
   // Force cache invalidation by adding a comment.
@@ -130,14 +131,14 @@ const config = {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'slide-in-from-top': 'slide-in-from-top 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-        'slide-in-from-bottom': 'slide-in-from-bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-        'slide-in-from-left': 'slide-in-from-left 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-        'slide-in-from-right': 'slide-in-from-right 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-        'fade-in-up': 'fade-in-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-        'fade-in-zoom': 'fade-in-zoom 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'slide-in-from-top': 'slide-in-from-top 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'slide-in-from-bottom': 'slide-in-from-bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'slide-in-from-left': 'slide-in-from-left 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'slide-in-from-right': 'slide-in-from-right 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'fade-in-up': 'fade-in-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'fade-in-zoom': 'fade-in-zoom 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'shimmer': 'shimmer 2s infinite',
-        'zoom-in-out': 'zoom-in-out 3s ease-in-out infinite',
+        'zoom-in-out': 'zoom-in-out 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
     },
   },
