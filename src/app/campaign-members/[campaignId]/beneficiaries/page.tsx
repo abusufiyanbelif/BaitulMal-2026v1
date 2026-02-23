@@ -921,10 +921,7 @@ const sortedGroupKeys = useMemo(() => {
                           <CommandEmpty>No referral found.</CommandEmpty>
                           <CommandGroup>
                             <CommandItem
-                                onMouseDown={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                }}
+                                onMouseDown={(e) => e.preventDefault()}
                                 onSelect={() => {
                                     if (areAllReferralsSelected) {
                                         setTempReferralFilter([]);
@@ -943,10 +940,7 @@ const sortedGroupKeys = useMemo(() => {
                               <CommandItem
                                 key={referral}
                                 value={referral}
-                                onMouseDown={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                }}
+                                onMouseDown={(e) => e.preventDefault()}
                                 onSelect={() => {
                                   setTempReferralFilter(prev => {
                                       const selected = prev.includes(referral);

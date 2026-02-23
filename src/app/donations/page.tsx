@@ -1,4 +1,5 @@
 
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -197,7 +198,7 @@ export default function DonationsPage() {
             if (fileList && fileList.length > 0) {
                 const file = fileList[0];
                 const resizedBlob = await new Promise<Blob>((resolve) => {
-                     Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                     (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
                 const fileRef = storageRef(storage, filePath);
@@ -489,7 +490,7 @@ export default function DonationsPage() {
                           <CommandEmpty>No initiatives found.</CommandEmpty>
                           <CommandGroup>
                              <CommandItem 
-                                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                onMouseDown={(e) => e.preventDefault()}
                                 onSelect={() => {
                                  if (areAllLinksSelected) {
                                      setTempLinkFilter([]);
@@ -504,7 +505,7 @@ export default function DonationsPage() {
                             </CommandItem>
                             <Separator className="my-1"/>
                              <CommandItem 
-                                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                onMouseDown={(e) => e.preventDefault()}
                                 onSelect={() => setTempLinkFilter(prev => prev.includes('unlinked') ? prev.filter(l => l !== 'unlinked') : [...prev, 'unlinked'])}>
                                 <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", tempLinkFilter.includes('unlinked') ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
                                   <Check className={cn("h-4 w-4")} />
@@ -514,7 +515,7 @@ export default function DonationsPage() {
                             <CommandGroup heading="Campaigns">
                               {campaigns?.map((campaign) => (
                                 <CommandItem key={`campaign_${campaign.id}`} value={campaign.name} 
-                                    onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                    onMouseDown={(e) => e.preventDefault()}
                                     onSelect={() => {
                                     const filterId = `campaign_${campaign.id}`;
                                     setTempLinkFilter(prev => prev.includes(filterId) ? prev.filter(l => l !== filterId) : [...prev, filterId]);
@@ -529,7 +530,7 @@ export default function DonationsPage() {
                             <CommandGroup heading="Leads">
                               {leads?.map((lead) => (
                                 <CommandItem key={`lead_${lead.id}`} value={lead.name}
-                                    onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                    onMouseDown={(e) => e.preventDefault()}
                                     onSelect={() => {
                                     const filterId = `lead_${lead.id}`;
                                     setTempLinkFilter(prev => prev.includes(filterId) ? prev.filter(l => l !== filterId) : [...prev, filterId]);
@@ -646,4 +647,3 @@ export default function DonationsPage() {
     </>
   );
 }
-
