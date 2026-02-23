@@ -1,4 +1,3 @@
-
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -39,3 +38,13 @@ export function set(obj: any, path: string, value: any) {
     current[keys[keys.length - 1]] = value;
     return obj;
 }
+
+export const getInitials = (name: string | null | undefined): string => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase();
+};

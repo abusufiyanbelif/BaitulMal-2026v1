@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect } from 'react';
@@ -21,6 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getInitials } from '@/lib/utils';
 
 export function DocuExtractHeader() {
   const session = useSession();
@@ -34,16 +34,6 @@ export function DocuExtractHeader() {
       await signOut(auth);
       router.push('/login');
     }
-  };
-
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .substring(0, 2)
-      .toUpperCase();
   };
 
   const isLoading = session.isLoading || isBrandingLoading;

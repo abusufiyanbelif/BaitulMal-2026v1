@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -13,14 +12,19 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, UserPlus, Edit, ShieldAlert, Users } from 'lucide-react';
+import { Loader2, UserPlus, Edit, ShieldAlert, Users, ChevronDown } from 'lucide-react';
 import type { UserProfile } from '@/lib/types';
 import { GROUPS, type GroupId } from '@/lib/modules';
+import { UserSearchDialog } from '@/components/user-search-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
 
 export default function OrganizationMembersPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
     const firestore = useFirestore();
     const router = useRouter();
+    
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
     
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.members?.update;
 
@@ -43,10 +47,10 @@ export default function OrganizationMembersPage() {
         }, {} as Record<GroupId, UserProfile[]>);
     }, [members]);
 
-    const handleAddNew = () => {
-        router.push('/users/create');
+    const handleSelectUser = (user: UserProfile) => {
+        router.push(`/users/${user.id}`);
     };
-
+    
     const handleEdit = (member: UserProfile) => {
         router.push(`/users/${member.id}`);
     };
@@ -72,47 +76,71 @@ export default function OrganizationMembersPage() {
     }
     
     return (
-        <Card>
-            <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex-1">
-                        <CardTitle className="flex items-center gap-2"><Users /> Organization Members</CardTitle>
-                        <CardDescription>Manage your organization's public-facing team members. Add, edit, or remove them via the main User Management page.</CardDescription>
+        <>
+            <Card>
+                <CardHeader>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="flex-1">
+                            <CardTitle className="flex items-center gap-2"><Users /> Organization Members</CardTitle>
+                            <CardDescription>Manage your organization's public-facing team members. Add, edit, or remove them via the main User Management page.</CardDescription>
+                        </div>
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button>
+                                    <UserPlus className="mr-2 h-4 w-4" />
+                                    Add Member
+                                    <ChevronDown className="ml-2 h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem onClick={() => router.push('/users/create')}>
+                                Create New User
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setIsSearchOpen(true)}>
+                                Assign Existing User
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
-                    <Button onClick={handleAddNew}><UserPlus className="mr-2 h-4 w-4" /> Add Member</Button>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <Accordion type="multiple" defaultValue={['founder', 'co-founder', 'finance', 'member']} className="w-full">
-                    {GROUPS.map((group) => (
-                        <AccordionItem value={group.id} key={group.id}>
-                            <AccordionTrigger className="text-lg font-semibold">{group.name} ({(membersByGroup[group.id] || []).length})</AccordionTrigger>
-                            <AccordionContent>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-                                    {(membersByGroup[group.id] || []).map(member => (
-                                        <Card key={member.id} className="group relative">
-                                            <CardContent className="p-4 flex items-center gap-4">
-                                                <Avatar className="h-16 w-16">
-                                                    <AvatarImage src={member.idProofUrl} />
-                                                    <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <div className="flex-1">
-                                                    <p className="font-bold">{member.name}</p>
-                                                    <p className="text-sm text-muted-foreground">{member.organizationRole}</p>
-                                                </div>
-                                                <div className="absolute top-2 right-2 flex opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(member)}><Edit className="h-4 w-4"/></Button>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                    {(membersByGroup[group.id] || []).length === 0 && <p className="text-sm text-muted-foreground">No members in this group yet.</p>}
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                    ))}
-                </Accordion>
-            </CardContent>
-        </Card>
+                </CardHeader>
+                <CardContent>
+                    <Accordion type="multiple" defaultValue={['founder', 'co-founder', 'finance', 'member']} className="w-full">
+                        {GROUPS.map((group) => (
+                            <AccordionItem value={group.id} key={group.id}>
+                                <AccordionTrigger className="text-lg font-semibold">{group.name} ({(membersByGroup[group.id] || []).length})</AccordionTrigger>
+                                <AccordionContent>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+                                        {(membersByGroup[group.id] || []).map(member => (
+                                            <Card key={member.id} className="group relative">
+                                                <CardContent className="p-4 flex items-center gap-4">
+                                                    <Avatar className="h-16 w-16">
+                                                        <AvatarImage src={member.idProofUrl} />
+                                                        <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="flex-1">
+                                                        <p className="font-bold">{member.name}</p>
+                                                        <p className="text-sm text-muted-foreground">{member.organizationRole}</p>
+                                                    </div>
+                                                    <div className="absolute top-2 right-2 flex opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(member)}><Edit className="h-4 w-4"/></Button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                        {(membersByGroup[group.id] || []).length === 0 && <p className="text-sm text-muted-foreground">No members in this group yet.</p>}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
+                </CardContent>
+            </Card>
+
+            <UserSearchDialog
+                open={isSearchOpen}
+                onOpenChange={setIsSearchOpen}
+                onSelectUser={handleSelectUser}
+            />
+        </>
     );
 }
