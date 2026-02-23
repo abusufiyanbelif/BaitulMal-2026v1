@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import Resizer from 'react-image-file-resizer';
+import { Timestamp } from 'firebase/firestore';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -392,10 +393,10 @@ export function BeneficiaryForm({
                     <FormField control={control} name="notes" render={({ field }) => (<FormItem><FormControl><Textarea placeholder="Any internal notes..." {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
                 </div>
                 
-                {isEditing && beneficiary?.createdAt && (
+                {isEditing && beneficiary?.createdAt && beneficiary.createdAt instanceof Timestamp && (
                     <div className="pt-4 text-xs text-muted-foreground space-y-1">
                         <p>Created by {beneficiary.createdByName || 'N/A'} on {new Date(beneficiary.createdAt.seconds * 1000).toLocaleString()}</p>
-                        {beneficiary.updatedAt && <p>Last updated by {beneficiary.updatedByName || 'N/A'} on {new Date(beneficiary.updatedAt.seconds * 1000).toLocaleString()}</p>}
+                        {beneficiary.updatedAt && beneficiary.updatedAt instanceof Timestamp && <p>Last updated by {beneficiary.updatedByName || 'N/A'} on {new Date(beneficiary.updatedAt.seconds * 1000).toLocaleString()}</p>}
                     </div>
                 )}
                 

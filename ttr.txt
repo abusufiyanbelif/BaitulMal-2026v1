@@ -1,40 +1,21 @@
-src/app/beneficiaries/page.tsx(251,5): error TS2304: Cannot find name 'setUserToDelete'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(123,105): error TS2304: Cannot find name 'Donation'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(241,23): error TS2304: Cannot find name 'deleteObject'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(241,36): error TS2552: Cannot find name 'storageRef'. Did you mean 'storage'?
-src/app/campaign-members/[campaignId]/summary/page.tsx(248,28): error TS2304: Cannot find name 'deleteObject'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(248,41): error TS2552: Cannot find name 'storageRef'. Did you mean 'storage'?
-src/app/campaign-members/[campaignId]/summary/page.tsx(248,78): error TS7006: Parameter 'e' implicitly has an 'any' type.
-src/app/campaign-members/[campaignId]/summary/page.tsx(254,33): error TS2552: Cannot find name 'storageRef'. Did you mean 'storage'?
-src/app/campaign-members/[campaignId]/summary/page.tsx(255,23): error TS2304: Cannot find name 'uploadBytes'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(256,34): error TS2304: Cannot find name 'getDownloadURL'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(268,29): error TS2304: Cannot find name 'storageRef'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(269,19): error TS2304: Cannot find name 'uploadBytes'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(270,31): error TS2304: Cannot find name 'getDownloadURL'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(284,23): error TS2304: Cannot find name 'deleteObject'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(284,36): error TS2304: Cannot find name 'storageRef'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(328,41): error TS7006: Parameter 'link' implicitly has an 'any' type.
-src/app/campaign-members/[campaignId]/summary/page.tsx(335,41): error TS2304: Cannot find name 'DonationCategory'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(335,144): error TS2304: Cannot find name 'DonationCategory'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(339,52): error TS7006: Parameter 'l' implicitly has an 'any' type.
-src/app/campaign-members/[campaignId]/summary/page.tsx(359,52): error TS2304: Cannot find name 'DonationCategory'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(361,28): error TS7006: Parameter 'split' implicitly has an 'any' type.
-src/app/campaign-members/[campaignId]/summary/page.tsx(367,51): error TS2304: Cannot find name 'DonationCategory'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(375,59): error TS7006: Parameter 'l' implicitly has an 'any' type.
-src/app/campaign-members/[campaignId]/summary/page.tsx(404,89): error TS2304: Cannot find name 'DonationCategory'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(590,22): error TS2304: Cannot find name 'Link'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(593,23): error TS2304: Cannot find name 'Link'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(605,22): error TS2304: Cannot find name 'Link'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(608,23): error TS2304: Cannot find name 'Link'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(684,34): error TS2304: Cannot find name 'Link'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(684,97): error TS2304: Cannot find name 'Link'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(689,34): error TS2304: Cannot find name 'Link'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(689,147): error TS2304: Cannot find name 'Link'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(694,34): error TS2304: Cannot find name 'Link'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(694,112): error TS2304: Cannot find name 'Link'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(699,34): error TS2304: Cannot find name 'Link'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(699,101): error TS2304: Cannot find name 'Link'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(1088,37): error TS2304: Cannot find name 'TableFooter'.
-src/app/campaign-members/[campaignId]/summary/page.tsx(1093,39): error TS2304: Cannot find name 'TableFooter'.
-src/app/campaign-members/create/page.tsx(162,7): error TS2739: Type 'FieldValue' is missing the following properties from type 'Timestamp': seconds, nanoseconds, toDate, toMillis, toJSON
-src/app/leads-members/create/page.tsx(203,7): error TS2322: Type 'FieldValue' is not assignable to type 'Timestamp'.
+src/app/campaign-members/create/page.tsx(158,11): error TS2322: Type '{ targetAmount: number; description: string; createdAt: FieldValue; createdById: string; createdByName: string; priceDate: string; shopName: string; shopContact: string; shopAddress: string; ... 8 more ...; allowedDonationTypes?: string[] | undefined; }' is not assignable to type 'Partial<Campaign>'.
+  Types of property 'allowedDonationTypes' are incompatible.
+    Type 'string[] | undefined' is not assignable to type '("Fitra" | "Zakat" | "Sadaqah" | "Interest" | "Lillah" | "Loan" | "Monthly Contribution")[] | undefined'.
+      Type 'string[]' is not assignable to type '("Fitra" | "Zakat" | "Sadaqah" | "Interest" | "Lillah" | "Loan" | "Monthly Contribution")[]'.
+        Type 'string' is not assignable to type '"Fitra" | "Zakat" | "Sadaqah" | "Interest" | "Lillah" | "Loan" | "Monthly Contribution"'.
+src/app/leads-members/create/page.tsx(195,11): error TS2322: Type '{ requiredAmount: number; targetAmount: number; description: string; purposeDetails: string; category: string; categoryDetails: string; createdAt: FieldValue; createdById: string; ... 19 more ...; allowedDonationTypes?: string[] | undefined; }' is not assignable to type 'Partial<Lead>'.
+  Types of property 'allowedDonationTypes' are incompatible.
+    Type 'string[] | undefined' is not assignable to type '("Fitra" | "Zakat" | "Sadaqah" | "Interest" | "Lillah" | "Loan" | "Monthly Contribution")[] | undefined'.
+src/app/users/[userId]/page.tsx(162,9): error TS2322: Type 'string | null | undefined' is not assignable to type '"founder" | "co-founder" | "finance" | "member" | null | undefined'.
+  Type 'string' is not assignable to type '"founder" | "co-founder" | "finance" | "member" | null | undefined'.
+src/components/beneficiary-form.tsx(397,111): error TS2339: Property 'seconds' does not exist on type 'Timestamp | FieldValue'.
+  Property 'seconds' does not exist on type 'FieldValue'.
+src/components/beneficiary-form.tsx(398,142): error TS2339: Property 'seconds' does not exist on type 'Timestamp | FieldValue'.
+  Property 'seconds' does not exist on type 'FieldValue'.
+src/lib/schemas.ts(21,29): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: readonly [string, ...string[]], params?: RawCreateParams): ZodEnum<[string, ...string[]]>', gave the following error.
+    Argument of type '[...("founder" | "co-founder" | "finance" | "member")[], string]' is not assignable to parameter of type 'readonly [string, ...string[]]'.
+      Source provides no match for required element at position 0 in target.
+  Overload 2 of 2, '(values: [string, ...string[]], params?: RawCreateParams): ZodEnum<[string, ...string[]]>', gave the following error.
+    Argument of type '[...("founder" | "co-founder" | "finance" | "member")[], string]' is not assignable to parameter of type '[string, ...string[]]'.
+      Source provides no match for required element at position 0 in target.

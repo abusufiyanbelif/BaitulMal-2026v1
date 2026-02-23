@@ -41,7 +41,7 @@ const campaignSchema = z.object({
   startDate: z.string().min(1, 'Start date is required.'),
   endDate: z.string().min(1, 'End date is required.'),
   targetAmount: z.coerce.number().min(0, 'Target amount must be a positive number.').optional(),
-  allowedDonationTypes: z.array(z.string()).optional(),
+  allowedDonationTypes: z.array(z.enum(donationCategories)).optional(),
   imageFile: z.any().optional(),
 }).refine(data => new Date(data.startDate) <= new Date(data.endDate), {
     message: "End date cannot be before the start date.",

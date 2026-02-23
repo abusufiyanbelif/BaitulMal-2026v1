@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { z } from 'zod';
@@ -18,7 +19,7 @@ export const userFormSchema = z.object({
   idProofFile: z.any().optional(),
   idProofDeleted: z.boolean().optional(),
   password: z.string().optional(),
-  organizationGroup: z.enum([...GROUP_IDS, 'none']).optional(),
+  organizationGroup: z.enum(['founder', 'co-founder', 'finance', 'member', 'none']).optional(),
   organizationRole: z.string().optional(),
   _isEditing: z.boolean(),
 })

@@ -44,7 +44,7 @@ const leadSchema = z.object({
   endDate: z.string().min(1, 'End date is required.'),
   requiredAmount: z.coerce.number().min(0).optional(),
   targetAmount: z.coerce.number().min(0).optional(),
-  allowedDonationTypes: z.array(z.string()).optional(),
+  allowedDonationTypes: z.array(z.enum(donationCategories)).optional(),
   degree: z.string().optional(),
   year: z.string().optional(),
   semester: z.string().optional(),
