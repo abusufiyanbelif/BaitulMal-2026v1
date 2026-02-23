@@ -28,7 +28,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase/provider';
-import { createAdminPermissions, type UserPermissions } from '@/lib/modules';
+import { createAdminPermissions, type UserPermissions, GROUPS, GROUP_IDS } from '@/lib/modules';
 import type { UserProfile } from '@/lib/types';
 import { userFormSchema, type UserFormData } from '@/lib/schemas';
 import { sendPasswordResetEmail } from 'firebase/auth';
@@ -72,6 +72,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
       password: '',
       idProofType: user?.idProofType || '',
       idNumber: user?.idNumber || '',
+      organizationGroup: user?.organizationGroup || '',
+      organizationRole: user?.organizationRole || '',
       _isEditing: isEditing,
       idProofDeleted: false,
     },
@@ -264,9 +266,10 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
     <Form {...form}>
         <form onSubmit={handleSubmit(finalSubmitHandler)} className="space-y-4 pt-4">
             <Tabs defaultValue="profile" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="profile">Profile Details</TabsTrigger>
-                    <TabsTrigger value="permissions">Roles & Permissions</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="profile">Profile</TabsTrigger>
+                    <TabsTrigger value="organization">Organization</TabsTrigger>
+                    <TabsTrigger value="permissions">Permissions</TabsTrigger>
                 </TabsList>
                 <TabsContent value="profile" className="mt-6">
                     <div className="space-y-6">
@@ -431,6 +434,40 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <FormDescription>
                                     Inactive users cannot log in.
                                 </FormDescription>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                </TabsContent>
+                <TabsContent value="organization" className="mt-6">
+                    <div className="space-y-6">
+                        <FormField
+                            control={control}
+                            name="organizationGroup"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Organization Group</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value || ''} disabled={isFormDisabled}>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Not a member" /></SelectTrigger></FormControl>
+                                <SelectContent>
+                                    <SelectItem value="">None</SelectItem>
+                                    {GROUPS.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
+                                </SelectContent>
+                                </Select>
+                                <FormDescription>Assigning a group makes this user a public-facing organization member.</FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={control}
+                            name="organizationRole"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Organization Role/Position</FormLabel>
+                                <FormControl><Input placeholder="e.g. President, Treasurer" {...field} value={field.value || ''} disabled={isFormDisabled} /></FormControl>
+                                <FormDescription>The title they hold in the organization.</FormDescription>
                                 <FormMessage />
                                 </FormItem>
                             )}

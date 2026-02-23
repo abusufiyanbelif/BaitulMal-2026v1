@@ -1,8 +1,9 @@
+
 'use client';
 import { useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { Copy, Smartphone, QrCode, Mail, Phone, Download, Globe } from 'lucide-react';
+import { Copy, Smartphone, QrCode, Mail, Phone, Download, Globe, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -10,6 +11,7 @@ import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useBranding } from '@/hooks/use-branding';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import Link from 'next/link';
 
 export function AppFooter() {
   const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
@@ -54,7 +56,7 @@ export function AppFooter() {
             description: "Your QR code image has started downloading.",
             variant: "success"
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error("QR Code download failed:", error);
         toast({
             title: "Download Failed",
@@ -119,6 +121,12 @@ export function AppFooter() {
                 <div className="flex items-center gap-2 text-xs transition-all hover:text-primary">
                 <Globe className="h-3 w-3" />
                 <a href={paymentSettings.website} target="_blank" rel="noopener noreferrer" className="hover:underline break-all">{paymentSettings.website}</a>
+                </div>
+            )}
+            {isLoading ? <Skeleton className="h-4 w-3/4" /> : (
+                <div className="flex items-center gap-2 text-xs transition-all hover:text-primary">
+                    <Users className="h-3 w-3" />
+                    <Link href="/info/members" className="hover:underline">Organization Members</Link>
                 </div>
             )}
             </div>

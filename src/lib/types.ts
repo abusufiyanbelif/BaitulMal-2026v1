@@ -1,7 +1,6 @@
 
-
 import type { DocumentData, Timestamp, FieldValue } from 'firebase/firestore';
-import type { UserPermissions } from './modules';
+import type { UserPermissions, GroupId } from './modules';
 import { donationCategories } from './modules';
 
 export type DonationCategory = typeof donationCategories[number];
@@ -208,6 +207,8 @@ export interface UserProfile extends DocumentData {
   idProofType?: string;
   idNumber?: string;
   idProofUrl?: string;
+  organizationGroup?: GroupId;
+  organizationRole?: string;
 }
 
 export interface OrganizationMember {

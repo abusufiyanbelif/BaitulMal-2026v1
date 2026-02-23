@@ -7,6 +7,17 @@ export const readUpdatePermissions = ['read', 'update'] as const;
 export const simpleReadPermission = ['read'] as const;
 export const donationCategories = ['Fitra', 'Zakat', 'Sadaqah', 'Interest', 'Lillah', 'Loan', 'Monthly Contribution'] as const;
 
+export const GROUPS = [
+    { id: 'founder', name: 'Founders' },
+    { id: 'co-founder', name: 'Co-Founders' },
+    { id: 'finance', name: 'Finance Team' },
+    { id: 'member', name: 'Members' },
+] as const;
+
+export type GroupId = typeof GROUPS[number]['id'];
+export const GROUP_IDS = GROUPS.map(g => g.id);
+
+
 export type DonationCategory = typeof donationCategories[number];
 export type CrudPermissions = typeof crudPermissions;
 export type ReadUpdatePermissions = typeof readUpdatePermissions;

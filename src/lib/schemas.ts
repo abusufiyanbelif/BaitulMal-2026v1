@@ -3,6 +3,7 @@
 
 import { z } from 'zod';
 import type { UserPermissions } from './modules';
+import { GROUP_IDS } from './modules';
 
 export const userFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -17,6 +18,8 @@ export const userFormSchema = z.object({
   idProofFile: z.any().optional(),
   idProofDeleted: z.boolean().optional(),
   password: z.string().optional(),
+  organizationGroup: z.enum(GROUP_IDS).optional().or(z.literal('')),
+  organizationRole: z.string().optional(),
   _isEditing: z.boolean(),
 })
 .refine((data) => data.email || data.phone, {

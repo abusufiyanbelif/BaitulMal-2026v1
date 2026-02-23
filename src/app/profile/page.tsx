@@ -7,7 +7,7 @@ import { useSession } from '@/hooks/use-session';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, User, Shield, Phone, KeyRound, CheckCircle, XCircle, LogIn, FileText, BadgeInfo, Hash, Eye, Edit, Save, Mail, ZoomIn, ZoomOut, RotateCw, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Loader2, User, Shield, Phone, KeyRound, CheckCircle, XCircle, LogIn, FileText, BadgeInfo, Hash, Eye, Edit, Save, Mail, ZoomIn, ZoomOut, RotateCw, RefreshCw, Building } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -183,6 +183,13 @@ export default function ProfilePage() {
                                 label="Role" 
                                 value={<Badge variant={userProfile.role === 'Admin' ? 'destructive' : 'secondary'}>{userProfile.role}</Badge>} 
                             />
+
+                            {userProfile.organizationGroup && (
+                               <ProfileDetail icon={<Building />} label="Organization Group" value={<Badge variant="outline">{userProfile.organizationGroup}</Badge>} />
+                            )}
+                            {userProfile.organizationRole && (
+                                <ProfileDetail icon={<BadgeInfo />} label="Organization Role" value={userProfile.organizationRole} />
+                            )}
                             
                             <ProfileDetail 
                                 icon={userProfile.status === 'Active' ? <CheckCircle className="text-success-foreground" /> : <XCircle className="text-destructive" />} 
