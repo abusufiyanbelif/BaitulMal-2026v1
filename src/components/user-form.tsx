@@ -72,7 +72,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
       password: '',
       idProofType: user?.idProofType || '',
       idNumber: user?.idNumber || '',
-      organizationGroup: user?.organizationGroup || '',
+      organizationGroup: user?.organizationGroup || 'none',
       organizationRole: user?.organizationRole || '',
       _isEditing: isEditing,
       idProofDeleted: false,
@@ -99,7 +99,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
         password: '',
         idProofType: user.idProofType || '',
         idNumber: user.idNumber || '',
-        organizationGroup: user.organizationGroup || '',
+        organizationGroup: user.organizationGroup || 'none',
         organizationRole: user.organizationRole || '',
         _isEditing: true,
         idProofDeleted: false,
@@ -473,10 +473,10 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Organization Group</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value || ''} disabled={isFormDisabled}>
+                                <Select onValueChange={field.onChange} value={field.value || 'none'} disabled={isFormDisabled}>
                                 <FormControl><SelectTrigger><SelectValue placeholder="Not a member" /></SelectTrigger></FormControl>
                                 <SelectContent>
-                                    <SelectItem value="">None</SelectItem>
+                                    <SelectItem value="none">None</SelectItem>
                                     {GROUPS.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
                                 </SelectContent>
                                 </Select>

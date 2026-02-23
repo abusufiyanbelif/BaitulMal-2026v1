@@ -18,7 +18,7 @@ export const userFormSchema = z.object({
   idProofFile: z.any().optional(),
   idProofDeleted: z.boolean().optional(),
   password: z.string().optional(),
-  organizationGroup: z.enum(GROUP_IDS).optional().or(z.literal('')),
+  organizationGroup: z.enum([...GROUP_IDS, 'none']).optional(),
   organizationRole: z.string().optional(),
   _isEditing: z.boolean(),
 })

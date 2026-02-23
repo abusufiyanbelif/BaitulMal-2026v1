@@ -45,7 +45,7 @@ export default function UserDetailsPage() {
     return doc(firestore, 'users', userId) as DocumentReference<UserProfile>;
   }, [firestore, userId]);
 
-  const { data: user, isLoading: isUserLoading } = useDoc<UserProfile>(userDocRef);
+  const { data: user, isLoading: isUserLoading, forceRefetch } = useDoc<UserProfile>(userDocRef);
 
   const canUpdate = currentUserProfile?.role === 'Admin' || !!currentUserProfile?.permissions?.users?.update;
 
@@ -159,6 +159,8 @@ export default function UserDetailsPage() {
         idProofType: data.idProofType,
         idNumber: data.idNumber,
         idProofUrl,
+        organizationGroup: data.organizationGroup === 'none' ? null : data.organizationGroup,
+        organizationRole: data.organizationRole,
     };
     
     let newEmail = user.email;
@@ -199,6 +201,7 @@ export default function UserDetailsPage() {
     try {
         await batch.commit();
         toast({ title: 'Success', description: 'User details have been successfully updated.', variant: 'success' });
+        forceRefetch();
         setIsEditMode(false);
     } catch (serverError: any) {
         if (serverError.code === 'permission-denied') {

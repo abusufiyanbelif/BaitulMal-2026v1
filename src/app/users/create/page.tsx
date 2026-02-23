@@ -120,6 +120,8 @@ export default function CreateUserPage() {
         idProofType: data.idProofType,
         idNumber: data.idNumber,
         idProofUrl, // Include the URL here
+        organizationGroup: data.organizationGroup === 'none' ? null : data.organizationGroup,
+        organizationRole: data.organizationRole,
         createdAt: serverTimestamp(),
         createdById: userProfile?.id || 'system',
         createdByName: userProfile?.name || 'System',

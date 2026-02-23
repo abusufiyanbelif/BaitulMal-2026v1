@@ -207,7 +207,7 @@ export interface UserProfile extends DocumentData {
   idProofType?: string;
   idNumber?: string;
   idProofUrl?: string;
-  organizationGroup?: GroupId;
+  organizationGroup?: GroupId | null;
   organizationRole?: string;
 }
 
