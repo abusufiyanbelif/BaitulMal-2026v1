@@ -137,7 +137,8 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                 <TableCell>
                     <Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'}>{beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}</Badge>
                 </TableCell>
-                <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
+                <TableCell className="text-right font-medium font-mono">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
+                <TableCell className="text-right font-medium font-mono">₹{(beneficiary.zakatAllocation || 0).toFixed(2)}</TableCell>
                 <TableCell>{beneficiary.referralBy}</TableCell>
 
                 {(canUpdate || canDelete) && (
@@ -204,7 +205,7 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
             </TableRow>
             {isOpen && (
                  <TableRow className="bg-muted/20 hover:bg-muted/30">
-                    <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="p-0">
+                    <TableCell colSpan={(canUpdate || canDelete) ? 8 : 7} className="p-0">
                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 p-4">
                             <DetailItem label="Address" value={beneficiary.address} />
                             <DetailItem label="Age" value={beneficiary.age} />
@@ -773,6 +774,40 @@ const sortedGroupKeys = useMemo(() => {
     }
   };
   const handleSelectExisting = (beneficiaryData: Beneficiary) => {
+    const calculateTotal = (items: RationItem[]) => {
+        return items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+    };
+
+    let calculatedKitAmount = 0;
+    const isRationStyle = sanitizedItemCategories.some(cat => cat.minMembers !== undefined && cat.maxMembers !== undefined);
+    
+    if (isRationStyle) {
+        const members = beneficiaryData.members || 0;
+        const matchingCategories = sanitizedItemCategories.filter(
+            cat => cat.name !== 'Item Price List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
+        );
+        let appliedCategory: ItemCategory | undefined = undefined;
+        if (matchingCategories.length > 1) {
+            matchingCategories.sort((a, b) => {
+                const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
+                const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
+                if(rangeA !== rangeB) return rangeA - rangeB;
+                return (b.minMembers ?? 0) - (a.minMembers ?? 0);
+            });
+            appliedCategory = matchingCategories[0];
+        } else if (matchingCategories.length === 1) {
+            appliedCategory = matchingCategories[0];
+        }
+        if (appliedCategory) {
+            calculatedKitAmount = calculateTotal(appliedCategory.items);
+        }
+    } else {
+        const generalList = sanitizedItemCategories.find(cat => cat.name !== 'Item Price List');
+        if (generalList) {
+            calculatedKitAmount = calculateTotal(generalList.items);
+        }
+    }
+    
     const dataToSubmit: BeneficiaryFormData = {
         name: beneficiaryData.name,
         address: beneficiaryData.address || '',
@@ -786,7 +821,7 @@ const sortedGroupKeys = useMemo(() => {
         idProofType: beneficiaryData.idProofType || '',
         idNumber: beneficiaryData.idNumber || '',
         referralBy: beneficiaryData.referralBy || '',
-        kitAmount: 0,
+        kitAmount: calculatedKitAmount,
         status: 'Pending',
         notes: beneficiaryData.notes || '',
         isEligibleForZakat: beneficiaryData.isEligibleForZakat,
@@ -1070,6 +1105,7 @@ const sortedGroupKeys = useMemo(() => {
                             <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
                             <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort}>Zakat</SortableHeader>
                             <SortableHeader sortKey="kitAmount" className="text-right" sortConfig={sortConfig} handleSort={handleSort}>Kit Amount (₹)</SortableHeader>
+                            <SortableHeader sortKey="zakatAllocation" className="text-right" sortConfig={sortConfig} handleSort={handleSort}>Zakat Allocation (₹)</SortableHeader>
                             <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort}>Referred By</SortableHeader>
                             {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right">Actions</TableHead>}
                         </TableRow>
@@ -1082,6 +1118,7 @@ const sortedGroupKeys = useMemo(() => {
                                     <TableCell><Skeleton className="h-6 w-32" /></TableCell>
                                     <TableCell><Skeleton className="h-7 w-20" /></TableCell>
                                     <TableCell><Skeleton className="h-7 w-20" /></TableCell>
+                                    <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                     {(canUpdate || canDelete) && <TableCell><Skeleton className="h-6 w-12 mx-auto" /></TableCell>}
@@ -1109,7 +1146,7 @@ const sortedGroupKeys = useMemo(() => {
                                 return (
                                     <React.Fragment key={categoryId}>
                                         <TableRow className="bg-muted hover:bg-muted cursor-pointer" onClick={() => toggleGroup(categoryId)}>
-                                            <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="font-bold">
+                                            <TableCell colSpan={(canUpdate || canDelete) ? 8 : 7} className="font-bold">
                                                 <div className="flex items-center gap-2">
                                                     {categoryIsCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                                     <span>{categoryName} ({totalBeneficiariesInCategory} beneficiaries)</span>
@@ -1126,7 +1163,7 @@ const sortedGroupKeys = useMemo(() => {
                                             return (
                                                 <React.Fragment key={subGroupKey}>
                                                     <TableRow className="bg-muted/50 hover:bg-muted/50 cursor-pointer" onClick={(e) => { e.stopPropagation(); toggleSubGroup(subGroupKey);}}>
-                                                        <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="font-medium">
+                                                        <TableCell colSpan={(canUpdate || canDelete) ? 8 : 7} className="font-medium">
                                                             <div className="flex items-center gap-2 pl-6">
                                                                 {subGroupIsCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                                                 <span>{memberCount} Members ({beneficiariesInSubGroup.length} beneficiaries)</span>
@@ -1150,7 +1187,7 @@ const sortedGroupKeys = useMemo(() => {
                             })
                         ) : (
                         <TableRow>
-                            <TableCell colSpan={(canUpdate || canDelete) ? 7 : 6} className="text-center h-24 text-muted-foreground">
+                            <TableCell colSpan={(canUpdate || canDelete) ? 8 : 7} className="text-center h-24 text-muted-foreground">
                                 No beneficiaries found matching your criteria.
                             </TableCell>
                         </TableRow>
@@ -1176,6 +1213,7 @@ const sortedGroupKeys = useMemo(() => {
                 isLoading={isLoading}
                 kitAmountLabel={kitAmountLabel}
                 isSessionLoading={isProfileLoading}
+                hideZakatAllocation={false}
             />
         </DialogContent>
       </Dialog>

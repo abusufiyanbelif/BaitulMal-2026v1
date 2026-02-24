@@ -137,38 +137,44 @@ export function BeneficiaryForm({
     }, [isEligibleForZakat, setValue, getValues]);
 
     useEffect(() => {
-        const isRationStyle = itemCategories.some(cat => cat.minMembers !== undefined && cat.maxMembers !== undefined);
-        if (isReadOnly || !isRationStyle || itemCategories.length === 0) return;
+        if (isReadOnly) return;
 
         const calculateTotal = (items: RationItem[]) => {
             return items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
         };
         
-        const members = membersValue || 0;
+        const isRationStyle = itemCategories.some(cat => cat.minMembers !== undefined && cat.maxMembers !== undefined);
 
-        const matchingCategories = itemCategories.filter(
-            cat => cat.name !== 'Item Price List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
-        );
+        if (isRationStyle && itemCategories.length > 0) {
+            const members = membersValue || 0;
+            const matchingCategories = itemCategories.filter(
+                cat => cat.name !== 'Item Price List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
+            );
+            let appliedCategory: ItemCategory | undefined = undefined;
 
-        let appliedCategory: ItemCategory | undefined = undefined;
+            if (matchingCategories.length > 1) {
+                matchingCategories.sort((a, b) => {
+                    const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
+                    const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
+                    if (rangeA !== rangeB) return rangeA - rangeB;
+                    return (b.minMembers ?? 0) - (a.minMembers ?? 0);
+                });
+                appliedCategory = matchingCategories[0];
+            } else if (matchingCategories.length === 1) {
+                appliedCategory = matchingCategories[0];
+            }
 
-        if (matchingCategories.length > 1) {
-            matchingCategories.sort((a, b) => {
-                const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
-                const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
-                if (rangeA !== rangeB) {
-                    return rangeA - rangeB;
-                }
-                return (b.minMembers ?? 0) - (a.minMembers ?? 0);
-            });
-            appliedCategory = matchingCategories[0];
-        } else if (matchingCategories.length === 1) {
-            appliedCategory = matchingCategories[0];
-        }
-
-        if (appliedCategory) {
-            const kitAmount = calculateTotal(appliedCategory.items);
-            setValue('kitAmount', kitAmount, { shouldValidate: true, shouldDirty: true });
+            if (appliedCategory) {
+                const kitAmount = calculateTotal(appliedCategory.items);
+                setValue('kitAmount', kitAmount, { shouldValidate: true, shouldDirty: true });
+            }
+        } else if (!isRationStyle && itemCategories.length > 0) {
+            // For non-ration campaigns (General, Relief), there's usually one list.
+            const generalList = itemCategories.find(cat => cat.name !== 'Item Price List');
+            if (generalList) {
+                const kitAmount = calculateTotal(generalList.items);
+                setValue('kitAmount', kitAmount, { shouldValidate: true, shouldDirty: true });
+            }
         }
     }, [membersValue, itemCategories, setValue, isReadOnly]);
 
