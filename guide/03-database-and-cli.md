@@ -43,6 +43,11 @@ These scripts are used to update your existing data to a newer format after an a
 -   **When to Run**: Run this script **once** to ensure all older donations are compatible with the latest features that allow linking a single donation to multiple campaigns or leads.
 -   **What it Does**: It scans all documents in the `donations` collection. For any donation that has a `campaignId` but no `linkSplit`, it creates a new `linkSplit` array containing the original campaign information and removes the old, redundant fields.
 
+### `npm run db:migrate-zakat`
+
+-   **Purpose**: To synchronize the `isEligibleForZakat` and `zakatAllocation` fields from the master beneficiary list to all instances of beneficiaries within Campaigns and Leads.
+-   **When to Run**: Run this script **once** after making bulk changes to Zakat eligibility in the master list, to ensure all financial calculations in individual initiatives are accurate.
+
 ---
 
 ## Utility Scripts
