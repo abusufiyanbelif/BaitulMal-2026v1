@@ -634,104 +634,43 @@ Your contribution, big or small, makes a huge difference.
                 )}
 
                 {campaign.category === 'Ration' && beneficiaryData && beneficiaryData.sortedBeneficiaryCategoryKeys.length > 0 && (
-                      <Card>
-                          <CardHeader><CardTitle>Beneficiary Groups</CardTitle></CardHeader>
-                          <CardContent>
+                    <Card>
+                        <CardHeader><CardTitle>Beneficiary Groups</CardTitle></CardHeader>
+                        <CardContent>
                             <div className="w-full overflow-x-auto">
-                              <Table>
-                                  <TableHeader>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Category Name</TableHead>
+                                        <TableHead className="text-center">Total Beneficiaries</TableHead>
+                                        <TableHead className="text-right">Kit Amount (per kit)</TableHead>
+                                        <TableHead className="text-right">Total Kit Amount (per category)</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {beneficiaryData.sortedBeneficiaryCategoryKeys.map(key => {
+                                        const group = beneficiaryData.beneficiariesByCategory[key];
+                                        return (
+                                            <TableRow key={key}>
+                                                <TableCell>{group.categoryName}</TableCell>
+                                                <TableCell className="text-center">{group.beneficiaries.length}</TableCell>
+                                                <TableCell className="text-right font-mono">₹{group.kitAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                                <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                                 <TableFooter>
                                       <TableRow>
-                                          <TableHead>Category Name</TableHead>
-                                          <TableHead className="text-center">Total Beneficiaries</TableHead>
-                                          <TableHead className="text-right">Kit Amount (per kit)</TableHead>
-                                          <TableHead className="text-right">Total Kit Amount (per category)</TableHead>
+                                          <TableCell colSpan={3} className="font-bold text-right">Total</TableCell>
+                                          <TableCell className="text-right font-bold font-mono">₹{Object.values(beneficiaryData.beneficiariesByCategory).reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
                                       </TableRow>
-                                  </TableHeader>
-                                  <TableBody>
-                                      {beneficiaryData.sortedBeneficiaryCategoryKeys.map(categoryId => {
-                                          const group = beneficiaryData.beneficiariesByCategory[categoryId];
-                                          if (!group) return null;
-                                          const { category, beneficiariesByMemberCount } = group;
-
-                                          const isMultiGroup = Object.keys(beneficiariesByMemberCount).length > 1;
-                                          const categoryIsCollapsed = isMultiGroup && collapsedGroups[categoryId];
-
-                                          const totalBeneficiariesInCategory = Object.values(beneficiariesByMemberCount).reduce((sum, benList) => sum + benList.length, 0);
-
-                                          const groupTotalAmount = Object.values(beneficiariesByMemberCount).reduce((sum, benList) => {
-                                              if (benList.length === 0) return sum;
-                                              const kitAmount = benList[0].kitAmount || 0;
-                                              return sum + (kitAmount * benList.length);
-                                          }, 0);
-                                          
-                                          const categoryName = category.name === 'Uncategorized' 
-                                              ? 'Uncategorized'
-                                              : (category.minMembers === undefined || category.minMembers === category.maxMembers)
-                                                  ? `${category.name} (${category.minMembers ?? 'Any'} Members)`
-                                                  : `${category.name} (${category.minMembers}-${category.maxMembers} Members)`;
-
-                                          return (
-                                              <React.Fragment key={categoryId}>
-                                                  {isMultiGroup ? (
-                                                    <TableRow className="bg-muted hover:bg-muted cursor-pointer" onClick={() => toggleGroup(categoryId)}>
-                                                        <TableCell className="font-bold">
-                                                            <div className="flex items-center gap-2">
-                                                                {categoryIsCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                                                {categoryName}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell className="text-center font-bold">{totalBeneficiariesInCategory}</TableCell>
-                                                        <TableCell className="text-right font-bold font-mono"></TableCell>
-                                                        <TableCell className="text-right font-bold font-mono">₹{groupTotalAmount.toLocaleString('en-IN')}</TableCell>
-                                                    </TableRow>
-                                                  ) : (
-                                                    <TableRow>
-                                                        <TableCell className="font-medium">{categoryName}</TableCell>
-                                                        <TableCell className="text-center">{totalBeneficiariesInCategory}</TableCell>
-                                                        <TableCell className="text-right font-mono">₹{(Object.values(beneficiariesByMemberCount)[0]?.[0]?.kitAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                                        <TableCell className="text-right font-mono">₹{groupTotalAmount.toLocaleString('en-IN')}</TableCell>
-                                                    </TableRow>
-                                                  )}
-                                                  
-                                                  {isMultiGroup && !categoryIsCollapsed && Object.keys(beneficiariesByMemberCount).sort((a, b) => Number(a) - Number(b)).map(memberCountStr => {
-                                                      const memberCount = Number(memberCountStr);
-                                                      const subGroupBeneficiaries = beneficiariesByMemberCount[memberCount];
-                                                      if (subGroupBeneficiaries.length === 0) return null;
-                                                      const subGroupKitAmount = subGroupBeneficiaries[0].kitAmount || 0;
-                                                      const subGroupTotalAmount = subGroupKitAmount * subGroupBeneficiaries.length;
-                                                      return (
-                                                          <TableRow key={`${categoryId}-${memberCount}`} className="bg-muted/20">
-                                                              <TableCell className="pl-12">
-                                                                  {memberCount} Members
-                                                              </TableCell>
-                                                              <TableCell className="text-center">{subGroupBeneficiaries.length}</TableCell>
-                                                              <TableCell className="text-right font-mono">₹{subGroupKitAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                                              <TableCell className="text-right font-mono">₹{subGroupTotalAmount.toLocaleString('en-IN')}</TableCell>
-                                                          </TableRow>
-                                                      )
-                                                  })}
-                                              </React.Fragment>
-                                          )
-                                      })}
-                                  </TableBody>
-                                   <TableFooter>
-                                        <TableRow>
-                                            <TableCell colSpan={3} className="font-bold text-right">Total</TableCell>
-                                            <TableCell className="text-right font-bold font-mono">₹{Object.values(beneficiaryData.beneficiariesByCategory).reduce((sum, group) => {
-                                                const groupTotal = Object.values(group.beneficiariesByMemberCount).reduce((subSum, benList) => {
-                                                    if (benList.length === 0) return subSum;
-                                                    return subSum + ((benList[0].kitAmount || 0) * benList.length);
-                                                }, 0);
-                                                return sum + groupTotal;
-                                            }, 0).toLocaleString('en-IN')}
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableFooter>
-                              </Table>
+                                  </TableFooter>
+                            </Table>
                             </div>
-                          </CardContent>
-                      </Card>
-                  )}
+                        </CardContent>
+                    </Card>
+                )}
             </div>
 
             <ShareDialog 

@@ -226,6 +226,7 @@ export default function PublicLeadSummaryPage() {
             
             let appliedCategory: ItemCategory | null = null;
             if (matchingCategories.length > 1) {
+                // If multiple categories match, find the most specific one (smallest range)
                 matchingCategories.sort((a, b) => {
                     const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
                     const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
