@@ -116,7 +116,8 @@ export async function updateBeneficiaryStatusInInitiativeAction(
 
     try {
         const docRef = adminDb.doc(docPath);
-        await docRef.update({ status: newStatus });
+        // Use set with merge to prevent FAILED_PRECONDITION if the doc doesn't exist
+        await docRef.set({ status: newStatus }, { merge: true });
 
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
         return { success: true, message: 'Beneficiary status updated successfully.' };
