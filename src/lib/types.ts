@@ -189,6 +189,8 @@ export interface Donation extends DocumentData {
   transactions?: TransactionDetail[];
   campaignId?: string; // Legacy field
   campaignName?: string; // Legacy field
+  contributionFromDate?: string;
+  contributionToDate?: string;
 }
 
 export interface UserProfile extends DocumentData {

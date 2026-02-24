@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { z } from 'zod';
@@ -58,6 +57,8 @@ const formSchema = z.object({
   })).min(1, { message: 'At least one donation category is required.'}),
   donationType: z.enum(['Cash', 'Online Payment', 'Check', 'Other']),
   donationDate: z.string().min(1, { message: "Donation date is required."}),
+  contributionFromDate: z.string().optional(),
+  contributionToDate: z.string().optional(),
   status: z.enum(['Verified', 'Pending', 'Canceled']),
   comments: z.string().optional(),
   suggestions: z.string().optional(),
@@ -319,6 +320,8 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
       amount: donation?.amount || 0,
       donationType: donation?.donationType || 'Online Payment',
       donationDate: donation?.donationDate || new Date().toISOString().split('T')[0],
+      contributionFromDate: donation?.contributionFromDate || '',
+      contributionToDate: donation?.contributionToDate || '',
       status: donation?.status || 'Pending',
       comments: donation?.comments || '',
       suggestions: donation?.suggestions || '',
@@ -341,6 +344,8 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     name: 'transactions',
   });
   const isTypeSplit = watch('isTypeSplit');
+  const watchedTypeSplit = watch('typeSplit');
+  const isMonthlyContribution = useMemo(() => watchedTypeSplit?.some(s => s.category === 'Monthly Contribution'), [watchedTypeSplit]);
   const isLinkSplit = watch('isSplit');
 
   // Calculate total amount from transactions
@@ -614,6 +619,40 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
             </div>
           )}
         </div>
+        
+        {isMonthlyContribution && (
+          <div className="space-y-4 rounded-md border p-4 animate-fade-in-zoom">
+            <h3 className="text-base font-semibold">Monthly Contribution Period</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={control}
+                name="contributionFromDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>From</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="contributionToDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>To</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Initiative Split */}
         <div className="space-y-3 rounded-md border p-4">
