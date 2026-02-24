@@ -51,7 +51,7 @@ Server-side scripts (e.g., for database seeding) require administrative access t
 -   **File**: `serviceAccountKey.json`
 -   **Location**: Project root directory.
 -   **Purpose**: This file contains a private key that grants your scripts administrative privileges, allowing them to bypass all security rules.
--   **Security**: **This file is highly sensitive and must never be committed to version control.** The project's `.gitignore` file is pre-configured to ignore it.
+-   **Security**: **This file is highly sensitive and must never be committed to version control.** A `.gitignore` file is included in the project to help prevent this file from being accidentally committed.
 
 For detailed steps on obtaining this file, refer to the [Setup and Installation](./01-setup-and-installation.md) guide.
 

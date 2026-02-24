@@ -25,14 +25,23 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
 .env*.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
+next-env.d.ts
 
 # Firebase
 serviceAccountKey.json
+*.firebase.json
 src/serviceAccountKey.json
+src/serviceAccountKey.json
+# Service Account Keys
+*.json

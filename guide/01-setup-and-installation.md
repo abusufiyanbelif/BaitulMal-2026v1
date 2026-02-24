@@ -72,11 +72,9 @@ The server-side scripts (for seeding, migration, etc.) require admin privileges.
 
 1.  In the Firebase Console, go to **Project Settings** > **Service accounts**.
 2.  Click the **"Generate new private key"** button. A JSON file will be downloaded.
-3.  Rename the downloaded file to `serviceAccountKey.json` and place it in the **root directory** of your project. The project's `.gitignore` file is already configured to ignore this sensitive file.
+3.  Rename the downloaded file to `serviceAccountKey.json` and place it in the **root directory** of your project. **Do not commit this file to version control.** A `.gitignore` file has been added to help prevent this, but you should always ensure this file remains private.
 
 ## Running the Application
-
-Once your environment is configured, you can run the application.
 
 ### Step 1: Seed the Database
 

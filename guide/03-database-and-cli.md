@@ -11,7 +11,7 @@ This project includes several command-line interface (CLI) scripts to help manag
 
 ## Prerequisite: Admin SDK Setup for Local Development
 
-Before running any of these commands locally, you **must** have your [Admin SDK Service Account](./02-firebase-configuration.md#admin-sdk-configuration-serviceaccountkeyjson-local-vs-production) (`serviceAccountKey.json`) set up in your project root. This is not required for the deployed application, only for running administrative scripts on your local machine.
+Before running any of these commands locally, you **must** have your [Admin SDK Service Account](./02-firebase-configuration.md#admin-sdk-configuration-serviceaccountkeyjson) set up in your project root. This is not required for the deployed application, only for running administrative scripts on your local machine.
 
 ---
 
