@@ -11,10 +11,10 @@ import React, {
   useEffect,
 } from 'react';
 
-import type { FirebaseApp } from 'firebase/app';
-import type { Firestore } from 'firebase/firestore';
-import { onAuthStateChanged, type Auth, type User } from 'firebase/auth';
-import type { FirebaseStorage } from 'firebase/storage';
+import { FirebaseApp } from '@/firebase';
+import { Firestore } from '@/firebase';
+import { onAuthStateChanged, Auth, User } from '@/firebase';
+import { FirebaseStorage } from '@/firebase';
 
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 

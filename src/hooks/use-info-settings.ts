@@ -1,17 +1,14 @@
 
+
 'use client';
-import { useMemoFirebase, useFirestore } from '@/firebase/provider';
-import { useDoc } from '@/firebase/firestore/use-doc';
-import { doc, DocumentReference } from 'firebase/firestore';
+import { useMemoFirebase, useFirestore, useDoc, doc, type DocumentReference } from '@/firebase';
 import type { InfoSettings } from '@/lib/types';
 
 export function useInfoSettings() {
   const firestore = useFirestore();
 
   const infoSettingsDocRef = useMemoFirebase(() => {
-    if (!firestore) {
-      return null;
-    }
+    if (!firestore) return null;
     return doc(firestore, 'settings', 'info') as DocumentReference<InfoSettings>;
   }, [firestore]);
 

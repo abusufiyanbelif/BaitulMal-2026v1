@@ -1,2 +1,3 @@
-src/app/analytics/page.tsx(235,58): error TS18046: 'a' is of type 'unknown'.
-src/app/analytics/page.tsx(235,79): error TS18046: 'b' is of type 'unknown'.
+src/app/analytics/page.tsx(237,58): error TS18046: 'a' is of type 'unknown'.
+src/app/analytics/page.tsx(237,79): error TS18046: 'b' is of type 'unknown'.
+src/lib/auth.ts(10,10): error TS2724: '"@/firebase"' has no exported member named 'Firestore'. Did you mean 'useFirestore'?

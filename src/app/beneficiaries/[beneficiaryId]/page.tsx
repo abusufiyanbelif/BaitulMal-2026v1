@@ -3,10 +3,7 @@
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
-import { useDoc } from '@/firebase/firestore/use-doc';
-import { getDocs, getDoc, doc, type DocumentReference, collection, query, type CollectionReference } from 'firebase/firestore';
-import { uploadBytes, getDownloadURL, deleteObject, ref as storageRef } from 'firebase/storage';
+import { useFirestore, useStorage, useAuth, useMemoFirebase, useDoc, getDocs, getDoc, doc, type DocumentReference, collection, query, type CollectionReference, uploadBytes, getDownloadURL, deleteObject, storageRef } from '@/firebase';
 import Resizer from 'react-image-file-resizer';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 

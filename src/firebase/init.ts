@@ -1,8 +1,9 @@
+
 // src/firebase/init.ts
-import { FirebaseApp, initializeApp, getApp, getApps } from 'firebase/app';
-import { Auth, getAuth } from 'firebase/auth';
-import { Firestore, getFirestore } from 'firebase/firestore';
-import { FirebaseStorage, getStorage } from 'firebase/storage';
+import { initializeApp, getApp, getApps, type FirebaseApp } from '@/firebase';
+import { getAuth, type Auth } from '@/firebase';
+import { getFirestore, type Firestore } from '@/firebase';
+import { getStorage, type FirebaseStorage } from '@/firebase';
 import { firebaseConfig } from './config';
 
 interface FirebaseServices {

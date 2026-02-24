@@ -3,8 +3,7 @@
 'use client';
 import { useMemo } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import { useFirestore, useMemoFirebase } from '@/firebase/provider';
-import { collection, query, where } from '@/firebase';
+import { useFirestore, useMemoFirebase, collection, query, where } from '@/firebase';
 import type { Campaign, Lead, Donation, DonationCategory } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 
@@ -133,7 +132,7 @@ export function usePublicData() {
                     yearlyData[year] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
                 }
                 yearlyData[year].overallTotalReceived += donation.amount;
-            } catch (e) { /* ignore */ }
+            } catch (e: any) { /* ignore */ }
         }
     });
     
@@ -145,7 +144,7 @@ export function usePublicData() {
                     yearlyData[year] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
                 }
                 yearlyData[year].totalTarget += item.targetAmount;
-            } catch(e) { /* ignore */ }
+            } catch(e: any) { /* ignore */ }
         }
     });
 
@@ -158,7 +157,7 @@ export function usePublicData() {
                     yearlyData[year] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
                 }
                 yearlyData[year].totalGoalReceived += amount;
-            } catch(e) { /* ignore */ }
+            } catch(e: any) { /* ignore */ }
         }
     });
     

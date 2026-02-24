@@ -17,5 +17,3 @@ export const useSession = () => {
   
   return { ...context, forceRefetch };
 };
-
-    

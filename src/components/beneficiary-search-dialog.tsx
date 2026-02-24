@@ -1,16 +1,18 @@
 
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { collection, query, where, getDocs, limit, type QueryDocumentSnapshot, type DocumentData } from 'firebase/firestore';
+import { useFirestore, useMemoFirebase, useCollection, collection, query, where, getDocs, limit, type QueryDocumentSnapshot, type DocumentData } from '@/firebase';
 import type { Beneficiary } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, Search } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getInitials } from '@/lib/utils';
+import { Badge } from './ui/badge';
 
 interface BeneficiarySearchDialogProps {
   open: boolean;
@@ -51,7 +53,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
       const beneficiariesQuery = query(collection(firestore, 'beneficiaries'));
       const querySnapshot = await getDocs(beneficiariesQuery);
       const allBeneficiaries: Beneficiary[] = [];
-      querySnapshot.forEach((doc: any) => {
+      querySnapshot.forEach((doc: QueryDocumentSnapshot) => {
           allBeneficiaries.push({ id: doc.id, ...doc.data() } as Beneficiary);
       });
 
@@ -106,7 +108,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
                 </Button>
             </div>
             <ScrollArea className="h-64 border rounded-md">
-                <div className="p-4 space-y-2">
+                <div className="p-2 space-y-1">
                     {isSearching && [...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
                     {!isSearching && searchResults.length === 0 && (
                         <p className="text-center text-muted-foreground pt-10">{searchTerm ? 'No results found.' : 'Enter a search term to begin.'}</p>
