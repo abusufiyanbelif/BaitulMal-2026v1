@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { getDocs, getDoc, doc, type QueryDocumentSnapshot, type DocumentData, type DocumentReference, collection, CollectionReference } from 'firebase/firestore';
+import { getDocs, getDoc, doc, type QueryDocumentSnapshot, type DocumentData, type DocumentReference, collection, CollectionReference, setDoc } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 import Resizer from 'react-image-file-resizer';
@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { updateMasterBeneficiaryAction, updateBeneficiaryStatusInInitiativeAction } from '../actions';
+import { updateMasterBeneficiaryAction, updateBeneficiaryStatusInInitiativeAction, updateInitiativeBeneficiaryDetailsAction } from '../actions';
 import { useSession } from '@/hooks/use-session';
 import { BrandedLoader } from '@/components/branded-loader';
 
@@ -49,12 +49,29 @@ export default function BeneficiaryDetailsPage() {
   
   const { userProfile: currentUserProfile, isLoading: isProfileLoading } = useSession();
   
+  const [initiativeContext, setInitiativeContext] = useState<{ type: 'campaign' | 'lead', id: string } | null>(null);
+
+  useEffect(() => {
+    if (redirectUrl) {
+      const parts = redirectUrl.split('/');
+      if (parts.includes('campaign-members') && parts[2]) {
+        setInitiativeContext({ type: 'campaign', id: parts[2] });
+      } else if (parts.includes('leads-members') && parts[2]) {
+        setInitiativeContext({ type: 'lead', id: parts[2] });
+      } else {
+        setInitiativeContext(null);
+      }
+    } else {
+        setInitiativeContext(null);
+    }
+  }, [redirectUrl]);
+
   const beneficiaryDocRef = useMemoFirebase(() => {
     if (!firestore || !beneficiaryId) return null;
     return doc(firestore, 'beneficiaries', beneficiaryId) as DocumentReference<Beneficiary>;
   }, [firestore, beneficiaryId]);
 
-  const { data: beneficiary, isLoading: isBeneficiaryLoading, error: beneficiaryError, forceRefetch } = useDoc<Beneficiary>(beneficiaryDocRef);
+  const { data: beneficiary, isLoading: isBeneficiaryLoading, error: beneficiaryError, forceRefetch } = useDoc<Beneficiary>(beneficiary);
   
   const [linkedInitiatives, setLinkedInitiatives] = useState<LinkedInitiative[]>([]);
   const [isLinksLoading, setIsLinksLoading] = useState(true);
@@ -198,16 +215,34 @@ export default function BeneficiaryDetailsPage() {
         return;
     }
 
-    const { idProofFile, idProofDeleted, kitAmount, status, ...beneficiaryData } = data;
+    const { idProofFile, idProofDeleted, kitAmount, status, zakatAllocation, ...beneficiaryData } = data;
     
-    const result = await updateMasterBeneficiaryAction(
+    const masterData: Partial<Beneficiary> = {
+        ...beneficiaryData,
+        idProofUrl,
+        isEligibleForZakat: data.isEligibleForZakat
+    };
+
+    const masterUpdateResult = await updateMasterBeneficiaryAction(
         beneficiaryId, 
-        { ...beneficiaryData, idProofUrl, isEligibleForZakat: data.isEligibleForZakat },
+        masterData,
         { id: currentUserProfile.id, name: currentUserProfile.name }
     );
     
-    if (result.success) {
-        toast({ title: 'Success', description: result.message, variant: 'success' });
+    if (masterUpdateResult.success && initiativeContext) {
+        const initiativeUpdateResult = await updateInitiativeBeneficiaryDetailsAction(
+            initiativeContext.type,
+            initiativeContext.id,
+            beneficiaryId,
+            { zakatAllocation: data.zakatAllocation }
+        );
+        if (!initiativeUpdateResult.success) {
+            toast({ title: 'Partial Success', description: `Master details saved, but failed to update Zakat Allocation for the specific initiative: ${initiativeUpdateResult.message}`, variant: 'destructive'});
+        }
+    }
+
+    if (masterUpdateResult.success) {
+        toast({ title: 'Success', description: masterUpdateResult.message, variant: 'success' });
         if (redirectUrl) {
             router.push(redirectUrl);
         } else {
@@ -215,7 +250,7 @@ export default function BeneficiaryDetailsPage() {
             setIsEditMode(false);
         }
     } else {
-        toast({ title: 'Update Failed', description: result.message, variant: 'destructive' });
+        toast({ title: 'Update Failed', description: masterUpdateResult.message, variant: 'destructive' });
     }
 
     setIsSubmitting(false);
@@ -346,7 +381,7 @@ export default function BeneficiaryDetailsPage() {
               kitAmountLabel="Kit Amount (₹)"
               isSessionLoading={isProfileLoading}
               hideKitAmount={true}
-              hideZakatAllocation={true}
+              hideZakatAllocation={!initiativeContext}
           />
         </CardContent>
       </Card>
