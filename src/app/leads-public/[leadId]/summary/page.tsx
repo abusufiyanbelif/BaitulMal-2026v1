@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useMemo, useState, useRef } from 'react';
@@ -170,7 +169,7 @@ export default function PublicLeadSummaryPage() {
         const zakatPending = zakatAllocated - zakatGiven;
 
         const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
-
+        
         const totalCollectedForGoal = Object.entries(amountsByCategory)
             .filter(([category]) => lead.allowedDonationTypes?.includes(category as DonationCategory))
             .reduce((sum, [category, amount]) => {
@@ -289,7 +288,7 @@ export default function PublicLeadSummaryPage() {
             return;
         }
         
-        let shareText = `
+        let shareText = \`
 *Assalamualaikum Warahmatullahi Wabarakatuh*
 
 *We Need Your Support!*
@@ -298,28 +297,28 @@ Join us for the *${lead.name}* initiative as we work to provide essential aid to
 
 *Our Goal:*
 ${lead.description || 'To support those in need.'}
-        `.trim().replace(/^\s+/gm, '');
+        \`.trim().replace(/^\s+/gm, '');
 
         if(fundingData) {
-            shareText += `
+            shareText += \`
 
 *Financial Update:*
 🎯 Target: ₹${fundingData.targetAmount.toLocaleString('en-IN')}
 ✅ Collected (Verified): ₹${fundingData.totalCollectedForGoal.toLocaleString('en-IN')}
 ⏳ Remaining: *₹${fundingData.remainingToCollect.toLocaleString('en-IN')}*
-            `
+            \`
         }
         
-        shareText += `
+        shareText += \`
 
 Your contribution, big or small, makes a huge difference.
 
 *Please donate and share this message.*
-        `.trim().replace(/^\s+/gm, '');
+        \`.trim().replace(/^\s+/gm, '');
 
 
         const dataToShare = {
-            title: `Lead Summary: ${lead.name}`,
+            title: \`Lead Summary: ${lead.name}\`,
             text: shareText,
             url: window.location.href,
         };
@@ -434,6 +433,27 @@ Your contribution, big or small, makes a huge difference.
                         )}
                     </CardContent>
                 </Card>
+
+                {publicDocuments.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Public Artifacts</CardTitle>
+                            <CardDescription>View photos, receipts, or other public documents related to this lead.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                {publicDocuments.map((doc) => (
+                                    <Button key={doc.url} variant="outline" asChild>
+                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
+                                            <File className="mr-2 h-4 w-4 shrink-0" />
+                                            <span className="truncate">{doc.name}</span>
+                                        </a>
+                                    </Button>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {fundingData ? (
                     <Card>
@@ -551,32 +571,12 @@ Your contribution, big or small, makes a huge difference.
                     </Card>
                 </div>
                 
-                {publicDocuments.length > 0 && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Public Artifacts</CardTitle>
-                            <CardDescription>View photos, receipts, or other public documents related to this lead.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                {publicDocuments.map((doc) => (
-                                    <Button key={doc.url} variant="outline" asChild>
-                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
-                                            <File className="mr-2 h-4 w-4 shrink-0" />
-                                            <span className="truncate">{doc.name}</span>
-                                        </a>
-                                    </Button>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
                  {fundingData && (
                     <Card>
                         <CardHeader>
                             <CardTitle>Zakat Utilization</CardTitle>
                         </CardHeader>
-                         <CardContent className="space-y-3">
+                        <CardContent className="space-y-3">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-muted-foreground">Total Zakat Collected for Lead</span>
                                 <span className="font-semibold font-mono">₹{fundingData.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>

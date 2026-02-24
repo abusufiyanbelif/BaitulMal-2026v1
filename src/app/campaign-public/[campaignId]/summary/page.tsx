@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useMemo, useState, useRef } from 'react';
@@ -152,7 +151,7 @@ export default function PublicCampaignSummaryPage() {
             
             if (campaignLink) {
                 amountForThisCampaign = campaignLink.amount;
-            } else if ((!d.linkSplit || d.linkSplit.length === 0) && (d as any).campaignId === campaign.id) {
+            } else if ((!d.linkSplit || d.linkSplit.length === 0) && d.campaignId === campaign.id) {
                 amountForThisCampaign = d.amount;
             } else {
                 return;
@@ -315,7 +314,7 @@ export default function PublicCampaignSummaryPage() {
             return;
         }
         
-        let shareText = `
+        let shareText = \`
 *Assalamualaikum Warahmatullahi Wabarakatuh*
 
 *We Need Your Support!*
@@ -324,28 +323,28 @@ Join us for the *${campaign.name}* campaign as we work to provide essential aid 
 
 *Our Goal:*
 ${campaign.description || 'To support those in need.'}
-        `.trim().replace(/^\s+/gm, '');
+        \`.trim().replace(/^\s+/gm, '');
 
         if(fundingData) {
-            shareText += `
+            shareText += \`
 
 *Financial Update:*
 🎯 Target for Kits: ₹${fundingData.targetAmount.toLocaleString('en-IN')}
 ✅ Collected (Verified): ₹${fundingData.totalCollectedForGoal.toLocaleString('en-IN')}
 ⏳ Remaining: *₹${fundingData.remainingToCollect.toLocaleString('en-IN')}*
-            `
+            \`
         }
         
-        shareText += `
+        shareText += \`
 
 Your contribution, big or small, makes a huge difference.
 
 *Please donate and share this message.*
-        `.trim().replace(/^\s+/gm, '');
+        \`.trim().replace(/^\s+/gm, '');
 
 
         const dataToShare = {
-            title: `Campaign Summary: ${campaign.name}`,
+            title: \`Campaign Summary: ${campaign.name}\`,
             text: shareText,
             url: window.location.href,
         };
@@ -456,6 +455,27 @@ Your contribution, big or small, makes a huge difference.
                         )}
                     </CardContent>
                 </Card>
+
+                {publicDocuments.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Public Artifacts</CardTitle>
+                            <CardDescription>View photos, receipts, or other public documents related to this campaign.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                {publicDocuments.map((doc) => (
+                                    <Button key={doc.url} variant="outline" asChild>
+                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
+                                            <File className="mr-2 h-4 w-4 shrink-0" />
+                                            <span className="truncate">{doc.name}</span>
+                                        </a>
+                                    </Button>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {fundingData ? (
                     <Card>
@@ -573,32 +593,12 @@ Your contribution, big or small, makes a huge difference.
                     </Card>
                 </div>
                 
-                {publicDocuments.length > 0 && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Public Artifacts</CardTitle>
-                            <CardDescription>View photos, receipts, or other public documents related to this campaign.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                {publicDocuments.map((doc) => (
-                                    <Button key={doc.url} variant="outline" asChild>
-                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
-                                            <File className="mr-2 h-4 w-4 shrink-0" />
-                                            <span className="truncate">{doc.name}</span>
-                                        </a>
-                                    </Button>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-                 {fundingData && (
+                {fundingData && (
                     <Card>
                         <CardHeader>
                             <CardTitle>Zakat Utilization</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                         <CardContent className="space-y-3">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-muted-foreground">Total Zakat Collected for Campaign</span>
                                 <span className="font-semibold font-mono">₹{fundingData.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
@@ -652,38 +652,47 @@ Your contribution, big or small, makes a huge difference.
                                           if (!group) return null;
                                           const { category, beneficiariesByMemberCount } = group;
 
-                                          const categoryIsCollapsed = collapsedGroups[categoryId];
+                                          const isMultiGroup = Object.keys(beneficiariesByMemberCount).length > 1;
+                                          const categoryIsCollapsed = isMultiGroup && collapsedGroups[categoryId];
+
                                           const totalBeneficiariesInCategory = Object.values(beneficiariesByMemberCount).reduce((sum, benList) => sum + benList.length, 0);
-                                          
-                                          const subGroupTotals = Object.values(beneficiariesByMemberCount).reduce((sum, benList) => {
+
+                                          const groupTotalAmount = Object.values(beneficiariesByMemberCount).reduce((sum, benList) => {
                                               if (benList.length === 0) return sum;
                                               const kitAmount = benList[0].kitAmount || 0;
                                               return sum + (kitAmount * benList.length);
                                           }, 0);
-
+                                          
                                           const categoryName = category.name === 'Uncategorized' 
                                               ? 'Uncategorized'
                                               : (category.minMembers === undefined || category.minMembers === category.maxMembers)
                                                   ? `${category.name} (${category.minMembers ?? 'Any'} Members)`
                                                   : `${category.name} (${category.minMembers}-${category.maxMembers} Members)`;
-                                          
-                                          const isEffectivelyRanged = category.name !== 'Uncategorized' && category.minMembers !== category.maxMembers && Object.keys(beneficiariesByMemberCount).length > 1;
 
                                           return (
                                               <React.Fragment key={categoryId}>
-                                                  <TableRow className="bg-muted hover:bg-muted cursor-pointer" onClick={() => toggleGroup(categoryId)}>
-                                                      <TableCell colSpan={isEffectivelyRanged ? 1 : 4} className="font-bold">
-                                                          <div className="flex items-center gap-2">
-                                                              {isEffectivelyRanged && (categoryIsCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />)}
-                                                              {categoryName}
-                                                          </div>
-                                                      </TableCell>
-                                                      {isEffectivelyRanged && <TableCell className="text-center font-bold">{totalBeneficiariesInCategory}</TableCell>}
-                                                      {isEffectivelyRanged && <TableCell className="text-right font-bold font-mono"></TableCell>}
-                                                      {isEffectivelyRanged && <TableCell className="text-right font-bold font-mono">₹{subGroupTotals.toLocaleString('en-IN')}</TableCell>}
-                                                  </TableRow>
-
-                                                  {!categoryIsCollapsed && Object.keys(beneficiariesByMemberCount).sort((a, b) => Number(a) - Number(b)).map(memberCountStr => {
+                                                  {isMultiGroup ? (
+                                                    <TableRow className="bg-muted hover:bg-muted cursor-pointer" onClick={() => toggleGroup(categoryId)}>
+                                                        <TableCell className="font-bold">
+                                                            <div className="flex items-center gap-2">
+                                                                {categoryIsCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                                                {categoryName}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="text-center font-bold">{totalBeneficiariesInCategory}</TableCell>
+                                                        <TableCell className="text-right font-bold font-mono"></TableCell>
+                                                        <TableCell className="text-right font-bold font-mono">₹{groupTotalAmount.toLocaleString('en-IN')}</TableCell>
+                                                    </TableRow>
+                                                  ) : (
+                                                    <TableRow>
+                                                        <TableCell className="font-medium">{categoryName}</TableCell>
+                                                        <TableCell className="text-center">{totalBeneficiariesInCategory}</TableCell>
+                                                        <TableCell className="text-right font-mono">₹{(Object.values(beneficiariesByMemberCount)[0]?.[0]?.kitAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                                        <TableCell className="text-right font-mono">₹{groupTotalAmount.toLocaleString('en-IN')}</TableCell>
+                                                    </TableRow>
+                                                  )}
+                                                  
+                                                  {isMultiGroup && !categoryIsCollapsed && Object.keys(beneficiariesByMemberCount).sort((a, b) => Number(a) - Number(b)).map(memberCountStr => {
                                                       const memberCount = Number(memberCountStr);
                                                       const subGroupBeneficiaries = beneficiariesByMemberCount[memberCount];
                                                       if (subGroupBeneficiaries.length === 0) return null;
