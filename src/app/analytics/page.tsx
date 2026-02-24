@@ -6,7 +6,7 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, Timestamp } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Users, FolderKanban, Lightbulb, HandHelping, DollarSign, BarChart, CalendarIcon, Database } from 'lucide-react';
+import { ArrowLeft, Users, FolderKanban, Lightbulb, HandHelping, DollarSign, BarChart, CalendarIcon, Database, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useMemo, useState, useEffect } from 'react';
@@ -26,6 +26,7 @@ import { format, startOfMonth, endOfMonth, startOfQuarter, endOfYear, subMonths,
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StorageAnalytics } from '@/components/storage-analytics';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 function StatCard({ title, value, icon: Icon, isLoading }: { title: string, value: number, icon: React.ComponentType<{className?: string}>, isLoading: boolean }) {
     return (
@@ -226,6 +227,25 @@ export default function AnalyticsPage() {
         color: "hsl(var(--chart-2))",
       },
     } satisfies ChartConfig;
+    
+    const documentDistributionChartConfig = {
+        Users: { label: "Users", color: "hsl(var(--chart-1))" },
+        Campaigns: { label: "Campaigns", color: "hsl(var(--chart-2))" },
+        Leads: { label: "Leads", color: "hsl(var(--chart-3))" },
+        Beneficiaries: { label: "Beneficiaries", color: "hsl(var(--chart-4))" },
+        Donations: { label: "Donations", color: "hsl(var(--chart-5))" },
+    } satisfies ChartConfig;
+
+    const documentDistributionData = useMemo(() => {
+        if (isLoading) return [];
+        return [
+            { name: 'Users', value: users?.length || 0, fill: 'var(--color-Users)' },
+            { name: 'Campaigns', value: campaigns?.length || 0, fill: 'var(--color-Campaigns)' },
+            { name: 'Leads', value: leads?.length || 0, fill: 'var(--color-Leads)' },
+            { name: 'Beneficiaries', value: beneficiaries?.length || 0, fill: 'var(--color-Beneficiaries)' },
+            { name: 'Donations', value: donations?.length || 0, fill: 'var(--color-Donations)' },
+        ].filter(item => item.value > 0);
+    }, [isLoading, users, campaigns, leads, beneficiaries, donations]);
 
 
     return (
@@ -240,9 +260,10 @@ export default function AnalyticsPage() {
             </div>
             
             <Tabs defaultValue="general" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsList className="grid w-full grid-cols-3 mb-6">
                     <TabsTrigger value="general"><BarChart className="mr-2 h-4 w-4" />General Analytics</TabsTrigger>
                     <TabsTrigger value="storage"><Database className="mr-2 h-4 w-4" />Storage Analytics</TabsTrigger>
+                    <TabsTrigger value="database"><Database className="mr-2 h-4 w-4" />Database Analytics</TabsTrigger>
                 </TabsList>
                 <TabsContent value="general">
                     <div className="space-y-6">
@@ -420,6 +441,69 @@ export default function AnalyticsPage() {
                 </TabsContent>
                 <TabsContent value="storage">
                     <StorageAnalytics />
+                </TabsContent>
+                <TabsContent value="database">
+                    <div className="space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-3xl">Database Analytics</CardTitle>
+                                <CardDescription>An overview of document counts across your main Firestore collections.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                <StatCard title="User Profiles" value={users?.length || 0} icon={Users} isLoading={isLoading} />
+                                <StatCard title="Campaigns" value={campaigns?.length || 0} icon={FolderKanban} isLoading={isLoading} />
+                                <StatCard title="Leads" value={leads?.length || 0} icon={Lightbulb} isLoading={isLoading} />
+                                <StatCard title="Master Beneficiaries" value={beneficiaries?.length || 0} icon={HandHelping} isLoading={isLoading} />
+                                <StatCard title="Donations" value={donations?.length || 0} icon={DollarSign} isLoading={isLoading} />
+                            </CardContent>
+                        </Card>
+
+                        <div className="grid gap-6 lg:grid-cols-2">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Document Distribution</CardTitle>
+                                    <CardDescription>The proportion of documents in each main collection.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                {isClient ? (
+                                    <ChartContainer config={documentDistributionChartConfig} className="h-[300px] w-full">
+                                        <PieChart>
+                                            <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                            <Pie data={documentDistributionData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+                                                {documentDistributionData.map((entry) => (
+                                                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                                                ))}
+                                            </Pie>
+                                            <ChartLegend content={<ChartLegendContent />} />
+                                        </PieChart>
+                                    </ChartContainer>
+                                ) : <Skeleton className="h-[300px] w-full" />}
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Detailed Usage Metrics</CardTitle>
+                                    <CardDescription>Information about database reads, writes, and deletes.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Alert>
+                                        <Database className="h-4 w-4" />
+                                        <AlertTitle>View Usage in Firebase Console</AlertTitle>
+                                        <AlertDescription>
+                                            <p>For detailed, real-time metrics on database operations (document reads, writes, deletes), network usage, and storage, please visit your Firebase Console.</p>
+                                            <p className="mt-2">The "Activity Over Time" chart in the General Analytics tab can provide insight into document creation trends.</p>
+                                            <Button asChild variant="link" className="p-0 h-auto mt-2">
+                                                <a href={`https://console.firebase.google.com/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/firestore/usage`} target="_blank" rel="noopener noreferrer">
+                                                    Go to Firebase Console Usage <ExternalLink className="ml-1 h-3 w-3" />
+                                                </a>
+                                            </Button>
+                                        </AlertDescription>
+                                    </Alert>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
                 </TabsContent>
             </Tabs>
         </div>
