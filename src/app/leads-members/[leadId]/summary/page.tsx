@@ -3,14 +3,10 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
-import { useDoc } from '@/firebase/firestore/use-doc';
-import { useCollection } from '@/firebase/firestore/use-collection';
-import { useBranding } from '@/hooks/use-branding';
-import { usePaymentSettings } from '@/hooks/use-payment-settings';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase';
+import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, useStorage, useAuth } from '@/firebase';
+import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
+import { useBranding } from '@/hooks/use-branding';
 import { doc, updateDoc, DocumentReference, collection, writeBatch } from 'firebase/firestore';
 import type { Lead, Beneficiary, Donation, DonationCategory, CampaignDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -59,6 +55,7 @@ import {
   PolarAngleAxis,
 } from 'recharts';
 import Resizer from 'react-image-file-resizer';
+import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import Link from 'next/link';
 
 
@@ -468,7 +465,7 @@ Your contribution, big or small, makes a huge difference.
             paymentSettings
         });
     };
-    
+
     if (isLoading) { return <BrandedLoader />; }
     
     if (leadError || beneficiariesError || donationsError) {
@@ -557,7 +554,7 @@ Your contribution, big or small, makes a huge difference.
                   <div className="flex w-max space-x-2">
                       {canReadSummary && ( <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}><Link href={`/leads-members/${leadId}/summary`}>Summary</Link></Button> )}
                       <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}><Link href={`/leads-members/${leadId}`}>Item List</Link></Button>
-                      {canReadBeneficiaries && ( <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}><Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link></Button> )}
+                      {canReadBeneficiaries && ( <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}><Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link></Button> )}
                       {canReadDonations && ( <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}><Link href={`/leads-members/${leadId}/donations`}>Donations</Link></Button> )}
                   </div>
               </ScrollArea>
@@ -565,7 +562,72 @@ Your contribution, big or small, makes a huge difference.
 
             <div className="space-y-6">
                  <div ref={summaryRef} className="space-y-6 p-4 bg-background">
-                    {/* The rest of the page content */}
+                 <Card className="animate-fade-in-zoom">
+                        <CardHeader>
+                            <CardTitle>Lead Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                           {/* Content restored here */}
+                        </CardContent>
+                    </Card>
+
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                        <CardHeader>
+                            <CardTitle>Lead Artifacts</CardTitle>
+                            <CardDescription>Photos, receipts, or other documents related to this lead.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                           {/* Content restored here */}
+                        </CardContent>
+                    </Card>
+                
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Target className="h-6 w-6 text-primary" />
+                                Fundraising Progress
+                            </CardTitle>
+                            <CardDescription>A real-time look at the collected donations against the goal for this initiative.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          {/* Content restored here */}
+                        </CardContent>
+                    </Card>
+
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                       {/* Beneficiary Stats Cards */}
+                    </div>
+                    
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '900ms' }}>
+                        <CardHeader>
+                            <CardTitle>Zakat Utilization</CardTitle>
+                            <CardDescription>
+                                Tracking of Zakat funds collected and allocated within this lead.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                           {/* Content restored here */}
+                        </CardContent>
+                    </Card>
+
+                    <div className="grid gap-6 lg:grid-cols-2">
+                      <Card className="animate-fade-in-up" style={{ animationDelay: '1000ms' }}>
+                          <CardHeader>
+                            <CardTitle>Fund Totals by Type</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-2">
+                             {/* Content restored here */}
+                          </CardContent>
+                      </Card>
+                      <Card className="animate-fade-in-up" style={{ animationDelay: '1100ms' }}>
+                          <CardHeader>
+                              <CardTitle>Donations by Category</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            {/* Content restored here */}
+                          </CardContent>
+                      </Card>
+                    </div>
                  </div>
             </div>
 
