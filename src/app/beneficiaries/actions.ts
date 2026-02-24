@@ -47,25 +47,38 @@ export async function updateMasterBeneficiaryAction(beneficiaryId: string, data:
             updatedByName: updatedBy.name,
         };
 
-        // 1. Update the master document, creating it if it doesn't exist to prevent errors.
         batch.set(masterBeneficiaryRef, updatePayload, { merge: true });
 
-        // 2. Find and update all instances in subcollections
+        // Explicitly define which master fields to propagate to sub-collections.
+        // This prevents overwriting initiative-specific fields like `status` or `kitAmount`.
+        const fieldsToPropagate: (keyof Beneficiary)[] = [
+            'name', 'address', 'phone', 'age', 'occupation', 'members',
+            'earningMembers', 'male', 'female', 'idProofType', 'idNumber',
+            'idProofUrl', 'idProofFilename', 'idProofIsPublic', 'referralBy', 'notes',
+            'isEligibleForZakat', 'zakatAllocation'
+        ];
+
+        const subCollectionData: Partial<Beneficiary> = {};
+        for (const field of fieldsToPropagate) {
+            if (field in data) {
+                (subCollectionData as any)[field] = (data as any)[field];
+            }
+        }
+        
+        // Find and update all instances in subcollections
         const allInstancesQuery = adminDb.collectionGroup('beneficiaries').where('id', '==', beneficiaryId);
         const allInstancesSnap = await allInstancesQuery.get();
-        
-        // Exclude initiative-specific fields from being propagated to sub-collections.
-        const { status, kitAmount, ...subCollectionData } = data;
 
-        allInstancesSnap.forEach(docSnap => {
-            // Don't re-update the master document that was found in the collection group query
-            if (docSnap.ref.path !== masterBeneficiaryRef.path) {
-                // Only propagate master data fields, not initiative-specific ones like status or kit amount.
-                batch.set(docSnap.ref, subCollectionData, { merge: true });
-            }
-        });
+        if (Object.keys(subCollectionData).length > 0) {
+            allInstancesSnap.forEach(docSnap => {
+                // Don't re-update the master document that was found in the collection group query
+                if (docSnap.ref.path !== masterBeneficiaryRef.path) {
+                    batch.set(docSnap.ref, subCollectionData, { merge: true });
+                }
+            });
+        }
 
-        // 3. Commit the batch
+        // Commit the batch
         await batch.commit();
 
         revalidatePath(`/beneficiaries/${beneficiaryId}`);

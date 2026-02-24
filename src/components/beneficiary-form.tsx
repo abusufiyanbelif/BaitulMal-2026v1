@@ -126,6 +126,14 @@ export function BeneficiaryForm({
     const [preview, setPreview] = useState<string | null>(beneficiary?.idProofUrl || null);
     
     const membersValue = watch('members');
+    const isEligibleForZakat = watch('isEligibleForZakat');
+
+    useEffect(() => {
+        // When a user un-checks "Eligible for Zakat", automatically reset the allocation amount to 0.
+        if (!isEligibleForZakat && getValues('zakatAllocation') !== 0) {
+            setValue('zakatAllocation', 0, { shouldDirty: true });
+        }
+    }, [isEligibleForZakat, setValue, getValues]);
 
     useEffect(() => {
         const isRationStyle = itemCategories.some(cat => cat.minMembers !== undefined && cat.maxMembers !== undefined);
