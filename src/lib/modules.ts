@@ -103,6 +103,7 @@ export const modules = [
   { id: 'extractor', name: 'Extractor', permissions: simpleReadPermission },
   { id: 'storyCreator', name: 'Story Creator', permissions: simpleReadPermission },
   { id: 'diagnostics', name: 'Diagnostics', permissions: simpleReadPermission },
+  { id: 'analytics', name: 'Data Analytics', permissions: simpleReadPermission },
   { 
     id: 'settings', 
     name: 'Settings', 
