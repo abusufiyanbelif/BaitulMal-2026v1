@@ -1,4 +1,5 @@
 
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,8 +29,13 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {leads.map(lead => (
-                <Card key={lead.id} className="flex flex-col hover:shadow-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 cursor-pointer overflow-hidden" onClick={() => router.push(`/leads-public/${lead.id}/summary`)}>
+            {leads.map((lead, index) => (
+                <Card 
+                    key={lead.id} 
+                    className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden" 
+                    style={{ animationDelay: `${100 + index * 50}ms`, animationFillMode: 'backwards' }}
+                    onClick={() => router.push(`/leads-public/${lead.id}/summary`)}
+                >
                     <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
                         {lead.imageUrl ? (
                             <Image

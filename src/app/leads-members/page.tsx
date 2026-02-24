@@ -221,8 +221,12 @@ export default function LeadPage() {
   
   const isLoading = areLeadsLoading || isProfileLoading || isDeleting || areDonationsLoading;
 
-  const LeadCard = ({ lead }: { lead: Lead & { collected: number; progress: number; }}) => (
-    <Card className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-zoom overflow-hidden" onClick={() => router.push(`/leads-members/${lead.id}/summary`)}>
+  const LeadCard = ({ lead, index }: { lead: Lead & { collected: number; progress: number; }, index: number }) => (
+    <Card 
+        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden" 
+        style={{ animationDelay: `${100 + index * 50}ms`, animationFillMode: 'backwards' }}
+        onClick={() => router.push(`/leads-members/${lead.id}/summary`)}
+    >
       <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
         {lead.imageUrl ? (
             <Image
@@ -324,17 +328,18 @@ export default function LeadPage() {
             <Badge variant="outline">{lead.authenticityStatus || 'N/A'}</Badge>
             <Badge variant="outline">{lead.publicVisibility || 'N/A'}</Badge>
         </div>
+        <p className="text-sm text-muted-foreground line-clamp-2 flex-grow">{lead.description || "No description provided."}</p>
           {(lead.targetAmount || 0) > 0 && (
             <div className="space-y-1 pt-1">
                 <Progress value={lead.progress} className="h-2" />
                 <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>₹{lead.collected.toLocaleString('en-IN')}</span>
+                    <span>₹{lead.collected.toLocaleString('en-IN')} raised</span>
                     <span>Goal: ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</span>
                 </div>
             </div>
         )}
     </CardContent>
-    <CardFooter className="p-2">
+     <CardFooter className="p-2">
         <Button asChild className="w-full" size="sm">
             <Link href={`/leads-members/${lead.id}/summary`}>
                 View Details
@@ -455,7 +460,7 @@ export default function LeadPage() {
                     <section>
                         <h2 className="text-2xl font-bold mb-4">Active Leads ({activeLeads.length})</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {activeLeads.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
+                          {activeLeads.map((lead, index) => <LeadCard key={lead.id} lead={lead} index={index} />)}
                         </div>
                     </section>
                 )}
@@ -463,7 +468,7 @@ export default function LeadPage() {
                     <section>
                         <h2 className="text-2xl font-bold mb-4">Upcoming Leads ({upcomingLeads.length})</h2>
                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {upcomingLeads.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
+                          {upcomingLeads.map((lead, index) => <LeadCard key={lead.id} lead={lead} index={index} />)}
                         </div>
                     </section>
                 )}
@@ -471,7 +476,7 @@ export default function LeadPage() {
                     <section>
                         <h2 className="text-2xl font-bold mb-4">Completed Leads ({completedLeads.length})</h2>
                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {completedLeads.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
+                          {completedLeads.map((lead, index) => <LeadCard key={lead.id} lead={lead} index={index} />)}
                         </div>
                     </section>
                 )}
@@ -522,6 +527,7 @@ export default function LeadPage() {
     </>
   );
 }
+
 
 
 

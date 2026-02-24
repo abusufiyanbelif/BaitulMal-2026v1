@@ -243,8 +243,12 @@ export default function CampaignPage() {
 
   const isLoading = areCampaignsLoading || isProfileLoading || isDeleting || areDonationsLoading;
   
-  const CampaignCard = ({ campaign }: { campaign: Campaign & { collected: number; progress: number; }}) => (
-    <Card className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-zoom overflow-hidden" onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}>
+  const CampaignCard = ({ campaign, index }: { campaign: Campaign & { collected: number; progress: number; }, index: number }) => (
+    <Card 
+        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden" 
+        style={{ animationDelay: `${100 + index * 50}ms`, animationFillMode: 'backwards' }}
+        onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}
+    >
       <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
         {campaign.imageUrl ? (
             <Image
@@ -478,7 +482,7 @@ export default function CampaignPage() {
                     <section>
                         <h2 className="text-2xl font-bold mb-4">Active Campaigns ({activeCampaigns.length})</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {activeCampaigns.map((campaign) => <CampaignCard key={campaign.id} campaign={campaign} />)}
+                          {activeCampaigns.map((campaign, index) => <CampaignCard key={campaign.id} campaign={campaign} index={index} />)}
                         </div>
                     </section>
                 )}
@@ -486,7 +490,7 @@ export default function CampaignPage() {
                     <section>
                         <h2 className="text-2xl font-bold mb-4">Upcoming Campaigns ({upcomingCampaigns.length})</h2>
                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {upcomingCampaigns.map((campaign) => <CampaignCard key={campaign.id} campaign={campaign} />)}
+                          {upcomingCampaigns.map((campaign, index) => <CampaignCard key={campaign.id} campaign={campaign} index={index} />)}
                         </div>
                     </section>
                 )}
@@ -494,7 +498,7 @@ export default function CampaignPage() {
                     <section>
                         <h2 className="text-2xl font-bold mb-4">Completed Campaigns ({completedCampaigns.length})</h2>
                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {completedCampaigns.map((campaign) => <CampaignCard key={campaign.id} campaign={campaign} />)}
+                          {completedCampaigns.map((campaign, index) => <CampaignCard key={campaign.id} campaign={campaign} index={index} />)}
                         </div>
                     </section>
                 )}
@@ -544,6 +548,7 @@ export default function CampaignPage() {
     </>
   );
 }
+
 
 
 

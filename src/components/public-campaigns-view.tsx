@@ -1,4 +1,5 @@
 
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -26,8 +27,13 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
     }
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {campaigns.map(campaign => (
-                <Card key={campaign.id} className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-zoom overflow-hidden" onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}>
+            {campaigns.map((campaign, index) => (
+                <Card 
+                    key={campaign.id} 
+                    className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden" 
+                    style={{ animationDelay: `${100 + index * 50}ms`, animationFillMode: 'backwards' }}
+                    onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}
+                >
                     <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
                         {campaign.imageUrl ? (
                             <Image
