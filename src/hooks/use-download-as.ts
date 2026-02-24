@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { RefObject } from 'react';
@@ -50,7 +49,7 @@ export function useDownloadAs() {
         const canvas = await html2canvas(element, {
             scale: 2,
             useCORS: true,
-            backgroundColor: null,
+            backgroundColor: 'hsl(var(--background))', // Use the background color for capture
         });
 
         const [logoDataUrl, qrDataUrl] = await Promise.all([
@@ -62,17 +61,21 @@ export function useDownloadAs() {
         const qrImg = qrDataUrl ? await new Promise<HTMLImageElement>(res => { const i = new Image(); i.onload = () => res(i); i.src = qrDataUrl; }) : null;
 
         if (format === 'png') {
-            const PADDING = 50;
-            const HEADER_HEIGHT = 100;
-            const FOOTER_HEIGHT = 180;
+            const finalWidth = 1200;
+            const PADDING = 60;
+            const HEADER_HEIGHT = 120;
+            const FOOTER_HEIGHT = 200;
             const COPYRIGHT_HEIGHT = 40;
-            
+
+            const contentWidth = finalWidth - PADDING * 2;
+            const contentHeight = (canvas.height * contentWidth) / canvas.width;
+
             const finalCanvas = document.createElement('canvas');
-            finalCanvas.width = canvas.width + PADDING * 2;
-            finalCanvas.height = canvas.height + HEADER_HEIGHT + FOOTER_HEIGHT + PADDING + COPYRIGHT_HEIGHT;
+            finalCanvas.width = finalWidth;
+            finalCanvas.height = contentHeight + HEADER_HEIGHT + FOOTER_HEIGHT + PADDING * 2 + COPYRIGHT_HEIGHT;
             const ctx = finalCanvas.getContext('2d')!;
             
-            ctx.fillStyle = 'hsl(140 40% 96%)';
+            ctx.fillStyle = 'hsl(var(--background))';
             ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
             // Header
@@ -83,25 +86,25 @@ export function useDownloadAs() {
                 ctx.drawImage(logoImg, PADDING, PADDING / 2, logoWidth, logoHeight);
                 headerTextX = PADDING + logoWidth + 30;
             }
-            ctx.fillStyle = 'hsl(142 70% 25%)'; // Use concrete color
-            ctx.font = 'bold 32px sans-serif';
+            ctx.fillStyle = 'hsl(var(--foreground))';
+            ctx.font = 'bold 36px sans-serif';
             ctx.textBaseline = 'middle';
-            ctx.fillText(brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur', headerTextX, (PADDING / 2) + 45);
+            ctx.fillText(brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur', headerTextX, HEADER_HEIGHT / 2);
 
             // Title
-            ctx.font = 'bold 28px sans-serif';
+            ctx.font = 'bold 30px sans-serif';
             ctx.textBaseline = 'alphabetic';
-            ctx.fillText(documentTitle, PADDING, HEADER_HEIGHT + PADDING/2);
+            ctx.fillText(documentTitle, PADDING, HEADER_HEIGHT + PADDING - 10);
             
             // Content
-            ctx.drawImage(canvas, PADDING, HEADER_HEIGHT + PADDING);
+            ctx.drawImage(canvas, PADDING, HEADER_HEIGHT + PADDING, contentWidth, contentHeight);
             
             // Watermark
             if (logoImg) {
-                const wmScale = 0.6;
+                const wmScale = 0.5;
                 const wmWidth = finalCanvas.width * wmScale;
                 const wmHeight = (logoImg.height / logoImg.width) * wmWidth;
-                ctx.globalAlpha = 0.08;
+                ctx.globalAlpha = 0.05;
                 ctx.drawImage(logoImg, (finalCanvas.width - wmWidth) / 2, (finalCanvas.height - wmHeight) / 2, wmWidth, wmHeight);
                 ctx.globalAlpha = 1.0;
             }
@@ -109,24 +112,25 @@ export function useDownloadAs() {
             // Footer
             const footerY = finalCanvas.height - FOOTER_HEIGHT - COPYRIGHT_HEIGHT;
             if (qrImg) {
-                const qrSize = 150;
-                ctx.drawImage(qrImg, finalCanvas.width - PADDING - qrSize, footerY + 15, qrSize, qrSize);
+                const qrSize = 180;
+                ctx.drawImage(qrImg, finalCanvas.width - PADDING - qrSize, footerY, qrSize, qrSize);
             }
-            ctx.fillStyle = 'hsl(142 70% 25%)'; // Use concrete color
-            ctx.font = 'bold 22px sans-serif';
-            ctx.fillText('For Donations & Contact', PADDING, footerY + 30);
-            ctx.font = '18px sans-serif';
-            let textY = footerY + 65;
-            if (paymentSettings?.upiId) { ctx.fillText(`UPI: ${paymentSettings.upiId}`, PADDING, textY); textY += 28; }
-            if (paymentSettings?.contactPhone) { ctx.fillText(`Phone: ${paymentSettings.contactPhone}`, PADDING, textY); textY += 28; }
-            if (paymentSettings?.website) { ctx.fillText(`Website: ${paymentSettings.website}`, PADDING, textY); textY += 28; }
+            ctx.fillStyle = 'hsl(var(--foreground))';
+            ctx.font = 'bold 24px sans-serif';
+            ctx.fillText('For Donations & Contact', PADDING, footerY + 20);
+            ctx.font = '20px sans-serif';
+            let textY = footerY + 60;
+            const lineSpacing = 32;
+            if (paymentSettings?.upiId) { ctx.fillText(`UPI: ${paymentSettings.upiId}`, PADDING, textY); textY += lineSpacing; }
+            if (paymentSettings?.contactPhone) { ctx.fillText(`Phone: ${paymentSettings.contactPhone}`, PADDING, textY); textY += lineSpacing; }
+            if (paymentSettings?.website) { ctx.fillText(`Website: ${paymentSettings.website}`, PADDING, textY); textY += lineSpacing; }
             if (paymentSettings?.address) { ctx.fillText(paymentSettings.address, PADDING, textY); }
 
             // Copyright
             ctx.textAlign = 'center';
-            ctx.font = '14px sans-serif';
-            ctx.fillStyle = 'hsl(142 25% 40%)'; // Use concrete color
-            ctx.fillText(paymentSettings?.copyright || '© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved.', finalCanvas.width / 2, finalCanvas.height - 20);
+            ctx.font = '16px sans-serif';
+            ctx.fillStyle = 'hsl(var(--muted-foreground))';
+            ctx.fillText(paymentSettings?.copyright || '© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved.', finalCanvas.width / 2, finalCanvas.height - 25);
 
             const link = document.createElement('a');
             link.download = `${documentName}.png`;
