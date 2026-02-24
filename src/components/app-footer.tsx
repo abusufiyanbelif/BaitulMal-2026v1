@@ -71,8 +71,8 @@ export function AppFooter() {
   const hasOrgInfo = paymentSettings?.regNo || paymentSettings?.pan || paymentSettings?.address;
   const hasCopyright = paymentSettings?.copyright;
 
-  if (!isLoading && !hasPaymentInfo && !hasContactInfo && !hasOrgInfo && !hasCopyright) {
-    return null; // Don't render footer if no settings are found and not loading
+  if (pathname === '/login' || (!isLoading && !hasPaymentInfo && !hasContactInfo && !hasOrgInfo && !hasCopyright)) {
+    return null; // Don't render footer if no settings are found and not loading, or on login page
   }
 
   return (
