@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
 import { useDoc } from '@/firebase/firestore/use-doc';
@@ -11,11 +11,7 @@ import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { doc, collection, updateDoc, query, where, DocumentReference } from 'firebase/firestore';
-import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import Link from 'next/link';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
-import Resizer from 'react-image-file-resizer';
+import { doc, updateDoc, DocumentReference, collection, writeBatch } from 'firebase/firestore';
 import type { Lead, Beneficiary, Donation, DonationCategory, CampaignDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -26,6 +22,8 @@ import { ArrowLeft, Loader2, Users, Edit, Save, Wallet, Share2, Hourglass, LogIn
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
 import { Label } from '@/components/ui/label';
@@ -44,6 +42,24 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { FileUploader } from '@/components/file-uploader';
 import { Switch } from '@/components/ui/switch';
 import { BrandedLoader } from '@/components/branded-loader';
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  RadialBarChart,
+  RadialBar,
+  PolarAngleAxis,
+} from 'recharts';
+import Resizer from 'react-image-file-resizer';
+import Link from 'next/link';
 
 
 const donationCategoryChartConfig = {
@@ -152,6 +168,10 @@ export default function LeadSummaryPage() {
       }
     }, [editableLead.purpose, editMode]);
     
+    const handleFieldChange = (field: keyof Lead, value: any) => {
+        setEditableLead(p => (p ? { ...p, [field]: value } : null));
+    };
+
     const handleImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
@@ -502,39 +522,129 @@ Your contribution, big or small, makes a huge difference.
             <div className="space-y-6" ref={summaryRef}>
                 <Card>
                     <CardHeader><CardTitle>Lead Details</CardTitle></CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-6">
                          {editMode ? (
-                            <div className="space-y-2">
-                                <Label>Header Image</Label>
-                                <Input id="imageFile" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} className="hidden" />
-                                <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
-                                    {imagePreview ? (
-                                        <>
-                                            <Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" />
-                                            <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}>
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </>
-                                    ) : (
-                                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                            <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
-                                            <p className="mb-2 text-sm text-center text-muted-foreground">
-                                                <span className="font-semibold text-primary">Click to upload</span> or drag and drop
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">PNG, JPG, WEBP recommended</p>
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <Label>Header Image</Label>
+                                    <Input id="imageFile" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} className="hidden" />
+                                    <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
+                                        {imagePreview ? (
+                                            <>
+                                                <Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" />
+                                                <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}>
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </>
+                                        ) : (
+                                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
+                                                <p className="mb-2 text-sm text-center text-muted-foreground">
+                                                    <span className="font-semibold text-primary">Click to upload</span> or drag and drop
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP recommended</p>
+                                            </div>
+                                        )}
+                                    </label>
+                                </div>
+                                <div>
+                                    <Label htmlFor="description">Description</Label>
+                                    <Textarea id="description" value={editableLead.description} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1" rows={4} />
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <Label>Purpose</Label>
+                                        <Select value={editableLead.purpose} onValueChange={(value) => setEditableLead(p => ({ ...p, purpose: value as any, category: '' }))} disabled={!canUpdate}>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectContent>{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                    </div>
+                                    {availableCategories.length > 0 && (
+                                        <div className="space-y-1">
+                                            <Label>Category</Label>
+                                            <Select value={editableLead.category} onValueChange={(value) => handleFieldChange('category', value)} disabled={!canUpdate}>
+                                                <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+                                                <SelectContent>{availableCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
+                                            </Select>
                                         </div>
                                     )}
-                                </label>
+                                </div>
+                                {editableLead.purpose === 'Other' && (
+                                    <div className="space-y-1">
+                                        <Label>Details for 'Other' Purpose</Label>
+                                        <Input value={editableLead.purposeDetails || ''} onChange={(e) => handleFieldChange('purposeDetails', e.target.value)} disabled={!canUpdate} />
+                                    </div>
+                                )}
+                                {editableLead.category === 'Other' && (
+                                    <div className="space-y-1">
+                                        <Label>Details for 'Other' Category</Label>
+                                        <Input value={editableLead.categoryDetails || ''} onChange={(e) => handleFieldChange('categoryDetails', e.target.value)} disabled={!canUpdate} />
+                                    </div>
+                                )}
+                                <div className="space-y-2">
+                                    <Label>Donation Types for Fundraising</Label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-md">
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox id="lead-select-all-types" checked={editableLead.allowedDonationTypes?.length === donationCategories.length} onCheckedChange={(checked) => handleFieldChange('allowedDonationTypes', checked ? [...donationCategories] : [])} />
+                                            <Label htmlFor="lead-select-all-types" className="font-bold">Any</Label>
+                                        </div>
+                                        {donationCategories.map((type) => (
+                                            <div key={type} className="flex items-center space-x-2">
+                                                <Checkbox id={`lead-type-${type}`} checked={editableLead.allowedDonationTypes?.includes(type as DonationCategory)}
+                                                    onCheckedChange={(checked) => {
+                                                        const currentTypes = editableLead.allowedDonationTypes || [];
+                                                        const newTypes = checked ? [...currentTypes, type as DonationCategory] : currentTypes.filter(t => t !== type);
+                                                        handleFieldChange('allowedDonationTypes', newTypes);
+                                                    }}
+                                                />
+                                                <Label htmlFor={`lead-type-${type}`}>{type}</Label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="lead-startDate">Start Date</Label>
+                                        <Input id="lead-startDate" type="date" value={editableLead.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="lead-endDate">End Date</Label>
+                                        <Input id="lead-endDate" type="date" value={editableLead.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <Label>Authenticity</Label>
+                                        <Select value={editableLead.authenticityStatus} onValueChange={(value) => handleFieldChange('authenticityStatus', value as any)}>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Pending Verification">Pending Verification</SelectItem>
+                                                <SelectItem value="Verified">Verified</SelectItem>
+                                                <SelectItem value="On Hold">On Hold</SelectItem>
+                                                <SelectItem value="Rejected">Rejected</SelectItem>
+                                                <SelectItem value="Need More Details">Need More Details</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label>Public Visibility</Label>
+                                        <Select value={editableLead.publicVisibility} onValueChange={(value) => handleFieldChange('publicVisibility', value as any)}>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Hold">Hold (Private)</SelectItem>
+                                                <SelectItem value="Ready to Publish">Ready to Publish</SelectItem>
+                                                <SelectItem value="Published">Published</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
                             </div>
                         ) : (
-                            lead.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden"><Image src={lead.imageUrl} alt={lead.name} fill sizes="100vw" className="object-cover" /></div>
+                            <>
+                                {lead.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden"><Image src={lead.imageUrl} alt={lead.name} fill sizes="100vw" className="object-cover" /></div>}
+                                <p className="mt-1 text-sm">{lead.description || 'No description provided.'}</p>
+                            </>
                         )}
-                        <div>
-                            <Label htmlFor="description" className="text-sm font-medium text-muted-foreground">Description</Label>
-                            {editMode && canUpdate ? (
-                                <Textarea id="description" value={editableLead.description} onChange={(e: any) => setEditableLead(p => ({...p, description: e.target.value}))} className="mt-1" rows={4} />
-                            ) : ( <p className="mt-1 text-sm">{lead.description || 'No description provided.'}</p> )}
-                        </div>
                     </CardContent>
                 </Card>
 
@@ -710,7 +820,7 @@ Your contribution, big or small, makes a huge difference.
                         <CardContent><div className="text-2xl font-bold">{summaryData?.totalBeneficiaries ?? 0}</div></CardContent>
                     </Card>
                     <Card className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Items Distributed</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Items/Services Provided</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader>
                         <CardContent><div className="text-2xl font-bold">{summaryData?.beneficiariesGiven ?? 0}</div></CardContent>
                     </Card>
                      <Card className="animate-fade-in-up" style={{ animationDelay: '500ms' }}>

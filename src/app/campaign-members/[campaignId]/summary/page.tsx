@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -151,6 +150,11 @@ export default function CampaignSummaryPage() {
             setExistingDocuments(campaign.documents || []);
         }
     }, [campaign, editMode]);
+
+    const handleFieldChange = (field: keyof Campaign, value: any) => {
+        if (!editableCampaign) return;
+        setEditableCampaign(prev => prev ? { ...prev, [field]: value } : null);
+    };
 
     const handleImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -713,46 +717,108 @@ Your contribution, big or small, makes a huge difference.
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {editMode ? (
-                                <div className="space-y-2">
-                                    <Label>Header Image</Label>
-                                    <Input id="imageFile" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} className="hidden" />
-                                    <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
-                                        {imagePreview ? (
-                                            <>
-                                                <Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" />
-                                                <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}>
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </>
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
-                                                <p className="mb-2 text-sm text-center text-muted-foreground">
-                                                    <span className="font-semibold text-primary">Click to upload</span> or drag and drop
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP recommended</p>
+                                <div className="space-y-6">
+                                    <div className="space-y-2">
+                                        <Label>Header Image</Label>
+                                        <Input id="imageFile" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} className="hidden" />
+                                        <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
+                                            {imagePreview ? (
+                                                <>
+                                                    <Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" />
+                                                    <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
+                                                    <p className="mb-2 text-sm text-center text-muted-foreground">
+                                                        <span className="font-semibold text-primary">Click to upload</span> or drag and drop
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">PNG, JPG, WEBP recommended</p>
+                                                </div>
+                                            )}
+                                        </label>
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="description">Description</Label>
+                                        <Textarea id="description" value={editableCampaign.description} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1" rows={4} />
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <Label>Donation Types for Fundraising</Label>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-md">
+                                            <div className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    id="select-all-types"
+                                                    checked={editableCampaign.allowedDonationTypes?.length === donationCategories.length}
+                                                    onCheckedChange={(checked) => handleFieldChange('allowedDonationTypes', checked ? [...donationCategories] : [])}
+                                                />
+                                                <Label htmlFor="select-all-types" className="font-bold">Any</Label>
                                             </div>
-                                        )}
-                                    </label>
+                                            {donationCategories.map((type) => (
+                                                <div key={type} className="flex items-center space-x-2">
+                                                    <Checkbox
+                                                        id={`type-${type}`}
+                                                        checked={editableCampaign.allowedDonationTypes?.includes(type as DonationCategory)}
+                                                        onCheckedChange={(checked) => {
+                                                            const currentTypes = editableCampaign.allowedDonationTypes || [];
+                                                            const newTypes = checked
+                                                                ? [...currentTypes, type as DonationCategory]
+                                                                : currentTypes.filter(t => t !== type);
+                                                            handleFieldChange('allowedDonationTypes', newTypes);
+                                                        }}
+                                                    />
+                                                    <Label htmlFor={`type-${type}`}>{type}</Label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <Label htmlFor="startDate">Start Date</Label>
+                                            <Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label htmlFor="endDate">End Date</Label>
+                                            <Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <Label htmlFor="authenticityStatus">Authenticity</Label>
+                                            <Select value={editableCampaign.authenticityStatus} onValueChange={(value) => handleFieldChange('authenticityStatus', value as any)}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Pending Verification">Pending Verification</SelectItem>
+                                                    <SelectItem value="Verified">Verified</SelectItem>
+                                                    <SelectItem value="On Hold">On Hold</SelectItem>
+                                                    <SelectItem value="Rejected">Rejected</SelectItem>
+                                                    <SelectItem value="Need More Details">Need More Details</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label htmlFor="publicVisibility">Public Visibility</Label>
+                                            <Select value={editableCampaign.publicVisibility} onValueChange={(value) => handleFieldChange('publicVisibility', value as any)}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Hold">Hold (Private)</SelectItem>
+                                                    <SelectItem value="Ready to Publish">Ready to Publish</SelectItem>
+                                                    <SelectItem value="Published">Published</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
                                 </div>
                             ) : (
-                                campaign.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden"><Image src={campaign.imageUrl} alt={campaign.name} fill sizes="100vw" className="object-cover" /></div>
-                            )}
-
-                            <div>
-                                <Label htmlFor="description" className="text-sm font-medium text-muted-foreground">Description</Label>
-                                {editMode && canUpdate ? (
-                                    <Textarea
-                                        id="description"
-                                        value={editableCampaign.description}
-                                        onChange={(e: any) => setEditableCampaign(p => ({...p, description: e.target.value}))}
-                                        className="mt-1"
-                                        rows={4}
-                                    />
-                                ) : (
+                                <>
+                                    {campaign.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden"><Image src={campaign.imageUrl} alt={campaign.name} fill sizes="100vw" className="object-cover" /></div>}
                                     <p className="mt-1 text-sm">{campaign.description || 'No description provided.'}</p>
-                                )}
-                            </div>
+                                </>
+                            )}
                         </CardContent>
                     </Card>
 
