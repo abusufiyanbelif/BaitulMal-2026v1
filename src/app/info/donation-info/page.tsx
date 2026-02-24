@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Check, X } from 'lucide-react';
+import { ArrowLeft, Check, X, Loader2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useInfoSettings } from '@/hooks/use-info-settings';
 
 const donationTypes = [
     {
@@ -54,6 +55,31 @@ const comparisonData = [
 ];
 
 export default function DonationInfoPage() {
+    const { infoSettings, isLoading } = useInfoSettings();
+
+    if (isLoading) {
+        return (
+             <div className="flex items-center justify-center min-h-screen">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            </div>
+        );
+    }
+    
+    if (!infoSettings?.isDonationInfoPublic) {
+        return (
+            <main className="container mx-auto p-4 md:p-8 text-center">
+                <h1 className="text-2xl font-bold">Page Not Available</h1>
+                <p className="text-muted-foreground mt-2">This informational page is not currently public.</p>
+                 <Button asChild className="mt-6">
+                    <Link href="/">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Go Back to Home
+                    </Link>
+                </Button>
+            </main>
+        );
+    }
+
   return (
     <main className="container mx-auto p-4 md:p-8">
       <div className="mb-4">

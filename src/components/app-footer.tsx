@@ -3,12 +3,13 @@
 import { useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { Copy, Smartphone, QrCode, Mail, Phone, Download, Globe, Users } from 'lucide-react';
+import { Copy, Smartphone, QrCode, Mail, Phone, Download, Globe, Users, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useBranding } from '@/hooks/use-branding';
+import { useInfoSettings } from '@/hooks/use-info-settings';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import Link from 'next/link';
@@ -16,11 +17,12 @@ import Link from 'next/link';
 export function AppFooter() {
   const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
   const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
+  const { infoSettings, isLoading: isInfoSettingsLoading } = useInfoSettings();
   const { toast } = useToast();
   const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
   const pathname = usePathname();
 
-  const isLoading = isPaymentLoading || isBrandingLoading;
+  const isLoading = isPaymentLoading || isBrandingLoading || isInfoSettingsLoading;
 
   const copyToClipboard = (text: string, type: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -127,6 +129,12 @@ export function AppFooter() {
                 <div className="flex items-center gap-2 text-xs transition-all hover:text-primary">
                     <Users className="h-3 w-3" />
                     <Link href="/info/members" className="hover:underline">Organization Members</Link>
+                </div>
+            )}
+             {isLoading ? <Skeleton className="h-4 w-1/2" /> : (infoSettings?.isDonationInfoPublic &&
+                <div className="flex items-center gap-2 text-xs transition-all hover:text-primary">
+                    <Info className="h-3 w-3" />
+                    <Link href="/info/donation-info" className="hover:underline">Donation Types</Link>
                 </div>
             )}
             </div>

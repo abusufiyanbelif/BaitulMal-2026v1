@@ -29,6 +29,10 @@ export interface PaymentSettings extends DocumentData {
   copyright?: string;
 }
 
+export interface InfoSettings extends DocumentData {
+  isDonationInfoPublic?: boolean;
+}
+
 export interface CampaignDocument {
   name: string;
   url: string;
