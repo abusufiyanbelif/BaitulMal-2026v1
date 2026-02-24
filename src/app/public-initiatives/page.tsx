@@ -6,8 +6,10 @@ import { ArrowLeft, FolderKanban, Lightbulb } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PublicCampaignsView } from '@/components/public-campaigns-view';
 import { PublicLeadsView } from '@/components/public-leads-view';
+import { usePageHit } from '@/hooks/use-page-hit';
 
 export default function PublicInitiativesPage() {
+  usePageHit('public_initiatives');
   return (
     <div className="container mx-auto p-4 md:p-8">
       <div className="mb-4">
@@ -33,3 +35,4 @@ export default function PublicInitiativesPage() {
     </div>
   );
 }
+

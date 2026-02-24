@@ -7,7 +7,7 @@ import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, Timestamp } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Users, FolderKanban, Lightbulb, HandHelping, DollarSign, BarChart, CalendarIcon, Database, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Users, FolderKanban, Lightbulb, HandHelping, DollarSign, BarChart, CalendarIcon, Database, ExternalLink, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useMemo, useState, useEffect } from 'react';
@@ -28,6 +28,7 @@ import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StorageAnalytics } from '@/components/storage-analytics';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { getPageHits } from './actions';
 
 function StatCard({ title, value, icon: Icon, isLoading }: { title: string, value: number, icon: React.ComponentType<{className?: string}>, isLoading: boolean }) {
     return (
@@ -71,6 +72,19 @@ export default function AnalyticsPage() {
     const { data: leads, isLoading: leadsLoading } = useCollection(leadsRef);
     const { data: donations, isLoading: donationsLoading } = useCollection<Donation>(donationsRef);
     const { data: beneficiaries, isLoading: beneficiariesLoading } = useCollection<Beneficiary>(beneficiariesRef);
+
+    const [pageHits, setPageHits] = useState<{ id: string, hits: number }[] | null>(null);
+    const [hitsLoading, setHitsLoading] = useState(false);
+
+    useEffect(() => {
+        setHitsLoading(true);
+        getPageHits().then(result => {
+            if (!('error' in result)) {
+                setPageHits(result as { id: string, hits: number }[]);
+            }
+            setHitsLoading(false);
+        });
+    }, []);
 
     const isLoading = usersLoading || campaignsLoading || leadsLoading || donationsLoading || beneficiariesLoading;
     
@@ -282,8 +296,8 @@ export default function AnalyticsPage() {
                                 <StatCard title="Total Donation Amount" value={totalDonationAmount} icon={DollarSign} isLoading={isLoading} />
                             </CardContent>
                         </Card>
-                        <div className="grid gap-6 lg:grid-cols-2">
-                            <Card>
+                        <div className="grid gap-6 lg:grid-cols-3">
+                            <Card className="lg:col-span-1">
                                 <CardHeader>
                                     <CardTitle>Donations by Category</CardTitle>
                                     <CardDescription>Total amount received for each donation category.</CardDescription>
@@ -304,7 +318,7 @@ export default function AnalyticsPage() {
                                 ) : <Skeleton className="h-[300px] w-full" />}
                                 </CardContent>
                             </Card>
-                            <Card>
+                            <Card className="lg:col-span-1">
                                 <CardHeader>
                                     <CardTitle>Top 5 Funded Campaigns</CardTitle>
                                     <CardDescription>The campaigns that have received the most funding.</CardDescription>
@@ -328,6 +342,32 @@ export default function AnalyticsPage() {
                                         </TableBody>
                                     </Table>
                                     ) : <Skeleton className="h-[300px] w-full" />}
+                                </CardContent>
+                            </Card>
+                             <Card className="lg:col-span-1">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2"><Eye/> Page Hits</CardTitle>
+                                    <CardDescription>Total visits for key pages.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {hitsLoading ? <Skeleton className="h-40 w-full"/> : (
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Page</TableHead>
+                                                    <TableHead className="text-right">Hits</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {pageHits?.sort((a,b) => b.hits - a.hits).map(hit => (
+                                                    <TableRow key={hit.id}>
+                                                        <TableCell className="font-medium capitalize">{hit.id.replace(/_/g, ' ')}</TableCell>
+                                                        <TableCell className="text-right font-mono">{hit.hits.toLocaleString()}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>
@@ -496,3 +536,4 @@ export default function AnalyticsPage() {
         </div>
     );
 }
+

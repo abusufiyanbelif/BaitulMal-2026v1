@@ -12,10 +12,12 @@ import { Loader2, ArrowLeft, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { getPublicMembersAction } from '@/app/users/actions';
+import { usePageHit } from '@/hooks/use-page-hit';
 
 export default function PublicOrganizationMembersPage() {
     const [members, setMembers] = useState<Partial<UserProfile>[] | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    usePageHit('public_org_members');
 
     useEffect(() => {
         async function fetchMembers() {
@@ -93,3 +95,4 @@ export default function PublicOrganizationMembersPage() {
         </main>
     );
 }
+

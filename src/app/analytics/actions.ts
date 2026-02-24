@@ -1,6 +1,7 @@
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
+import { FieldValue } from 'firebase-admin/firestore';
 
 export async function getStorageAnalytics() {
     const { adminStorage } = getAdminServices();
@@ -52,6 +53,42 @@ export async function getStorageAnalytics() {
         };
     } catch (error: any) {
         console.error("Error getting storage analytics:", error);
+        return { error: error.message };
+    }
+}
+
+export async function incrementPageHit(pageId: string) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) {
+        console.error("Admin SDK not available for page hit increment.");
+        return;
+    }
+
+    const pageRef = adminDb.collection('page_hits').doc(pageId);
+
+    try {
+        await pageRef.set({
+            hits: FieldValue.increment(1)
+        }, { merge: true });
+    } catch (error) {
+        console.error(`Failed to increment page hit for ${pageId}:`, error);
+    }
+}
+
+export async function getPageHits() {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) {
+        return { error: "Admin SDK not available." };
+    }
+
+    try {
+        const snapshot = await adminDb.collection('page_hits').get();
+        if (snapshot.empty) {
+            return [];
+        }
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error: any) {
+        console.error("Error getting page hits:", error);
         return { error: error.message };
     }
 }

@@ -312,6 +312,16 @@
         "treatmentRecommendations",
         "keyFindings"
       ]
+    },
+    "PageHit": {
+      "title": "PageHit",
+      "type": "object",
+      "description": "Represents a hit count for a specific page.",
+      "properties": {
+        "id": { "type": "string" },
+        "hits": { "type": "number" }
+      },
+      "required": ["id", "hits"]
     }
   },
   "auth": {
@@ -330,6 +340,16 @@
             "$ref": "#/backend/entities/UserProfile"
           },
           "description": "Stores individual user profiles. The document ID (`{userId}`) for each UserProfile document directly corresponds to the Firebase Authentication UID, ensuring path-based ownership. This collection forms the root of a user's private data hierarchy."
+        }
+      },
+      {
+        "path": "/page_hits/{pageId}",
+        "definition": {
+          "entityName": "PageHit",
+          "schema": {
+            "$ref": "#/backend/entities/PageHit"
+          },
+          "description": "Stores hit counts for application pages."
         }
       },
       {

@@ -55,6 +55,11 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin() || hasPermission('settings', 'update');
     }
+    
+    match /page_hits/{pageId} {
+        allow read: if hasPermission('analytics', 'read') || isAdmin();
+        allow write: if isAdmin(); // Only allow server-side admin to write
+    }
 
     match /user_lookups/{lookupId} {
         allow read: if true;
@@ -147,3 +152,4 @@ service cloud.firestore {
     }
   }
 }
+

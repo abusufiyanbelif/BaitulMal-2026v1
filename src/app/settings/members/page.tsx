@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/use-session';
 import { getPublicMembersAction } from '@/app/users/actions';
@@ -17,10 +17,12 @@ import type { UserProfile } from '@/lib/types';
 import { GROUPS, type GroupId } from '@/lib/modules';
 import { UserSearchDialog } from '@/components/user-search-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { usePageHit } from '@/hooks/use-page-hit';
 
 export default function OrganizationMembersPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
     const router = useRouter();
+    usePageHit('org_members_settings');
     
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     
@@ -150,3 +152,4 @@ export default function OrganizationMembersPage() {
         </>
     );
 }
+

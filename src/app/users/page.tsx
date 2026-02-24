@@ -42,6 +42,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils';
 import { getNestedValue } from '@/lib/utils';
 import { useMemoFirebase } from '@/firebase/provider';
+import { usePageHit } from '@/hooks/use-page-hit';
 
 type SortKey = keyof UserProfile | 'srNo';
 
@@ -61,6 +62,7 @@ export default function UsersPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
+  usePageHit('user_management');
 
   const { userProfile, isLoading: isProfileLoading } = useSession();
 
@@ -271,9 +273,9 @@ export default function UsersPage() {
     <main className="container mx-auto p-4 md:p-8">
       <div className="mb-4">
           <Button variant="outline" asChild>
-              <Link href="/">
+              <Link href="/dashboard">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Home
+                  Back to Dashboard
               </Link>
           </Button>
       </div>

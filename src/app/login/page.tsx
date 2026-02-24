@@ -11,6 +11,7 @@ import { useAuth, useFirestore, sendPasswordResetEmail } from '@/firebase';
 import { signInWithLoginId } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useBranding } from '@/hooks/use-branding';
+import { usePageHit } from '@/hooks/use-page-hit';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,6 +48,7 @@ export default function LoginPage() {
   const [setupError, setSetupError] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
   const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
+  usePageHit('login');
 
   // State for password reset dialog
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
@@ -260,3 +262,4 @@ export default function LoginPage() {
   </div>
   );
 }
+
