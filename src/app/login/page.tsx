@@ -7,10 +7,9 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useAuth, useFirestore } from '@/firebase/provider';
+import { useAuth, useFirestore, sendPasswordResetEmail } from '@/firebase';
 import { signInWithLoginId } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
-import { sendPasswordResetEmail } from 'firebase/auth';
 import { useBranding } from '@/hooks/use-branding';
 
 import { Button } from '@/components/ui/button';

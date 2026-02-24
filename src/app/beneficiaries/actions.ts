@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
@@ -183,7 +184,7 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
     }
     
     try {
-        const batch = adminDb!.batch();
+        const batch = adminDb.batch();
         let addedCount = 0;
         
         const masterBeneficiariesSnap = await adminDb.collection('beneficiaries').get();

@@ -2,12 +2,10 @@
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
+import { useFirestore, useStorage, useAuth, useMemoFirebase, getDocs, getDoc, doc, type DocumentReference, collection, query, type CollectionReference, uploadBytes, getDownloadURL, deleteObject } from '@/firebase';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { getDocs, getDoc, doc, type DocumentReference, collection, query, type CollectionReference } from 'firebase/firestore';
-import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 import Resizer from 'react-image-file-resizer';
+import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -73,8 +71,6 @@ export default function BeneficiaryDetailsPage() {
     return doc(firestore, 'beneficiaries', beneficiaryId) as DocumentReference<Beneficiary>;
   }, [firestore, beneficiaryId]);
 
-  const { data: beneficiary, isLoading: isBeneficiaryLoading, error: beneficiaryError, forceRefetch } = useDoc<Beneficiary>(beneficiaryDocRef);
-  
   useEffect(() => {
     if (initiativeContext && firestore && beneficiaryId) {
         setIsInitiativeDataLoading(true);
@@ -95,6 +91,8 @@ export default function BeneficiaryDetailsPage() {
     }
   }, [initiativeContext, firestore, beneficiaryId, toast]);
 
+  const { data: beneficiary, isLoading: isBeneficiaryLoading, error: beneficiaryError, forceRefetch } = useDoc<Beneficiary>(beneficiaryDocRef);
+  
   const formBeneficiaryData = useMemo(() => {
       if (!beneficiary) return null;
       // Merge master data with initiative-specific data. Initiative data takes precedence.
@@ -118,7 +116,7 @@ export default function BeneficiaryDetailsPage() {
         const campaignsQuery = query(collection(firestore, 'campaigns') as CollectionReference<Campaign>);
         const campaignsSnapshot = await getDocs(campaignsQuery);
 
-        for (const campaignDoc: any of campaignsSnapshot.docs) {
+        for (const campaignDoc of campaignsSnapshot.docs) {
             const beneficiarySubDocRef = doc(firestore, `campaigns/${campaignDoc.id}/beneficiaries`, beneficiary.id);
             const beneficiarySnap = await getDoc(beneficiarySubDocRef);
 
@@ -139,7 +137,7 @@ export default function BeneficiaryDetailsPage() {
         const leadsQuery = query(collection(firestore, 'leads') as CollectionReference<Lead>);
         const leadsSnapshot = await getDocs(leadsQuery);
 
-        for (const leadDoc: any of leadsSnapshot.docs) {
+        for (const leadDoc of leadsSnapshot.docs) {
             const beneficiarySubDocRef = doc(firestore, `leads/${leadDoc.id}/beneficiaries`, beneficiary.id);
             const beneficiarySnap = await getDoc(beneficiarySubDocRef);
             

@@ -1,4 +1,5 @@
 
+
 import type { DocumentData, Timestamp, FieldValue } from 'firebase/firestore';
 import type { UserPermissions, GroupId } from './modules';
 import { donationCategories } from './modules';
@@ -128,7 +129,7 @@ export interface Beneficiary extends DocumentData {
     earningMembers?: number;
     male?: number;
     female?: number;
-    addedDate: string;
+    addedDate?: string;
     idProofType?: string;
     idNumber?: string;
     referralBy?: string;

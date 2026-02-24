@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -21,7 +22,7 @@ import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, Loader2, Users, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, Gift, UploadCloud, Trash2, FolderKanban, Lightbulb, Target, File, ShieldAlert } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 import { useToast } from '@/hooks/use-toast';
@@ -79,6 +80,7 @@ const donationPaymentTypeChartConfig = {
     Check: { label: "Check", color: "hsl(var(--chart-5))" },
     Other: { label: "Other", color: "hsl(var(--chart-4))" },
 } satisfies ChartConfig;
+
 
 export default function LeadSummaryPage() {
     const params = useParams();
@@ -446,7 +448,7 @@ Your contribution, big or small, makes a huge difference.
     
     if (leadError || beneficiariesError || donationsError) {
         return (
-            <main className="container mx-auto p-4 md:p-8">
+             <main className="container mx-auto p-4 md:p-8">
                 <Alert variant="destructive">
                     <ShieldAlert className="h-4 w-4" />
                     <AlertTitle>Error Loading Data</AlertTitle>
@@ -458,7 +460,7 @@ Your contribution, big or small, makes a huge difference.
                     </AlertDescription>
                 </Alert>
             </main>
-        )
+        );
     }
 
     if (!lead) { return <main className="container mx-auto p-4 md:p-8 text-center"><p>Lead not found.</p></main> }
@@ -544,7 +546,102 @@ Your contribution, big or small, makes a huge difference.
                         </CardHeader>
                         <CardContent className="space-y-6">
                             {editMode ? (
-                                // ... (Edit Mode JSX is the same)
+                                <div className="space-y-6">
+                                    <div className="space-y-2">
+                                        <Label>Header Image</Label>
+                                        <Input id="imageFile" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} className="hidden" />
+                                        <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
+                                            {imagePreview ? (
+                                                <>
+                                                    <Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" />
+                                                    <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
+                                                    <p className="mb-2 text-sm text-center text-muted-foreground">
+                                                        <span className="font-semibold text-primary">Click to upload</span> or drag and drop
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">PNG, JPG, WEBP recommended</p>
+                                                </div>
+                                            )}
+                                        </label>
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="description">Description</Label>
+                                        <Textarea id="description" value={editableLead.description} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1" rows={4} />
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <Label>Donation Types for Fundraising</Label>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-md">
+                                            <div className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    id="select-all-types-lead-summary"
+                                                    checked={editableLead.allowedDonationTypes?.length === donationCategories.length}
+                                                    onCheckedChange={(checked) => handleFieldChange('allowedDonationTypes', checked ? [...donationCategories] : [])}
+                                                />
+                                                <Label htmlFor="select-all-types-lead-summary" className="font-bold">Any</Label>
+                                            </div>
+                                            {donationCategories.map((type) => (
+                                                <div key={type} className="flex items-center space-x-2">
+                                                    <Checkbox
+                                                        id={`type-${type}`}
+                                                        checked={editableLead.allowedDonationTypes?.includes(type as DonationCategory)}
+                                                        onCheckedChange={(checked) => {
+                                                            const currentTypes = editableLead.allowedDonationTypes || [];
+                                                            const newTypes = checked
+                                                                ? [...currentTypes, type as DonationCategory]
+                                                                : currentTypes.filter(t => t !== type);
+                                                            handleFieldChange('allowedDonationTypes', newTypes);
+                                                        }}
+                                                    />
+                                                    <Label htmlFor={`type-${type}`}>{type}</Label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <Label htmlFor="startDate">Start Date</Label>
+                                            <Input id="startDate" type="date" value={editableLead.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label htmlFor="endDate">End Date</Label>
+                                            <Input id="endDate" type="date" value={editableLead.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <Label htmlFor="authenticityStatus">Authenticity</Label>
+                                            <Select value={editableLead.authenticityStatus} onValueChange={(value) => handleFieldChange('authenticityStatus', value as any)}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Pending Verification">Pending Verification</SelectItem>
+                                                    <SelectItem value="Verified">Verified</SelectItem>
+                                                    <SelectItem value="On Hold">On Hold</SelectItem>
+                                                    <SelectItem value="Rejected">Rejected</SelectItem>
+                                                    <SelectItem value="Need More Details">Need More Details</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label htmlFor="publicVisibility">Public Visibility</Label>
+                                            <Select value={editableLead.publicVisibility} onValueChange={(value) => handleFieldChange('publicVisibility', value as any)}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Hold">Hold (Private)</SelectItem>
+                                                    <SelectItem value="Ready to Publish">Ready to Publish</SelectItem>
+                                                    <SelectItem value="Published">Published</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </div>
                             ) : (
                                 <>
                                     {lead.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden"><Image src={lead.imageUrl} alt={lead.name} fill sizes="100vw" className="object-cover" /></div>}
@@ -553,18 +650,166 @@ Your contribution, big or small, makes a huge difference.
                             )}
                         </CardContent>
                     </Card>
-                    
+
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                        <CardHeader>
+                            <CardTitle>Lead Artifacts</CardTitle>
+                            <CardDescription>Photos, receipts, or other documents related to this lead.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {editMode ? (
+                                <div className="space-y-4">
+                                    <Label>Upload New Artifacts</Label>
+                                    <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
+                                    <Separator />
+                                    <Label>Manage Existing Artifacts</Label>
+                                    {existingDocuments.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {existingDocuments.map((doc) => {
+                                                const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+                                                return (
+                                                <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md gap-4">
+                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                        <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+                                                            {isImage ? (
+                                                                <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} width={48} height={48} className="object-cover h-full w-full" />
+                                                            ) : (
+                                                                <File className="h-6 w-6 text-muted-foreground" />
+                                                            )}
+                                                        </div>
+                                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:underline truncate min-w-0">
+                                                            <p className="truncate">{doc.name}</p>
+                                                        </a>
+                                                    </div>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} id={`public-${doc.url}`} />
+                                                            <Label htmlFor={`public-${doc.url}`} className="text-xs">Public</Label>
+                                                        </div>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleRemoveExistingDocument(doc.url)}>
+                                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                )
+                                            })}
+                                        </div>
+                                    ) : <p className="text-sm text-muted-foreground">No artifacts uploaded yet.</p>}
+                                </div>
+                            ) : (
+                                lead.documents && lead.documents.length > 0 ? (
+                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                        {lead.documents.map((doc) => {
+                                            const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+                                            return (
+                                                <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                                                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="group block flex-grow">
+                                                        <CardContent className="p-0">
+                                                            <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
+                                                                {isImage ? (
+                                                                    <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
+                                                                ) : (
+                                                                    <File className="w-10 h-10 text-muted-foreground" />
+                                                                )}
+                                                            </div>
+                                                            <div className="p-2 text-center">
+                                                                <p className="text-xs font-medium truncate group-hover:underline">{doc.name}</p>
+                                                            </div>
+                                                        </CardContent>
+                                                    </a>
+                                                    <CardFooter className="p-2 border-t mt-auto">
+                                                        <div className="flex items-center justify-center w-full gap-2">
+                                                            {canUpdate ? (
+                                                                <>
+                                                                    <Switch 
+                                                                        id={`quick-toggle-lead-${doc.url}`} 
+                                                                        checked={!!doc.isPublic} 
+                                                                        onCheckedChange={() => quickToggleDocumentPublic(doc)} 
+                                                                    />
+                                                                    <Label htmlFor={`quick-toggle-lead-${doc.url}`} className="text-xs cursor-pointer">Public</Label>
+                                                                </>
+                                                            ) : (
+                                                                <Badge variant={doc.isPublic ? "outline" : "secondary"}>{doc.isPublic ? "Public" : "Private"}</Badge>
+                                                            )}
+                                                        </div>
+                                                    </CardFooter>
+                                                </Card>
+                                            )
+                                        })}
+                                    </div>
+                                ) : <p className="text-sm text-muted-foreground">No artifacts uploaded yet.</p>
+                            )}
+                        </CardContent>
+                    </Card>
+                
                     <Card className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <Target className="h-6 w-6 text-primary" />
                                 Fundraising Progress
                             </CardTitle>
+                            <CardDescription>A real-time look at the collected donations against the goal for this lead.</CardDescription>
                         </CardHeader>
                         <CardContent>
                           {isClient ? (
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                                  {/* ... (Chart JSX is the same) */}
+                                  <div className="relative h-48 w-full">
+                                      <ChartContainer
+                                          config={{
+                                              progress: {
+                                                  label: 'Progress',
+                                                  color: 'hsl(var(--primary))',
+                                              },
+                                          }}
+                                          className="mx-auto aspect-square h-full"
+                                      >
+                                          <RadialBarChart
+                                              data={[{ name: 'Progress', value: summaryData?.fundingProgress || 0, fill: 'hsl(var(--primary))' }]}
+                                              startAngle={-270}
+                                              endAngle={90}
+                                              innerRadius="75%"
+                                              outerRadius="100%"
+                                              barSize={20}
+                                          >
+                                          <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                          <RadialBar
+                                              dataKey="value"
+                                              background={{ fill: 'hsl(var(--muted))' }}
+                                              cornerRadius={10}
+                                          />
+                                          <ChartTooltip
+                                              cursor={false}
+                                              content={<ChartTooltipContent hideLabel />}
+                                          />
+                                          </RadialBarChart>
+                                      </ChartContainer>
+                                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                          <span className="text-4xl font-bold text-primary">
+                                              {(summaryData?.fundingProgress || 0).toFixed(0)}%
+                                          </span>
+                                          <span className="text-xs text-muted-foreground">Funded</span>
+                                      </div>
+                                  </div>
+                                  <div className="space-y-4 text-center md:text-left">
+                                      <div>
+                                          <p className="text-sm text-muted-foreground">Raised for Goal</p>
+                                          <p className="text-3xl font-bold">
+                                          ₹{(summaryData?.totalCollectedForGoal || 0).toLocaleString('en-IN')}
+                                          </p>
+                                      </div>
+                                      <div>
+                                          <p className="text-sm text-muted-foreground">Fundraising Target</p>
+                                          <p className="text-3xl font-bold">
+                                          ₹{(summaryData?.targetAmount || 0).toLocaleString('en-IN')}
+                                          </p>
+                                      </div>
+                                      <div>
+                                          <p className="text-sm text-muted-foreground">Grand Total Received</p>
+                                          <p className="text-3xl font-bold">
+                                          ₹{(summaryData?.fundTotals.grandTotal || 0).toLocaleString('en-IN')}
+                                          </p>
+                                      </div>
+                                  </div>
                               </div>
                           ) : (
                               <Skeleton className="w-full h-48" />
@@ -573,8 +818,36 @@ Your contribution, big or small, makes a huge difference.
                     </Card>
 
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {/* ... (Stat cards are the same) */}
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle>
+                                <Users className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{summaryData?.totalBeneficiaries ?? 0}</div>
+                            </CardContent>
+                        </Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">{givenLabel}</CardTitle>
+                                <Gift className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{summaryData?.beneficiariesGiven ?? 0}</div>
+                            </CardContent>
+                        </Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">{pendingLabel}</CardTitle>
+                                <Hourglass className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{summaryData?.beneficiariesPending ?? 0}</div>
+                            </CardContent>
+                        </Card>
                     </div>
+                    {summaryData && (
+                    <>
                     <Card className="animate-fade-in-up" style={{ animationDelay: '900ms' }}>
                         <CardHeader>
                             <CardTitle>Zakat Utilization</CardTitle>
@@ -585,25 +858,89 @@ Your contribution, big or small, makes a huge difference.
                         <CardContent className="space-y-3">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-muted-foreground">Total Zakat Collected</span>
-                                <span className="font-semibold font-mono">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
+                                <span className="font-semibold font-mono">₹{summaryData.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-muted-foreground">(-) Allocated as Cash-in-Hand</span>
-                                <span className="font-semibold font-mono">₹{(summaryData?.zakatAllocated || 0).toLocaleString('en-IN')}</span>
+                                <span className="font-semibold font-mono">₹{(summaryData.zakatAllocated || 0).toLocaleString('en-IN')}</span>
                             </div>
                             <Separator />
                             <div className="flex justify-between items-center text-base">
                                 <span className="font-bold">Zakat Available for Goal</span>
-                                <span className="font-bold text-primary font-mono">₹{((summaryData?.fundTotals.zakat || 0) - (summaryData?.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
+                                <span className="font-bold text-primary font-mono">₹{((summaryData.fundTotals.zakat || 0) - (summaryData.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
                             </div>
-                            {lead.allowedDonationTypes?.includes('Zakat') && (
+                             {lead.allowedDonationTypes?.includes('Zakat') && (
                                 <p className="text-xs text-muted-foreground pt-1">
                                     Because Zakat is an allowed donation type for this lead, the available balance is automatically applied to the fundraising goal.
                                 </p>
                             )}
                         </CardContent>
                     </Card>
-                    {/* ... (rest of the cards) */}
+
+                    <div className="grid gap-6 lg:grid-cols-2">
+                      <Card className="animate-fade-in-up" style={{ animationDelay: '1000ms' }}>
+                        <CardHeader>
+                            <CardTitle>Fund Totals by Type</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fidiya</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.fidiya.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <Separator className="my-2"/>
+                            <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{summaryData.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                        </CardContent>
+                      </Card>
+                      <Card className="animate-fade-in-up" style={{ animationDelay: '1100ms' }}>
+                          <CardHeader>
+                              <CardTitle>Donations by Category</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            {isClient ? (
+                              <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
+                                  <BarChart data={Object.entries(summaryData.amountsByCategory || {}).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
+                                      <CartesianGrid horizontal={false} />
+                                      <YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/>
+                                      <XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
+                                      <ChartTooltip content={<ChartTooltipContent />} />
+                                      <Bar dataKey="value" radius={4}>
+                                          {Object.entries(summaryData.amountsByCategory || {}).map(([name]) => (
+                                              <Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />
+                                          ))}
+                                      </Bar>
+                                  </BarChart>
+                              </ChartContainer>
+                            ) : <Skeleton className="h-[250px] w-full" />}
+                          </CardContent>
+                      </Card>
+
+                      <Card className="animate-fade-in-up" style={{ animationDelay: '1200ms' }}>
+                          <CardHeader>
+                              <CardTitle>Donations by Payment Type</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                              {isClient ? (
+                               <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
+                                  <PieChart>
+                                      <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                      <Pie data={summaryData.donationPaymentTypeChartData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5}>
+                                          {summaryData.donationPaymentTypeChartData?.map((entry) => (
+                                              <Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />
+                                          ))}
+                                      </Pie>
+                                      <ChartLegend content={<ChartLegendContent />} />
+                                  </PieChart>
+                              </ChartContainer>
+                               ) : <Skeleton className="h-[250px] w-full" />}
+                          </CardContent>
+                      </Card>
+                    </div>
+                    </>
+                  )}
                 </div>
             </div>
 
