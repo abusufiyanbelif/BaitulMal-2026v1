@@ -182,6 +182,12 @@ export default function PublicCampaignSummaryPage() {
         const zakatAllocated = beneficiaries
             .filter(b => b.isEligibleForZakat && b.zakatAllocation)
             .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
+        
+        const zakatGiven = beneficiaries
+            .filter(b => b.isEligibleForZakat && b.zakatAllocation && b.status === 'Given')
+            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
+        
+        const zakatPending = zakatAllocated - zakatGiven;
 
         const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
 
@@ -222,6 +228,8 @@ export default function PublicCampaignSummaryPage() {
             amountsByCategory,
             donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
             zakatAllocated,
+            zakatGiven,
+            zakatPending,
             zakatAvailableForGoal,
             fundTotals: { fitra: fitraTotal, zakat: zakatTotal, loan: loanTotal, interest: interestTotal, sadaqah: sadaqahTotal, fidiya: fidiyaTotal, lillah: lillahTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal, }
         };
@@ -584,16 +592,27 @@ Your contribution, big or small, makes a huge difference.
                                 <span className="text-muted-foreground">Total Zakat Collected for Campaign</span>
                                 <span className="font-semibold font-mono">₹{fundingData.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
                             </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Zakat Allocated as Cash-in-Hand</span>
-                                <span className="font-semibold font-mono">₹{(fundingData.zakatAllocated || 0).toLocaleString('en-IN')}</span>
+                            <Separator />
+                            <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Allocated as Cash-in-Hand</span>
+                                    <span className="font-semibold font-mono">₹{(fundingData.zakatAllocated || 0).toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs pl-4">
+                                    <span className="text-muted-foreground">Given</span>
+                                    <span className="font-mono text-green-600">₹{(fundingData.zakatGiven || 0).toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs pl-4">
+                                    <span className="text-muted-foreground">Pending</span>
+                                    <span className="font-mono text-amber-600">₹{(fundingData.zakatPending || 0).toLocaleString('en-IN')}</span>
+                                </div>
                             </div>
                             <Separator />
                             <div className="flex justify-between items-center text-base">
                                 <span className="font-bold">Zakat Balance for Goal</span>
-                                <span className="font-bold text-primary font-mono">₹{((fundingData.fundTotals.zakat || 0) - (fundingData.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
+                                <span className="font-bold text-primary font-mono">₹{(fundingData.zakatAvailableForGoal || 0).toLocaleString('en-IN')}</span>
                             </div>
-                             {campaign.allowedDonationTypes?.includes('Zakat') && (
+                            {campaign.allowedDonationTypes?.includes('Zakat') && (
                                 <p className="text-xs text-muted-foreground pt-1">
                                     Because Zakat is an allowed donation type for this campaign, the available balance is automatically applied to the fundraising goal.
                                 </p>

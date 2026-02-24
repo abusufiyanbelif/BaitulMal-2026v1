@@ -62,6 +62,7 @@ const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
     Sadaqah: { label: "Sadaqah", color: "hsl(var(--chart-2))" },
+    Fidiya: { label: "Fidiya", color: "hsl(var(--chart-8))" },
     Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
     Interest: { label: "Interest", color: "hsl(var(--chart-3))" },
     Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
@@ -155,7 +156,13 @@ export default function PublicLeadSummaryPage() {
         const zakatAllocated = beneficiaries
             .filter(b => b.isEligibleForZakat && b.zakatAllocation)
             .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
-            
+        
+        const zakatGiven = beneficiaries
+            .filter(b => b.isEligibleForZakat && b.zakatAllocation && b.status === 'Given')
+            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
+        
+        const zakatPending = zakatAllocated - zakatGiven;
+
         const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
 
         const totalCollectedForGoal = Object.entries(amountsByCategory)
@@ -194,12 +201,14 @@ export default function PublicLeadSummaryPage() {
             amountsByCategory,
             donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
             zakatAllocated,
+            zakatGiven,
+            zakatPending,
             zakatAvailableForGoal,
             fundTotals: { fitra: fitraTotal, zakat: zakatTotal, loan: loanTotal, interest: interestTotal, sadaqah: sadaqahTotal, fidiya: fidiyaTotal, lillah: lillahTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal, }
         };
     }, [allDonations, lead, beneficiaries]);
-    
-     const beneficiaryData = useMemo(() => {
+
+    const beneficiaryData = useMemo(() => {
         if (!beneficiaries) return null;
 
         const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
@@ -481,24 +490,24 @@ Your contribution, big or small, makes a huge difference.
                 </div>
                 
                 {publicDocuments.length > 0 && (
-                  <Card>
-                      <CardHeader>
-                          <CardTitle>Public Artifacts</CardTitle>
-                          <CardDescription>View photos, receipts, or other public documents related to this lead.</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                              {publicDocuments.map((doc) => (
-                                  <Button key={doc.url} variant="outline" asChild>
-                                      <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
-                                          <File className="mr-2 h-4 w-4 shrink-0" />
-                                          <span className="truncate">{doc.name}</span>
-                                      </a>
-                                  </Button>
-                              ))}
-                          </div>
-                      </CardContent>
-                  </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Public Artifacts</CardTitle>
+                            <CardDescription>View photos, receipts, or other public documents related to this lead.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                {publicDocuments.map((doc) => (
+                                    <Button key={doc.url} variant="outline" asChild>
+                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
+                                            <File className="mr-2 h-4 w-4 shrink-0" />
+                                            <span className="truncate">{doc.name}</span>
+                                        </a>
+                                    </Button>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
                 )}
                  {fundingData && (
                     <>
@@ -506,21 +515,32 @@ Your contribution, big or small, makes a huge difference.
                         <CardHeader>
                             <CardTitle>Zakat Utilization</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                         <CardContent className="space-y-3">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-muted-foreground">Total Zakat Collected for Lead</span>
                                 <span className="font-semibold font-mono">₹{fundingData.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
                             </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Zakat Allocated as Cash-in-Hand</span>
-                                <span className="font-semibold font-mono">₹{(fundingData.zakatAllocated || 0).toLocaleString('en-IN')}</span>
+                            <Separator />
+                            <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Allocated as Cash-in-Hand</span>
+                                    <span className="font-semibold font-mono">₹{(fundingData.zakatAllocated || 0).toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs pl-4">
+                                    <span className="text-muted-foreground">Given</span>
+                                    <span className="font-mono text-green-600">₹{(fundingData.zakatGiven || 0).toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs pl-4">
+                                    <span className="text-muted-foreground">Pending</span>
+                                    <span className="font-mono text-amber-600">₹{(fundingData.zakatPending || 0).toLocaleString('en-IN')}</span>
+                                </div>
                             </div>
                             <Separator />
                             <div className="flex justify-between items-center text-base">
                                 <span className="font-bold">Zakat Balance for Goal</span>
-                                <span className="font-bold text-primary font-mono">₹{((fundingData.fundTotals.zakat || 0) - (fundingData.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
+                                <span className="font-bold text-primary font-mono">₹{(fundingData.zakatAvailableForGoal || 0).toLocaleString('en-IN')}</span>
                             </div>
-                            {lead.allowedDonationTypes?.includes('Zakat') && (
+                             {lead.allowedDonationTypes?.includes('Zakat') && (
                                 <p className="text-xs text-muted-foreground pt-1">
                                     Because Zakat is an allowed donation type for this lead, the available balance is automatically applied to the fundraising goal.
                                 </p>
@@ -528,11 +548,11 @@ Your contribution, big or small, makes a huge difference.
                         </CardContent>
                     </Card>
                     <div className="grid gap-6 lg:grid-cols-2">
-                      <Card>
-                        <CardHeader>
-                            <CardTitle>Fund Totals by Type</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
+                       <Card>
+                          <CardHeader>
+                              <CardTitle>Fund Totals by Type</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-2">
                              <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
                              <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
                              <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
@@ -542,8 +562,8 @@ Your contribution, big or small, makes a huge difference.
                              <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
                             <Separator className="my-2"/>
                             <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{fundingData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                        </CardContent>
-                      </Card>
+                          </CardContent>
+                        </Card>
                         <Card>
                             <CardHeader>
                                 <CardTitle>Donations by Payment Type</CardTitle>

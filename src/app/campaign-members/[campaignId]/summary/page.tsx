@@ -382,6 +382,12 @@ export default function CampaignSummaryPage() {
             .filter(b => b.isEligibleForZakat && b.zakatAllocation)
             .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
 
+        const zakatGiven = beneficiaries
+            .filter(b => b.isEligibleForZakat && b.zakatAllocation && b.status === 'Given')
+            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
+        
+        const zakatPending = zakatAllocated - zakatGiven;
+
         const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
 
         const totalCollectedForGoal = Object.entries(amountsByCategory)
@@ -394,6 +400,9 @@ export default function CampaignSummaryPage() {
                 return sum + amount;
             }, 0);
 
+        const fundingGoal = campaign.targetAmount || 0;
+        const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
+        
         const donationStatusStats = donations.reduce((acc, donation) => {
             const status = donation.status || 'Pending';
             let amountForThisCampaign = 0;
@@ -421,9 +430,6 @@ export default function CampaignSummaryPage() {
             canceled: { count: 0, amount: 0 },
         });
 
-        const fundingGoal = campaign.targetAmount || 0;
-        const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
-        
         const beneficiariesByCategory = beneficiaries.reduce((acc, ben) => {
             const members = ben.members || 0;
             const generalCategory = sanitizedRationLists.find(cat => cat.name === 'Item Price List');
@@ -504,6 +510,8 @@ export default function CampaignSummaryPage() {
             sortedBeneficiaryCategoryKeys,
             donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
             zakatAllocated,
+            zakatGiven,
+            zakatPending,
             zakatAvailableForGoal,
             zakatForGoalAmount,
             fundTotals: {
@@ -1063,13 +1071,24 @@ Your contribution, big or small, makes a huge difference.
                                 <span className="text-muted-foreground">Total Zakat Collected</span>
                                 <span className="font-semibold font-mono">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
                             </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">(-) Allocated as Cash-in-Hand</span>
-                                <span className="font-semibold font-mono">₹{(summaryData?.zakatAllocated || 0).toLocaleString('en-IN')}</span>
+                            <Separator />
+                            <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Allocated as Cash-in-Hand</span>
+                                    <span className="font-semibold font-mono">₹{(summaryData?.zakatAllocated || 0).toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs pl-4">
+                                    <span className="text-muted-foreground">Given</span>
+                                    <span className="font-mono text-green-600">₹{(summaryData?.zakatGiven || 0).toLocaleString('en-IN')}</span>
+                                </div>
+                                 <div className="flex justify-between items-center text-xs pl-4">
+                                    <span className="text-muted-foreground">Pending</span>
+                                    <span className="font-mono text-amber-600">₹{(summaryData?.zakatPending || 0).toLocaleString('en-IN')}</span>
+                                </div>
                             </div>
                             <Separator />
                             <div className="flex justify-between items-center text-base">
-                                <span className="font-bold">Zakat Balance Available for Goal</span>
+                                <span className="font-bold">Zakat Balance for Goal</span>
                                 <span className="font-bold text-primary font-mono">₹{(summaryData?.zakatAvailableForGoal || 0).toLocaleString('en-IN')}</span>
                             </div>
                              {campaign.allowedDonationTypes?.includes('Zakat') && (
