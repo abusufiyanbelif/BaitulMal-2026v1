@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -71,6 +70,7 @@ interface BeneficiaryFormProps {
   isSubmitting?: boolean;
   isLoading?: boolean;
   hideZakatInfo?: boolean;
+  hideZakatAllocation?: boolean;
   isSessionLoading?: boolean;
   hideKitAmount?: boolean;
 }
@@ -86,6 +86,7 @@ export function BeneficiaryForm({
     isSubmitting = false, 
     isLoading = false, 
     hideZakatInfo = false,
+    hideZakatAllocation = false,
     isSessionLoading = false,
     hideKitAmount = false,
 }: BeneficiaryFormProps) {
@@ -294,8 +295,8 @@ export function BeneficiaryForm({
                 <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Identification & Financials</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField control={control} name="idProofType" render={({ field }) => (<FormItem><FormLabel>ID Proof Type</FormLabel><FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
-                        <FormField control={control} name="idNumber" render={({ field }) => (<FormItem><FormLabel>ID Number</FormLabel><FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
+                        <FormField control={control} name="idProofType" render={({ field }) => (<FormItem><FormLabel>ID Proof Type</FormLabel><FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled}/></FormControl></FormItem>)}/>
+                        <FormField control={control} name="idNumber" render={({ field }) => (<FormItem><FormLabel>ID Number</FormLabel><FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled}/></FormControl></FormItem>)}/>
                     </div>
                     
                     <div className="space-y-2">
@@ -385,7 +386,7 @@ export function BeneficiaryForm({
                                     )}
                                 />
                             </div>
-                            {watch('isEligibleForZakat') && (
+                            {watch('isEligibleForZakat') && !hideZakatAllocation && (
                                 <div className="animate-fade-in-zoom">
                                     <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem><FormLabel>Zakat Allocation (₹)</FormLabel><FormControl><Input type="number" placeholder="Amount from Zakat" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
                                 </div>

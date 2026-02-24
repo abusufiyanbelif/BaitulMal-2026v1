@@ -448,7 +448,7 @@ export default function BeneficiariesPage() {
             }),
         } as Beneficiary;
         
-        const { status, kitAmount, ...masterBeneficiaryData } = fullData;
+        const { status, kitAmount, zakatAllocation, ...masterBeneficiaryData } = fullData;
 
         const oldKitAmount = editingBeneficiary?.kitAmount || 0;
         const newKitAmount = data.kitAmount || 0;
@@ -534,26 +534,31 @@ export default function BeneficiariesPage() {
   };
   
     const handleZakatToggle = async (beneficiary: Beneficiary) => {
-        if (!canUpdate || !userProfile) return;
+        if (!canUpdate || !userProfile || !firestore || !leadId) return;
         const newZakatStatus = !beneficiary.isEligibleForZakat;
+        
+        const beneficiaryRef = doc(firestore, `leads/${leadId}/beneficiaries`, beneficiary.id);
         const updateData: Partial<Beneficiary> = { isEligibleForZakat: newZakatStatus };
+        
         if (!newZakatStatus) {
-            updateData.zakatAllocation = 0;
+            updateData.zakatAllocation = 0; // Reset allocation if they become ineligible
         }
-        const result = await updateMasterBeneficiaryAction(
-            beneficiary.id,
-            updateData,
-            { id: userProfile.id, name: userProfile.name }
-        );
-        if (result.success) {
+        
+        setDoc(beneficiaryRef, updateData, { merge: true }).then(() => {
             toast({
                 title: 'Zakat Status Updated',
-                description: `${beneficiary.name} is now ${newZakatStatus ? 'Eligible' : 'Not Eligible'} for Zakat.`,
+                description: `${beneficiary.name} is now ${newZakatStatus ? 'Eligible' : 'Not Eligible'} for Zakat in this lead.`,
                 variant: 'success',
             });
-        } else {
-            toast({ title: 'Update Failed', description: result.message, variant: 'destructive' });
-        }
+            // Also trigger a master record update for eligibility, but not for allocation
+            updateMasterBeneficiaryAction(beneficiary.id, { isEligibleForZakat: newZakatStatus }, { id: userProfile.id, name: userProfile.name });
+        }).catch((serverError: any) => {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: beneficiaryRef.path,
+                operation: 'update',
+                requestResourceData: updateData,
+            }));
+        });
     };
 
   const filteredAndSortedBeneficiaries = useMemo(() => {

@@ -9,7 +9,7 @@ import { FieldValue, DocumentData } from 'firebase-admin/firestore';
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
 
 function sanitizeBeneficiaryForMasterList(data: DocumentData): Partial<Beneficiary> {
-    const { status, kitAmount, itemCategoryId, itemCategoryName, ...masterData } = data;
+    const { status, kitAmount, itemCategoryId, itemCategoryName, zakatAllocation, ...masterData } = data;
     return masterData;
 }
 
@@ -62,7 +62,7 @@ export async function updateMasterBeneficiaryAction(beneficiaryId: string, data:
             'name', 'address', 'phone', 'age', 'occupation', 'members',
             'earningMembers', 'male', 'female', 'idProofType', 'idNumber',
             'idProofUrl', 'idProofFilename', 'idProofIsPublic', 'referralBy', 'notes',
-            'isEligibleForZakat', 'zakatAllocation'
+            'isEligibleForZakat' // Zakat ELIGIBILITY is a master property, but the ALLOCATION amount is not.
         ];
 
         const subCollectionData: Partial<Beneficiary> = {};
@@ -163,7 +163,7 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
         const fileRef = adminStorage.bucket().file(filePath);
         await fileRef.delete().catch((storageError: any) => {
             // We only log a warning if the file doesn't exist, as it might not have been uploaded.
-            if (storageError.code !== 'storage/object-not-found') {
+            if (storageError.code !== 404) {
                 console.warn(`Could not delete beneficiary ID proof from storage: ${storageError.message}`);
             }
         });

@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
@@ -199,11 +198,11 @@ export default function BeneficiaryDetailsPage() {
         return;
     }
 
-    const { idProofFile, idProofDeleted, kitAmount, status, ...beneficiaryData } = data;
+    const { idProofFile, idProofDeleted, kitAmount, status, zakatAllocation, ...beneficiaryData } = data;
     
     const result = await updateMasterBeneficiaryAction(
         beneficiaryId, 
-        { ...beneficiaryData, idProofUrl },
+        { ...beneficiaryData, idProofUrl, isEligibleForZakat: data.isEligibleForZakat },
         { id: currentUserProfile.id, name: currentUserProfile.name }
     );
     
@@ -347,6 +346,7 @@ export default function BeneficiaryDetailsPage() {
               kitAmountLabel="Kit Amount (₹)"
               isSessionLoading={isProfileLoading}
               hideKitAmount={true}
+              hideZakatAllocation={true}
           />
         </CardContent>
       </Card>

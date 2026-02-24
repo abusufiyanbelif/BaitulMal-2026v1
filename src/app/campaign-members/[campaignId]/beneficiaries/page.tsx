@@ -3,9 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
-import { useCollection } from '@/firebase/firestore/use-collection';
-import { useDoc } from '@/firebase/firestore/use-doc';
+import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -498,26 +496,32 @@ const sortedGroupKeys = useMemo(() => {
   };
 
   const handleZakatToggle = async (beneficiary: Beneficiary) => {
-    if (!canUpdate || !userProfile) return;
+    if (!canUpdate || !userProfile || !firestore || !campaignId) return;
     const newZakatStatus = !beneficiary.isEligibleForZakat;
+    
+    // This is an initiative-specific update.
+    const beneficiaryRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
     const updateData: Partial<Beneficiary> = { isEligibleForZakat: newZakatStatus };
+    
     if (!newZakatStatus) {
-        updateData.zakatAllocation = 0;
+        updateData.zakatAllocation = 0; // Reset allocation if they become ineligible
     }
-    const result = await updateMasterBeneficiaryAction(
-        beneficiary.id,
-        updateData,
-        { id: userProfile.id, name: userProfile.name }
-    );
-    if (result.success) {
+    
+    setDoc(beneficiaryRef, updateData, { merge: true }).then(() => {
         toast({
             title: 'Zakat Status Updated',
-            description: `${beneficiary.name} is now ${newZakatStatus ? 'Eligible' : 'Not Eligible'} for Zakat.`,
+            description: `${beneficiary.name} is now ${newZakatStatus ? 'Eligible' : 'Not Eligible'} for Zakat in this campaign.`,
             variant: 'success',
         });
-    } else {
-        toast({ title: 'Update Failed', description: result.message, variant: 'destructive' });
-    }
+        // Also trigger a master record update for eligibility, but not for allocation
+        updateMasterBeneficiaryAction(beneficiary.id, { isEligibleForZakat: newZakatStatus }, { id: userProfile.id, name: userProfile.name });
+    }).catch((serverError: any) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: beneficiaryRef.path,
+            operation: 'update',
+            requestResourceData: updateData,
+        }));
+    });
   };
 
   if (isLoading && !campaign) {
@@ -696,7 +700,7 @@ const sortedGroupKeys = useMemo(() => {
             }),
         } as Beneficiary;
 
-        const { status, kitAmount, ...masterBeneficiaryData } = fullData;
+        const { status, kitAmount, zakatAllocation, ...masterBeneficiaryData } = fullData;
 
         const oldKitAmount = editingBeneficiary?.kitAmount || 0;
         const newKitAmount = data.kitAmount || 0;
