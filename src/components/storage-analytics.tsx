@@ -74,7 +74,7 @@ export function StorageAnalytics() {
     }, {} as ChartConfig);
 
     return (
-        <Card>
+        <Card className="animate-fade-in-zoom">
             <CardHeader>
                 <CardTitle>Storage Analytics</CardTitle>
                 <CardDescription>
