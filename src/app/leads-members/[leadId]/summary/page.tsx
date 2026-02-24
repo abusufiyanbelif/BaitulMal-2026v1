@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -846,8 +845,7 @@ Your contribution, big or small, makes a huge difference.
                             </CardContent>
                         </Card>
                     </div>
-                    {summaryData && (
-                    <>
+                    
                     <Card className="animate-fade-in-up" style={{ animationDelay: '900ms' }}>
                         <CardHeader>
                             <CardTitle>Zakat Utilization</CardTitle>
@@ -858,16 +856,16 @@ Your contribution, big or small, makes a huge difference.
                         <CardContent className="space-y-3">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-muted-foreground">Total Zakat Collected</span>
-                                <span className="font-semibold font-mono">₹{summaryData.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
+                                <span className="font-semibold font-mono">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-muted-foreground">(-) Allocated as Cash-in-Hand</span>
-                                <span className="font-semibold font-mono">₹{(summaryData.zakatAllocated || 0).toLocaleString('en-IN')}</span>
+                                <span className="font-semibold font-mono">₹{(summaryData?.zakatAllocated || 0).toLocaleString('en-IN')}</span>
                             </div>
                             <Separator />
                             <div className="flex justify-between items-center text-base">
                                 <span className="font-bold">Zakat Available for Goal</span>
-                                <span className="font-bold text-primary font-mono">₹{((summaryData.fundTotals.zakat || 0) - (summaryData.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
+                                <span className="font-bold text-primary font-mono">₹{((summaryData?.fundTotals.zakat || 0) - (summaryData?.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
                             </div>
                              {lead.allowedDonationTypes?.includes('Zakat') && (
                                 <p className="text-xs text-muted-foreground pt-1">
@@ -883,16 +881,16 @@ Your contribution, big or small, makes a huge difference.
                             <CardTitle>Fund Totals by Type</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fidiya</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.fidiya.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold font-mono">₹{summaryData.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fidiya</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.fidiya.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
                             <Separator className="my-2"/>
-                            <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{summaryData.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
                         </CardContent>
                       </Card>
                       <Card className="animate-fade-in-up" style={{ animationDelay: '1100ms' }}>
@@ -902,13 +900,13 @@ Your contribution, big or small, makes a huge difference.
                           <CardContent>
                             {isClient ? (
                               <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                  <BarChart data={Object.entries(summaryData.amountsByCategory || {}).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
+                                  <BarChart data={Object.entries(summaryData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
                                       <CartesianGrid horizontal={false} />
                                       <YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/>
                                       <XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
                                       <ChartTooltip content={<ChartTooltipContent />} />
                                       <Bar dataKey="value" radius={4}>
-                                          {Object.entries(summaryData.amountsByCategory || {}).map(([name]) => (
+                                          {Object.entries(summaryData?.amountsByCategory || {}).map(([name]) => (
                                               <Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />
                                           ))}
                                       </Bar>
@@ -927,8 +925,8 @@ Your contribution, big or small, makes a huge difference.
                                <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
                                   <PieChart>
                                       <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                      <Pie data={summaryData.donationPaymentTypeChartData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5}>
-                                          {summaryData.donationPaymentTypeChartData?.map((entry) => (
+                                      <Pie data={summaryData?.donationPaymentTypeChartData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5}>
+                                          {summaryData?.donationPaymentTypeChartData?.map((entry) => (
                                               <Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />
                                           ))}
                                       </Pie>
@@ -939,7 +937,6 @@ Your contribution, big or small, makes a huge difference.
                           </CardContent>
                       </Card>
                     </div>
-                    </>
                   )}
                 </div>
             </div>

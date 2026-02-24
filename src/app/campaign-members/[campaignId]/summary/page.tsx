@@ -270,7 +270,6 @@ export default function CampaignSummaryPage() {
             }
         }
         
-        // Handle artifact uploads
         const documentUploadPromises = newDocuments.map(async (file) => {
             const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
             const fileRef = storageRef(storage, `campaigns/${campaignId}/documents/${safeFileName}`);
@@ -695,7 +694,7 @@ Your contribution, big or small, makes a huge difference.
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex w-max space-x-2">
                         {canReadSummary && (
-                            <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-primary-foreground shadow" : "hover:bg-accent hover:text-accent-foreground")}>
+                            <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>
                                 Summary
                             </Link>
                         )}
