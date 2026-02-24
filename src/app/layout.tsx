@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   },
   description: 'Managing and tracking community support campaigns efficiently.',
   manifest: '/manifest.json',
+  icons: {
+    apple: '/apple-icon.png',
+  },
 };
 
 export const viewport: Viewport = {

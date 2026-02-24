@@ -1,21 +1,21 @@
 {
   "name": "Baitulmal Samajik Sanstha Solapur",
-  "short_name": "BMSS",
+  "short_name": "Baitulmal",
   "description": "Managing and tracking community support campaigns efficiently.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f2f9f5",
+  "background_color": "#eef7f0",
   "theme_color": "#16a34a",
   "icons": [
     {
-      "src": "/icons/icon-192x192.svg",
+      "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png"
     },
     {
-      "src": "/icons/icon-512x512.svg",
+      "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ]
 }
