@@ -64,6 +64,7 @@ const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
     Sadaqah: { label: "Sadaqah", color: "hsl(var(--chart-2))" },
+    Fidiya: { label: "Fidiya", color: "hsl(var(--chart-8))" },
     Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
     Interest: { label: "Interest", color: "hsl(var(--chart-3))" },
     Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
@@ -136,7 +137,7 @@ export default function PublicCampaignSummaryPage() {
             if (d.linkSplit && d.linkSplit.length > 0) {
                 return d.linkSplit.some(link => link.linkId === campaign.id && link.linkType === 'campaign');
             }
-            return d.campaignId === campaign.id;
+            return (d as any).campaignId === campaign.id;
         });
 
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
@@ -145,41 +146,51 @@ export default function PublicCampaignSummaryPage() {
 
         verifiedDonationsList.forEach(d => {
             let amountForThisCampaign = 0;
-            const campaignLink = d.linkSplit?.find(l => l.linkId === campaign.id && l.linkType === 'campaign');
+            const campaignLink = d.linkSplit?.find((l: any) => l.linkId === campaign.id && l.linkType === 'campaign');
             
             if (campaignLink) {
                 amountForThisCampaign = campaignLink.amount;
-            } else if ((!d.linkSplit || d.linkSplit.length === 0) && d.campaignId === campaign.id) {
-                // This is a legacy donation for this campaign
+            } else if ((!d.linkSplit || d.linkSplit.length === 0) && (d as any).campaignId === campaign.id) {
                 amountForThisCampaign = d.amount;
             } else {
-                return; // Skip this donation if not related
+                return;
+            }
+
+            if (amountForThisCampaign === 0) {
+                return;
             }
 
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
-            const allocationProportion = amountForThisCampaign / totalDonationAmount;
+            const proportionForThisCampaign = amountForThisCampaign / totalDonationAmount;
 
             const splits = d.typeSplit && d.typeSplit.length > 0
                 ? d.typeSplit
                 : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
             
-            splits.forEach(split => {
+            splits.forEach((split: any) => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
+
                 if (amountsByCategory.hasOwnProperty(category)) {
-                    amountsByCategory[category as DonationCategory] += split.amount * allocationProportion;
+                    const allocatedAmount = split.amount * proportionForThisCampaign;
+                    amountsByCategory[category as DonationCategory] += allocatedAmount;
                 }
             });
         });
 
+        const zakatForGoalAmount = amountsByCategory['Zakat'] || 0;
+        
         const zakatAllocated = beneficiaries
             .filter(b => b.isEligibleForZakat && b.zakatAllocation)
             .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
+
+        const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
 
         const totalCollectedForGoal = Object.entries(amountsByCategory)
             .filter(([category]) => campaign.allowedDonationTypes?.includes(category as DonationCategory))
             .reduce((sum, [category, amount]) => {
                 if (category === 'Zakat') {
-                    return sum + Math.max(0, amount - zakatAllocated);
+                    // Only use the available portion of Zakat for the goal.
+                    return sum + zakatAvailableForGoal;
                 }
                 return sum + amount;
             }, 0);
@@ -198,9 +209,10 @@ export default function PublicCampaignSummaryPage() {
         const loanTotal = amountsByCategory['Loan'] || 0;
         const interestTotal = amountsByCategory['Interest'] || 0;
         const sadaqahTotal = amountsByCategory['Sadaqah'] || 0;
+        const fidiyaTotal = amountsByCategory['Fidiya'] || 0;
         const lillahTotal = amountsByCategory['Lillah'] || 0;
         const monthlyContributionTotal = amountsByCategory['Monthly Contribution'] || 0;
-        const grandTotal = fitraTotal + zakatTotal + loanTotal + interestTotal + sadaqahTotal + lillahTotal + monthlyContributionTotal;
+        const grandTotal = fitraTotal + zakatTotal + loanTotal + interestTotal + sadaqahTotal + fidiyaTotal + lillahTotal + monthlyContributionTotal;
 
         return {
             totalCollectedForGoal,
@@ -210,7 +222,8 @@ export default function PublicCampaignSummaryPage() {
             amountsByCategory,
             donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
             zakatAllocated,
-            fundTotals: { fitra: fitraTotal, zakat: zakatTotal, loan: loanTotal, interest: interestTotal, sadaqah: sadaqahTotal, lillah: lillahTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal, }
+            zakatAvailableForGoal,
+            fundTotals: { fitra: fitraTotal, zakat: zakatTotal, loan: loanTotal, interest: interestTotal, sadaqah: sadaqahTotal, fidiya: fidiyaTotal, lillah: lillahTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal, }
         };
     }, [allDonations, campaign, beneficiaries]);
 
@@ -580,6 +593,11 @@ Your contribution, big or small, makes a huge difference.
                                 <span className="font-bold">Zakat Balance for Goal</span>
                                 <span className="font-bold text-primary font-mono">₹{((fundingData.fundTotals.zakat || 0) - (fundingData.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
                             </div>
+                             {campaign.allowedDonationTypes?.includes('Zakat') && (
+                                <p className="text-xs text-muted-foreground pt-1">
+                                    Because Zakat is an allowed donation type for this campaign, the available balance is automatically applied to the fundraising goal.
+                                </p>
+                            )}
                         </CardContent>
                     </Card>
 
@@ -592,6 +610,7 @@ Your contribution, big or small, makes a huge difference.
                               <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
                               <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
                               <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                              <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fidiya</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.fidiya.toLocaleString('en-IN') ?? '0.00'}</span></div>
                               <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
                               <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
                               <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>

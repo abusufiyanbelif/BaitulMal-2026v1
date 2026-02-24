@@ -29,7 +29,7 @@ import type { Lead, Beneficiary, Donation, DonationCategory, ItemCategory } from
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift, Target, HandHelping, File } from 'lucide-react';
+import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift, Target, HandHelping, File, ChevronDown, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
@@ -59,13 +59,13 @@ import { Separator } from '@/components/ui/separator';
 
 
 const donationCategoryChartConfig = {
+    Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
     Sadaqah: { label: "Sadaqah", color: "hsl(var(--chart-2))" },
     Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
     Interest: { label: "Interest", color: "hsl(var(--chart-3))" },
     Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
     'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-5))" },
-    Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
 } satisfies ChartConfig;
 
 const donationPaymentTypeChartConfig = {
@@ -88,9 +88,17 @@ export default function PublicLeadSummaryPage() {
     
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
+    const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
 
     const summaryRef = useRef<HTMLDivElement>(null);
     
+    const toggleGroup = (groupId: string) => {
+        setCollapsedGroups(prev => ({
+            ...prev,
+            [groupId]: !prev[groupId]
+        }));
+    };
+
     // Data fetching
     const leadDocRef = useMemoFirebase(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
@@ -131,14 +139,9 @@ export default function PublicLeadSummaryPage() {
         verifiedDonationsList.forEach(d => {
             const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id);
             if (!leadAllocation) return;
-
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
             const allocationProportion = leadAllocation.amount / totalDonationAmount;
-
-            const splits = d.typeSplit && d.typeSplit.length > 0
-                ? d.typeSplit
-                : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
-            
+            const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
             splits.forEach(split => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
                 if (amountsByCategory.hasOwnProperty(category)) {
@@ -146,16 +149,20 @@ export default function PublicLeadSummaryPage() {
                 }
             });
         });
+        
+        const zakatForGoalAmount = amountsByCategory['Zakat'] || 0;
 
         const zakatAllocated = beneficiaries
             .filter(b => b.isEligibleForZakat && b.zakatAllocation)
             .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
+            
+        const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
 
         const totalCollectedForGoal = Object.entries(amountsByCategory)
             .filter(([category]) => lead.allowedDonationTypes?.includes(category as DonationCategory))
             .reduce((sum, [category, amount]) => {
                 if (category === 'Zakat') {
-                    return sum + Math.max(0, amount - zakatAllocated);
+                    return sum + zakatAvailableForGoal;
                 }
                 return sum + amount;
             }, 0);
@@ -174,10 +181,11 @@ export default function PublicLeadSummaryPage() {
         const loanTotal = amountsByCategory['Loan'] || 0;
         const interestTotal = amountsByCategory['Interest'] || 0;
         const sadaqahTotal = amountsByCategory['Sadaqah'] || 0;
+        const fidiyaTotal = amountsByCategory['Fidiya'] || 0;
         const lillahTotal = amountsByCategory['Lillah'] || 0;
         const monthlyContributionTotal = amountsByCategory['Monthly Contribution'] || 0;
-        const grandTotal = fitraTotal + zakatTotal + loanTotal + interestTotal + sadaqahTotal + lillahTotal + monthlyContributionTotal;
-        
+        const grandTotal = fitraTotal + zakatTotal + loanTotal + interestTotal + sadaqahTotal + fidiyaTotal + lillahTotal + monthlyContributionTotal;
+
         return {
             totalCollectedForGoal,
             fundingProgress,
@@ -186,7 +194,8 @@ export default function PublicLeadSummaryPage() {
             amountsByCategory,
             donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
             zakatAllocated,
-            fundTotals: { fitra: fitraTotal, zakat: zakatTotal, loan: loanTotal, interest: interestTotal, sadaqah: sadaqahTotal, lillah: lillahTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal, }
+            zakatAvailableForGoal,
+            fundTotals: { fitra: fitraTotal, zakat: zakatTotal, loan: loanTotal, interest: interestTotal, sadaqah: sadaqahTotal, fidiya: fidiyaTotal, lillah: lillahTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal, }
         };
     }, [allDonations, lead, beneficiaries]);
     
@@ -511,6 +520,11 @@ Your contribution, big or small, makes a huge difference.
                                 <span className="font-bold">Zakat Balance for Goal</span>
                                 <span className="font-bold text-primary font-mono">₹{((fundingData.fundTotals.zakat || 0) - (fundingData.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
                             </div>
+                            {lead.allowedDonationTypes?.includes('Zakat') && (
+                                <p className="text-xs text-muted-foreground pt-1">
+                                    Because Zakat is an allowed donation type for this lead, the available balance is automatically applied to the fundraising goal.
+                                </p>
+                            )}
                         </CardContent>
                     </Card>
                     <div className="grid gap-6 lg:grid-cols-2">
