@@ -1,0 +1,12 @@
+src/app/leads-members/[leadId]/summary/page.tsx(479,9): error TS2657: JSX expressions must have one parent element.
+src/app/leads-members/[leadId]/summary/page.tsx(550,37): error TS1005: '(' expected.
+src/app/leads-members/[leadId]/summary/page.tsx(550,38): error TS1131: Property or signature expected.
+src/app/leads-members/[leadId]/summary/page.tsx(550,42): error TS1005: ':' expected.
+src/app/leads-members/[leadId]/summary/page.tsx(550,215): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/leads-members/[leadId]/summary/page.tsx(552,35): error TS1003: Identifier expected.
+src/app/leads-members/[leadId]/summary/page.tsx(553,30): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/leads-members/[leadId]/summary/page.tsx(554,27): error TS17002: Expected corresponding JSX closing tag for 'Card'.
+src/app/leads-members/[leadId]/summary/page.tsx(555,23): error TS17002: Expected corresponding JSX closing tag for 'div'.
+src/app/leads-members/[leadId]/summary/page.tsx(608,15): error TS17002: Expected corresponding JSX closing tag for 'main'.
+src/app/leads-members/[leadId]/summary/page.tsx(615,9): error TS1005: ')' expected.
+src/app/leads-members/[leadId]/summary/page.tsx(616,5): error TS1109: Expression expected.

@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { updateMasterBeneficiaryAction, updateInitiativeBeneficiaryDetailsAction } from '../actions';
+import { updateMasterBeneficiaryAction, updateInitiativeBeneficiaryDetailsAction, updateBeneficiaryStatusInInitiativeAction } from '../actions';
 import { useSession } from '@/hooks/use-session';
 import { BrandedLoader } from '@/components/branded-loader';
 
@@ -30,7 +30,7 @@ interface LinkedInitiative {
     type: 'Campaign' | 'Lead';
     status: Campaign['status'] | Lead['status'];
     kitAmount: number;
-    beneficiaryStatus: 'Given' | 'Pending' | 'Hold' | 'Need More Details' | 'Verified';
+    beneficiaryStatus: Beneficiary['status'];
 }
 
 export default function BeneficiaryDetailsPage() {
@@ -84,7 +84,7 @@ export default function BeneficiaryDetailsPage() {
             if (docSnap.exists()) {
                 setInitiativeBeneficiaryData(docSnap.data() as Beneficiary);
             }
-        }).catch(err => {
+        }).catch((err: any) => {
             console.error("Error fetching initiative-specific beneficiary data:", err);
             toast({ title: "Error", description: "Could not load context-specific data for this beneficiary.", variant: 'destructive'});
         }).finally(() => {
@@ -118,7 +118,7 @@ export default function BeneficiaryDetailsPage() {
         const campaignsQuery = query(collection(firestore, 'campaigns') as CollectionReference<Campaign>);
         const campaignsSnapshot = await getDocs(campaignsQuery);
 
-        for (const campaignDoc of campaignsSnapshot.docs) {
+        for (const campaignDoc: any of campaignsSnapshot.docs) {
             const beneficiarySubDocRef = doc(firestore, `campaigns/${campaignDoc.id}/beneficiaries`, beneficiary.id);
             const beneficiarySnap = await getDoc(beneficiarySubDocRef);
 
@@ -139,7 +139,7 @@ export default function BeneficiaryDetailsPage() {
         const leadsQuery = query(collection(firestore, 'leads') as CollectionReference<Lead>);
         const leadsSnapshot = await getDocs(leadsQuery);
 
-        for (const leadDoc of leadsSnapshot.docs) {
+        for (const leadDoc: any of leadsSnapshot.docs) {
             const beneficiarySubDocRef = doc(firestore, `leads/${leadDoc.id}/beneficiaries`, beneficiary.id);
             const beneficiarySnap = await getDoc(beneficiarySubDocRef);
             
@@ -455,7 +455,7 @@ export default function BeneficiaryDetailsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {linkedInitiatives.map((link: LinkedInitiative) => (
+                            {linkedInitiatives.map((link) => (
                                 <TableRow key={link.id}>
                                     <TableCell>
                                         <Link href={link.type === 'Campaign' ? `/campaign-members/${link.id}/beneficiaries` : `/leads-members/${link.id}/beneficiaries`} className="font-medium text-primary hover:underline flex items-center gap-2">

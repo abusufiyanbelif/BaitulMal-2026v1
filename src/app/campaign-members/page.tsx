@@ -6,8 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping } from 'lucide-react';
-import { useCollection } from '@/firebase/firestore/use-collection';
-import { useFirestore, useStorage } from '@/firebase/provider';
+import { useCollection, useFirestore, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -46,8 +45,6 @@ import { CopyCampaignDialog } from '@/components/copy-campaign-dialog';
 import { copyCampaignAction, deleteCampaignAction } from './actions';
 import { getNestedValue } from '@/lib/utils';
 import Image from 'next/image';
-import { useMemoFirebase } from '@/firebase/provider';
-import { errorEmitter, FirestorePermissionError } from '@/firebase';
 
 export default function CampaignPage() {
   const router = useRouter();
@@ -547,6 +544,7 @@ export default function CampaignPage() {
     </>
   );
 }
+
 
 
 

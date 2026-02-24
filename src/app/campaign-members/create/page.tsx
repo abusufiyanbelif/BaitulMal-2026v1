@@ -3,8 +3,7 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, errorEmitter, FirestorePermissionError, useStorage, useAuth, useMemoFirebase } from '@/firebase';
-import { useCollection } from '@/firebase/firestore/use-collection';
+import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage, useMemoFirebase, useAuth } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -330,9 +329,9 @@ export default function CreateCampaignPage() {
                         <FormItem><FormLabel>Authenticity *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select authenticity" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Pending Verification">Pending Verification</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="On Hold">On Hold</SelectItem><SelectItem value="Rejected">Rejected</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                     )}/>
                 </div>
-                <FormField control={form.control} name="publicVisibility" render={({ field }) => (
-                    <FormItem><FormLabel>Public Visibility *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select visibility" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Hold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish">Ready to Publish</SelectItem><SelectItem value="Published">Published</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                )}/>
+              <FormField control={form.control} name="publicVisibility" render={({ field }) => (
+                  <FormItem><FormLabel>Public Visibility *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select visibility" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Hold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish">Ready to Publish</SelectItem><SelectItem value="Published">Published</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+              )}/>
               <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={() => router.push('/campaign-members')} disabled={isLoading}>Cancel</Button>
                   <Button type="button" variant="secondary" onClick={() => { form.reset(); setDocumentsToUpload([]); }} disabled={isLoading}><RotateCcw className="mr-2 h-4 w-4"/>Reset</Button>

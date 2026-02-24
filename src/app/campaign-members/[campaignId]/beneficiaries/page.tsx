@@ -658,7 +658,7 @@ const sortedGroupKeys = useMemo(() => {
             if (idProofUrl) {
                 const oldFileRef = storageRef(storage, idProofUrl);
                 await deleteObject(oldFileRef).catch((err: any) => {
-                    if ((err.code !== 'storage/object-not-found')) console.warn("Failed to delete old ID proof:", err);
+                    if ((err as any).code !== 'storage/object-not-found') console.warn("Old ID proof deletion failed:", err);
                 });
             }
 

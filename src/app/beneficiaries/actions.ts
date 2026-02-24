@@ -23,7 +23,7 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
         await docRef.set({
             ...data,
             id: docRef.id, // Explicitly set the ID in the document
-            addedDate: new Date().toISOString().split('T')[0],
+            addedDate: data.addedDate || new Date().toISOString().split('T')[0],
             createdAt: FieldValue.serverTimestamp(),
             createdById: createdBy.id,
             createdByName: createdBy.name,
@@ -58,11 +58,6 @@ export async function updateMasterBeneficiaryAction(
             updatedById: updatedBy.id,
             updatedByName: updatedBy.name,
         }, { merge: true });
-
-        // Optional: If you still want to propagate core details to subcollections,
-        // the collectionGroup query is the way, but it must have an index.
-        // For now, we simplify to avoid the FAILED_PRECONDITION error.
-        // The UI will fetch both master and initiative docs to show merged data.
         
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
         revalidatePath('/beneficiaries');
@@ -188,7 +183,7 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
     }
     
     try {
-        const batch = adminDb.batch();
+        const batch = adminDb!.batch();
         let addedCount = 0;
         
         const masterBeneficiariesSnap = await adminDb.collection('beneficiaries').get();

@@ -478,14 +478,14 @@ export default function DonationsPage() {
                     Total for filtered donations: <span className="font-bold text-foreground">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisCampaign, 0).toFixed(2)}</span>
                     </CardDescription>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                        {canCreate && (
-                            <Button onClick={handleAdd}>
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Add Donation
-                            </Button>
-                        )}
+                {canCreate && (
+                    <div className="flex flex-wrap gap-2">
+                        <Button onClick={handleAdd}>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Add Donation
+                        </Button>
                     </div>
+                )}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-4">
                     <Input
@@ -668,7 +668,7 @@ export default function DonationsPage() {
                 </CardFooter>
             )}
         </Card>
-
+      
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -734,3 +734,9 @@ export default function DonationsPage() {
     </>
   );
 }
+
+    
+
+    
+
+    
