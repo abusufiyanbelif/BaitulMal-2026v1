@@ -23,6 +23,7 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
         await docRef.set({
             ...data,
             id: docRef.id, // Explicitly set the ID in the document
+            addedDate: new Date().toISOString().split('T')[0],
             createdAt: FieldValue.serverTimestamp(),
             createdById: createdBy.id,
             createdByName: createdBy.name,
@@ -46,53 +47,31 @@ export async function updateMasterBeneficiaryAction(
         return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     try {
-        const batch = adminDb.batch();
         const masterBeneficiaryRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
 
-        const { zakatAllocation, ...masterData } = data;
+        // Ensure initiative-specific fields are never written to the master document
+        const { zakatAllocation, kitAmount, status, ...masterData } = data;
 
-        batch.set(masterBeneficiaryRef, {
+        await masterBeneficiaryRef.set({
             ...masterData,
             updatedAt: FieldValue.serverTimestamp(),
             updatedById: updatedBy.id,
             updatedByName: updatedBy.name,
         }, { merge: true });
+
+        // Optional: If you still want to propagate core details to subcollections,
+        // the collectionGroup query is the way, but it must have an index.
+        // For now, we simplify to avoid the FAILED_PRECONDITION error.
+        // The UI will fetch both master and initiative docs to show merged data.
         
-        const fieldsToPropagate: (keyof Beneficiary)[] = [
-            'name', 'address', 'phone', 'age', 'occupation', 'members',
-            'earningMembers', 'male', 'female', 'idProofType', 'idNumber',
-            'idProofUrl', 'referralBy', 'notes',
-            'isEligibleForZakat'
-        ];
-
-        const subCollectionData: Partial<Beneficiary> = {};
-        for (const field of fieldsToPropagate) {
-            if (field in data) {
-                (subCollectionData as any)[field] = (data as any)[field];
-            }
-        }
-        
-        const allInstancesQuery = adminDb.collectionGroup('beneficiaries').where('id', '==', beneficiaryId);
-        const allInstancesSnap = await allInstancesQuery.get();
-
-        if (Object.keys(subCollectionData).length > 0) {
-            allInstancesSnap.forEach(docSnap => {
-                if (docSnap.ref.path !== masterBeneficiaryRef.path) {
-                    batch.set(docSnap.ref, subCollectionData, { merge: true });
-                }
-            });
-        }
-
-        await batch.commit();
-
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
         revalidatePath('/beneficiaries');
         revalidatePath('/campaign-members', 'layout');
         revalidatePath('/leads-members', 'layout');
 
-        return { success: true, message: `Beneficiary's master details updated across the system.` };
+        return { success: true, message: `Beneficiary's master record updated.` };
     } catch (error: any) {
-        console.error("Error updating beneficiary:", error);
+        console.error("Error updating master beneficiary:", error);
         return { success: false, message: `Failed to update beneficiary: ${error.message}` };
     }
 }
@@ -101,7 +80,7 @@ export async function updateInitiativeBeneficiaryDetailsAction(
     initiativeType: 'campaign' | 'lead',
     initiativeId: string,
     beneficiaryId: string,
-    data: { zakatAllocation?: number; kitAmount?: number }
+    data: Partial<Beneficiary>
 ): Promise<{ success: boolean; message: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) {
@@ -111,6 +90,8 @@ export async function updateInitiativeBeneficiaryDetailsAction(
     try {
         const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';
         const docRef = adminDb.doc(`${collectionName}/${initiativeId}/beneficiaries/${beneficiaryId}`);
+        
+        // Use set with merge: true to create the document if it doesn't exist, preventing FAILED_PRECONDITION errors.
         await docRef.set(data, { merge: true });
 
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
@@ -140,6 +121,7 @@ export async function updateBeneficiaryStatusInInitiativeAction(
 
     try {
         const docRef = adminDb.doc(docPath);
+        // Use set with merge to be safe
         await docRef.set({ status: newStatus }, { merge: true });
 
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
@@ -167,6 +149,7 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
             const parentRef = docSnap.ref.parent.parent;
             if (parentRef) {
                 const beneficiaryData = docSnap.data() as Beneficiary;
+                // Before deleting, subtract its amount from the parent's target.
                 const amountToSubtract = beneficiaryData.kitAmount || 0;
                 if (amountToSubtract > 0) {
                     batch.update(parentRef, { targetAmount: FieldValue.increment(-amountToSubtract) });
@@ -175,13 +158,13 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
             batch.delete(docSnap.ref);
         }
 
+        // The above loop also includes the master doc if it was found, but deleting it again is fine.
         batch.delete(masterBeneficiaryRef);
 
-        const filePath = `beneficiaries/${beneficiaryId}/id_proof.png`;
-        const fileRef = adminStorage.bucket().file(filePath);
-        await fileRef.delete().catch((storageError: any) => {
+        const folderPath = `beneficiaries/${beneficiaryId}/`;
+        await adminStorage.bucket().deleteFiles({ prefix: folderPath }).catch((storageError: any) => {
             if (storageError.code !== 404) {
-                console.warn(`Could not delete beneficiary ID proof from storage: ${storageError.message}`);
+                console.warn(`Could not delete beneficiary files from storage: ${storageError.message}`);
             }
         });
 

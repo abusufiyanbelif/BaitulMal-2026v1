@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { updateMasterBeneficiaryAction, updateBeneficiaryStatusInInitiativeAction, updateInitiativeBeneficiaryDetailsAction } from '../actions';
+import { updateMasterBeneficiaryAction, updateInitiativeBeneficiaryDetailsAction } from '../actions';
 import { useSession } from '@/hooks/use-session';
 import { BrandedLoader } from '@/components/branded-loader';
 
@@ -97,6 +97,7 @@ export default function BeneficiaryDetailsPage() {
 
   const formBeneficiaryData = useMemo(() => {
       if (!beneficiary) return null;
+      // Merge master data with initiative-specific data. Initiative data takes precedence.
       return {
         ...beneficiary,
         ...initiativeBeneficiaryData,
@@ -245,41 +246,56 @@ export default function BeneficiaryDetailsPage() {
         return;
     }
 
-    const { idProofFile, idProofDeleted, kitAmount, status, ...beneficiaryData } = data;
+    const { idProofFile, idProofDeleted, ...beneficiaryDataFromForm } = data;
     
-    const masterData: Partial<Beneficiary> = {
-        ...beneficiaryData,
+    // 1. Data for the master record (strips out initiative-specific fields)
+    const { status, kitAmount, zakatAllocation, ...masterData } = beneficiaryDataFromForm;
+    const finalMasterData: Partial<Beneficiary> = {
+        ...masterData,
         idProofUrl,
     };
+    
+    // 2. Data for the specific initiative sub-collection (if in context)
+    const initiativeData: Partial<Beneficiary> = {
+        ...beneficiaryDataFromForm,
+        idProofUrl,
+        id: beneficiaryId
+    };
 
+    // Run master update first
     const masterUpdateResult = await updateMasterBeneficiaryAction(
         beneficiaryId, 
-        masterData,
+        finalMasterData,
         { id: currentUserProfile.id, name: currentUserProfile.name }
     );
     
-    if (masterUpdateResult.success && initiativeContext) {
+    if (!masterUpdateResult.success) {
+        toast({ title: 'Master Record Update Failed', description: masterUpdateResult.message, variant: 'destructive' });
+        setIsSubmitting(false);
+        return;
+    }
+
+    // If in an initiative context, update the specific sub-collection doc
+    if (initiativeContext) {
         const initiativeUpdateResult = await updateInitiativeBeneficiaryDetailsAction(
             initiativeContext.type,
             initiativeContext.id,
             beneficiaryId,
-            { zakatAllocation: data.zakatAllocation }
+            initiativeData
         );
         if (!initiativeUpdateResult.success) {
-            toast({ title: 'Partial Success', description: `Master details saved, but failed to update Zakat Allocation for the specific initiative: ${initiativeUpdateResult.message}`, variant: 'destructive'});
+            toast({ title: 'Partial Success', description: `Master details saved, but failed to update details for the specific initiative: ${initiativeUpdateResult.message}`, variant: 'destructive'});
+            setIsSubmitting(false);
+            return;
         }
     }
 
-    if (masterUpdateResult.success) {
-        toast({ title: 'Success', description: masterUpdateResult.message, variant: 'success' });
-        if (redirectUrl) {
-            router.push(redirectUrl);
-        } else {
-            forceRefetch();
-            setIsEditMode(false);
-        }
+    toast({ title: 'Success', description: 'Beneficiary updated successfully.', variant: 'success' });
+    if (redirectUrl) {
+        router.push(redirectUrl);
     } else {
-        toast({ title: 'Update Failed', description: masterUpdateResult.message, variant: 'destructive' });
+        forceRefetch();
+        setIsEditMode(false);
     }
 
     setIsSubmitting(false);
@@ -310,7 +326,7 @@ export default function BeneficiaryDetailsPage() {
   const isLoading = isBeneficiaryLoading || isProfileLoading || isInitiativeDataLoading;
   const backHref = redirectUrl || '/beneficiaries';
 
-  if (isLoading) {
+  if (isLoading && !formBeneficiaryData) {
     return <BrandedLoader />;
   }
 
@@ -404,7 +420,7 @@ export default function BeneficiaryDetailsPage() {
               onSubmit={handleSave}
               onCancel={handleCancel}
               isSubmitting={isSubmitting}
-              isLoading={isBeneficiaryLoading}
+              isLoading={isBeneficiaryLoading || isInitiativeDataLoading}
               isReadOnly={!isEditMode}
               itemCategories={[]}
               kitAmountLabel="Kit Amount (₹)"

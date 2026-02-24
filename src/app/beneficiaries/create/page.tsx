@@ -50,7 +50,7 @@ export default function CreateBeneficiaryPage() {
       }
     }
 
-    const { idProofFile, idProofDeleted, status, ...beneficiaryData } = data;
+    const { idProofFile, idProofDeleted, ...beneficiaryData } = data;
 
     const newBeneficiary: Partial<Beneficiary> = {
         ...beneficiaryData,
@@ -125,7 +125,8 @@ export default function CreateBeneficiaryPage() {
                 isSubmitting={isSubmitting}
                 itemCategories={[]}
                 isLoading={false}
-                hideZakatInfo={true}
+                hideZakatInfo={false} // Show Zakat eligibility on master creation
+                hideZakatAllocation={true} // But hide allocation amount
                 kitAmountLabel="Kit Amount (₹)"
                 isSessionLoading={isProfileLoading}
             />
