@@ -4,9 +4,14 @@
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import type { Beneficiary } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldValue, DocumentData } from 'firebase-admin/firestore';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
+
+function sanitizeBeneficiaryForMasterList(data: DocumentData): Partial<Beneficiary> {
+    const { status, kitAmount, itemCategoryId, itemCategoryName, ...masterData } = data;
+    return masterData;
+}
 
 export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
     const { adminDb } = getAdminServices();
@@ -195,7 +200,8 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
             for (const benDoc of campaignBeneficiariesSnap.docs) {
                 if (!masterIds.has(benDoc.id)) {
                     const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
-                    batch.set(masterRef, benDoc.data());
+                    const sanitizedData = sanitizeBeneficiaryForMasterList(benDoc.data());
+                    batch.set(masterRef, sanitizedData, { merge: true });
                     masterIds.add(benDoc.id); // Avoid re-adding if found in another campaign
                     addedCount++;
                 }
@@ -208,7 +214,8 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
             for (const benDoc of leadBeneficiariesSnap.docs) {
                 if (!masterIds.has(benDoc.id)) {
                     const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
-                    batch.set(masterRef, benDoc.data());
+                    const sanitizedData = sanitizeBeneficiaryForMasterList(benDoc.data());
+                    batch.set(masterRef, sanitizedData, { merge: true });
                     masterIds.add(benDoc.id);
                     addedCount++;
                 }

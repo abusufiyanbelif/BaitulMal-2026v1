@@ -13,6 +13,7 @@
     "db:migrate-categories": "tsx scripts/migrate-categories.ts",
     "db:migrate-donations": "tsx scripts/migrate-donations.ts",
     "db:migrate-zakat": "tsx scripts/migrate-zakat.ts",
+    "db:migrate-beneficiaries": "tsx scripts/migrate-beneficiaries.ts",
     "db:check-structure": "tsx scripts/check-structure.ts",
     "db:erase": "tsx scripts/erase.ts"
   },
