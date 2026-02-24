@@ -1,5 +1,4 @@
 
-
 import type { DocumentData, Timestamp, FieldValue } from 'firebase/firestore';
 import type { UserPermissions, GroupId } from './modules';
 import { donationCategories } from './modules';
@@ -31,6 +30,21 @@ export interface PaymentSettings extends DocumentData {
 
 export interface InfoSettings extends DocumentData {
   isDonationInfoPublic?: boolean;
+}
+
+export interface DonationTypeInfo {
+  id: string;
+  title: string;
+  description: string;
+  usage: string;
+  restrictions?: string;
+  impact?: string;
+  keyUse?: string;
+  application?: string;
+}
+
+export interface DonationInfoData extends DocumentData {
+  types: DonationTypeInfo[];
 }
 
 export interface CampaignDocument {
