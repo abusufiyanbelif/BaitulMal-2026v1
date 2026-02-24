@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useCollection, useDoc } from '@/firebase';
 import { collection, query, where, DocumentReference, doc } from 'firebase/firestore';
-import type { Donation, Campaign, Lead } from '@/lib/types';
+import type { Donation, Campaign, Lead, DonationCategory } from '@/lib/types';
 import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -62,36 +62,57 @@ export default function DonationsSummaryPage() {
     let monthlyContribution = 0;
 
     for (const d of donations) {
-        if (d.typeSplit && d.typeSplit.length > 0) {
-            for (const split of d.typeSplit) {
-                switch (split.category) {
-                    case 'Fitra':
-                        fitra += split.amount;
-                        break;
-                    case 'Zakat':
-                        zakat += split.amount;
-                        break;
-                    case 'Sadaqah':
-                        sadaqah += split.amount;
-                        break;
-                    case 'Fidiya':
-                        fidiya += split.amount;
-                        break;
-                    case 'Interest':
-                        interest += split.amount;
-                        break;
-                    case 'Lillah':
-                        lillah += split.amount;
-                        break;
-                    case 'Loan':
-                        loan += split.amount;
-                        break;
-                    case 'Monthly Contribution':
-                        monthlyContribution += split.amount;
-                        break;
-                }
-            }
+        let amountForThisCampaign = 0;
+        const campaignLink = d.linkSplit?.find(l => l.linkId === campaignId && l.linkType === 'campaign');
+
+        if (campaignLink) {
+            amountForThisCampaign = campaignLink.amount;
+        } else if ((!d.linkSplit || d.linkSplit.length === 0) && (d as any).campaignId === campaignId) {
+            amountForThisCampaign = d.amount;
+        } else {
+            continue; // Skip if donation is not actually for this campaign
         }
+
+        if (amountForThisCampaign === 0) continue;
+
+        const totalDonationAmount = d.amount > 0 ? d.amount : 1;
+        const proportionForThisCampaign = amountForThisCampaign / totalDonationAmount;
+        
+        const splits = d.typeSplit && d.typeSplit.length > 0
+            ? d.typeSplit
+            : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
+            
+        splits.forEach(split => {
+            const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
+            const splitAmountForThisCampaign = split.amount * proportionForThisCampaign;
+            
+            switch (category) {
+                case 'Fitra':
+                    fitra += splitAmountForThisCampaign;
+                    break;
+                case 'Zakat':
+                    zakat += splitAmountForThisCampaign;
+                    break;
+                case 'Sadaqah':
+                    sadaqah += splitAmountForThisCampaign;
+                    break;
+                case 'Fidiya':
+                    fidiya += splitAmountForThisCampaign;
+                    break;
+                case 'Interest':
+                    interest += splitAmountForThisCampaign;
+                    break;
+                case 'Lillah':
+                    lillah += splitAmountForThisCampaign;
+                    break;
+                case 'Loan':
+                    loan += splitAmountForThisCampaign;
+                    break;
+                case 'Monthly Contribution':
+                    monthlyContribution += splitAmountForThisCampaign;
+                    break;
+            }
+        });
     }
     const grandTotal = fitra + zakat + sadaqah + fidiya + interest + lillah + loan + monthlyContribution;
 
@@ -106,7 +127,7 @@ export default function DonationsSummaryPage() {
         monthlyContributionTotal: monthlyContribution,
         grandTotal: grandTotal,
     };
-}, [donations]);
+}, [donations, campaignId]);
 
   const statusStats = useMemo(() => {
     if (!donations) {

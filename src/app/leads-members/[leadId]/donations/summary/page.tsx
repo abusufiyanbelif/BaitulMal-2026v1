@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useCollection, useDoc } from '@/firebase';
 import { collection, query, where, DocumentReference, doc } from 'firebase/firestore';
-import type { Donation, Lead } from '@/lib/types';
+import type { Donation, Lead, DonationCategory } from '@/lib/types';
 import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,7 +34,7 @@ export default function DonationsSummaryPage() {
 
   const donations = useMemo(() => {
     if (!allDonations) return [];
-    return allDonations.filter(d => d.linkSplit?.some(link => link.linkId === leadId));
+    return allDonations.filter(d => d.linkSplit?.some(link => link.linkId === leadId && link.linkType === 'lead'));
   }, [allDonations, leadId]);
   
   const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
@@ -56,36 +56,50 @@ export default function DonationsSummaryPage() {
     let monthlyContribution = 0;
 
     for (const d of donations) {
-        if (d.typeSplit && d.typeSplit.length > 0) {
-            for (const split of d.typeSplit) {
-                switch (split.category) {
-                    case 'Fitra':
-                        fitra += split.amount;
-                        break;
-                    case 'Zakat':
-                        zakat += split.amount;
-                        break;
-                    case 'Sadaqah':
-                        sadaqah += split.amount;
-                        break;
-                    case 'Fidiya':
-                        fidiya += split.amount;
-                        break;
-                    case 'Interest':
-                        interest += split.amount;
-                        break;
-                    case 'Lillah':
-                        lillah += split.amount;
-                        break;
-                    case 'Loan':
-                        loan += split.amount;
-                        break;
-                    case 'Monthly Contribution':
-                        monthlyContribution += split.amount;
-                        break;
-                }
+        const leadLink = d.linkSplit?.find(l => l.linkId === leadId && l.linkType === 'lead');
+        if (!leadLink) continue;
+        
+        const amountForThisLead = leadLink.amount;
+        if (amountForThisLead === 0) continue;
+
+        const totalDonationAmount = d.amount > 0 ? d.amount : 1;
+        const proportionForThisLead = amountForThisLead / totalDonationAmount;
+        
+        const splits = d.typeSplit && d.typeSplit.length > 0
+            ? d.typeSplit
+            : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
+            
+        splits.forEach(split => {
+            const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
+            const splitAmountForThisLead = split.amount * proportionForThisLead;
+            
+            switch (category) {
+                case 'Fitra':
+                    fitra += splitAmountForThisLead;
+                    break;
+                case 'Zakat':
+                    zakat += splitAmountForThisLead;
+                    break;
+                case 'Sadaqah':
+                    sadaqah += splitAmountForThisLead;
+                    break;
+                case 'Fidiya':
+                    fidiya += splitAmountForThisLead;
+                    break;
+                case 'Interest':
+                    interest += splitAmountForThisLead;
+                    break;
+                case 'Lillah':
+                    lillah += splitAmountForThisLead;
+                    break;
+                case 'Loan':
+                    loan += splitAmountForThisLead;
+                    break;
+                case 'Monthly Contribution':
+                    monthlyContribution += splitAmountForThisLead;
+                    break;
             }
-        }
+        });
     }
     const grandTotal = fitra + zakat + sadaqah + fidiya + interest + lillah + loan + monthlyContribution;
 
@@ -100,7 +114,7 @@ export default function DonationsSummaryPage() {
         monthlyContributionTotal: monthlyContribution,
         grandTotal: grandTotal,
     };
-}, [donations]);
+  }, [donations, leadId]);
 
   const statusStats = useMemo(() => {
     if (!donations) {
@@ -112,15 +126,18 @@ export default function DonationsSummaryPage() {
     }
     return donations.reduce((acc, donation) => {
       const status = donation.status || 'Pending';
+      const leadLink = donation.linkSplit?.find(l => l.linkId === leadId && l.linkType === 'lead');
+      const amountForThisLead = leadLink?.amount || 0;
+
       if (status === 'Verified') {
         acc.verified.count += 1;
-        acc.verified.amount += donation.amount;
+        acc.verified.amount += amountForThisLead;
       } else if (status === 'Pending') {
         acc.pending.count += 1;
-        acc.pending.amount += donation.amount;
+        acc.pending.amount += amountForThisLead;
       } else if (status === 'Canceled') {
         acc.canceled.count += 1;
-        acc.canceled.amount += donation.amount;
+        acc.canceled.amount += amountForThisLead;
       }
       return acc;
     }, {
@@ -128,7 +145,7 @@ export default function DonationsSummaryPage() {
       pending: { count: 0, amount: 0 },
       canceled: { count: 0, amount: 0 },
     });
-  }, [donations]);
+  }, [donations, leadId]);
 
   const isLoading = isLeadLoading || areDonationsLoading || isProfileLoading;
 
