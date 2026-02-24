@@ -28,16 +28,25 @@ function RouteGuard({ children }: { children: ReactNode }) {
             return;
         }
         
+        // If user is logged in, redirect away from login page
+        if (user && pathname === '/login') {
+            router.push('/dashboard');
+            return;
+        }
+
+        // If not logged in and on a protected route, redirect to login page
         if (!user && !isPublicRoute && !isHomePage) {
             router.push('/login');
         }
+        
+        // If logged in and on the homepage, redirect to dashboard
         if (user && isHomePage) {
             router.push('/dashboard');
         }
     }, [user, isLoading, isPublicRoute, isHomePage, pathname, router]);
 
     // Show a loader while the session is loading OR while a redirect is imminent.
-    if (isLoading || (!user && !isPublicRoute && !isHomePage) || (user && isHomePage)) {
+    if (isLoading || (!user && !isPublicRoute && !isHomePage) || (user && isHomePage) || (user && pathname === '/login')) {
         return <BrandedLoader />;
     }
     

@@ -90,7 +90,7 @@ export default function PublicLeadSummaryPage() {
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
 
     const summaryRef = useRef<HTMLDivElement>(null);
-
+    
     // Data fetching
     const leadDocRef = useMemoFirebase(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
@@ -120,7 +120,7 @@ export default function PublicLeadSummaryPage() {
     }, [lead?.itemCategories]);
 
     const fundingData = useMemo(() => {
-        if (!allDonations || !lead) return null;
+        if (!allDonations || !lead || !beneficiaries) return null;
 
         const donations = allDonations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id && link.linkType === 'lead'));
 
@@ -147,9 +147,18 @@ export default function PublicLeadSummaryPage() {
             });
         });
 
+        const zakatAllocated = beneficiaries
+            .filter(b => b.isEligibleForZakat && b.zakatAllocation)
+            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
+
         const totalCollectedForGoal = Object.entries(amountsByCategory)
             .filter(([category]) => lead.allowedDonationTypes?.includes(category as DonationCategory))
-            .reduce((sum, [, amount]) => sum + amount, 0);
+            .reduce((sum, [category, amount]) => {
+                if (category === 'Zakat') {
+                    return sum + Math.max(0, amount - zakatAllocated);
+                }
+                return sum + amount;
+            }, 0);
 
         const fundingGoal = lead.targetAmount || 0;
         const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
@@ -176,9 +185,10 @@ export default function PublicLeadSummaryPage() {
             remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal),
             amountsByCategory,
             donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
+            zakatAllocated,
             fundTotals: { fitra: fitraTotal, zakat: zakatTotal, loan: loanTotal, interest: interestTotal, sadaqah: sadaqahTotal, lillah: lillahTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal, }
         };
-    }, [allDonations, lead]);
+    }, [allDonations, lead, beneficiaries]);
     
      const beneficiaryData = useMemo(() => {
         if (!beneficiaries) return null;
@@ -443,7 +453,7 @@ Your contribution, big or small, makes a huge difference.
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Kits Given</CardTitle>
+                            <CardTitle className="text-sm font-medium">Items/Services Provided</CardTitle>
                             <Gift className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
@@ -452,7 +462,7 @@ Your contribution, big or small, makes a huge difference.
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Kits Pending</CardTitle>
+                            <CardTitle className="text-sm font-medium">Pending</CardTitle>
                             <Hourglass className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
@@ -481,25 +491,45 @@ Your contribution, big or small, makes a huge difference.
                       </CardContent>
                   </Card>
                 )}
-
-                {fundingData && (
+                 {fundingData && (
+                    <>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Zakat Utilization</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">Total Zakat Collected for Lead</span>
+                                <span className="font-semibold font-mono">₹{fundingData.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">Zakat Allocated as Cash-in-Hand</span>
+                                <span className="font-semibold font-mono">₹{(fundingData.zakatAllocated || 0).toLocaleString('en-IN')}</span>
+                            </div>
+                            <Separator />
+                            <div className="flex justify-between items-center text-base">
+                                <span className="font-bold">Zakat Balance for Goal</span>
+                                <span className="font-bold text-primary font-mono">₹{((fundingData.fundTotals.zakat || 0) - (fundingData.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
+                            </div>
+                        </CardContent>
+                    </Card>
                     <div className="grid gap-6 lg:grid-cols-2">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Fund Totals by Type</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-2">
-                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold font-mono">₹{fundingData.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold font-mono">₹{fundingData.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold font-mono">₹{fundingData.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold font-mono">₹{fundingData.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold font-mono">₹{fundingData.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold font-mono">₹{fundingData.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold font-mono">₹{fundingData.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                                <Separator className="my-2"/>
-                                <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{fundingData.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            </CardContent>
-                        </Card>
+                      <Card>
+                        <CardHeader>
+                            <CardTitle>Fund Totals by Type</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <Separator className="my-2"/>
+                            <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{fundingData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                        </CardContent>
+                      </Card>
                         <Card>
                             <CardHeader>
                                 <CardTitle>Donations by Payment Type</CardTitle>
@@ -520,6 +550,7 @@ Your contribution, big or small, makes a huge difference.
                             </CardContent>
                         </Card>
                     </div>
+                </>
                 )}
             </div>
 
