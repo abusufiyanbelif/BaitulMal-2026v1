@@ -610,7 +610,7 @@ export default function DonationsPage() {
                             </TableRow>
                             {isOpen && (
                                 <TableRow className="bg-muted/50 hover:bg-muted/50">
-                                <TableCell colSpan={8} className="p-2">
+                                <TableCell colSpan={7} className="p-2">
                                     <h4 className="text-sm font-semibold mb-2">Transaction Details</h4>
                                     <div className="border rounded-md bg-background">
                                     <Table>
@@ -646,7 +646,7 @@ export default function DonationsPage() {
                     })
                     ) : (
                     <TableRow>
-                        <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
+                        <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
                             No donations found matching your criteria.
                         </TableCell>
                     </TableRow>

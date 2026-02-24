@@ -63,7 +63,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Separator } from '@/components/ui/separator';
 
-type SortKey = keyof Donation | 'srNo';
+type SortKey = keyof Donation | 'srNo' | 'linkSplit';
 
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
@@ -464,25 +464,43 @@ export default function DonationsPage() {
     if (sortConfig !== null) {
         sortableItems.sort((a, b) => {
             if (sortConfig.key === 'srNo') return 0;
-            const aValue = (a as any)[sortConfig.key] ?? '';
-            const bValue = (b as any)[sortConfig.key] ?? '';
-            
-            if (sortConfig.key === 'amount') {
-                 return sortConfig.direction === 'ascending' ? (aValue as number) - (bValue as number) : (bValue as number) - (aValue as number);
-            }
-             if (sortConfig.key === 'donationDate') {
-                const dateA = new Date(aValue as string).getTime();
-                const dateB = new Date(bValue as string).getTime();
-                return sortConfig.direction === 'ascending' ? dateA - dateB : dateB - dateA;
-            }
-            if (typeof aValue === 'string' && typeof bValue === 'string') {
-                 if (aValue < bValue) {
+
+            if (sortConfig.key === 'linkSplit') {
+                const aLinks = a.linkSplit || [];
+                const bLinks = b.linkSplit || [];
+                const aLinkName = aLinks.length > 0 ? aLinks[0].linkName : 'Unlinked';
+                const bLinkName = bLinks.length > 0 ? bLinks[0].linkName : 'Unlinked';
+
+                if (aLinkName.toLowerCase() < bLinkName.toLowerCase()) {
                     return sortConfig.direction === 'ascending' ? -1 : 1;
                 }
-                if (aValue > bValue) {
+                if (aLinkName.toLowerCase() > bLinkName.toLowerCase()) {
                     return sortConfig.direction === 'ascending' ? 1 : -1;
                 }
+                return 0;
             }
+            
+            const key = sortConfig.key as keyof Donation;
+            const aValue = a[key] ?? '';
+            const bValue = b[key] ?? '';
+
+            if (key === 'amount') {
+                const numA = Number(aValue) || 0;
+                const numB = Number(bValue) || 0;
+                return sortConfig.direction === 'ascending' ? numA - numB : numB - numA;
+            }
+
+            if (key === 'donationDate') {
+                const dateA = new Date(aValue as string).getTime() || 0;
+                const dateB = new Date(bValue as string).getTime() || 0;
+                return sortConfig.direction === 'ascending' ? dateA - dateB : dateB - dateA;
+            }
+
+            const strA = String(aValue || '').toLowerCase();
+            const strB = String(bValue || '').toLowerCase();
+            if (strA < strB) return sortConfig.direction === 'ascending' ? -1 : 1;
+            if (strA > strB) return sortConfig.direction === 'ascending' ? 1 : -1;
+            
             return 0;
         });
     }
@@ -711,7 +729,7 @@ export default function DonationsPage() {
                       <SortableHeader sortKey="donationDate" className="w-[150px]" sortConfig={sortConfig} handleSort={handleSort}>Date</SortableHeader>
                       <TableHead className="w-[200px]">Category &amp; Type</TableHead>
                       <SortableHeader sortKey="status" className="w-[120px]" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
-                      <TableHead className="w-[200px]">Linked To</TableHead>
+                      <SortableHeader sortKey="linkSplit" className="w-[200px]" sortConfig={sortConfig} handleSort={handleSort}>Linked To</SortableHeader>
                       <TableHead className="w-[100px] text-right pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
