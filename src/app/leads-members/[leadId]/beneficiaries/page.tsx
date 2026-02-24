@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -620,8 +621,7 @@ export default function BeneficiariesPage() {
   const kitAmountLabel = `${lead.purpose} Cost (₹)`;
 
   return (
-    <>
-      <main className="container mx-auto p-4 md:p-8">
+    <main className="container mx-auto p-4 md:p-8">
         <div className="mb-4">
             <Button variant="outline" asChild>
                 <Link href="/leads-members">
@@ -638,25 +638,16 @@ export default function BeneficiariesPage() {
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-2">
                     {canReadSummary && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
-                        </Button>
+                        <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/leads-members/${leadId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Summary</Link>
                     )}
-                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/leads-members/${leadId}`}>Item List</Link>
-                    </Button>
+                    <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/leads-members/${leadId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Item List</Link>
                     {canReadBeneficiaries && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
-                        </Button>
+                        <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Beneficiary Details</Link>
                     )}
                     {canReadDonations && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
-                        </Button>
+                        <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Donations</Link>
                     )}
                 </div>
-                <ScrollBar orientation="horizontal" />
             </ScrollArea>
         </div>
 
@@ -755,8 +746,7 @@ export default function BeneficiariesPage() {
             </div>
           </CardContent>
         </Card>
-      </main>
-
+      
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -802,6 +792,8 @@ export default function BeneficiariesPage() {
         currentLeadId={leadId}
         initiativeType="lead"
       />
-    </>
+    </main>
   );
 }
+
+    

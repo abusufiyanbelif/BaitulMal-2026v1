@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -517,25 +518,41 @@ const sortedGroupKeys = useMemo(() => {
 
   if (isLoading && !campaign) {
     return (
-        <div className="space-y-4">
-          <Card>
-              <CardHeader>
-                  <Skeleton className="h-8 w-1/2" />
-                  <Skeleton className="h-5 w-1/3" />
-              </CardHeader>
-              <CardContent>
-                  <Skeleton className="h-64 w-full" />
-              </CardContent>
-          </Card>
-        </div>
+        <main className="container mx-auto p-4 md:p-8">
+            <div className="space-y-4">
+                <Skeleton className="h-10 w-44" />
+                <Skeleton className="h-9 w-64 mb-4" />
+                <div className="flex flex-wrap gap-2 border-b mb-4">
+                    <Skeleton className="h-10 w-24" />
+                    <Skeleton className="h-10 w-32" />
+                    <Skeleton className="h-10 w-36" />
+                    <Skeleton className="h-10 w-28" />
+                </div>
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-8 w-1/2" />
+                        <Skeleton className="h-5 w-1/3" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-64 w-full" />
+                    </CardContent>
+                </Card>
+            </div>
+        </main>
     );
   }
   
   if (!campaign) {
     return (
-        <div className="text-center">
+        <main className="container mx-auto p-4 md:p-8 text-center">
             <p className="text-lg text-muted-foreground">Campaign not found.</p>
-        </div>
+            <Button asChild className="mt-4">
+                <Link href="/campaign-members">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Campaigns
+                </Link>
+            </Button>
+        </main>
     );
   }
 
@@ -792,7 +809,37 @@ const sortedGroupKeys = useMemo(() => {
   const kitAmountLabel = campaign.category === 'Ration' ? 'Ration Kit Amount (₹)' : 'Aid Amount (₹)';
 
   return (
-    <>
+    <main className="container mx-auto p-4 md:p-8">
+      <div className="mb-4">
+        <Button variant="outline" asChild>
+            <Link href="/campaign-members">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Campaigns
+            </Link>
+        </Button>
+      </div>
+       <div className="flex justify-between items-center mb-4">
+        <h1 className="text-3xl font-bold">{campaign.name}</h1>
+      </div>
+      <div className="border-b mb-4">
+        <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex w-max space-x-2">
+                {canReadSummary && (
+                    <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Summary</Link>
+                )}
+                {canReadRation && (
+                    <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Item Lists</Link>
+                )}
+                {canReadBeneficiaries && (
+                    <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Beneficiary List</Link>
+                )}
+                {canReadDonations && (
+                    <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Donations</Link>
+                )}
+            </div>
+        </ScrollArea>
+      </div>
+
       <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -1033,7 +1080,7 @@ const sortedGroupKeys = useMemo(() => {
                                 </TableRow>
                             ))
                         ) : sortedGroupKeys.length > 0 ? (
-                            sortedGroupKeys.map((categoryId) => {
+                            sortedGroupKeys.map((categoryId, groupIndex) => {
                                 const group = groupedBeneficiaries[categoryId];
                                 if (!group) return null;
                                 const { category, beneficiariesByMemberCount } = group;
@@ -1184,6 +1231,8 @@ const sortedGroupKeys = useMemo(() => {
         currentLeadId={campaignId}
         initiativeType="campaign"
       />
-    </>
+    </main>
   );
 }
+
+    
