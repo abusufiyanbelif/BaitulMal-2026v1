@@ -1,5 +1,4 @@
 
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -12,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import Resizer from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -109,6 +108,9 @@ export default function DonationsPage() {
   const [openLinkFilter, setOpenLinkFilter] = useState(false);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [isSyncing, setIsSyncing] = useState(false);
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   
   const canRead = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.read;
   const canCreate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.create;
@@ -354,6 +356,13 @@ export default function DonationsPage() {
     return sortableItems;
   }, [donations, searchTerm, statusFilter, typeFilter, donationTypeFilter, linkFilter, sortConfig]);
 
+  const totalPages = Math.ceil(filteredAndSortedDonations.length / itemsPerPage);
+  const paginatedDonations = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredAndSortedDonations.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredAndSortedDonations, currentPage, itemsPerPage]);
+
+
   const isLoading = areDonationsLoading || isProfileLoading || areCampaignsLoading || areLeadsLoading;
   
   if (isLoading && !donations) {
@@ -569,11 +578,11 @@ export default function DonationsPage() {
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    [...Array(5)].map((_, i) => (<TableRow key={i}><TableCell colSpan={8}><Skeleton className="h-12 w-full" /></TableCell></TableRow>))
-                  ) : filteredAndSortedDonations.length > 0 ? (
-                    filteredAndSortedDonations.map((donation, index) => (
+                    [...Array(10)].map((_, i) => (<TableRow key={i}><TableCell colSpan={8}><Skeleton className="h-12 w-full" /></TableCell></TableRow>))
+                  ) : paginatedDonations.length > 0 ? (
+                    paginatedDonations.map((donation, index) => (
                       <TableRow key={donation.id} onClick={() => router.push(`/donations/${donation.id}`)} className="cursor-pointer">
-                        <TableCell className="pl-4">{index + 1}</TableCell>
+                        <TableCell className="pl-4">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                         <TableCell>
                           <div className="font-medium">{donation.donorName}</div>
                           <div className="text-xs text-muted-foreground">{donation.donorPhone || 'No Phone'}</div>
@@ -622,6 +631,18 @@ export default function DonationsPage() {
               </Table>
             </div>
           </CardContent>
+           {totalPages > 1 && (
+            <CardFooter className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                  Showing {paginatedDonations.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredAndSortedDonations.length)} of {filteredAndSortedDonations.length} donations
+              </p>
+              <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
+                  <span className="text-sm">{currentPage} / {totalPages}</span>
+                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
+              </div>
+            </CardFooter>
+        )}
         </Card>
       </main>
 
@@ -647,3 +668,5 @@ export default function DonationsPage() {
     </>
   );
 }
+
+    

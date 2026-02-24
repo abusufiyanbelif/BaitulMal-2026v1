@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import Resizer from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -247,6 +247,8 @@ export default function BeneficiariesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   
   const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
   const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
@@ -593,6 +595,12 @@ export default function BeneficiariesPage() {
     return sortableItems;
   }, [beneficiaries, searchTerm, statusFilter, sortConfig]);
 
+  const totalPages = Math.ceil(filteredAndSortedBeneficiaries.length / itemsPerPage);
+  const paginatedBeneficiaries = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredAndSortedBeneficiaries.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredAndSortedBeneficiaries, currentPage, itemsPerPage]);
+
   const isLoading = isLeadLoading || areBeneficiariesLoading || isProfileLoading;
   
   if (isLoading && !lead) {
@@ -719,12 +727,12 @@ export default function BeneficiariesPage() {
                                     {(canUpdate || canDelete) && <TableCell className="text-right"><Skeleton className="h-6 w-12 ml-auto" /></TableCell>}
                                 </TableRow>
                             ))
-                        ) : filteredAndSortedBeneficiaries.length > 0 ? (
-                            filteredAndSortedBeneficiaries.map((beneficiary, index) => (
+                        ) : paginatedBeneficiaries.length > 0 ? (
+                            paginatedBeneficiaries.map((beneficiary, index) => (
                                 <BeneficiaryRow
                                     key={beneficiary.id}
                                     beneficiary={beneficiary}
-                                    index={index + 1}
+                                    index={(currentPage - 1) * itemsPerPage + index + 1}
                                     canUpdate={canUpdate}
                                     canDelete={canDelete}
                                     onView={handleView}
@@ -745,6 +753,18 @@ export default function BeneficiariesPage() {
                 </Table>
             </div>
           </CardContent>
+            {totalPages > 1 && (
+                <CardFooter className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                    Showing {paginatedBeneficiaries.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredAndSortedBeneficiaries.length)} of {filteredAndSortedBeneficiaries.length} beneficiaries
+                </p>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
+                    <span className="text-sm">{currentPage} / {totalPages}</span>
+                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
+                </div>
+                </CardFooter>
+            )}
         </Card>
       
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
@@ -795,5 +815,7 @@ export default function BeneficiariesPage() {
     </main>
   );
 }
+
+    
 
     
