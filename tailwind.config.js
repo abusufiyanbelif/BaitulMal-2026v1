@@ -2,6 +2,7 @@
 /** @type {import('tailwindcss').Config} */
 const config = {
   // Force cache invalidation by adding a comment.
+  // Force cache invalidation again.
   darkMode: ['class'],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -124,7 +125,7 @@ const config = {
         },
         'zoom-in-out': {
             '0%, 100%': { transform: 'scale(1)' },
-            '50%': { transform: 'scale(1.2)' },
+            '50%': { transform: 'scale(1.5)' },
         },
       },
       animation: {
@@ -137,7 +138,7 @@ const config = {
         'fade-in-up': 'fade-in-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'fade-in-zoom': 'fade-in-zoom 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'shimmer': 'shimmer 2s infinite',
-        'zoom-in-out': 'zoom-in-out 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'zoom-in-out': 'zoom-in-out 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
     },
   },

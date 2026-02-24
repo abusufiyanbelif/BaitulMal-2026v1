@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -136,72 +135,78 @@ export default function DonationsSummaryPage() {
     );
   }
 
+  if (!lead) {
+    return (
+      <main className="container mx-auto p-4 md:p-8 text-center">
+        <p>Lead not found.</p>
+      </main>
+    );
+  }
+
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Donations Summary ({donations.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-              <Card>
-                  <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
-                  <CardContent>
-                      <div className="text-2xl font-bold">{statusStats.verified.count}</div>
-                      <p className="text-xs text-muted-foreground">₹{statusStats.verified.amount.toLocaleString('en-IN')}</p>
-                  </CardContent>
-              </Card>
-              <Card>
-                  <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                  <CardContent>
-                      <div className="text-2xl font-bold">{statusStats.pending.count}</div>
-                      <p className="text-xs text-muted-foreground">₹{statusStats.pending.amount.toLocaleString('en-IN')}</p>
-                  </CardContent>
-              </Card>
-              <Card>
-                  <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Canceled</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
-                  <CardContent>
-                      <div className="text-2xl font-bold">{statusStats.canceled.count}</div>
-                      <p className="text-xs text-muted-foreground">₹{statusStats.canceled.amount.toLocaleString('en-IN')}</p>
-                  </CardContent>
-              </Card>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
-              <Card>
-                  <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Grand Total</CardTitle></CardHeader>
-                  <CardContent className="p-2"><div className="text-2xl font-bold">₹{grandTotal.toLocaleString('en-IN')}</div></CardContent>
-              </Card>
-               <Card>
-                  <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Fitra</CardTitle></CardHeader>
-                  <CardContent className="p-2"><div className="text-2xl font-bold">₹{fitraTotal.toLocaleString('en-IN')}</div></CardContent>
-              </Card>
-              <Card>
-                  <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Zakat</CardTitle></CardHeader>
-                  <CardContent className="p-2"><div className="text-2xl font-bold">₹{zakatTotal.toLocaleString('en-IN')}</div></CardContent>
-              </Card>
-              <Card>
-                  <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Interest</CardTitle></CardHeader>
-                  <CardContent className="p-2"><div className="text-2xl font-bold">₹{interestTotal.toLocaleString('en-IN')}</div></CardContent>
-              </Card>
-              <Card>
-                  <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Loan</CardTitle></CardHeader>
-                  <CardContent className="p-2"><div className="text-2xl font-bold">₹{loanTotal.toLocaleString('en-IN')}</div></CardContent>
-              </Card>
-               <Card>
-                  <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Sadaqah</CardTitle></CardHeader>
-                  <CardContent className="p-2"><div className="text-2xl font-bold">₹{sadaqahTotal.toLocaleString('en-IN')}</div></CardContent>
-              </Card>
-              <Card>
-                  <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Lillah</CardTitle></CardHeader>
-                  <CardContent className="p-2"><div className="text-2xl font-bold">₹{lillahTotal.toLocaleString('en-IN')}</div></CardContent>
-              </Card>
-              <Card>
-                  <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Monthly Contribution</CardTitle></CardHeader>
-                  <CardContent className="p-2"><div className="text-2xl font-bold">₹{monthlyContributionTotal.toLocaleString('en-IN')}</div></CardContent>
-              </Card>
-          </div>
-        </CardContent>
-      </Card>
-    </>
+    <Card className="animate-fade-in-zoom">
+      <CardHeader>
+        <CardTitle>Donations Summary ({donations.length})</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+            <Card>
+                <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{statusStats.verified.count}</div>
+                    <p className="text-xs text-muted-foreground">₹{statusStats.verified.amount.toLocaleString('en-IN')}</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{statusStats.pending.count}</div>
+                    <p className="text-xs text-muted-foreground">₹{statusStats.pending.amount.toLocaleString('en-IN')}</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Canceled</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{statusStats.canceled.count}</div>
+                    <p className="text-xs text-muted-foreground">₹{statusStats.canceled.amount.toLocaleString('en-IN')}</p>
+                </CardContent>
+            </Card>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+            <Card>
+                <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Grand Total</CardTitle></CardHeader>
+                <CardContent className="p-2"><div className="text-2xl font-bold">₹{grandTotal.toLocaleString('en-IN')}</div></CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Fitra</CardTitle></CardHeader>
+                <CardContent className="p-2"><div className="text-2xl font-bold">₹{fitraTotal.toLocaleString('en-IN')}</div></CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Zakat</CardTitle></CardHeader>
+                <CardContent className="p-2"><div className="text-2xl font-bold">₹{zakatTotal.toLocaleString('en-IN')}</div></CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Interest</CardTitle></CardHeader>
+                <CardContent className="p-2"><div className="text-2xl font-bold">₹{interestTotal.toLocaleString('en-IN')}</div></CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Loan</CardTitle></CardHeader>
+                <CardContent className="p-2"><div className="text-2xl font-bold">₹{loanTotal.toLocaleString('en-IN')}</div></CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Sadaqah</CardTitle></CardHeader>
+                <CardContent className="p-2"><div className="text-2xl font-bold">₹{sadaqahTotal.toLocaleString('en-IN')}</div></CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Lillah</CardTitle></CardHeader>
+                <CardContent className="p-2"><div className="text-2xl font-bold">₹{lillahTotal.toLocaleString('en-IN')}</div></CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Monthly Contribution</CardTitle></CardHeader>
+                <CardContent className="p-2"><div className="text-2xl font-bold">₹{monthlyContributionTotal.toLocaleString('en-IN')}</div></CardContent>
+            </Card>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

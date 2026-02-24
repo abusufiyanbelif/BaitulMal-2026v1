@@ -55,7 +55,7 @@ export function DonationSummary() {
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      <Card>
+      <Card className="animate-fade-in-up" style={{ animationDelay: '800ms', animationFillMode: 'backwards' }}>
         <CardHeader>
           <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -97,7 +97,7 @@ export function DonationSummary() {
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="animate-fade-in-up" style={{ animationDelay: '900ms', animationFillMode: 'backwards' }}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <PieChartIcon className="h-6 w-6 text-primary" />

@@ -56,7 +56,7 @@ export default function PublicOrganizationMembersPage() {
                     </Link>
                 </Button>
             </div>
-            <Card>
+            <Card className="animate-fade-in-zoom">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-3xl"><Users /> Our Team</CardTitle>
                     <CardDescription>The dedicated members of our organization.</CardDescription>

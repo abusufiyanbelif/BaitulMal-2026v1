@@ -5,7 +5,7 @@ import { Settings } from 'lucide-react';
 
 export default function CampaignSettingsPage() {
   return (
-    <Card>
+    <Card className="animate-fade-in-zoom">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Settings /> Campaign Settings

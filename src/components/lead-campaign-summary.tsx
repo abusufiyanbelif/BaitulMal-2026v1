@@ -55,7 +55,7 @@ export function LeadAndCampaignSummary() {
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      <Card>
+      <Card className="animate-fade-in-up" style={{ animationDelay: '1000ms', animationFillMode: 'backwards' }}>
         <CardHeader>
           <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -85,7 +85,7 @@ export function LeadAndCampaignSummary() {
           </Table>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="animate-fade-in-up" style={{ animationDelay: '1100ms', animationFillMode: 'backwards' }}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
