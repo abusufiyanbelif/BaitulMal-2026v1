@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useMemo, useState, useRef } from 'react';
@@ -209,7 +210,54 @@ export default function PublicLeadSummaryPage() {
     }, [allDonations, lead, beneficiaries]);
 
     const beneficiaryData = useMemo(() => {
-        if (!beneficiaries) return null;
+        if (!beneficiaries || !sanitizedRationLists) return null;
+
+        const beneficiariesByCategory = beneficiaries.reduce((acc, ben) => {
+            const members = ben.members || 0;
+            
+            const matchingCategories = sanitizedRationLists.filter(
+              cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
+            );
+            
+            let appliedCategory: ItemCategory | null = null;
+            if (matchingCategories.length > 1) {
+                matchingCategories.sort((a, b) => {
+                    const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
+                    const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
+                    if(rangeA !== rangeB) return rangeA - rangeB;
+                    return (b.minMembers ?? 0) - (a.minMembers ?? 0);
+                });
+                appliedCategory = matchingCategories[0];
+            } else if (matchingCategories.length === 1) {
+                appliedCategory = matchingCategories[0];
+            }
+
+            const categoryForGroup = appliedCategory || { id: 'uncategorized', name: 'Uncategorized', items: [], minMembers: -1, maxMembers: -1 };
+            const categoryKey = categoryForGroup.id;
+
+            if (!acc[categoryKey]) {
+              acc[categoryKey] = { 
+                category: categoryForGroup, 
+                beneficiariesByMemberCount: {} 
+              };
+            }
+
+            const memberCount = ben.members || 0;
+            if (!acc[categoryKey].beneficiariesByMemberCount[memberCount]) {
+              acc[categoryKey].beneficiariesByMemberCount[memberCount] = [];
+            }
+            acc[categoryKey].beneficiariesByMemberCount[memberCount].push(ben);
+            
+            return acc;
+        }, {} as Record<string, { category: ItemCategory, beneficiariesByMemberCount: Record<number, Beneficiary[]> }>);
+
+        const sortedBeneficiaryCategoryKeys = Object.keys(beneficiariesByCategory).sort((a, b) => {
+          const catA = beneficiariesByCategory[a].category;
+          const catB = beneficiariesByCategory[b].category;
+          if (catA.id === 'uncategorized') return 1;
+          if (catB.id === 'uncategorized') return -1;
+          return (catA.minMembers ?? 0) - (catB.minMembers ?? 0);
+        });
 
         const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
         const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
@@ -218,8 +266,10 @@ export default function PublicLeadSummaryPage() {
             totalBeneficiaries: beneficiaries.length,
             beneficiariesGiven,
             beneficiariesPending,
+            beneficiariesByCategory,
+            sortedBeneficiaryCategoryKeys,
         }
-    }, [beneficiaries]);
+    }, [beneficiaries, sanitizedRationLists]);
 
     const isLoading = isLeadLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
     
@@ -245,7 +295,7 @@ ${lead.description || 'To support those in need.'}
         `.trim().replace(/^\s+/gm, '');
 
         if(fundingData) {
-             shareText += `
+            shareText += `
 
 *Financial Update:*
 🎯 Target: ₹${fundingData.targetAmount.toLocaleString('en-IN')}
@@ -253,7 +303,7 @@ ${lead.description || 'To support those in need.'}
 ⏳ Remaining: *₹${fundingData.remainingToCollect.toLocaleString('en-IN')}*
             `
         }
-
+        
         shareText += `
 
 Your contribution, big or small, makes a huge difference.
@@ -435,7 +485,7 @@ Your contribution, big or small, makes a huge difference.
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Fundraising Target</p>
+                                        <p className="text-sm font-medium text-muted-foreground">Fundraising Target</p>
                                         <p className="text-3xl font-bold">
                                         ₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}
                                         </p>
@@ -445,17 +495,17 @@ Your contribution, big or small, makes a huge difference.
                         </CardContent>
                     </Card>
                 ) : (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Target className="h-6 w-6 text-primary" />
-                                Fundraising Progress
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-muted-foreground">Login to view detailed fundraising progress.</p>
-                        </CardContent>
-                    </Card>
+                   <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Target className="h-6 w-6 text-primary" />
+                            Fundraising Progress
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {areDonationsLoading ? <Skeleton className="h-24" /> : <p className="text-muted-foreground">Login to view detailed fundraising progress.</p>}
+                      </CardContent>
+                   </Card>
                 )}
 
 
@@ -496,15 +546,28 @@ Your contribution, big or small, makes a huge difference.
                             <CardDescription>View photos, receipts, or other public documents related to this lead.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                {publicDocuments.map((doc) => (
-                                    <Button key={doc.url} variant="outline" asChild>
-                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
-                                            <File className="mr-2 h-4 w-4 shrink-0" />
-                                            <span className="truncate">{doc.name}</span>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                {publicDocuments.map((doc) => {
+                                    const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+                                    return (
+                                        <a key={doc.url} href={doc.url} target="_blank" rel="noopener noreferrer" className="group block">
+                                            <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+                                                <CardContent className="p-0">
+                                                    <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
+                                                        {isImage ? (
+                                                            <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
+                                                        ) : (
+                                                            <File className="w-10 h-10 text-muted-foreground" />
+                                                        )}
+                                                    </div>
+                                                    <div className="p-2 text-center">
+                                                        <p className="text-xs font-medium truncate group-hover:underline">{doc.name}</p>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
                                         </a>
-                                    </Button>
-                                ))}
+                                    )
+                                })}
                             </div>
                         </CardContent>
                     </Card>
@@ -540,13 +603,14 @@ Your contribution, big or small, makes a huge difference.
                                 <span className="font-bold">Zakat Balance for Goal</span>
                                 <span className="font-bold text-primary font-mono">₹{(fundingData.zakatAvailableForGoal || 0).toLocaleString('en-IN')}</span>
                             </div>
-                             {lead.allowedDonationTypes?.includes('Zakat') && (
+                            {lead.allowedDonationTypes?.includes('Zakat') && (
                                 <p className="text-xs text-muted-foreground pt-1">
                                     Because Zakat is an allowed donation type for this lead, the available balance is automatically applied to the fundraising goal.
                                 </p>
                             )}
                         </CardContent>
                     </Card>
+
                     <div className="grid gap-6 lg:grid-cols-2">
                        <Card>
                           <CardHeader>

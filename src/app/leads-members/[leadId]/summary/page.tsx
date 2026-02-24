@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -577,7 +578,88 @@ Your contribution, big or small, makes a huge difference.
                             <CardDescription>Photos, receipts, or other documents related to this lead.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                           {/* Content restored here */}
+                           {editMode ? (
+                                <div className="space-y-4">
+                                    <Label>Upload New Artifacts</Label>
+                                    <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
+                                    <Separator />
+                                    <Label>Manage Existing Artifacts</Label>
+                                    {existingDocuments.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {existingDocuments.map((doc) => {
+                                                const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+                                                return (
+                                                <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md gap-4">
+                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                        <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+                                                            {isImage ? (
+                                                                <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} width={48} height={48} className="object-cover h-full w-full" />
+                                                            ) : (
+                                                                <File className="h-6 w-6 text-muted-foreground" />
+                                                            )}
+                                                        </div>
+                                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:underline truncate min-w-0">
+                                                            <p className="truncate">{doc.name}</p>
+                                                        </a>
+                                                    </div>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} id={`public-${doc.url}`} />
+                                                            <Label htmlFor={`public-${doc.url}`} className="text-xs">Public</Label>
+                                                        </div>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleRemoveExistingDocument(doc.url)}>
+                                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                )
+                                            })}
+                                        </div>
+                                    ) : <p className="text-sm text-muted-foreground">No artifacts uploaded yet.</p>}
+                                </div>
+                            ) : (
+                                lead.documents && lead.documents.length > 0 ? (
+                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                        {lead.documents.map((doc) => {
+                                            const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+                                            return (
+                                                <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                                                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="group block flex-grow">
+                                                        <CardContent className="p-0">
+                                                            <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
+                                                                {isImage ? (
+                                                                    <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
+                                                                ) : (
+                                                                    <File className="w-10 h-10 text-muted-foreground" />
+                                                                )}
+                                                            </div>
+                                                            <div className="p-2 text-center">
+                                                                <p className="text-xs font-medium truncate group-hover:underline">{doc.name}</p>
+                                                            </div>
+                                                        </CardContent>
+                                                    </a>
+                                                    <CardFooter className="p-2 border-t mt-auto">
+                                                        <div className="flex items-center justify-center w-full gap-2">
+                                                            {canUpdate ? (
+                                                                <>
+                                                                    <Switch 
+                                                                        id={`quick-toggle-lead-${doc.url}`} 
+                                                                        checked={!!doc.isPublic} 
+                                                                        onCheckedChange={() => quickToggleDocumentPublic(doc)} 
+                                                                    />
+                                                                    <Label htmlFor={`quick-toggle-lead-${doc.url}`} className="text-xs cursor-pointer">Public</Label>
+                                                                </>
+                                                            ) : (
+                                                                <Badge variant={doc.isPublic ? "outline" : "secondary"}>{doc.isPublic ? "Public" : "Private"}</Badge>
+                                                            )}
+                                                        </div>
+                                                    </CardFooter>
+                                                </Card>
+                                            )
+                                        })}
+                                    </div>
+                                ) : <p className="text-sm text-muted-foreground">No artifacts uploaded yet.</p>
+                            )}
                         </CardContent>
                     </Card>
                 
