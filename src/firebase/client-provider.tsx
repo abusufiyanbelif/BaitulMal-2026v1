@@ -4,10 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { initializeFirebase } from './init';
 import { FirebaseProvider } from './provider';
 import { BrandedLoader } from '@/components/branded-loader';
-import { FirebaseApp } from 'firebase/app';
-import { Auth } from 'firebase/auth';
-import { Firestore } from 'firebase/firestore';
-import { FirebaseStorage } from 'firebase/storage';
+import type { FirebaseApp } from 'firebase/app';
+import type { Auth } from 'firebase/auth';
+import type { Firestore } from 'firebase/firestore';
+import type { FirebaseStorage } from 'firebase/storage';
 
 interface FirebaseServices {
     firebaseApp: FirebaseApp;

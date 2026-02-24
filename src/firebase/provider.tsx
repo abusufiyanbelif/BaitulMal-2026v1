@@ -74,7 +74,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
           userError: null,
         });
       },
-      (error) => {
+      (error: any) => {
         console.error('Auth state error:', error);
         setUserAuthState({
           user: null,

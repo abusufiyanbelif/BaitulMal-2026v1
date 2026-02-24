@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og'
+import * as React from 'react';
 
 // Route segment config
 export const runtime = 'edge'
@@ -6,9 +7,8 @@ export const runtime = 'edge'
 // Image generation
 export function GET() {
   return new ImageResponse(
-    (
-      <div
-        style={{
+    React.createElement('div', {
+        style: {
           fontSize: 96,
           background: '#16a34a',
           width: '100%',
@@ -19,10 +19,9 @@ export function GET() {
           color: 'white',
           borderRadius: '24px',
           fontWeight: 'bold',
-        }}
-      >
-        B
-      </div>
+        }
+      },
+      'B'
     ),
     {
       width: 192,
