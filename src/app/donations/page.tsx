@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, Check, ChevronsUpDown, X } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, Check, ChevronsUpDown, X, LinkIcon, FolderKanban, Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -76,6 +76,118 @@ function SortableHeader({ sortKey, children, className, sortConfig, handleSort }
     );
 };
 
+function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleViewImage }: { donation: Donation, index: number, handleEdit: () => void, handleDeleteClick: () => void, handleViewImage: (url: string) => void }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const router = useRouter();
+    const { userProfile } = useSession();
+
+    const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.update;
+    const canDelete = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.delete;
+
+    const getInitiativeLink = (link: any) => {
+        if (link.linkType === 'campaign') {
+            return `/campaign-members/${link.linkId}/donations`;
+        }
+        if (link.linkType === 'lead') {
+            return `/leads-members/${link.linkId}/donations`;
+        }
+        return '#';
+    };
+
+    return (
+        <React.Fragment>
+            <TableRow onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? "open" : "closed"} className="cursor-pointer">
+                <TableCell className="pl-4">
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!donation.transactions || donation.transactions.length === 0}>
+                            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            <span className="sr-only">Toggle details</span>
+                        </Button>
+                        {index}
+                    </div>
+                </TableCell>
+                <TableCell>
+                    <div className="font-medium">{donation.donorName}</div>
+                    <div className="text-xs text-muted-foreground">{donation.donorPhone || 'No Phone'}</div>
+                </TableCell>
+                <TableCell className="text-right font-medium font-mono">₹{donation.amount.toFixed(2)}</TableCell>
+                <TableCell>{donation.donationDate}</TableCell>
+                <TableCell>
+                    <div className="flex flex-wrap items-center gap-1">
+                        {donation.typeSplit?.map(split => (<Badge key={split.category} variant="secondary">{split.category}</Badge>))}
+                        <Badge variant="outline">{donation.donationType}</Badge>
+                    </div>
+                </TableCell>
+                <TableCell><Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge></TableCell>
+                <TableCell className="truncate">
+                    {donation.linkSplit && donation.linkSplit.length > 0 ? (
+                        <div className="flex flex-col gap-1">
+                            {donation.linkSplit.map(link => (
+                                <Button key={`${link.linkType}_${link.linkId}`} variant="link" className="p-0 h-auto justify-start" asChild onClick={(e) => e.stopPropagation()}>
+                                    <Link href={getInitiativeLink(link)} className="flex items-center gap-1 text-xs">
+                                        {link.linkType === 'campaign' ? <FolderKanban className="h-3 w-3 shrink-0" /> : <Lightbulb className="h-3 w-3 shrink-0" />}
+                                        <span className="truncate">{link.linkName} {donation.linkSplit && donation.linkSplit.length > 1 ? `(₹${link.amount.toFixed(2)})` : ''}</span>
+                                    </Link>
+                                </Button>
+                            ))}
+                        </div>
+                    ) : "Unlinked"}
+                </TableCell>
+                <TableCell className="text-right pr-4">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => router.push(`/donations/${donation.id}`)}><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
+                            {canUpdate && <DropdownMenuItem onClick={handleEdit}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
+                            {canDelete && <DropdownMenuSeparator />}
+                            {canDelete && <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive focus:bg-destructive/20 focus:text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </TableCell>
+            </TableRow>
+            {isOpen && (
+                <TableRow className="bg-muted/50 hover:bg-muted/50">
+                    <TableCell colSpan={8} className="p-2">
+                        <h4 className="text-sm font-semibold mb-2 px-2">Transaction Details</h4>
+                        <div className="border rounded-md bg-background">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Amount</TableHead>
+                                        <TableHead>Transaction ID</TableHead>
+                                        <TableHead>Screenshot</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {(donation.transactions || []).map((tx) => (
+                                        <TableRow key={tx.id}>
+                                            <TableCell>₹{tx.amount.toFixed(2)}</TableCell>
+                                            <TableCell>{tx.transactionId || 'N/A'}</TableCell>
+                                            <TableCell>
+                                                {tx.screenshotUrl ? (
+                                                    <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)}>
+                                                        <Eye className="mr-2 h-4 w-4" /> View
+                                                    </Button>
+                                                ) : 'No'}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                    {(donation.transactions?.length || 0) === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="text-center text-muted-foreground">No transaction details available.</TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </TableCell>
+                </TableRow>
+            )}
+        </React.Fragment>
+    )
+}
+
+
 export default function DonationsPage() {
   const router = useRouter();
   const firestore = useFirestore();
@@ -112,6 +224,11 @@ export default function DonationsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const [imageToView, setImageToView] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+
   const canRead = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.read;
   const canCreate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.create;
   const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.update;
@@ -155,6 +272,13 @@ export default function DonationsPage() {
     if (!canDelete) return;
     setDonationToDelete(id);
     setIsDeleteDialogOpen(true);
+  };
+
+  const handleViewImage = (url: string) => {
+    setImageToView(url);
+    setZoom(1);
+    setRotation(0);
+    setIsImageViewerOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
@@ -294,7 +418,10 @@ export default function DonationsPage() {
     if (!donations) return [];
     let sortableItems = [...donations];
 
-    if (statusFilter !== 'All') {
+    // Filtering logic
+    if (statusFilter === 'No Transactions') {
+        sortableItems = sortableItems.filter(d => !d.transactions || d.transactions.length === 0);
+    } else if (statusFilter !== 'All') {
         sortableItems = sortableItems.filter(d => d.status === statusFilter);
     }
     if (typeFilter !== 'All') {
@@ -332,6 +459,7 @@ export default function DonationsPage() {
       );
     }
 
+    // Sorting
     if (sortConfig !== null) {
         sortableItems.sort((a, b) => {
             if (sortConfig.key === 'srNo') return 0;
@@ -340,6 +468,11 @@ export default function DonationsPage() {
             
             if (sortConfig.key === 'amount') {
                  return sortConfig.direction === 'ascending' ? (aValue as number) - (bValue as number) : (bValue as number) - (aValue as number);
+            }
+             if (sortConfig.key === 'donationDate') {
+                const dateA = new Date(aValue as string).getTime();
+                const dateB = new Date(bValue as string).getTime();
+                return sortConfig.direction === 'ascending' ? dateA - dateB : dateB - dateA;
             }
             if (typeof aValue === 'string' && typeof bValue === 'string') {
                  if (aValue < bValue) {
@@ -449,6 +582,7 @@ export default function DonationsPage() {
                         <SelectItem value="Verified">Verified</SelectItem>
                         <SelectItem value="Pending">Pending</SelectItem>
                         <SelectItem value="Canceled">Canceled</SelectItem>
+                        <SelectItem value="No Transactions">No Transactions</SelectItem>
                     </SelectContent>
                 </Select>
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
@@ -569,7 +703,8 @@ export default function DonationsPage() {
                   <TableRow>
                       <SortableHeader sortKey="srNo" className="w-[50px] pl-4" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
                       <SortableHeader sortKey="donorName" className="w-[200px]" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
-                      <SortableHeader sortKey="amount" className="w-[150px] text-right" sortConfig={sortConfig} handleSort={handleSort}>Amount &amp; Date</SortableHeader>
+                      <SortableHeader sortKey="amount" className="w-[150px] text-right" sortConfig={sortConfig} handleSort={handleSort}>Amount</SortableHeader>
+                      <SortableHeader sortKey="donationDate" className="w-[150px]" sortConfig={sortConfig} handleSort={handleSort}>Date</SortableHeader>
                       <TableHead className="w-[200px]">Category &amp; Type</TableHead>
                       <SortableHeader sortKey="status" className="w-[120px]" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
                       <TableHead className="w-[200px]">Linked To</TableHead>
@@ -581,46 +716,14 @@ export default function DonationsPage() {
                     [...Array(10)].map((_, i) => (<TableRow key={i}><TableCell colSpan={8}><Skeleton className="h-12 w-full" /></TableCell></TableRow>))
                   ) : paginatedDonations.length > 0 ? (
                     paginatedDonations.map((donation, index) => (
-                      <TableRow key={donation.id} onClick={() => router.push(`/donations/${donation.id}`)} className="cursor-pointer">
-                        <TableCell className="pl-4">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
-                        <TableCell>
-                          <div className="font-medium">{donation.donorName}</div>
-                          <div className="text-xs text-muted-foreground">{donation.donorPhone || 'No Phone'}</div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                            <div className="font-medium font-mono">₹{donation.amount.toFixed(2)}</div>
-                            <div className="text-xs text-muted-foreground">{donation.donationDate}</div>
-                        </TableCell>
-                        <TableCell>
-                            <div className="flex flex-wrap items-center gap-1">
-                                {donation.typeSplit?.map(split => (<Badge key={split.category} variant="secondary">{split.category}</Badge>))}
-                                <Badge variant="outline">{donation.donationType}</Badge>
-                            </div>
-                        </TableCell>
-                        <TableCell><Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'}>{donation.status}</Badge></TableCell>
-                        <TableCell className="truncate">
-                            {donation.linkSplit && donation.linkSplit.length > 0 ? (
-                                <div className="flex flex-col gap-1">
-                                    {donation.linkSplit.map(link => (
-                                        <Badge key={`${link.linkType}_${link.linkId}`} variant="outline" className="w-fit">
-                                            {link.linkName} {donation.linkSplit && donation.linkSplit.length > 1 ? `(₹${link.amount.toFixed(2)})` : ''}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            ) : "Unlinked"}
-                        </TableCell>
-                        <TableCell className="text-right pr-4">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => router.push(`/donations/${donation.id}`)}><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
-                                    {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
-                                    {canDelete && <DropdownMenuSeparator />}
-                                    {canDelete && <DropdownMenuItem onClick={() => handleDeleteClick(donation.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
+                        <DonationRow
+                            key={donation.id}
+                            donation={donation}
+                            index={(currentPage - 1) * itemsPerPage + index + 1}
+                            handleEdit={() => handleEdit(donation)}
+                            handleDeleteClick={() => handleDeleteClick(donation.id)}
+                            handleViewImage={handleViewImage}
+                        />
                     ))
                   ) : (
                     <TableRow>
@@ -665,8 +768,33 @@ export default function DonationsPage() {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
+        <DialogContent className="max-w-4xl">
+            <DialogHeader>
+                <DialogTitle>Donation Screenshot</DialogTitle>
+            </DialogHeader>
+            {imageToView && (
+                <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
+                    <Image
+                        src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
+                        alt="Donation screenshot"
+                        fill
+                        sizes="(max-width: 896px) 100vw, 896px"
+                        className="object-contain transition-transform duration-200 ease-out origin-center"
+                        style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
+                        unoptimized
+                    />
+                </div>
+            )}
+             <DialogFooter className="sm:justify-center pt-4 flex-wrap">
+                <Button variant="outline" onClick={() => setZoom(z => z * 1.2)}><ZoomIn className="mr-2"/> Zoom In</Button>
+                <Button variant="outline" onClick={() => setZoom(z => z / 1.2)}><ZoomOut className="mr-2"/> Zoom Out</Button>
+                <Button variant="outline" onClick={() => setRotation(r => r + 90)}><RotateCw className="mr-2"/> Rotate</Button>
+                <Button variant="outline" onClick={() => { setZoom(1); setRotation(0); }}><RefreshCw className="mr-2"/> Reset</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
-
-    

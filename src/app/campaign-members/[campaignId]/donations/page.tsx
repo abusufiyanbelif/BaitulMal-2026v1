@@ -1,5 +1,4 @@
 
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -62,7 +61,7 @@ import { cn } from '@/lib/utils';
 import { getNestedValue } from '@/lib/utils';
 import { syncDonationsAction } from '@/app/donations/actions';
 
-type SortKey = keyof Donation | 'srNo';
+type SortKey = keyof Donation | 'srNo' | 'amountForThisCampaign';
 
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
@@ -100,15 +99,19 @@ export default function DonationsPage() {
   const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
 
   const donations = useMemo(() => {
-    if (!allDonations) return [];
-    return allDonations.filter(d => {
-      // Prioritize the new data structure
-      if (d.linkSplit && d.linkSplit.length > 0) {
-        return d.linkSplit.some(link => link.linkId === campaignId && link.linkType === 'campaign');
-      }
-      // Fallback for legacy data
-      return d.campaignId === campaignId;
-    });
+    if (!allDonations || !campaignId) return [];
+    return allDonations
+      .filter(d => {
+        if (d.linkSplit && d.linkSplit.length > 0) {
+          return d.linkSplit.some(link => link.linkId === campaignId && link.linkType === 'campaign');
+        }
+        return (d as any).campaignId === campaignId;
+      })
+      .map(d => {
+        const campaignLink = d.linkSplit?.find(l => l.linkId === campaignId && l.linkType === 'campaign');
+        const amountForThisCampaign = campaignLink?.amount || ((d as any).campaignId === campaignId ? d.amount : 0);
+        return { ...d, amountForThisCampaign };
+      });
   }, [allDonations, campaignId]);
 
   const allCampaignsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
@@ -348,11 +351,14 @@ export default function DonationsPage() {
     let sortableItems = [...donations];
 
     // Filtering logic
-    if (statusFilter !== 'All') {
+    if (statusFilter === 'No Transactions') {
+        sortableItems = sortableItems.filter(d => !d.transactions || d.transactions.length === 0);
+    } else if (statusFilter !== 'All') {
         sortableItems = sortableItems.filter(d => d.status === statusFilter);
     }
+
     if (typeFilter !== 'All') {
-        sortableItems = sortableItems.filter(d => d.typeSplit.some(s => s.category === typeFilter));
+        sortableItems = sortableItems.filter(d => d.typeSplit?.some(s => s.category === typeFilter));
     }
     if (donationTypeFilter !== 'All') {
         sortableItems = sortableItems.filter(d => d.donationType === donationTypeFilter);
@@ -372,11 +378,18 @@ export default function DonationsPage() {
     if (sortConfig !== null) {
         sortableItems.sort((a, b) => {
             if (sortConfig.key === 'srNo') return 0;
-            const aValue = a[sortConfig.key as keyof Donation] ?? '';
-            const bValue = b[sortConfig.key as keyof Donation] ?? '';
             
-            if (sortConfig.key === 'amount') {
-                 return sortConfig.direction === 'ascending' ? (aValue as number) - (bValue as number) : (bValue as number) - (aValue as number);
+            let aValue, bValue;
+            if (sortConfig.key === 'amountForThisCampaign') {
+                aValue = a.amountForThisCampaign;
+                bValue = b.amountForThisCampaign;
+            } else {
+                aValue = a[sortConfig.key as keyof Donation] ?? '';
+                bValue = b[sortConfig.key as keyof Donation] ?? '';
+            }
+            
+            if (typeof aValue === 'number' && typeof bValue === 'number') {
+                 return sortConfig.direction === 'ascending' ? aValue - bValue : bValue - aValue;
             }
              if (sortConfig.key === 'donationDate') {
                 const dateA = new Date(aValue as string).getTime();
@@ -466,7 +479,7 @@ export default function DonationsPage() {
                 <div className="flex-1 space-y-1.5">
                     <CardTitle>Donation List ({filteredAndSortedDonations.length})</CardTitle>
                     <CardDescription>
-                    Total for filtered donations: <span className="font-bold text-foreground">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amount, 0).toFixed(2)}</span>
+                    Total for filtered donations: <span className="font-bold text-foreground">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisCampaign, 0).toFixed(2)}</span>
                     </CardDescription>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -494,6 +507,7 @@ export default function DonationsPage() {
                             <SelectItem value="Verified">Verified</SelectItem>
                             <SelectItem value="Pending">Pending</SelectItem>
                             <SelectItem value="Canceled">Canceled</SelectItem>
+                            <SelectItem value="No Transactions">No Transactions</SelectItem>
                         </SelectContent>
                     </Select>
                     <Select value={typeFilter} onValueChange={(value) => { setTypeFilter(value); setCurrentPage(1); }}>
@@ -531,10 +545,9 @@ export default function DonationsPage() {
                     <TableRow>
                         <SortableHeader sortKey="srNo" className="w-[50px] pl-4" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
                         <SortableHeader sortKey="donorName" className="w-[200px]" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
-                        <SortableHeader sortKey="receiverName" className="w-[200px]" sortConfig={sortConfig} handleSort={handleSort}>Receiver</SortableHeader>
-                        <SortableHeader sortKey="amount" className="w-[150px] text-right" sortConfig={sortConfig} handleSort={handleSort}>Amount</SortableHeader>
+                        <SortableHeader sortKey="amountForThisCampaign" className="w-[150px] text-right" sortConfig={sortConfig} handleSort={handleSort}>Amount</SortableHeader>
                         <SortableHeader sortKey="donationDate" className="w-[150px]" sortConfig={sortConfig} handleSort={handleSort}>Date</SortableHeader>
-                        <TableHead className="w-[200px]">Category & Type</TableHead>
+                        <TableHead className="w-[200px]">Category &amp; Type</TableHead>
                         <SortableHeader sortKey="status" className="w-[120px]" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
                         <TableHead className="w-[100px] text-right pr-4">Actions</TableHead>
                     </TableRow>
@@ -549,8 +562,6 @@ export default function DonationsPage() {
                     ) : (paginatedDonations && paginatedDonations.length > 0) ? (
                     paginatedDonations.map((donation, index) => {
                         const isOpen = openRows[donation.id] || false;
-                        const campaignLink = donation.linkSplit?.find(l => l.linkId === campaignId && l.linkType === 'campaign');
-                        const amountForThisCampaign = campaignLink?.amount || 0;
                         return (
                             <React.Fragment key={donation.id}>
                             <TableRow className="bg-background hover:bg-accent/50 cursor-pointer" data-state={isOpen ? 'open' : 'closed'} onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
@@ -559,11 +570,7 @@ export default function DonationsPage() {
                                     <div className="font-medium">{donation.donorName}</div>
                                     <div className="text-xs text-muted-foreground">{donation.donorPhone || 'No Phone'}</div>
                                 </TableCell>
-                                <TableCell>
-                                    <div className="font-medium">{donation.receiverName}</div>
-                                    <div className="text-xs text-muted-foreground">Ref: {donation.referral || 'N/A'}</div>
-                                </TableCell>
-                                <TableCell className="text-right font-medium font-mono">₹{amountForThisCampaign.toFixed(2)}</TableCell>
+                                <TableCell className="text-right font-medium font-mono">₹{donation.amountForThisCampaign.toFixed(2)}</TableCell>
                                 <TableCell>{donation.donationDate}</TableCell>
                                 <TableCell>
                                     <div className="flex flex-wrap items-center gap-1">
