@@ -407,11 +407,13 @@ export default function CampaignSummaryPage() {
             .filter(b => b.isEligibleForZakat && b.zakatAllocation)
             .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
 
+        const zakatAvailableForGoal = Math.max(0, (amountsByCategory['Zakat'] || 0) - zakatAllocated);
+
         const totalCollectedForGoal = Object.entries(amountsByCategory)
             .filter(([category]) => campaign.allowedDonationTypes?.includes(category as DonationCategory))
             .reduce((sum, [category, amount]) => {
                 if (category === 'Zakat') {
-                    return sum + Math.max(0, amount - zakatAllocated);
+                    return sum + zakatAvailableForGoal;
                 }
                 return sum + amount;
             }, 0);
@@ -423,7 +425,7 @@ export default function CampaignSummaryPage() {
         
         const beneficiariesByCategory = beneficiaries.reduce((acc, ben) => {
             const members = ben.members || 0;
-            const generalCategory = sanitizedRationLists.find(cat => cat.name === 'General Item List');
+            const generalCategory = sanitizedRationLists.find(cat => cat.name === 'Item Price List');
             
             const matchingCategories = sanitizedRationLists.filter(cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999));
             
@@ -502,6 +504,7 @@ export default function CampaignSummaryPage() {
             sortedBeneficiaryCategoryKeys,
             donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
             zakatAllocated,
+            zakatAvailableForGoal,
             fundTotals: {
                 fitra: fitraTotal,
                 zakat: zakatTotal,
@@ -1056,18 +1059,23 @@ Your contribution, big or small, makes a huge difference.
                         </CardHeader>
                         <CardContent className="space-y-3">
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Total Zakat Collected for Campaign</span>
+                                <span className="text-muted-foreground">Total Zakat Collected</span>
                                 <span className="font-semibold font-mono">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Zakat Allocated as Cash-in-Hand</span>
+                                <span className="text-muted-foreground">(-) Allocated as Cash-in-Hand</span>
                                 <span className="font-semibold font-mono">₹{(summaryData?.zakatAllocated || 0).toLocaleString('en-IN')}</span>
                             </div>
                             <Separator />
                             <div className="flex justify-between items-center text-base">
-                                <span className="font-bold">Zakat Balance for Goal</span>
+                                <span className="font-bold">Zakat Available for Goal</span>
                                 <span className="font-bold text-primary font-mono">₹{((summaryData?.fundTotals.zakat || 0) - (summaryData?.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
                             </div>
+                             {campaign.allowedDonationTypes?.includes('Zakat') && (
+                                <p className="text-xs text-muted-foreground pt-1">
+                                    Because Zakat is an allowed donation type for this campaign, the available balance is automatically applied to the fundraising goal.
+                                </p>
+                            )}
                         </CardContent>
                     </Card>
 
