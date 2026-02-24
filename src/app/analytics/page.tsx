@@ -1,21 +1,29 @@
 
+
 'use client';
 
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, Timestamp } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Users, FolderKanban, Lightbulb, HandHelping, DollarSign, BarChart } from 'lucide-react';
+import { ArrowLeft, Users, FolderKanban, Lightbulb, HandHelping, DollarSign, BarChart, CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useMemo, useState, useEffect } from 'react';
-import type { Donation, Beneficiary, Campaign } from '@/lib/types';
+import type { Donation, Beneficiary, Campaign, UserProfile } from '@/lib/types';
 
-import { Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { donationCategories } from '@/lib/modules';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
+import { DateRange } from "react-day-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select as UiSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { format, startOfMonth, endOfMonth, startOfQuarter, endOfYear, subMonths, startOfYear, endOfQuarter, parseISO, isValid, startOfDay, endOfDay, startOfWeek, formatISO } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 function StatCard({ title, value, icon: Icon, isLoading }: { title: string, value: number, icon: React.ComponentType<{className?: string}>, isLoading: boolean }) {
     return (
@@ -54,7 +62,7 @@ export default function AnalyticsPage() {
     const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
     const beneficiariesRef = useMemoFirebase(() => firestore ? collection(firestore, 'beneficiaries') : null, [firestore]);
 
-    const { data: users, isLoading: usersLoading } = useCollection(usersRef);
+    const { data: users, isLoading: usersLoading } = useCollection<UserProfile>(usersRef);
     const { data: campaigns, isLoading: campaignsLoading } = useCollection<Campaign>(campaignsRef);
     const { data: leads, isLoading: leadsLoading } = useCollection(leadsRef);
     const { data: donations, isLoading: donationsLoading } = useCollection<Donation>(donationsRef);
@@ -62,6 +70,13 @@ export default function AnalyticsPage() {
 
     const isLoading = usersLoading || campaignsLoading || leadsLoading || donationsLoading || beneficiariesLoading;
     
+    const [date, setDate] = useState<DateRange | undefined>({
+      from: startOfYear(new Date()),
+      to: new Date(),
+    });
+    const [granularity, setGranularity] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
+    const [selectedMetric, setSelectedMetric] = useState<'donations' | 'users' | 'beneficiaries'>('donations');
+
     const totalDonationAmount = useMemo(() => {
         return donations?.reduce((sum, d) => sum + d.amount, 0) || 0;
     }, [donations]);
@@ -121,6 +136,95 @@ export default function AnalyticsPage() {
         return campaignData.sort((a,b) => b.collected - a.collected).slice(0, 5);
 
     }, [campaigns, donations]);
+
+    const timeSeriesData = useMemo(() => {
+        let sourceData: any[] | null = [];
+        let dateField: string;
+        let amountField: string | null = null;
+    
+        switch (selectedMetric) {
+          case 'users':
+            sourceData = users;
+            dateField = 'createdAt'; // Timestamp
+            break;
+          case 'beneficiaries':
+            sourceData = beneficiaries;
+            dateField = 'createdAt'; // Timestamp (prefer over addedDate for consistency)
+            break;
+          case 'donations':
+          default:
+            sourceData = donations;
+            dateField = 'donationDate'; // String YYYY-MM-DD
+            amountField = 'amount';
+            break;
+        }
+
+        if (!sourceData) return [];
+
+        const filteredData = sourceData.filter(item => {
+            const itemDateValue = item[dateField];
+            if (!itemDateValue) return false;
+
+            let itemDate: Date;
+            if (typeof itemDateValue === 'string') {
+                itemDate = parseISO(itemDateValue);
+            } else if (itemDateValue && typeof itemDateValue.toDate === 'function') { // Firestore Timestamp
+                itemDate = itemDateValue.toDate();
+            } else {
+                return false;
+            }
+
+            if (!isValid(itemDate)) return false;
+
+            if (!date?.from) return true;
+            const from = startOfDay(date.from);
+            const to = date.to ? endOfDay(date.to) : endOfDay(date.from);
+            return itemDate >= from && itemDate <= to;
+        });
+
+        const groupedData = filteredData.reduce((acc, item) => {
+            const itemDateValue = item[dateField];
+            let itemDate: Date;
+            if (typeof itemDateValue === 'string') {
+                itemDate = parseISO(itemDateValue);
+            } else {
+                itemDate = itemDateValue.toDate();
+            }
+
+            let key: string;
+            if (granularity === 'daily') {
+                key = formatISO(itemDate, { representation: 'date' });
+            } else if (granularity === 'weekly') {
+                key = formatISO(startOfWeek(itemDate), { representation: 'date' });
+            } else { // monthly
+                key = format(itemDate, 'yyyy-MM');
+            }
+
+            if (!acc[key]) {
+                acc[key] = { date: key, count: 0, amount: 0 };
+            }
+            acc[key].count += 1;
+            if (amountField && item[amountField]) {
+                acc[key].amount += Number(item[amountField]);
+            }
+
+            return acc;
+        }, {} as Record<string, { date: string, count: number, amount: number }>);
+        
+        return Object.values(groupedData).sort((a, b) => a.date.localeCompare(b.date));
+    }, [donations, users, beneficiaries, date, granularity, selectedMetric]);
+    
+    const activityChartConfig = {
+      count: {
+        label: "Count",
+        color: "hsl(var(--chart-1))",
+      },
+      amount: {
+        label: "Amount (₹)",
+        color: "hsl(var(--chart-2))",
+      },
+    } satisfies ChartConfig;
+
 
     return (
         <div className="container mx-auto p-4 md:p-8">
@@ -198,11 +302,110 @@ export default function AnalyticsPage() {
                 </div>
                  <Card>
                     <CardHeader>
-                        <CardTitle>Advanced Analytics (Future)</CardTitle>
-                        <CardDescription>
-                            Metrics for storage usage, database operations, and user activity are planned for a future update. For detailed usage, please check your project's dashboards in the Firebase and Google Cloud Console.
-                        </CardDescription>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <CardTitle>Activity Over Time</CardTitle>
+                                <CardDescription>Track new donations, users, and beneficiaries over a selected period.</CardDescription>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button id="date" variant={"outline"} className={cn("w-full sm:w-[300px] justify-start text-left font-normal", !date && "text-muted-foreground")}>
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {date?.from ? (date.to ? (<>{format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}</>) : (format(date.from, "LLL dd, y"))) : (<span>Pick a date</span>)}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="end">
+                                        <Calendar initialFocus mode="range" defaultMonth={date?.from} selected={date} onSelect={setDate} numberOfMonths={2} />
+                                    </PopoverContent>
+                                </Popover>
+                                <UiSelect onValueChange={(value) => {
+                                    const now = new Date();
+                                    if (value === 'this_month') setDate({ from: startOfMonth(now), to: endOfMonth(now) });
+                                    else if (value === 'this_quarter') setDate({ from: startOfQuarter(now), to: endOfQuarter(now) });
+                                    else if (value === 'this_year') setDate({ from: startOfYear(now), to: endOfYear(now) });
+                                    else if (value === 'last_3_months') setDate({ from: subMonths(now, 3), to: now });
+                                    else setDate({ from: undefined, to: undefined });
+                                }}>
+                                    <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Quick Select" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all_time">All Time</SelectItem>
+                                        <SelectItem value="this_month">This Month</SelectItem>
+                                        <SelectItem value="this_quarter">This Quarter</SelectItem>
+                                        <SelectItem value="this_year">This Year</SelectItem>
+                                        <SelectItem value="last_3_months">Last 3 Months</SelectItem>
+                                    </SelectContent>
+                                </UiSelect>
+                            </div>
+                        </div>
+                        <div className="pt-4 flex flex-wrap gap-4 items-center">
+                            <UiSelect value={selectedMetric} onValueChange={(value) => setSelectedMetric(value as any)}>
+                            <SelectTrigger className="w-full sm:w-[200px]">
+                                <SelectValue placeholder="Select Metric" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="donations">Donations</SelectItem>
+                                <SelectItem value="users">New Users</SelectItem>
+                                <SelectItem value="beneficiaries">New Beneficiaries</SelectItem>
+                            </SelectContent>
+                            </UiSelect>
+                            <UiSelect value={granularity} onValueChange={(value) => setGranularity(value as any)}>
+                            <SelectTrigger className="w-full sm:w-[180px]">
+                                <SelectValue placeholder="Select Granularity" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="daily">Daily</SelectItem>
+                                <SelectItem value="weekly">Weekly</SelectItem>
+                                <SelectItem value="monthly">Monthly</SelectItem>
+                            </SelectContent>
+                            </UiSelect>
+                        </div>
                     </CardHeader>
+                    <CardContent>
+                        {isClient ? (
+                        <ChartContainer config={activityChartConfig} className="h-[350px] w-full">
+                            <AreaChart data={timeSeriesData} margin={{ left: 12, right: 12 }}>
+                            <CartesianGrid vertical={false} />
+                            <XAxis
+                                dataKey="date"
+                                tickLine={false}
+                                axisLine={false}
+                                tickMargin={8}
+                                tickFormatter={(value) => {
+                                  try {
+                                    if (granularity === 'monthly') return format(parseISO(`${value}-01`), 'MMM yyyy');
+                                    if (granularity === 'weekly') return format(parseISO(value), 'd MMM');
+                                    return format(parseISO(value), 'd MMM');
+                                  } catch (e) { return value; }
+                                }}
+                            />
+                            <YAxis tickFormatter={(value) => value.toLocaleString()} />
+                            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                            <Area
+                                dataKey="count"
+                                type="natural"
+                                fill="var(--color-count)"
+                                fillOpacity={0.4}
+                                stroke="var(--color-count)"
+                                stackId="a"
+                            />
+                            {selectedMetric === 'donations' && (
+                                <Area
+                                    dataKey="amount"
+                                    type="natural"
+                                    fill="var(--color-amount)"
+                                    fillOpacity={0.4}
+                                    stroke="var(--color-amount)"
+                                    stackId="b"
+                                />
+                            )}
+                            <ChartLegend content={<ChartLegendContent />} />
+                            </AreaChart>
+                        </ChartContainer>
+                        ) : (
+                        <Skeleton className="h-[350px] w-full" />
+                        )}
+                    </CardContent>
                 </Card>
             </div>
         </div>
