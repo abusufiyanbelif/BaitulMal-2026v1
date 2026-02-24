@@ -31,7 +31,7 @@ import type { Campaign, Beneficiary, Donation, DonationCategory, ItemCategory } 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift, Target, HandHelping, File } from 'lucide-react';
+import { ArrowLeft, Loader2, LogIn, Share2, Hourglass, Wallet, Users, Gift, Target, HandHelping, File, ChevronDown, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
@@ -69,6 +69,13 @@ const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
 } satisfies ChartConfig;
 
+const donationPaymentTypeChartConfig = {
+    Cash: { label: "Cash", color: "hsl(var(--chart-1))" },
+    'Online Payment': { label: "Online Payment", color: "hsl(var(--chart-2))" },
+    Check: { label: "Check", color: "hsl(var(--chart-5))" },
+    Other: { label: "Other", color: "hsl(var(--chart-4))" },
+} satisfies ChartConfig;
+
 
 export default function PublicCampaignSummaryPage() {
     const params = useParams();
@@ -82,8 +89,16 @@ export default function PublicCampaignSummaryPage() {
     
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
+    const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
 
     const summaryRef = useRef<HTMLDivElement>(null);
+    
+    const toggleGroup = (groupId: string) => {
+        setCollapsedGroups(prev => ({
+            ...prev,
+            [groupId]: !prev[groupId]
+        }));
+    };
 
     // Data fetching
     const campaignDocRef = useMemoFirebase(() => (firestore && campaignId) ? doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign> : null, [firestore, campaignId]);
@@ -176,34 +191,49 @@ export default function PublicCampaignSummaryPage() {
 
         const beneficiariesByCategory = beneficiaries.reduce((acc, ben) => {
             const members = ben.members || 0;
-            const generalCategory = sanitizedRationLists.find(cat => cat.name === 'General Item List');
-            const specificCategory = sanitizedRationLists.find(cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999));
             
-            const appliedCategory = specificCategory || generalCategory;
+            const matchingCategories = sanitizedRationLists.filter(
+              cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
+            );
             
-            let categoryName = 'Uncategorized';
-            let categoryKey = 'uncategorized';
-
-            if (appliedCategory) {
-              categoryName = appliedCategory.name === 'General Item List'
-                  ? 'General'
-                  : (appliedCategory.minMembers === undefined || appliedCategory.maxMembers === undefined || appliedCategory.minMembers === appliedCategory.maxMembers)
-                      ? `${appliedCategory.name} (${appliedCategory.minMembers})`
-                      : `${appliedCategory.name} (${appliedCategory.minMembers}-${appliedCategory.maxMembers})`;
-              categoryKey = appliedCategory.id;
+            let appliedCategory: ItemCategory | null = null;
+            if (matchingCategories.length > 1) {
+                matchingCategories.sort((a, b) => {
+                    const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
+                    const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
+                    if(rangeA !== rangeB) return rangeA - rangeB;
+                    return (b.minMembers ?? 0) - (a.minMembers ?? 0);
+                });
+                appliedCategory = matchingCategories[0];
+            } else if (matchingCategories.length === 1) {
+                appliedCategory = matchingCategories[0];
             }
+
+            const categoryForGroup = appliedCategory || { id: 'uncategorized', name: 'Uncategorized', items: [], minMembers: -1, maxMembers: -1 };
+            const categoryKey = categoryForGroup.id;
 
             if (!acc[categoryKey]) {
-              acc[categoryKey] = { categoryName, beneficiaries: [], totalAmount: 0, kitAmount: 0, minMembers: appliedCategory?.minMembers ?? 0 };
+              acc[categoryKey] = { 
+                category: categoryForGroup, 
+                beneficiariesByMemberCount: {} 
+              };
             }
-            acc[categoryKey].beneficiaries.push(ben);
-            acc[categoryKey].totalAmount += ben.kitAmount || 0;
-            acc[categoryKey].kitAmount = ben.kitAmount || 0; // Assuming kitAmount is consistent per category
+
+            const memberCount = ben.members || 0;
+            if (!acc[categoryKey].beneficiariesByMemberCount[memberCount]) {
+              acc[categoryKey].beneficiariesByMemberCount[memberCount] = [];
+            }
+            acc[categoryKey].beneficiariesByMemberCount[memberCount].push(ben);
+            
             return acc;
-        }, {} as Record<string, { categoryName: string, beneficiaries: Beneficiary[], totalAmount: number, kitAmount: number, minMembers: number }>);
+        }, {} as Record<string, { category: ItemCategory, beneficiariesByMemberCount: Record<number, Beneficiary[]> }>);
 
         const sortedBeneficiaryCategoryKeys = Object.keys(beneficiariesByCategory).sort((a, b) => {
-          return beneficiariesByCategory[a].minMembers - beneficiariesByCategory[b].minMembers;
+          const catA = beneficiariesByCategory[a].category;
+          const catB = beneficiariesByCategory[b].category;
+          if (catA.id === 'uncategorized') return 1;
+          if (catB.id === 'uncategorized') return -1;
+          return (catA.minMembers ?? 0) - (catB.minMembers ?? 0);
         });
 
         const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
@@ -503,42 +533,6 @@ Your contribution, big or small, makes a huge difference.
                     </Card>
                 )}
 
-                {fundingData && (
-                    <div className="grid gap-6 lg:grid-cols-2">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>All Donations by Category</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                    <BarChart
-                                        data={Object.entries(fundingData.amountsByCategory || {}).map(([name, value]) => ({ name, value }))}
-                                        layout="vertical"
-                                        margin={{ right: 20 }}
-                                    >
-                                        <CartesianGrid horizontal={false} />
-                                        <YAxis
-                                            dataKey="name"
-                                            type="category"
-                                            tickLine={false}
-                                            tickMargin={10}
-                                            axisLine={false}
-                                            tick={{ fontSize: 12 }}
-                                            width={120}
-                                        />
-                                        <XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
-                                        <ChartTooltip content={<ChartTooltipContent />} />
-                                        <Bar dataKey="value" radius={4}>
-                                            {Object.entries(fundingData.amountsByCategory || {}).map(([name,]) => (
-                                                <Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ChartContainer>
-                            </CardContent>
-                        </Card>
-                    </div>
-                )}
                 {campaign.category === 'Ration' && beneficiaryData && beneficiaryData.sortedBeneficiaryCategoryKeys.length > 0 && (
                       <Card>
                           <CardHeader><CardTitle>Beneficiary Groups</CardTitle></CardHeader>
@@ -554,22 +548,74 @@ Your contribution, big or small, makes a huge difference.
                                       </TableRow>
                                   </TableHeader>
                                   <TableBody>
-                                      {beneficiaryData.sortedBeneficiaryCategoryKeys.map(key => {
-                                          const group = beneficiaryData.beneficiariesByCategory[key];
+                                      {beneficiaryData.sortedBeneficiaryCategoryKeys.map(categoryId => {
+                                          const group = beneficiaryData.beneficiariesByCategory[categoryId];
+                                          if (!group) return null;
+                                          const { category, beneficiariesByMemberCount } = group;
+
+                                          const categoryIsCollapsed = collapsedGroups[categoryId];
+                                          const totalBeneficiariesInCategory = Object.values(beneficiariesByMemberCount).reduce((sum, benList) => sum + benList.length, 0);
+                                          
+                                          const subGroupTotals = Object.values(beneficiariesByMemberCount).reduce((sum, benList) => {
+                                              if (benList.length === 0) return sum;
+                                              const kitAmount = benList[0].kitAmount || 0;
+                                              return sum + (kitAmount * benList.length);
+                                          }, 0);
+
+                                          const categoryName = category.name === 'Uncategorized' 
+                                              ? 'Uncategorized'
+                                              : (category.minMembers === undefined || category.minMembers === category.maxMembers)
+                                                  ? `${category.name} (${category.minMembers ?? 'Any'} Members)`
+                                                  : `${category.name} (${category.minMembers}-${category.maxMembers} Members)`;
+                                          
+                                          const isEffectivelyRanged = category.name !== 'Uncategorized' && category.minMembers !== category.maxMembers && Object.keys(beneficiariesByMemberCount).length > 1;
+
                                           return (
-                                              <TableRow key={key}>
-                                                  <TableCell>{group.categoryName}</TableCell>
-                                                  <TableCell className="text-center">{group.beneficiaries.length}</TableCell>
-                                                  <TableCell className="text-right font-mono">₹{group.kitAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                                  <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
-                                              </TableRow>
-                                          );
+                                              <React.Fragment key={categoryId}>
+                                                  <TableRow className="bg-muted hover:bg-muted cursor-pointer" onClick={() => toggleGroup(categoryId)}>
+                                                      <TableCell colSpan={isEffectivelyRanged ? 1 : 4} className="font-bold">
+                                                          <div className="flex items-center gap-2">
+                                                              {isEffectivelyRanged && (categoryIsCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />)}
+                                                              {categoryName}
+                                                          </div>
+                                                      </TableCell>
+                                                      {isEffectivelyRanged && <TableCell className="text-center font-bold">{totalBeneficiariesInCategory}</TableCell>}
+                                                      {isEffectivelyRanged && <TableCell className="text-right font-bold font-mono"></TableCell>}
+                                                      {isEffectivelyRanged && <TableCell className="text-right font-bold font-mono">₹{subGroupTotals.toLocaleString('en-IN')}</TableCell>}
+                                                  </TableRow>
+
+                                                  {!categoryIsCollapsed && Object.keys(beneficiariesByMemberCount).sort((a, b) => Number(a) - Number(b)).map(memberCountStr => {
+                                                      const memberCount = Number(memberCountStr);
+                                                      const subGroupBeneficiaries = beneficiariesByMemberCount[memberCount];
+                                                      if (subGroupBeneficiaries.length === 0) return null;
+                                                      const subGroupKitAmount = subGroupBeneficiaries[0].kitAmount || 0;
+                                                      const subGroupTotalAmount = subGroupKitAmount * subGroupBeneficiaries.length;
+                                                      return (
+                                                          <TableRow key={`${categoryId}-${memberCount}`} className="bg-muted/20">
+                                                              <TableCell className="pl-12">
+                                                                  {memberCount} Members
+                                                              </TableCell>
+                                                              <TableCell className="text-center">{subGroupBeneficiaries.length}</TableCell>
+                                                              <TableCell className="text-right font-mono">₹{subGroupKitAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                                              <TableCell className="text-right font-mono">₹{subGroupTotalAmount.toLocaleString('en-IN')}</TableCell>
+                                                          </TableRow>
+                                                      )
+                                                  })}
+                                              </React.Fragment>
+                                          )
                                       })}
                                   </TableBody>
                                    <TableFooter>
                                         <TableRow>
                                             <TableCell colSpan={3} className="font-bold text-right">Total</TableCell>
-                                            <TableCell className="text-right font-bold font-mono">₹{Object.values(beneficiaryData.beneficiariesByCategory).reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
+                                            <TableCell className="text-right font-bold font-mono">₹{Object.values(beneficiaryData.beneficiariesByCategory).reduce((sum, group) => {
+                                                const groupTotal = Object.values(group.beneficiariesByMemberCount).reduce((subSum, benList) => {
+                                                    if (benList.length === 0) return subSum;
+                                                    return subSum + ((benList[0].kitAmount || 0) * benList.length);
+                                                }, 0);
+                                                return sum + groupTotal;
+                                            }, 0).toLocaleString('en-IN')}
+                                            </TableCell>
                                         </TableRow>
                                     </TableFooter>
                               </Table>
