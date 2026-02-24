@@ -3,6 +3,7 @@
 const nextConfig = {
   // Force a reload by adding a comment.
   // Force a cache invalidation again.
+  // Force a cache invalidation one more time to fix ChunkLoadError.
   reactStrictMode: true,
   allowedDevOrigins: [
     "https://*.cloudworkstations.dev"
