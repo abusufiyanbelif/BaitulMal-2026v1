@@ -26,7 +26,8 @@ import {
   DropdownMenuPortal,
   DropdownMenuSub,
   DropdownMenuSubContent,
-  DropdownMenuSubTrigger
+  DropdownMenuSubTrigger,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -463,14 +464,14 @@ export default function DonationsPage() {
                 Total for filtered donations: <span className="font-bold text-foreground">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisLead, 0).toFixed(2)}</span>
                 </CardDescription>
             </div>
-            <div className="flex flex-wrap gap-2">
-                    {canCreate && (
-                        <Button onClick={handleAdd}>
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            Add Donation
-                        </Button>
-                    )}
+            {canCreate && (
+                <div className="flex flex-wrap gap-2">
+                    <Button onClick={handleAdd}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Donation
+                    </Button>
                 </div>
+            )}
             </div>
             <div className="flex flex-wrap items-center gap-2 pt-4">
                 <Input
@@ -557,7 +558,11 @@ export default function DonationsPage() {
                                         <span className="sr-only">Toggle details</span>
                                     </Button>
                                     <DropdownMenu>
-                                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/leads-members/${leadId}/donations/${donation.id}`); }}>
                                                 <Eye className="mr-2 h-4 w-4" /> View Details
@@ -637,8 +642,7 @@ export default function DonationsPage() {
                 </CardFooter>
             )}
         </Card>
-      </main>
-
+      
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -703,3 +707,4 @@ export default function DonationsPage() {
     </>
   );
 }
+
