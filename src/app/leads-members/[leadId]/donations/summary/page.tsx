@@ -41,17 +41,18 @@ export default function DonationsSummaryPage() {
   const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
   const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
 
-  const { fitraTotal, zakatTotal, loanTotal, interestTotal, sadaqahTotal, lillahTotal, monthlyContributionTotal, grandTotal } = useMemo(() => {
+  const { fitraTotal, zakatTotal, sadaqahTotal, fidiyaTotal, interestTotal, lillahTotal, loanTotal, monthlyContributionTotal, grandTotal } = useMemo(() => {
     if (!donations) {
-        return { fitraTotal: 0, zakatTotal: 0, loanTotal: 0, interestTotal: 0, sadaqahTotal: 0, lillahTotal: 0, monthlyContributionTotal: 0, grandTotal: 0 };
+        return { fitraTotal: 0, zakatTotal: 0, sadaqahTotal: 0, fidiyaTotal: 0, interestTotal: 0, lillahTotal: 0, loanTotal: 0, monthlyContributionTotal: 0, grandTotal: 0 };
     }
 
     let fitra = 0;
     let zakat = 0;
-    let loan = 0;
-    let interest = 0;
     let sadaqah = 0;
+    let fidiya = 0;
+    let interest = 0;
     let lillah = 0;
+    let loan = 0;
     let monthlyContribution = 0;
 
     for (const d of donations) {
@@ -64,17 +65,20 @@ export default function DonationsSummaryPage() {
                     case 'Zakat':
                         zakat += split.amount;
                         break;
-                    case 'Loan':
-                        loan += split.amount;
+                    case 'Sadaqah':
+                        sadaqah += split.amount;
+                        break;
+                    case 'Fidiya':
+                        fidiya += split.amount;
                         break;
                     case 'Interest':
                         interest += split.amount;
                         break;
-                    case 'Sadaqah':
-                        sadaqah += split.amount;
-                        break;
                     case 'Lillah':
                         lillah += split.amount;
+                        break;
+                    case 'Loan':
+                        loan += split.amount;
                         break;
                     case 'Monthly Contribution':
                         monthlyContribution += split.amount;
@@ -83,15 +87,16 @@ export default function DonationsSummaryPage() {
             }
         }
     }
-    const grandTotal = fitra + zakat + loan + interest + sadaqah + lillah + monthlyContribution;
+    const grandTotal = fitra + zakat + sadaqah + fidiya + interest + lillah + loan + monthlyContribution;
 
     return {
         fitraTotal: fitra,
         zakatTotal: zakat,
-        loanTotal: loan,
-        interestTotal: interest,
         sadaqahTotal: sadaqah,
+        fidiyaTotal: fidiya,
+        interestTotal: interest,
         lillahTotal: lillah,
+        loanTotal: loan,
         monthlyContributionTotal: monthlyContribution,
         grandTotal: grandTotal,
     };
@@ -179,31 +184,35 @@ export default function DonationsSummaryPage() {
             </Card>
              <Card>
                 <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Fitra</CardTitle></CardHeader>
-                <CardContent className="p-2"><div className="text-2xl font-bold">₹{fitraTotal.toLocaleString('en-IN')}</div></CardContent>
+                <CardContent><div className="text-2xl font-bold">₹{fitraTotal.toLocaleString('en-IN')}</div></CardContent>
             </Card>
             <Card>
                 <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Zakat</CardTitle></CardHeader>
-                <CardContent className="p-2"><div className="text-2xl font-bold">₹{zakatTotal.toLocaleString('en-IN')}</div></CardContent>
+                <CardContent><div className="text-2xl font-bold">₹{zakatTotal.toLocaleString('en-IN')}</div></CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Sadaqah</CardTitle></CardHeader>
+                <CardContent><div className="text-2xl font-bold">₹{sadaqahTotal.toLocaleString('en-IN')}</div></CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Fidiya</CardTitle></CardHeader>
+                <CardContent><div className="text-2xl font-bold">₹{fidiyaTotal.toLocaleString('en-IN')}</div></CardContent>
             </Card>
             <Card>
                 <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Interest</CardTitle></CardHeader>
-                <CardContent className="p-2"><div className="text-2xl font-bold">₹{interestTotal.toLocaleString('en-IN')}</div></CardContent>
+                <CardContent><div className="text-2xl font-bold">₹{interestTotal.toLocaleString('en-IN')}</div></CardContent>
             </Card>
             <Card>
                 <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Loan</CardTitle></CardHeader>
-                <CardContent className="p-2"><div className="text-2xl font-bold">₹{loanTotal.toLocaleString('en-IN')}</div></CardContent>
+                <CardContent><div className="text-2xl font-bold">₹{loanTotal.toLocaleString('en-IN')}</div></CardContent>
             </Card>
              <Card>
-                <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Sadaqah</CardTitle></CardHeader>
-                <CardContent className="p-2"><div className="text-2xl font-bold">₹{sadaqahTotal.toLocaleString('en-IN')}</div></CardContent>
-            </Card>
-            <Card>
                 <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Lillah</CardTitle></CardHeader>
-                <CardContent className="p-2"><div className="text-2xl font-bold">₹{lillahTotal.toLocaleString('en-IN')}</div></CardContent>
+                <CardContent><div className="text-2xl font-bold">₹{lillahTotal.toLocaleString('en-IN')}</div></CardContent>
             </Card>
             <Card>
                 <CardHeader className="p-2 pb-0 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Monthly Contribution</CardTitle></CardHeader>
-                <CardContent className="p-2"><div className="text-2xl font-bold">₹{monthlyContributionTotal.toLocaleString('en-IN')}</div></CardContent>
+                <CardContent><div className="text-2xl font-bold">₹{monthlyContributionTotal.toLocaleString('en-IN')}</div></CardContent>
             </Card>
         </div>
       </CardContent>

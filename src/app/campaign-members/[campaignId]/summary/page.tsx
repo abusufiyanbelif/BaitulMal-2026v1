@@ -64,6 +64,7 @@ const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
     Sadaqah: { label: "Sadaqah", color: "hsl(var(--chart-2))" },
+    Fidiya: { label: "Fidiya", color: "hsl(var(--chart-8))" },
     Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
     Interest: { label: "Interest", color: "hsl(var(--chart-3))" },
     Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
@@ -225,7 +226,7 @@ export default function CampaignSummaryPage() {
     const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
     const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
     const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
-    const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.update', false) || getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
+    const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false) || getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
 
     const handleSave = async () => {
         if (!campaignDocRef || !userProfile || !canUpdate || !storage) return;
@@ -476,12 +477,13 @@ export default function CampaignSummaryPage() {
 
         const fitraTotal = amountsByCategory['Fitra'] || 0;
         const zakatTotal = amountsByCategory['Zakat'] || 0;
-        const loanTotal = amountsByCategory['Loan'] || 0;
-        const interestTotal = amountsByCategory['Interest'] || 0;
         const sadaqahTotal = amountsByCategory['Sadaqah'] || 0;
+        const fidiyaTotal = amountsByCategory['Fidiya'] || 0;
+        const interestTotal = amountsByCategory['Interest'] || 0;
         const lillahTotal = amountsByCategory['Lillah'] || 0;
+        const loanTotal = amountsByCategory['Loan'] || 0;
         const monthlyContributionTotal = amountsByCategory['Monthly Contribution'] || 0;
-        const grandTotal = fitraTotal + zakatTotal + loanTotal + interestTotal + sadaqahTotal + lillahTotal + monthlyContributionTotal;
+        const grandTotal = fitraTotal + zakatTotal + sadaqahTotal + fidiyaTotal + interestTotal + lillahTotal + loanTotal + monthlyContributionTotal;
 
         const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
         const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
@@ -503,10 +505,11 @@ export default function CampaignSummaryPage() {
             fundTotals: {
                 fitra: fitraTotal,
                 zakat: zakatTotal,
-                loan: loanTotal,
-                interest: interestTotal,
                 sadaqah: sadaqahTotal,
+                fidiya: fidiyaTotal,
+                interest: interestTotal,
                 lillah: lillahTotal,
+                loan: loanTotal,
                 monthlyContribution: monthlyContributionTotal,
                 grandTotal: grandTotal,
             },
@@ -1074,6 +1077,7 @@ Your contribution, big or small, makes a huge difference.
                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fidiya</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.fidiya.toLocaleString('en-IN') ?? '0.00'}</span></div>
                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>

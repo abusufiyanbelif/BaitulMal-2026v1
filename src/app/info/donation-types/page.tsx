@@ -27,6 +27,12 @@ const donationTypes = [
         impact: "It is often used for immediate relief like food, clothing, and medical care.",
     },
     {
+        title: "Fidiya (Compensation)",
+        description: "Fidiya is a religious donation made in Islam when someone is unable to fast during Ramadan due to illness, old age, or other valid reasons. It is intended to feed a needy person for each day of fasting that is missed.",
+        usage: "The money is used to provide meals to the poor and needy. Typically, it covers two meals for one person for each missed fast.",
+        keyUse: "It serves as a compensation for missed fasts and is a separate obligation from Zakat.",
+    },
+    {
         title: "Lillah (For the Sake of Allah)",
         description: "Lillah is a type of voluntary Sadaqah. While \"Sadaqah\" often refers to helping individuals, \"Lillah\" is typically used to denote donations intended for institutions.",
         usage: "It is primarily used for the construction and maintenance of mosques, schools (Madrasas), hospitals, and other community infrastructure.",
@@ -41,10 +47,10 @@ const donationTypes = [
 ];
 
 const comparisonData = [
-    { feature: 'Status', zakat: 'Obligatory (Fard)', sadaqah: 'Voluntary', lillah: 'Voluntary', interest: 'Mandatory disposal' },
-    { feature: 'Amount', zakat: 'Fixed (2.5%)', sadaqah: 'Any amount', lillah: 'Any amount', interest: 'Total amount earned' },
-    { feature: 'Recipient', zakat: 'Specific 8 categories', sadaqah: 'Anyone in need', lillah: 'Institutions/Public', interest: 'Public welfare' },
-    { feature: 'Mosque/School', zakat: <X className="text-destructive" />, sadaqah: <Check className="text-success-foreground" />, lillah: 'Primary use', interest: <Check className="text-success-foreground" /> },
+    { feature: 'Status', zakat: 'Obligatory (Fard)', sadaqah: 'Voluntary', lillah: 'Voluntary', fidiya: 'Obligatory Compensation', interest: 'Mandatory disposal' },
+    { feature: 'Amount', zakat: 'Fixed (2.5%)', sadaqah: 'Any amount', lillah: 'Any amount', fidiya: 'Fixed per missed fast', interest: 'Total amount earned' },
+    { feature: 'Recipient', zakat: 'Specific 8 categories', sadaqah: 'Anyone in need', lillah: 'Institutions/Public', fidiya: 'Poor & Needy', interest: 'Public welfare' },
+    { feature: 'Mosque/School', zakat: <X className="text-destructive" />, sadaqah: <Check className="text-success-foreground" />, lillah: 'Primary use', fidiya: <X className="text-destructive" />, interest: <Check className="text-success-foreground" /> },
 ];
 
 export default function DonationInfoPage() {
@@ -63,7 +69,7 @@ export default function DonationInfoPage() {
         <CardHeader>
           <CardTitle className="text-3xl">Understanding Donation Types in Islam</CardTitle>
           <CardDescription>
-            In Islam, financial and charitable practices are categorized based on their obligation and purpose. Here is a breakdown of the differences between Sadaqah, Zakat, Interest, and Lillah.
+            In Islam, financial and charitable practices are categorized based on their obligation and purpose. Here is a breakdown of the differences between Zakat, Sadaqah, Fidiya, Lillah, and Interest.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
@@ -91,6 +97,7 @@ export default function DonationInfoPage() {
                     <TableHead className="font-bold">Zakat</TableHead>
                     <TableHead className="font-bold">Sadaqah</TableHead>
                     <TableHead className="font-bold">Lillah</TableHead>
+                    <TableHead className="font-bold">Fidiya</TableHead>
                     <TableHead className="font-bold">Interest (Disposal)</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -101,6 +108,7 @@ export default function DonationInfoPage() {
                       <TableCell>{row.zakat}</TableCell>
                       <TableCell>{row.sadaqah}</TableCell>
                       <TableCell>{row.lillah}</TableCell>
+                      <TableCell>{row.fidiya}</TableCell>
                       <TableCell>{row.interest}</TableCell>
                     </TableRow>
                   ))}
