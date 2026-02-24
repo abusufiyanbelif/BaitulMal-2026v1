@@ -55,7 +55,7 @@ This is how administrative scripts (like `npm run db:*`) and Server Actions conn
 | **Local Development** | Uses the **`serviceAccountKey.json`** file in your project root.                                                                 | Grants your local machine's scripts admin rights to bypass all security rules for seeding, migrations, etc.  |
 | **Production** (Firebase App Hosting) | **No file needed.** It automatically uses the Google Cloud environment's default service account credentials.      | Your deployed application's server-side code runs in a trusted environment with inherent admin access.     |
 
-**The "Admin SDK initialization failed" error occurs when you run a script locally without a valid `serviceAccountKey.json` file in your project's root directory.**
+**The "Admin SDK initialization failed" error occurs when you run a script locally *without* a valid `serviceAccountKey.json` file in your project's root directory.**
 
 ## Troubleshooting Connection Issues
 

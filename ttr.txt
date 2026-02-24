@@ -1,0 +1,4 @@
+src/app/leads-members/[leadId]/donations/page.tsx(428,11): error TS17014: JSX fragment has no corresponding closing tag.
+src/app/leads-members/[leadId]/donations/page.tsx(707,7): error TS1003: Identifier expected.
+src/app/leads-members/[leadId]/donations/page.tsx(709,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/leads-members/[leadId]/donations/page.tsx(711,1): error TS1005: '</' expected.
