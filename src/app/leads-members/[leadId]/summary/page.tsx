@@ -338,6 +338,7 @@ export default function LeadSummaryPage() {
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
         
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
+        let zakatForGoalAmount = 0;
         
         verifiedDonationsList.forEach(d => {
             const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id);
@@ -347,9 +348,15 @@ export default function LeadSummaryPage() {
             const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
             splits.forEach(split => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
-                if (amountsByCategory.hasOwnProperty(category) && isForFundraising) {
-                    amountsByCategory[category as DonationCategory] += split.amount * allocationProportion;
+
+                if (amountsByCategory.hasOwnProperty(category)) {
+                    const allocatedAmount = split.amount * allocationProportion;
+                    amountsByCategory[category as DonationCategory] += allocatedAmount;
+
+                    const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
+                    if (category === 'Zakat' && isForFundraising) {
+                        zakatForGoalAmount += allocatedAmount;
+                    }
                 }
             });
         });
@@ -358,7 +365,7 @@ export default function LeadSummaryPage() {
             .filter(b => b.isEligibleForZakat && b.zakatAllocation)
             .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
 
-        const zakatAvailableForGoal = Math.max(0, (amountsByCategory['Zakat'] || 0) - zakatAllocated);
+        const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
         
         const totalCollectedForGoal = Object.entries(amountsByCategory)
             .filter(([category]) => lead.allowedDonationTypes?.includes(category as DonationCategory))
@@ -864,8 +871,8 @@ Your contribution, big or small, makes a huge difference.
                             </div>
                             <Separator />
                             <div className="flex justify-between items-center text-base">
-                                <span className="font-bold">Zakat Available for Goal</span>
-                                <span className="font-bold text-primary font-mono">₹{((summaryData?.fundTotals.zakat || 0) - (summaryData?.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
+                                <span className="font-bold">Zakat Balance Available for Goal</span>
+                                <span className="font-bold text-primary font-mono">₹{(summaryData?.zakatAvailableForGoal || 0).toLocaleString('en-IN')}</span>
                             </div>
                              {lead.allowedDonationTypes?.includes('Zakat') && (
                                 <p className="text-xs text-muted-foreground pt-1">
@@ -936,8 +943,7 @@ Your contribution, big or small, makes a huge difference.
                                ) : <Skeleton className="h-[250px] w-full" />}
                           </CardContent>
                       </Card>
-                    </div>
-                  )}
+                  </div>
                 </div>
             </div>
 

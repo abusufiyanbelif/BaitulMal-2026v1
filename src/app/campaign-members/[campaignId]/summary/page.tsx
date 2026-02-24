@@ -35,7 +35,6 @@ import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ShieldAlert } from 'lucide-react';
 import { FileUploader } from '@/components/file-uploader';
 import { Switch } from '@/components/ui/switch';
 import { BrandedLoader } from '@/components/branded-loader';
@@ -339,6 +338,7 @@ export default function CampaignSummaryPage() {
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
+        let zakatForGoalAmount = 0;
 
         verifiedDonationsList.forEach(d => {
             let amountForThisCampaign = 0;
@@ -347,10 +347,9 @@ export default function CampaignSummaryPage() {
             if (campaignLink) {
                 amountForThisCampaign = campaignLink.amount;
             } else if ((!d.linkSplit || d.linkSplit.length === 0) && d.campaignId === campaign.id) {
-                // This is a legacy donation for this campaign
                 amountForThisCampaign = d.amount;
             } else {
-                return; // Skip this donation if not related
+                return;
             }
 
             if (amountForThisCampaign === 0) {
@@ -367,14 +366,34 @@ export default function CampaignSummaryPage() {
             splits.forEach((split: any) => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
 
-                const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
+                if (amountsByCategory.hasOwnProperty(category)) {
+                    const allocatedAmount = split.amount * proportionForThisCampaign;
+                    amountsByCategory[category as DonationCategory] += allocatedAmount;
 
-                if (amountsByCategory.hasOwnProperty(category) && isForFundraising) {
-                    amountsByCategory[category as DonationCategory] += split.amount * proportionForThisCampaign;
+                    const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
+                    if (category === 'Zakat' && isForFundraising) {
+                        zakatForGoalAmount += allocatedAmount;
+                    }
                 }
             });
         });
         
+        const zakatAllocated = beneficiaries
+            .filter(b => b.isEligibleForZakat && b.zakatAllocation)
+            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
+
+        const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
+
+        const totalCollectedForGoal = Object.entries(amountsByCategory)
+            .filter(([category]) => campaign.allowedDonationTypes?.includes(category as DonationCategory))
+            .reduce((sum, [category, amount]) => {
+                if (category === 'Zakat') {
+                    // Only use the available portion of Zakat for the goal.
+                    return sum + zakatAvailableForGoal;
+                }
+                return sum + amount;
+            }, 0);
+
         const donationStatusStats = donations.reduce((acc, donation) => {
             const status = donation.status || 'Pending';
             let amountForThisCampaign = 0;
@@ -402,23 +421,6 @@ export default function CampaignSummaryPage() {
             canceled: { count: 0, amount: 0 },
         });
 
-        const zakatAllocated = beneficiaries
-            .filter(b => b.isEligibleForZakat && b.zakatAllocation)
-            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
-
-        const zakatAvailableForGoal = Math.max(0, (amountsByCategory['Zakat'] || 0) - zakatAllocated);
-
-        const totalCollectedForGoal = Object.entries(amountsByCategory)
-            .filter(([category]) => campaign.allowedDonationTypes?.includes(category as DonationCategory))
-            .reduce((sum, [category, amount]) => {
-                if (category === 'Zakat') {
-                    return sum + zakatAvailableForGoal;
-                }
-                return sum + amount;
-            }, 0);
-
-        const pendingDonations = donationStatusStats.pending.amount;
-
         const fundingGoal = campaign.targetAmount || 0;
         const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
         
@@ -430,7 +432,6 @@ export default function CampaignSummaryPage() {
             
             let specificCategory: ItemCategory | null = null;
             if (matchingCategories.length > 1) {
-                // If multiple categories match, find the most specific one (smallest range)
                 matchingCategories.sort((a, b) => {
                     const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
                     const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
@@ -491,7 +492,7 @@ export default function CampaignSummaryPage() {
         
         return {
             totalCollectedForGoal,
-            pendingDonations,
+            pendingDonations: donationStatusStats.pending.amount,
             fundingProgress,
             targetAmount: campaign.targetAmount || 0,
             remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal),
@@ -504,6 +505,7 @@ export default function CampaignSummaryPage() {
             donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
             zakatAllocated,
             zakatAvailableForGoal,
+            zakatForGoalAmount,
             fundTotals: {
                 fitra: fitraTotal,
                 zakat: zakatTotal,
@@ -576,14 +578,14 @@ Your contribution, big or small, makes a huge difference.
         return <BrandedLoader />;
     }
     
-    if (campaignError || beneficiariesError || donationsError) {
+    if (leadError || beneficiariesError || donationsError) {
         return (
              <main className="container mx-auto p-4 md:p-8">
                 <Alert variant="destructive">
                     <ShieldAlert className="h-4 w-4" />
                     <AlertTitle>Error Loading Data</AlertTitle>
                     <AlertDescription>
-                        <p>There was a problem fetching the required data for this page. This could be due to network issues or insufficient permissions.</p>
+                        <p>There was a problem fetching the required data for this page. This could be due to network issues or permissions.</p>
                         <pre className="mt-2 text-xs bg-destructive/10 p-2 rounded-md font-mono">
                             {(campaignError || beneficiariesError || donationsError)?.message}
                         </pre>
@@ -1067,8 +1069,8 @@ Your contribution, big or small, makes a huge difference.
                             </div>
                             <Separator />
                             <div className="flex justify-between items-center text-base">
-                                <span className="font-bold">Zakat Available for Goal</span>
-                                <span className="font-bold text-primary font-mono">₹{((summaryData?.fundTotals.zakat || 0) - (summaryData?.zakatAllocated || 0)).toLocaleString('en-IN')}</span>
+                                <span className="font-bold">Zakat Balance Available for Goal</span>
+                                <span className="font-bold text-primary font-mono">₹{(summaryData?.zakatAvailableForGoal || 0).toLocaleString('en-IN')}</span>
                             </div>
                              {campaign.allowedDonationTypes?.includes('Zakat') && (
                                 <p className="text-xs text-muted-foreground pt-1">
