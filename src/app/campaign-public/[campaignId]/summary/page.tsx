@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useMemo, useState, useRef } from 'react';
@@ -143,7 +144,8 @@ export default function PublicCampaignSummaryPage() {
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
-
+        let zakatForGoalAmount = 0;
+        
         verifiedDonationsList.forEach(d => {
             let amountForThisCampaign = 0;
             const campaignLink = d.linkSplit?.find((l: any) => l.linkId === campaign.id && l.linkType === 'campaign');
@@ -173,11 +175,14 @@ export default function PublicCampaignSummaryPage() {
                 if (amountsByCategory.hasOwnProperty(category)) {
                     const allocatedAmount = split.amount * proportionForThisCampaign;
                     amountsByCategory[category as DonationCategory] += allocatedAmount;
+
+                     const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
+                    if (category === 'Zakat' && isForFundraising) {
+                        zakatForGoalAmount += allocatedAmount;
+                    }
                 }
             });
         });
-
-        const zakatForGoalAmount = amountsByCategory['Zakat'] || 0;
         
         const zakatAllocated = beneficiaries
             .filter(b => b.isEligibleForZakat && b.zakatAllocation)
@@ -231,6 +236,7 @@ export default function PublicCampaignSummaryPage() {
             zakatGiven,
             zakatPending,
             zakatAvailableForGoal,
+            zakatForGoalAmount,
             fundTotals: { fitra: fitraTotal, zakat: zakatTotal, loan: loanTotal, interest: interestTotal, sadaqah: sadaqahTotal, fidiya: fidiyaTotal, lillah: lillahTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal, }
         };
     }, [allDonations, campaign, beneficiaries]);
@@ -507,9 +513,15 @@ Your contribution, big or small, makes a huge difference.
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Fundraising Target</p>
+                                        <p className="text-sm font-medium text-muted-foreground">Fundraising Target</p>
                                         <p className="text-3xl font-bold">
                                         ₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}
+                                        </p>
+                                    </div>
+                                     <div>
+                                        <p className="text-sm text-muted-foreground">Grand Total Received</p>
+                                        <p className="text-3xl font-bold">
+                                        ₹{(fundingData?.fundTotals.grandTotal || 0).toLocaleString('en-IN')}
                                         </p>
                                     </div>
                                 </div>
@@ -582,7 +594,6 @@ Your contribution, big or small, makes a huge difference.
                     </Card>
                 )}
                  {fundingData && (
-                    <>
                     <Card>
                         <CardHeader>
                             <CardTitle>Zakat Utilization</CardTitle>
@@ -619,46 +630,6 @@ Your contribution, big or small, makes a huge difference.
                             )}
                         </CardContent>
                     </Card>
-
-                    <div className="grid gap-6 lg:grid-cols-2">
-                       <Card>
-                          <CardHeader>
-                              <CardTitle>Fund Totals by Type</CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-2">
-                              <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                              <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                              <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                              <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fidiya</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.fidiya.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                              <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                              <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                              <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                              <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                              <Separator className="my-2"/>
-                              <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{fundingData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                          </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Donations by Payment Type</CardTitle>
-                                <CardDescription>Count of donations per payment type.</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
-                                    <PieChart>
-                                        <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                        <Pie data={fundingData?.donationPaymentTypeChartData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5}>
-                                            {fundingData?.donationPaymentTypeChartData?.map((entry) => (
-                                                <Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />
-                                            ))}
-                                        </Pie>
-                                        <ChartLegend content={<ChartLegendContent />} />
-                                    </PieChart>
-                                </ChartContainer>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </>
                 )}
 
                 {campaign.category === 'Ration' && beneficiaryData && beneficiaryData.sortedBeneficiaryCategoryKeys.length > 0 && (

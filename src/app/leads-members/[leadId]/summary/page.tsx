@@ -672,7 +672,69 @@ Your contribution, big or small, makes a huge difference.
                             <CardDescription>A real-time look at the collected donations against the goal for this initiative.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                          {/* Content restored here */}
+                          {isClient ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                                  <div className="relative h-48 w-full">
+                                      <ChartContainer
+                                          config={{
+                                              progress: {
+                                                  label: 'Progress',
+                                                  color: 'hsl(var(--primary))',
+                                              },
+                                          }}
+                                          className="mx-auto aspect-square h-full"
+                                      >
+                                          <RadialBarChart
+                                              data={[{ name: 'Progress', value: summaryData?.fundingProgress || 0, fill: 'hsl(var(--primary))' }]}
+                                              startAngle={-270}
+                                              endAngle={90}
+                                              innerRadius="75%"
+                                              outerRadius="100%"
+                                              barSize={20}
+                                          >
+                                          <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                          <RadialBar
+                                              dataKey="value"
+                                              background={{ fill: 'hsl(var(--muted))' }}
+                                              cornerRadius={10}
+                                          />
+                                          <ChartTooltip
+                                              cursor={false}
+                                              content={<ChartTooltipContent hideLabel />}
+                                          />
+                                          </RadialBarChart>
+                                      </ChartContainer>
+                                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                          <span className="text-4xl font-bold text-primary">
+                                              {(summaryData?.fundingProgress || 0).toFixed(0)}%
+                                          </span>
+                                          <span className="text-xs text-muted-foreground">Funded</span>
+                                      </div>
+                                  </div>
+                                  <div className="space-y-4 text-center md:text-left">
+                                      <div>
+                                          <p className="text-sm text-muted-foreground">Raised for Goal</p>
+                                          <p className="text-3xl font-bold">
+                                          ₹{(summaryData?.totalCollectedForGoal || 0).toLocaleString('en-IN')}
+                                          </p>
+                                      </div>
+                                      <div>
+                                          <p className="text-sm text-muted-foreground">Fundraising Target</p>
+                                          <p className="text-3xl font-bold">
+                                          ₹{(summaryData?.targetAmount || 0).toLocaleString('en-IN')}
+                                          </p>
+                                      </div>
+                                      <div>
+                                          <p className="text-sm text-muted-foreground">Grand Total Received</p>
+                                          <p className="text-3xl font-bold">
+                                          ₹{(summaryData?.fundTotals.grandTotal || 0).toLocaleString('en-IN')}
+                                          </p>
+                                      </div>
+                                  </div>
+                              </div>
+                          ) : (
+                              <Skeleton className="w-full h-48" />
+                          )}
                         </CardContent>
                     </Card>
 
@@ -688,7 +750,35 @@ Your contribution, big or small, makes a huge difference.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                           {/* Content restored here */}
+                           <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">Total Zakat Collected</span>
+                                <span className="font-semibold font-mono">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
+                            </div>
+                            <Separator />
+                            <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Allocated as Cash-in-Hand</span>
+                                    <span className="font-semibold font-mono">₹{(summaryData?.zakatAllocated || 0).toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs pl-4">
+                                    <span className="text-muted-foreground">Given</span>
+                                    <span className="font-mono text-green-600">₹{(summaryData?.zakatGiven || 0).toLocaleString('en-IN')}</span>
+                                </div>
+                                 <div className="flex justify-between items-center text-xs pl-4">
+                                    <span className="text-muted-foreground">Pending</span>
+                                    <span className="font-mono text-amber-600">₹{(summaryData?.zakatPending || 0).toLocaleString('en-IN')}</span>
+                                </div>
+                            </div>
+                            <Separator />
+                            <div className="flex justify-between items-center text-base">
+                                <span className="font-bold">Zakat Balance for Goal</span>
+                                <span className="font-bold text-primary font-mono">₹{(summaryData?.zakatAvailableForGoal || 0).toLocaleString('en-IN')}</span>
+                            </div>
+                             {lead.allowedDonationTypes?.includes('Zakat') && (
+                                <p className="text-xs text-muted-foreground pt-1">
+                                    Because Zakat is an allowed donation type for this lead, the available balance is automatically applied to the fundraising goal.
+                                </p>
+                            )}
                         </CardContent>
                     </Card>
 

@@ -137,6 +137,7 @@ export default function PublicLeadSummaryPage() {
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
+        let zakatForGoalAmount = 0;
 
         verifiedDonationsList.forEach(d => {
             const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id);
@@ -147,13 +148,17 @@ export default function PublicLeadSummaryPage() {
             splits.forEach(split => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
                 if (amountsByCategory.hasOwnProperty(category)) {
-                    amountsByCategory[category as DonationCategory] += split.amount * allocationProportion;
+                    const allocatedAmount = split.amount * allocationProportion;
+                    amountsByCategory[category as DonationCategory] += allocatedAmount;
+
+                    const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
+                    if (category === 'Zakat' && isForFundraising) {
+                        zakatForGoalAmount += allocatedAmount;
+                    }
                 }
             });
         });
         
-        const zakatForGoalAmount = amountsByCategory['Zakat'] || 0;
-
         const zakatAllocated = beneficiaries
             .filter(b => b.isEligibleForZakat && b.zakatAllocation)
             .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
@@ -205,6 +210,7 @@ export default function PublicLeadSummaryPage() {
             zakatGiven,
             zakatPending,
             zakatAvailableForGoal,
+            zakatForGoalAmount,
             fundTotals: { fitra: fitraTotal, zakat: zakatTotal, loan: loanTotal, interest: interestTotal, sadaqah: sadaqahTotal, fidiya: fidiyaTotal, lillah: lillahTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal, }
         };
     }, [allDonations, lead, beneficiaries]);
@@ -490,6 +496,12 @@ Your contribution, big or small, makes a huge difference.
                                         ₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}
                                         </p>
                                     </div>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Grand Total Received</p>
+                                        <p className="text-3xl font-bold">
+                                        ₹{(fundingData.fundTotals.grandTotal || 0).toLocaleString('en-IN')}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>
@@ -546,34 +558,20 @@ Your contribution, big or small, makes a huge difference.
                             <CardDescription>View photos, receipts, or other public documents related to this lead.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                {publicDocuments.map((doc) => {
-                                    const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
-                                    return (
-                                        <a key={doc.url} href={doc.url} target="_blank" rel="noopener noreferrer" className="group block">
-                                            <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-                                                <CardContent className="p-0">
-                                                    <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
-                                                        {isImage ? (
-                                                            <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
-                                                        ) : (
-                                                            <File className="w-10 h-10 text-muted-foreground" />
-                                                        )}
-                                                    </div>
-                                                    <div className="p-2 text-center">
-                                                        <p className="text-xs font-medium truncate group-hover:underline">{doc.name}</p>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                {publicDocuments.map((doc) => (
+                                    <Button key={doc.url} variant="outline" asChild>
+                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate">
+                                            <File className="mr-2 h-4 w-4 shrink-0" />
+                                            <span className="truncate">{doc.name}</span>
                                         </a>
-                                    )
-                                })}
+                                    </Button>
+                                ))}
                             </div>
                         </CardContent>
                     </Card>
                 )}
                  {fundingData && (
-                    <>
                     <Card>
                         <CardHeader>
                             <CardTitle>Zakat Utilization</CardTitle>
@@ -610,45 +608,6 @@ Your contribution, big or small, makes a huge difference.
                             )}
                         </CardContent>
                     </Card>
-
-                    <div className="grid gap-6 lg:grid-cols-2">
-                       <Card>
-                          <CardHeader>
-                              <CardTitle>Fund Totals by Type</CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-2">
-                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold font-mono">₹{fundingData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <Separator className="my-2"/>
-                            <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{fundingData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                          </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Donations by Payment Type</CardTitle>
-                                <CardDescription>Count of donations per payment type.</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
-                                    <PieChart>
-                                        <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                        <Pie data={fundingData?.donationPaymentTypeChartData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5}>
-                                            {fundingData?.donationPaymentTypeChartData?.map((entry) => (
-                                                <Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />
-                                            ))}
-                                        </Pie>
-                                        <ChartLegend content={<ChartLegendContent />} />
-                                    </PieChart>
-                                </ChartContainer>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </>
                 )}
             </div>
 
