@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
@@ -71,7 +70,7 @@ export default function BeneficiaryDetailsPage() {
     return doc(firestore, 'beneficiaries', beneficiaryId) as DocumentReference<Beneficiary>;
   }, [firestore, beneficiaryId]);
 
-  const { data: beneficiary, isLoading: isBeneficiaryLoading, error: beneficiaryError, forceRefetch } = useDoc<Beneficiary>(beneficiary);
+  const { data: beneficiary, isLoading: isBeneficiaryLoading, error: beneficiaryError, forceRefetch } = useDoc<Beneficiary>(beneficiaryDocRef);
   
   const [linkedInitiatives, setLinkedInitiatives] = useState<LinkedInitiative[]>([]);
   const [isLinksLoading, setIsLinksLoading] = useState(true);
