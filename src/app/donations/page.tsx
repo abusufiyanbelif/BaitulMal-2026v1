@@ -42,6 +42,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -463,8 +464,8 @@ export default function DonationsPage() {
     if (sortConfig !== null) {
         sortableItems.sort((a, b) => {
             if (sortConfig.key === 'srNo') return 0;
-            const aValue = a[sortConfig.key as keyof Donation] ?? '';
-            const bValue = b[sortConfig.key as keyof Donation] ?? '';
+            const aValue = (a as any)[sortConfig.key] ?? '';
+            const bValue = (b as any)[sortConfig.key] ?? '';
             
             if (sortConfig.key === 'amount') {
                  return sortConfig.direction === 'ascending' ? (aValue as number) - (bValue as number) : (bValue as number) - (aValue as number);
@@ -551,6 +552,9 @@ export default function DonationsPage() {
             <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
               <div className="flex-1 space-y-1.5">
                 <CardTitle>Donation List ({filteredAndSortedDonations.length})</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                    Total for filtered donations: <span className="font-bold">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amount, 0).toFixed(2)}</span>
+                </p>
               </div>
               <div className="flex flex-wrap gap-2">
                 {canUpdate && (

@@ -363,36 +363,32 @@ export default function DonationsPage() {
 
     // Sorting
     if (sortConfig !== null) {
-        sortableItems.sort((a, b) => {
-            if (sortConfig.key === 'srNo') return 0;
+      sortableItems.sort((a, b) => {
+        if (sortConfig.key === 'srNo') return 0;
+        
+        const key = sortConfig.key;
+        const aValue = (a as any)[key];
+        const bValue = (b as any)[key];
 
-            let aValue, bValue;
-            if (sortConfig.key === 'amountForThisLead') {
-                aValue = a.amountForThisLead;
-                bValue = b.amountForThisLead;
-            } else {
-                aValue = a[sortConfig.key as keyof Donation] ?? '';
-                bValue = b[sortConfig.key as keyof Donation] ?? '';
-            }
-            
-            if (typeof aValue === 'number' && typeof bValue === 'number') {
-                 return sortConfig.direction === 'ascending' ? aValue - bValue : bValue - aValue;
-            }
-             if (sortConfig.key === 'donationDate') {
-                const dateA = new Date(aValue as string).getTime();
-                const dateB = new Date(bValue as string).getTime();
-                return sortConfig.direction === 'ascending' ? dateA - dateB : dateB - dateA;
-            }
-            if (typeof aValue === 'string' && typeof bValue === 'string') {
-                 if (aValue < bValue) {
-                    return sortConfig.direction === 'ascending' ? -1 : 1;
-                }
-                if (aValue > bValue) {
-                    return sortConfig.direction === 'ascending' ? 1 : -1;
-                }
-            }
-            return 0;
-        });
+        if (key === 'amount' || key === 'amountForThisLead') {
+            const numA = Number(aValue) || 0;
+            const numB = Number(bValue) || 0;
+            return sortConfig.direction === 'ascending' ? numA - numB : numB - numA;
+        }
+
+        if (key === 'donationDate') {
+            const dateA = new Date(aValue as string).getTime() || 0;
+            const dateB = new Date(bValue as string).getTime() || 0;
+            return sortConfig.direction === 'ascending' ? dateA - dateB : dateB - dateA;
+        }
+
+        const strA = String(aValue || '').toLowerCase();
+        const strB = String(bValue || '').toLowerCase();
+        if (strA < strB) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (strA > strB) return sortConfig.direction === 'ascending' ? 1 : -1;
+        
+        return 0;
+      });
     }
     
     return sortableItems;
