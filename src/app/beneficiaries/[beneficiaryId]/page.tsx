@@ -1,9 +1,10 @@
+
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { getDocs, getDoc, doc, type QueryDocumentSnapshot, type DocumentData, type DocumentReference, collection, CollectionReference, setDoc } from 'firebase/firestore';
+import { getDocs, getDoc, doc, type DocumentReference, collection, query, type CollectionReference } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 import Resizer from 'react-image-file-resizer';
@@ -49,6 +50,8 @@ export default function BeneficiaryDetailsPage() {
   const { userProfile: currentUserProfile, isLoading: isProfileLoading } = useSession();
   
   const [initiativeContext, setInitiativeContext] = useState<{ type: 'campaign' | 'lead', id: string } | null>(null);
+  const [initiativeBeneficiaryData, setInitiativeBeneficiaryData] = useState<Partial<Beneficiary> | null>(null);
+  const [isInitiativeDataLoading, setIsInitiativeDataLoading] = useState(false);
 
   useEffect(() => {
     if (redirectUrl) {
@@ -72,6 +75,34 @@ export default function BeneficiaryDetailsPage() {
 
   const { data: beneficiary, isLoading: isBeneficiaryLoading, error: beneficiaryError, forceRefetch } = useDoc<Beneficiary>(beneficiaryDocRef);
   
+  useEffect(() => {
+    if (initiativeContext && firestore && beneficiaryId) {
+        setIsInitiativeDataLoading(true);
+        const collectionName = initiativeContext.type === 'campaign' ? 'campaigns' : 'leads';
+        const initiativeDocRef = doc(firestore, `${collectionName}/${initiativeContext.id}/beneficiaries/${beneficiaryId}`);
+        getDoc(initiativeDocRef).then(docSnap => {
+            if (docSnap.exists()) {
+                setInitiativeBeneficiaryData(docSnap.data() as Beneficiary);
+            }
+        }).catch(err => {
+            console.error("Error fetching initiative-specific beneficiary data:", err);
+            toast({ title: "Error", description: "Could not load context-specific data for this beneficiary.", variant: 'destructive'});
+        }).finally(() => {
+            setIsInitiativeDataLoading(false);
+        });
+    } else {
+        setInitiativeBeneficiaryData(null);
+    }
+  }, [initiativeContext, firestore, beneficiaryId, toast]);
+
+  const formBeneficiaryData = useMemo(() => {
+      if (!beneficiary) return null;
+      return {
+        ...beneficiary,
+        ...initiativeBeneficiaryData,
+      };
+  }, [beneficiary, initiativeBeneficiaryData]);
+
   const [linkedInitiatives, setLinkedInitiatives] = useState<LinkedInitiative[]>([]);
   const [isLinksLoading, setIsLinksLoading] = useState(true);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -83,8 +114,8 @@ export default function BeneficiaryDetailsPage() {
 
     try {
         const initiatives: LinkedInitiative[] = [];
-        const campaignsCollectionRef = collection(firestore, 'campaigns') as CollectionReference<Campaign>;
-        const campaignsSnapshot = await getDocs(campaignsCollectionRef);
+        const campaignsQuery = query(collection(firestore, 'campaigns') as CollectionReference<Campaign>);
+        const campaignsSnapshot = await getDocs(campaignsQuery);
 
         for (const campaignDoc of campaignsSnapshot.docs) {
             const beneficiarySubDocRef = doc(firestore, `campaigns/${campaignDoc.id}/beneficiaries`, beneficiary.id);
@@ -104,8 +135,8 @@ export default function BeneficiaryDetailsPage() {
             }
         }
 
-        const leadsCollectionRef = collection(firestore, 'leads') as CollectionReference<Lead>;
-        const leadsSnapshot = await getDocs(leadsCollectionRef);
+        const leadsQuery = query(collection(firestore, 'leads') as CollectionReference<Lead>);
+        const leadsSnapshot = await getDocs(leadsQuery);
 
         for (const leadDoc of leadsSnapshot.docs) {
             const beneficiarySubDocRef = doc(firestore, `leads/${leadDoc.id}/beneficiaries`, beneficiary.id);
@@ -214,12 +245,11 @@ export default function BeneficiaryDetailsPage() {
         return;
     }
 
-    const { idProofFile, idProofDeleted, kitAmount, status, zakatAllocation, ...beneficiaryData } = data;
+    const { idProofFile, idProofDeleted, kitAmount, status, ...beneficiaryData } = data;
     
     const masterData: Partial<Beneficiary> = {
         ...beneficiaryData,
         idProofUrl,
-        isEligibleForZakat: data.isEligibleForZakat
     };
 
     const masterUpdateResult = await updateMasterBeneficiaryAction(
@@ -277,7 +307,7 @@ export default function BeneficiaryDetailsPage() {
     setIsUpdatingStatus(false);
   }
 
-  const isLoading = isBeneficiaryLoading || isProfileLoading;
+  const isLoading = isBeneficiaryLoading || isProfileLoading || isInitiativeDataLoading;
   const backHref = redirectUrl || '/beneficiaries';
 
   if (isLoading) {
@@ -370,7 +400,7 @@ export default function BeneficiaryDetailsPage() {
               </Alert>
           )}
           <BeneficiaryForm
-              beneficiary={beneficiary}
+              beneficiary={formBeneficiaryData}
               onSubmit={handleSave}
               onCancel={handleCancel}
               isSubmitting={isSubmitting}

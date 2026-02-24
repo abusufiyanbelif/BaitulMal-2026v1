@@ -119,8 +119,33 @@ export function BeneficiaryForm({
         },
     });
 
-    const { control, handleSubmit, watch, setValue, getValues, register, formState: { isDirty } } = form;
+    const { control, handleSubmit, watch, setValue, getValues, register, formState: { isDirty }, reset } = form;
     
+    useEffect(() => {
+        if (beneficiary) {
+            reset({
+                name: beneficiary.name || '',
+                address: beneficiary.address || '',
+                phone: beneficiary.phone || '',
+                age: beneficiary.age || undefined,
+                occupation: beneficiary.occupation || '',
+                members: beneficiary.members || 1,
+                earningMembers: beneficiary.earningMembers || 0,
+                male: beneficiary.male || 0,
+                female: beneficiary.female || 0,
+                idProofType: beneficiary.idProofType || '',
+                idNumber: beneficiary.idNumber || '',
+                referralBy: beneficiary.referralBy || '',
+                kitAmount: beneficiary.kitAmount ?? defaultKitAmount ?? 0,
+                status: beneficiary.status || 'Pending',
+                notes: beneficiary.notes || '',
+                isEligibleForZakat: beneficiary.isEligibleForZakat || false,
+                zakatAllocation: beneficiary.zakatAllocation || 0,
+                idProofDeleted: false,
+            });
+        }
+    }, [beneficiary, reset, defaultKitAmount]);
+
     const [isScanning, setIsScanning] = useState(false);
     
     const idProofFile = watch('idProofFile');

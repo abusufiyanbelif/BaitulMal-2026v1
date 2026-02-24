@@ -39,8 +39,7 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
 export async function updateMasterBeneficiaryAction(
     beneficiaryId: string, 
     data: Partial<Beneficiary>, 
-    updatedBy: {id: string, name: string},
-    initiativeContext?: { type: 'campaign' | 'lead', id: string }
+    updatedBy: {id: string, name: string}
 ): Promise<{ success: boolean; message: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) {
@@ -62,7 +61,7 @@ export async function updateMasterBeneficiaryAction(
         const fieldsToPropagate: (keyof Beneficiary)[] = [
             'name', 'address', 'phone', 'age', 'occupation', 'members',
             'earningMembers', 'male', 'female', 'idProofType', 'idNumber',
-            'idProofUrl', 'idProofFilename', 'idProofIsPublic', 'referralBy', 'notes',
+            'idProofUrl', 'referralBy', 'notes',
             'isEligibleForZakat'
         ];
 
@@ -102,7 +101,7 @@ export async function updateInitiativeBeneficiaryDetailsAction(
     initiativeType: 'campaign' | 'lead',
     initiativeId: string,
     beneficiaryId: string,
-    data: { zakatAllocation?: number }
+    data: { zakatAllocation?: number; kitAmount?: number }
 ): Promise<{ success: boolean; message: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) {
