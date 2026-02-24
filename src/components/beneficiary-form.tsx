@@ -388,7 +388,7 @@ export function BeneficiaryForm({
                             </div>
                             {watch('isEligibleForZakat') && !hideZakatAllocation && (
                                 <div className="animate-fade-in-zoom">
-                                    <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem><FormLabel>Zakat Allocation (₹)</FormLabel><FormControl><Input type="number" placeholder="Amount from Zakat" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
+                                    <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem><FormLabel>Zakat Allocation (Cash in hand) (₹)</FormLabel><FormControl><Input type="number" placeholder="Amount from Zakat" {...field} disabled={formIsDisabled} /></FormControl><FormDescription>This amount will be reserved from Zakat funds and given as cash.</FormDescription></FormItem>)}/>
                                 </div>
                             )}
                         </div>

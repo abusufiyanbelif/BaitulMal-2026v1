@@ -574,6 +574,7 @@ export default function CampaignDetailsPage() {
     for (const beneficiary of beneficiaries) {
       let newKitAmount = 0;
       let appliedCategoryName = '';
+      let appliedCategoryId = '';
       
       if (editableCampaign.category === 'Ration') {
         const members = beneficiary.members || 0;
@@ -588,10 +589,7 @@ export default function CampaignDetailsPage() {
             matchingCategories.sort((a, b) => {
                 const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
                 const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
-                if (rangeA !== rangeB) {
-                    return rangeA - rangeB;
-                }
-                // If ranges are equal, prefer the one with higher minMembers
+                if(rangeA !== rangeB) return rangeA - rangeB;
                 return (b.minMembers ?? 0) - (a.minMembers ?? 0);
             });
             appliedCategory = matchingCategories[0];
@@ -602,20 +600,23 @@ export default function CampaignDetailsPage() {
         if (appliedCategory) {
            newKitAmount = calculateTotal(appliedCategory.items);
            appliedCategoryName = appliedCategory.name;
+           appliedCategoryId = appliedCategory.id;
         } else {
            newKitAmount = 0;
            appliedCategoryName = 'Uncategorized';
+           appliedCategoryId = 'uncategorized';
         }
-      } else {
-        const appliedCategory = sanitizedEditableItemCategories.find(c => c.id === beneficiary.itemCategoryId);
-        if (appliedCategory) {
-          newKitAmount = calculateTotal(appliedCategory.items);
-          appliedCategoryName = appliedCategory.name;
+      } else { // For 'General', 'Relief' campaigns
+        const generalCategory = sanitizedEditableItemCategories.find(c => c.name !== 'Item Price List');
+        if (generalCategory) {
+            newKitAmount = calculateTotal(generalCategory.items);
+            appliedCategoryName = generalCategory.name;
+            appliedCategoryId = generalCategory.id;
         }
       }
 
       const beneficiaryRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
-      batch.update(beneficiaryRef, { kitAmount: newKitAmount, itemCategoryName: appliedCategoryName });
+      batch.update(beneficiaryRef, { kitAmount: newKitAmount, itemCategoryId: appliedCategoryId, itemCategoryName: appliedCategoryName });
       newTotalRequiredAmount += newKitAmount;
     }
 
