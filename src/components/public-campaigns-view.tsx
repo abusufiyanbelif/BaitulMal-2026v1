@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { FolderKanban } from 'lucide-react';
+import { FolderKanban, HandHelping } from 'lucide-react';
 import type { Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
 import { usePublicData } from '@/hooks/use-public-data';
+import Link from 'next/link';
 
 const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: number; progress: number; })[] }) => {
     const router = useRouter();
@@ -26,46 +27,56 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {campaigns.map(campaign => (
-                <Card key={campaign.id} className="flex flex-col hover:shadow-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 cursor-pointer" onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}>
-                    <div className="relative h-40 w-full bg-secondary flex items-center justify-center">
+                <Card key={campaign.id} className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-zoom overflow-hidden" onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}>
+                    <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
                         {campaign.imageUrl ? (
                             <Image
-                                src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`}
-                                alt={campaign.name}
-                                fill
-                                sizes="100vw"
-                                className="object-cover"
-                                data-ai-hint="campaign background"
+                              src={campaign.imageUrl}
+                              alt={campaign.name}
+                              fill
+                              sizes="100vw"
+                              className="object-cover"
+                              data-ai-hint="campaign background"
                             />
                         ) : (
-                            <FolderKanban className="h-16 w-16 text-muted-foreground" />
+                            <HandHelping className="h-16 w-16 text-muted-foreground" />
                         )}
                     </div>
                     <CardHeader>
                         <div className="flex justify-between items-start gap-2">
-                            <CardTitle>{campaign.name}</CardTitle>
+                            <CardTitle className="w-full break-words text-base">
+                                {campaign.campaignNumber && <span className="text-primary font-bold">#{campaign.campaignNumber} </span>}{campaign.name}
+                            </CardTitle>
+                        </div>
+                        <CardDescription className="text-xs">{campaign.startDate} to {campaign.endDate}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-grow space-y-2">
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                            <Badge variant="outline">{campaign.category}</Badge>
                             <Badge variant={
                                 campaign.status === 'Active' ? 'success' :
                                 campaign.status === 'Completed' ? 'secondary' : 'outline'
                             }>{campaign.status}</Badge>
                         </div>
-                        <CardDescription>{campaign.startDate} to {campaign.endDate}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex flex-col flex-grow space-y-4">
-                        <p className="text-sm text-muted-foreground line-clamp-3 flex-grow">{campaign.description || "No description provided."}</p>
-                         {campaign.targetAmount && campaign.targetAmount > 0 && (
-                          <div className="space-y-2 pt-2">
-                              <Progress value={campaign.progress} />
-                              <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>₹{campaign.collected.toLocaleString('en-IN')} raised</span>
-                                  <span>Goal: ₹{campaign.targetAmount.toLocaleString('en-IN')}</span>
-                              </div>
-                          </div>
-                         )}
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                            <Badge variant="outline">{campaign.authenticityStatus || 'N/A'}</Badge>
+                            <Badge variant="outline">{campaign.publicVisibility || 'N/A'}</Badge>
+                        </div>
+                        {(campaign.targetAmount || 0) > 0 && (
+                            <div className="space-y-1 pt-1">
+                                <Progress value={campaign.progress} className="h-2" />
+                                <div className="flex justify-between text-xs text-muted-foreground">
+                                    <span>₹{campaign.collected.toLocaleString('en-IN')} raised</span>
+                                    <span>Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</span>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
-                    <CardFooter>
-                        <Button className="w-full" tabIndex={-1}>
-                            View Details
+                    <CardFooter className="p-2">
+                        <Button asChild className="w-full" size="sm">
+                            <Link href={`/campaign-public/${campaign.id}/summary`}>
+                                View Details
+                            </Link>
                         </Button>
                     </CardFooter>
                 </Card>
