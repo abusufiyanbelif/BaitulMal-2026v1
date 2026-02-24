@@ -4,6 +4,7 @@ const nextConfig = {
   // Force a reload by adding a comment.
   // Force a cache invalidation again.
   // Force a cache invalidation one more time to fix ChunkLoadError.
+  // And again to resolve the EADDRINUSE error.
   reactStrictMode: true,
   allowedDevOrigins: [
     "https://*.cloudworkstations.dev"
