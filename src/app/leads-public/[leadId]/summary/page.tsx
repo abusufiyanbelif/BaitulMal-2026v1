@@ -288,7 +288,7 @@ export default function PublicLeadSummaryPage() {
             return;
         }
         
-        let shareText = \`
+        let shareText = `
 *Assalamualaikum Warahmatullahi Wabarakatuh*
 
 *We Need Your Support!*
@@ -297,28 +297,28 @@ Join us for the *${lead.name}* initiative as we work to provide essential aid to
 
 *Our Goal:*
 ${lead.description || 'To support those in need.'}
-        \`.trim().replace(/^\s+/gm, '');
+        `.trim().replace(/^\s+/gm, '');
 
         if(fundingData) {
-            shareText += \`
+            shareText += `
 
 *Financial Update:*
 🎯 Target: ₹${fundingData.targetAmount.toLocaleString('en-IN')}
 ✅ Collected (Verified): ₹${fundingData.totalCollectedForGoal.toLocaleString('en-IN')}
 ⏳ Remaining: *₹${fundingData.remainingToCollect.toLocaleString('en-IN')}*
-            \`
+            `
         }
         
-        shareText += \`
+        shareText += `
 
 Your contribution, big or small, makes a huge difference.
 
 *Please donate and share this message.*
-        \`.trim().replace(/^\s+/gm, '');
+        `.trim().replace(/^\s+/gm, '');
 
 
         const dataToShare = {
-            title: \`Lead Summary: ${lead.name}\`,
+            title: `Lead Summary: ${lead.name}`,
             text: shareText,
             url: window.location.href,
         };

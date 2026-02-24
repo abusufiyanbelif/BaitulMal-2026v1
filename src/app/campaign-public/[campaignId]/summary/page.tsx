@@ -245,49 +245,50 @@ export default function PublicCampaignSummaryPage() {
 
         const beneficiariesByCategory = beneficiaries.reduce((acc, ben) => {
             const members = ben.members || 0;
+            const generalCategory = sanitizedRationLists.find(cat => cat.name === 'Item Price List');
             
-            const matchingCategories = sanitizedRationLists.filter(
-              cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
-            );
+            const matchingCategories = sanitizedRationLists.filter(cat => cat.name !== 'General Item List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999));
             
-            let appliedCategory: ItemCategory | null = null;
+            let specificCategory: ItemCategory | null = null;
             if (matchingCategories.length > 1) {
+                // If multiple categories match, find the most specific one (smallest range)
                 matchingCategories.sort((a, b) => {
                     const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
                     const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
                     if(rangeA !== rangeB) return rangeA - rangeB;
                     return (b.minMembers ?? 0) - (a.minMembers ?? 0);
                 });
-                appliedCategory = matchingCategories[0];
+                specificCategory = matchingCategories[0];
             } else if (matchingCategories.length === 1) {
-                appliedCategory = matchingCategories[0];
+                specificCategory = matchingCategories[0];
             }
 
-            const categoryForGroup = appliedCategory || { id: 'uncategorized', name: 'Uncategorized', items: [], minMembers: -1, maxMembers: -1 };
-            const categoryKey = categoryForGroup.id;
+            const appliedCategory = specificCategory || generalCategory;
+
+
+            let categoryName = 'Uncategorized';
+            let categoryKey = 'uncategorized';
+
+            if (appliedCategory) {
+              categoryName = appliedCategory.name === 'General Item List'
+                  ? 'General'
+                  : (appliedCategory.minMembers === undefined || appliedCategory.maxMembers === undefined || appliedCategory.minMembers === appliedCategory.maxMembers)
+                      ? `${appliedCategory.name} (${appliedCategory.minMembers})`
+                      : `${appliedCategory.name} (${appliedCategory.minMembers}-${appliedCategory.maxMembers})`;
+              categoryKey = appliedCategory.id;
+            }
 
             if (!acc[categoryKey]) {
-              acc[categoryKey] = { 
-                category: categoryForGroup, 
-                beneficiariesByMemberCount: {} 
-              };
+              acc[categoryKey] = { categoryName: categoryName, beneficiaries: [], totalAmount: 0, kitAmount: 0, minMembers: appliedCategory?.minMembers ?? 0 };
             }
-
-            const memberCount = ben.members || 0;
-            if (!acc[categoryKey].beneficiariesByMemberCount[memberCount]) {
-              acc[categoryKey].beneficiariesByMemberCount[memberCount] = [];
-            }
-            acc[categoryKey].beneficiariesByMemberCount[memberCount].push(ben);
-            
+            acc[categoryKey].beneficiaries.push(ben);
+            acc[categoryKey].totalAmount += ben.kitAmount || 0;
+            acc[categoryKey].kitAmount = ben.kitAmount || 0;
             return acc;
-        }, {} as Record<string, { category: ItemCategory, beneficiariesByMemberCount: Record<number, Beneficiary[]> }>);
+        }, {} as Record<string, { categoryName: string, beneficiaries: Beneficiary[], totalAmount: number, kitAmount: number, minMembers: number }>);
 
         const sortedBeneficiaryCategoryKeys = Object.keys(beneficiariesByCategory).sort((a, b) => {
-          const catA = beneficiariesByCategory[a].category;
-          const catB = beneficiariesByCategory[b].category;
-          if (catA.id === 'uncategorized') return 1;
-          if (catB.id === 'uncategorized') return -1;
-          return (catA.minMembers ?? 0) - (catB.minMembers ?? 0);
+          return beneficiariesByCategory[a].minMembers - beneficiariesByCategory[b].minMembers;
         });
 
         const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
@@ -314,7 +315,7 @@ export default function PublicCampaignSummaryPage() {
             return;
         }
         
-        let shareText = \`
+        let shareText = `
 *Assalamualaikum Warahmatullahi Wabarakatuh*
 
 *We Need Your Support!*
@@ -323,28 +324,28 @@ Join us for the *${campaign.name}* campaign as we work to provide essential aid 
 
 *Our Goal:*
 ${campaign.description || 'To support those in need.'}
-        \`.trim().replace(/^\s+/gm, '');
+        `.trim().replace(/^\s+/gm, '');
 
         if(fundingData) {
-            shareText += \`
+            shareText += `
 
 *Financial Update:*
 🎯 Target for Kits: ₹${fundingData.targetAmount.toLocaleString('en-IN')}
 ✅ Collected (Verified): ₹${fundingData.totalCollectedForGoal.toLocaleString('en-IN')}
 ⏳ Remaining: *₹${fundingData.remainingToCollect.toLocaleString('en-IN')}*
-            \`
+            `
         }
         
-        shareText += \`
+        shareText += `
 
 Your contribution, big or small, makes a huge difference.
 
 *Please donate and share this message.*
-        \`.trim().replace(/^\s+/gm, '');
+        `.trim().replace(/^\s+/gm, '');
 
 
         const dataToShare = {
-            title: \`Campaign Summary: ${campaign.name}\`,
+            title: `Campaign Summary: ${campaign.name}`,
             text: shareText,
             url: window.location.href,
         };
