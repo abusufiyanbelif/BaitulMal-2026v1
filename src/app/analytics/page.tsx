@@ -331,6 +331,58 @@ export default function AnalyticsPage() {
                                 </CardContent>
                             </Card>
                         </div>
+                    </div>
+                </TabsContent>
+                <TabsContent value="storage">
+                    <StorageAnalytics />
+                </TabsContent>
+                <TabsContent value="database">
+                    <div className="space-y-6">
+                        <div className="grid gap-6 lg:grid-cols-2">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Document Distribution</CardTitle>
+                                    <CardDescription>The proportion of documents in each main collection.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                {isClient ? (
+                                    <ChartContainer config={documentDistributionChartConfig} className="h-[300px] w-full">
+                                        <PieChart>
+                                            <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                            <Pie data={documentDistributionData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+                                                {documentDistributionData.map((entry) => (
+                                                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                                                ))}
+                                            </Pie>
+                                            <ChartLegend content={<ChartLegendContent />} />
+                                        </PieChart>
+                                    </ChartContainer>
+                                ) : <Skeleton className="h-[300px] w-full" />}
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Detailed Usage Metrics</CardTitle>
+                                    <CardDescription>Information about database reads, writes, and deletes.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Alert>
+                                        <Database className="h-4 w-4" />
+                                        <AlertTitle>View Usage in Firebase Console</AlertTitle>
+                                        <AlertDescription>
+                                            <p>For detailed, real-time metrics on database operations (document reads, writes, deletes), network usage, and storage, please visit your Firebase Console.</p>
+                                            <p className="mt-2">The "Activity Over Time" chart on this tab can provide insight into document creation trends.</p>
+                                            <Button asChild variant="link" className="p-0 h-auto mt-2">
+                                                <a href={`https://console.firebase.google.com/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/firestore/usage`} target="_blank" rel="noopener noreferrer">
+                                                    Go to Firebase Console Usage <ExternalLink className="ml-1 h-3 w-3" />
+                                                </a>
+                                            </Button>
+                                        </AlertDescription>
+                                    </Alert>
+                                </CardContent>
+                            </Card>
+                        </div>
                         <Card>
                             <CardHeader>
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -438,72 +490,6 @@ export default function AnalyticsPage() {
                                 )}
                             </CardContent>
                         </Card>
-                    </div>
-                </TabsContent>
-                <TabsContent value="storage">
-                    <StorageAnalytics />
-                </TabsContent>
-                <TabsContent value="database">
-                    <div className="space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-3xl">Database Analytics</CardTitle>
-                                <CardDescription>An overview of document counts across your main Firestore collections.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                <StatCard title="User Profiles" value={users?.length || 0} icon={Users} isLoading={isLoading} />
-                                <StatCard title="Campaigns" value={campaigns?.length || 0} icon={FolderKanban} isLoading={isLoading} />
-                                <StatCard title="Leads" value={leads?.length || 0} icon={Lightbulb} isLoading={isLoading} />
-                                <StatCard title="Master Beneficiaries" value={beneficiaries?.length || 0} icon={HandHelping} isLoading={isLoading} />
-                                <StatCard title="Donations" value={donations?.length || 0} icon={DollarSign} isLoading={isLoading} />
-                            </CardContent>
-                        </Card>
-
-                        <div className="grid gap-6 lg:grid-cols-2">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Document Distribution</CardTitle>
-                                    <CardDescription>The proportion of documents in each main collection.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                {isClient ? (
-                                    <ChartContainer config={documentDistributionChartConfig} className="h-[300px] w-full">
-                                        <PieChart>
-                                            <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                            <Pie data={documentDistributionData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
-                                                {documentDistributionData.map((entry) => (
-                                                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                                                ))}
-                                            </Pie>
-                                            <ChartLegend content={<ChartLegendContent />} />
-                                        </PieChart>
-                                    </ChartContainer>
-                                ) : <Skeleton className="h-[300px] w-full" />}
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Detailed Usage Metrics</CardTitle>
-                                    <CardDescription>Information about database reads, writes, and deletes.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Alert>
-                                        <Database className="h-4 w-4" />
-                                        <AlertTitle>View Usage in Firebase Console</AlertTitle>
-                                        <AlertDescription>
-                                            <p>For detailed, real-time metrics on database operations (document reads, writes, deletes), network usage, and storage, please visit your Firebase Console.</p>
-                                            <p className="mt-2">The "Activity Over Time" chart in the General Analytics tab can provide insight into document creation trends.</p>
-                                            <Button asChild variant="link" className="p-0 h-auto mt-2">
-                                                <a href={`https://console.firebase.google.com/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/firestore/usage`} target="_blank" rel="noopener noreferrer">
-                                                    Go to Firebase Console Usage <ExternalLink className="ml-1 h-3 w-3" />
-                                                </a>
-                                            </Button>
-                                        </AlertDescription>
-                                    </Alert>
-                                </CardContent>
-                            </Card>
-                        </div>
                     </div>
                 </TabsContent>
             </Tabs>
