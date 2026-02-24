@@ -24,13 +24,13 @@ export default function Home() {
                       An overview of our organization's impact and activities. Join us in making a difference.
                   </p>
                   <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-                      <Button asChild size="lg" className="flex-1 max-w-xs">
+                      <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95">
                           <Link href="/campaign-public">
                               <FolderKanban className="mr-2 h-5 w-5" />
                               View Public Campaigns
                           </Link>
                       </Button>
-                      <Button asChild size="lg" variant="secondary" className="flex-1 max-w-xs">
+                      <Button asChild size="lg" variant="secondary" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95">
                           <Link href="/leads-public">
                               <Lightbulb className="mr-2 h-5 w-5" />
                               View Public Leads
