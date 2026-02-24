@@ -47,15 +47,22 @@ export async function updateMasterBeneficiaryAction(beneficiaryId: string, data:
             updatedByName: updatedBy.name,
         };
 
-        // 1. Update the master document
-        batch.update(masterBeneficiaryRef, updatePayload);
+        // 1. Update the master document, creating it if it doesn't exist to prevent errors.
+        batch.set(masterBeneficiaryRef, updatePayload, { merge: true });
 
         // 2. Find and update all instances in subcollections
         const allInstancesQuery = adminDb.collectionGroup('beneficiaries').where('id', '==', beneficiaryId);
         const allInstancesSnap = await allInstancesQuery.get();
         
+        // Exclude initiative-specific fields from being propagated to sub-collections.
+        const { status, kitAmount, ...subCollectionData } = data;
+
         allInstancesSnap.forEach(docSnap => {
-            batch.set(docSnap.ref, updatePayload, { merge: true });
+            // Don't re-update the master document that was found in the collection group query
+            if (docSnap.ref.path !== masterBeneficiaryRef.path) {
+                // Only propagate master data fields, not initiative-specific ones like status or kit amount.
+                batch.set(docSnap.ref, subCollectionData, { merge: true });
+            }
         });
 
         // 3. Commit the batch
