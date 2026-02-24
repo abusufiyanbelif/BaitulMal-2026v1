@@ -606,6 +606,9 @@ Your contribution, big or small, makes a huge difference.
     }
     
     const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
+    const itemName = campaign.category === 'Ration' ? 'Kits' : 'Items/Services';
+    const givenLabel = `${itemName} Provided`;
+    const pendingLabel = `Pending ${itemName}`;
 
     return (
         <main className="container mx-auto p-4 md:p-8">
@@ -694,17 +697,17 @@ Your contribution, big or small, makes a huge difference.
                             </Link>
                         )}
                         {canReadRation && (
-                            <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow" : "hover:bg-accent hover:text-accent-foreground")}>
+                            <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>
                                 Item Lists
                             </Link>
                         )}
                         {canReadBeneficiaries && (
-                            <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "bg-primary text-primary-foreground shadow" : "hover:bg-accent hover:text-accent-foreground")}>
+                            <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>
                                 Beneficiary List
                             </Link>
                         )}
                          {canReadDonations && (
-                             <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow" : "hover:bg-accent hover:text-accent-foreground")}>
+                             <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>
                                 Donations
                             </Link>
                         )}
@@ -1003,7 +1006,7 @@ Your contribution, big or small, makes a huge difference.
                         </Card>
                         <Card className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Kits Given</CardTitle>
+                                <CardTitle className="text-sm font-medium">{givenLabel}</CardTitle>
                                 <Gift className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
@@ -1012,7 +1015,7 @@ Your contribution, big or small, makes a huge difference.
                         </Card>
                         <Card className="animate-fade-in-up" style={{ animationDelay: '500ms' }}>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Kits Pending</CardTitle>
+                                <CardTitle className="text-sm font-medium">{pendingLabel}</CardTitle>
                                 <Hourglass className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
