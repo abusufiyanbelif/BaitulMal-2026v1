@@ -16,30 +16,28 @@ export default function Home() {
     return (
         <div className="container mx-auto p-4 md:p-8">
             <div className="space-y-8">
-              <Card className="max-w-4xl mx-auto text-center animate-fade-in-up">
-                  <CardHeader>
-                      <CardTitle className="text-3xl font-bold">Welcome to Baitulmal Samajik Sanstha Solapur</CardTitle>
-                      <CardDescription className="text-lg text-muted-foreground pt-2">
-                          An overview of our organization's impact and activities.
-                      </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button asChild size="lg" className="flex-1">
-                            <Link href="/campaign-public">
-                                <FolderKanban className="mr-2 h-5 w-5" />
-                                View Public Campaigns
-                            </Link>
-                        </Button>
-                        <Button asChild size="lg" variant="secondary" className="flex-1">
-                            <Link href="/leads-public">
-                                <Lightbulb className="mr-2 h-5 w-5" />
-                                View Public Leads
-                            </Link>
-                        </Button>
-                    </div>
-                  </CardContent>
-              </Card>
+              <section className="text-center py-12 md:py-20 animate-fade-in-up">
+                  <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary">
+                      Baitulmal Samajik Sanstha Solapur
+                  </h1>
+                  <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
+                      An overview of our organization's impact and activities. Join us in making a difference.
+                  </p>
+                  <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+                      <Button asChild size="lg" className="flex-1 max-w-xs">
+                          <Link href="/campaign-public">
+                              <FolderKanban className="mr-2 h-5 w-5" />
+                              View Public Campaigns
+                          </Link>
+                      </Button>
+                      <Button asChild size="lg" variant="secondary" className="flex-1 max-w-xs">
+                          <Link href="/leads-public">
+                              <Lightbulb className="mr-2 h-5 w-5" />
+                              View Public Leads
+                          </Link>
+                      </Button>
+                  </div>
+              </section>
 
               <WisdomAndReflection />
 

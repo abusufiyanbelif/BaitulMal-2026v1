@@ -6,54 +6,25 @@ export function TempLogo() {
       viewBox="0 0 100 100"
       className="h-full w-full object-contain"
     >
-      <circle cx="50" cy="50" r="45" stroke="hsl(var(--foreground))" fill="none" strokeWidth="2" />
+      <circle
+        cx="50"
+        cy="50"
+        r="45"
+        stroke="hsl(var(--primary))"
+        fill="hsl(var(--primary) / 0.1)"
+        strokeWidth="3"
+      />
       <text
         x="50%"
-        y="30%"
+        y="55%"
         dominantBaseline="middle"
         textAnchor="middle"
-        fontSize="10"
-        fill="hsl(var(--foreground))"
+        fontSize="48"
+        fill="hsl(var(--primary))"
         fontFamily="sans-serif"
         fontWeight="bold"
       >
-        Baitulmal
-      </text>
-       <text
-        x="50%"
-        y="45%"
-        dominantBaseline="middle"
-        textAnchor="middle"
-        fontSize="10"
-        fill="hsl(var(--foreground))"
-        fontFamily="sans-serif"
-        fontWeight="bold"
-      >
-        Samajik
-      </text>
-       <text
-        x="50%"
-        y="60%"
-        dominantBaseline="middle"
-        textAnchor="middle"
-        fontSize="10"
-        fill="hsl(var(--foreground))"
-        fontFamily="sans-serif"
-        fontWeight="bold"
-      >
-        Sanstha
-      </text>
-       <text
-        x="50%"
-        y="75%"
-        dominantBaseline="middle"
-        textAnchor="middle"
-        fontSize="10"
-        fill="hsl(var(--foreground))"
-        fontFamily="sans-serif"
-        fontWeight="bold"
-      >
-        Solapur
+        B
       </text>
     </svg>
   );
