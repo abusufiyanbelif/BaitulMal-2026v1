@@ -40,14 +40,16 @@ export async function updateMasterBeneficiaryAction(beneficiaryId: string, data:
         const batch = adminDb.batch();
         const masterBeneficiaryRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
 
-        const updatePayload = {
+        // Use set with merge to create the document if it doesn't exist.
+        // This prevents FAILED_PRECONDITION errors if a beneficiary exists in a
+        // subcollection but not in the master list yet.
+        batch.set(masterBeneficiaryRef, {
             ...data,
             updatedAt: FieldValue.serverTimestamp(),
             updatedById: updatedBy.id,
             updatedByName: updatedBy.name,
-        };
+        }, { merge: true });
 
-        batch.set(masterBeneficiaryRef, updatePayload, { merge: true });
 
         // Explicitly define which master fields to propagate to sub-collections.
         // This prevents overwriting initiative-specific fields like `status` or `kitAmount`.
@@ -133,10 +135,19 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
         const allBeneficiaryInstancesQuery = adminDb.collectionGroup('beneficiaries').where('id', '==', beneficiaryId);
         const allBeneficiaryInstancesSnap = await allBeneficiaryInstancesQuery.get();
 
-        allBeneficiaryInstancesSnap.forEach(docSnap => {
+        for (const docSnap of allBeneficiaryInstancesSnap.docs) {
+            // Decrement the target amount on the parent campaign/lead
+            const parentRef = docSnap.ref.parent.parent;
+            if (parentRef) {
+                const beneficiaryData = docSnap.data() as Beneficiary;
+                const amountToSubtract = beneficiaryData.kitAmount || 0;
+                if (amountToSubtract > 0) {
+                    batch.update(parentRef, { targetAmount: FieldValue.increment(-amountToSubtract) });
+                }
+            }
             // Add each subcollection instance to the delete batch
             batch.delete(docSnap.ref);
-        });
+        }
 
         // Also delete the master document
         batch.delete(masterBeneficiaryRef);
@@ -155,8 +166,8 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
         await batch.commit();
 
         revalidatePath('/beneficiaries');
-        revalidatePath('/campaign-members');
-        revalidatePath('/leads-members');
+        revalidatePath('/campaign-members', 'layout');
+        revalidatePath('/leads-members', 'layout');
 
         return { success: true, message: 'Beneficiary permanently deleted from the master list and all linked initiatives.' };
     } catch (error: any) {
