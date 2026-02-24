@@ -518,7 +518,7 @@ export default function BeneficiariesPage() {
     const beneficiaryDocRef = doc(firestore, 'leads', leadId, 'beneficiaries', beneficiary.id);
     
     try {
-      await updateDoc(beneficiaryDocRef, { status: newStatus });
+      await setDoc(beneficiaryDocRef, { status: newStatus }, { merge: true });
       toast({
         title: 'Status Updated',
         description: `${beneficiary.name}'s status has been set to ${newStatus}.`,
@@ -536,9 +536,13 @@ export default function BeneficiariesPage() {
     const handleZakatToggle = async (beneficiary: Beneficiary) => {
         if (!canUpdate || !userProfile) return;
         const newZakatStatus = !beneficiary.isEligibleForZakat;
+        const updateData: Partial<Beneficiary> = { isEligibleForZakat: newZakatStatus };
+        if (!newZakatStatus) {
+            updateData.zakatAllocation = 0;
+        }
         const result = await updateMasterBeneficiaryAction(
             beneficiary.id,
-            { isEligibleForZakat: newZakatStatus },
+            updateData,
             { id: userProfile.id, name: userProfile.name }
         );
         if (result.success) {
@@ -815,6 +819,8 @@ export default function BeneficiariesPage() {
     </main>
   );
 }
+
+    
 
     
 

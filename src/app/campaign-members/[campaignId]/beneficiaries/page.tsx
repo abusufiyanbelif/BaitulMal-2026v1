@@ -482,7 +482,7 @@ const sortedGroupKeys = useMemo(() => {
     const beneficiaryDocRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
     
     try {
-      await updateDoc(beneficiaryDocRef, { status: newStatus });
+      await setDoc(beneficiaryDocRef, { status: newStatus }, { merge: true });
       toast({
         title: 'Status Updated',
         description: `${beneficiary.name}'s status has been set to ${newStatus}.`,
@@ -500,9 +500,13 @@ const sortedGroupKeys = useMemo(() => {
   const handleZakatToggle = async (beneficiary: Beneficiary) => {
     if (!canUpdate || !userProfile) return;
     const newZakatStatus = !beneficiary.isEligibleForZakat;
+    const updateData: Partial<Beneficiary> = { isEligibleForZakat: newZakatStatus };
+    if (!newZakatStatus) {
+        updateData.zakatAllocation = 0;
+    }
     const result = await updateMasterBeneficiaryAction(
         beneficiary.id,
-        { isEligibleForZakat: newZakatStatus },
+        updateData,
         { id: userProfile.id, name: userProfile.name }
     );
     if (result.success) {
@@ -1234,6 +1238,8 @@ const sortedGroupKeys = useMemo(() => {
     </main>
   );
 }
+
+    
 
     
 
