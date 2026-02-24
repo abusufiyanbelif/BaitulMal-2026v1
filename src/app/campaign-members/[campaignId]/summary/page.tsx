@@ -438,6 +438,7 @@ export default function CampaignSummaryPage() {
             
             let specificCategory: ItemCategory | null = null;
             if (matchingCategories.length > 1) {
+                // If multiple categories match, find the most specific one (smallest range)
                 matchingCategories.sort((a, b) => {
                     const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
                     const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
@@ -586,7 +587,7 @@ Your contribution, big or small, makes a huge difference.
         return <BrandedLoader />;
     }
     
-    if (leadError || beneficiariesError || donationsError) {
+    if (campaignError || beneficiariesError || donationsError) {
         return (
              <main className="container mx-auto p-4 md:p-8">
                 <Alert variant="destructive">
