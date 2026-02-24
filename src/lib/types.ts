@@ -1,5 +1,6 @@
 
-import type { DocumentData, Timestamp, FieldValue } from 'firebase/firestore';
+
+import type { DocumentData, Timestamp, FieldValue } from '@/firebase';
 import type { UserPermissions, GroupId } from './modules';
 import { donationCategories } from './modules';
 

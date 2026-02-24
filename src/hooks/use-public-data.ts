@@ -4,7 +4,7 @@
 import { useMemo } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useFirestore, useMemoFirebase } from '@/firebase/provider';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, where } from '@/firebase';
 import type { Campaign, Lead, Donation, DonationCategory } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 

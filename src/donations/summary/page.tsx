@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -268,30 +269,13 @@ export default function DonationsSummaryPage() {
     const monthlyContributionData = useMemo(() => {
         if (!filteredDonations) return null;
         const monthlyTotals = filteredDonations.reduce((acc, d) => {
-            if (d.contributionFromDate && d.contributionToDate) {
-                const typeSplit = d.typeSplit || [];
-                const contribution = typeSplit.find(s => s.category === 'Monthly Contribution');
-                if (contribution && contribution.amount > 0) {
-                    try {
-                        const from = new Date(d.contributionFromDate);
-                        const to = new Date(d.contributionToDate);
-                        let current = from;
-                        while(current <= to) {
-                            const month = format(current, 'yyyy-MM');
-                            acc[month] = (acc[month] || 0) + (contribution.amount / ((to.getMonth() - from.getMonth() + 12 * (to.getFullYear() - from.getFullYear())) + 1) );
-                            current.setMonth(current.getMonth() + 1);
-                        }
-                    } catch(e) { /* ignore date parsing errors */ }
-                }
-            } else {
-                 const typeSplit = d.typeSplit || [];
-                const contribution = typeSplit.find(s => s.category === 'Monthly Contribution');
-                if (contribution && contribution.amount > 0 && d.donationDate) {
-                    try {
-                        const month = format(new Date(d.donationDate), 'yyyy-MM');
-                        acc[month] = (acc[month] || 0) + contribution.amount;
-                    } catch(e) { /* ignore */ }
-                }
+            const typeSplit = d.typeSplit || [];
+            const contribution = typeSplit.find(s => s.category === 'Monthly Contribution');
+            if (contribution && contribution.amount > 0 && d.donationDate) {
+                try {
+                    const month = format(new Date(d.donationDate), 'yyyy-MM');
+                    acc[month] = (acc[month] || 0) + contribution.amount;
+                } catch(e) { /* ignore */ }
             }
             return acc;
         }, {} as Record<string, number>);

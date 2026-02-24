@@ -1,8 +1,9 @@
 
+
 'use client';
 import { useMemoFirebase, useFirestore } from '@/firebase/provider';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { doc, type DocumentReference } from 'firebase/firestore';
+import { doc, type DocumentReference } from '@/firebase';
 import type { PaymentSettings } from '@/lib/types';
 
 export function usePaymentSettings() {

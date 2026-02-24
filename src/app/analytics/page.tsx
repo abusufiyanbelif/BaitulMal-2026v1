@@ -1,8 +1,10 @@
+
+
 'use client';
 
 import { useMemoFirebase, useFirestore } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import { collection, Timestamp } from 'firebase/firestore';
+import { collection, Timestamp, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Users, FolderKanban, Lightbulb, HandHelping, DollarSign, BarChart, CalendarIcon, Database, ExternalLink, Eye } from 'lucide-react';
@@ -362,7 +364,7 @@ export default function AnalyticsPage() {
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {pageHits?.sort((a,b) => b.hits - a.hits).map(hit => (
+                                                {pageHits?.sort((a: { hits: number }, b: { hits: number }) => b.hits - a.hits).map(hit => (
                                                     <TableRow key={hit.id}>
                                                         <TableCell className="font-medium capitalize">{hit.id.replace(/_/g, ' ')}</TableCell>
                                                         <TableCell className="text-right font-mono">{hit.hits.toLocaleString()}</TableCell>

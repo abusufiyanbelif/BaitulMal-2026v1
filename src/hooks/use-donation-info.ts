@@ -1,8 +1,9 @@
 
+
 'use client';
 import { useMemoFirebase, useFirestore } from '@/firebase/provider';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { doc, DocumentReference } from 'firebase/firestore';
+import { doc, DocumentReference } from '@/firebase';
 import type { DonationInfoData } from '@/lib/types';
 
 export function useDonationInfo() {

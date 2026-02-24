@@ -1,11 +1,12 @@
 
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc, updateDoc, doc, serverTimestamp, setDoc, deleteField } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, serverTimestamp, setDoc, deleteField, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import type { Donation, Campaign, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -193,7 +194,6 @@ export default function DonationsPage() {
   const router = useRouter();
   const firestore = useFirestore();
   const storage = useStorage();
-  console.log("Storage instance:", storage);
   const { toast } = useToast();
   const pathname = usePathname();
   const { userProfile, isLoading: isProfileLoading } = useSession();

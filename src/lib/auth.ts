@@ -1,15 +1,16 @@
 
+
 'use client';
 import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   type Auth,
-} from 'firebase/auth';
+} from '@/firebase';
 import { 
     type Firestore, 
     doc,
     getDoc
-} from 'firebase/firestore';
+} from '@/firebase';
 
 export const signInWithLoginId = async (auth: Auth, firestore: Firestore, loginId: string, password?: string) => {
     
