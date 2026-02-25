@@ -111,7 +111,7 @@ export function DonationSummary() {
             <PieChart>
               <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
               <Pie data={categorySummary} dataKey="value" nameKey="name" innerRadius={40} outerRadius={60} strokeWidth={2}>
-                {categorySummary.map((entry) => (
+                {categorySummary.map((entry: any) => (
                   <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                 ))}
               </Pie>

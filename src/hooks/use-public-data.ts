@@ -65,7 +65,7 @@ export function usePublicData() {
         ? donation.linkSplit
         : (donation as any).campaignId ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] : [];
       
-      links.forEach(link => {
+      links.forEach((link: any) => {
         const item = itemsById.get(link.linkId);
         // Only process donations linked to our public items
         if (!item) return;

@@ -4,7 +4,7 @@
 
 import { useMemoFirebase, useFirestore } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import { collection, Timestamp, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import { collection, Timestamp, DocumentData, QueryDocumentSnapshot } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Users, FolderKanban, Lightbulb, HandHelping, DollarSign, BarChart, CalendarIcon, Database, ExternalLink, Eye } from 'lucide-react';
@@ -135,7 +135,7 @@ export default function AnalyticsPage() {
                 ? donation.linkSplit
                 : (donation as any).campaignId ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] : [];
 
-            links.forEach(link => {
+            links.forEach((link: any) => {
                 if (link.linkType === 'campaign') {
                     const currentTotal = campaignTotals.get(link.linkId) || 0;
                     campaignTotals.set(link.linkId, currentTotal + link.amount);

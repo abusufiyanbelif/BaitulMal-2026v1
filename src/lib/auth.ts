@@ -6,9 +6,9 @@ import {
   signOut as firebaseSignOut,
   type Auth,
   doc,
-  getDoc
+  getDoc,
+  type Firestore,
 } from '@/firebase';
-import type { Firestore } from 'firebase/firestore';
 
 export const signInWithLoginId = async (auth: Auth, firestore: Firestore, loginId: string, password?: string) => {
     

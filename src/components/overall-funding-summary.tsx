@@ -90,19 +90,19 @@ export function OverallFundingSummary() {
                 <div>
                     <p className="text-sm text-muted-foreground">Total Raised for Goals</p>
                     <p className="text-3xl font-bold">
-                    ₹{overallSummary.totalCollectedForGoals.toLocaleString('en-IN')}
+                    ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Combined Target</p>
                     <p className="text-3xl font-bold">
-                    ₹{overallSummary.totalTarget.toLocaleString('en-IN')}
+                    ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Grand Total Received (All Types)</p>
                     <p className="text-3xl font-bold">
-                    ₹{overallSummary.grandTotalRaised.toLocaleString('en-IN')}
+                    ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
                     </p>
                 </div>
             </div>
