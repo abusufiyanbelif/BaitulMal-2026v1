@@ -178,23 +178,30 @@ export default function AnalyticsPage() {
 
         if (!sourceData) return [];
 
-        const filteredData = sourceData.filter(item => {
-            if (!date?.from) return true; // 'All time' filter
-
+        // Pre-filter to ensure all items have a valid date field, preventing crashes.
+        const dataWithDates = sourceData.filter(item => {
             const itemDateValue = item[dateField];
             if (!itemDateValue) return false;
+            // For Timestamps, check for toDate method. For strings, check if it's a valid date string.
+            if (typeof itemDateValue === 'string') {
+                return isValid(parseISO(itemDateValue));
+            }
+            return typeof itemDateValue.toDate === 'function';
+        });
 
+        const filteredData = dataWithDates.filter(item => {
+            if (!date?.from) return true; // 'All time' filter handles showing all valid dates
+
+            const itemDateValue = item[dateField];
+            
             let itemDate: Date;
             if (typeof itemDateValue === 'string') {
                 itemDate = parseISO(itemDateValue);
-            } else if (itemDateValue && typeof itemDateValue.toDate === 'function') { // Firestore Timestamp
+            } else { // Timestamp
                 itemDate = itemDateValue.toDate();
-            } else {
-                return false;
             }
 
-            if (!isValid(itemDate)) return false;
-
+            // No need for extra isValid check as it's done in dataWithDates pre-filter
             const from = startOfDay(date.from);
             const to = date.to ? endOfDay(date.to) : endOfDay(date.from);
             return itemDate >= from && itemDate <= to;
@@ -233,7 +240,7 @@ export default function AnalyticsPage() {
             return acc;
         }, {} as Record<string, { date: string, count: number, amount: number }>);
         
-        return Object.values(groupedData).sort((a, b) => a.date.localeCompare(b.date));
+        return Object.values(groupedData).sort((a: {date: string}, b: {date: string}) => a.date.localeCompare(b.date));
     }, [donations, users, beneficiaries, date, granularity, selectedMetric]);
     
     const activityChartConfig = {
@@ -363,7 +370,7 @@ export default function AnalyticsPage() {
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {pageHits?.sort((a: { hits: number }, b: { hits: number }) => b.hits - a.hits).map(hit => (
+                                                {pageHits?.sort((a, b) => b.hits - a.hits).map(hit => (
                                                     <TableRow key={hit.id}>
                                                         <TableCell className="font-medium capitalize">{hit.id.replace(/_/g, ' ')}</TableCell>
                                                         <TableCell className="text-right font-mono">{hit.hits.toLocaleString()}</TableCell>
@@ -543,5 +550,3 @@ export default function AnalyticsPage() {
         </div>
     );
 }
-
-    
