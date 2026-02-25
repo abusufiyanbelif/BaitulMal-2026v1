@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemoFirebase, useFirestore } from '@/firebase/provider';
@@ -207,7 +206,7 @@ export default function AnalyticsPage() {
             return itemDate >= from && itemDate <= to;
         });
 
-        const groupedData = filteredData.reduce((acc, item) => {
+        const groupedData = filteredData.reduce<Record<string, { date: string; count: number; amount: number }>>((acc, item) => {
             const itemDateValue = item[dateField];
             let itemDate: Date;
             if (typeof itemDateValue === 'string') {
@@ -238,9 +237,9 @@ export default function AnalyticsPage() {
             }
 
             return acc;
-        }, {} as Record<string, { date: string, count: number, amount: number }>);
+        }, {});
         
-        return Object.values(groupedData).sort((a: {date: string}, b: {date: string}) => a.date.localeCompare(b.date));
+        return Object.values(groupedData).sort((a, b) => a.date.localeCompare(b.date));
     }, [donations, users, beneficiaries, date, granularity, selectedMetric]);
     
     const activityChartConfig = {
