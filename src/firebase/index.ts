@@ -1,4 +1,5 @@
 
+
 'use client';
 
 export { initializeFirebase } from './init';
@@ -34,6 +35,8 @@ export {
     type CollectionReference,
     type Timestamp,
     type FieldValue,
+    type FirestoreError,
+    type DocumentSnapshot,
 } from 'firebase/firestore';
 
 export {

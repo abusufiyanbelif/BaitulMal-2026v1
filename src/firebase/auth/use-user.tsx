@@ -1,6 +1,8 @@
 
+
 'use client';
-import { useFirebase, type User } from '@/firebase';
+import { useFirebase } from '@/firebase/provider';
+import type { User } from 'firebase/auth';
 
 interface UseUserResult {
   user: User | null;

@@ -12,8 +12,11 @@ import React, {
   useEffect,
 } from 'react';
 
-import type { FirebaseApp, Auth, User, Firestore, FirebaseStorage } from '@/firebase';
-import { onAuthStateChanged } from '@/firebase';
+import type { FirebaseApp } from 'firebase/app';
+import type { Auth, User } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
+import type { Firestore } from 'firebase/firestore';
+import type { FirebaseStorage } from 'firebase/storage';
 
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 

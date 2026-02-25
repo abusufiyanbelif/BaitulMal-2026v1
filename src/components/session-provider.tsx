@@ -1,8 +1,10 @@
 
+
 'use client';
 
 import { createContext, useMemo as useReactMemo, ReactNode } from 'react';
-import { useFirestore, useMemoFirebase, useDoc, doc, type DocumentReference, type User } from '@/firebase';
+import { useFirestore, useMemoFirebase, useDoc, doc, type DocumentReference } from '@/firebase';
+import type { User } from 'firebase/auth';
 import type { UserProfile } from '@/lib/types';
 
 interface SessionContextType {
