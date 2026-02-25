@@ -173,7 +173,7 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
                     </TableCell>
                 </TableRow>
             )}
-        </RefreshCw.Fragment>
+        </React.Fragment>
     );
 }
 
@@ -194,7 +194,6 @@ export default function BeneficiariesPage() {
   
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
   const [isSyncing, setIsSyncing] = useState(false);
-  const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);

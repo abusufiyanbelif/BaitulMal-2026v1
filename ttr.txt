@@ -1,2 +1,1 @@
-src/app/analytics/page.tsx(236,58): error TS18046: 'a' is of type 'unknown'.
-src/app/analytics/page.tsx(236,79): error TS18046: 'b' is of type 'unknown'.
+src/app/beneficiaries/page.tsx(176,11): error TS17002: Expected corresponding JSX closing tag for 'React.Fragment'.
