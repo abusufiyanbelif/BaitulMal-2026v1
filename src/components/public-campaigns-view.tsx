@@ -1,10 +1,8 @@
-
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { FolderKanban, HandHelping } from 'lucide-react';
+import { FolderKanban, HandHelping, CalendarIcon, X } from 'lucide-react';
 import type { Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -15,6 +13,11 @@ import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
 import { usePublicData } from '@/hooks/use-public-data';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import { DateRange } from "react-day-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: number; progress: number; })[] }) => {
     const router = useRouter();
@@ -96,20 +99,62 @@ export function PublicCampaignsView() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
   
+  // Date filtering state
+  const [selectedYear, setSelectedYear] = useState('All');
+  const [selectedMonth, setSelectedMonth] = useState('All');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+
   const { isLoading, campaignsWithProgress } = usePublicData();
+
+  const availableYears = useMemo(() => {
+    if (!campaignsWithProgress) return [new Date().getFullYear().toString()];
+    const years = new Set<string>();
+    campaignsWithProgress.forEach(c => {
+        if (c.startDate) {
+            try {
+                const y = c.startDate.split('-')[0];
+                if (y) years.add(y);
+            } catch (e) {}
+        }
+    });
+    if (years.size === 0) years.add(new Date().getFullYear().toString());
+    return Array.from(years).sort((a, b) => b.localeCompare(a));
+  }, [campaignsWithProgress]);
 
   const filteredCampaigns = useMemo(() => {
     if (!campaignsWithProgress) return [];
-    return campaignsWithProgress.filter(c => 
+    let items = campaignsWithProgress.filter(c => 
         (statusFilter === 'All' || c.status === statusFilter) &&
         (categoryFilter === 'All' || c.category === categoryFilter) &&
         (c.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    ).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-  }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter]);
+    );
 
-  const activeCampaigns = useMemo(() => filteredCampaigns.filter(c => c.status === 'Active').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredCampaigns]);
-  const upcomingCampaigns = useMemo(() => filteredCampaigns.filter(c => c.status === 'Upcoming').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredCampaigns]);
-  const completedCampaigns = useMemo(() => filteredCampaigns.filter(c => c.status === 'Completed').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredCampaigns]);
+    // Date Filtering
+    if (dateRange?.from) {
+        const from = startOfDay(dateRange.from);
+        const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+        items = items.filter(c => {
+            if (!c.startDate) return false;
+            try {
+                const itemDate = parseISO(c.startDate);
+                return itemDate >= from && itemDate <= to;
+            } catch (e) { return false; }
+        });
+    } else {
+        if (selectedYear !== 'All') {
+            items = items.filter(c => c.startDate?.startsWith(selectedYear));
+            if (selectedMonth !== 'All') {
+                items = items.filter(c => c.startDate?.split('-')[1] === selectedMonth);
+            }
+        }
+    }
+
+    return items.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+  }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, dateRange, selectedYear, selectedMonth]);
+
+  const activeCampaigns = useMemo(() => filteredCampaigns.filter(c => c.status === 'Active'), [filteredCampaigns]);
+  const upcomingCampaigns = useMemo(() => filteredCampaigns.filter(c => c.status === 'Upcoming'), [filteredCampaigns]);
+  const completedCampaigns = useMemo(() => filteredCampaigns.filter(c => c.status === 'Completed'), [filteredCampaigns]);
 
 
   return (
@@ -147,6 +192,44 @@ export function PublicCampaignsView() {
                       <SelectItem value="General">General</SelectItem>
                   </SelectContent>
               </Select>
+
+              {/* Date Filters */}
+              <div className="flex items-center gap-2 border-l pl-2 ml-2">
+                  <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}>
+                      <SelectTrigger className="w-[100px] text-xs sm:text-sm"><SelectValue placeholder="Year" /></SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="All">All Years</SelectItem>
+                          {availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                      </SelectContent>
+                  </Select>
+                  <Select value={selectedMonth} onValueChange={(val) => { setSelectedMonth(val); setDateRange(undefined); }} disabled={isLoading || selectedYear === 'All'}>
+                      <SelectTrigger className="w-[120px] text-xs sm:text-sm"><SelectValue placeholder="Month" /></SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="All">All Months</SelectItem>
+                          {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((m, i) => (
+                              <SelectItem key={m} value={(i + 1).toString().padStart(2, '0')}>{m}</SelectItem>
+                          ))}
+                      </SelectContent>
+                  </Select>
+                  <Popover>
+                      <PopoverTrigger asChild>
+                          <Button variant="outline" size="sm" className={cn("justify-start text-left font-normal h-10 px-3", !dateRange && "text-muted-foreground")} disabled={isLoading}>
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              <span className="hidden sm:inline">
+                                  {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd")) : "Custom Range"}
+                              </span>
+                          </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar initialFocus mode="range" defaultMonth={dateRange?.from} selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); setSelectedMonth('All'); } }} numberOfMonths={2} />
+                      </PopoverContent>
+                  </Popover>
+                  {(selectedYear !== 'All' || dateRange) && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedYear('All'); setSelectedMonth('All'); setDateRange(undefined); }}>
+                          <X className="h-4 w-4" />
+                      </Button>
+                  )}
+              </div>
         </div>
       </div>
 

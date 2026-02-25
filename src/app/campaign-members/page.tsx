@@ -1,11 +1,9 @@
-
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping } from 'lucide-react';
+import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X } from 'lucide-react';
 import { useCollection, useFirestore, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/types';
@@ -43,207 +41,26 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { CopyCampaignDialog } from '@/components/copy-campaign-dialog';
 import { copyCampaignAction, deleteCampaignAction } from './actions';
-import { getNestedValue } from '@/lib/utils';
+import { cn, getNestedValue } from '@/lib/utils';
 import Image from 'next/image';
+import { DateRange } from "react-day-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, parseISO, startOfDay, endOfDay } from 'date-fns';
 
-export default function CampaignPage() {
-  const router = useRouter();
-  const firestore = useFirestore();
-  const storage = useStorage();
-  const { toast } = useToast();
+interface CampaignCardProps {
+    campaign: Campaign & { collected: number; progress: number; };
+    index: number;
+    router: ReturnType<typeof useRouter>;
+    canUpdate: boolean;
+    canCreate: boolean;
+    canDelete: boolean;
+    handleStatusUpdate: (campaignToUpdate: Campaign, field: 'status' | 'authenticityStatus' | 'publicVisibility', value: string) => Promise<void>;
+    handleCopyClick: (campaign: Campaign) => void;
+    handleDeleteClick: (campaign: Campaign) => void;
+}
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [categoryFilter, setCategoryFilter] = useState('All');
-  const [authenticityFilter, setAuthenticityFilter] = useState('All');
-  const [visibilityFilter, setVisibilityFilter] = useState('All');
-  const [isDeleting, setIsDeleting] = useState(false);
-  
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [campaignToDelete, setCampaignToDelete] = useState<Campaign | null>(null);
-
-  const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
-  const [campaignToCopy, setCampaignToCopy] = useState<Campaign | null>(null);
-
-  const { userProfile, isLoading: isProfileLoading } = useSession();
-
-  const campaignsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'campaigns');
-  }, [firestore]);
-  const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
-
-  const donationsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
-  }, [firestore]);
-  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
-
-  const campaignData = useMemo(() => {
-    if (!campaigns || !donations) return [];
-    
-    const collectedAmounts = new Map<string, number>();
-    const campaignsById = new Map(campaigns.map(c => [c.id, c]));
-
-    donations.forEach(donation => {
-        const links = (donation.linkSplit && donation.linkSplit.length > 0)
-            ? donation.linkSplit
-            : (donation as any).campaignId ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] : [];
-        
-        links.forEach(link => {
-            if (link.linkType !== 'campaign') return;
-
-            const campaign = campaignsById.get(link.linkId);
-            if (!campaign) return;
-
-            const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
-            const proportionForThisCampaign = link.amount / totalDonationAmount;
-
-            const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
-                ? donation.typeSplit
-                : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
-            
-            const applicableAmount = typeSplits.reduce((acc, split) => {
-                const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                if (campaign.allowedDonationTypes?.includes(category as DonationCategory)) {
-                    return acc + split.amount;
-                }
-                return acc;
-            }, 0);
-
-            const currentCollected = collectedAmounts.get(link.linkId) || 0;
-            collectedAmounts.set(link.linkId, currentCollected + (applicableAmount * proportionForThisCampaign));
-        });
-    });
-
-    return campaigns.map(campaign => {
-      const collected = collectedAmounts.get(campaign.id) || 0;
-      const targetAmount = campaign.targetAmount || 0;
-      const progress = targetAmount > 0 ? (collected / targetAmount) * 100 : 0;
-      
-      return {
-        ...campaign,
-        collected,
-        progress
-      };
-    });
-  }, [campaigns, donations]);
-  
-  const canCreate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.create', false);
-  const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.update', false);
-  const canDelete = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.delete', false);
-  const canViewCampaigns = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false);
-
-
-  const handleDeleteClick = (campaign: Campaign) => {
-    if (!canDelete) return;
-    setCampaignToDelete(campaign);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleCopyClick = (campaign: Campaign) => {
-    if (!canCreate) return;
-    setCampaignToCopy(campaign);
-    setIsCopyDialogOpen(true);
-  };
-
-  const handleCopyConfirm = async (options: { newName: string; copyBeneficiaries: boolean; copyDonations: boolean; copyRationLists: boolean; }) => {
-    if (!campaignToCopy || !canCreate) return;
-
-    setIsCopyDialogOpen(false);
-    
-    const result = await copyCampaignAction({
-        sourceCampaignId: campaignToCopy.id,
-        ...options
-    });
-
-    if (result.success) {
-        toast({ title: 'Campaign Copied', description: result.message, variant: 'success' });
-    } else {
-        toast({ title: 'Copy Failed', description: result.message, variant: 'destructive' });
-    }
-
-    setCampaignToCopy(null);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!campaignToDelete || !canDelete) {
-        toast({ title: 'Error', description: 'Could not delete campaign.', variant: 'destructive'});
-        return;
-    };
-
-    setIsDeleteDialogOpen(false);
-    setIsDeleting(true);
-
-    const result = await deleteCampaignAction(campaignToDelete.id);
-
-    if (result.success) {
-        toast({ title: 'Campaign Deleted', description: result.message, variant: 'success' });
-    } else {
-        toast({ title: 'Deletion Failed', description: result.message, variant: 'destructive' });
-    }
-    
-    setIsDeleting(false);
-    setCampaignToDelete(null);
-  };
-  
-  const handleStatusUpdate = async (campaignToUpdate: Campaign, field: 'status' | 'authenticityStatus' | 'publicVisibility', value: string) => {
-    if (!firestore || !canUpdate) {
-        toast({ title: 'Permission Denied', description: 'You do not have permission to update campaigns.', variant: 'destructive'});
-        return;
-    };
-
-    const docRef = doc(firestore, 'campaigns', campaignToUpdate.id);
-    const updatedData = { [field]: value };
-
-    updateDoc(docRef, updatedData)
-        .then(() => {
-            toast({ title: 'Success', description: `Campaign '${campaignToUpdate.name}' has been updated.`, variant: 'success' });
-        })
-        .catch(async (serverError: any) => {
-            const permissionError = new FirestorePermissionError({
-                path: docRef.path,
-                operation: 'update',
-                requestResourceData: updatedData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        });
-  };
-  
-  const filteredAndSortedCampaigns = useMemo(() => {
-    if (!campaignData) return [];
-    let sortableItems = [...campaignData];
-    
-    if (statusFilter !== 'All') {
-        sortableItems = sortableItems.filter(c => c.status === statusFilter);
-    }
-    if (categoryFilter !== 'All') {
-        sortableItems = sortableItems.filter(c => c.category === categoryFilter);
-    }
-    if (authenticityFilter !== 'All') {
-        sortableItems = sortableItems.filter(c => (c.authenticityStatus || 'Pending Verification') === authenticityFilter);
-    }
-    if (visibilityFilter !== 'All') {
-        sortableItems = sortableItems.filter(c => (c.publicVisibility || 'Hold') === visibilityFilter);
-    }
-    if (searchTerm) {
-        const lowercasedTerm = searchTerm.toLowerCase();
-        sortableItems = sortableItems.filter(c => 
-            c.name.toLowerCase().includes(lowercasedTerm)
-        );
-    }
-    
-    return sortableItems;
-  }, [campaignData, searchTerm, statusFilter, categoryFilter, authenticityFilter, visibilityFilter]);
-
-  const activeCampaigns = useMemo(() => filteredAndSortedCampaigns.filter(c => c.status === 'Active').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedCampaigns]);
-  const upcomingCampaigns = useMemo(() => filteredAndSortedCampaigns.filter(c => c.status === 'Upcoming').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedCampaigns]);
-  const completedCampaigns = useMemo(() => filteredAndSortedCampaigns.filter(c => c.status === 'Completed').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedCampaigns]);
-  
-
-  const isLoading = areCampaignsLoading || isProfileLoading || isDeleting || areDonationsLoading;
-  
-  const CampaignCard = ({ campaign, index }: { campaign: Campaign & { collected: number; progress: number; }, index: number }) => (
+const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete, handleStatusUpdate, handleCopyClick, handleDeleteClick }: CampaignCardProps) => (
     <Card 
         className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden" 
         style={{ animationDelay: `${100 + index * 50}ms`, animationFillMode: 'backwards' }}
@@ -367,8 +184,246 @@ export default function CampaignPage() {
         </Button>
     </CardFooter>
     </Card>
-  );
+);
 
+export default function CampaignPage() {
+  const router = useRouter();
+  const firestore = useFirestore();
+  const storage = useStorage();
+  const { toast } = useToast();
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [authenticityFilter, setAuthenticityFilter] = useState('All');
+  const [visibilityFilter, setVisibilityFilter] = useState('All');
+  
+  // Date filtering state
+  const [selectedYear, setSelectedYear] = useState('All');
+  const [selectedMonth, setSelectedMonth] = useState('All');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [campaignToDelete, setCampaignToDelete] = useState<Campaign | null>(null);
+
+  const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
+  const [campaignToCopy, setCampaignToCopy] = useState<Campaign | null>(null);
+
+  const { userProfile, isLoading: isProfileLoading } = useSession();
+
+  const campaignsCollectionRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'campaigns');
+  }, [firestore]);
+  const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
+
+  const donationsCollectionRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
+  }, [firestore]);
+  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
+
+  const campaignData = useMemo(() => {
+    if (!campaigns || !donations) return [];
+    
+    const collectedAmounts = new Map<string, number>();
+    const campaignsById = new Map(campaigns.map(c => [c.id, c]));
+
+    donations.forEach(donation => {
+        const links = (donation.linkSplit && donation.linkSplit.length > 0)
+            ? donation.linkSplit
+            : (donation as any).campaignId ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] : [];
+        
+        links.forEach(link => {
+            if (link.linkType !== 'campaign') return;
+
+            const campaign = campaignsById.get(link.linkId);
+            if (!campaign) return;
+
+            const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
+            const proportionForThisCampaign = link.amount / totalDonationAmount;
+
+            const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
+                ? donation.typeSplit
+                : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
+            
+            const applicableAmount = typeSplits.reduce((acc, split) => {
+                const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
+                if (campaign.allowedDonationTypes?.includes(category as DonationCategory)) {
+                    return acc + split.amount;
+                }
+                return acc;
+            }, 0);
+
+            const currentCollected = collectedAmounts.get(link.linkId) || 0;
+            collectedAmounts.set(link.linkId, currentCollected + (applicableAmount * proportionForThisCampaign));
+        });
+    });
+
+    return campaigns.map(campaign => {
+      const collected = collectedAmounts.get(campaign.id) || 0;
+      const targetAmount = campaign.targetAmount || 0;
+      const progress = targetAmount > 0 ? (collected / targetAmount) * 100 : 0;
+      
+      return {
+        ...campaign,
+        collected,
+        progress
+      };
+    });
+  }, [campaigns, donations]);
+
+  const availableYears = useMemo(() => {
+    if (!campaignData) return [new Date().getFullYear().toString()];
+    const years = new Set<string>();
+    campaignData.forEach(c => {
+        if (c.startDate) {
+            try {
+                const y = c.startDate.split('-')[0];
+                if (y) years.add(y);
+            } catch (e) {}
+        }
+    });
+    if (years.size === 0) years.add(new Date().getFullYear().toString());
+    return Array.from(years).sort((a, b) => b.localeCompare(a));
+  }, [campaignData]);
+  
+  const canCreate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.create', false);
+  const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.update', false);
+  const canDelete = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.delete', false);
+  const canViewCampaigns = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false);
+
+
+  const handleDeleteClick = (campaign: Campaign) => {
+    if (!canDelete) return;
+    setCampaignToDelete(campaign);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleCopyClick = (campaign: Campaign) => {
+    if (!canCreate) return;
+    setCampaignToCopy(campaign);
+    setIsCopyDialogOpen(true);
+  };
+
+  const handleCopyConfirm = async (options: { newName: string; copyBeneficiaries: boolean; copyDonations: boolean; copyRationLists: boolean; }) => {
+    if (!campaignToCopy || !canCreate) return;
+
+    setIsCopyDialogOpen(false);
+    
+    const result = await copyCampaignAction({
+        sourceCampaignId: campaignToCopy.id,
+        ...options
+    });
+
+    if (result.success) {
+        toast({ title: 'Campaign Copied', description: result.message, variant: 'success' });
+    } else {
+        toast({ title: 'Copy Failed', description: result.message, variant: 'destructive' });
+    }
+
+    setCampaignToCopy(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!campaignToDelete || !canDelete) {
+        toast({ title: 'Error', description: 'Could not delete campaign.', variant: 'destructive'});
+        return;
+    };
+
+    setIsDeleteDialogOpen(false);
+    setIsDeleting(true);
+
+    const result = await deleteCampaignAction(campaignToDelete.id);
+
+    if (result.success) {
+        toast({ title: 'Campaign Deleted', description: result.message, variant: 'success' });
+    } else {
+        toast({ title: 'Deletion Failed', description: result.message, variant: 'destructive' });
+    }
+    
+    setIsDeleting(false);
+    setCampaignToDelete(null);
+  };
+  
+  const handleStatusUpdate = async (campaignToUpdate: Campaign, field: 'status' | 'authenticityStatus' | 'publicVisibility', value: string) => {
+    if (!firestore || !canUpdate) {
+        toast({ title: 'Permission Denied', description: 'You do not have permission to update campaigns.', variant: 'destructive'});
+        return;
+    };
+
+    const docRef = doc(firestore, 'campaigns', campaignToUpdate.id);
+    const updatedData = { [field]: value };
+
+    updateDoc(docRef, updatedData)
+        .then(() => {
+            toast({ title: 'Success', description: `Campaign '${campaignToUpdate.name}' has been updated.`, variant: 'success' });
+        })
+        .catch(async (serverError: any) => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'update',
+                requestResourceData: updatedData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        });
+  };
+  
+  const filteredAndSortedCampaigns = useMemo(() => {
+    if (!campaignData) return [];
+    let sortableItems = [...campaignData];
+    
+    if (statusFilter !== 'All') {
+        sortableItems = sortableItems.filter(c => c.status === statusFilter);
+    }
+    if (categoryFilter !== 'All') {
+        sortableItems = sortableItems.filter(c => c.category === categoryFilter);
+    }
+    if (authenticityFilter !== 'All') {
+        sortableItems = sortableItems.filter(c => (c.authenticityStatus || 'Pending Verification') === authenticityFilter);
+    }
+    if (visibilityFilter !== 'All') {
+        sortableItems = sortableItems.filter(c => (c.publicVisibility || 'Hold') === visibilityFilter);
+    }
+    if (searchTerm) {
+        const lowercasedTerm = searchTerm.toLowerCase();
+        sortableItems = sortableItems.filter(c => 
+            c.name.toLowerCase().includes(lowercasedTerm)
+        );
+    }
+
+    // Date Filtering
+    if (dateRange?.from) {
+        const from = startOfDay(dateRange.from);
+        const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+        sortableItems = sortableItems.filter(c => {
+            if (!c.startDate) return false;
+            try {
+                const itemDate = parseISO(c.startDate);
+                return itemDate >= from && itemDate <= to;
+            } catch (e) { return false; }
+        });
+    } else {
+        if (selectedYear !== 'All') {
+            sortableItems = sortableItems.filter(c => c.startDate?.startsWith(selectedYear));
+            if (selectedMonth !== 'All') {
+                sortableItems = sortableItems.filter(c => c.startDate?.split('-')[1] === selectedMonth);
+            }
+        }
+    }
+    
+    return sortableItems;
+  }, [campaignData, searchTerm, statusFilter, categoryFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear, selectedMonth]);
+
+  const activeCampaigns = useMemo(() => filteredAndSortedCampaigns.filter(c => c.status === 'Active').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedCampaigns]);
+  const upcomingCampaigns = useMemo(() => filteredAndSortedCampaigns.filter(c => c.status === 'Upcoming').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedCampaigns]);
+  const completedCampaigns = useMemo(() => filteredAndSortedCampaigns.filter(c => c.status === 'Completed').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedCampaigns]);
+  
+
+  const isLoading = areCampaignsLoading || isProfileLoading || isDeleting || areDonationsLoading;
+  
   if (!isLoading && userProfile && !canViewCampaigns) {
     return (
         <main className="container mx-auto p-4 md:p-8">
@@ -459,6 +514,44 @@ export default function CampaignPage() {
                             <SelectItem value="Published">Published</SelectItem>
                         </SelectContent>
                     </Select>
+                    
+                    {/* Date Filters */}
+                    <div className="flex items-center gap-2 border-l pl-2 ml-2">
+                        <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}>
+                            <SelectTrigger className="w-[100px] text-xs sm:text-sm"><SelectValue placeholder="Year" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="All">All Years</SelectItem>
+                                {availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                        <Select value={selectedMonth} onValueChange={(val) => { setSelectedMonth(val); setDateRange(undefined); }} disabled={isLoading || selectedYear === 'All'}>
+                            <SelectTrigger className="w-[120px] text-xs sm:text-sm"><SelectValue placeholder="Month" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="All">All Months</SelectItem>
+                                {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((m, i) => (
+                                    <SelectItem key={m} value={(i + 1).toString().padStart(2, '0')}>{m}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" size="sm" className={cn("justify-start text-left font-normal h-10 px-3", !dateRange && "text-muted-foreground")} disabled={isLoading}>
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    <span className="hidden sm:inline">
+                                        {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd")) : "Custom Range"}
+                                    </span>
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar initialFocus mode="range" defaultMonth={dateRange?.from} selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); setSelectedMonth('All'); } }} numberOfMonths={2} />
+                            </PopoverContent>
+                        </Popover>
+                        {(selectedYear !== 'All' || dateRange) && (
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedYear('All'); setSelectedMonth('All'); setDateRange(undefined); }}>
+                                <X className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </div>
             {isLoading && <Skeleton className="h-10 w-44" />}
@@ -482,7 +575,20 @@ export default function CampaignPage() {
                     <section>
                         <h2 className="text-2xl font-bold mb-4">Active Campaigns ({activeCampaigns.length})</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {activeCampaigns.map((campaign, index) => <CampaignCard key={campaign.id} campaign={campaign} index={index} />)}
+                          {activeCampaigns.map((campaign, index) => (
+                            <CampaignCard 
+                                key={campaign.id} 
+                                campaign={campaign} 
+                                index={index} 
+                                router={router}
+                                canUpdate={canUpdate}
+                                canCreate={canCreate}
+                                canDelete={canDelete}
+                                handleStatusUpdate={handleStatusUpdate}
+                                handleCopyClick={handleCopyClick}
+                                handleDeleteClick={handleDeleteClick}
+                            />
+                          ))}
                         </div>
                     </section>
                 )}
@@ -490,7 +596,20 @@ export default function CampaignPage() {
                     <section>
                         <h2 className="text-2xl font-bold mb-4">Upcoming Campaigns ({upcomingCampaigns.length})</h2>
                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {upcomingCampaigns.map((campaign, index) => <CampaignCard key={campaign.id} campaign={campaign} index={index} />)}
+                          {upcomingCampaigns.map((campaign, index) => (
+                            <CampaignCard 
+                                key={campaign.id} 
+                                campaign={campaign} 
+                                index={index} 
+                                router={router}
+                                canUpdate={canUpdate}
+                                canCreate={canCreate}
+                                canDelete={canDelete}
+                                handleStatusUpdate={handleStatusUpdate}
+                                handleCopyClick={handleCopyClick}
+                                handleDeleteClick={handleDeleteClick}
+                            />
+                          ))}
                         </div>
                     </section>
                 )}
@@ -498,7 +617,20 @@ export default function CampaignPage() {
                     <section>
                         <h2 className="text-2xl font-bold mb-4">Completed Campaigns ({completedCampaigns.length})</h2>
                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {completedCampaigns.map((campaign, index) => <CampaignCard key={campaign.id} campaign={campaign} index={index} />)}
+                          {completedCampaigns.map((campaign, index) => (
+                            <CampaignCard 
+                                key={campaign.id} 
+                                campaign={campaign} 
+                                index={index} 
+                                router={router}
+                                canUpdate={canUpdate}
+                                canCreate={canCreate}
+                                canDelete={canDelete}
+                                handleStatusUpdate={handleStatusUpdate}
+                                handleCopyClick={handleCopyClick}
+                                handleDeleteClick={handleDeleteClick}
+                            />
+                          ))}
                         </div>
                     </section>
                 )}
@@ -548,12 +680,3 @@ export default function CampaignPage() {
     </>
   );
 }
-
-
-
-
-
-
-
-
-

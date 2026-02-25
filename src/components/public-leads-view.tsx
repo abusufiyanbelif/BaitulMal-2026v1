@@ -1,9 +1,7 @@
-
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Lightbulb, HandHelping } from 'lucide-react';
+import { Lightbulb, HandHelping, CalendarIcon, X } from 'lucide-react';
 import type { Lead } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -16,6 +14,11 @@ import { leadPurposesConfig } from '@/lib/modules';
 import Image from 'next/image';
 import { usePublicData } from '@/hooks/use-public-data';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import { DateRange } from "react-day-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: number; })[] }) => {
     const router = useRouter();
@@ -97,21 +100,63 @@ export function PublicLeadsView() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [purposeFilter, setPurposeFilter] = useState('All');
+  
+  // Date filtering state
+  const [selectedYear, setSelectedYear] = useState('All');
+  const [selectedMonth, setSelectedMonth] = useState('All');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   const { isLoading, leadsWithProgress } = usePublicData();
+
+  const availableYears = useMemo(() => {
+    if (!leadsWithProgress) return [new Date().getFullYear().toString()];
+    const years = new Set<string>();
+    leadsWithProgress.forEach(l => {
+        if (l.startDate) {
+            try {
+                const y = l.startDate.split('-')[0];
+                if (y) years.add(y);
+            } catch (e) {}
+        }
+    });
+    if (years.size === 0) years.add(new Date().getFullYear().toString());
+    return Array.from(years).sort((a, b) => b.localeCompare(a));
+  }, [leadsWithProgress]);
   
   const filteredLeads = useMemo(() => {
     if (!leadsWithProgress) return [];
-    return leadsWithProgress.filter(l => 
+    let items = leadsWithProgress.filter(l => 
         (statusFilter === 'All' || l.status === statusFilter) &&
         (purposeFilter === 'All' || l.purpose === purposeFilter) &&
         (l.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    ).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-  }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter]);
+    );
+
+    // Date Filtering
+    if (dateRange?.from) {
+        const from = startOfDay(dateRange.from);
+        const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+        items = items.filter(l => {
+            if (!l.startDate) return false;
+            try {
+                const itemDate = parseISO(l.startDate);
+                return itemDate >= from && itemDate <= to;
+            } catch (e) { return false; }
+        });
+    } else {
+        if (selectedYear !== 'All') {
+            items = items.filter(l => l.startDate?.startsWith(selectedYear));
+            if (selectedMonth !== 'All') {
+                items = items.filter(l => l.startDate?.split('-')[1] === selectedMonth);
+            }
+        }
+    }
+
+    return items.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+  }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, dateRange, selectedYear, selectedMonth]);
   
-  const activeLeads = useMemo(() => filteredLeads.filter(c => c.status === 'Active').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredLeads]);
-  const upcomingLeads = useMemo(() => filteredLeads.filter(c => c.status === 'Upcoming').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredLeads]);
-  const completedLeads = useMemo(() => filteredLeads.filter(c => c.status === 'Completed').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredLeads]);
+  const activeLeads = useMemo(() => filteredLeads.filter(c => c.status === 'Active'), [filteredLeads]);
+  const upcomingLeads = useMemo(() => filteredLeads.filter(c => c.status === 'Upcoming'), [filteredLeads]);
+  const completedLeads = useMemo(() => filteredLeads.filter(c => c.status === 'Completed'), [filteredLeads]);
   
   return (
     <div className="space-y-8">
@@ -146,6 +191,44 @@ export function PublicLeadsView() {
                     {leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                 </SelectContent>
             </Select>
+
+            {/* Date Filters */}
+            <div className="flex items-center gap-2 border-l pl-2 ml-2">
+                <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}>
+                    <SelectTrigger className="w-[100px] text-xs sm:text-sm"><SelectValue placeholder="Year" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">All Years</SelectItem>
+                        {availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+                <Select value={selectedMonth} onValueChange={(val) => { setSelectedMonth(val); setDateRange(undefined); }} disabled={isLoading || selectedYear === 'All'}>
+                    <SelectTrigger className="w-[120px] text-xs sm:text-sm"><SelectValue placeholder="Month" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">All Months</SelectItem>
+                        {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((m, i) => (
+                            <SelectItem key={m} value={(i + 1).toString().padStart(2, '0')}>{m}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" className={cn("justify-start text-left font-normal h-10 px-3", !dateRange && "text-muted-foreground")} disabled={isLoading}>
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            <span className="hidden sm:inline">
+                                {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd")) : "Custom Range"}
+                            </span>
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar initialFocus mode="range" defaultMonth={dateRange?.from} selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); setSelectedMonth('All'); } }} numberOfMonths={2} />
+                    </PopoverContent>
+                </Popover>
+                {(selectedYear !== 'All' || dateRange) && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedYear('All'); setSelectedMonth('All'); setDateRange(undefined); }}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                )}
+            </div>
         </div>
       </div>
 

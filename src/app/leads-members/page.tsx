@@ -1,11 +1,9 @@
-
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping } from 'lucide-react';
+import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X } from 'lucide-react';
 import { useCollection, useFirestore, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import type { Lead, Beneficiary, Donation, DonationCategory } from '@/lib/types';
@@ -23,9 +21,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { CopyLeadDialog } from '@/components/copy-lead-dialog';
 import { copyLeadAction, deleteLeadAction } from './actions';
-import { getNestedValue } from '@/lib/utils';
+import { cn, getNestedValue } from '@/lib/utils';
 import { leadPurposesConfig } from '@/lib/modules';
 import Image from 'next/image';
+import { DateRange } from "react-day-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 export default function LeadPage() {
   const router = useRouter();
@@ -38,6 +40,12 @@ export default function LeadPage() {
   const [purposeFilter, setPurposeFilter] = useState('All');
   const [authenticityFilter, setAuthenticityFilter] = useState('All');
   const [visibilityFilter, setVisibilityFilter] = useState('All');
+  
+  // Date filtering state
+  const [selectedYear, setSelectedYear] = useState('All');
+  const [selectedMonth, setSelectedMonth] = useState('All');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+
   const [isDeleting, setIsDeleting] = useState(false);
   
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -106,6 +114,21 @@ export default function LeadPage() {
         };
     });
   }, [leads, donations]);
+
+  const availableYears = useMemo(() => {
+    if (!leadData) return [new Date().getFullYear().toString()];
+    const years = new Set<string>();
+    leadData.forEach(l => {
+        if (l.startDate) {
+            try {
+                const y = l.startDate.split('-')[0];
+                if (y) years.add(y);
+            } catch (e) {}
+        }
+    });
+    if (years.size === 0) years.add(new Date().getFullYear().toString());
+    return Array.from(years).sort((a, b) => b.localeCompare(a));
+  }, [leadData]);
 
   const canCreate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.create', false);
   const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.update', false);
@@ -212,8 +235,28 @@ export default function LeadPage() {
         );
     }
 
+    // Date Filtering
+    if (dateRange?.from) {
+        const from = startOfDay(dateRange.from);
+        const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+        sortableItems = sortableItems.filter(c => {
+            if (!c.startDate) return false;
+            try {
+                const itemDate = parseISO(c.startDate);
+                return itemDate >= from && itemDate <= to;
+            } catch (e) { return false; }
+        });
+    } else {
+        if (selectedYear !== 'All') {
+            sortableItems = sortableItems.filter(c => c.startDate?.startsWith(selectedYear));
+            if (selectedMonth !== 'All') {
+                sortableItems = sortableItems.filter(c => c.startDate?.split('-')[1] === selectedMonth);
+            }
+        }
+    }
+
     return sortableItems;
-  }, [leadData, searchTerm, statusFilter, purposeFilter, authenticityFilter, visibilityFilter]);
+  }, [leadData, searchTerm, statusFilter, purposeFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear, selectedMonth]);
 
   const activeLeads = useMemo(() => filteredAndSortedLeads.filter(c => c.status === 'Active').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedLeads]);
   const upcomingLeads = useMemo(() => filteredAndSortedLeads.filter(c => c.status === 'Upcoming').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedLeads]);
@@ -437,6 +480,44 @@ export default function LeadPage() {
                             <SelectItem value="Published">Published</SelectItem>
                         </SelectContent>
                     </Select>
+
+                    {/* Date Filters */}
+                    <div className="flex items-center gap-2 border-l pl-2 ml-2">
+                        <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}>
+                            <SelectTrigger className="w-[100px] text-xs sm:text-sm"><SelectValue placeholder="Year" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="All">All Years</SelectItem>
+                                {availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                        <Select value={selectedMonth} onValueChange={(val) => { setSelectedMonth(val); setDateRange(undefined); }} disabled={isLoading || selectedYear === 'All'}>
+                            <SelectTrigger className="w-[120px] text-xs sm:text-sm"><SelectValue placeholder="Month" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="All">All Months</SelectItem>
+                                {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((m, i) => (
+                                    <SelectItem key={m} value={(i + 1).toString().padStart(2, '0')}>{m}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" size="sm" className={cn("justify-start text-left font-normal h-10 px-3", !dateRange && "text-muted-foreground")} disabled={isLoading}>
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    <span className="hidden sm:inline">
+                                        {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd")) : "Custom Range"}
+                                    </span>
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar initialFocus mode="range" defaultMonth={dateRange?.from} selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); setSelectedMonth('All'); } }} numberOfMonths={2} />
+                            </PopoverContent>
+                        </Popover>
+                        {(selectedYear !== 'All' || dateRange) && (
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedYear('All'); setSelectedMonth('All'); setDateRange(undefined); }}>
+                                <X className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </div>
             {isLoading && <Skeleton className="h-10 w-44" />}
@@ -527,11 +608,3 @@ export default function LeadPage() {
     </>
   );
 }
-
-
-
-
-
-
-
-
