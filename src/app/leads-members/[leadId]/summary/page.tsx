@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -15,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, Users, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, Gift, UploadCloud, Trash2, FolderKanban, Lightbulb, Target, File, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Loader2, Users, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, Gift, UploadCloud, Trash2, FolderKanban, Lightbulb, Target, File, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
@@ -162,12 +160,6 @@ export default function LeadSummaryPage() {
         }
     }, [lead, editMode]);
 
-    useEffect(() => {
-      if (editMode) {
-        setEditableLead(prev => ({...prev, category: ''}));
-      }
-    }, [editableLead.purpose, editMode]);
-    
     const handleFieldChange = (field: keyof Lead, value: any) => {
         setEditableLead(p => (p ? { ...p, [field]: value } : null));
     };
@@ -383,6 +375,29 @@ export default function LeadSummaryPage() {
         const fundingGoal = lead.targetAmount || 0;
         const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
         const pendingDonations = donations.filter(d => d.status === 'Pending').reduce((sum, d) => { const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id); return sum + (leadAllocation?.amount || 0);}, 0);
+        
+        const donationStatusStats = donations.reduce((acc, donation) => {
+            const status = donation.status || 'Pending';
+            const leadLink = donation.linkSplit?.find((l: any) => l.linkId === lead.id && l.linkType === 'lead');
+            const amountForThisLead = leadLink?.amount || 0;
+
+            if (status === 'Verified') {
+                acc.verified.count += 1;
+                acc.verified.amount += amountForThisLead;
+            } else if (status === 'Pending') {
+                acc.pending.count += 1;
+                acc.pending.amount += amountForThisLead;
+            } else if (status === 'Canceled') {
+                acc.canceled.count += 1;
+                acc.canceled.amount += amountForThisLead;
+            }
+            return acc;
+        }, {
+            verified: { count: 0, amount: 0 },
+            pending: { count: 0, amount: 0 },
+            canceled: { count: 0, amount: 0 },
+        });
+
         const paymentTypeData = donations.reduce((acc, d) => { const key = d.donationType || 'Other'; acc[key] = (acc[key] || 0) + 1; return acc; }, {} as Record<string, number>);
         const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
         const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
@@ -405,6 +420,7 @@ export default function LeadSummaryPage() {
             zakatPending,
             zakatAvailableForGoal,
             zakatForGoalAmount,
+            donationStatusStats,
             fundTotals: {
                 fitra: fitraTotal,
                 zakat: zakatTotal,
@@ -568,7 +584,177 @@ Your contribution, big or small, makes a huge difference.
                             <CardTitle>Lead Details</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                           {/* Content restored here */}
+                            {editMode ? (
+                                <div className="space-y-6">
+                                    <div className="space-y-2">
+                                        <Label>Header Image</Label>
+                                        <Input id="imageFile" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} className="hidden" />
+                                        <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
+                                            {imagePreview ? (
+                                                <>
+                                                    <Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" />
+                                                    <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
+                                                    <p className="mb-2 text-sm text-center text-muted-foreground">
+                                                        <span className="font-semibold text-primary">Click to upload</span> or drag and drop
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">PNG, JPG, WEBP recommended</p>
+                                                </div>
+                                            )}
+                                        </label>
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="description">Description</Label>
+                                        <Textarea id="description" value={editableLead.description} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1" rows={4} />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <Label htmlFor="purpose">Purpose</Label>
+                                            <Select value={editableLead.purpose} onValueChange={(val) => handleFieldChange('purpose', val)}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    {leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        {availableCategories.length > 0 && (
+                                            <div className="space-y-1">
+                                                <Label htmlFor="category">Category</Label>
+                                                <Select value={editableLead.category} onValueChange={(val) => handleFieldChange('category', val)}>
+                                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                                    <SelectContent>
+                                                        {availableCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {editableLead.purpose === 'Education' && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border p-3 rounded-md bg-muted/20">
+                                            <div className="space-y-1">
+                                                <Label>Degree/Class</Label>
+                                                <Select value={editableLead.degree} onValueChange={(val) => handleFieldChange('degree', val)}>
+                                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                                    <SelectContent>{educationDegrees.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label>Year</Label>
+                                                <Select value={editableLead.year} onValueChange={(val) => handleFieldChange('year', val)}>
+                                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                                    <SelectContent>{educationYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label>Semester</Label>
+                                                <Select value={editableLead.semester} onValueChange={(val) => handleFieldChange('semester', val)}>
+                                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                                    <SelectContent>{educationSemesters.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {editableLead.purpose === 'Medical' && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border p-3 rounded-md bg-muted/20">
+                                            <div className="space-y-1">
+                                                <Label>Disease Identified</Label>
+                                                <Input value={editableLead.diseaseIdentified || ''} onChange={(e) => handleFieldChange('diseaseIdentified', e.target.value)} />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label>Disease Stage</Label>
+                                                <Input value={editableLead.diseaseStage || ''} onChange={(e) => handleFieldChange('diseaseStage', e.target.value)} />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label>Seriousness</Label>
+                                                <Select value={editableLead.seriousness || undefined} onValueChange={(val) => handleFieldChange('seriousness', val)}>
+                                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                                    <SelectContent>{leadSeriousnessLevels.map(level => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    <div className="space-y-2">
+                                        <Label>Donation Types for Fundraising</Label>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-md">
+                                            {donationCategories.map((type) => (
+                                                <div key={type} className="flex items-center space-x-2">
+                                                    <Checkbox
+                                                        id={`type-lead-${type}`}
+                                                        checked={editableLead.allowedDonationTypes?.includes(type as DonationCategory)}
+                                                        onCheckedChange={(checked) => {
+                                                            const currentTypes = editableLead.allowedDonationTypes || [];
+                                                            const newTypes = checked
+                                                                ? [...currentTypes, type as DonationCategory]
+                                                                : currentTypes.filter(t => t !== type);
+                                                            handleFieldChange('allowedDonationTypes', newTypes);
+                                                        }}
+                                                    />
+                                                    <Label htmlFor={`type-lead-${type}`}>{type}</Label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <Label htmlFor="requiredAmount">Required Amount (₹)</Label>
+                                            <Input id="requiredAmount" type="number" value={editableLead.requiredAmount || 0} onChange={(e) => handleFieldChange('requiredAmount', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label htmlFor="targetAmount">Fundraising Target (₹)</Label>
+                                            <Input id="targetAmount" type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <Label htmlFor="authenticityStatus">Authenticity</Label>
+                                            <Select value={editableLead.authenticityStatus} onValueChange={(value) => handleFieldChange('authenticityStatus', value as any)}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Pending Verification">Pending Verification</SelectItem>
+                                                    <SelectItem value="Verified">Verified</SelectItem>
+                                                    <SelectItem value="On Hold">On Hold</SelectItem>
+                                                    <SelectItem value="Rejected">Rejected</SelectItem>
+                                                    <SelectItem value="Need More Details">Need More Details</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label htmlFor="publicVisibility">Public Visibility</Label>
+                                            <Select value={editableLead.publicVisibility} onValueChange={(value) => handleFieldChange('publicVisibility', value as any)}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Hold">Hold (Private)</SelectItem>
+                                                    <SelectItem value="Ready to Publish">Ready to Publish</SelectItem>
+                                                    <SelectItem value="Published">Published</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    {lead.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden"><Image src={lead.imageUrl} alt={lead.name} fill sizes="100vw" className="object-cover" /></div>}
+                                    <p className="mt-1 text-sm">{lead.description || 'No description provided.'}</p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Purpose</p><p className="font-semibold">{lead.purpose} {lead.category && `(${lead.category})`}</p></div>
+                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Target Goal</p><p className="font-semibold font-mono">₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Start Date</p><p className="font-semibold">{lead.startDate || 'N/A'}</p></div>
+                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">End Date</p><p className="font-semibold">{lead.endDate || 'N/A'}</p></div>
+                                    </div>
+                                </>
+                            )}
                         </CardContent>
                     </Card>
 
@@ -739,9 +925,59 @@ Your contribution, big or small, makes a huge difference.
                     </Card>
 
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                       {/* Beneficiary Stats Cards */}
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle>
+                                <Users className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{summaryData?.totalBeneficiaries ?? 0}</div>
+                            </CardContent>
+                        </Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">{givenLabel}</CardTitle>
+                                <Gift className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{summaryData?.beneficiariesGiven ?? 0}</div>
+                            </CardContent>
+                        </Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">{pendingLabel}</CardTitle>
+                                <Hourglass className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{summaryData?.beneficiariesPending ?? 0}</div>
+                            </CardContent>
+                        </Card>
                     </div>
                     
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '600ms' }}>
+                            <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified Donations</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
+                            <CardContent className="p-4 pt-0">
+                                <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.verified.count}</div>
+                                <p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.verified.amount.toLocaleString('en-IN')}</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '700ms' }}>
+                            <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending Donations</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                            <CardContent className="p-4 pt-0">
+                                <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.pending.count}</div>
+                                <p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.pending.amount.toLocaleString('en-IN')}</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '800ms' }}>
+                            <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Canceled Donations</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
+                            <CardContent className="p-4 pt-0">
+                                <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.canceled.count}</div>
+                                <p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.canceled.amount.toLocaleString('en-IN')}</p>
+                            </CardContent>
+                        </Card>
+                    </div>
+
                     <Card className="animate-fade-in-up" style={{ animationDelay: '900ms' }}>
                         <CardHeader>
                             <CardTitle>Zakat Utilization</CardTitle>
@@ -788,7 +1024,16 @@ Your contribution, big or small, makes a huge difference.
                             <CardTitle>Fund Totals by Type</CardTitle>
                           </CardHeader>
                           <CardContent className="space-y-2">
-                             {/* Content restored here */}
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fidiya</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.fidiya.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <Separator className="my-2"/>
+                            <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
                           </CardContent>
                       </Card>
                       <Card className="animate-fade-in-up" style={{ animationDelay: '1100ms' }}>
@@ -796,7 +1041,21 @@ Your contribution, big or small, makes a huge difference.
                               <CardTitle>Donations by Category</CardTitle>
                           </CardHeader>
                           <CardContent>
-                            {/* Content restored here */}
+                            {isClient ? (
+                              <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
+                                  <BarChart data={Object.entries(summaryData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
+                                      <CartesianGrid horizontal={false} />
+                                      <YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/>
+                                      <XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
+                                      <ChartTooltip content={<ChartTooltipContent />} />
+                                      <Bar dataKey="value" radius={4}>
+                                          {Object.entries(summaryData?.amountsByCategory || {}).map(([name]) => (
+                                              <Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />
+                                          ))}
+                                      </Bar>
+                                  </BarChart>
+                              </ChartContainer>
+                            ) : <Skeleton className="h-[250px] w-full" />}
                           </CardContent>
                       </Card>
                     </div>
