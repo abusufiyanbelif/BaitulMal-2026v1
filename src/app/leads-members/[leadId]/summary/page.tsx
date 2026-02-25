@@ -1,19 +1,18 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, useStorage, useAuth } from '@/firebase';
-import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
-import { doc, updateDoc, DocumentReference, collection, writeBatch } from 'firebase/firestore';
+import { doc, updateDoc, DocumentReference, collection } from 'firebase/firestore';
 import type { Lead, Beneficiary, Donation, DonationCategory, CampaignDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Loader2, Users, Edit, Save, Wallet, Share2, Hourglass, LogIn, Download, Gift, UploadCloud, Trash2, FolderKanban, Lightbulb, Target, File, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, Users, Edit, Save, Share2, Hourglass, Download, Gift, UploadCloud, Trash2, Target, File, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
@@ -23,7 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
 import { Label } from '@/components/ui/label';
 import { cn, getNestedValue } from '@/lib/utils';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { ShareDialog } from '@/components/share-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters } from '@/lib/modules';
@@ -32,8 +31,6 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 import type { ChartConfig } from '@/components/ui/chart';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { FileUploader } from '@/components/file-uploader';
 import { Switch } from '@/components/ui/switch';
 import { BrandedLoader } from '@/components/branded-loader';
@@ -46,9 +43,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
   RadialBarChart,
   RadialBar,
   PolarAngleAxis,
@@ -90,7 +84,6 @@ export default function LeadSummaryPage() {
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
     const { download } = useDownloadAs();
 
-    // State for edit mode and form fields
     const [editMode, setEditMode] = useState(false);
     const [editableLead, setEditableLead] = useState<Partial<Lead>>({});
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -109,10 +102,8 @@ export default function LeadSummaryPage() {
         setIsClient(true);
     }, []);
 
-    // Data fetching
     const leadDocRef = useMemoFirebase(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
-    
     const allDonationsCollectionRef = useMemoFirebase(() => (firestore) ? collection(firestore, 'donations') : null, [firestore]);
 
     const { data: lead, isLoading: isLeadLoading, error: leadError } = useDoc<Lead>(leadDocRef);
@@ -236,12 +227,12 @@ export default function LeadSummaryPage() {
         if (isImageDeleted && imageUrl && storage) {
             try {
                 await deleteObject(storageRef(storage, imageUrl));
-            } catch (e: any) { console.warn("Old image deletion failed, it might not exist.", e) }
+            } catch (e: any) { console.warn("Old image deletion failed", e) }
             imageUrl = '';
         } else if (imageFile && storage) {
             try {
                 if (imageUrl) {
-                     await deleteObject(storageRef(storage, imageUrl)).catch((e: any) => console.warn("Old image deletion failed, it might not exist.", e));
+                     await deleteObject(storageRef(storage, imageUrl)).catch((e: any) => console.warn("Old image deletion failed", e));
                 }
                 const resizedBlob = await new Promise<Blob>((resolve) => {
                     (Resizer as any).imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
@@ -275,7 +266,7 @@ export default function LeadSummaryPage() {
             try {
                 await deleteObject(storageRef(storage, docToDelete.url));
             } catch (e: any) {
-                console.warn(`Could not delete artifact ${docToDelete.url}. It may have already been deleted.`, e);
+                console.warn(`Could not delete artifact ${docToDelete.url}.`, e);
             }
         }
 
@@ -289,8 +280,8 @@ export default function LeadSummaryPage() {
             startDate: editableLead.startDate || '',
             endDate: editableLead.endDate || '',
             status: editableLead.status || 'Upcoming',
-            requiredAmount: editableLead.requiredAmount || 0,
-            targetAmount: editableLead.targetAmount || 0,
+            requiredAmount: Number(editableLead.requiredAmount) || 0,
+            targetAmount: Number(editableLead.targetAmount) || 0,
             authenticityStatus: editableLead.authenticityStatus || 'Pending Verification',
             publicVisibility: editableLead.publicVisibility || 'Hold',
             allowedDonationTypes: editableLead.allowedDonationTypes,
@@ -374,7 +365,6 @@ export default function LeadSummaryPage() {
 
         const fundingGoal = lead.targetAmount || 0;
         const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
-        const pendingDonations = donations.filter(d => d.status === 'Pending').reduce((sum, d) => { const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id); return sum + (leadAllocation?.amount || 0);}, 0);
         
         const donationStatusStats = donations.reduce((acc, donation) => {
             const status = donation.status || 'Pending';
@@ -414,7 +404,7 @@ export default function LeadSummaryPage() {
 
         return {
             totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal), totalBeneficiaries: beneficiaries.length,
-            beneficiariesGiven, beneficiariesPending, pendingDonations, amountsByCategory, donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
+            beneficiariesGiven, beneficiariesPending, amountsByCategory, donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
             zakatAllocated,
             zakatGiven,
             zakatPending,
@@ -435,11 +425,9 @@ export default function LeadSummaryPage() {
         };
     }, [beneficiaries, allDonations, lead]);
     
-    const isLoading = isLeadLoading || areBeneficiariesLoading || areDonationsLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
-    
     const handleShare = async () => {
         if (!lead || !summaryData) {
-            toast({ title: 'Error', description: 'Cannot share, summary data is not available.', variant: 'destructive'});
+            toast({ title: 'Error', description: 'Cannot share summary.', variant: 'destructive'});
             return;
         }
         
@@ -448,7 +436,7 @@ export default function LeadSummaryPage() {
 
 *We Need Your Support!*
 
-Join us for the *${lead.name}* initiative as we work to provide essential aid to our community.
+Join us for the *${lead.name}* initiative.
 
 *Our Goal:*
 ${lead.description || 'To support those in need.'}
@@ -458,18 +446,14 @@ ${lead.description || 'To support those in need.'}
 ✅ Collected (Verified): ₹${summaryData.totalCollectedForGoal.toLocaleString('en-IN')}
 ⏳ Remaining: *₹${summaryData.remainingToCollect.toLocaleString('en-IN')}*
 
-Your contribution, big or small, makes a huge difference.
-
-*Please donate and share this message.*
+*Please donate and share.*
         `.trim().replace(/^\s+/gm, '');
 
-        const dataToShare = {
+        setShareDialogData({
             title: `Lead Summary: ${lead.name}`,
             text: shareText,
             url: `${window.location.origin}/leads-public/${leadId}/summary`,
-        };
-        
-        setShareDialogData(dataToShare);
+        });
         setIsShareDialogOpen(true);
     };
 
@@ -492,7 +476,7 @@ Your contribution, big or small, makes a huge difference.
                     <ShieldAlert className="h-4 w-4" />
                     <AlertTitle>Error Loading Data</AlertTitle>
                     <AlertDescription>
-                        <p>There was a problem fetching required data for this page. This may be due to network issues or permissions.</p>
+                        <p>There was a problem fetching required data.</p>
                         <pre className="mt-2 text-xs bg-destructive/10 p-2 rounded-md font-mono">
                             {(leadError || beneficiariesError || donationsError)?.message}
                         </pre>
@@ -503,8 +487,6 @@ Your contribution, big or small, makes a huge difference.
     }
 
     if (!lead) { return <main className="container mx-auto p-4 md:p-8 text-center"><p>Lead not found.</p></main> }
-    
-    const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
     
     let givenLabel = 'Items/Services Provided';
     let pendingLabel = 'Pending';
@@ -554,8 +536,7 @@ Your contribution, big or small, makes a huge difference.
                                 </DropdownMenuContent>
                             </DropdownMenu>
                             <Button onClick={handleShare} variant="outline">
-                                <Share2 className="mr-2 h-4 w-4" />
-                                Share
+                                <Share2 className="mr-2 h-4 w-4" /> Share
                             </Button>
                         </>
                     )}
@@ -745,9 +726,12 @@ Your contribution, big or small, makes a huge difference.
                                 </div>
                             ) : (
                                 <>
-                                    {lead.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden"><Image src={lead.imageUrl} alt={lead.name} fill sizes="100vw" className="object-cover" /></div>}
-                                    <p className="mt-1 text-sm">{lead.description || 'No description provided.'}</p>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                                    {lead.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4"><Image src={lead.imageUrl} alt={lead.name} fill sizes="100vw" className="object-cover" /></div>}
+                                    <div className="space-y-2">
+                                        <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
+                                        <p className="mt-1 text-sm whitespace-pre-wrap">{lead.description || 'No description provided.'}</p>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                                         <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Purpose</p><p className="font-semibold">{lead.purpose} {lead.category && `(${lead.category})`}</p></div>
                                         <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Target Goal</p><p className="font-semibold font-mono">₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</p></div>
                                         <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Start Date</p><p className="font-semibold">{lead.startDate || 'N/A'}</p></div>
