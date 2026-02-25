@@ -1,6 +1,4 @@
 
-
-
 'use client';
 
 import { useMemoFirebase, useFirestore } from '@/firebase/provider';
@@ -365,7 +363,7 @@ export default function AnalyticsPage() {
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {pageHits?.sort((a: any, b: any) => b.hits - a.hits).map(hit => (
+                                                {pageHits?.sort((a: { hits: number; }, b: { hits: number; }) => b.hits - a.hits).map(hit => (
                                                     <TableRow key={hit.id}>
                                                         <TableCell className="font-medium capitalize">{hit.id.replace(/_/g, ' ')}</TableCell>
                                                         <TableCell className="text-right font-mono">{hit.hits.toLocaleString()}</TableCell>
