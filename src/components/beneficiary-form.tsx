@@ -34,16 +34,21 @@ import { useToast } from '@/hooks/use-toast';
 import Resizer from 'react-image-file-resizer';
 import { Timestamp } from 'firebase/firestore';
 
+const numericOptional = z.preprocess(
+  (val) => (val === "" || val === null || val === undefined ? undefined : val),
+  z.coerce.number().optional()
+);
+
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   address: z.string().optional(),
   phone: z.string().optional(),
-  age: z.coerce.number().optional(),
+  age: numericOptional,
   occupation: z.string().optional(),
-  members: z.coerce.number().optional(),
-  earningMembers: z.coerce.number().optional(),
-  male: z.coerce.number().optional(),
-  female: z.coerce.number().optional(),
+  members: numericOptional,
+  earningMembers: numericOptional,
+  male: numericOptional,
+  female: numericOptional,
   idProofType: z.string().optional(),
   idNumber: z.string().optional(),
   idProofFile: z.any().optional(),
@@ -53,7 +58,7 @@ const formSchema = z.object({
   status: z.enum(['Given', 'Pending', 'Hold', 'Need More Details', 'Verified']),
   notes: z.string().optional(),
   isEligibleForZakat: z.boolean().optional(),
-  zakatAllocation: z.coerce.number().optional(),
+  zakatAllocation: numericOptional,
 });
 
 export type BeneficiaryFormData = z.infer<typeof formSchema>;
@@ -288,7 +293,7 @@ export function BeneficiaryForm({
                         <FormField control={control} name="age" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Age</FormLabel>
-                                <FormControl><Input type="number" placeholder="e.g. 35" {...field} disabled={formIsDisabled} /></FormControl>
+                                <FormControl><Input type="number" placeholder="e.g. 35" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}/>
@@ -314,10 +319,10 @@ export function BeneficiaryForm({
                 <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Family Details</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <FormField control={control} name="members" render={({ field }) => (<FormItem><FormLabel>Members</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)} />
-                        <FormField control={control} name="earningMembers" render={({ field }) => (<FormItem><FormLabel>Earning</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)} />
-                        <FormField control={control} name="male" render={({ field }) => (<FormItem><FormLabel>Male</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)} />
-                        <FormField control={control} name="female" render={({ field }) => (<FormItem><FormLabel>Female</FormLabel><FormControl><Input type="number" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                        <FormField control={control} name="members" render={({ field }) => (<FormItem><FormLabel>Members</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                        <FormField control={control} name="earningMembers" render={({ field }) => (<FormItem><FormLabel>Earning</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                        <FormField control={control} name="male" render={({ field }) => (<FormItem><FormLabel>Male</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                        <FormField control={control} name="female" render={({ field }) => (<FormItem><FormLabel>Female</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
                     </div>
                 </div>
 
@@ -347,7 +352,7 @@ export function BeneficiaryForm({
                         {preview && (
                             <div className="relative group w-full h-48 mt-2 rounded-md overflow-hidden border bg-secondary/20">
                                 {preview.startsWith('data:application/pdf') || preview.endsWith('.pdf') ? (
-                                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
+                                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4 text-center">
                                         <FileIcon className="w-12 h-12 mb-2" />
                                         <p className="text-sm text-center">PDF Document Uploaded</p>
                                     </div>
@@ -419,7 +424,7 @@ export function BeneficiaryForm({
                             </div>
                             {watch('isEligibleForZakat') && !hideZakatAllocation && (
                                 <div className="animate-fade-in-zoom">
-                                    <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem><FormLabel>Zakat Allocation (Cash in hand) (₹)</FormLabel><FormControl><Input type="number" placeholder="Amount from Zakat" {...field} disabled={formIsDisabled} /></FormControl><FormDescription>This amount will be reserved from Zakat funds and given as cash.</FormDescription></FormItem>)}/>
+                                    <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem><FormLabel>Zakat Allocation (Cash in hand) (₹)</FormLabel><FormControl><Input type="number" placeholder="Amount from Zakat" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl><FormDescription>This amount will be reserved from Zakat funds and given as cash.</FormDescription></FormItem>)}/>
                                 </div>
                             )}
                         </div>
