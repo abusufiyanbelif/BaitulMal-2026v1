@@ -1,2 +1,2 @@
-src/app/analytics/page.tsx(238,58): error TS18046: 'a' is of type 'unknown'.
-src/app/analytics/page.tsx(238,79): error TS18046: 'b' is of type 'unknown'.
+src/app/analytics/page.tsx(236,58): error TS18046: 'a' is of type 'unknown'.
+src/app/analytics/page.tsx(236,79): error TS18046: 'b' is of type 'unknown'.
