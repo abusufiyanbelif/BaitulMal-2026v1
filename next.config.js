@@ -6,6 +6,7 @@ const nextConfig = {
   // Force a cache invalidation one more time to fix ChunkLoadError.
   // And again to resolve the EADDRINUSE error.
   // And one more time for good measure.
+  // Refreshing build cache to fix compilation hang.
   reactStrictMode: true,
   allowedDevOrigins: [
     "https://*.cloudworkstations.dev"
