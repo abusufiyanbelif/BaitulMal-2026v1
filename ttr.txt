@@ -1,3 +1,8 @@
 src/app/analytics/page.tsx(237,58): error TS18046: 'a' is of type 'unknown'.
 src/app/analytics/page.tsx(237,79): error TS18046: 'b' is of type 'unknown'.
-src/lib/auth.ts(10,10): error TS2724: '"@/firebase"' has no exported member named 'Firestore'. Did you mean 'useFirestore'?
+src/components/beneficiary-search-dialog.tsx(8,103): error TS2305: Module '"@/firebase"' has no exported member 'QueryDocumentSnapshot'.
+src/components/beneficiary-search-dialog.tsx(39,34): error TS2304: Cannot find name 'useMemo'.
+src/firebase/init.ts(5,10): error TS2724: '"@/firebase"' has no exported member named 'getFirestore'. Did you mean 'useFirestore'?
+src/firebase/init.ts(5,29): error TS2724: '"@/firebase"' has no exported member named 'Firestore'. Did you mean 'useFirestore'?
+src/firebase/provider.tsx(15,10): error TS2724: '"@/firebase"' has no exported member named 'Firestore'. Did you mean 'useFirestore'?
+src/lib/auth.ts(8,8): error TS2724: '"@/firebase"' has no exported member named 'Firestore'. Did you mean 'useFirestore'?

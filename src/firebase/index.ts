@@ -30,6 +30,7 @@ export {
     type DocumentReference,
     type Query,
     type QuerySnapshot,
+    type QueryDocumentSnapshot,
     type CollectionReference,
     type Timestamp,
     type FieldValue,
