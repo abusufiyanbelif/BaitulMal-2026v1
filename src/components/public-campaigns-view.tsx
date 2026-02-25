@@ -33,7 +33,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
             {campaigns.map((campaign, index) => (
                 <Card 
                     key={campaign.id} 
-                    className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden" 
+                    className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98]" 
                     style={{ animationDelay: `${100 + index * 50}ms`, animationFillMode: 'backwards' }}
                     onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}
                 >
@@ -82,7 +82,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                         )}
                     </CardContent>
                     <CardFooter className="p-2">
-                        <Button asChild className="w-full" size="sm">
+                        <Button asChild className="w-full transition-transform active:scale-95" size="sm">
                             <Link href={`/campaign-public/${campaign.id}/summary`}>
                                 View Details
                             </Link>
@@ -158,7 +158,7 @@ export function PublicCampaignsView() {
 
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in-zoom">
        <div className="space-y-4">
           <h1 className="text-4xl font-bold">Public Campaigns</h1>
           <p className="text-muted-foreground text-lg">Browse our ongoing and past initiatives to support the community.</p>

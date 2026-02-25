@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState } from 'react';
@@ -135,20 +133,20 @@ export default function LoginPage() {
   return (
     <div className="w-full max-w-sm">
         <div className="mb-4 flex animate-slide-in-from-top" style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}>
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild className="transition-transform active:scale-95">
                 <Link href="/">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back to Home
                 </Link>
             </Button>
         </div>
-      <Card className="animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
+      <Card className="animate-fade-in-up shadow-xl" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
           <CardHeader className="text-center">
               <div className="flex justify-center items-center gap-3 mb-4">
                 {isBrandingLoading ? (
                     <Skeleton className="h-9 w-full max-w-xs" />
                 ) : (
-                    <h1 className="text-2xl sm:text-3xl font-bold font-headline text-foreground">
+                    <h1 className="text-2xl sm:text-3xl font-bold font-headline text-foreground animate-fade-in-zoom">
                         {brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}
                     </h1>
                 )}
@@ -192,7 +190,7 @@ export default function LoginPage() {
                   </FormItem>
                   )}
               />
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full transition-transform active:scale-95" disabled={isLoading}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Sign In
               </Button>
@@ -204,7 +202,7 @@ export default function LoginPage() {
                   <DialogTrigger asChild>
                       <Button variant="link" className="p-0 h-auto text-sm font-normal">Forgot Password?</Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
+                  <DialogContent className="sm:max-w-[425px] animate-fade-in-zoom">
                       <DialogHeader>
                           <DialogTitle>Reset Password</DialogTitle>
                           <DialogDescription>
@@ -224,7 +222,7 @@ export default function LoginPage() {
                       </div>
                       <DialogFooter>
                           <Button type="button" variant="outline" onClick={() => setIsResetDialogOpen(false)} disabled={isSendingReset}>Cancel</Button>
-                          <Button type="submit" onClick={handlePasswordReset} disabled={isSendingReset}>
+                          <Button type="submit" onClick={handlePasswordReset} disabled={isSendingReset} className="transition-transform active:scale-95">
                               {isSendingReset && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                               Send Reset Link
                           </Button>
@@ -235,7 +233,7 @@ export default function LoginPage() {
       </Card>
       
       {loginError && (
-          <Alert variant="destructive" className="mt-4">
+          <Alert variant="destructive" className="mt-4 animate-fade-in-up">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Login Failed</AlertTitle>
               <AlertDescription>
@@ -245,12 +243,12 @@ export default function LoginPage() {
       )}
 
       {setupError && (
-          <Alert variant="destructive" className="mt-4">
+          <Alert variant="destructive" className="mt-4 animate-fade-in-up">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Action Required: Enable Sign-In Method</AlertTitle>
               <AlertDescription className="space-y-3">
                   <p>For the one-time initial setup, you must enable the 'Email/Password' provider in your Firebase project. This allows the app to create the first admin user.</p>
-                  <Button asChild variant="secondary" size="sm" className="mt-3 w-full">
+                  <Button asChild variant="secondary" size="sm" className="mt-3 w-full transition-transform active:scale-95">
                       <Link href={authUrl} target="_blank">
                           Go to Firebase Console to Enable
                           <ExternalLink className="ml-2 h-4 w-4" />
@@ -262,4 +260,3 @@ export default function LoginPage() {
   </div>
   );
 }
-

@@ -1,5 +1,3 @@
-
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -543,7 +541,7 @@ export default function DonationsPage() {
     <>
       <main className="container mx-auto p-4 md:p-8">
         <div className="mb-4">
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild className="transition-transform active:scale-95">
                 <Link href="/dashboard">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back to Dashboard
@@ -565,7 +563,7 @@ export default function DonationsPage() {
                 </div>
             </ScrollArea>
         </div>
-        <Card className="animate-fade-in-zoom">
+        <Card className="animate-fade-in-zoom shadow-lg">
           <CardHeader>
             <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
               <div className="flex-1 space-y-1.5">
@@ -576,13 +574,13 @@ export default function DonationsPage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {canUpdate && (
-                    <Button onClick={handleSync} disabled={isSyncing} variant="secondary">
+                    <Button onClick={handleSync} disabled={isSyncing} variant="secondary" className="transition-transform active:scale-95">
                         {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <DatabaseZap className="mr-2 h-4 w-4" />}
                         Sync Data
                     </Button>
                 )}
                 {canCreate && (
-                    <Button onClick={handleAdd}>
+                    <Button onClick={handleAdd} className="transition-transform active:scale-95">
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Add Donation
                     </Button>
@@ -648,7 +646,7 @@ export default function DonationsPage() {
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[350px] p-0">
+                    <PopoverContent className="w-[350px] p-0 animate-fade-in-zoom">
                       <Command>
                         <CommandInput placeholder="Search initiatives..." />
                         <CommandList>
@@ -772,14 +770,14 @@ export default function DonationsPage() {
       </main>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in-zoom">
             <DialogHeader><DialogTitle>{editingDonation ? 'Edit' : 'Add'} Donation</DialogTitle></DialogHeader>
             <DonationForm donation={editingDonation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} campaigns={campaigns || []} leads={leads || []} />
         </DialogContent>
       </Dialog>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="animate-fade-in-zoom">
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>This action cannot be undone. This will permanently delete the donation record and its associated screenshots from storage.</AlertDialogDescription>
@@ -792,7 +790,7 @@ export default function DonationsPage() {
       </AlertDialog>
 
       <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl animate-fade-in-zoom">
             <DialogHeader>
                 <DialogTitle>Donation Screenshot</DialogTitle>
             </DialogHeader>

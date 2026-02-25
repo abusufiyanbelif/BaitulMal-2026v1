@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -51,14 +50,14 @@ export default function PublicOrganizationMembersPage() {
     return (
         <main className="container mx-auto p-4 md:p-8">
              <div className="mb-4">
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="transition-transform active:scale-95">
                     <Link href="/">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Home
                     </Link>
                 </Button>
             </div>
-            <Card className="animate-fade-in-zoom">
+            <Card className="animate-fade-in-zoom shadow-lg">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-3xl"><Users /> Our Team</CardTitle>
                     <CardDescription>The dedicated members of our organization.</CardDescription>
@@ -66,16 +65,16 @@ export default function PublicOrganizationMembersPage() {
                 <CardContent>
                     <Accordion type="multiple" defaultValue={['founder', 'co-founder', 'finance', 'member']} className="w-full">
                         {GROUPS.map((group) => (
-                            <AccordionItem value={group.id} key={group.id}>
-                                <AccordionTrigger className="text-xl font-semibold">{group.name} ({(membersByGroup[group.id] || []).length})</AccordionTrigger>
+                            <AccordionItem value={group.id} key={group.id} className="animate-fade-in-up">
+                                <AccordionTrigger className="text-xl font-semibold hover:text-primary transition-colors">{group.name} ({(membersByGroup[group.id] || []).length})</AccordionTrigger>
                                 <AccordionContent>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-                                        {(membersByGroup[group.id] || []).map(member => (
-                                            <Card key={member.id} className="group">
+                                        {(membersByGroup[group.id] || []).map((member, idx) => (
+                                            <Card key={member.id} className="group transition-all duration-300 hover:shadow-md hover:-translate-y-1 animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
                                                 <CardContent className="p-4 flex items-center gap-4">
-                                                    <Avatar className="h-20 w-20">
+                                                    <Avatar className="h-20 w-20 transition-transform group-hover:scale-110">
                                                         <AvatarImage src={member.idProofUrl} />
-                                                        <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                                                        <AvatarFallback>{member.name?.charAt(0)}</AvatarFallback>
                                                     </Avatar>
                                                     <div className="flex-1">
                                                         <p className="font-bold text-lg">{member.name}</p>
@@ -95,4 +94,3 @@ export default function PublicOrganizationMembersPage() {
         </main>
     );
 }
-

@@ -62,7 +62,7 @@ interface CampaignCardProps {
 
 const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete, handleStatusUpdate, handleCopyClick, handleDeleteClick }: CampaignCardProps) => (
     <Card 
-        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden" 
+        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98]" 
         style={{ animationDelay: `${100 + index * 50}ms`, animationFillMode: 'backwards' }}
         onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}
     >
@@ -177,7 +177,7 @@ const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete
         )}
     </CardContent>
     <CardFooter className="p-2">
-        <Button asChild className="w-full" size="sm">
+        <Button asChild className="w-full transition-transform active:scale-95" size="sm">
             <Link href={`/campaign-members/${campaign.id}/summary`}>
                 View Details
             </Link>
@@ -556,7 +556,7 @@ export default function CampaignPage() {
             </div>
             {isLoading && <Skeleton className="h-10 w-44" />}
             {!isLoading && canCreate && (
-              <Button asChild>
+              <Button asChild className="transition-transform active:scale-95">
                 <Link href="/campaign-members/create">
                   <Plus className="mr-2 h-4 w-4" />
                   Create Campaign
@@ -653,7 +653,7 @@ export default function CampaignPage() {
       </main>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="animate-fade-in-zoom">
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>

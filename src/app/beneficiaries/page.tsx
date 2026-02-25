@@ -1,5 +1,3 @@
-
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -175,7 +173,7 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
                     </TableCell>
                 </TableRow>
             )}
-        </React.Fragment>
+        </RefreshCw.Fragment>
     );
 }
 
@@ -430,7 +428,7 @@ export default function BeneficiariesPage() {
   return (
     <main className="container mx-auto p-4 md:p-8">
       <div className="mb-4">
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="transition-transform active:scale-95">
               <Link href="/">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Back to Home
@@ -453,7 +451,7 @@ export default function BeneficiariesPage() {
         </ScrollArea>
       </div>
 
-      <Card className="animate-fade-in-zoom">
+      <Card className="animate-fade-in-zoom shadow-lg">
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
             <div className="flex-1 space-y-2">
@@ -508,7 +506,7 @@ export default function BeneficiariesPage() {
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[350px] p-0">
+                    <PopoverContent className="w-[350px] p-0 animate-fade-in-zoom">
                       <Command>
                         <CommandInput placeholder="Search referrals..." />
                         <CommandList>
@@ -570,7 +568,7 @@ export default function BeneficiariesPage() {
                   </Popover>
                 </div>
                 {referralFilter.length > 0 && (
-                  <div className="pt-2 flex flex-wrap gap-1 items-center">
+                  <div className="pt-2 flex flex-wrap gap-1 items-center animate-fade-in-up">
                       {referralFilter.map((referral) => (
                           <Badge
                               key={referral}
@@ -600,12 +598,12 @@ export default function BeneficiariesPage() {
               )}
             </div>
             <div className="flex flex-wrap gap-2 shrink-0">
-                <Button onClick={handleSyncMasterList} disabled={isSyncing || areBeneficiariesLoading} variant="outline">
+                <Button onClick={handleSyncMasterList} disabled={isSyncing || areBeneficiariesLoading} variant="outline" className="transition-transform active:scale-95">
                     {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
                     Sync Master List
                 </Button>
                 {canCreate && (
-                    <Button onClick={handleAdd}>
+                    <Button onClick={handleAdd} className="transition-transform active:scale-95">
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Create Beneficiary
                     </Button>
@@ -681,7 +679,7 @@ export default function BeneficiariesPage() {
       </Card>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="animate-fade-in-zoom">
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>

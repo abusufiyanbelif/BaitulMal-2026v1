@@ -1,5 +1,3 @@
-
-
 'use client';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
@@ -122,7 +120,7 @@ export default function Home() {
                     ))}
                 </div>
             ) : userProfile ? (
-            <div className="space-y-8">
+            <div className="space-y-8 animate-fade-in-zoom">
                 <h2 className="text-3xl font-bold tracking-tight mb-4">
                     Welcome back, {userProfile.name}!
                 </h2>
