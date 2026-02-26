@@ -1,8 +1,6 @@
-
-
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter, useParams, useSearchParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams, usePathname } from 'next/navigation';
 import { useFirestore, useStorage, useAuth, useMemoFirebase, useDoc, getDocs, getDoc, doc, type DocumentReference, collection, query, type CollectionReference, uploadBytes, getDownloadURL, deleteObject, storageRef } from '@/firebase';
 import Resizer from 'react-image-file-resizer';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
@@ -21,6 +19,8 @@ import { Badge } from '@/components/ui/badge';
 import { updateMasterBeneficiaryAction, updateInitiativeBeneficiaryDetailsAction, updateBeneficiaryStatusInInitiativeAction } from '../actions';
 import { useSession } from '@/hooks/use-session';
 import { BrandedLoader } from '@/components/branded-loader';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn, getNestedValue } from '@/lib/utils';
 
 interface LinkedInitiative {
     id: string;
@@ -35,6 +35,7 @@ export default function BeneficiaryDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const beneficiaryId = String(params.beneficiaryId || '');
   const redirectUrl = searchParams.get('redirect');
 
@@ -65,6 +66,13 @@ export default function BeneficiaryDetailsPage() {
         setInitiativeContext(null);
     }
   }, [redirectUrl]);
+
+  // Fetch parent initiative data for header and tabs
+  const campaignDocRef = useMemoFirebase(() => (firestore && initiativeContext?.type === 'campaign') ? doc(firestore, 'campaigns', initiativeContext.id) as DocumentReference<Campaign> : null, [firestore, initiativeContext]);
+  const { data: campaign } = useDoc<Campaign>(campaignDocRef);
+
+  const leadDocRef = useMemoFirebase(() => (firestore && initiativeContext?.type === 'lead') ? doc(firestore, 'leads', initiativeContext.id) as DocumentReference<Lead> : null, [firestore, initiativeContext]);
+  const { data: lead } = useDoc<Lead>(leadDocRef);
 
   const beneficiaryDocRef = useMemoFirebase(() => {
     if (!firestore || !beneficiaryId) return null;
@@ -380,16 +388,57 @@ export default function BeneficiaryDetailsPage() {
      )
   }
 
+  const initiativeName = campaign?.name || lead?.name;
+  const initiativeType = campaign ? 'Campaign' : lead ? 'Lead' : null;
+  const initiativeId = initiativeContext?.id;
+
+  const canReadSummary = currentUserProfile?.role === 'Admin' || (initiativeType === 'Campaign' ? !!getNestedValue(currentUserProfile, 'permissions.campaigns.summary.read', false) : !!getNestedValue(currentUserProfile, 'permissions.leads-members.summary.read', false));
+  const canReadRation = initiativeType === 'Campaign' && (currentUserProfile?.role === 'Admin' || !!getNestedValue(currentUserProfile, 'permissions.campaigns.ration.read', false));
+  const canReadBeneficiaries = currentUserProfile?.role === 'Admin' || (initiativeType === 'Campaign' ? !!getNestedValue(currentUserProfile, 'permissions.campaigns.beneficiaries.read', false) : !!getNestedValue(currentUserProfile, 'permissions.leads-members.beneficiaries.read', false));
+  const canReadDonations = currentUserProfile?.role === 'Admin' || (initiativeType === 'Campaign' ? !!getNestedValue(currentUserProfile, 'permissions.campaigns.donations.read', false) : !!getNestedValue(currentUserProfile, 'permissions.leads-members.donations.read', false));
+
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6">
       <div className="mb-4">
         <Button variant="outline" asChild>
           <Link href={backHref}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+            Back to {initiativeName || 'Beneficiaries'}
           </Link>
         </Button>
       </div>
+
+      {initiativeName && initiativeId && initiativeType && (
+          <div className="space-y-4">
+              <div className="flex justify-between items-center flex-wrap gap-2">
+                  <div className="space-y-1">
+                      <h1 className="text-3xl font-bold">{initiativeName}</h1>
+                      <p className="text-muted-foreground">{initiativeType}</p>
+                  </div>
+              </div>
+              <div className="border-b mb-4">
+                <ScrollArea className="w-full whitespace-nowrap">
+                    <div className="flex w-max space-x-2">
+                        {canReadSummary && (
+                            <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "text-muted-foreground")}>Summary</Link>
+                        )}
+                        {canReadRation && (
+                            <Link href={`/campaign-members/${initiativeId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "text-muted-foreground")}>Item Lists</Link>
+                        )}
+                        {initiativeType === 'Lead' && (
+                             <Link href={`/leads-members/${initiativeId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "text-muted-foreground")}>Item List</Link>
+                        )}
+                        {canReadBeneficiaries && (
+                            <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "bg-primary text-primary-foreground shadow")}>Beneficiary List</Link>
+                        )}
+                        {canReadDonations && (
+                            <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "text-muted-foreground")}>Donations</Link>
+                        )}
+                    </div>
+                </ScrollArea>
+            </div>
+          </div>
+      )}
 
       <Card className="max-w-2xl mx-auto animate-fade-in-zoom">
         <CardHeader>
