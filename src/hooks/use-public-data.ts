@@ -60,7 +60,6 @@ export function usePublicData() {
     // --- Calculate Collected Amounts for Each Item ---
     const collectedAmounts = new Map<string, number>();
     donations.forEach(donation => {
-      // Robust handle for allocation links including legacy fallback
       const links = (donation.linkSplit && donation.linkSplit.length > 0)
         ? donation.linkSplit
         : (donation as any).campaignId 
@@ -69,7 +68,6 @@ export function usePublicData() {
       
       links.forEach((link: any) => {
         const item = itemsById.get(link.linkId);
-        // Only process donations linked to our public items
         if (!item) return;
 
         const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
@@ -81,8 +79,6 @@ export function usePublicData() {
         
         const applicableAmountInDonation = typeSplits.reduce((acc, split) => {
           const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-          
-          // Parity check: category allowed? designated for goal?
           const isAllowed = item.allowedDonationTypes?.includes(category as DonationCategory);
           const isForGoal = category !== 'Zakat' || split.forFundraising !== false;
 
@@ -97,7 +93,6 @@ export function usePublicData() {
       });
     });
 
-    // --- Enhance Campaign/Lead data with progress ---
     const campaignsWithProgress = campaigns.map(campaign => {
       const collected = collectedAmounts.get(campaign.id) || 0;
       const progress = campaign.targetAmount && campaign.targetAmount > 0 ? (collected / campaign.targetAmount) * 100 : 0;
@@ -110,13 +105,11 @@ export function usePublicData() {
       return { ...lead, collected, progress };
     });
 
-    // --- Calculate Overall Summary ---
     const totalTarget = allPublicItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
     const grandTotalRaised = donations.reduce((sum, d) => sum + d.amount, 0);
     const totalCollectedForGoals = Array.from(collectedAmounts.values()).reduce((sum, amount) => sum + amount, 0);
     const overallProgress = totalTarget > 0 ? Math.min((totalCollectedForGoals / totalTarget) * 100, 100) : 0;
 
-    // --- Calculate Yearly and Category Summaries ---
     const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
     const amountsByCategory = donations.reduce((acc, d) => {
       const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
@@ -173,7 +166,6 @@ export function usePublicData() {
             progress: data.totalTarget > 0 ? (data.totalGoalReceived / data.totalTarget) * 100 : 0 
         }))
         .sort((a, b) => parseInt(b.year) - parseInt(a.year));
-
 
     return {
       campaignsWithProgress,

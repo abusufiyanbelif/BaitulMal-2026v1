@@ -5,12 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X } from 'lucide-react';
-import { useCollection, useFirestore, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, collection, query, where, doc, updateDoc } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import type { Campaign, Donation, DonationCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
-import { collection, query, where, doc, updateDoc } from 'firebase/firestore';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -49,6 +48,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from '@/components/news-ticker';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 interface CampaignCardProps {
     campaign: Campaign & { collected: number; progress: number; };
@@ -71,12 +72,11 @@ const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete
       <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
         {campaign.imageUrl ? (
             <Image
-              src={campaign.imageUrl}
+              src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`}
               alt={campaign.name}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover"
-              data-ai-hint="campaign background"
             />
         ) : (
             <HandHelping className="h-16 w-16 text-muted-foreground" />
@@ -197,7 +197,6 @@ export default function CampaignPage() {
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [authenticityFilter, setAuthenticityFilter] = useState('All');
   const [visibilityFilter, setVisibilityFilter] = useState('All');
-  
   const [selectedYear, setSelectedYear] = useState('All');
   const [selectedMonth, setSelectedMonth] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
@@ -229,7 +228,6 @@ export default function CampaignPage() {
     const campaignsById = new Map(campaigns.map(c => [c.id, c]));
 
     donations.forEach(donation => {
-        // Correctly handle legacy data fallback by checking link length
         const links = (donation.linkSplit && donation.linkSplit.length > 0)
             ? donation.linkSplit
             : (donation as any).campaignId 
@@ -241,21 +239,16 @@ export default function CampaignPage() {
             const campaign = campaignsById.get(link.linkId);
             if (!campaign) return;
 
-            // Calculate the proportion of this donation allocated to this specific campaign
             const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
             const proportion = link.amount / totalDonationAmount;
 
-            // Handle type fallback for single-category donations
             const typeSplits = donation.typeSplit && donation.typeSplit.length > 0
                 ? donation.typeSplit
                 : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount, forFundraising: true }] : []);
 
             const applicable = typeSplits.reduce((acc, split) => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                
-                // Only count categories allowed for this campaign's goal
                 const isAllowed = campaign.allowedDonationTypes?.includes(category as DonationCategory);
-                // Respect the fundraising flag (useful for Zakat portions not intended for kits)
                 const isForGoal = category !== 'Zakat' || split.forFundraising !== false;
 
                 if (isAllowed && isForGoal) {
@@ -284,9 +277,9 @@ export default function CampaignPage() {
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
-    campaignData.forEach(c => c.startDate && years.add(c.startDate.split('-')[0]));
+    campaigns.forEach(c => c.startDate && years.add(c.startDate.split('-')[0]));
     return Array.from(years).sort((a, b) => b.localeCompare(a));
-  }, [campaignData]);
+  }, [campaigns]);
   
   const canCreate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.create', false);
   const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.update', false);
@@ -306,9 +299,10 @@ export default function CampaignPage() {
   const handleStatusUpdate = async (campaignToUpdate: Campaign, field: string, value: string) => {
     if (!firestore || !canUpdate) return;
     const docRef = doc(firestore, 'campaigns', campaignToUpdate.id);
-    updateDoc(docRef, { [field]: value })
+    const updateData = { [field]: value };
+    updateDoc(docRef, updateData)
         .then(() => toast({ title: 'Success', description: `Campaign updated.`, variant: 'success' }))
-        .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: { [field]: value } })));
+        .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData })));
   };
   
   const filteredCampaigns = useMemo(() => {

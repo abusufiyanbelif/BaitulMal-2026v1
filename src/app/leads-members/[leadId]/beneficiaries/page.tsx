@@ -2,13 +2,10 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
-import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
-import { useCollection } from '@/firebase/firestore/use-collection';
-import { useDoc } from '@/firebase/firestore/use-doc';
+import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc, collection, doc, serverTimestamp, setDoc, DocumentReference, writeBatch } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { collection, doc, serverTimestamp, setDoc, DocumentReference, writeBatch } from 'firebase/firestore';
 import type { Beneficiary, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -146,9 +143,10 @@ export default function BeneficiariesPage() {
   const handleStatusChange = (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => {
     if (!firestore || !leadId || !canUpdate) return;
     const ref = doc(firestore, 'leads', leadId, 'beneficiaries', beneficiary.id);
-    setDoc(ref, { status: newStatus }, { merge: true })
+    const updateData = { status: newStatus };
+    setDoc(ref, updateData, { merge: true })
       .catch(async (err: any) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { status: newStatus } }));
+        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: updateData }));
       });
   };
 

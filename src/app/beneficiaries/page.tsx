@@ -2,12 +2,10 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useFirestore, useMemoFirebase } from '@/firebase/provider';
-import { useCollection } from '@/firebase/firestore/use-collection';
+import { useFirestore, useMemoFirebase, useCollection, collection, doc, updateDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useSession } from '@/hooks/use-session';
-import { collection, doc, updateDoc } from 'firebase/firestore';
 import type { Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';

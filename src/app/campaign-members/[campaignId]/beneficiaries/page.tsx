@@ -3,11 +3,10 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc } from '@/firebase';
+import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc, collection, doc, serverTimestamp, writeBatch, setDoc, DocumentReference } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { collection, doc, serverTimestamp, writeBatch, setDoc, DocumentReference } from 'firebase/firestore';
 import type { Beneficiary, Campaign, RationItem, ItemCategory } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -275,7 +274,7 @@ export default function BeneficiariesPage() {
         if (!campaign?.itemCategories) return [];
         let lists: ItemCategory[] = Array.isArray(campaign.itemCategories) ? campaign.itemCategories : [];
         return lists.map(cat => {
-            if (cat.name === 'General Item List' || cat.name === 'General' || cat.name === 'Item Master List') {
+            if (cat.name === 'General Item List' || cat.name === 'General' || cat.name === 'Item Price List') {
               return { ...cat, name: 'Item Price List' };
             }
             return cat;
