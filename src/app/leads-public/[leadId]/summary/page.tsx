@@ -20,6 +20,7 @@ import {
 import type { Lead, Beneficiary, Donation, DonationCategory, ItemCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, Loader2, Share2, Hourglass, Users, Gift, Target, HandHelping, File } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ShareDialog } from '@/components/share-dialog';
@@ -47,6 +48,7 @@ import { useSession } from '@/hooks/use-session';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { BrandedLoader } from '@/components/branded-loader';
+import { Label } from '@/components/ui/label';
 
 
 const donationCategoryChartConfig = {
@@ -95,6 +97,8 @@ export default function PublicLeadSummaryPage() {
     const { data: beneficiaries, isLoading: areBeneficiariesLoading, error: beneficiariesError } = useCollection<Beneficiary>(beneficiariesCollectionRef);
     const { data: allDonations, isLoading: areDonationsLoading, error: donationsError } = useCollection<Donation>(allDonationsCollectionRef);
     
+    const isLoading = isLeadLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
+
      const sanitizedRationLists = useMemo(() => {
         if (!lead?.itemCategories) return [];
         if (Array.isArray(lead.itemCategories)) return lead.itemCategories;
@@ -214,8 +218,6 @@ export default function PublicLeadSummaryPage() {
         return { totalBeneficiaries: beneficiaries.length, beneficiariesGiven, beneficiariesPending, beneficiariesByCategory, sortedBeneficiaryCategoryKeys };
     }, [beneficiaries, sanitizedRationLists]);
 
-    const isLoading = isLeadLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
-    
     const handleShare = async () => {
         if (!lead || !fundingData) return;
         const shareText = `Join us for the *${lead.name}* initiative. Goal: ₹${fundingData.targetAmount.toLocaleString('en-IN')}. Collected: ₹${fundingData.totalCollectedForGoal.toLocaleString('en-IN')}.`;

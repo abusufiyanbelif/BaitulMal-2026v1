@@ -103,6 +103,8 @@ export default function CampaignSummaryPage() {
     const { data: beneficiaries, isLoading: areBeneficiariesLoading, error: beneficiariesError } = useCollection<Beneficiary>(beneficiariesCollectionRef);
     const { data: allDonations, isLoading: areDonationsLoading, error: donationsError } = useCollection<Donation>(allDonationsCollectionRef);
     
+    const isLoading = isCampaignLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
+
     useEffect(() => {
         if (campaign && !editMode) {
              setEditableCampaign({
@@ -352,8 +354,6 @@ export default function CampaignSummaryPage() {
 
         return { totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal), totalBeneficiaries: beneficiaries.length, beneficiariesGiven, beneficiariesPending, zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, zakatForGoalAmount, fundTotals: { fitra: fitraTotal, zakat: zakatTotal, sadaqah: sadaqahTotal, fidiya: fidiyaTotal, interest: interestTotal, lillah: lillahTotal, loan: loanTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal }, donationStatusStats, amountsByCategory };
     }, [allDonations, campaign, beneficiaries, sanitizedRationLists]);
-    
-    const isLoading = isCampaignLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
     
     const handleShare = async () => {
         if (!campaign || !summaryData) return;

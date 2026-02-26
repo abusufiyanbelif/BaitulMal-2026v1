@@ -3,9 +3,11 @@
 const nextConfig = {
   // Force a fresh build to resolve MODULE_NOT_FOUND and cross-origin issues.
   // Refreshing build cache to fix compilation hang and allowedDevOrigins errors.
+  // Update: Explicitly allowing workstation origin to resolve HMR blocks.
   reactStrictMode: true,
   allowedDevOrigins: [
-    "https://*.cloudworkstations.dev"
+    "https://*.cloudworkstations.dev",
+    "6000-firebase-studio-1757160189526.cluster-edb2jv34dnhjisxuq5m7l37ccy.cloudworkstations.dev"
   ],
   images: {
     remotePatterns: [

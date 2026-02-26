@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -102,6 +103,8 @@ export default function LeadSummaryPage() {
     const { data: beneficiaries, isLoading: areBeneficiariesLoading, error: beneficiariesError } = useCollection<Beneficiary>(beneficiariesCollectionRef);
     const { data: allDonations, isLoading: areDonationsLoading, error: donationsError } = useCollection<Donation>(allDonationsCollectionRef);
     
+    const isLoading = isLeadLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
+
     const availableCategories = React.useMemo(() => {
         const selectedPurpose = leadPurposesConfig.find(p => p.id === editableLead.purpose);
         return selectedPurpose?.categories || [];
@@ -380,6 +383,9 @@ export default function LeadSummaryPage() {
             canceled: { count: 0, amount: 0 },
         });
 
+        const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
+        const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
+
         const fitraTotal = amountsByCategory['Fitra'] || 0;
         const zakatTotal = amountsByCategory['Zakat'] || 0;
         const sadaqahTotal = amountsByCategory['Sadaqah'] || 0;
@@ -434,8 +440,6 @@ export default function LeadSummaryPage() {
             paymentSettings
         });
     };
-
-    const isLoading = isLeadLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
 
     if (isLoading) { return <BrandedLoader />; }
     
