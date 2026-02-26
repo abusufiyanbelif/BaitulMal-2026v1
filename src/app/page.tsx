@@ -1,19 +1,45 @@
-
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { OverallFundingSummary } from '@/components/overall-funding-summary';
 import { DonationSummary } from '@/components/donation-summary';
 import { LeadAndCampaignSummary } from '@/components/lead-campaign-summary';
 import { WisdomAndReflection } from '@/components/WisdomAndReflection';
+import { NewsTicker } from '@/components/news-ticker';
+import { usePublicData } from '@/hooks/use-public-data';
 import { cn } from '@/lib/utils';
 import { FolderKanban, Lightbulb } from 'lucide-react';
 
 export default function Home() {
+    const { campaignsWithProgress, leadsWithProgress } = usePublicData();
+
+    const activeTickerItems = useMemo(() => {
+        const activeCampaigns = campaignsWithProgress
+            .filter(c => c.status === 'Active')
+            .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-public/${c.id}/summary` }));
+        
+        const activeLeads = leadsWithProgress
+            .filter(l => l.status === 'Active')
+            .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
+
+        return [...activeCampaigns, ...activeLeads];
+    }, [campaignsWithProgress, leadsWithProgress]);
+
+    const completedTickerItems = useMemo(() => {
+        const completedCampaigns = campaignsWithProgress
+            .filter(c => c.status === 'Completed')
+            .map(c => ({ id: c.id, text: c.name, href: `/campaign-public/${c.id}/summary` }));
+        
+        const completedLeads = leadsWithProgress
+            .filter(l => l.status === 'Completed')
+            .map(l => ({ id: l.id, text: l.name, href: `/leads-public/${l.id}/summary` }));
+
+        return [...completedCampaigns, ...completedLeads];
+    }, [campaignsWithProgress, leadsWithProgress]);
+
     return (
         <div className="container mx-auto p-4 md:p-8">
             <div className="space-y-8">
@@ -39,6 +65,11 @@ export default function Home() {
                       </Button>
                   </div>
               </section>
+
+              <div className="space-y-2">
+                <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
+                <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
+              </div>
 
               <WisdomAndReflection />
 

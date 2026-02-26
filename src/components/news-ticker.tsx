@@ -1,8 +1,8 @@
-
 'use client';
 
-import { Megaphone } from 'lucide-react';
+import { Megaphone, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 interface TickerItem {
   id: string;
@@ -10,24 +10,51 @@ interface TickerItem {
   href: string;
 }
 
-export function NewsTicker({ items }: { items: TickerItem[] }) {
+interface NewsTickerProps {
+  items: TickerItem[];
+  label?: string;
+  variant?: 'active' | 'completed';
+}
+
+export function NewsTicker({ items, label = "Live Updates", variant = "active" }: NewsTickerProps) {
   if (items.length === 0) return null;
 
+  const isCompleted = variant === 'completed';
+
   return (
-    <div className="bg-primary/5 border rounded-lg py-2 overflow-hidden relative flex items-center mb-6 shadow-sm">
-      <div className="absolute left-0 top-0 bottom-0 bg-background z-10 px-4 flex items-center border-r shadow-md">
-        <Megaphone className="h-4 w-4 text-primary mr-2 animate-bounce" />
-        <span className="text-[10px] sm:text-xs font-black uppercase tracking-tighter whitespace-nowrap text-primary">
-          Live Updates
+    <div className={cn(
+      "border rounded-lg py-2 overflow-hidden relative flex items-center mb-4 shadow-sm",
+      isCompleted ? "bg-muted/30 border-muted" : "bg-primary/5 border-primary/10"
+    )}>
+      <div className={cn(
+        "absolute left-0 top-0 bottom-0 z-10 px-4 flex items-center border-r shadow-md",
+        isCompleted ? "bg-secondary" : "bg-background"
+      )}>
+        {isCompleted ? (
+          <CheckCircle2 className="h-4 w-4 text-muted-foreground mr-2" />
+        ) : (
+          <Megaphone className="h-4 w-4 text-primary mr-2 animate-bounce" />
+        )}
+        <span className={cn(
+          "text-[10px] sm:text-xs font-black uppercase tracking-tighter whitespace-nowrap",
+          isCompleted ? "text-muted-foreground" : "text-primary"
+        )}>
+          {label}
         </span>
       </div>
-      <div className="flex whitespace-nowrap animate-marquee pl-[120px]">
+      <div className="flex whitespace-nowrap animate-marquee pl-[140px]">
         {items.map((item) => (
           <div key={item.id} className="mx-8 flex items-center shrink-0">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary mr-3 animate-status-pulse" />
+            <span className={cn(
+              "h-1.5 w-1.5 rounded-full mr-3",
+              isCompleted ? "bg-muted-foreground" : "bg-primary animate-status-pulse"
+            )} />
             <Link 
               href={item.href} 
-              className="text-sm font-bold hover:text-primary transition-colors decoration-primary/30 underline-offset-4 hover:underline"
+              className={cn(
+                "text-sm font-bold transition-colors decoration-primary/30 underline-offset-4 hover:underline",
+                isCompleted ? "text-muted-foreground hover:text-foreground" : "hover:text-primary"
+              )}
             >
               {item.text}
             </Link>
@@ -36,10 +63,16 @@ export function NewsTicker({ items }: { items: TickerItem[] }) {
         {/* Duplicate items for a truly seamless infinite loop */}
         {items.map((item) => (
           <div key={`${item.id}-dup`} className="mx-8 flex items-center shrink-0">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary mr-3 animate-status-pulse" />
+            <span className={cn(
+              "h-1.5 w-1.5 rounded-full mr-3",
+              isCompleted ? "bg-muted-foreground" : "bg-primary animate-status-pulse"
+            )} />
             <Link 
               href={item.href} 
-              className="text-sm font-bold hover:text-primary transition-colors decoration-primary/30 underline-offset-4 hover:underline"
+              className={cn(
+                "text-sm font-bold transition-colors decoration-primary/30 underline-offset-4 hover:underline",
+                isCompleted ? "text-muted-foreground hover:text-foreground" : "hover:text-primary"
+              )}
             >
               {item.text}
             </Link>

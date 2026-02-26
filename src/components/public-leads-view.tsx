@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -96,9 +95,15 @@ export function PublicLeadsView() {
 
   const { isLoading, leadsWithProgress } = usePublicData();
 
-  const tickerItems = useMemo(() => {
+  const activeTickerItems = useMemo(() => {
     return leadsWithProgress
       .filter(l => l.status === 'Active')
+      .map(l => ({ id: l.id, text: l.name, href: `/leads-public/${l.id}/summary` }));
+  }, [leadsWithProgress]);
+
+  const completedTickerItems = useMemo(() => {
+    return leadsWithProgress
+      .filter(l => l.status === 'Completed')
       .map(l => ({ id: l.id, text: l.name, href: `/leads-public/${l.id}/summary` }));
   }, [leadsWithProgress]);
 
@@ -142,7 +147,10 @@ export function PublicLeadsView() {
           <h1 className="text-4xl font-black tracking-tighter uppercase">PUBLIC LEADS</h1>
           <p className="text-muted-foreground text-lg">Verified community appeals requiring your support.</p>
           
-          <NewsTicker items={tickerItems} />
+          <div className="space-y-2">
+            <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
+            <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
+          </div>
 
           <div className="flex flex-wrap items-center gap-2 pt-4 bg-muted/10 p-4 rounded-xl border">
               <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs" disabled={isLoading}/>

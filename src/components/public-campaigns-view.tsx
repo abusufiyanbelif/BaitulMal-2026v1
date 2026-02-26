@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -96,9 +95,15 @@ export function PublicCampaignsView() {
 
   const { isLoading, campaignsWithProgress } = usePublicData();
 
-  const tickerItems = useMemo(() => {
+  const activeTickerItems = useMemo(() => {
     return campaignsWithProgress
       .filter(c => c.status === 'Active')
+      .map(c => ({ id: c.id, text: c.name, href: `/campaign-public/${c.id}/summary` }));
+  }, [campaignsWithProgress]);
+
+  const completedTickerItems = useMemo(() => {
+    return campaignsWithProgress
+      .filter(c => c.status === 'Completed')
       .map(c => ({ id: c.id, text: c.name, href: `/campaign-public/${c.id}/summary` }));
   }, [campaignsWithProgress]);
 
@@ -142,7 +147,10 @@ export function PublicCampaignsView() {
           <h1 className="text-4xl font-black tracking-tighter">OUR CAMPAIGNS</h1>
           <p className="text-muted-foreground text-lg">Transparent tracking of our community support projects.</p>
           
-          <NewsTicker items={tickerItems} />
+          <div className="space-y-2">
+            <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
+            <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
+          </div>
 
           <div className="flex flex-wrap items-center gap-2 pt-4 bg-muted/10 p-4 rounded-xl border">
               <Input placeholder="Search campaigns..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs" disabled={isLoading}/>
