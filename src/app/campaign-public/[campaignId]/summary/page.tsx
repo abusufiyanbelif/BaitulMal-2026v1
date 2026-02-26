@@ -142,7 +142,39 @@ export default function PublicCampaignSummaryPage() {
         const totalCollectedForGoal = Object.entries(amountsByCategory).filter(([category]) => campaign.allowedDonationTypes?.includes(category as DonationCategory)).reduce((sum, [category, amount]) => category === 'Zakat' ? sum + zakatAvailableForGoal : sum + amount, 0);
         const fundingGoal = campaign.targetAmount || 0;
         const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
-        return { totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal), fundTotals: { zakat: zakatTotal, grandTotal: grandTotal }, zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal };
+
+        const fitraTotal = amountsByCategory['Fitra'] || 0;
+        const zakatTotal = amountsByCategory['Zakat'] || 0;
+        const sadaqahTotal = amountsByCategory['Sadaqah'] || 0;
+        const fidiyaTotal = amountsByCategory['Fidiya'] || 0;
+        const interestTotal = amountsByCategory['Interest'] || 0;
+        const lillahTotal = amountsByCategory['Lillah'] || 0;
+        const loanTotal = amountsByCategory['Loan'] || 0;
+        const monthlyContributionTotal = amountsByCategory['Monthly Contribution'] || 0;
+        const grandTotal = fitraTotal + zakatTotal + sadaqahTotal + fidiyaTotal + interestTotal + lillahTotal + loanTotal + monthlyContributionTotal;
+
+        return {
+            totalCollectedForGoal,
+            fundingProgress,
+            targetAmount: fundingGoal,
+            remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal),
+            zakatAllocated,
+            zakatGiven,
+            zakatPending,
+            zakatAvailableForGoal,
+            zakatForGoalAmount,
+            fundTotals: {
+                fitra: fitraTotal,
+                zakat: zakatTotal,
+                sadaqah: sadaqahTotal,
+                fidiya: fidiyaTotal,
+                interest: interestTotal,
+                lillah: lillahTotal,
+                loan: loanTotal,
+                monthlyContribution: monthlyContributionTotal,
+                grandTotal: grandTotal,
+            }
+        };
     }, [allDonations, campaign, beneficiaries]);
 
     const beneficiaryData = useMemo(() => {
