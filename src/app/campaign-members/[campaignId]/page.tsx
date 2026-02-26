@@ -3,11 +3,11 @@
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, collection, doc } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
-import { doc, updateDoc, DocumentReference, collection, writeBatch } from 'firebase/firestore';
+import { updateDoc, DocumentReference, writeBatch } from 'firebase/firestore';
 import type { Campaign, RationItem, Beneficiary, ItemCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -961,7 +961,7 @@ export default function CampaignDetailsPage() {
                                                     type="number"
                                                     value={newCategoryMin}
                                                     onChange={(e) => setNewCategoryMin(e.target.value)}
-                                                    placeholder="e.g., 1"
+                                                    placeholder="e.g. 1"
                                                 />
                                             </div>
                                             <div className="space-y-2">
@@ -971,7 +971,7 @@ export default function CampaignDetailsPage() {
                                                     type="number"
                                                     value={newCategoryMax}
                                                     onChange={(e) => setNewCategoryMax(e.target.value)}
-                                                    placeholder="e.g., 4"
+                                                    placeholder="e.g. 4"
                                                 />
                                             </div>
                                         </div>
@@ -1161,7 +1161,7 @@ export default function CampaignDetailsPage() {
                                     const categoryName = cat.name === 'Item Price List'
                                     ? 'Item Price List'
                                     : (editableCampaign?.category === 'Ration' && cat.minMembers !== undefined && cat.maxMembers !== undefined)
-                                        ? `${cat.name} (${cat.minMembers}-${cat.maxMembers})`
+                                        ? `${categoryName} (${cat.minMembers}-${cat.maxMembers})`
                                         : cat.name;
                                     return <SelectItem key={cat.id} value={cat.id}>{categoryName}</SelectItem>
                                 })}

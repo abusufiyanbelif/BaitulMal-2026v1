@@ -3,10 +3,10 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, collection, doc } from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { doc, updateDoc, DocumentReference, collection, writeBatch } from 'firebase/firestore';
+import { updateDoc, DocumentReference, writeBatch } from 'firebase/firestore';
 import type { Lead, RationItem, Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

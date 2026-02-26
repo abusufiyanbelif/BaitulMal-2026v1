@@ -1,11 +1,13 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, useStorage, useAuth } from '@/firebase';
+import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, useStorage, useAuth, collection, doc } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
-import { doc, updateDoc, DocumentReference, collection } from 'firebase/firestore';
+import { usePaymentSettings } from '@/hooks/use-payment-settings';
+import { updateDoc, DocumentReference } from 'firebase/firestore';
 import type { Campaign, Beneficiary, Donation, DonationCategory, CampaignDocument, ItemCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -47,7 +49,6 @@ import {
   PolarAngleAxis,
 } from 'recharts';
 import Resizer from 'react-image-file-resizer';
-import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -61,14 +62,6 @@ const donationCategoryChartConfig = {
     Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
     'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-5))" },
 } satisfies ChartConfig;
-
-const donationPaymentTypeChartConfig = {
-    Cash: { label: "Cash", color: "hsl(var(--chart-1))" },
-    'Online Payment': { label: "Online Payment", color: "hsl(var(--chart-2))" },
-    Check: { label: "Check", color: "hsl(var(--chart-5))" },
-    Other: { label: "Other", color: "hsl(var(--chart-4))" },
-} satisfies ChartConfig;
-
 
 export default function CampaignSummaryPage() {
     const params = useParams();
@@ -357,7 +350,7 @@ export default function CampaignSummaryPage() {
         const monthlyContributionTotal = amountsByCategory['Monthly Contribution'] || 0;
         const grandTotal = fitraTotal + zakatTotal + sadaqahTotal + fidiyaTotal + interestTotal + lillahTotal + loanTotal + monthlyContributionTotal;
 
-        return { totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal), totalBeneficiaries: beneficiaries.length, beneficiariesGiven, beneficiariesPending, zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, zakatForGoalAmount, fundTotals: { fitra: fitraTotal, zakat: zakatTotal, sadaqah: sadaqahTotal, fidiya: fidiyaTotal, interest: interestTotal, lillah: lillahTotal, loan: loanTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal }, donationStatusStats, };
+        return { totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal), totalBeneficiaries: beneficiaries.length, beneficiariesGiven, beneficiariesPending, zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, zakatForGoalAmount, fundTotals: { fitra: fitraTotal, zakat: zakatTotal, sadaqah: sadaqahTotal, fidiya: fidiyaTotal, interest: interestTotal, lillah: lillahTotal, loan: loanTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal }, donationStatusStats, amountsByCategory };
     }, [allDonations, campaign, beneficiaries, sanitizedRationLists]);
     
     const isLoading = isCampaignLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;

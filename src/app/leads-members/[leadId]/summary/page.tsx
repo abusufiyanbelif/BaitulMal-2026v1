@@ -1,11 +1,13 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, useStorage, useAuth } from '@/firebase';
+import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, useStorage, useAuth, collection, doc } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
-import { doc, updateDoc, DocumentReference, collection } from 'firebase/firestore';
+import { usePaymentSettings } from '@/hooks/use-payment-settings';
+import { updateDoc, DocumentReference } from 'firebase/firestore';
 import type { Lead, Beneficiary, Donation, DonationCategory, CampaignDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -47,7 +49,6 @@ import {
   PolarAngleAxis,
 } from 'recharts';
 import Resizer from 'react-image-file-resizer';
-import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -62,14 +63,6 @@ const donationCategoryChartConfig = {
     Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
     'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-5))" },
 } satisfies ChartConfig;
-
-const donationPaymentTypeChartConfig = {
-    Cash: { label: "Cash", color: "hsl(var(--chart-1))" },
-    'Online Payment': { label: "Online Payment", color: "hsl(var(--chart-2))" },
-    Check: { label: "Check", color: "hsl(var(--chart-5))" },
-    Other: { label: "Other", color: "hsl(var(--chart-4))" },
-} satisfies ChartConfig;
-
 
 export default function LeadSummaryPage() {
     const params = useParams();
@@ -388,10 +381,6 @@ export default function LeadSummaryPage() {
             canceled: { count: 0, amount: 0 },
         });
 
-        const paymentTypeData = donations.reduce((acc, d) => { const key = d.donationType || 'Other'; acc[key] = (acc[key] || 0) + 1; return acc; }, {} as Record<string, number>);
-        const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
-        const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
-        
         const fitraTotal = amountsByCategory['Fitra'] || 0;
         const zakatTotal = amountsByCategory['Zakat'] || 0;
         const sadaqahTotal = amountsByCategory['Sadaqah'] || 0;
@@ -404,8 +393,7 @@ export default function LeadSummaryPage() {
 
         return {
             totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal), totalBeneficiaries: beneficiaries.length,
-            beneficiariesGiven, beneficiariesPending, amountsByCategory, donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
-            zakatAllocated,
+            beneficiariesGiven, beneficiariesPending, amountsByCategory, zakatAllocated,
             zakatGiven,
             zakatPending,
             zakatAvailableForGoal,
@@ -426,28 +414,9 @@ export default function LeadSummaryPage() {
     }, [beneficiaries, allDonations, lead]);
     
     const handleShare = async () => {
-        if (!lead || !summaryData) {
-            toast({ title: 'Error', description: 'Cannot share summary.', variant: 'destructive'});
-            return;
-        }
+        if (!lead || !summaryData) return;
         
-        const shareText = `
-*Assalamualaikum Warahmatullahi Wabarakatuh*
-
-*We Need Your Support!*
-
-Join us for the *${lead.name}* initiative.
-
-*Our Goal:*
-${lead.description || 'To support those in need.'}
-
-*Financial Update:*
-🎯 Target: ₹${summaryData.targetAmount.toLocaleString('en-IN')}
-✅ Collected (Verified): ₹${summaryData.totalCollectedForGoal.toLocaleString('en-IN')}
-⏳ Remaining: *₹${summaryData.remainingToCollect.toLocaleString('en-IN')}*
-
-*Please donate and share.*
-        `.trim().replace(/^\s+/gm, '');
+        const shareText = `Lead: ${lead.name}\nTarget: ₹${summaryData.targetAmount.toLocaleString('en-IN')}\nRaised: ₹${summaryData.totalCollectedForGoal.toLocaleString('en-IN')}`;
 
         setShareDialogData({
             title: `Lead Summary: ${lead.name}`,
@@ -470,20 +439,7 @@ ${lead.description || 'To support those in need.'}
     if (isLoading) { return <BrandedLoader />; }
     
     if (leadError || beneficiariesError || donationsError) {
-        return (
-             <main className="container mx-auto p-4 md:p-8">
-                <Alert variant="destructive">
-                    <ShieldAlert className="h-4 w-4" />
-                    <AlertTitle>Error Loading Data</AlertTitle>
-                    <AlertDescription>
-                        <p>There was a problem fetching required data.</p>
-                        <pre className="mt-2 text-xs bg-destructive/10 p-2 rounded-md font-mono">
-                            {(leadError || beneficiariesError || donationsError)?.message}
-                        </pre>
-                    </AlertDescription>
-                </Alert>
-            </main>
-        );
+        return ( <main className="container mx-auto p-4 md:p-8"><Alert variant="destructive"><ShieldAlert className="h-4 w-4" /><AlertTitle>Error Loading Data</AlertTitle><AlertDescription><p>Problem fetching data.</p></AlertDescription></Alert></main> );
     }
 
     if (!lead) { return <main className="container mx-auto p-4 md:p-8 text-center"><p>Lead not found.</p></main> }
@@ -500,14 +456,7 @@ ${lead.description || 'To support those in need.'}
 
     return (
         <main className="container mx-auto p-4 md:p-8">
-             <div className="mb-4">
-                <Button variant="outline" asChild>
-                    <Link href="/leads-members">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Leads
-                    </Link>
-                </Button>
-            </div>
+             <div className="mb-4"><Button variant="outline" asChild><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                  <div className="space-y-1">
                     {editMode ? (
@@ -618,52 +567,6 @@ ${lead.description || 'To support those in need.'}
                                         )}
                                     </div>
 
-                                    {editableLead.purpose === 'Education' && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border p-3 rounded-md bg-muted/20">
-                                            <div className="space-y-1">
-                                                <Label>Degree/Class</Label>
-                                                <Select value={editableLead.degree} onValueChange={(val) => handleFieldChange('degree', val)}>
-                                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                                    <SelectContent>{educationDegrees.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <Label>Year</Label>
-                                                <Select value={editableLead.year} onValueChange={(val) => handleFieldChange('year', val)}>
-                                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                                    <SelectContent>{educationYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <Label>Semester</Label>
-                                                <Select value={editableLead.semester} onValueChange={(val) => handleFieldChange('semester', val)}>
-                                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                                    <SelectContent>{educationSemesters.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                                                </Select>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {editableLead.purpose === 'Medical' && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border p-3 rounded-md bg-muted/20">
-                                            <div className="space-y-1">
-                                                <Label>Disease Identified</Label>
-                                                <Input value={editableLead.diseaseIdentified || ''} onChange={(e) => handleFieldChange('diseaseIdentified', e.target.value)} />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <Label>Disease Stage</Label>
-                                                <Input value={editableLead.diseaseStage || ''} onChange={(e) => handleFieldChange('diseaseStage', e.target.value)} />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <Label>Seriousness</Label>
-                                                <Select value={editableLead.seriousness || undefined} onValueChange={(val) => handleFieldChange('seriousness', val)}>
-                                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                                    <SelectContent>{leadSeriousnessLevels.map(level => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent>
-                                                </Select>
-                                            </div>
-                                        </div>
-                                    )}
-                                    
                                     <div className="space-y-2">
                                         <Label>Donation Types for Fundraising</Label>
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-md">

@@ -1,12 +1,8 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Force a reload by adding a comment.
-  // Force a cache invalidation again.
-  // Force a cache invalidation one more time to fix ChunkLoadError.
-  // And again to resolve the EADDRINUSE error.
-  // And one more time for good measure.
-  // Refreshing build cache to fix compilation hang.
+  // Force a fresh build to resolve MODULE_NOT_FOUND and cross-origin issues.
+  // Refreshing build cache to fix compilation hang and allowedDevOrigins errors.
   reactStrictMode: true,
   allowedDevOrigins: [
     "https://*.cloudworkstations.dev"
