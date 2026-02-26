@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSubTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuRadioGroup, DropdownMenuRadioItem } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useToast } from '@/hooks/use-toast';
@@ -129,7 +129,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                         </>
                     )}
                 </DropdownMenuContent>
-            </DropdownMenu>
+              </DropdownMenu>
         </div>
         <CardDescription className="text-[10px] font-bold uppercase tracking-wider">{lead.startDate} to {lead.endDate}</CardDescription>
     </CardHeader>
@@ -205,18 +205,42 @@ export default function LeadPage() {
     const leadsById = new Map(leads.map(l => [l.id, l]));
 
     donations.forEach(donation => {
-        const links = donation.linkSplit || [];
-        links.forEach(link => {
+        // Robust fallback for legacy donation formats
+        const links = (donation.linkSplit && donation.linkSplit.length > 0)
+            ? donation.linkSplit
+            : (donation as any).campaignId 
+                ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] 
+                : [];
+
+        links.forEach((link: any) => {
             if (link.linkType !== 'lead') return;
             const lead = leadsById.get(link.linkId);
             if (!lead) return;
-            const proportion = link.amount / (donation.amount || 1);
-            const typeSplits = donation.typeSplit || (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
+
+            // Calculate exact proportion for this lead link
+            const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
+            const proportion = link.amount / totalDonationAmount;
+
+            // Handle category fallback
+            const typeSplits = donation.typeSplit && donation.typeSplit.length > 0
+                ? donation.typeSplit
+                : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount, forFundraising: true }] : []);
+
             const applicable = typeSplits.reduce((acc, split) => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                return lead.allowedDonationTypes?.includes(category as DonationCategory) ? acc + split.amount : acc;
+                
+                // Parity with Summary Page logic: category allowed? Zakat earmarked?
+                const isAllowed = lead.allowedDonationTypes?.includes(category as DonationCategory);
+                const isForGoal = category !== 'Zakat' || split.forFundraising !== false;
+
+                if (isAllowed && isForGoal) {
+                    return acc + split.amount;
+                }
+                return acc;
             }, 0);
-            collectedAmounts.set(link.linkId, (collectedAmounts.get(link.linkId) || 0) + (applicable * proportion));
+
+            const currentCollected = collectedAmounts.get(link.linkId) || 0;
+            collectedAmounts.set(link.linkId, currentCollected + (applicable * proportion));
         });
     });
 
@@ -351,7 +375,7 @@ export default function LeadPage() {
                 ))}
               </Accordion>
             ) : (
-              <div className="text-center py-20 bg-muted/10 rounded-xl border-2 border-dashed">
+              <div className="text-center py-20 bg-muted/10 rounded-2xl border-2 border-dashed">
                   <HandHelping className="h-12 w-12 mx-auto text-muted-foreground/20 mb-4" />
                   <p className="text-muted-foreground font-medium">No leads found.</p>
                   <Button variant="link" onClick={() => { setSearchTerm(''); setStatusFilter('All'); setPurposeFilter('All'); setDateRange(undefined); setSelectedYear('All'); }}>Reset filters</Button>

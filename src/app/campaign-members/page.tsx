@@ -152,7 +152,7 @@ const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete
                         </>
                     )}
                 </DropdownMenuContent>
-            </DropdownMenu>
+              </DropdownMenu>
         </div>
         <CardDescription className="text-[10px] uppercase font-bold tracking-wider">{campaign.startDate} to {campaign.endDate}</CardDescription>
     </CardHeader>
@@ -229,18 +229,43 @@ export default function CampaignPage() {
     const campaignsById = new Map(campaigns.map(c => [c.id, c]));
 
     donations.forEach(donation => {
-        const links = donation.linkSplit || (donation as any).campaignId ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] : [];
-        links.forEach(link => {
+        // Correctly handle legacy data fallback by checking link length
+        const links = (donation.linkSplit && donation.linkSplit.length > 0)
+            ? donation.linkSplit
+            : (donation as any).campaignId 
+                ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] 
+                : [];
+
+        links.forEach((link: any) => {
             if (link.linkType !== 'campaign') return;
             const campaign = campaignsById.get(link.linkId);
             if (!campaign) return;
-            const proportion = link.amount / (donation.amount || 1);
-            const typeSplits = donation.typeSplit || (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
+
+            // Calculate the proportion of this donation allocated to this specific campaign
+            const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
+            const proportion = link.amount / totalDonationAmount;
+
+            // Handle type fallback for single-category donations
+            const typeSplits = donation.typeSplit && donation.typeSplit.length > 0
+                ? donation.typeSplit
+                : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount, forFundraising: true }] : []);
+
             const applicable = typeSplits.reduce((acc, split) => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                return campaign.allowedDonationTypes?.includes(category as DonationCategory) ? acc + split.amount : acc;
+                
+                // Only count categories allowed for this campaign's goal
+                const isAllowed = campaign.allowedDonationTypes?.includes(category as DonationCategory);
+                // Respect the fundraising flag (useful for Zakat portions not intended for kits)
+                const isForGoal = category !== 'Zakat' || split.forFundraising !== false;
+
+                if (isAllowed && isForGoal) {
+                    return acc + split.amount;
+                }
+                return acc;
             }, 0);
-            collectedAmounts.set(link.linkId, (collectedAmounts.get(link.linkId) || 0) + (applicable * proportion));
+
+            const currentCollected = collectedAmounts.get(link.linkId) || 0;
+            collectedAmounts.set(link.linkId, currentCollected + (applicable * proportion));
         });
     });
 

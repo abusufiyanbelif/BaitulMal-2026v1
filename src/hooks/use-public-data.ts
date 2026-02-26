@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useMemo } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
@@ -61,18 +60,20 @@ export function usePublicData() {
     // --- Calculate Collected Amounts for Each Item ---
     const collectedAmounts = new Map<string, number>();
     donations.forEach(donation => {
+      // Robust handle for allocation links including legacy fallback
       const links = (donation.linkSplit && donation.linkSplit.length > 0)
         ? donation.linkSplit
-        : (donation as any).campaignId ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] : [];
+        : (donation as any).campaignId 
+            ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] 
+            : [];
       
       links.forEach((link: any) => {
         const item = itemsById.get(link.linkId);
         // Only process donations linked to our public items
         if (!item) return;
 
-        const amountForThisItem = link.amount;
         const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
-        const proportionForThisItem = amountForThisItem / totalDonationAmount;
+        const proportionForThisItem = link.amount / totalDonationAmount;
 
         const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
           ? donation.typeSplit
@@ -80,8 +81,12 @@ export function usePublicData() {
         
         const applicableAmountInDonation = typeSplits.reduce((acc, split) => {
           const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-          const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
-          if (item.allowedDonationTypes?.includes(category as DonationCategory) && isForFundraising) {
+          
+          // Parity check: category allowed? designated for goal?
+          const isAllowed = item.allowedDonationTypes?.includes(category as DonationCategory);
+          const isForGoal = category !== 'Zakat' || split.forFundraising !== false;
+
+          if (isAllowed && isForGoal) {
             return acc + split.amount;
           }
           return acc;
