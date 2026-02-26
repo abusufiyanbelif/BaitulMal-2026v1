@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
@@ -56,8 +55,6 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn, getNestedValue } from '@/lib/utils';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-
-
 
 const quantityTypes = ['kg', 'litre', 'gram', 'ml', 'piece', 'packet', 'dozen', 'month', 'year', 'semester', 'unit', 'day', 'treatment'];
 
@@ -144,7 +141,6 @@ export default function CampaignDetailsPage() {
     });
   }, []);
 
-  // Reset local state if edit mode is cancelled or if the base data changes while NOT in edit mode.
   useEffect(() => {
     if (campaign && !editMode) {
         const campaignCopy = JSON.parse(JSON.stringify(campaign));
@@ -169,7 +165,6 @@ export default function CampaignDetailsPage() {
         return cat;
     });
     
-    // Sort to put "Item Price List" first, then by min members or name
     return lists.sort((a, b) => {
         if (a.name === 'Item Price List') return -1;
         if (b.name === 'Item Price List') return 1;
@@ -181,8 +176,7 @@ export default function CampaignDetailsPage() {
   }, [editableCampaign?.itemCategories]);
 
   const isLegacyData = useMemo(() => {
-    // @ts-ignore
-    return !!(campaign && !campaign.itemCategories && campaign.rationLists);
+    return !!(campaign && !campaign.itemCategories && (campaign as any).rationLists);
   }, [campaign]);
 
   const sourceCategoryForCopy = useMemo(() => {
@@ -246,7 +240,6 @@ export default function CampaignDetailsPage() {
 
   const handleCancel = () => {
       setEditMode(false);
-      // editableCampaign will be reset by the useEffect
   };
 
   const handleFieldChange = (field: keyof Campaign, value: any) => {
@@ -384,7 +377,7 @@ export default function CampaignDetailsPage() {
 
   const handleEditCategoryClick = (category: ItemCategory) => {
     if (!canUpdate || !editMode || category.name === 'Item Price List') return;
-    setCategoryToEdit(JSON.parse(JSON.stringify(category))); // Deep copy
+    setCategoryToEdit(JSON.parse(JSON.stringify(category)));
     setIsEditCategoryOpen(true);
   };
 
@@ -519,9 +512,8 @@ export default function CampaignDetailsPage() {
         );
 
         if (existingItemIndex > -1) {
-            // Replace/Update existing item
             targetItems[existingItemIndex] = {
-                ...targetItems[existingItemIndex], // Keep original ID and other properties of target
+                ...targetItems[existingItemIndex],
                 quantity: sourceItem.quantity,
                 quantityType: sourceItem.quantityType,
                 price: sourceItem.price,
@@ -529,7 +521,6 @@ export default function CampaignDetailsPage() {
             };
             updatedCount++;
         } else {
-            // Add new item
             targetItems.push({
                 ...sourceItem,
                 id: `${copyTargetCategory.id}-item-${Date.now()}-${Math.random()}`
@@ -585,7 +576,6 @@ export default function CampaignDetailsPage() {
 
         let appliedCategory: ItemCategory | null = null;
         if (matchingCategories.length > 1) {
-            // If multiple categories match, find the most specific one (smallest range)
             matchingCategories.sort((a, b) => {
                 const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
                 const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
@@ -606,7 +596,7 @@ export default function CampaignDetailsPage() {
            appliedCategoryName = 'Uncategorized';
            appliedCategoryId = 'uncategorized';
         }
-      } else { // For 'General', 'Relief' campaigns
+      } else {
         const generalCategory = sanitizedEditableItemCategories.find(c => c.name !== 'Item Price List');
         if (generalCategory) {
             newKitAmount = calculateTotal(generalCategory.items);
@@ -993,14 +983,14 @@ export default function CampaignDetailsPage() {
                         <ScrollArea>
                             <TabsList>
                                 {sanitizedEditableItemCategories.map(category => {
-                                    const categoryName = category.name === 'Item Price List'
+                                    const categoryNameDisplay = category.name === 'Item Price List'
                                     ? 'Item Price List'
-                                    : (editableCampaign.category === 'Ration' && category.minMembers !== undefined && category.maxMembers !== undefined)
+                                    : (editableCampaign?.category === 'Ration' && category.minMembers !== undefined && category.maxMembers !== undefined)
                                         ? `${category.name} (${category.minMembers}-${category.maxMembers})`
                                         : category.name;
                                     return (
                                         <div key={category.id} className="flex items-center gap-1 p-1">
-                                            <TabsTrigger value={category.id}>{categoryName}</TabsTrigger>
+                                            <TabsTrigger value={category.id}>{categoryNameDisplay}</TabsTrigger>
                                             {editMode && canUpdate && category.name !== 'Item Price List' && (
                                                 <div className="flex items-center">
                                                     <Button 
@@ -1158,12 +1148,12 @@ export default function CampaignDetailsPage() {
                             </SelectTrigger>
                             <SelectContent>
                                 {sanitizedEditableItemCategories.filter(cat => cat.id !== copyTargetCategory?.id).map(cat => {
-                                    const categoryName = cat.name === 'Item Price List'
+                                    const categoryNameDisplaySelect = cat.name === 'Item Price List'
                                     ? 'Item Price List'
                                     : (editableCampaign?.category === 'Ration' && cat.minMembers !== undefined && cat.maxMembers !== undefined)
-                                        ? `${categoryName} (${cat.minMembers}-${cat.maxMembers})`
+                                        ? `${cat.name} (${cat.minMembers}-${cat.maxMembers})`
                                         : cat.name;
-                                    return <SelectItem key={cat.id} value={cat.id}>{categoryName}</SelectItem>
+                                    return <SelectItem key={cat.id} value={cat.id}>{categoryNameDisplaySelect}</SelectItem>
                                 })}
                             </SelectContent>
                         </Select>
