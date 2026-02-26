@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -6,11 +7,10 @@ import Link from 'next/link';
 import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X } from 'lucide-react';
 import { useCollection, useFirestore, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/types';
+import type { Campaign, Donation, DonationCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
-import { collection, query, where, getDocs, writeBatch, doc, updateDoc } from 'firebase/firestore';
-import { ref as storageRef, deleteObject } from 'firebase/storage';
+import { collection, query, where, doc, updateDoc } from 'firebase/firestore';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -37,6 +37,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { CopyCampaignDialog } from '@/components/copy-campaign-dialog';
@@ -46,7 +47,8 @@ import Image from 'next/image';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, parseISO, startOfDay, endOfDay } from 'date-fns';
+import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
+import { NewsTicker } from '@/components/news-ticker';
 
 interface CampaignCardProps {
     campaign: Campaign & { collected: number; progress: number; };
@@ -62,8 +64,8 @@ interface CampaignCardProps {
 
 const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete, handleStatusUpdate, handleCopyClick, handleDeleteClick }: CampaignCardProps) => (
     <Card 
-        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98]" 
-        style={{ animationDelay: `${100 + index * 50}ms`, animationFillMode: 'backwards' }}
+        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full" 
+        style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
         onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}
     >
       <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
@@ -72,7 +74,7 @@ const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete
               src={campaign.imageUrl}
               alt={campaign.name}
               fill
-              sizes="100vw"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover"
               data-ai-hint="campaign background"
             />
@@ -80,10 +82,10 @@ const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete
             <HandHelping className="h-16 w-16 text-muted-foreground" />
         )}
       </div>
-      <CardHeader>
+      <CardHeader className="p-4">
         <div className="flex justify-between items-start gap-2">
-            <CardTitle className="w-full break-words text-base">
-                {campaign.campaignNumber && <span className="text-primary font-bold">#{campaign.campaignNumber} </span>}{campaign.name}
+            <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2">
+                {campaign.campaignNumber && <span className="text-primary">#{campaign.campaignNumber} </span>}{campaign.name}
             </CardTitle>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -152,34 +154,33 @@ const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
-        <CardDescription className="text-xs">{campaign.startDate} to {campaign.endDate}</CardDescription>
+        <CardDescription className="text-[10px] uppercase font-bold tracking-wider">{campaign.startDate} to {campaign.endDate}</CardDescription>
     </CardHeader>
-    <CardContent className="flex-grow space-y-2">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <Badge variant="outline">{campaign.category}</Badge>
-            <Badge variant={
-                campaign.status === 'Active' ? 'success' :
-                campaign.status === 'Completed' ? 'secondary' : 'outline'
-            }>{campaign.status}</Badge>
-        </div>
-        <div className="flex justify-between text-xs text-muted-foreground">
-            <Badge variant="outline">{campaign.authenticityStatus || 'N/A'}</Badge>
-            <Badge variant="outline">{campaign.publicVisibility || 'N/A'}</Badge>
+    <CardContent className="flex-grow space-y-3 p-4 pt-0">
+          <div className="flex justify-between items-center text-xs">
+            <Badge variant="secondary" className="text-[10px]">{campaign.category}</Badge>
+            <Badge 
+              variant={campaign.status === 'Active' ? 'success' : campaign.status === 'Completed' ? 'secondary' : 'outline'}
+              className={cn("text-[10px]", campaign.status === 'Active' && "animate-status-pulse")}
+            >
+              {campaign.status}
+            </Badge>
         </div>
         {(campaign.targetAmount || 0) > 0 && (
-            <div className="space-y-1 pt-1">
-                <Progress value={campaign.progress} className="h-2" />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>₹{campaign.collected.toLocaleString('en-IN')}</span>
-                    <span>Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</span>
+            <div className="space-y-1.5">
+                <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
+                    <span>Collected: ₹{campaign.collected.toLocaleString('en-IN')}</span>
+                    <span>{Math.round(campaign.progress)}%</span>
                 </div>
+                <Progress value={campaign.progress} className="h-1.5" />
+                <p className="text-center text-[10px] text-muted-foreground/70">Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</p>
             </div>
         )}
     </CardContent>
-    <CardFooter className="p-2">
-        <Button asChild className="w-full transition-transform active:scale-95" size="sm">
+    <CardFooter className="p-2 border-t bg-muted/5">
+        <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold" size="sm" variant="ghost">
             <Link href={`/campaign-members/${campaign.id}/summary`}>
-                View Details
+                Manage Campaign
             </Link>
         </Button>
     </CardFooter>
@@ -189,7 +190,6 @@ const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete
 export default function CampaignPage() {
   const router = useRouter();
   const firestore = useFirestore();
-  const storage = useStorage();
   const { toast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -198,16 +198,13 @@ export default function CampaignPage() {
   const [authenticityFilter, setAuthenticityFilter] = useState('All');
   const [visibilityFilter, setVisibilityFilter] = useState('All');
   
-  // Date filtering state
   const [selectedYear, setSelectedYear] = useState('All');
   const [selectedMonth, setSelectedMonth] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   const [isDeleting, setIsDeleting] = useState(false);
-  
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [campaignToDelete, setCampaignToDelete] = useState<Campaign | null>(null);
-
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const [campaignToCopy, setCampaignToCopy] = useState<Campaign | null>(null);
 
@@ -232,61 +229,37 @@ export default function CampaignPage() {
     const campaignsById = new Map(campaigns.map(c => [c.id, c]));
 
     donations.forEach(donation => {
-        const links = (donation.linkSplit && donation.linkSplit.length > 0)
-            ? donation.linkSplit
-            : (donation as any).campaignId ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] : [];
-        
+        const links = donation.linkSplit || (donation as any).campaignId ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] : [];
         links.forEach(link => {
             if (link.linkType !== 'campaign') return;
-
             const campaign = campaignsById.get(link.linkId);
             if (!campaign) return;
-
-            const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
-            const proportionForThisCampaign = link.amount / totalDonationAmount;
-
-            const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
-                ? donation.typeSplit
-                : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
-            
-            const applicableAmount = typeSplits.reduce((acc, split) => {
+            const proportion = link.amount / (donation.amount || 1);
+            const typeSplits = donation.typeSplit || (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount }] : []);
+            const applicable = typeSplits.reduce((acc, split) => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                if (campaign.allowedDonationTypes?.includes(category as DonationCategory)) {
-                    return acc + split.amount;
-                }
-                return acc;
+                return campaign.allowedDonationTypes?.includes(category as DonationCategory) ? acc + split.amount : acc;
             }, 0);
-
-            const currentCollected = collectedAmounts.get(link.linkId) || 0;
-            collectedAmounts.set(link.linkId, currentCollected + (applicableAmount * proportionForThisCampaign));
+            collectedAmounts.set(link.linkId, (collectedAmounts.get(link.linkId) || 0) + (applicable * proportion));
         });
     });
 
     return campaigns.map(campaign => {
       const collected = collectedAmounts.get(campaign.id) || 0;
-      const targetAmount = campaign.targetAmount || 0;
-      const progress = targetAmount > 0 ? (collected / targetAmount) * 100 : 0;
-      
-      return {
-        ...campaign,
-        collected,
-        progress
-      };
+      const progress = campaign.targetAmount ? (collected / campaign.targetAmount) * 100 : 0;
+      return { ...campaign, collected, progress };
     });
   }, [campaigns, donations]);
 
+  const tickerItems = useMemo(() => {
+    return campaignData
+      .filter(c => c.status === 'Active')
+      .map(c => ({ id: c.id, text: c.name, href: `/campaign-members/${c.id}/summary` }));
+  }, [campaignData]);
+
   const availableYears = useMemo(() => {
-    if (!campaignData) return [new Date().getFullYear().toString()];
     const years = new Set<string>();
-    campaignData.forEach(c => {
-        if (c.startDate) {
-            try {
-                const y = c.startDate.split('-')[0];
-                if (y) years.add(y);
-            } catch (e) {}
-        }
-    });
-    if (years.size === 0) years.add(new Date().getFullYear().toString());
+    campaignData.forEach(c => c.startDate && years.add(c.startDate.split('-')[0]));
     return Array.from(years).sort((a, b) => b.localeCompare(a));
   }, [campaignData]);
   
@@ -295,388 +268,128 @@ export default function CampaignPage() {
   const canDelete = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.delete', false);
   const canViewCampaigns = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false);
 
-
-  const handleDeleteClick = (campaign: Campaign) => {
-    if (!canDelete) return;
-    setCampaignToDelete(campaign);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleCopyClick = (campaign: Campaign) => {
-    if (!canCreate) return;
-    setCampaignToCopy(campaign);
-    setIsCopyDialogOpen(true);
-  };
-
-  const handleCopyConfirm = async (options: { newName: string; copyBeneficiaries: boolean; copyDonations: boolean; copyRationLists: boolean; }) => {
-    if (!campaignToCopy || !canCreate) return;
-
-    setIsCopyDialogOpen(false);
-    
-    const result = await copyCampaignAction({
-        sourceCampaignId: campaignToCopy.id,
-        ...options
-    });
-
-    if (result.success) {
-        toast({ title: 'Campaign Copied', description: result.message, variant: 'success' });
-    } else {
-        toast({ title: 'Copy Failed', description: result.message, variant: 'destructive' });
-    }
-
-    setCampaignToCopy(null);
-  };
-
   const handleDeleteConfirm = async () => {
-    if (!campaignToDelete || !canDelete) {
-        toast({ title: 'Error', description: 'Could not delete campaign.', variant: 'destructive'});
-        return;
-    };
-
+    if (!campaignToDelete || !canDelete) return;
     setIsDeleteDialogOpen(false);
     setIsDeleting(true);
-
     const result = await deleteCampaignAction(campaignToDelete.id);
-
-    if (result.success) {
-        toast({ title: 'Campaign Deleted', description: result.message, variant: 'success' });
-    } else {
-        toast({ title: 'Deletion Failed', description: result.message, variant: 'destructive' });
-    }
-    
+    toast({ title: result.success ? 'Campaign Deleted' : 'Deletion Failed', description: result.message, variant: result.success ? 'success' : 'destructive' });
     setIsDeleting(false);
     setCampaignToDelete(null);
   };
   
-  const handleStatusUpdate = async (campaignToUpdate: Campaign, field: 'status' | 'authenticityStatus' | 'publicVisibility', value: string) => {
-    if (!firestore || !canUpdate) {
-        toast({ title: 'Permission Denied', description: 'You do not have permission to update campaigns.', variant: 'destructive'});
-        return;
-    };
-
+  const handleStatusUpdate = async (campaignToUpdate: Campaign, field: string, value: string) => {
+    if (!firestore || !canUpdate) return;
     const docRef = doc(firestore, 'campaigns', campaignToUpdate.id);
-    const updatedData = { [field]: value };
-
-    updateDoc(docRef, updatedData)
-        .then(() => {
-            toast({ title: 'Success', description: `Campaign '${campaignToUpdate.name}' has been updated.`, variant: 'success' });
-        })
-        .catch(async (serverError: any) => {
-            const permissionError = new FirestorePermissionError({
-                path: docRef.path,
-                operation: 'update',
-                requestResourceData: updatedData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        });
+    updateDoc(docRef, { [field]: value })
+        .then(() => toast({ title: 'Success', description: `Campaign updated.`, variant: 'success' }))
+        .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: { [field]: value } })));
   };
   
-  const filteredAndSortedCampaigns = useMemo(() => {
-    if (!campaignData) return [];
-    let sortableItems = [...campaignData];
-    
-    if (statusFilter !== 'All') {
-        sortableItems = sortableItems.filter(c => c.status === statusFilter);
-    }
-    if (categoryFilter !== 'All') {
-        sortableItems = sortableItems.filter(c => c.category === categoryFilter);
-    }
-    if (authenticityFilter !== 'All') {
-        sortableItems = sortableItems.filter(c => (c.authenticityStatus || 'Pending Verification') === authenticityFilter);
-    }
-    if (visibilityFilter !== 'All') {
-        sortableItems = sortableItems.filter(c => (c.publicVisibility || 'Hold') === visibilityFilter);
-    }
-    if (searchTerm) {
-        const lowercasedTerm = searchTerm.toLowerCase();
-        sortableItems = sortableItems.filter(c => 
-            c.name.toLowerCase().includes(lowercasedTerm)
-        );
-    }
+  const filteredCampaigns = useMemo(() => {
+    let items = campaignData.filter(c => 
+        (statusFilter === 'All' || c.status === statusFilter) &&
+        (categoryFilter === 'All' || c.category === categoryFilter) &&
+        (authenticityFilter === 'All' || c.authenticityStatus === authenticityFilter) &&
+        (visibilityFilter === 'All' || c.publicVisibility === visibilityFilter) &&
+        c.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-    // Date Filtering
     if (dateRange?.from) {
         const from = startOfDay(dateRange.from);
         const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
-        sortableItems = sortableItems.filter(c => {
-            if (!c.startDate) return false;
-            try {
-                const itemDate = parseISO(c.startDate);
-                return itemDate >= from && itemDate <= to;
-            } catch (e) { return false; }
+        items = items.filter(c => {
+            const d = parseISO(c.startDate);
+            return d >= from && d <= to;
         });
-    } else {
-        if (selectedYear !== 'All') {
-            sortableItems = sortableItems.filter(c => c.startDate?.startsWith(selectedYear));
-            if (selectedMonth !== 'All') {
-                sortableItems = sortableItems.filter(c => c.startDate?.split('-')[1] === selectedMonth);
-            }
-        }
+    } else if (selectedYear !== 'All') {
+        items = items.filter(c => c.startDate?.startsWith(selectedYear));
+        if (selectedMonth !== 'All') items = items.filter(c => c.startDate?.split('-')[1] === selectedMonth);
     }
-    
-    return sortableItems;
+    return items;
   }, [campaignData, searchTerm, statusFilter, categoryFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear, selectedMonth]);
 
-  const activeCampaigns = useMemo(() => filteredAndSortedCampaigns.filter(c => c.status === 'Active').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedCampaigns]);
-  const upcomingCampaigns = useMemo(() => filteredAndSortedCampaigns.filter(c => c.status === 'Upcoming').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedCampaigns]);
-  const completedCampaigns = useMemo(() => filteredAndSortedCampaigns.filter(c => c.status === 'Completed').sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()), [filteredAndSortedCampaigns]);
-  
+  const sections = [
+    { id: 'active', title: 'Active Campaigns', items: filteredCampaigns.filter(c => c.status === 'Active') },
+    { id: 'upcoming', title: 'Upcoming Campaigns', items: filteredCampaigns.filter(c => c.status === 'Upcoming') },
+    { id: 'completed', title: 'Completed Campaigns', items: filteredCampaigns.filter(c => c.status === 'Completed') }
+  ].filter(s => s.items.length > 0);
 
   const isLoading = areCampaignsLoading || isProfileLoading || isDeleting || areDonationsLoading;
   
   if (!isLoading && userProfile && !canViewCampaigns) {
-    return (
-        <main className="container mx-auto p-4 md:p-8">
-            <div className="mb-4">
-                <Button variant="outline" asChild>
-                    <Link href="/">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Home
-                    </Link>
-                </Button>
-            </div>
-            <Alert variant="destructive">
-                <ShieldAlert className="h-4 w-4" />
-                <AlertTitle>Access Denied</AlertTitle>
-                <AlertDescription>
-                You do not have the required permissions to view campaigns.
-                </AlertDescription>
-            </Alert>
-        </main>
-    )
+    return <main className="container mx-auto p-4 md:p-8"><Alert variant="destructive"><ShieldAlert className="h-4 w-4" /><AlertTitle>Access Denied</AlertTitle><AlertDescription>Missing permissions.</AlertDescription></Alert></main>;
   }
 
   return (
     <>
-      <main className="container mx-auto p-2 sm:p-4">
-        <div className="mb-4">
-          <Button variant="outline" asChild>
-            <Link href="/dashboard">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
-            </Link>
-          </Button>
+      <main className="container mx-auto p-4 sm:p-6 space-y-6">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <Button variant="outline" asChild size="sm"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
+          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold"><Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New Campaign</Link></Button>}
         </div>
-        <Card className="animate-fade-in-zoom">
-          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-             <div className="flex-1 space-y-2">
-                <CardTitle>Campaigns ({filteredAndSortedCampaigns.length})</CardTitle>
-                 <div className="flex flex-wrap items-center gap-2">
-                    <Input 
-                        placeholder="Search by name..."
-                        value={searchTerm}
-                        onChange={(e) => { setSearchTerm(e.target.value); }}
-                        className="max-w-xs"
-                        disabled={isLoading}
-                    />
-                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); }} disabled={isLoading}>
-                        <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
-                            <SelectValue placeholder="Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="All">All Statuses</SelectItem>
-                            <SelectItem value="Active">Active</SelectItem>
-                            <SelectItem value="Upcoming">Upcoming</SelectItem>
-                            <SelectItem value="Completed">Completed</SelectItem>
-                        </SelectContent>
-                    </Select>
-                     <Select value={categoryFilter} onValueChange={(value) => { setCategoryFilter(value); }} disabled={isLoading}>
-                        <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
-                            <SelectValue placeholder="Category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="All">All Categories</SelectItem>
-                            <SelectItem value="Ration">Ration</SelectItem>
-                            <SelectItem value="Relief">Relief</SelectItem>
-                            <SelectItem value="General">General</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Select value={authenticityFilter} onValueChange={(value) => { setAuthenticityFilter(value); }} disabled={isLoading}>
-                        <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
-                            <SelectValue placeholder="Authenticity" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="All">All Authenticity</SelectItem>
-                            <SelectItem value="Pending Verification">Pending</SelectItem>
-                            <SelectItem value="Verified">Verified</SelectItem>
-                            <SelectItem value="On Hold">On Hold</SelectItem>
-                            <SelectItem value="Rejected">Rejected</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Select value={visibilityFilter} onValueChange={(value) => { setVisibilityFilter(value); }} disabled={isLoading}>
-                        <SelectTrigger className="w-auto text-xs sm:text-sm md:w-[150px]">
-                            <SelectValue placeholder="Visibility" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="All">All Visibilities</SelectItem>
-                            <SelectItem value="Hold">Hold</SelectItem>
-                            <SelectItem value="Ready to Publish">Ready</SelectItem>
-                            <SelectItem value="Published">Published</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    
-                    {/* Date Filters */}
-                    <div className="flex items-center gap-2 border-l pl-2 ml-2">
-                        <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}>
-                            <SelectTrigger className="w-[100px] text-xs sm:text-sm"><SelectValue placeholder="Year" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="All">All Years</SelectItem>
-                                {availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                        <Select value={selectedMonth} onValueChange={(val) => { setSelectedMonth(val); setDateRange(undefined); }} disabled={isLoading || selectedYear === 'All'}>
-                            <SelectTrigger className="w-[120px] text-xs sm:text-sm"><SelectValue placeholder="Month" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="All">All Months</SelectItem>
-                                {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((m, i) => (
-                                    <SelectItem key={m} value={(i + 1).toString().padStart(2, '0')}>{m}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant="outline" size="sm" className={cn("justify-start text-left font-normal h-10 px-3", !dateRange && "text-muted-foreground")} disabled={isLoading}>
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    <span className="hidden sm:inline">
-                                        {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd")) : "Custom Range"}
-                                    </span>
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar initialFocus mode="range" defaultMonth={dateRange?.from} selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); setSelectedMonth('All'); } }} numberOfMonths={2} />
-                            </PopoverContent>
-                        </Popover>
-                        {(selectedYear !== 'All' || dateRange) && (
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedYear('All'); setSelectedMonth('All'); setDateRange(undefined); }}>
-                                <X className="h-4 w-4" />
-                            </Button>
-                        )}
-                    </div>
+
+        <div className="space-y-2">
+          <h1 className="text-3xl font-black tracking-tighter">CAMPAIGN HUB</h1>
+          <p className="text-muted-foreground text-sm max-w-2xl">Manage and monitor all community support initiatives from this centralized command center.</p>
+        </div>
+
+        <NewsTicker items={tickerItems} />
+
+        <Card className="animate-fade-in-zoom shadow-md border-primary/5">
+          <CardHeader className="p-4 sm:p-6 border-b bg-muted/5">
+            <div className="flex flex-wrap items-center gap-3">
+                <Input placeholder="Search campaigns..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs" disabled={isLoading}/>
+                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem><SelectItem value="Completed">Completed</SelectItem></SelectContent></Select>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All Categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
+                <div className="flex items-center gap-2 border-l pl-3 ml-1">
+                    <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+                    <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal", !dateRange && "text-muted-foreground")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); setSelectedMonth('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                    {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedYear('All'); setSelectedMonth('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
                 </div>
             </div>
-            {isLoading && <Skeleton className="h-10 w-44" />}
-            {!isLoading && canCreate && (
-              <Button asChild className="transition-transform active:scale-95">
-                <Link href="/campaign-members/create">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Campaign
-                </Link>
-              </Button>
-            )}
           </CardHeader>
-          <CardContent className="space-y-8">
+          <CardContent className="p-4 sm:p-6">
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-lg" />)}
               </div>
+            ) : sections.length > 0 ? (
+              <Accordion type="multiple" defaultValue={['active']} className="space-y-4">
+                {sections.map(section => (
+                  <AccordionItem key={section.id} value={section.id} className="border rounded-lg px-4 bg-card/50">
+                    <AccordionTrigger className="hover:no-underline py-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-black tracking-tight uppercase">{section.title}</span>
+                        <Badge variant="secondary" className="rounded-full px-2 py-0 h-5 text-[10px]">{section.items.length}</Badge>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {section.items.map((campaign, idx) => (
+                          <CampaignCard key={campaign.id} campaign={campaign} index={idx} router={router} canUpdate={canUpdate} canCreate={canCreate} canDelete={canDelete} handleStatusUpdate={handleStatusUpdate} handleCopyClick={setCampaignToCopy} handleDeleteClick={setCampaignToDelete}/>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             ) : (
-              <>
-                {(statusFilter === 'All' || statusFilter === 'Active') && activeCampaigns.length > 0 && (
-                    <section>
-                        <h2 className="text-2xl font-bold mb-4">Active Campaigns ({activeCampaigns.length})</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {activeCampaigns.map((campaign, index) => (
-                            <CampaignCard 
-                                key={campaign.id} 
-                                campaign={campaign} 
-                                index={index} 
-                                router={router}
-                                canUpdate={canUpdate}
-                                canCreate={canCreate}
-                                canDelete={canDelete}
-                                handleStatusUpdate={handleStatusUpdate}
-                                handleCopyClick={handleCopyClick}
-                                handleDeleteClick={handleDeleteClick}
-                            />
-                          ))}
-                        </div>
-                    </section>
-                )}
-                {(statusFilter === 'All' || statusFilter === 'Upcoming') && upcomingCampaigns.length > 0 && (
-                    <section>
-                        <h2 className="text-2xl font-bold mb-4">Upcoming Campaigns ({upcomingCampaigns.length})</h2>
-                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {upcomingCampaigns.map((campaign, index) => (
-                            <CampaignCard 
-                                key={campaign.id} 
-                                campaign={campaign} 
-                                index={index} 
-                                router={router}
-                                canUpdate={canUpdate}
-                                canCreate={canCreate}
-                                canDelete={canDelete}
-                                handleStatusUpdate={handleStatusUpdate}
-                                handleCopyClick={handleCopyClick}
-                                handleDeleteClick={handleDeleteClick}
-                            />
-                          ))}
-                        </div>
-                    </section>
-                )}
-                {(statusFilter === 'All' || statusFilter === 'Completed') && completedCampaigns.length > 0 && (
-                    <section>
-                        <h2 className="text-2xl font-bold mb-4">Completed Campaigns ({completedCampaigns.length})</h2>
-                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {completedCampaigns.map((campaign, index) => (
-                            <CampaignCard 
-                                key={campaign.id} 
-                                campaign={campaign} 
-                                index={index} 
-                                router={router}
-                                canUpdate={canUpdate}
-                                canCreate={canCreate}
-                                canDelete={canDelete}
-                                handleStatusUpdate={handleStatusUpdate}
-                                handleCopyClick={handleCopyClick}
-                                handleDeleteClick={handleDeleteClick}
-                            />
-                          ))}
-                        </div>
-                    </section>
-                )}
-                {filteredAndSortedCampaigns.length === 0 && (
-                  <div className="text-center py-16">
-                      <p className="text-muted-foreground">No campaigns found matching your criteria.</p>
-                      {canCreate && campaigns?.length === 0 && (
-                          <p className="text-sm text-muted-foreground mt-2">
-                              <Link href="/campaign-members/create" className="text-primary underline">
-                                  Create one now
-                              </Link>
-                          </p>
-                      )}
-                  </div>
-                )}
-              </>
+              <div className="text-center py-20 bg-muted/10 rounded-xl border-2 border-dashed">
+                  <HandHelping className="h-12 w-12 mx-auto text-muted-foreground/20 mb-4" />
+                  <p className="text-muted-foreground font-medium">No campaigns match your filters.</p>
+                  <Button variant="link" onClick={() => { setSearchTerm(''); setStatusFilter('All'); setCategoryFilter('All'); setDateRange(undefined); setSelectedYear('All'); }}>Clear all filters</Button>
+              </div>
             )}
           </CardContent>
         </Card>
       </main>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent className="animate-fade-in-zoom">
-            <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the campaign '{campaignToDelete?.name}' and all of its associated data, including beneficiaries, donations, and uploaded files.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction 
-                    onClick={handleDeleteConfirm} 
-                    className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                        Delete
-                </AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Campaign?</AlertDialogTitle><AlertDialogDescription>This will permanently erase all data for '{campaignToDelete?.name}'.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white hover:bg-destructive/90">Delete Permanently</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
-        <CopyCampaignDialog
-            open={isCopyDialogOpen}
-            onOpenChange={setIsCopyDialogOpen}
-            campaign={campaignToCopy}
-            onCopyConfirm={handleCopyConfirm}
-        />
+      <CopyCampaignDialog open={!!campaignToCopy} onOpenChange={() => setCampaignToCopy(null)} campaign={campaignToCopy} onCopyConfirm={async (opt) => { const res = await copyCampaignAction({ sourceCampaignId: campaignToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setCampaignToCopy(null); }}/>
     </>
   );
 }
