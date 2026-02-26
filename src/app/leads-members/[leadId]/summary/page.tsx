@@ -16,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Loader2, Users, Edit, Save, Share2, Hourglass, Download, Gift, UploadCloud, Trash2, Target, File, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 import { useToast } from '@/hooks/use-toast';
@@ -28,7 +28,7 @@ import { ShareDialog } from '@/components/share-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters } from '@/lib/modules';
 import { Badge } from '@/components/ui/badge';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
@@ -38,8 +38,6 @@ import { BrandedLoader } from '@/components/branded-loader';
 import {
   BarChart,
   Bar,
-  PieChart,
-  Pie,
   Cell,
   XAxis,
   YAxis,
@@ -956,7 +954,7 @@ export default function LeadSummaryPage() {
 
             <ShareDialog 
                 open={isShareDialogOpen} 
-                onOpenChange={setIsShareDialogOpen} 
+                onOpenChange={(open) => setIsShareDialogOpen(open)} 
                 shareData={shareDialogData} 
             />
         </main>

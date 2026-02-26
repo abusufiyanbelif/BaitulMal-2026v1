@@ -1,10 +1,11 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc, updateDoc, doc, serverTimestamp, setDoc, deleteField, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, setDoc, deleteField, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import type { Donation, Campaign, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -131,6 +132,13 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                 </Button>
                             ))}
                         </div>
+                    ) : (donation as any).campaignId ? (
+                        <Button variant="link" className="p-0 h-auto justify-start" asChild onClick={(e) => e.stopPropagation()}>
+                            <Link href={`/campaign-members/${(donation as any).campaignId}/donations`} className="flex items-center gap-1 text-xs">
+                                <FolderKanban className="h-3 w-3 shrink-0" />
+                                <span className="truncate">{(donation as any).campaignName || 'Legacy Campaign'}</span>
+                            </Link>
+                        </Button>
                     ) : "Unlinked"}
                 </TableCell>
                 <TableCell className="text-right pr-4">

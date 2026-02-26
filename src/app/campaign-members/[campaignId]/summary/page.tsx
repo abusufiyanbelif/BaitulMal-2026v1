@@ -8,7 +8,7 @@ import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { updateDoc, DocumentReference } from 'firebase/firestore';
-import type { Campaign, Beneficiary, Donation, DonationCategory, CampaignDocument, ItemCategory } from '@/lib/types';
+import type { Campaign, Beneficiary, Donation, DonationCategory, CampaignDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Target, Users, Gift, Edit, Save, Share2, Hourglass, Download, UploadCloud, Trash2, CheckCircle2, XCircle, File, ShieldAlert } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 import { useToast } from '@/hooks/use-toast';
@@ -28,7 +28,7 @@ import { ShareDialog } from '@/components/share-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { donationCategories } from '@/lib/modules';
 import { Badge } from '@/components/ui/badge';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
@@ -38,8 +38,6 @@ import { BrandedLoader } from '@/components/branded-loader';
 import {
   BarChart,
   Bar,
-  PieChart,
-  Pie,
   Cell,
   XAxis,
   YAxis,
@@ -361,6 +359,16 @@ export default function CampaignSummaryPage() {
     const givenLabel = `${itemName} Provided`;
     const pendingLabel = `Pending ${itemName}`;
 
+    const handleDownload = (format: 'png' | 'pdf') => {
+        download(format, {
+            contentRef: summaryRef,
+            documentTitle: `Campaign Summary: ${campaign?.name || 'Summary'}`,
+            documentName: `campaign-summary-${campaignId}`,
+            brandingSettings,
+            paymentSettings
+        });
+    };
+
     return (
         <main className="container mx-auto p-4 md:p-8">
              <div className="mb-4"><Button variant="outline" asChild><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
@@ -631,7 +639,7 @@ export default function CampaignSummaryPage() {
             </div>
             <ShareDialog 
                 open={isShareDialogOpen} 
-                onOpenChange={setShareDialogData} 
+                onOpenChange={(open) => setIsShareDialogOpen(open)} 
                 shareData={{
                     title: `Campaign Summary: ${campaign.name}`,
                     text: `Check out the latest progress for the ${campaign.name} campaign.`,

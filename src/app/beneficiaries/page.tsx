@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -45,7 +46,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { getNestedValue } from '@/lib/utils';
-import { BeneficiaryImportDialog, type ProcessedRecord } from '@/components/beneficiary-import-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -82,7 +82,7 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
     const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
         <div>
             <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">{label}</p>
-            <p className="text-sm font-medium pt-1">{value || 'N/A'}</p>
+            <div className="text-sm font-medium pt-1">{value || 'N/A'}</div>
         </div>
     );
     
@@ -168,7 +168,7 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
                             <DetailItem label="Family" value={`Total: ${beneficiary.members}, Earning: ${beneficiary.earningMembers}, M: ${beneficiary.male}, F: ${beneficiary.female}`} />
                             <DetailItem label="ID Proof" value={`${beneficiary.idProofType || 'N/A'} - ${beneficiary.idNumber || 'N/A'}`} />
                             <DetailItem label="Date Added" value={beneficiary.addedDate} />
-                            {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-3"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
+                            {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-3"><DetailItem label="Notes" value={<div className="whitespace-pre-wrap">{beneficiary.notes}</div>} /></div>}
                         </div>
                     </TableCell>
                 </TableRow>
@@ -195,11 +195,6 @@ export default function BeneficiariesPage() {
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
   const [isSyncing, setIsSyncing] = useState(false);
   
-  const [isImportOpen, setIsImportOpen] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [importData, setImportData] = useState<ProcessedRecord[]>([]);
-
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
