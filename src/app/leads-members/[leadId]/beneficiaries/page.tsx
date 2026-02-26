@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -146,7 +147,7 @@ export default function BeneficiariesPage() {
     if (!firestore || !leadId || !canUpdate) return;
     const ref = doc(firestore, 'leads', leadId, 'beneficiaries', beneficiary.id);
     setDoc(ref, { status: newStatus }, { merge: true })
-      .catch(async (err) => {
+      .catch(async (err: any) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { status: newStatus } }));
       });
   };

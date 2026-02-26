@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -167,7 +168,7 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
                             <DetailItem label="Family" value={`Total: ${beneficiary.members}, Earning: ${beneficiary.earningMembers}, M: ${beneficiary.male}, F: ${beneficiary.female}`} />
                             <DetailItem label="ID Proof" value={`${beneficiary.idProofType || 'N/A'} - ${beneficiary.idNumber || 'N/A'}`} />
                             <DetailItem label="Date Added" value={beneficiary.addedDate} />
-                            {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-3"><DetailItem label="Notes" value={<div className="whitespace-pre-wrap">{beneficiary.notes}</div>} /></div>}
+                            {beneficiary.notes && <div className="sm:col-span-2 lg:grid-cols-3"><DetailItem label="Notes" value={<div className="whitespace-pre-wrap">{beneficiary.notes}</div>} /></div>}
                         </div>
                     </TableCell>
                 </TableRow>

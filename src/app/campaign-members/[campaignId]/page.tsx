@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
@@ -1148,12 +1149,12 @@ export default function CampaignDetailsPage() {
                             </SelectTrigger>
                             <SelectContent>
                                 {sanitizedEditableItemCategories.filter(cat => cat.id !== copyTargetCategory?.id).map(cat => {
-                                    const categoryNameDisplaySelect = cat.name === 'Item Price List'
+                                    const currentCatName = cat.name === 'Item Price List'
                                     ? 'Item Price List'
                                     : (editableCampaign?.category === 'Ration' && cat.minMembers !== undefined && cat.maxMembers !== undefined)
                                         ? `${cat.name} (${cat.minMembers}-${cat.maxMembers})`
                                         : cat.name;
-                                    return <SelectItem key={cat.id} value={cat.id}>{categoryNameDisplaySelect}</SelectItem>
+                                    return <SelectItem key={cat.id} value={cat.id}>{currentCatName}</SelectItem>
                                 })}
                             </SelectContent>
                         </Select>
