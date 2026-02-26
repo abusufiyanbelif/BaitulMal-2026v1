@@ -207,7 +207,7 @@ const BeneficiaryRow: React.FC<BeneficiaryRowProps> = ({ beneficiary, index, can
                              {beneficiary.isEligibleForZakat && (
                                 <DetailItem label="Zakat Allocation" value={`₹${(beneficiary.zakatAllocation || 0).toFixed(2)}`} />
                              )}
-                            {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-3"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
+                            {beneficiary.notes && <div className="sm:col-span-2 lg:grid-cols-3"><DetailItem label="Notes" value={<p className="whitespace-pre-wrap">{beneficiary.notes}</p>} /></div>}
                         </div>
                     </TableCell>
                 </TableRow>
@@ -250,12 +250,7 @@ export default function BeneficiariesPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<string | null>(null);
   
-  const [isImportOpen, setIsImportOpen] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [importData, setImportData] = useState<ProcessedRecord[]>([]);
-
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -265,18 +260,6 @@ export default function BeneficiariesPage() {
   const [openReferralPopover, setOpenReferralPopover] = useState(false);
   const [zakatFilter, setZakatFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
-  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
-  const [collapsedSubGroups, setCollapsedSubGroups] = useState<Record<string, boolean>>({});
-  
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  const toggleGroup = (groupKey: string) => {
-    setCollapsedGroups(prev => ({ ...prev, [groupKey]: !prev[groupKey] }));
-  };
-
-  const toggleSubGroup = (subGroupKey: string) => {
-    setCollapsedSubGroups(prev => ({ ...prev, [subGroupKey]: !prev[subGroupKey] }));
-  };
   
   const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
   const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
@@ -313,6 +296,27 @@ export default function BeneficiariesPage() {
 
   const areAllReferralsSelected = useMemo(() => uniqueReferrals.length > 0 && tempReferralFilter.length === uniqueReferrals.length, [tempReferralFilter, uniqueReferrals]);
   
+  const handleSort = (key: SortKey) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+        direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const handleView = (b: Beneficiary) => {
+    router.push(`/beneficiaries/${b.id}?redirect=${pathname}`);
+  };
+
+  const handleEdit = (b: Beneficiary) => {
+    router.push(`/beneficiaries/${b.id}?redirect=${pathname}`);
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setBeneficiaryToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
   const filteredAndSortedBeneficiaries = useMemo(() => {
     if (!beneficiaries) return [];
     let sortableItems = [...beneficiaries];
@@ -353,17 +357,6 @@ export default function BeneficiariesPage() {
     return sortableItems;
   }, [beneficiaries, searchTerm, statusFilter, zakatFilter, referralFilter, sortConfig]);
 
-  const statusCounts = useMemo(() => {
-    const counts = { Total: 0, Given: 0, Verified: 0, Pending: 0, Hold: 0, 'Need More Details': 0 };
-    if (!filteredAndSortedBeneficiaries) return counts;
-    counts.Total = filteredAndSortedBeneficiaries.length;
-    for (const b of filteredAndSortedBeneficiaries) {
-        const status = b.status || 'Pending';
-        if (counts.hasOwnProperty(status)) counts[status as keyof typeof counts]++;
-    }
-    return counts;
-  }, [filteredAndSortedBeneficiaries]);
-
   const groupedBeneficiaries = useMemo(() => {
     if (!filteredAndSortedBeneficiaries || !sanitizedItemCategories || sanitizedItemCategories.length === 0) return {};
     return filteredAndSortedBeneficiaries.reduce((acc, beneficiary) => {
@@ -396,7 +389,7 @@ const sortedGroupKeys = useMemo(() => {
 
   const handleStatusChange = (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => {
     if (!firestore || !campaignId || !canUpdate) return;
-    const beneficiaryDocRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
+    const beneficiaryDocRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiary.id);
     setDoc(beneficiaryDocRef, { status: newStatus }, { merge: true })
       .catch(async (serverError: any) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({ path: beneficiaryDocRef.path, operation: 'update', requestResourceData: { status: newStatus } }));
@@ -406,7 +399,7 @@ const sortedGroupKeys = useMemo(() => {
   const handleZakatToggle = (beneficiary: Beneficiary) => {
     if (!canUpdate || !userProfile || !firestore || !campaignId) return;
     const newZakatStatus = !beneficiary.isEligibleForZakat;
-    const beneficiaryRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
+    const beneficiaryRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiary.id);
     const updateData: Partial<Beneficiary> = { isEligibleForZakat: newZakatStatus, ...( !newZakatStatus && { zakatAllocation: 0 }) };
     setDoc(beneficiaryRef, updateData, { merge: true })
       .catch(async (serverError: any) => {
@@ -497,7 +490,7 @@ const sortedGroupKeys = useMemo(() => {
             <div className="flex flex-col gap-2 pt-4">
               <div className="flex flex-wrap items-center gap-2">
                   <Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm" />
-                  <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-auto md:w-[180px]"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Pending">Pending</SelectItem></SelectContent></Select>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-auto md:w-[180px]"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Pending">Pending</SelectItem></SelectContent></Select>
               </div>
             </div>
           </CardHeader>
@@ -516,12 +509,29 @@ const sortedGroupKeys = useMemo(() => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {sortedGroupKeys.map((categoryId) => {
+                        {sortedGroupKeys.length > 0 ? sortedGroupKeys.map((categoryId) => {
                             const group = groupedBeneficiaries[categoryId];
                             return Object.values(group.beneficiariesByMemberCount).flat().map((beneficiary, index) => (
-                                <BeneficiaryRow key={beneficiary.id} beneficiary={beneficiary} index={index + 1} canUpdate={canUpdate} canDelete={canDelete} onView={router.push as any} onEdit={router.push as any} onDelete={setIsDeleteDialogOpen as any} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} />
+                                <BeneficiaryRow 
+                                    key={beneficiary.id} 
+                                    beneficiary={beneficiary} 
+                                    index={index + 1} 
+                                    canUpdate={canUpdate} 
+                                    canDelete={canDelete} 
+                                    onView={handleView} 
+                                    onEdit={handleEdit} 
+                                    onDelete={handleDeleteClick} 
+                                    onStatusChange={handleStatusChange} 
+                                    onZakatToggle={handleZakatToggle} 
+                                />
                             ))
-                        })}
+                        }) : (
+                            <TableRow>
+                                <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                                    No beneficiaries found.
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </div>

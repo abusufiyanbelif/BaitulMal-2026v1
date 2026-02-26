@@ -135,6 +135,8 @@ export default function BeneficiariesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
+  const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.create', false);
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.update', false);
@@ -147,6 +149,27 @@ export default function BeneficiariesPage() {
       .catch(async (err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { status: newStatus } }));
       });
+  };
+
+  const handleSort = (key: SortKey) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+        direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const handleView = (b: Beneficiary) => {
+    router.push(`/beneficiaries/${b.id}?redirect=${pathname}`);
+  };
+
+  const handleEdit = (b: Beneficiary) => {
+    router.push(`/beneficiaries/${b.id}?redirect=${pathname}`);
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setBeneficiaryToDelete(id);
+    setIsDeleteDialogOpen(true);
   };
 
   const filteredAndSortedBeneficiaries = useMemo(() => {
@@ -170,8 +193,28 @@ export default function BeneficiariesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Beneficiaries ({filteredAndSortedBeneficiaries.length})</CardTitle><div className="flex gap-2">{canCreate && <Button onClick={() => setIsFormOpen(true)}><PlusCircle className="mr-2 h-4 w-4" /> Add New</Button>}</div></CardHeader>
           <CardContent><div className="flex gap-2 mb-4"><Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /><Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Pending">Pending</SelectItem></SelectContent></Select></div>
-            <Table><TableHeader><TableRow><TableHead>#</TableHead><TableHead>Name</TableHead><TableHead>Status</TableHead><TableHead>Zakat</TableHead><TableHead className="text-right">Amount</TableHead><TableHead>Referral</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
-            <TableBody>{filteredAndSortedBeneficiaries.map((b, i) => <BeneficiaryRow key={b.id} beneficiary={b} index={i+1} canUpdate={canUpdate} canDelete={canDelete} onView={router.push as any} onEdit={router.push as any} onDelete={console.log as any} onStatusChange={handleStatusChange} onZakatToggle={console.log as any} />)}</TableBody></Table>
+            <Table><TableHeader><TableRow>
+                <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
+                <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>
+                <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
+                <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort}>Zakat</SortableHeader>
+                <TableHead className="text-right">Amount</TableHead>
+                <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort}>Referral</SortableHeader>
+                <TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+            <TableBody>{filteredAndSortedBeneficiaries.map((b, i) => (
+                <BeneficiaryRow 
+                    key={b.id} 
+                    beneficiary={b} 
+                    index={i+1} 
+                    canUpdate={canUpdate} 
+                    canDelete={canDelete} 
+                    onView={handleView} 
+                    onEdit={handleEdit} 
+                    onDelete={handleDeleteClick} 
+                    onStatusChange={handleStatusChange} 
+                    onZakatToggle={() => {}} 
+                />
+            ))}</TableBody></Table>
           </CardContent>
         </Card>
     </main>
