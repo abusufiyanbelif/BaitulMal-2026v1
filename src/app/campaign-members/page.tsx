@@ -1,12 +1,13 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X } from 'lucide-react';
-import { useCollection, useFirestore, useMemoFirebase, collection, query, where, doc, updateDoc } from '@/firebase';
+import { useFirestore, doc, updateDoc } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import type { Campaign, Donation, DonationCategory } from '@/lib/types';
+import type { Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
 import { Input } from '@/components/ui/input';
@@ -45,7 +46,7 @@ import Image from 'next/image';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
+import { parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from '@/components/news-ticker';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -234,6 +235,13 @@ export default function CampaignPage() {
     return [...completedCampaigns, ...completedLeads];
   }, [campaignsWithProgress, leadsWithProgress]);
 
+  const memberDonationTickerItems = useMemo(() => {
+    return recentDonationsFormatted.map(item => ({
+        ...item,
+        href: item.href.replace('-public/', '-members/')
+    }));
+  }, [recentDonationsFormatted]);
+
   const availableYears = useMemo(() => {
     const years = new Set<string>();
     campaignsWithProgress.forEach(c => c.startDate && years.add(c.startDate.split('-')[0]));
@@ -255,7 +263,7 @@ export default function CampaignPage() {
     setCampaignToDelete(null);
   };
   
-  const handleStatusUpdate = async (campaignToUpdate: Campaign, field: string, value: string) => {
+  const handleStatusUpdate = async (campaignToUpdate: Campaign, field: 'status' | 'authenticityStatus' | 'publicVisibility', value: string) => {
     if (!firestore || !canUpdate) return;
     const docRef = doc(firestore, 'campaigns', campaignToUpdate.id);
     const updateData = { [field]: value };
@@ -314,7 +322,7 @@ export default function CampaignPage() {
 
         <div className="space-y-2">
           <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
-          <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
+          <NewsTicker items={memberDonationTickerItems} label="Donation Updates" variant="donation" />
           <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
         </div>
 
