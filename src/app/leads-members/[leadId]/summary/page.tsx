@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -865,6 +864,7 @@ export default function LeadSummaryPage() {
                                 <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.canceled.count}</div>
                                 <p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.canceled.amount.toLocaleString('en-IN')}</p>
                             </CardContent>
+                        </Card>
                     </div>
 
                     <Card className="animate-fade-in-up shadow-sm border-primary/5" style={{ animationDelay: '900ms' }}>

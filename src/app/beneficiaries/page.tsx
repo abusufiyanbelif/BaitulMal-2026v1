@@ -1,9 +1,7 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useFirestore, useMemoFirebase, useCollection, collection, doc, updateDoc } from '@/firebase';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { useFirestore, useMemoFirebase, useCollection, collection, doc } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import type { Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -11,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, ArrowUp, ArrowDown, DatabaseZap, Loader2, Eye, CheckCircle2, Hourglass, XCircle, Info, ChevronsUpDown, ChevronDown, ChevronUp, BadgeCheck, X, Check } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, ArrowUp, ArrowDown, DatabaseZap, Loader2, Eye, CheckCircle2, Hourglass, XCircle, Info, ChevronsUpDown, ChevronDown, ChevronUp, BadgeCheck } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,16 +34,10 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterBeneficiaryAction } from './actions';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn, getNestedValue } from '@/lib/utils';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 
 type SortKey = keyof Beneficiary | 'srNo';
 type BeneficiaryStatus = Beneficiary['status'];
@@ -184,9 +176,6 @@ export default function BeneficiariesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [zakatFilter, setZakatFilter] = useState('All');
-  const [referralFilter, setReferralFilter] = useState<string[]>([]);
-  const [tempReferralFilter, setTempReferralFilter] = useState<string[]>([]);
-  const [openReferralPopover, setOpenReferralPopover] = useState(false);
   
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
   const [isSyncing, setIsSyncing] = useState(false);
@@ -208,14 +197,6 @@ export default function BeneficiariesPage() {
   const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.beneficiaries.update', false);
   const canDelete = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.beneficiaries.delete', false);
   const canRead = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.beneficiaries.read', false);
-
-  const uniqueReferrals = useMemo(() => {
-    if (!beneficiaries) return [];
-    const referrals = new Set(beneficiaries.map(b => b.referralBy).filter(Boolean) as string[]);
-    return [...Array.from(referrals).sort()];
-  }, [beneficiaries]);
-
-  const areAllReferralsSelected = useMemo(() => uniqueReferrals.length > 0 && tempReferralFilter.length === uniqueReferrals.length, [tempReferralFilter, uniqueReferrals]);
 
   const handleAdd = () => {
     if (!canCreate) return;
@@ -272,7 +253,7 @@ export default function BeneficiariesPage() {
 
     if (statusFilter !== 'All') sortableItems = sortableItems.filter(b => b.status === statusFilter);
     if (zakatFilter !== 'All') sortableItems = sortableItems.filter(b => !!b.isEligibleForZakat === (zakatFilter === 'Eligible'));
-    if (referralFilter.length > 0) sortableItems = sortableItems.filter(b => b.referralBy && referralFilter.includes(b.referralBy));
+    
     if (searchTerm) {
         const lower = searchTerm.toLowerCase();
         sortableItems = sortableItems.filter(b => (b.name || '').toLowerCase().includes(lower) || (b.phone || '').includes(searchTerm) || (b.address || '').toLowerCase().includes(lower));
@@ -281,15 +262,15 @@ export default function BeneficiariesPage() {
     if (sortConfig) {
         sortableItems.sort((a, b) => {
             if (sortConfig.key === 'srNo') return 0;
-            const aVal = a[sortConfig.key as keyof Beneficiary] ?? '';
-            const bVal = b[sortConfig.key as keyof Beneficiary] ?? '';
+            const aVal = String(a[sortConfig.key as keyof Beneficiary] ?? '').toLowerCase();
+            const bVal = String(b[sortConfig.key as keyof Beneficiary] ?? '').toLowerCase();
             if (aVal < bVal) return sortConfig.direction === 'ascending' ? -1 : 1;
             if (aVal > bVal) return sortConfig.direction === 'ascending' ? 1 : -1;
             return 0;
         });
     }
     return sortableItems;
-  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, referralFilter, sortConfig]);
+  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, sortConfig]);
 
   const totalPages = Math.ceil(filteredAndSortedBeneficiaries.length / itemsPerPage);
   const paginatedBeneficiaries = useMemo(() => {
