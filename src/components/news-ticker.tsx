@@ -17,7 +17,7 @@ interface NewsTickerProps {
 }
 
 export function NewsTicker({ items, label = "Live Updates", variant = "active" }: NewsTickerProps) {
-  if (items.length === 0) return null;
+  if (!items || items.length === 0) return null;
 
   const isCompleted = variant === 'completed';
 
@@ -39,10 +39,10 @@ export function NewsTicker({ items, label = "Live Updates", variant = "active" }
           "text-[10px] sm:text-xs font-black uppercase tracking-tighter whitespace-nowrap",
           isCompleted ? "text-muted-foreground" : "text-primary"
         )}>
-          {label}
+          {label} ({items.length})
         </span>
       </div>
-      <div className="flex whitespace-nowrap animate-marquee pl-[140px]">
+      <div className="flex whitespace-nowrap animate-marquee pl-[160px]">
         {items.map((item) => (
           <div key={item.id} className="mx-8 flex items-center shrink-0">
             <span className={cn(

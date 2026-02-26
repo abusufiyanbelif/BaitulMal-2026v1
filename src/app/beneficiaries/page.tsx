@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -12,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, ShieldAlert, ArrowUp, ArrowDown, DatabaseZap, Loader2, Upload, Download, Eye, CheckCircle2, Hourglass, XCircle, Info, ChevronsUpDown, Check, X, ChevronDown, ChevronUp, BadgeCheck } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, ArrowUp, ArrowDown, DatabaseZap, Loader2, Eye, CheckCircle2, Hourglass, XCircle, Info, ChevronsUpDown, ChevronDown, ChevronUp, BadgeCheck, X, Check } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,11 +41,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterBeneficiaryAction } from './actions';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
-import { getNestedValue } from '@/lib/utils';
+import { cn, getNestedValue } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
 type SortKey = keyof Beneficiary | 'srNo';
@@ -242,34 +240,20 @@ export default function BeneficiariesPage() {
   const handleSyncMasterList = async () => {
     setIsSyncing(true);
     toast({ title: 'Syncing Master List...', description: 'Please wait while we check all campaigns and leads for new beneficiaries.' });
-    
     const result = await syncMasterBeneficiaryListAction();
-    
     if (result.success) {
       toast({ title: 'Sync Complete', description: result.message, variant: 'success' });
     } else {
       toast({ title: 'Sync Failed', description: result.message, variant: 'destructive' });
     }
-
     setIsSyncing(false);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!beneficiaryToDelete || !canDelete) {
-        toast({ title: 'Permission Denied', description: 'You do not have permission to delete beneficiaries.', variant: 'destructive'});
-        return;
-    };
-    
+    if (!beneficiaryToDelete || !canDelete) return;
     setIsDeleteDialogOpen(false);
-
     const result = await deleteBeneficiaryAction(beneficiaryToDelete);
-
-    if (result.success) {
-        toast({ title: 'Beneficiary Deleted', description: result.message, variant: 'success' });
-    } else {
-        toast({ title: 'Deletion Failed', description: result.message, variant: 'destructive' });
-    }
-    
+    toast({ title: result.success ? 'Deleted' : 'Error', description: result.message, variant: result.success ? 'success' : 'destructive' });
     setBeneficiaryToDelete(null);
   };
   
@@ -286,51 +270,24 @@ export default function BeneficiariesPage() {
     if (!beneficiaries) return [];
     let sortableItems = [...beneficiaries];
 
-    // Filtering
-    if (statusFilter !== 'All') {
-        sortableItems = sortableItems.filter(b => b.status === statusFilter);
-    }
-    if (zakatFilter !== 'All') {
-        const isEligible = zakatFilter === 'Eligible';
-        sortableItems = sortableItems.filter(b => !!b.isEligibleForZakat === isEligible);
-    }
-    if (referralFilter.length > 0) {
-        sortableItems = sortableItems.filter(b => b.referralBy && referralFilter.includes(b.referralBy));
-    }
+    if (statusFilter !== 'All') sortableItems = sortableItems.filter(b => b.status === statusFilter);
+    if (zakatFilter !== 'All') sortableItems = sortableItems.filter(b => !!b.isEligibleForZakat === (zakatFilter === 'Eligible'));
+    if (referralFilter.length > 0) sortableItems = sortableItems.filter(b => b.referralBy && referralFilter.includes(b.referralBy));
     if (searchTerm) {
-        const lowercasedTerm = searchTerm.toLowerCase();
-        sortableItems = sortableItems.filter(b => 
-            (b.name || '').toLowerCase().includes(lowercasedTerm) ||
-            (b.phone || '').toLowerCase().includes(lowercasedTerm) ||
-            (b.address || '').toLowerCase().includes(lowercasedTerm)
-        );
+        const lower = searchTerm.toLowerCase();
+        sortableItems = sortableItems.filter(b => (b.name || '').toLowerCase().includes(lower) || (b.phone || '').includes(searchTerm) || (b.address || '').toLowerCase().includes(lower));
     }
 
-    // Sorting
-    if (sortConfig !== null) {
+    if (sortConfig) {
         sortableItems.sort((a, b) => {
             if (sortConfig.key === 'srNo') return 0;
-            const aValue = a[sortConfig.key as keyof Beneficiary] ?? '';
-            const bValue = b[sortConfig.key as keyof Beneficiary] ?? '';
-            
-            if (typeof aValue === 'number' && typeof bValue === 'number') {
-                return sortConfig.direction === 'ascending' ? aValue - bValue : bValue - aValue;
-            }
-             if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
-                 return sortConfig.direction === 'ascending' ? (aValue === bValue ? 0 : aValue ? -1 : 1) : (aValue === bValue ? 0 : aValue ? 1 : -1);
-            }
-            if (typeof aValue === 'string' && typeof bValue === 'string') {
-                 if (aValue < bValue) {
-                    return sortConfig.direction === 'ascending' ? -1 : 1;
-                }
-                if (aValue > bValue) {
-                    return sortConfig.direction === 'ascending' ? 1 : -1;
-                }
-            }
+            const aVal = a[sortConfig.key as keyof Beneficiary] ?? '';
+            const bVal = b[sortConfig.key as keyof Beneficiary] ?? '';
+            if (aVal < bVal) return sortConfig.direction === 'ascending' ? -1 : 1;
+            if (aVal > bVal) return sortConfig.direction === 'ascending' ? 1 : -1;
             return 0;
         });
     }
-
     return sortableItems;
   }, [beneficiaries, searchTerm, statusFilter, zakatFilter, referralFilter, sortConfig]);
 
@@ -340,82 +297,24 @@ export default function BeneficiariesPage() {
     return filteredAndSortedBeneficiaries.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredAndSortedBeneficiaries, currentPage, itemsPerPage]);
 
+  const handleStatusChange = async (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => {
+    if (!canUpdate || !userProfile) return;
+    const result = await updateMasterBeneficiaryAction(beneficiary.id, { status: newStatus }, { id: userProfile.id, name: userProfile.name });
+    toast({ title: result.success ? 'Status Updated' : 'Error', description: result.message, variant: result.success ? 'success' : 'destructive' });
+  };
+  
+  const handleZakatToggle = async (beneficiary: Beneficiary) => {
+    if (!canUpdate || !userProfile) return;
+    const newZakatStatus = !beneficiary.isEligibleForZakat;
+    const result = await updateMasterBeneficiaryAction(beneficiary.id, { isEligibleForZakat: newZakatStatus }, { id: userProfile.id, name: userProfile.name });
+    toast({ title: result.success ? 'Zakat Status Updated' : 'Error', description: result.message, variant: result.success ? 'success' : 'destructive' });
+  };
+
   const isLoading = areBeneficiariesLoading || isProfileLoading;
   
-    const handleStatusChange = async (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => {
-        if (!canUpdate || !userProfile) return;
-        const result = await updateMasterBeneficiaryAction(
-            beneficiary.id,
-            { status: newStatus },
-            { id: userProfile.id, name: userProfile.name }
-        );
-        if (result.success) {
-            toast({
-                title: 'Status Updated',
-                description: `${beneficiary.name}'s status has been set to ${newStatus}.`,
-                variant: 'success',
-            });
-        } else {
-            toast({ title: 'Update Failed', description: result.message, variant: 'destructive' });
-        }
-    };
+  if (isLoading) return <main className="container mx-auto p-4 md:p-8"><Loader2 className="w-8 h-8 animate-spin mx-auto mt-20" /></main>;
   
-    const handleZakatToggle = async (beneficiary: Beneficiary) => {
-        if (!canUpdate || !userProfile) return;
-        const newZakatStatus = !beneficiary.isEligibleForZakat;
-
-        const updateData: Partial<Beneficiary> = { isEligibleForZakat: newZakatStatus };
-        
-        const result = await updateMasterBeneficiaryAction(
-            beneficiary.id,
-            updateData,
-            { id: userProfile.id, name: userProfile.name }
-        );
-        if (result.success) {
-            toast({
-                title: 'Zakat Status Updated',
-                description: `${beneficiary.name} is now ${newZakatStatus ? 'Eligible' : 'Not Eligible'} for Zakat.`,
-                variant: 'success',
-            });
-        } else {
-            toast({ title: 'Update Failed', description: result.message, variant: 'destructive' });
-        }
-    };
-  
-  if (isLoading) {
-    return (
-        <main className="container mx-auto p-4 md:p-8">
-            <Card>
-                <CardHeader><Skeleton className="h-8 w-48" /></CardHeader>
-                <CardContent>
-                    <Skeleton className="h-40 w-full" />
-                </CardContent>
-            </Card>
-        </main>
-    )
-  }
-  
-  if (!canRead) {
-    return (
-        <main className="container mx-auto p-4 md:p-8">
-            <div className="mb-4">
-                <Button variant="outline" asChild>
-                    <Link href="/">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Home
-                    </Link>
-                </Button>
-            </div>
-            <Alert variant="destructive">
-                <ShieldAlert className="h-4 w-4" />
-                <AlertTitle>Access Denied</AlertTitle>
-                <AlertDescription>
-                You do not have the required permissions to view beneficiaries.
-                </AlertDescription>
-            </Alert>
-        </main>
-    )
-  }
+  if (!canRead) return <main className="container mx-auto p-4 md:p-8"><Alert variant="destructive"><ShieldAlert className="h-4 w-4" /><AlertTitle>Access Denied</AlertTitle><AlertDescription>Missing permissions.</AlertDescription></Alert></main>;
 
   return (
     <main className="container mx-auto p-4 md:p-8">
@@ -429,18 +328,10 @@ export default function BeneficiariesPage() {
       </div>
       
       <div className="border-b mb-4">
-        <ScrollArea className="w-full whitespace-nowrap">
-            <div className="flex w-max space-x-2">
-                <Link href="/beneficiaries/summary" className={cn(
-                    "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    pathname === '/beneficiaries/summary' ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                )}>Summary</Link>
-                <Link href="/beneficiaries" className={cn(
-                    "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    pathname === '/beneficiaries' ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
-                )}>Beneficiary List</Link>
-            </div>
-        </ScrollArea>
+        <div className="flex space-x-2">
+            <Link href="/beneficiaries/summary" className={cn("px-3 py-1.5 text-sm font-medium rounded-md", pathname === '/beneficiaries/summary' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted/50")}>Summary</Link>
+            <Link href="/beneficiaries" className={cn("px-3 py-1.5 text-sm font-medium rounded-md", pathname === '/beneficiaries' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted/50")}>Beneficiary List</Link>
+        </div>
       </div>
 
       <Card className="animate-fade-in-zoom shadow-lg">
@@ -449,16 +340,9 @@ export default function BeneficiariesPage() {
             <div className="flex-1 space-y-2">
                 <CardTitle>Master Beneficiary List ({filteredAndSortedBeneficiaries.length})</CardTitle>
                 <div className="flex flex-wrap items-center gap-2">
-                    <Input 
-                        placeholder="Search name, phone, address..."
-                        value={searchTerm}
-                        onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                        className="max-w-sm"
-                    />
+                    <Input placeholder="Search..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-sm" />
                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[150px]">
-                            <SelectValue placeholder="Filter by status" />
-                        </SelectTrigger>
+                        <SelectTrigger className="w-auto md:w-[150px]"><SelectValue placeholder="Filter by status" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="All">All Statuses</SelectItem>
                             <SelectItem value="Verified">Verified</SelectItem>
@@ -468,134 +352,22 @@ export default function BeneficiariesPage() {
                         </SelectContent>
                     </Select>
                      <Select value={zakatFilter} onValueChange={(value) => { setZakatFilter(value); setCurrentPage(1); }}>
-                      <SelectTrigger className="w-auto md:w-[180px]">
-                          <SelectValue placeholder="Filter by Zakat" />
-                      </SelectTrigger>
+                      <SelectTrigger className="w-auto md:w-[180px]"><SelectValue placeholder="Filter by Zakat" /></SelectTrigger>
                       <SelectContent>
                           <SelectItem value="All">All Zakat Status</SelectItem>
                           <SelectItem value="Eligible">Eligible</SelectItem>
                           <SelectItem value="Not Eligible">Not Eligible</SelectItem>
                       </SelectContent>
                   </Select>
-                    <Popover open={openReferralPopover} onOpenChange={(isOpen) => {
-                      setOpenReferralPopover(isOpen);
-                      if (isOpen) {
-                          setTempReferralFilter(referralFilter);
-                      }
-                  }}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={openReferralPopover}
-                        className="w-auto md:w-[250px] justify-between"
-                      >
-                        <span className="truncate">
-                          {referralFilter.length > 0
-                            ? `${referralFilter.length} referral(s) selected`
-                            : "Filter by referral..."}
-                        </span>
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[350px] p-0 animate-fade-in-zoom">
-                      <Command>
-                        <CommandInput placeholder="Search referrals..." />
-                        <CommandList>
-                          <CommandEmpty>No referral found.</CommandEmpty>
-                          <CommandGroup>
-                            <CommandItem
-                                onMouseDown={(e) => e.preventDefault()}
-                                onSelect={() => {
-                                    if (areAllReferralsSelected) {
-                                        setTempReferralFilter([]);
-                                    } else {
-                                        setTempReferralFilter([...uniqueReferrals]);
-                                    }
-                                }}
-                            >
-                                <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", areAllReferralsSelected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
-                                  <Check className={cn("h-4 w-4")} />
-                                </div>
-                                Select All
-                            </CommandItem>
-                            <Separator className="my-1" />
-                            {uniqueReferrals.map((referral) => (
-                              <CommandItem
-                                key={referral}
-                                value={referral}
-                                onMouseDown={(e) => e.preventDefault()}
-                                onSelect={() => {
-                                  setTempReferralFilter(prev => {
-                                      const selected = prev.includes(referral);
-                                      if (selected) {
-                                          return prev.filter((r) => r !== referral);
-                                      } else {
-                                          return [...prev, referral];
-                                      }
-                                  });
-                                }}
-                              >
-                                <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", tempReferralFilter.includes(referral) ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
-                                    <Check className={cn("h-4 w-4")} />
-                                </div>
-                                {referral}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                       <div className="p-2 border-t flex justify-between items-center">
-                            <Button variant="ghost" size="sm" onClick={() => {
-                                setTempReferralFilter([]);
-                                setReferralFilter([]);
-                                setOpenReferralPopover(false);
-                            }}>Reset</Button>
-                            <Button size="sm" onClick={() => {
-                                setReferralFilter(tempReferralFilter);
-                                setOpenReferralPopover(false);
-                            }}>Apply</Button>
-                        </div>
-                    </PopoverContent>
-                  </Popover>
                 </div>
-                {referralFilter.length > 0 && (
-                  <div className="pt-2 flex flex-wrap gap-1 items-center animate-fade-in-up">
-                      {referralFilter.map((referral) => (
-                          <Badge
-                              key={referral}
-                              variant="secondary"
-                              className="flex items-center gap-1"
-                          >
-                              {referral}
-                              <button
-                                  type="button"
-                                  aria-label={`Remove ${referral} filter`}
-                                  onClick={() => setReferralFilter(referralFilter.filter((r) => r !== referral))}
-                                  className="ml-1 rounded-full p-0.5 hover:bg-background/50 focus:outline-none focus:ring-1 focus:ring-ring"
-                              >
-                                  <X className="h-3 w-3" />
-                              </button>
-                          </Badge>
-                      ))}
-                       <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto py-0.5 px-1 text-xs text-muted-foreground hover:bg-transparent"
-                          onClick={() => setReferralFilter([])}
-                      >
-                          Clear all
-                      </Button>
-                  </div>
-              )}
             </div>
             <div className="flex flex-wrap gap-2 shrink-0">
-                <Button onClick={handleSyncMasterList} disabled={isSyncing || areBeneficiariesLoading} variant="outline" className="transition-transform active:scale-95">
+                <Button onClick={handleSyncMasterList} disabled={isSyncing} variant="outline" size="sm">
                     {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
                     Sync Master List
                 </Button>
                 {canCreate && (
-                    <Button onClick={handleAdd} className="transition-transform active:scale-95">
+                    <Button onClick={handleAdd} size="sm">
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Create Beneficiary
                     </Button>
@@ -618,39 +390,22 @@ export default function BeneficiariesPage() {
                       </TableRow>
                   </TableHeader>
                   <TableBody>
-                      {areBeneficiariesLoading ? (
-                          [...Array(10)].map((_, i) => (
-                              <TableRow key={`skeleton-${i}`}>
-                                  <TableCell><Skeleton className="h-5 w-5" /></TableCell>
-                                  <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                                  <TableCell><Skeleton className="h-5 w-40" /></TableCell>
-                                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                                  {(canUpdate || canDelete) && <TableCell><Skeleton className="h-5 w-10 ml-auto" /></TableCell>}
-                              </TableRow>
-                          ))
-                      ) : paginatedBeneficiaries.length > 0 ? (
-                          paginatedBeneficiaries.map((beneficiary, index) => (
-                            <BeneficiaryRow
-                                key={beneficiary.id}
-                                beneficiary={beneficiary}
-                                index={(currentPage - 1) * itemsPerPage + index + 1}
-                                canUpdate={canUpdate}
-                                canDelete={canDelete}
-                                onView={handleView}
-                                onEdit={handleEdit}
-                                onDelete={handleDeleteClick}
-                                onStatusChange={handleStatusChange}
-                                onZakatToggle={handleZakatToggle}
-                            />
-                      ))
-                      ) : (
-                      <TableRow>
-                          <TableCell colSpan={canUpdate || canDelete ? 7 : 6} className="text-center h-24 text-muted-foreground">
-                              No beneficiaries found matching your criteria.
-                          </TableCell>
-                      </TableRow>
+                      {paginatedBeneficiaries.map((beneficiary, index) => (
+                        <BeneficiaryRow
+                            key={beneficiary.id}
+                            beneficiary={beneficiary}
+                            index={(currentPage - 1) * itemsPerPage + index + 1}
+                            canUpdate={canUpdate}
+                            canDelete={canDelete}
+                            onView={handleView}
+                            onEdit={handleEdit}
+                            onDelete={handleDeleteClick}
+                            onStatusChange={handleStatusChange}
+                            onZakatToggle={handleZakatToggle}
+                        />
+                      ))}
+                      {paginatedBeneficiaries.length === 0 && (
+                        <TableRow><TableCell colSpan={canUpdate || canDelete ? 7 : 6} className="text-center h-24 text-muted-foreground">No records found.</TableCell></TableRow>
                       )}
                   </TableBody>
               </Table>
@@ -658,9 +413,7 @@ export default function BeneficiariesPage() {
         </CardContent>
         {totalPages > 1 && (
             <CardFooter className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                  Showing {paginatedBeneficiaries.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredAndSortedBeneficiaries.length)} of {filteredAndSortedBeneficiaries.length} beneficiaries
-              </p>
+              <p className="text-sm text-muted-foreground">Showing {paginatedBeneficiaries.length} of {filteredAndSortedBeneficiaries.length}</p>
               <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
                   <span className="text-sm">{currentPage} / {totalPages}</span>
@@ -671,20 +424,11 @@ export default function BeneficiariesPage() {
       </Card>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent className="animate-fade-in-zoom">
-            <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the beneficiary from the master list AND remove them from all campaigns and leads they are associated with.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
+        <AlertDialogContent>
+            <AlertDialogHeader><AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete the beneficiary from the master list and all linked initiatives.</AlertDialogDescription></AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction 
-                    onClick={handleDeleteConfirm} 
-                    className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                        Delete
-                </AlertDialogAction>
+                <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
