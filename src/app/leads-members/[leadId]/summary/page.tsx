@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -50,6 +49,7 @@ import {
 import Resizer from 'react-image-file-resizer';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import Link from 'next/link';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 const donationCategoryChartConfig = {
@@ -217,7 +217,7 @@ export default function LeadSummaryPage() {
         if (hasFileToUpload && !auth?.currentUser) {
             toast({
                 title: "Authentication Error",
-                description: "User not authenticated yet. Please wait.",
+                description: "User not authenticated yet.",
                 variant: "destructive",
             });
             return;

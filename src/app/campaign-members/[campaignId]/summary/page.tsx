@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -6,7 +5,7 @@ import { useParams, usePathname } from 'next/navigation';
 import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, useStorage, useAuth } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
-import { doc, updateDoc, DocumentReference } from 'firebase/firestore';
+import { doc, updateDoc, DocumentReference, collection } from 'firebase/firestore';
 import type { Campaign, Beneficiary, Donation, DonationCategory, CampaignDocument, ItemCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -50,7 +49,7 @@ import {
 import Resizer from 'react-image-file-resizer';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import Link from 'next/link';
-
+import { Skeleton } from '@/components/ui/skeleton';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
@@ -358,7 +357,7 @@ export default function CampaignSummaryPage() {
         const monthlyContributionTotal = amountsByCategory['Monthly Contribution'] || 0;
         const grandTotal = fitraTotal + zakatTotal + sadaqahTotal + fidiyaTotal + interestTotal + lillahTotal + loanTotal + monthlyContributionTotal;
 
-        return { totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, totalBeneficiaries: beneficiaries.length, beneficiariesGiven, beneficiariesPending, zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, zakatForGoalAmount, fundTotals: { fitra: fitraTotal, zakat: zakatTotal, sadaqah: sadaqahTotal, fidiya: fidiyaTotal, interest: interestTotal, lillah: lillahTotal, loan: loanTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal }, donationStatusStats, };
+        return { totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal), totalBeneficiaries: beneficiaries.length, beneficiariesGiven, beneficiariesPending, zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, zakatForGoalAmount, fundTotals: { fitra: fitraTotal, zakat: zakatTotal, sadaqah: sadaqahTotal, fidiya: fidiyaTotal, interest: interestTotal, lillah: lillahTotal, loan: loanTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal }, donationStatusStats, };
     }, [allDonations, campaign, beneficiaries, sanitizedRationLists]);
     
     const isLoading = isCampaignLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
@@ -405,10 +404,10 @@ export default function CampaignSummaryPage() {
              <div className="border-b mb-4">
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex w-max space-x-2">
-                        {canReadSummary && ( <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Summary</Link> )}
-                        {canReadRation && ( <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Item Lists</Link> )}
-                        {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Beneficiary List</Link> )}
-                         {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Donations</Link> )}
+                        {canReadSummary && ( <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Summary</Link> )}
+                        {canReadRation && ( <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Item Lists</Link> )}
+                        {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Beneficiary List</Link> )}
+                         {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Donations</Link> )}
                     </div>
                 </ScrollArea>
             </div>
@@ -444,8 +443,213 @@ export default function CampaignSummaryPage() {
                             )}
                         </CardContent>
                     </Card>
-                    {/* ... (rest of summary page) */}
-                </div>
+
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                        <CardHeader>
+                            <CardTitle>Campaign Artifacts</CardTitle>
+                            <CardDescription>Photos, receipts, or other documents related to this campaign.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                           {editMode ? (
+                                <div className="space-y-4">
+                                    <Label>Upload New Artifacts</Label>
+                                    <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
+                                    <Separator />
+                                    <Label>Manage Existing Artifacts</Label>
+                                    {existingDocuments.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {existingDocuments.map((doc) => {
+                                                const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+                                                return (
+                                                <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md gap-4">
+                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                        <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+                                                            {isImage ? (
+                                                                <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} width={48} height={48} className="object-cover h-full w-full" />
+                                                            ) : (
+                                                                <File className="h-6 w-6 text-muted-foreground" />
+                                                            )}
+                                                        </div>
+                                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:underline truncate min-w-0">
+                                                            <p className="truncate">{doc.name}</p>
+                                                        </a>
+                                                    </div>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} id={`public-${doc.url}`} />
+                                                            <Label htmlFor={`public-${doc.url}`} className="text-xs">Public</Label>
+                                                        </div>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleRemoveExistingDocument(doc.url)}>
+                                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                )
+                                            })}
+                                        </div>
+                                    ) : <p className="text-sm text-muted-foreground">No artifacts uploaded yet.</p>}
+                                </div>
+                            ) : (
+                                campaign.documents && campaign.documents.length > 0 ? (
+                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                        {campaign.documents.map((doc) => {
+                                            const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+                                            return (
+                                                <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                                                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="group block flex-grow">
+                                                        <CardContent className="p-0">
+                                                            <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
+                                                                {isImage ? (
+                                                                    <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
+                                                                ) : (
+                                                                    <File className="w-10 h-10 text-muted-foreground" />
+                                                                )}
+                                                            </div>
+                                                            <div className="p-2 text-center">
+                                                                <p className="text-xs font-medium truncate group-hover:underline">{doc.name}</p>
+                                                            </div>
+                                                        </CardContent>
+                                                    </a>
+                                                    <CardFooter className="p-2 border-t mt-auto">
+                                                        <div className="flex items-center justify-center w-full gap-2">
+                                                            {canUpdate ? (
+                                                                <>
+                                                                    <Switch 
+                                                                        id={`quick-toggle-${doc.url}`} 
+                                                                        checked={!!doc.isPublic} 
+                                                                        onCheckedChange={() => quickToggleDocumentPublic(doc)} 
+                                                                    />
+                                                                    <Label htmlFor={`quick-toggle-${doc.url}`} className="text-xs cursor-pointer">Public</Label>
+                                                                </>
+                                                            ) : (
+                                                                <Badge variant={doc.isPublic ? "outline" : "secondary"}>{doc.isPublic ? "Public" : "Private"}</Badge>
+                                                            )}
+                                                        </div>
+                                                    </CardFooter>
+                                                </Card>
+                                            )
+                                        })}
+                                    </div>
+                                ) : <p className="text-sm text-muted-foreground">No artifacts uploaded yet.</p>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
+                            <CardDescription>Verified donations against the goal for this campaign.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          {isClient ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                                  <div className="relative h-48 w-full">
+                                      <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
+                                          <RadialBarChart data={[{ name: 'Progress', value: summaryData?.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
+                                            <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                            <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} />
+                                            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                                          </RadialBarChart>
+                                      </ChartContainer>
+                                      <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(summaryData?.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground">Funded</span></div>
+                                  </div>
+                                  <div className="space-y-4 text-center md:text-left">
+                                      <div><p className="text-sm text-muted-foreground">Raised for Goal</p><p className="text-3xl font-bold">₹{(summaryData?.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                      <div><p className="text-sm text-muted-foreground">Fundraising Target</p><p className="text-3xl font-bold">₹{(summaryData?.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                      <div><p className="text-sm text-muted-foreground">Grand Total Received</p><p className="text-3xl font-bold">₹{(summaryData?.fundTotals.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                  </div>
+                              </div>
+                          ) : <Skeleton className="w-full h-48" />}
+                        </CardContent>
+                    </Card>
+
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader>
+                            <CardContent><div className="text-2xl font-bold">{summaryData?.totalBeneficiaries ?? 0}</div></CardContent>
+                        </Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">{givenLabel}</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader>
+                            <CardContent><div className="text-2xl font-bold">{summaryData?.beneficiariesGiven ?? 0}</div></CardContent>
+                        </Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">{pendingLabel}</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader>
+                            <CardContent><div className="text-2xl font-bold">{summaryData?.beneficiariesPending ?? 0}</div></CardContent>
+                        </Card>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '600ms' }}>
+                            <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified Donations</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
+                            <CardContent className="p-4 pt-0">
+                                <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.verified.count}</div>
+                                <p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.verified.amount.toLocaleString('en-IN')}</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '700ms' }}>
+                            <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending Donations</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
+                            <CardContent className="p-4 pt-0">
+                                <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.pending.count}</div>
+                                <p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.pending.amount.toLocaleString('en-IN')}</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="animate-fade-in-up" style={{ animationDelay: '800ms' }}>
+                            <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Canceled Donations</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
+                            <CardContent className="p-4 pt-0">
+                                <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.canceled.count}</div>
+                                <p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.canceled.amount.toLocaleString('en-IN')}</p>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '900ms' }}>
+                        <CardHeader>
+                            <CardTitle>Zakat Utilization</CardTitle>
+                            <CardDescription>Tracking of Zakat funds collected and allocated within this campaign.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                           <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <Separator />
+                            <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
+                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Allocated as Cash-in-Hand</span><span className="font-semibold font-mono">₹{(summaryData?.zakatAllocated || 0).toLocaleString('en-IN')}</span></div>
+                                <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground">Given</span><span className="font-mono text-green-600">₹{(summaryData?.zakatGiven || 0).toLocaleString('en-IN')}</span></div>
+                                 <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground">Pending</span><span className="font-mono text-amber-600">₹{(summaryData?.zakatPending || 0).toLocaleString('en-IN')}</span></div>
+                            </div>
+                            <Separator />
+                            <div className="flex justify-between items-center text-base"><span className="font-bold">Zakat Balance for Goal</span><span className="font-bold text-primary font-mono">₹{(summaryData?.zakatAvailableForGoal || 0).toLocaleString('en-IN')}</span></div>
+                             {campaign.allowedDonationTypes?.includes('Zakat') && <p className="text-xs text-muted-foreground pt-1">Because Zakat is allowed for this campaign, the balance is applied to the fundraising goal.</p>}
+                        </CardContent>
+                    </Card>
+
+                    <div className="grid gap-6 lg:grid-cols-2">
+                      <Card className="animate-fade-in-up" style={{ animationDelay: '1000ms' }}>
+                          <CardHeader><CardTitle>Fund Totals by Type</CardTitle></CardHeader>
+                          <CardContent className="space-y-2">
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fidiya</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.fidiya.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (disposal)</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <Separator className="my-2"/><div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                          </CardContent>
+                      </Card>
+                      <Card className="animate-fade-in-up" style={{ animationDelay: '1100ms' }}>
+                          <CardHeader><CardTitle>Donations by Category</CardTitle></CardHeader>
+                          <CardContent>
+                            {isClient ? (
+                              <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
+                                  <BarChart data={Object.entries(summaryData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
+                                      <CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4}>{Object.entries(summaryData?.amountsByCategory || {}).map(([name]) => (<Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />))}</Bar>
+                                  </BarChart>
+                              </ChartContainer>
+                            ) : <Skeleton className="h-[250px] w-full" />}
+                          </CardContent>
+                      </Card>
+                    </div>
+                 </div>
             </div>
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
         </main>
