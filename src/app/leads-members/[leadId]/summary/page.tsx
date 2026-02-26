@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -435,6 +434,8 @@ export default function LeadSummaryPage() {
             paymentSettings
         });
     };
+
+    const isLoading = isLeadLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
 
     if (isLoading) { return <BrandedLoader />; }
     
