@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -62,14 +61,6 @@ const donationCategoryChartConfig = {
     'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-5))" },
 } satisfies ChartConfig;
 
-const donationPaymentTypeChartConfig = {
-    Cash: { label: "Cash", color: "hsl(var(--chart-1))" },
-    'Online Payment': { label: "Online Payment", color: "hsl(var(--chart-2))" },
-    Check: { label: "Check", color: "hsl(var(--chart-5))" },
-    Other: { label: "Other", color: "hsl(var(--chart-4))" },
-} satisfies ChartConfig;
-
-
 export default function PublicLeadSummaryPage() {
     const params = useParams();
     const router = useRouter();
@@ -98,12 +89,6 @@ export default function PublicLeadSummaryPage() {
     const { data: allDonations, isLoading: areDonationsLoading, error: donationsError } = useCollection<Donation>(allDonationsCollectionRef);
     
     const isLoading = isLeadLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
-
-     const sanitizedRationLists = useMemo(() => {
-        if (!lead?.itemCategories) return [];
-        if (Array.isArray(lead.itemCategories)) return lead.itemCategories;
-        return [{ id: 'general', name: 'General', minMembers: 0, maxMembers: 0, items: [] }];
-    }, [lead?.itemCategories]);
 
     const fundingData = useMemo(() => {
         if (!allDonations || !lead || !beneficiaries) return null;
@@ -158,12 +143,6 @@ export default function PublicLeadSummaryPage() {
         const fundingGoal = lead.targetAmount || 0;
         const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
         
-        const paymentTypeData = donations.reduce((acc, d) => {
-            const key = d.donationType || 'Other';
-            acc[key] = (acc[key] || 0) + 1;
-            return acc;
-        }, {} as Record<string, number>);
-
         const fitraTotal = amountsByCategory['Fitra'] || 0;
         const zakatTotal = amountsByCategory['Zakat'] || 0;
         const loanTotal = amountsByCategory['Loan'] || 0;
@@ -180,7 +159,6 @@ export default function PublicLeadSummaryPage() {
             targetAmount: fundingGoal,
             remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal),
             amountsByCategory,
-            donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
             zakatAllocated,
             zakatGiven,
             zakatPending,
@@ -191,32 +169,11 @@ export default function PublicLeadSummaryPage() {
     }, [allDonations, lead, beneficiaries]);
 
     const beneficiaryData = useMemo(() => {
-        if (!beneficiaries || !sanitizedRationLists) return null;
-
-        const beneficiariesByCategory = beneficiaries.reduce((acc, ben) => {
-            const members = ben.members || 0;
-            const matchingCategories = sanitizedRationLists.filter(cat => members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999));
-            let appliedCategory: ItemCategory | null = matchingCategories.length > 0 ? matchingCategories[0] : (sanitizedRationLists[0] || null);
-            const categoryForGroup = appliedCategory || { id: 'uncategorized', name: 'Uncategorized', items: [], minMembers: -1, maxMembers: -1 };
-            const categoryKey = categoryForGroup.id;
-            if (!acc[categoryKey]) acc[categoryKey] = { category: categoryForGroup, beneficiariesByMemberCount: {} };
-            const memberCount = ben.members || 0;
-            if (!acc[categoryKey].beneficiariesByMemberCount[memberCount]) acc[categoryKey].beneficiariesByMemberCount[memberCount] = [];
-            acc[categoryKey].beneficiariesByMemberCount[memberCount].push(ben);
-            return acc;
-        }, {} as Record<string, { category: ItemCategory, beneficiariesByMemberCount: Record<number, Beneficiary[]> }>);
-
-        const sortedBeneficiaryCategoryKeys = Object.keys(beneficiariesByCategory).sort((a, b) => {
-          const catA = beneficiariesByCategory[a].category;
-          const catB = beneficiariesByCategory[b].category;
-          return (catA.minMembers ?? 0) - (catB.minMembers ?? 0);
-        });
-
+        if (!beneficiaries) return null;
         const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
         const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
-        
-        return { totalBeneficiaries: beneficiaries.length, beneficiariesGiven, beneficiariesPending, beneficiariesByCategory, sortedBeneficiaryCategoryKeys };
-    }, [beneficiaries, sanitizedRationLists]);
+        return { totalBeneficiaries: beneficiaries.length, beneficiariesGiven, beneficiariesPending };
+    }, [beneficiaries]);
 
     const handleShare = async () => {
         if (!lead || !fundingData) return;
@@ -231,7 +188,7 @@ export default function PublicLeadSummaryPage() {
         return (
             <main className="container mx-auto p-4 md:p-8 text-center">
                 <p className="text-lg text-muted-foreground">This lead is not available for public view.</p>
-                <Button asChild className="mt-4"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Leads</Link></Button>
+                <Button asChild className="mt-4 active:scale-95 transition-transform"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Leads</Link></Button>
             </main>
         );
     }
@@ -240,7 +197,7 @@ export default function PublicLeadSummaryPage() {
     
     return (
         <main className="container mx-auto p-4 md:p-8">
-             <div className="mb-4"><Button variant="outline" asChild><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
+             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
             
             <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center">
                 {lead.imageUrl ? (
@@ -251,11 +208,11 @@ export default function PublicLeadSummaryPage() {
             </div>
 
             <div className="flex justify-end items-center mb-4 flex-wrap gap-2">
-                <Button onClick={handleShare} variant="outline"><Share2 className="mr-2 h-4 w-4" /> Share</Button>
+                <Button onClick={handleShare} variant="outline" className="active:scale-95 transition-transform"><Share2 className="mr-2 h-4 w-4" /> Share</Button>
             </div>
 
             <div className="space-y-6" ref={summaryRef}>
-                <Card>
+                <Card className="animate-fade-in-zoom">
                     <CardHeader><CardTitle>Lead Details</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
@@ -272,12 +229,12 @@ export default function PublicLeadSummaryPage() {
                 </Card>
 
                 {publicDocuments.length > 0 && (
-                    <Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                         <CardHeader><CardTitle>Public Artifacts</CardTitle></CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                                 {publicDocuments.map((doc) => (
-                                    <Button key={doc.url} variant="outline" asChild><a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate"><File className="mr-2 h-4 w-4 shrink-0" /><span className="truncate">{doc.name}</span></a></Button>
+                                    <Button key={doc.url} variant="outline" asChild className="active:scale-95 transition-transform"><a href={doc.url} target="_blank" rel="noopener noreferrer" className="truncate"><File className="mr-2 h-4 w-4 shrink-0" /><span className="truncate">{doc.name}</span></a></Button>
                                 ))}
                             </div>
                         </CardContent>
@@ -285,7 +242,7 @@ export default function PublicLeadSummaryPage() {
                 )}
 
                 {fundingData ? (
-                    <Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                         <CardHeader><CardTitle className="flex items-center gap-2"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle></CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -309,9 +266,9 @@ export default function PublicLeadSummaryPage() {
                 ) : null}
 
                 <div className="grid gap-6 sm:grid-cols-3">
-                    <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{beneficiaryData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
-                    <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Items/Services Provided</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{beneficiaryData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
-                    <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{beneficiaryData?.beneficiariesPending ?? 0}</div></CardContent></Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '300ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{beneficiaryData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '400ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Provided</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{beneficiaryData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '500ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{beneficiaryData?.beneficiariesPending ?? 0}</div></CardContent></Card>
                 </div>
             </div>
 

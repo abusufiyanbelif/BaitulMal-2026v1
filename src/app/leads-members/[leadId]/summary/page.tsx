@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -459,7 +458,7 @@ export default function LeadSummaryPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8">
-             <div className="mb-4"><Button variant="outline" asChild><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
+             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                  <div className="space-y-1">
                     {editMode ? (
@@ -477,7 +476,7 @@ export default function LeadSummaryPage() {
                         <>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline">
+                                    <Button variant="outline" className="active:scale-95 transition-transform">
                                         <Download className="mr-2 h-4 w-4" />
                                         Download
                                     </Button>
@@ -487,14 +486,14 @@ export default function LeadSummaryPage() {
                                     <DropdownMenuItem onClick={() => handleDownload('pdf')}>Download as PDF</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                            <Button onClick={handleShare} variant="outline">
+                            <Button onClick={handleShare} variant="outline" className="active:scale-95 transition-transform">
                                 <Share2 className="mr-2 h-4 w-4" /> Share
                             </Button>
                         </>
                     )}
                     {canUpdate && userProfile && (
-                        !editMode ? ( <Button onClick={handleEditClick}><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) 
-                        : ( <div className="flex gap-2"><Button variant="outline" onClick={handleCancel}>Cancel</Button><Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save</Button></div>)
+                        !editMode ? ( <Button onClick={handleEditClick} className="active:scale-95 transition-transform"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) 
+                        : ( <div className="flex gap-2"><Button variant="outline" onClick={handleCancel}>Cancel</Button><Button onClick={handleSave} className="active:scale-95 transition-transform"><Save className="mr-2 h-4 w-4" /> Save</Button></div>)
                     )}
                 </div>
             </div>
@@ -648,7 +647,7 @@ export default function LeadSummaryPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                    <Card className="animate-fade-in-up shadow-sm border-primary/5" style={{ animationDelay: '100ms' }}>
                         <CardHeader>
                             <CardTitle>Lead Artifacts</CardTitle>
                             <CardDescription>Photos, receipts, or other documents related to this lead.</CardDescription>
@@ -683,7 +682,7 @@ export default function LeadSummaryPage() {
                                                             <Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} id={`public-${doc.url}`} />
                                                             <Label htmlFor={`public-${doc.url}`} className="text-xs">Public</Label>
                                                         </div>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleRemoveExistingDocument(doc.url)}>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 active:scale-90 transition-transform" onClick={() => handleRemoveExistingDocument(doc.url)}>
                                                             <Trash2 className="h-4 w-4 text-destructive" />
                                                         </Button>
                                                     </div>
@@ -699,7 +698,7 @@ export default function LeadSummaryPage() {
                                         {lead.documents.map((doc) => {
                                             const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
                                             return (
-                                                <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                                                <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col hover:-translate-y-1 active:scale-95">
                                                     <a href={doc.url} target="_blank" rel="noopener noreferrer" className="group block flex-grow">
                                                         <CardContent className="p-0">
                                                             <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
@@ -739,7 +738,7 @@ export default function LeadSummaryPage() {
                         </CardContent>
                     </Card>
                 
-                    <Card className="animate-fade-in-up shadow-sm" style={{ animationDelay: '200ms' }}>
+                    <Card className="animate-fade-in-up shadow-sm border-primary/5" style={{ animationDelay: '200ms' }}>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <Target className="h-6 w-6 text-primary" />
@@ -815,7 +814,7 @@ export default function LeadSummaryPage() {
                     </Card>
 
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        <Card className="animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                        <Card className="animate-fade-in-up shadow-sm border-primary/5" style={{ animationDelay: '300ms' }}>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle>
                                 <Users className="h-4 w-4 text-muted-foreground" />
@@ -824,7 +823,7 @@ export default function LeadSummaryPage() {
                                 <div className="text-2xl font-bold">{summaryData?.totalBeneficiaries ?? 0}</div>
                             </CardContent>
                         </Card>
-                        <Card className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+                        <Card className="animate-fade-in-up shadow-sm border-primary/5" style={{ animationDelay: '400ms' }}>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">{givenLabel}</CardTitle>
                                 <Gift className="h-4 w-4 text-muted-foreground" />
@@ -833,7 +832,7 @@ export default function LeadSummaryPage() {
                                 <div className="text-2xl font-bold">{summaryData?.beneficiariesGiven ?? 0}</div>
                             </CardContent>
                         </Card>
-                        <Card className="animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+                        <Card className="animate-fade-in-up shadow-sm border-primary/5" style={{ animationDelay: '500ms' }}>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">{pendingLabel}</CardTitle>
                                 <Hourglass className="h-4 w-4 text-muted-foreground" />
@@ -845,21 +844,21 @@ export default function LeadSummaryPage() {
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <Card className="animate-fade-in-up" style={{ animationDelay: '600ms' }}>
+                        <Card className="animate-fade-in-up shadow-sm border-success/20" style={{ animationDelay: '600ms' }}>
                             <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified Donations</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
                             <CardContent className="p-4 pt-0">
                                 <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.verified.count}</div>
                                 <p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.verified.amount.toLocaleString('en-IN')}</p>
                             </CardContent>
                         </Card>
-                        <Card className="animate-fade-in-up" style={{ animationDelay: '700ms' }}>
+                        <Card className="animate-fade-in-up shadow-sm border-amber-200" style={{ animationDelay: '700ms' }}>
                             <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending Donations</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
                             <CardContent className="p-4 pt-0">
                                 <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.pending.count}</div>
                                 <p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.pending.amount.toLocaleString('en-IN')}</p>
                             </CardContent>
                         </Card>
-                        <Card className="animate-fade-in-up" style={{ animationDelay: '800ms' }}>
+                        <Card className="animate-fade-in-up shadow-sm border-destructive/20" style={{ animationDelay: '800ms' }}>
                             <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Canceled Donations</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
                             <CardContent className="p-4 pt-0">
                                 <div className="text-2xl font-bold">{summaryData?.donationStatusStats?.canceled.count}</div>
@@ -868,7 +867,7 @@ export default function LeadSummaryPage() {
                         </Card>
                     </div>
 
-                    <Card className="animate-fade-in-up shadow-sm" style={{ animationDelay: '900ms' }}>
+                    <Card className="animate-fade-in-up shadow-sm border-primary/5" style={{ animationDelay: '900ms' }}>
                         <CardHeader>
                             <CardTitle>Zakat Utilization</CardTitle>
                             <CardDescription>
@@ -909,7 +908,7 @@ export default function LeadSummaryPage() {
                     </Card>
 
                     <div className="grid gap-6 lg:grid-cols-2">
-                      <Card className="animate-fade-in-up" style={{ animationDelay: '1000ms' }}>
+                      <Card className="animate-fade-in-up shadow-sm border-primary/5" style={{ animationDelay: '1000ms' }}>
                           <CardHeader>
                             <CardTitle>Fund Totals by Type</CardTitle>
                           </CardHeader>
@@ -926,7 +925,7 @@ export default function LeadSummaryPage() {
                             <div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
                           </CardContent>
                       </Card>
-                      <Card className="animate-fade-in-up" style={{ animationDelay: '1100ms' }}>
+                      <Card className="animate-fade-in-up shadow-sm border-primary/5" style={{ animationDelay: '1100ms' }}>
                           <CardHeader>
                               <CardTitle>Donations by Category</CardTitle>
                           </CardHeader>
