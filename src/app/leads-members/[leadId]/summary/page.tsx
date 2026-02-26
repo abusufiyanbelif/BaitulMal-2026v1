@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -6,7 +7,7 @@ import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollec
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
-import { updateDoc, DocumentReference } from 'firebase/firestore';
+import { updateDoc, serverTimestamp, DocumentReference } from 'firebase/firestore';
 import type { Lead, Beneficiary, Donation, DonationCategory, CampaignDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -182,7 +183,7 @@ export default function LeadSummaryPage() {
         );
         
         try {
-            await updateDoc(leadDocRef, { documents: newDocuments });
+            await updateDoc(leadDocRef, { documents: newDocuments, updatedAt: serverTimestamp() });
 
             toast({
                 title: "Visibility Updated",
@@ -285,6 +286,7 @@ export default function LeadSummaryPage() {
             seriousness: editableLead.seriousness || null,
             imageUrl: imageUrl,
             documents: finalDocuments,
+            updatedAt: serverTimestamp(),
         };
 
         updateDoc(leadDocRef, saveData)

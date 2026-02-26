@@ -1,5 +1,4 @@
 
-
 import type { DocumentData, Timestamp, FieldValue } from 'firebase/firestore';
 import type { UserPermissions, GroupId } from './modules';
 import { donationCategories } from './modules';
@@ -94,6 +93,7 @@ export interface Campaign extends DocumentData {
   itemCategories: ItemCategory[];
   allowedDonationTypes?: DonationCategory[];
   createdAt?: Timestamp | FieldValue;
+  updatedAt?: Timestamp | FieldValue;
   createdById?: string;
   createdByName?: string;
 }
@@ -125,6 +125,7 @@ export interface Lead extends DocumentData {
   itemCategories: ItemCategory[];
   allowedDonationTypes?: DonationCategory[];
   createdAt?: Timestamp | FieldValue;
+  updatedAt?: Timestamp | FieldValue;
   createdById?: string;
   createdByName?: string;
   // Education fields

@@ -1,9 +1,12 @@
+
 'use client';
 import { useMemo } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useFirestore, useMemoFirebase, collection, query, where } from '@/firebase';
 import type { Campaign, Lead, Donation, DonationCategory } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
+
+const RECENT_UPDATE_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 
 export function usePublicData() {
   const firestore = useFirestore();
@@ -36,6 +39,12 @@ export function usePublicData() {
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
 
   const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading;
+
+  const isRecentlyUpdated = (updatedAt: any) => {
+    if (!updatedAt) return false;
+    const date = updatedAt.toDate ? updatedAt.toDate() : new Date(updatedAt);
+    return (Date.now() - date.getTime()) < RECENT_UPDATE_THRESHOLD_MS;
+  };
 
   const memoizedData = useMemo(() => {
     if (isLoading || !campaigns || !leads || !donations) {
@@ -96,13 +105,23 @@ export function usePublicData() {
     const campaignsWithProgress = campaigns.map(campaign => {
       const collected = collectedAmounts.get(campaign.id) || 0;
       const progress = campaign.targetAmount && campaign.targetAmount > 0 ? (collected / campaign.targetAmount) * 100 : 0;
-      return { ...campaign, collected, progress };
+      return { 
+        ...campaign, 
+        collected, 
+        progress,
+        isUpdated: isRecentlyUpdated(campaign.updatedAt)
+      };
     });
 
     const leadsWithProgress = leads.map(lead => {
       const collected = collectedAmounts.get(lead.id) || 0;
       const progress = lead.targetAmount && lead.targetAmount > 0 ? (collected / lead.targetAmount) * 100 : 0;
-      return { ...lead, collected, progress };
+      return { 
+        ...lead, 
+        collected, 
+        progress,
+        isUpdated: isRecentlyUpdated(lead.updatedAt)
+      };
     });
 
     const totalTarget = allPublicItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);

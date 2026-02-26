@@ -7,7 +7,7 @@ import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollec
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
-import { updateDoc, DocumentReference } from 'firebase/firestore';
+import { updateDoc, serverTimestamp, DocumentReference } from 'firebase/firestore';
 import type { Campaign, Beneficiary, Donation, DonationCategory, CampaignDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -166,7 +166,7 @@ export default function CampaignSummaryPage() {
             doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc
         );
         try {
-            await updateDoc(campaignDocRef, { documents: newDocuments });
+            await updateDoc(campaignDocRef, { documents: newDocuments, updatedAt: serverTimestamp() });
             toast({ title: "Visibility Updated", description: `'${docToToggle.name}' is now ${!docToToggle.isPublic ? 'Public' : 'Private'}.` });
         } catch (serverError: any) {
             errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: { documents: newDocuments } }));
@@ -247,6 +247,7 @@ export default function CampaignSummaryPage() {
             imageUrl: imageUrl,
             imageUrlFilename: imageUrlFilename,
             documents: finalDocuments,
+            updatedAt: serverTimestamp(),
         };
 
         updateDoc(campaignDocRef, saveData)

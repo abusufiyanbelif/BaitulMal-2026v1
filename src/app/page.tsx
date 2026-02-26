@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -19,11 +20,27 @@ export default function Home() {
     const activeTickerItems = useMemo(() => {
         const activeCampaigns = campaignsWithProgress
             .filter(c => c.status === 'Active')
-            .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-public/${c.id}/summary` }));
+            .map(c => {
+                const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
+                const prefix = (c as any).isUpdated ? '✨ UPDATED: ' : '';
+                return {
+                    id: c.id,
+                    text: `${prefix}Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
+                    href: `/campaign-public/${c.id}/summary`
+                };
+            });
         
         const activeLeads = leadsWithProgress
             .filter(l => l.status === 'Active')
-            .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
+            .map(l => {
+                const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
+                const prefix = (l as any).isUpdated ? '✨ UPDATED: ' : '';
+                return {
+                    id: l.id,
+                    text: `${prefix}Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
+                    href: `/leads-public/${l.id}/summary`
+                };
+            });
 
         return [...activeCampaigns, ...activeLeads];
     }, [campaignsWithProgress, leadsWithProgress]);
