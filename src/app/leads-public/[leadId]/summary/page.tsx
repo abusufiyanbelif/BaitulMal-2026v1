@@ -260,7 +260,7 @@ export default function PublicLeadSummaryPage() {
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
-                            <p className="mt-1 text-sm whitespace-pre-wrap">{lead.description || 'No description provided.'}</p>
+                            <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed text-foreground/90">{lead.description || 'No description provided.'}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
                             <div className="space-y-1"><p className="text-sm font-medium text-muted-foreground">Required Amount</p><p className="mt-1 text-lg font-semibold">₹{(lead.requiredAmount ?? 0).toLocaleString('en-IN')}</p></div>

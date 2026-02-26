@@ -175,12 +175,6 @@ export default function CampaignSummaryPage() {
         }
     };
 
-    const sanitizedRationLists = useMemo(() => {
-        if (!campaign?.itemCategories) return [];
-        if (Array.isArray(campaign.itemCategories)) return campaign.itemCategories;
-        return [{ id: 'general', name: 'General', minMembers: 0, maxMembers: 0, items: [] }];
-    }, [campaign?.itemCategories]);
-    
     const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
     const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
     const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
@@ -271,7 +265,7 @@ export default function CampaignSummaryPage() {
     const handleCancel = () => setEditMode(false);
 
     const summaryData = useMemo(() => {
-        if (!allDonations || !campaign || !beneficiaries || !sanitizedRationLists) return null;
+        if (!allDonations || !campaign || !beneficiaries) return null;
         
         const donations = allDonations.filter(d => {
             if (d.linkSplit && d.linkSplit.length > 0) {
@@ -353,19 +347,8 @@ export default function CampaignSummaryPage() {
         const grandTotal = fitraTotal + zakatTotal + sadaqahTotal + fidiyaTotal + interestTotal + lillahTotal + loanTotal + monthlyContributionTotal;
 
         return { totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal), totalBeneficiaries: beneficiaries.length, beneficiariesGiven, beneficiariesPending, zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, zakatForGoalAmount, fundTotals: { fitra: fitraTotal, zakat: zakatTotal, sadaqah: sadaqahTotal, fidiya: fidiyaTotal, interest: interestTotal, lillah: lillahTotal, loan: loanTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal }, donationStatusStats, amountsByCategory };
-    }, [allDonations, campaign, beneficiaries, sanitizedRationLists]);
+    }, [allDonations, campaign, beneficiaries]);
     
-    const handleShare = async () => {
-        if (!campaign || !summaryData) return;
-        const shareText = `Campaign: ${campaign.name}\nTarget: ₹${summaryData.targetAmount.toLocaleString('en-IN')}\nRaised: ₹${summaryData.totalCollectedForGoal.toLocaleString('en-IN')}`;
-        setShareDialogData({ title: `Campaign Summary: ${campaign.name}`, text: shareText, url: `${window.location.origin}/campaign-public/${campaignId}/summary` });
-        setIsShareDialogOpen(true);
-    };
-
-    const handleDownload = (format: 'png' | 'pdf') => {
-        download(format, { contentRef: summaryRef, documentTitle: `Campaign Summary: ${campaign?.name || 'Summary'}`, documentName: `campaign-summary-${campaignId}`, brandingSettings, paymentSettings });
-    };
-
     if (isLoading) return <BrandedLoader />;
     
     if (campaignError || beneficiariesError || donationsError) {
@@ -388,7 +371,7 @@ export default function CampaignSummaryPage() {
                 </div>
                 <div className="flex gap-2">
                     {!editMode && (
-                        <><DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline"><Download className="mr-2 h-4 w-4" /> Download</Button></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem onClick={() => handleDownload('png')}>Download as Image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')}>Download as PDF</DropdownMenuItem></DropdownMenuContent></DropdownMenu><Button onClick={handleShare} variant="outline"><Share2 className="mr-2 h-4 w-4" /> Share</Button></>
+                        <><DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline"><Download className="mr-2 h-4 w-4" /> Download</Button></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem onClick={() => handleDownload('png')}>Download as Image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')}>Download as PDF</DropdownMenuItem></DropdownMenuContent></DropdownMenu><Button onClick={() => setIsShareDialogOpen(true)} variant="outline"><Share2 className="mr-2 h-4 w-4" /> Share</Button></>
                     )}
                     {canUpdate && userProfile && ( !editMode ? ( <Button onClick={handleEditClick}><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={handleCancel}>Cancel</Button><Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save</Button></div> ) )}
                 </div>
@@ -407,9 +390,11 @@ export default function CampaignSummaryPage() {
 
             <div className="space-y-6">
                  <div ref={summaryRef} className="space-y-6 p-4 bg-background">
-                    <Card className="animate-fade-in-zoom">
-                        <CardHeader><CardTitle>Campaign Details</CardTitle></CardHeader>
-                        <CardContent className="space-y-4">
+                    <Card className="animate-fade-in-zoom shadow-md border-primary/10">
+                        <CardHeader className="bg-primary/5">
+                            <CardTitle>Campaign Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4 pt-6">
                             {editMode ? (
                                 <div className="space-y-6">
                                     <div className="space-y-2">
@@ -419,7 +404,7 @@ export default function CampaignSummaryPage() {
                                             {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-2 text-sm text-center text-muted-foreground"><span className="font-semibold text-primary">Click to upload</span> or drag and drop</p></div> )}
                                         </label>
                                     </div>
-                                    <div><Label htmlFor="description">Description</Label><Textarea id="description" value={editableCampaign.description} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1" rows={4} /></div>
+                                    <div><Label htmlFor="description">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1" rows={4} /></div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1"><Label htmlFor="startDate">Start Date</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} /></div>
                                         <div className="space-y-1"><Label htmlFor="endDate">End Date</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} /></div>
@@ -430,7 +415,7 @@ export default function CampaignSummaryPage() {
                                     {campaign.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4"><Image src={campaign.imageUrl} alt={campaign.name} fill sizes="100vw" className="object-cover" /></div>}
                                     <div className="space-y-2">
                                         <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
-                                        <p className="mt-1 text-sm whitespace-pre-wrap">{campaign.description || 'No description provided.'}</p>
+                                        <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed text-foreground/90">{campaign.description || 'No description provided.'}</p>
                                     </div>
                                 </>
                             )}
@@ -528,7 +513,7 @@ export default function CampaignSummaryPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                    <Card className="animate-fade-in-up shadow-sm" style={{ animationDelay: '200ms' }}>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
                             <CardDescription>Verified donations against the goal for this campaign.</CardDescription>
@@ -644,7 +629,15 @@ export default function CampaignSummaryPage() {
                     </div>
                  </div>
             </div>
-            <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
+            <ShareDialog 
+                open={isShareDialogOpen} 
+                onOpenChange={setShareDialogData} 
+                shareData={{
+                    title: `Campaign Summary: ${campaign.name}`,
+                    text: `Check out the latest progress for the ${campaign.name} campaign.`,
+                    url: `${window.location.origin}/campaign-public/${campaignId}/summary`
+                }} 
+            />
         </main>
     );
 }

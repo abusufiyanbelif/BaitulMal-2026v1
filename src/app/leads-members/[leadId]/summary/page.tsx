@@ -514,11 +514,11 @@ export default function LeadSummaryPage() {
 
             <div className="space-y-6">
                  <div ref={summaryRef} className="space-y-6 p-4 bg-background">
-                 <Card className="animate-fade-in-zoom">
-                        <CardHeader>
+                 <Card className="animate-fade-in-zoom shadow-md border-primary/10">
+                        <CardHeader className="bg-primary/5">
                             <CardTitle>Lead Details</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-4 pt-6">
                             {editMode ? (
                                 <div className="space-y-6">
                                     <div className="space-y-2">
@@ -546,7 +546,7 @@ export default function LeadSummaryPage() {
 
                                     <div>
                                         <Label htmlFor="description">Description</Label>
-                                        <Textarea id="description" value={editableLead.description} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1" rows={4} />
+                                        <Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1" rows={4} />
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -637,7 +637,7 @@ export default function LeadSummaryPage() {
                                     {lead.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4"><Image src={lead.imageUrl} alt={lead.name} fill sizes="100vw" className="object-cover" /></div>}
                                     <div className="space-y-2">
                                         <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
-                                        <p className="mt-1 text-sm whitespace-pre-wrap">{lead.description || 'No description provided.'}</p>
+                                        <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed text-foreground/90">{lead.description || 'No description provided.'}</p>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                                         <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Purpose</p><p className="font-semibold">{lead.purpose} {lead.category && `(${lead.category})`}</p></div>
@@ -741,7 +741,7 @@ export default function LeadSummaryPage() {
                         </CardContent>
                     </Card>
                 
-                    <Card className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                    <Card className="animate-fade-in-up shadow-sm" style={{ animationDelay: '200ms' }}>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <Target className="h-6 w-6 text-primary" />
@@ -870,7 +870,7 @@ export default function LeadSummaryPage() {
                         </Card>
                     </div>
 
-                    <Card className="animate-fade-in-up" style={{ animationDelay: '900ms' }}>
+                    <Card className="animate-fade-in-up shadow-sm" style={{ animationDelay: '900ms' }}>
                         <CardHeader>
                             <CardTitle>Zakat Utilization</CardTitle>
                             <CardDescription>
