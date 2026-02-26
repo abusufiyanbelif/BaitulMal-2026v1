@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -50,6 +49,7 @@ import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from '@/components/news-ticker';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { usePublicData } from '@/hooks/use-public-data';
 
 interface CampaignCardProps {
     campaign: Campaign & { collected: number; progress: number; };
@@ -208,78 +208,37 @@ export default function CampaignPage() {
   const [campaignToCopy, setCampaignToCopy] = useState<Campaign | null>(null);
 
   const { userProfile, isLoading: isProfileLoading } = useSession();
+  const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted, areDonationsLoading } = usePublicData();
 
-  const campaignsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'campaigns');
-  }, [firestore]);
-  const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
-
-  const donationsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
-  }, [firestore]);
-  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
-
-  const campaignData = useMemo(() => {
-    if (!campaigns || !donations) return [];
-    
-    const collectedAmounts = new Map<string, number>();
-    const campaignsById = new Map(campaigns.map(c => [c.id, c]));
-
-    donations.forEach(donation => {
-        const links = (donation.linkSplit && donation.linkSplit.length > 0)
-            ? donation.linkSplit
-            : (donation as any).campaignId 
-                ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] 
-                : [];
-
-        links.forEach((link: any) => {
-            if (link.linkType !== 'campaign') return;
-            const campaign = campaignsById.get(link.linkId);
-            if (!campaign) return;
-
-            const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
-            const proportion = link.amount / totalDonationAmount;
-
-            const typeSplits = donation.typeSplit && donation.typeSplit.length > 0
-                ? donation.typeSplit
-                : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount, forFundraising: true }] : []);
-
-            const applicable = typeSplits.reduce((acc, split) => {
-                const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                const isAllowed = campaign.allowedDonationTypes?.includes(category as DonationCategory);
-                const isForGoal = category !== 'Zakat' || split.forFundraising !== false;
-
-                if (isAllowed && isForGoal) {
-                    return acc + split.amount;
-                }
-                return acc;
-            }, 0);
-
-            const currentCollected = collectedAmounts.get(link.linkId) || 0;
-            collectedAmounts.set(link.linkId, currentCollected + (applicable * proportion));
-        });
-    });
-
-    return campaigns.map(campaign => {
-      const collected = collectedAmounts.get(campaign.id) || 0;
-      const progress = campaign.targetAmount ? (collected / campaign.targetAmount) * 100 : 0;
-      return { ...campaign, collected, progress };
-    });
-  }, [campaigns, donations]);
-
-  const tickerItems = useMemo(() => {
-    return campaignData
+  const activeTickerItems = useMemo(() => {
+    const activeCampaigns = campaignsWithProgress
       .filter(c => c.status === 'Active')
-      .map(c => ({ id: c.id, text: c.name, href: `/campaign-members/${c.id}/summary` }));
-  }, [campaignData]);
+      .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-members/${c.id}/summary` }));
+    
+    const activeLeads = leadsWithProgress
+      .filter(l => l.status === 'Active')
+      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-members/${l.id}/summary` }));
+
+    return [...activeCampaigns, ...activeLeads];
+  }, [campaignsWithProgress, leadsWithProgress]);
+
+  const completedTickerItems = useMemo(() => {
+    const completedCampaigns = campaignsWithProgress
+      .filter(c => c.status === 'Completed')
+      .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-members/${c.id}/summary` }));
+    
+    const completedLeads = leadsWithProgress
+      .filter(l => l.status === 'Completed')
+      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-members/${l.id}/summary` }));
+
+    return [...completedCampaigns, ...completedLeads];
+  }, [campaignsWithProgress, leadsWithProgress]);
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
-    campaigns.forEach(c => c.startDate && years.add(c.startDate.split('-')[0]));
+    campaignsWithProgress.forEach(c => c.startDate && years.add(c.startDate.split('-')[0]));
     return Array.from(years).sort((a, b) => b.localeCompare(a));
-  }, [campaigns]);
+  }, [campaignsWithProgress]);
   
   const canCreate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.create', false);
   const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.update', false);
@@ -306,7 +265,7 @@ export default function CampaignPage() {
   };
   
   const filteredCampaigns = useMemo(() => {
-    let items = campaignData.filter(c => 
+    let items = campaignsWithProgress.filter(c => 
         (statusFilter === 'All' || c.status === statusFilter) &&
         (categoryFilter === 'All' || c.category === categoryFilter) &&
         (authenticityFilter === 'All' || c.authenticityStatus === authenticityFilter) &&
@@ -326,7 +285,7 @@ export default function CampaignPage() {
         if (selectedMonth !== 'All') items = items.filter(c => c.startDate?.split('-')[1] === selectedMonth);
     }
     return items;
-  }, [campaignData, searchTerm, statusFilter, categoryFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear, selectedMonth]);
+  }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear, selectedMonth]);
 
   const sections = [
     { id: 'active', title: 'Active Campaigns', items: filteredCampaigns.filter(c => c.status === 'Active') },
@@ -334,7 +293,7 @@ export default function CampaignPage() {
     { id: 'completed', title: 'Completed Campaigns', items: filteredCampaigns.filter(c => c.status === 'Completed') }
   ].filter(s => s.items.length > 0);
 
-  const isLoading = areCampaignsLoading || isProfileLoading || isDeleting || areDonationsLoading;
+  const isLoading = isProfileLoading || isDeleting || areDonationsLoading;
   
   if (!isLoading && userProfile && !canViewCampaigns) {
     return <main className="container mx-auto p-4 md:p-8"><Alert variant="destructive"><ShieldAlert className="h-4 w-4" /><AlertTitle>Access Denied</AlertTitle><AlertDescription>Missing permissions.</AlertDescription></Alert></main>;
@@ -353,7 +312,11 @@ export default function CampaignPage() {
           <p className="text-muted-foreground text-sm max-w-2xl">Manage and monitor all community support initiatives from this centralized command center.</p>
         </div>
 
-        <NewsTicker items={tickerItems} />
+        <div className="space-y-2">
+          <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
+          <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
+          <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
+        </div>
 
         <Card className="animate-fade-in-zoom shadow-md border-primary/5">
           <CardHeader className="p-4 sm:p-6 border-b bg-muted/5">

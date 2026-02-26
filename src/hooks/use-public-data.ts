@@ -1,4 +1,3 @@
-
 'use client';
 import { useMemo } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
@@ -51,6 +50,7 @@ export function usePublicData() {
         },
         yearlySummary: [],
         categorySummary: [],
+        recentDonationsFormatted: [],
       };
     }
 
@@ -167,6 +167,24 @@ export function usePublicData() {
         }))
         .sort((a, b) => parseInt(b.year) - parseInt(a.year));
 
+    // Recent Donations formatting
+    const recentDonationsFormatted = [...donations]
+        .sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime())
+        .slice(0, 15)
+        .map(d => {
+            const primaryLink = d.linkSplit?.[0] || ( (d as any).campaignId ? { linkName: (d as any).campaignName || 'Campaign', linkId: (d as any).campaignId, linkType: 'campaign', amount: d.amount } : null );
+            const initiativeName = primaryLink?.linkName || 'General Fund';
+            return {
+                id: d.id,
+                text: `₹${d.amount.toLocaleString('en-IN')} for ${initiativeName}`,
+                href: (primaryLink?.linkType === 'campaign') 
+                    ? `/campaign-public/${primaryLink.linkId}/summary` 
+                    : (primaryLink?.linkType === 'lead') 
+                        ? `/leads-public/${primaryLink.linkId}/summary` 
+                        : '#'
+            };
+        });
+
     return {
       campaignsWithProgress,
       leadsWithProgress,
@@ -178,6 +196,7 @@ export function usePublicData() {
       },
       yearlySummary: sortedYearlyData,
       categorySummary: Object.entries(amountsByCategory).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})`})),
+      recentDonationsFormatted,
     };
 
   }, [isLoading, campaigns, leads, donations]);

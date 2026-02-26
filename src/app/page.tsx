@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { FolderKanban, Lightbulb } from 'lucide-react';
 
 export default function Home() {
-    const { campaignsWithProgress, leadsWithProgress } = usePublicData();
+    const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted } = usePublicData();
 
     const activeTickerItems = useMemo(() => {
         const activeCampaigns = campaignsWithProgress
@@ -31,11 +31,11 @@ export default function Home() {
     const completedTickerItems = useMemo(() => {
         const completedCampaigns = campaignsWithProgress
             .filter(c => c.status === 'Completed')
-            .map(c => ({ id: c.id, text: c.name, href: `/campaign-public/${c.id}/summary` }));
+            .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-public/${c.id}/summary` }));
         
         const completedLeads = leadsWithProgress
             .filter(l => l.status === 'Completed')
-            .map(l => ({ id: l.id, text: l.name, href: `/leads-public/${l.id}/summary` }));
+            .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
 
         return [...completedCampaigns, ...completedLeads];
     }, [campaignsWithProgress, leadsWithProgress]);
@@ -68,6 +68,7 @@ export default function Home() {
 
               <div className="space-y-2">
                 <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
+                <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
                 <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
               </div>
 

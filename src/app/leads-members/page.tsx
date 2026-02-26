@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -30,6 +29,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from '@/components/news-ticker';
+import { usePublicData } from '@/hooks/use-public-data';
 
 const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handleStatusUpdate, handleCopyClick, handleDeleteClick }: { 
     lead: Lead & { collected: number; progress: number; }, 
@@ -186,82 +186,37 @@ export default function LeadPage() {
   const [leadToCopy, setLeadToCopy] = useState<Lead | null>(null);
   
   const { userProfile, isLoading: isProfileLoading } = useSession();
+  const { leadsWithProgress, campaignsWithProgress, recentDonationsFormatted, areDonationsLoading } = usePublicData();
 
-  const leadsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'leads');
-  }, [firestore]);
-  const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
-
-  const donationsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
-  }, [firestore]);
-  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
-
-  const leadData = useMemo(() => {
-    if (!leads || !donations) return [];
-    const collectedAmounts = new Map<string, number>();
-    const leadsById = new Map(leads.map(l => [l.id, l]));
-
-    donations.forEach(donation => {
-        // Robust fallback for legacy donation formats
-        const links = (donation.linkSplit && donation.linkSplit.length > 0)
-            ? donation.linkSplit
-            : (donation as any).campaignId 
-                ? [{ linkId: (donation as any).campaignId, amount: donation.amount, linkType: 'campaign' }] 
-                : [];
-
-        links.forEach((link: any) => {
-            if (link.linkType !== 'lead') return;
-            const lead = leadsById.get(link.linkId);
-            if (!lead) return;
-
-            // Calculate exact proportion for this lead link
-            const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
-            const proportion = link.amount / totalDonationAmount;
-
-            // Handle category fallback
-            const typeSplits = donation.typeSplit && donation.typeSplit.length > 0
-                ? donation.typeSplit
-                : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount, forFundraising: true }] : []);
-
-            const applicable = typeSplits.reduce((acc, split) => {
-                const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                
-                // Parity with Summary Page logic: category allowed? Zakat earmarked?
-                const isAllowed = lead.allowedDonationTypes?.includes(category as DonationCategory);
-                const isForGoal = category !== 'Zakat' || split.forFundraising !== false;
-
-                if (isAllowed && isForGoal) {
-                    return acc + split.amount;
-                }
-                return acc;
-            }, 0);
-
-            const currentCollected = collectedAmounts.get(link.linkId) || 0;
-            collectedAmounts.set(link.linkId, currentCollected + (applicable * proportion));
-        });
-    });
-
-    return leads.map(lead => {
-        const collected = collectedAmounts.get(lead.id) || 0;
-        const progress = lead.targetAmount ? (collected / lead.targetAmount) * 100 : 0;
-        return { ...lead, collected, progress };
-    });
-  }, [leads, donations]);
-
-  const tickerItems = useMemo(() => {
-    return leadData
+  const activeTickerItems = useMemo(() => {
+    const activeCampaigns = campaignsWithProgress
+      .filter(c => c.status === 'Active')
+      .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-members/${c.id}/summary` }));
+    
+    const activeLeads = leadsWithProgress
       .filter(l => l.status === 'Active')
-      .map(l => ({ id: l.id, text: l.name, href: `/leads-members/${l.id}/summary` }));
-  }, [leadData]);
+      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-members/${l.id}/summary` }));
+
+    return [...activeCampaigns, ...activeLeads];
+  }, [campaignsWithProgress, leadsWithProgress]);
+
+  const completedTickerItems = useMemo(() => {
+    const completedCampaigns = campaignsWithProgress
+      .filter(c => c.status === 'Completed')
+      .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-members/${c.id}/summary` }));
+    
+    const completedLeads = leadsWithProgress
+      .filter(l => l.status === 'Completed')
+      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-members/${l.id}/summary` }));
+
+    return [...completedCampaigns, ...completedLeads];
+  }, [campaignsWithProgress, leadsWithProgress]);
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
-    leadData.forEach(l => l.startDate && years.add(l.startDate.split('-')[0]));
+    leadsWithProgress.forEach(l => l.startDate && years.add(l.startDate.split('-')[0]));
     return Array.from(years).sort((a, b) => b.localeCompare(a));
-  }, [leadData]);
+  }, [leadsWithProgress]);
 
   const canCreate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.create', false);
   const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.update', false);
@@ -287,7 +242,7 @@ export default function LeadPage() {
   };
 
   const filteredLeads = useMemo(() => {
-    let items = leadData.filter(c => 
+    let items = leadsWithProgress.filter(c => 
         (statusFilter === 'All' || c.status === statusFilter) &&
         (purposeFilter === 'All' || c.purpose === purposeFilter) &&
         (authenticityFilter === 'All' || c.authenticityStatus === authenticityFilter) &&
@@ -307,7 +262,7 @@ export default function LeadPage() {
         if (selectedMonth !== 'All') items = items.filter(c => c.startDate?.split('-')[1] === selectedMonth);
     }
     return items;
-  }, [leadData, searchTerm, statusFilter, purposeFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear, selectedMonth]);
+  }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear, selectedMonth]);
 
   const sections = [
     { id: 'active', title: 'Active Leads', items: filteredLeads.filter(c => c.status === 'Active') },
@@ -315,7 +270,7 @@ export default function LeadPage() {
     { id: 'completed', title: 'Completed Leads', items: filteredLeads.filter(c => c.status === 'Completed') }
   ].filter(s => s.items.length > 0);
 
-  const isLoading = areLeadsLoading || isProfileLoading || isDeleting || areDonationsLoading;
+  const isLoading = isProfileLoading || isDeleting || areDonationsLoading;
   
   if (!isLoading && userProfile && !canViewLeads) {
     return <main className="container mx-auto p-4 md:p-8"><Alert variant="destructive"><ShieldAlert className="h-4 w-4" /><AlertTitle>Access Denied</AlertTitle><AlertDescription>Missing permissions.</AlertDescription></Alert></main>;
@@ -334,7 +289,11 @@ export default function LeadPage() {
           <p className="text-muted-foreground text-sm max-w-2xl">Pipeline for vetting and launching new community support opportunities.</p>
         </div>
 
-        <NewsTicker items={tickerItems} />
+        <div className="space-y-2">
+          <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
+          <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
+          <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
+        </div>
 
         <Card className="animate-fade-in-zoom shadow-md border-primary/5">
           <CardHeader className="p-4 border-b bg-muted/5">

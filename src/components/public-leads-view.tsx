@@ -93,19 +93,31 @@ export function PublicLeadsView() {
   const [selectedMonth, setSelectedMonth] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
-  const { isLoading, leadsWithProgress } = usePublicData();
+  const { isLoading, campaignsWithProgress, leadsWithProgress, recentDonationsFormatted } = usePublicData();
 
   const activeTickerItems = useMemo(() => {
-    return leadsWithProgress
+    const activeCampaigns = campaignsWithProgress
+      .filter(c => c.status === 'Active')
+      .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-public/${c.id}/summary` }));
+    
+    const activeLeads = leadsWithProgress
       .filter(l => l.status === 'Active')
-      .map(l => ({ id: l.id, text: l.name, href: `/leads-public/${l.id}/summary` }));
-  }, [leadsWithProgress]);
+      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
+
+    return [...activeCampaigns, ...activeLeads];
+  }, [campaignsWithProgress, leadsWithProgress]);
 
   const completedTickerItems = useMemo(() => {
-    return leadsWithProgress
+    const completedCampaigns = campaignsWithProgress
+      .filter(c => c.status === 'Completed')
+      .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-public/${c.id}/summary` }));
+    
+    const completedLeads = leadsWithProgress
       .filter(l => l.status === 'Completed')
-      .map(l => ({ id: l.id, text: l.name, href: `/leads-public/${l.id}/summary` }));
-  }, [leadsWithProgress]);
+      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
+
+    return [...completedCampaigns, ...completedLeads];
+  }, [campaignsWithProgress, leadsWithProgress]);
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
@@ -149,6 +161,7 @@ export function PublicLeadsView() {
           
           <div className="space-y-2">
             <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
+            <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
             <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
           </div>
 
