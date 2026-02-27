@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -209,7 +208,7 @@ export default function CampaignPage() {
   const [campaignToCopy, setCampaignToCopy] = useState<Campaign | null>(null);
 
   const { userProfile, isLoading: isProfileLoading } = useSession();
-  const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted, areDonationsLoading } = usePublicData();
+  const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted, isLoading: isPublicDataLoading } = usePublicData();
 
   const activeTickerItems = useMemo(() => {
     const activeCampaigns = campaignsWithProgress
@@ -317,10 +316,18 @@ export default function CampaignPage() {
     { id: 'completed', title: 'Completed Campaigns', items: filteredCampaigns.filter(c => c.status === 'Completed') }
   ].filter(s => s.items.length > 0);
 
-  const isLoading = isProfileLoading || isDeleting || areDonationsLoading;
+  const isLoading = isProfileLoading || isDeleting || isPublicDataLoading;
   
   if (!isLoading && userProfile && !canViewCampaigns) {
-    return <main className="container mx-auto p-4 md:p-8"><Alert variant="destructive"><ShieldAlert className="h-4 w-4" /><AlertTitle>Access Denied</AlertTitle><AlertDescription>Missing permissions.</AlertDescription></Alert></main>;
+    return (
+      <main className="container mx-auto p-4 md:p-8">
+        <Alert variant="destructive">
+          <ShieldAlert className="h-4 w-4" />
+          <AlertTitle>Access Denied</AlertTitle>
+          <AlertDescription>Missing permissions.</AlertDescription>
+        </Alert>
+      </main>
+    );
   }
 
   return (

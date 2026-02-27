@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, ArrowUp, ArrowDown, DatabaseZap, Loader2, Eye, CheckCircle2, Hourglass, XCircle, Info, ChevronsUpDown, ChevronDown, ChevronUp, BadgeCheck } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, ArrowUp, ArrowDown, DatabaseZap, Loader2, Eye, CheckCircle2, Hourglass, XCircle, Info, ChevronsUpDown, ChevronDown, ChevronUp, BadgeCheck, ShieldAlert } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -295,7 +296,15 @@ export default function BeneficiariesPage() {
   
   if (isLoading) return <main className="container mx-auto p-4 md:p-8"><Loader2 className="w-8 h-8 animate-spin mx-auto mt-20" /></main>;
   
-  if (!canRead) return <main className="container mx-auto p-4 md:p-8"><Alert variant="destructive"><ShieldAlert className="h-4 w-4" /><AlertTitle>Access Denied</AlertTitle><AlertDescription>Missing permissions.</AlertDescription></Alert></main>;
+  if (!canRead) return (
+    <main className="container mx-auto p-4 md:p-8">
+        <Alert variant="destructive">
+            <ShieldAlert className="h-4 w-4" />
+            <AlertTitle>Access Denied</AlertTitle>
+            <AlertDescription>Missing permissions.</AlertDescription>
+        </Alert>
+    </main>
+  );
 
   return (
     <main className="container mx-auto p-4 md:p-8">

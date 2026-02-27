@@ -1,1 +1,39 @@
-src/app/beneficiaries/page.tsx(176,11): error TS17002: Expected corresponding JSX closing tag for 'React.Fragment'.
+src/app/beneficiaries/page.tsx(298,72): error TS2552: Cannot find name 'Alert'. Did you mean 'alert'?
+src/app/beneficiaries/page.tsx(298,101): error TS2304: Cannot find name 'ShieldAlert'.
+src/app/beneficiaries/page.tsx(298,136): error TS2304: Cannot find name 'AlertTitle'.
+src/app/beneficiaries/page.tsx(298,162): error TS2304: Cannot find name 'AlertTitle'.
+src/app/beneficiaries/page.tsx(298,174): error TS2304: Cannot find name 'AlertDescription'.
+src/app/beneficiaries/page.tsx(298,213): error TS2304: Cannot find name 'AlertDescription'.
+src/app/beneficiaries/page.tsx(298,232): error TS2552: Cannot find name 'Alert'. Did you mean 'alert'?
+src/app/campaign-members/[campaignId]/summary/page.tsx(353,66): error TS2552: Cannot find name 'Alert'. Did you mean 'alert'?
+src/app/campaign-members/[campaignId]/summary/page.tsx(353,130): error TS2304: Cannot find name 'AlertTitle'.
+src/app/campaign-members/[campaignId]/summary/page.tsx(353,161): error TS2304: Cannot find name 'AlertTitle'.
+src/app/campaign-members/[campaignId]/summary/page.tsx(353,173): error TS2304: Cannot find name 'AlertDescription'.
+src/app/campaign-members/[campaignId]/summary/page.tsx(353,221): error TS2304: Cannot find name 'AlertDescription'.
+src/app/campaign-members/[campaignId]/summary/page.tsx(353,240): error TS2552: Cannot find name 'Alert'. Did you mean 'alert'?
+src/app/campaign-members/page.tsx(212,79): error TS2339: Property 'areDonationsLoading' does not exist on type '{ campaignsWithProgress: { collected: number; progress: number; isUpdated: boolean; id: string; campaignNumber?: number | undefined; name: string; imageUrl?: string | undefined; imageUrlFilename?: string | undefined; ... 18 more ...; createdByName?: string | undefined; }[]; ... 5 more ...; isLoading: boolean; }'.
+src/app/campaign-public/[campaignId]/summary/page.tsx(306,82): error TS2339: Property 'amountsByCategory' does not exist on type '{ totalCollectedForGoal: number; fundingProgress: number; targetAmount: number; remainingToCollect: number; totalBeneficiaries: number; beneficiariesGiven: number; beneficiariesPending: number; ... 6 more ...; grandTotal: number; }'.
+src/app/campaign-public/[campaignId]/summary/page.tsx(307,401): error TS2339: Property 'amountsByCategory' does not exist on type '{ totalCollectedForGoal: number; fundingProgress: number; targetAmount: number; remainingToCollect: number; totalBeneficiaries: number; beneficiariesGiven: number; beneficiariesPending: number; ... 6 more ...; grandTotal: number; }'.
+src/app/donations/page.tsx(163,96): error TS2304: Cannot find name 'ImageIcon'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(185,158): error TS2304: Cannot find name 'Select'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(185,219): error TS2304: Cannot find name 'SelectTrigger'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(185,234): error TS2304: Cannot find name 'SelectValue'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(185,271): error TS2304: Cannot find name 'SelectTrigger'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(185,286): error TS2304: Cannot find name 'SelectContent'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(185,301): error TS2304: Cannot find name 'SelectItem'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(185,338): error TS2304: Cannot find name 'SelectItem'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(185,350): error TS2304: Cannot find name 'SelectItem'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(185,382): error TS2304: Cannot find name 'SelectItem'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(185,394): error TS2304: Cannot find name 'SelectItem'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(185,432): error TS2304: Cannot find name 'SelectItem'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(185,444): error TS2304: Cannot find name 'SelectItem'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(185,480): error TS2304: Cannot find name 'SelectItem'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(185,493): error TS2304: Cannot find name 'SelectContent'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(185,509): error TS2304: Cannot find name 'Select'.
+src/app/leads-members/[leadId]/summary/page.tsx(445,66): error TS2304: Cannot find name 'Alert'.
+src/app/leads-members/[leadId]/summary/page.tsx(445,130): error TS2304: Cannot find name 'AlertTitle'.
+src/app/leads-members/[leadId]/summary/page.tsx(445,161): error TS2304: Cannot find name 'AlertTitle'.
+src/app/leads-members/[leadId]/summary/page.tsx(445,173): error TS2304: Cannot find name 'AlertDescription'.
+src/app/leads-members/[leadId]/summary/page.tsx(445,221): error TS2304: Cannot find name 'AlertDescription'.
+src/app/leads-members/[leadId]/summary/page.tsx(445,240): error TS2304: Cannot find name 'Alert'.
+src/app/leads-members/page.tsx(190,79): error TS2339: Property 'areDonationsLoading' does not exist on type '{ campaignsWithProgress: { collected: number; progress: number; isUpdated: boolean; id: string; campaignNumber?: number | undefined; name: string; imageUrl?: string | undefined; imageUrlFilename?: string | undefined; ... 18 more ...; createdByName?: string | undefined; }[]; ... 5 more ...; isLoading: boolean; }'.

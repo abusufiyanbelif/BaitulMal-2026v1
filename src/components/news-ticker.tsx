@@ -49,6 +49,9 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
   const isCompleted = variant === 'completed';
   const isDonation = variant === 'donation';
 
+  // Duplicate items for a seamless marquee loop
+  const displayItems = [...items, ...items];
+
   return (
     <div className={cn(
       "group border rounded-lg overflow-hidden relative flex items-center mb-2 shadow-sm h-12 transition-all hover:shadow-md",
@@ -98,14 +101,17 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         </Button>
       )}
 
-      {/* Scrollable Container */}
+      {/* Scrollable Container with Marquee Animation */}
       <div 
         ref={scrollRef}
         onScroll={checkScroll}
         className="flex-1 flex items-center overflow-x-auto scrollbar-hide snap-x snap-mandatory px-4"
       >
-        <div className="flex items-center gap-4">
-          {items.map((item, idx) => (
+        <div 
+          className="flex items-center gap-4 animate-marquee"
+          style={{ '--duration': `${Math.max(30, items.length * 10)}s` } as React.CSSProperties}
+        >
+          {displayItems.map((item, idx) => (
             <div key={`${item.id}-${idx}`} className="flex items-center shrink-0 snap-center pr-8 border-r border-dashed border-muted-foreground/20 last:border-0">
               <span className={cn(
                 "h-1.5 w-1.5 rounded-full mr-3 shrink-0",

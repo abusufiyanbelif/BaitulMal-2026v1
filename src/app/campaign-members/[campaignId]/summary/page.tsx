@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
@@ -350,7 +351,15 @@ export default function CampaignSummaryPage() {
     if (isLoading) return <BrandedLoader />;
     
     if (campaignError || beneficiariesError || donationsError) {
-        return ( <main className="container mx-auto p-4 md:p-8"><Alert variant="destructive"><ShieldAlert className="h-4 w-4" /><AlertTitle>Error Loading Data</AlertTitle><AlertDescription><p>Problem fetching data.</p></AlertDescription></Alert></main> );
+        return ( 
+          <main className="container mx-auto p-4 md:p-8">
+            <Alert variant="destructive">
+              <ShieldAlert className="h-4 w-4" />
+              <AlertTitle>Error Loading Data</AlertTitle>
+              <AlertDescription><p>Problem fetching data.</p></AlertDescription>
+            </Alert>
+          </main> 
+        );
     }
 
     if (!campaign) return <main className="container mx-auto p-4 md:p-8 text-center"><p>Campaign not found.</p></main>;

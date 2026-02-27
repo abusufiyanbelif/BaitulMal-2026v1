@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -187,7 +186,7 @@ export default function LeadPage() {
   const [leadToCopy, setLeadToCopy] = useState<Lead | null>(null);
   
   const { userProfile, isLoading: isProfileLoading } = useSession();
-  const { leadsWithProgress, campaignsWithProgress, recentDonationsFormatted, areDonationsLoading } = usePublicData();
+  const { leadsWithProgress, campaignsWithProgress, recentDonationsFormatted, isLoading: isPublicDataLoading } = usePublicData();
 
   const activeTickerItems = useMemo(() => {
     const activeCampaigns = campaignsWithProgress
@@ -295,10 +294,18 @@ export default function LeadPage() {
     { id: 'completed', title: 'Completed Leads', items: filteredLeads.filter(c => c.status === 'Completed') }
   ].filter(s => s.items.length > 0);
 
-  const isLoading = isProfileLoading || isDeleting || areDonationsLoading;
+  const isLoading = isProfileLoading || isDeleting || isPublicDataLoading;
   
   if (!isLoading && userProfile && !canViewLeads) {
-    return <main className="container mx-auto p-4 md:p-8"><Alert variant="destructive"><ShieldAlert className="h-4 w-4" /><AlertTitle>Access Denied</AlertTitle><AlertDescription>Missing permissions.</AlertDescription></Alert></main>;
+    return (
+      <main className="container mx-auto p-4 md:p-8">
+        <Alert variant="destructive">
+          <ShieldAlert className="h-4 w-4" />
+          <AlertTitle>Access Denied</AlertTitle>
+          <AlertDescription>Missing permissions.</AlertDescription>
+        </Alert>
+      </main>
+    );
   }
 
   return (

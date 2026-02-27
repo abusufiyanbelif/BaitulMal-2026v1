@@ -127,4 +127,17 @@
   .animate-fade-in-zoom {
     animation: fade-in-zoom 0.4s ease-out forwards;
   }
+
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .animate-marquee {
+    animation: marquee var(--duration, 60s) linear infinite;
+  }
+
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
 }
