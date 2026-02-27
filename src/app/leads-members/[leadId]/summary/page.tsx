@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, usePathname } from 'next/navigation';
+import Image from 'next/image';
 import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, useStorage, useAuth, collection, doc } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
@@ -12,12 +13,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2, Users, Edit, Save, Share2, Hourglass, Download, Gift, UploadCloud, Trash2, Target, File, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, Users, Edit, Save, Share2, Hourglass, Download, Gift, UploadCloud, Trash2, Target, File, ShieldAlert, CheckCircle2, XCircle, GraduationCap, HeartPulse, LifeBuoy, Info, HandHelping } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
@@ -31,7 +32,6 @@ import { Badge } from '@/components/ui/badge';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { Separator } from '@/components/ui/separator';
-import Image from 'next/image';
 import { FileUploader } from '@/components/file-uploader';
 import { Switch } from '@/components/ui/switch';
 import { BrandedLoader } from '@/components/branded-loader';
@@ -466,6 +466,11 @@ export default function LeadSummaryPage() {
         givenLabel = 'Aid Distributed';
     }
 
+    const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : 
+                         lead.purpose === 'Medical' ? HeartPulse : 
+                         lead.purpose === 'Relief' ? LifeBuoy : 
+                         lead.purpose === 'Other' ? Info : HandHelping;
+
     return (
         <main className="container mx-auto p-4 md:p-8">
              <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
@@ -641,7 +646,13 @@ export default function LeadSummaryPage() {
                                 </div>
                             ) : (
                                 <>
-                                    {lead.imageUrl && <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4"><Image src={lead.imageUrl} alt={lead.name} fill sizes="100vw" className="object-cover" /></div>}
+                                    <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center">
+                                        {lead.imageUrl ? (
+                                            <Image src={lead.imageUrl} alt={lead.name} fill sizes="100vw" className="object-cover" />
+                                        ) : (
+                                            <FallbackIcon className="h-20 w-20 text-muted-foreground/30" />
+                                        )}
+                                    </div>
                                     <div className="space-y-2">
                                         <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
                                         <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed text-foreground/90">{lead.description || 'No description provided.'}</p>

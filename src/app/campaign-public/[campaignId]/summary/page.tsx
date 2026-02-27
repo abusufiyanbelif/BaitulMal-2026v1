@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -24,7 +23,7 @@ import {
 import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Share2, Hourglass, Users, Gift, Target, HandHelping, File, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, Share2, Hourglass, Users, Gift, Target, HandHelping, File, CheckCircle2, XCircle, Utensils, LifeBuoy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
@@ -164,7 +163,7 @@ export default function PublicCampaignSummaryPage() {
             zakatPending, 
             zakatAvailableForGoal, 
             zakatForGoalAmount, 
-            amountsByCategory, // Explicitly return for chart usage
+            amountsByCategory, 
             fundTotals,
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
@@ -189,7 +188,8 @@ export default function PublicCampaignSummaryPage() {
     }
     
     const publicDocuments = campaign.documents?.filter(d => d.isPublic) || [];
-    
+    const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
+
     return (
         <main className="container mx-auto p-4 md:p-8">
              <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform"><a href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</a></Button></div>
@@ -197,7 +197,7 @@ export default function PublicCampaignSummaryPage() {
             <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center">
                 {campaign.imageUrl ? (
                     <Image src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`} alt={campaign.name} fill sizes="100vw" className="object-cover" priority />
-                ) : ( <HandHelping className="w-24 h-24 text-muted-foreground" /> )}
+                ) : ( <FallbackIcon className="w-24 h-24 text-muted-foreground/30" /> )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-6"><h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{campaign.name}</h1><p className="text-sm text-white/90 shadow-md">{campaign.status}</p></div>
             </div>

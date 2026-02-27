@@ -1,9 +1,8 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { FolderKanban, HandHelping, CalendarIcon, X } from 'lucide-react';
+import { FolderKanban, HandHelping, CalendarIcon, X, Utensils, LifeBuoy } from 'lucide-react';
 import type { Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -26,62 +25,65 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
     const router = useRouter();
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {campaigns.map((campaign, index) => (
-                <Card 
-                    key={campaign.id} 
-                    className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full" 
-                    style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
-                    onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}
-                >
-                    <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
-                        {campaign.imageUrl ? (
-                            <Image
-                              src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`}
-                              alt={campaign.name}
-                              fill
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                              className="object-cover"
-                              data-ai-hint="campaign background"
-                            />
-                        ) : (
-                            <HandHelping className="h-16 w-16 text-muted-foreground" />
-                        )}
-                    </div>
-                    <CardHeader className="p-4">
-                        <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2">
-                            {campaign.campaignNumber && <span className="text-primary">#{campaign.campaignNumber} </span>}{campaign.name}
-                        </CardTitle>
-                        <CardDescription className="text-[10px] uppercase font-bold tracking-wider">{campaign.startDate} to {campaign.endDate}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-grow space-y-3 p-4 pt-0">
-                        <div className="flex justify-between items-center text-xs">
-                            <Badge variant="outline" className="text-[10px]">{campaign.category}</Badge>
-                            <Badge 
-                              variant={campaign.status === 'Active' ? 'success' : 'outline'}
-                              className={cn("text-[10px]", campaign.status === 'Active' && "animate-status-pulse")}
-                            >
-                              {campaign.status}
-                            </Badge>
+            {campaigns.map((campaign, index) => {
+                const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
+                
+                return (
+                    <Card 
+                        key={campaign.id} 
+                        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full" 
+                        style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
+                        onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}
+                    >
+                        <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
+                            {campaign.imageUrl ? (
+                                <Image
+                                  src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`}
+                                  alt={campaign.name}
+                                  fill
+                                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                  className="object-cover"
+                                />
+                            ) : (
+                                <FallbackIcon className="h-16 w-16 text-muted-foreground/40" />
+                            )}
                         </div>
-                        {(campaign.targetAmount || 0) > 0 && (
-                            <div className="space-y-1.5">
-                                <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
-                                    <span>Collected: ₹{campaign.collected.toLocaleString('en-IN')}</span>
-                                    <span>{Math.round(campaign.progress)}%</span>
-                                </div>
-                                <Progress value={campaign.progress} className="h-1.5" />
+                        <CardHeader className="p-4">
+                            <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2">
+                                {campaign.campaignNumber && <span className="text-primary">#{campaign.campaignNumber} </span>}{campaign.name}
+                            </CardTitle>
+                            <CardDescription className="text-[10px] uppercase font-bold tracking-wider">{campaign.startDate} to {campaign.endDate}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-grow space-y-3 p-4 pt-0">
+                            <div className="flex justify-between items-center text-xs">
+                                <Badge variant="outline" className="text-[10px]">{campaign.category}</Badge>
+                                <Badge 
+                                  variant={campaign.status === 'Active' ? 'success' : 'outline'}
+                                  className={cn("text-[10px]", campaign.status === 'Active' && "animate-status-pulse")}
+                                >
+                                  {campaign.status}
+                                </Badge>
                             </div>
-                        )}
-                    </CardContent>
-                    <CardFooter className="p-2 border-t bg-muted/5">
-                        <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold" size="sm" variant="ghost">
-                            <Link href={`/campaign-public/${campaign.id}/summary`}>
-                                View Details
-                            </Link>
-                        </Button>
-                    </CardFooter>
-                </Card>
-            ))}
+                            {(campaign.targetAmount || 0) > 0 && (
+                                <div className="space-y-1.5">
+                                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
+                                        <span>Collected: ₹{campaign.collected.toLocaleString('en-IN')}</span>
+                                        <span>{Math.round(campaign.progress)}%</span>
+                                    </div>
+                                    <Progress value={campaign.progress} className="h-1.5" />
+                                </div>
+                            )}
+                        </CardContent>
+                        <CardFooter className="p-2 border-t bg-muted/5">
+                            <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold" size="sm" variant="ghost">
+                                <Link href={`/campaign-public/${campaign.id}/summary`}>
+                                    View Details
+                                </Link>
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                );
+            })}
         </div>
     );
 };

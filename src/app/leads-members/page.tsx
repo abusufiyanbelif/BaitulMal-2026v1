@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X } from 'lucide-react';
+import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info } from 'lucide-react';
 import { useFirestore, doc, updateDoc } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import type { Lead } from '@/lib/types';
@@ -42,127 +42,134 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
     handleStatusUpdate: any,
     handleCopyClick: any,
     handleDeleteClick: any
-}) => (
-    <Card 
-        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full" 
-        style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
-        onClick={() => router.push(`/leads-members/${lead.id}/summary`)}
-    >
-      <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
-        {lead.imageUrl ? (
-            <Image
-              src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`}
-              alt={lead.name}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover"
-            />
-        ) : (
-            <HandHelping className="h-16 w-16 text-muted-foreground" />
-        )}
-      </div>
-      <CardHeader className="p-4">
-        <div className="flex justify-between items-start gap-2">
-            <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2">{lead.name}</CardTitle>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                        <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenuItem onClick={() => router.push(`/leads-members/${lead.id}/summary`)} className="cursor-pointer">
-                        <Edit className="mr-2 h-4 w-4" />
-                        View Details
-                    </DropdownMenuItem>
-                    {canUpdate && <DropdownMenuSeparator />}
-                    {canUpdate && (
-                        <>
-                            <DropdownMenuSub>
-                                <DropdownMenuSubTrigger><span>Change Status</span></DropdownMenuSubTrigger>
-                                <DropdownMenuSubContent>
-                                    <DropdownMenuRadioGroup value={lead.status} onValueChange={(value) => handleStatusUpdate(lead, 'status', value)}>
-                                        <DropdownMenuRadioItem value="Upcoming">Upcoming</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Active">Active</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Completed">Completed</DropdownMenuRadioItem>
-                                    </DropdownMenuRadioGroup>
-                                </DropdownMenuSubContent>
-                            </DropdownMenuSub>
-                            <DropdownMenuSub>
-                                <DropdownMenuSubTrigger><span>Verification</span></DropdownMenuSubTrigger>
-                                <DropdownMenuSubContent>
-                                    <DropdownMenuRadioGroup value={lead.authenticityStatus} onValueChange={(value) => handleStatusUpdate(lead, 'authenticityStatus', value as string)}>
-                                        <DropdownMenuRadioItem value="Pending Verification">Pending Verification</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
-                                    </DropdownMenuRadioGroup>
-                                </DropdownMenuSubContent>
-                            </DropdownMenuSub>
-                            <DropdownMenuSub>
-                                <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
-                                <DropdownMenuSubContent>
-                                    <DropdownMenuRadioGroup value={lead.publicVisibility} onValueChange={(value) => handleStatusUpdate(lead, 'publicVisibility', value as string)}>
-                                        <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
-                                    </DropdownMenuRadioGroup>
-                                </DropdownMenuSubContent>
-                            </DropdownMenuSub>
-                        </>
-                    )}
-                    <DropdownMenuSeparator />
-                    {canCreate && (
-                        <DropdownMenuItem onClick={() => handleCopyClick(lead)} className="cursor-pointer">
-                            <Copy className="mr-2 h-4 w-4" />
-                            Copy
+}) => {
+    const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : 
+                         lead.purpose === 'Medical' ? HeartPulse : 
+                         lead.purpose === 'Relief' ? LifeBuoy : 
+                         lead.purpose === 'Other' ? Info : HandHelping;
+
+    return (
+        <Card 
+            className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full" 
+            style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
+            onClick={() => router.push(`/leads-members/${lead.id}/summary`)}
+        >
+          <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
+            {lead.imageUrl ? (
+                <Image
+                  src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`}
+                  alt={lead.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover"
+                />
+            ) : (
+                <FallbackIcon className="h-16 w-16 text-muted-foreground/40" />
+            )}
+          </div>
+          <CardHeader className="p-4">
+            <div className="flex justify-between items-start gap-2">
+                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2">{lead.name}</CardTitle>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuItem onClick={() => router.push(`/leads-members/${lead.id}/summary`)} className="cursor-pointer">
+                            <Edit className="mr-2 h-4 w-4" />
+                            View Details
                         </DropdownMenuItem>
-                    )}
-                    {canDelete && (
-                        <>
-                            {canCreate && <DropdownMenuSeparator />}
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(lead); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
+                        {canUpdate && <DropdownMenuSeparator />}
+                        {canUpdate && (
+                            <>
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger><span>Change Status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubContent>
+                                        <DropdownMenuRadioGroup value={lead.status} onValueChange={(value) => handleStatusUpdate(lead, 'status', value)}>
+                                            <DropdownMenuRadioItem value="Upcoming">Upcoming</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Active">Active</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Completed">Completed</DropdownMenuRadioItem>
+                                        </DropdownMenuRadioGroup>
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuSub>
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger><span>Verification</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubContent>
+                                        <DropdownMenuRadioGroup value={lead.authenticityStatus} onValueChange={(value) => handleStatusUpdate(lead, 'authenticityStatus', value as string)}>
+                                            <DropdownMenuRadioItem value="Pending Verification">Pending Verification</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
+                                        </DropdownMenuRadioGroup>
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuSub>
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubContent>
+                                        <DropdownMenuRadioGroup value={lead.publicVisibility} onValueChange={(value) => handleStatusUpdate(lead, 'publicVisibility', value as string)}>
+                                            <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
+                                        </DropdownMenuRadioGroup>
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuSub>
+                            </>
+                        )}
+                        <DropdownMenuSeparator />
+                        {canCreate && (
+                            <DropdownMenuItem onClick={() => handleCopyClick(lead)} className="cursor-pointer">
+                                <Copy className="mr-2 h-4 w-4" />
+                                Copy
                             </DropdownMenuItem>
-                        </>
-                    )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-        </div>
-        <CardDescription className="text-[10px] font-bold uppercase tracking-wider">{lead.startDate} to {lead.endDate}</CardDescription>
-    </CardHeader>
-    <CardContent className="flex-grow space-y-3 p-4 pt-0">
-          <div className="flex justify-between items-center text-xs">
-            <Badge variant="secondary" className="text-[10px]">{lead.purpose}</Badge>
-            <Badge 
-              variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
-              className={cn("text-[10px]", lead.status === 'Active' && "animate-status-pulse")}
-            >
-              {lead.status}
-            </Badge>
-        </div>
-          {(lead.targetAmount || 0) > 0 && (
-            <div className="space-y-1.5">
-                <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
-                    <span>Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
-                    <span>{Math.round(lead.progress)}%</span>
-                </div>
-                <Progress value={lead.progress} className="h-1.5" />
-                <p className="text-center text-[10px] text-muted-foreground/70">Goal: ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</p>
+                        )}
+                        {canDelete && (
+                            <>
+                                {canCreate && <DropdownMenuSeparator />}
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(lead); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                </DropdownMenuItem>
+                            </>
+                        )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
             </div>
-        )}
-    </CardContent>
-     <CardFooter className="p-2 border-t bg-muted/5">
-        <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold" size="sm" variant="ghost">
-            <Link href={`/leads-members/${lead.id}/summary`}>
-                Manage Lead
-            </Link>
-        </Button>
-    </CardFooter>
-    </Card>
-);
+            <CardDescription className="text-[10px] font-bold uppercase tracking-wider">{lead.startDate} to {lead.endDate}</CardDescription>
+        </CardHeader>
+        <CardContent className="flex-grow space-y-3 p-4 pt-0">
+              <div className="flex justify-between items-center text-xs">
+                <Badge variant="secondary" className="text-[10px]">{lead.purpose}</Badge>
+                <Badge 
+                  variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
+                  className={cn("text-[10px]", lead.status === 'Active' && "animate-status-pulse")}
+                >
+                  {lead.status}
+                </Badge>
+            </div>
+              {(lead.targetAmount || 0) > 0 && (
+                <div className="space-y-1.5">
+                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
+                        <span>Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
+                        <span>{Math.round(lead.progress)}%</span>
+                    </div>
+                    <Progress value={lead.progress} className="h-1.5" />
+                    <p className="text-center text-[10px] text-muted-foreground/70">Goal: ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</p>
+                </div>
+            )}
+        </CardContent>
+         <CardFooter className="p-2 border-t bg-muted/5">
+            <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold" size="sm" variant="ghost">
+                <Link href={`/leads-members/${lead.id}/summary`}>
+                    Manage Lead
+                </Link>
+            </Button>
+        </CardFooter>
+        </Card>
+    );
+};
 
 export default function LeadPage() {
   const router = useRouter();

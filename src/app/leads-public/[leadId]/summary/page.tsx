@@ -22,7 +22,7 @@ import {
 import type { Lead, Beneficiary, Donation, DonationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Share2, Hourglass, Users, Gift, Target, HandHelping, File, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, Share2, Hourglass, Users, Gift, Target, HandHelping, File, CheckCircle2, XCircle, GraduationCap, HeartPulse, LifeBuoy, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
@@ -74,8 +74,8 @@ export default function PublicLeadSummaryPage() {
     const allDonationsCollectionRef = useMemoFirebase(() => (firestore) ? collection(firestore, 'donations') : null, [firestore]);
 
     const { data: lead, isLoading: isLeadLoading, error: leadError } = useDoc<Lead>(leadDocRef);
-    const { data: beneficiaries, isLoading: areBeneficiariesLoading, error: beneficiariesError } = useCollection<Beneficiary>(beneficiariesCollectionRef);
-    const { data: allDonations, isLoading: areDonationsLoading, error: donationsError } = useCollection<Donation>(allDonationsCollectionRef);
+    const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
+    const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
     
     const isLoading = isLeadLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
 
@@ -158,19 +158,21 @@ export default function PublicLeadSummaryPage() {
 
     if (isLoading) return <BrandedLoader />;
 
-    if (!lead || lead.authenticityStatus !== 'Verified' || lead.publicVisibility !== 'Hold' && lead.publicVisibility !== 'Published') {
-        if (lead?.publicVisibility !== 'Published') {
-            return (
-                <main className="container mx-auto p-4 md:p-8 text-center">
-                    <p className="text-lg text-muted-foreground">This lead is not available for public view.</p>
-                    <Button asChild className="mt-4 active:scale-95 transition-transform"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Leads</Link></Button>
-                </main>
-            );
-        }
+    if (!lead || lead.publicVisibility !== 'Published') {
+        return (
+            <main className="container mx-auto p-4 md:p-8 text-center">
+                <p className="text-lg text-muted-foreground">This lead is not available for public view.</p>
+                <Button asChild className="mt-4 active:scale-95 transition-transform"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Leads</Link></Button>
+            </main>
+        );
     }
     
     const publicDocuments = lead.documents?.filter(d => d.isPublic) || [];
-    
+    const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : 
+                         lead.purpose === 'Medical' ? HeartPulse : 
+                         lead.purpose === 'Relief' ? LifeBuoy : 
+                         lead.purpose === 'Other' ? Info : HandHelping;
+
     return (
         <main className="container mx-auto p-4 md:p-8">
              <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
@@ -178,7 +180,7 @@ export default function PublicLeadSummaryPage() {
             <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center">
                 {lead.imageUrl ? (
                     <Image src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`} alt={lead.name} fill sizes="100vw" className="object-cover" priority />
-                ) : ( <HandHelping className="w-24 h-24 text-muted-foreground" /> )}
+                ) : ( <FallbackIcon className="w-24 h-24 text-muted-foreground/30" /> )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-6"><h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{lead.name}</h1><p className="text-sm text-white/90 shadow-md">{lead.status}</p></div>
             </div>

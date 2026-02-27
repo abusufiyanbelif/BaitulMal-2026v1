@@ -1,8 +1,7 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Lightbulb, HandHelping, CalendarIcon, X } from 'lucide-react';
+import { Lightbulb, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info } from 'lucide-react';
 import type { Lead } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -11,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/ui/accordion";
 import { leadPurposesConfig } from '@/lib/modules';
 import Image from 'next/image';
 import { usePublicData } from '@/hooks/use-public-data';
@@ -27,60 +26,66 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
     const router = useRouter();
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {leads.map((lead, index) => (
-                <Card 
-                    key={lead.id} 
-                    className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full" 
-                    style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
-                    onClick={() => router.push(`/leads-public/${lead.id}/summary`)}
-                >
-                    <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
-                        {lead.imageUrl ? (
-                            <Image
-                              src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`}
-                              alt={lead.name}
-                              fill
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                              className="object-cover"
-                              data-ai-hint="lead background"
-                            />
-                        ) : (
-                            <HandHelping className="h-16 w-16 text-muted-foreground" />
-                        )}
-                    </div>
-                    <CardHeader className="p-4">
-                        <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2">{lead.name}</CardTitle>
-                        <CardDescription className="text-[10px] uppercase font-bold tracking-wider">{lead.startDate} to {lead.endDate}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-grow space-y-3 p-4 pt-0">
-                        <div className="flex justify-between items-center text-xs">
-                            <Badge variant="outline" className="text-[10px]">{lead.purpose}</Badge>
-                            <Badge 
-                              variant={lead.status === 'Active' ? 'success' : 'outline'}
-                              className={cn("text-[10px]", lead.status === 'Active' && "animate-status-pulse")}
-                            >
-                              {lead.status}
-                            </Badge>
+            {leads.map((lead, index) => {
+                const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : 
+                                     lead.purpose === 'Medical' ? HeartPulse : 
+                                     lead.purpose === 'Relief' ? LifeBuoy : 
+                                     lead.purpose === 'Other' ? Info : HandHelping;
+
+                return (
+                    <Card 
+                        key={lead.id} 
+                        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full" 
+                        style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
+                        onClick={() => router.push(`/leads-public/${lead.id}/summary`)}
+                    >
+                        <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
+                            {lead.imageUrl ? (
+                                <Image
+                                  src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`}
+                                  alt={lead.name}
+                                  fill
+                                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                  className="object-cover"
+                                />
+                            ) : (
+                                <FallbackIcon className="h-16 w-16 text-muted-foreground/40" />
+                            )}
                         </div>
-                        {(lead.targetAmount || 0) > 0 && (
-                            <div className="space-y-1.5">
-                                <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
-                                    <span>Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
-                                    <span>{Math.round(lead.progress)}%</span>
-                                </div>
-                                <Progress value={lead.progress} className="h-1.5" />
+                        <CardHeader className="p-4">
+                            <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2">{lead.name}</CardTitle>
+                            <CardDescription className="text-[10px] uppercase font-bold tracking-wider">{lead.startDate} to {lead.endDate}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-grow space-y-3 p-4 pt-0">
+                            <div className="flex justify-between items-center text-xs">
+                                <Badge variant="outline" className="text-[10px]">{lead.purpose}</Badge>
+                                <Badge 
+                                  variant={lead.status === 'Active' ? 'success' : 'outline'}
+                                  className={cn("text-[10px]", lead.status === 'Active' && "animate-status-pulse")}
+                                >
+                                  {lead.status}
+                                </Badge>
                             </div>
-                        )}
-                    </CardContent>
-                     <CardFooter className="p-2 border-t bg-muted/5">
-                        <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold" size="sm" variant="ghost">
-                            <Link href={`/leads-public/${lead.id}/summary`}>
-                                View Details
-                            </Link>
-                        </Button>
-                    </CardFooter>
-                </Card>
-            ))}
+                            {(lead.targetAmount || 0) > 0 && (
+                                <div className="space-y-1.5">
+                                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
+                                        <span>Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
+                                        <span>{Math.round(lead.progress)}%</span>
+                                    </div>
+                                    <Progress value={lead.progress} className="h-1.5" />
+                                </div>
+                            )}
+                        </CardContent>
+                         <CardFooter className="p-2 border-t bg-muted/5">
+                            <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold" size="sm" variant="ghost">
+                                <Link href={`/leads-public/${lead.id}/summary`}>
+                                    View Details
+                                </Link>
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                );
+            })}
         </div>
     );
 };
