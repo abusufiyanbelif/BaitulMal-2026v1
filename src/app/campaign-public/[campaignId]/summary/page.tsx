@@ -8,7 +8,6 @@ import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { doc, collection, DocumentReference } from 'firebase/firestore';
-import Link from 'next/navigation';
 import {
   BarChart,
   Bar,
@@ -139,6 +138,18 @@ export default function PublicCampaignSummaryPage() {
         const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
         const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
 
+        const fundTotals = {
+            fitra: amountsByCategory['Fitra'] || 0,
+            zakat: amountsByCategory['Zakat'] || 0,
+            sadaqah: amountsByCategory['Sadaqah'] || 0,
+            fidiya: amountsByCategory['Fidiya'] || 0,
+            interest: amountsByCategory['Interest'] || 0,
+            lillah: amountsByCategory['Lillah'] || 0,
+            loan: amountsByCategory['Loan'] || 0,
+            monthlyContribution: amountsByCategory['Monthly Contribution'] || 0,
+            grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
+        };
+
         return { 
             totalCollectedForGoal, 
             fundingProgress, 
@@ -153,6 +164,7 @@ export default function PublicCampaignSummaryPage() {
             zakatAvailableForGoal, 
             zakatForGoalAmount, 
             amountsByCategory,
+            fundTotals,
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
     }, [allDonations, campaign, beneficiaries]);
@@ -279,7 +291,7 @@ export default function PublicCampaignSummaryPage() {
                         <Card className="animate-fade-in-up shadow-sm border-primary/5" style={{ animationDelay: '600ms' }}>
                             <CardHeader>
                                 <CardTitle>Zakat Utilization</CardTitle>
-                                <CardDescription>Tracking of Zakat funds collected and allocated within this campaign.</CardDescription>
+                                <CardDescription>Tracking of Zakat funds collected and allocated within this initiative.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-semibold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>

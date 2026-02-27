@@ -18,8 +18,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -180,7 +180,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                                     <TableCell className="text-right py-2">
                                                         {tx.screenshotUrl ? (
                                                             <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
-                                                                <Eye className="mr-1 h-3 w-3" /> View
+                                                                <ImageIcon className="mr-1 h-3 w-3" /> View
                                                             </Button>
                                                         ) : <span className="text-muted-foreground text-[10px] italic">No image</span>}
                                                     </TableCell>

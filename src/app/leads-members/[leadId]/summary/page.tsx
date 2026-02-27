@@ -26,7 +26,7 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ShareDialog } from '@/components/share-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters, donationCategories } from '@/lib/modules';
+import { leadPurposesConfig, donationCategories } from '@/lib/modules';
 import { Badge } from '@/components/ui/badge';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
