@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -86,35 +87,29 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                             <>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Change Status</span></DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent>
-                                        <DropdownMenuRadioGroup value={lead.status} onValueChange={(value) => handleStatusUpdate(lead, 'status', value)}>
-                                            <DropdownMenuRadioItem value="Upcoming">Upcoming</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Active">Active</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Completed">Completed</DropdownMenuRadioItem>
-                                        </DropdownMenuRadioGroup>
-                                    </DropdownMenuSubContent>
+                                    <DropdownMenuRadioGroup value={lead.status} onValueChange={(value) => handleStatusUpdate(lead, 'status', value)}>
+                                        <DropdownMenuRadioItem value="Upcoming">Upcoming</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Active">Active</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Completed">Completed</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Verification</span></DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent>
-                                        <DropdownMenuRadioGroup value={lead.authenticityStatus} onValueChange={(value) => handleStatusUpdate(lead, 'authenticityStatus', value as string)}>
-                                            <DropdownMenuRadioItem value="Pending Verification">Pending Verification</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
-                                        </DropdownMenuRadioGroup>
-                                    </DropdownMenuSubContent>
+                                    <DropdownMenuRadioGroup value={lead.authenticityStatus} onValueChange={(value) => handleStatusUpdate(lead, 'authenticityStatus', value as string)}>
+                                        <DropdownMenuRadioItem value="Pending Verification">Pending Verification</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent>
-                                        <DropdownMenuRadioGroup value={lead.publicVisibility} onValueChange={(value) => handleStatusUpdate(lead, 'publicVisibility', value as string)}>
-                                            <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
-                                        </DropdownMenuRadioGroup>
-                                    </DropdownMenuSubContent>
+                                    <DropdownMenuRadioGroup value={lead.publicVisibility} onValueChange={(value) => handleStatusUpdate(lead, 'publicVisibility', value as string)}>
+                                        <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                             </>
                         )}

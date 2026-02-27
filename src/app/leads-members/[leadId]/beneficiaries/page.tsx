@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -26,6 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { 
     ArrowLeft, 
     Edit, 
@@ -47,7 +49,8 @@ import {
     Info,
     FileUp,
     CopyPlus,
-    Search
+    Search,
+    ShieldAlert
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -397,7 +400,7 @@ export default function BeneficiariesPage() {
         <Card className="overflow-hidden">
             <CardContent className="p-0">
                 <Table>
-                    <TableHeader className="bg-muted/50">
+                    <TableHeader>
                         <TableRow>
                             <TableHead className="w-[60px]">#</TableHead>
                             <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name & Phone</SortableHeader>

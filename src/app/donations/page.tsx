@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, MoreHorizontal, Edit, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, DollarSign, FolderKanban, Lightbulb, Trash2, ZoomIn, ZoomOut, RotateCw, RefreshCw, Loader2, DatabaseZap, ShieldAlert, Image as ImageIcon } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Edit, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, DollarSign, FolderKanban, Lightbulb, Trash2, ZoomIn, ZoomOut, RotateCw, RefreshCw, Loader2, DatabaseZap, ShieldAlert, Image as LucideImage } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
 import { syncDonationsAction, deleteDonationAction } from './actions';
+import { BrandedLoader } from '@/components/branded-loader';
 
 type SortKey = keyof Donation | 'srNo';
 
@@ -161,7 +162,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <h4 className="text-sm font-semibold flex items-center gap-2"><ImageIcon className="h-4 w-4 text-primary"/> Transaction History & Artifacts</h4>
+                                <h4 className="text-sm font-semibold flex items-center gap-2"><LucideImage className="h-4 w-4 text-primary"/> Transaction History & Artifacts</h4>
                                 <div className="border rounded-md bg-background overflow-hidden">
                                     <Table>
                                         <TableHeader>
@@ -181,7 +182,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                                     <TableCell className="text-right py-2">
                                                         {tx.screenshotUrl ? (
                                                             <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
-                                                                <ImageIcon className="mr-1 h-3 w-3" /> View
+                                                                <LucideImage className="mr-1 h-3 w-3" /> View
                                                             </Button>
                                                         ) : <span className="text-muted-foreground text-[10px] italic">No image</span>}
                                                     </TableCell>
@@ -330,7 +331,7 @@ export default function DonationsPage() {
 
   const isLoading = areDonationsLoading || isProfileLoading;
 
-  if (isLoading) return <main className="container mx-auto p-4 md:p-8"><Loader2 className="w-8 h-8 animate-spin mx-auto mt-20" /></main>;
+  if (isLoading) return <BrandedLoader />;
 
   return (
     <main className="container mx-auto p-4 md:p-8">
