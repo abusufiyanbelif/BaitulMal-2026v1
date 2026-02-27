@@ -49,7 +49,6 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
   const isCompleted = variant === 'completed';
   const isDonation = variant === 'donation';
 
-  // Duplicate items for a seamless marquee loop
   const displayItems = [...items, ...items];
 
   return (
@@ -59,7 +58,6 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
       isDonation ? "bg-blue-500/5 border-blue-500/10" : 
       "bg-primary/5 border-primary/10"
     )}>
-      {/* Fixed Label */}
       <div className={cn(
         "z-30 h-full px-4 flex items-center border-r shadow-md shrink-0 bg-background",
         isCompleted ? "text-muted-foreground" : 
@@ -78,7 +76,6 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         </span>
       </div>
 
-      {/* Navigation Arrows (Visible on Hover) */}
       {showLeftArrow && (
         <Button
           variant="secondary"
@@ -101,7 +98,6 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         </Button>
       )}
 
-      {/* Scrollable Container with Marquee Animation */}
       <div 
         ref={scrollRef}
         onScroll={checkScroll}
@@ -135,7 +131,6 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         </div>
       </div>
       
-      {/* Edge Fades */}
       <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/50 to-transparent pointer-events-none z-20" />
     </div>
   );

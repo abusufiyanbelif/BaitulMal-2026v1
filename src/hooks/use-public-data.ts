@@ -1,4 +1,3 @@
-
 'use client';
 import { useMemo } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
@@ -66,7 +65,6 @@ export function usePublicData() {
     const allPublicItems = [...campaigns, ...leads];
     const itemsById = new Map(allPublicItems.map(item => [item.id, item]));
 
-    // --- Calculate Collected Amounts for Each Item ---
     const collectedAmounts = new Map<string, number>();
     donations.forEach(donation => {
       const links = (donation.linkSplit && donation.linkSplit.length > 0)
@@ -186,7 +184,6 @@ export function usePublicData() {
         }))
         .sort((a, b) => parseInt(b.year) - parseInt(a.year));
 
-    // Recent Donations formatting
     const recentDonationsFormatted = [...donations]
         .sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime())
         .slice(0, 15)

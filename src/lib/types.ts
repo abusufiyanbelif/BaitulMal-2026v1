@@ -45,6 +45,7 @@ export interface DonationTypeInfo {
   keyUse?: string;
   application?: string;
   imageHint?: string;
+  extraContent?: string;
 }
 
 export interface DonationInfoData extends DocumentData {

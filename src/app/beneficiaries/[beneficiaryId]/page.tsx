@@ -8,7 +8,7 @@ import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
-import { ArrowLeft, Save, Edit, ShieldAlert, FolderKanban, Lightbulb, UserCheck, Check, Hourglass, Loader2, MoreHorizontal, ChevronsUpDown, BadgeCheck, Info, XCircle, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Save, Edit, ShieldAlert, FolderKanban, Lightbulb, UserCheck, Check, Hourglass, Loader2, MoreHorizontal, ChevronsUpDown, BadgeCheck, Info, XCircle, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, DropdownMenuPortal, DropdownMenuRadioGroup, DropdownMenuRadioItem } from '@/components/ui/dropdown-menu';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { useToast } from '@/hooks/use-toast';
@@ -67,7 +67,6 @@ export default function BeneficiaryDetailsPage() {
     }
   }, [redirectUrl]);
 
-  // Fetch parent initiative data for header and tabs
   const campaignDocRef = useMemoFirebase(() => (firestore && initiativeContext?.type === 'campaign') ? doc(firestore, 'campaigns', initiativeContext.id) as DocumentReference<Campaign> : null, [firestore, initiativeContext]);
   const { data: campaign } = useDoc<Campaign>(campaignDocRef);
 
@@ -90,7 +89,7 @@ export default function BeneficiaryDetailsPage() {
             }
         }).catch((err: any) => {
             console.error("Error fetching initiative-specific beneficiary data:", err);
-            toast({ title: "Error", description: "Could not load context-specific data for this beneficiary.", variant: 'destructive'});
+            toast({ title: "Error", description: "Could not load context-specific data.", variant: 'destructive'});
         }).finally(() => {
             setIsInitiativeDataLoading(false);
         });
@@ -103,7 +102,6 @@ export default function BeneficiaryDetailsPage() {
   
   const formBeneficiaryData = useMemo(() => {
       if (!beneficiary) return null;
-      // Merge master data with initiative-specific data. Initiative data takes precedence.
       return {
         ...beneficiary,
         ...initiativeBeneficiaryData,
@@ -167,7 +165,7 @@ export default function BeneficiaryDetailsPage() {
 
     } catch (e: any) {
         console.error("Error fetching linked initiatives:", e);
-        toast({ title: "Error", description: "Could not fetch linked initiatives for this beneficiary.", variant: 'destructive'});
+        toast({ title: "Error", description: "Could not fetch linked initiatives.", variant: 'destructive'});
     } finally {
         setIsLinksLoading(false);
     }
@@ -184,7 +182,7 @@ export default function BeneficiaryDetailsPage() {
 
   const handleSave = async (data: BeneficiaryFormData) => {
     if (!beneficiaryId || !canUpdate || !currentUserProfile || !storage || !auth) {
-        toast({ title: 'Error', description: 'You do not have permission or services are unavailable.', variant: 'destructive' });
+        toast({ title: 'Error', description: 'Permission denied or services unavailable.', variant: 'destructive' });
         return;
     };
     setIsSubmitting(true);
@@ -193,29 +191,17 @@ export default function BeneficiaryDetailsPage() {
     const fileList = data.idProofFile as FileList | undefined;
     const hasFileToUpload = fileList && fileList.length > 0;
 
-    if (hasFileToUpload) {
-        if (isProfileLoading) {
-            toast({ title: 'Please wait', description: 'Authentication is still loading. Please try again in a moment.' });
-            setIsSubmitting(false);
-            return;
-        }
-        if (!auth.currentUser) {
-            toast({
-                title: "Authentication Error",
-                description: "User not authenticated yet. Please wait and try again.",
-                variant: "destructive",
-            });
-            setIsSubmitting(false);
-            return;
-        }
+    if (hasFileToUpload && !auth.currentUser) {
+        toast({ title: "Authentication Error", description: "User not authenticated yet.", variant: "destructive" });
+        setIsSubmitting(false);
+        return;
     }
-
 
     try {
         if (data.idProofDeleted && idProofUrl) {
             const oldFileRef = storageRef(storage, idProofUrl);
             await deleteObject(oldFileRef).catch((err: any) => {
-                if (err.code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
+                if (err.code !== 'storage/object-not-found') console.warn("Old ID proof deletion failed:", err);
             });
             idProofUrl = '';
         }
@@ -228,7 +214,7 @@ export default function BeneficiaryDetailsPage() {
             if(idProofUrl) {
                 const oldFileRef = storageRef(storage, idProofUrl);
                 await deleteObject(oldFileRef).catch((err: any) => {
-                    if (err.code !== 'storage/object-not-found') console.warn("Failed to delete old ID proof:", err);
+                    if (err.code !== 'storage/object-not-found') console.warn("Old ID proof deletion failed:", err);
                 });
             }
             
@@ -246,29 +232,25 @@ export default function BeneficiaryDetailsPage() {
             idProofUrl = await getDownloadURL(uploadResult.ref);
         }
     } catch (uploadError: any) {
-        console.error("File handling error:", uploadError);
-        toast({ title: 'File Error', description: `Could not process the ID proof file: ${uploadError.message}`, variant: 'destructive' });
+        toast({ title: 'File Error', description: `Could not process ID proof: ${uploadError.message}`, variant: 'destructive' });
         setIsSubmitting(false);
         return;
     }
 
     const { idProofFile, idProofDeleted, ...beneficiaryDataFromForm } = data;
     
-    // 1. Data for the master record (strips out initiative-specific fields)
     const { status, kitAmount, zakatAllocation, ...masterData } = beneficiaryDataFromForm;
     const finalMasterData: Partial<Beneficiary> = {
         ...masterData,
         idProofUrl,
     };
     
-    // 2. Data for the specific initiative sub-collection (if in context)
     const initiativeData: Partial<Beneficiary> = {
         ...beneficiaryDataFromForm,
         idProofUrl,
         id: beneficiaryId
     };
 
-    // Run master update first
     const masterUpdateResult = await updateMasterBeneficiaryAction(
         beneficiaryId, 
         finalMasterData,
@@ -276,12 +258,11 @@ export default function BeneficiaryDetailsPage() {
     );
     
     if (!masterUpdateResult.success) {
-        toast({ title: 'Master Record Update Failed', description: masterUpdateResult.message, variant: 'destructive' });
+        toast({ title: 'Update Failed', description: masterUpdateResult.message, variant: 'destructive' });
         setIsSubmitting(false);
         return;
     }
 
-    // If in an initiative context, update the specific sub-collection doc
     if (initiativeContext) {
         const initiativeUpdateResult = await updateInitiativeBeneficiaryDetailsAction(
             initiativeContext.type,
@@ -290,7 +271,7 @@ export default function BeneficiaryDetailsPage() {
             initiativeData
         );
         if (!initiativeUpdateResult.success) {
-            toast({ title: 'Partial Success', description: `Master details saved, but failed to update details for the specific initiative: ${initiativeUpdateResult.message}`, variant: 'destructive'});
+            toast({ title: 'Partial Success', description: `Master details saved, but failed to update initiative-specific data: ${initiativeUpdateResult.message}`, variant: 'destructive'});
             setIsSubmitting(false);
             return;
         }
@@ -321,8 +302,8 @@ export default function BeneficiaryDetailsPage() {
     );
 
     if (result.success) {
-        toast({ title: "Status Updated", description: `Status for '${initiative.name}' set to ${newStatus}.`, variant: "success"});
-        fetchLinkedInitiatives(); // refetch
+        toast({ title: "Status Updated", description: `Status set to ${newStatus}.`, variant: "success"});
+        fetchLinkedInitiatives();
     } else {
         toast({ title: "Update Failed", description: result.message, variant: "destructive" });
     }
@@ -339,25 +320,14 @@ export default function BeneficiaryDetailsPage() {
   if (beneficiaryError) {
     return (
       <main className="container mx-auto p-4 md:p-8">
-        <div className="mb-4">
-          <Button variant="outline" asChild>
-            <Link href={backHref}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
-            </Link>
-          </Button>
-        </div>
+        <div className="mb-4"><Button variant="outline" asChild><Link href={backHref}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Link></Button></div>
         <Card className="max-w-2xl mx-auto">
-          <CardHeader>
-            <CardTitle>Error</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Error</CardTitle></CardHeader>
           <CardContent>
             <Alert variant="destructive">
               <ShieldAlert className="h-4 w-4" />
-              <AlertTitle>Could not load beneficiary data.</AlertTitle>
-              <AlertDescription>
-                <p>This may be due to a network issue or you may not have permission to view this beneficiary.</p>
-                <pre className="mt-2 whitespace-pre-wrap text-xs bg-destructive/10 p-2 rounded-md font-code">{beneficiaryError.message}</pre>
-              </AlertDescription>
+              <AlertTitle>Could not load data.</AlertTitle>
+              <AlertDescription><p>{beneficiaryError.message}</p></AlertDescription>
             </Alert>
           </CardContent>
         </Card>
@@ -368,22 +338,8 @@ export default function BeneficiaryDetailsPage() {
   if (!beneficiary) {
      return (
         <main className="container mx-auto p-4 md:p-8">
-            <div className="mb-4">
-                <Button variant="outline" asChild>
-                    <Link href={backHref}>
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back
-                    </Link>
-                </Button>
-            </div>
-             <Card className="max-w-2xl mx-auto">
-                <CardHeader>
-                    <CardTitle>Beneficiary Not Found</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p>The beneficiary you are trying to edit does not exist.</p>
-                </CardContent>
-            </Card>
+            <div className="mb-4"><Button variant="outline" asChild><Link href={backHref}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Link></Button></div>
+             <Card className="max-w-2xl mx-auto"><CardHeader><CardTitle>Not Found</CardTitle></CardHeader><CardContent><p>The beneficiary does not exist.</p></CardContent></Card>
         </main>
      )
   }
@@ -429,7 +385,7 @@ export default function BeneficiaryDetailsPage() {
                              <Link href={`/leads-members/${initiativeId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "text-muted-foreground")}>Item List</Link>
                         )}
                         {canReadBeneficiaries && (
-                            <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "bg-primary text-primary-foreground shadow")}>Beneficiary List</Link>
+                            <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "bg-primary text-primary-foreground shadow")}>Beneficiary Details</Link>
                         )}
                         {canReadDonations && (
                             <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "text-muted-foreground")}>Donations</Link>
@@ -445,7 +401,7 @@ export default function BeneficiaryDetailsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                   <CardTitle>Beneficiary: {beneficiary.name}</CardTitle>
-                  <CardDescription>View beneficiary details or switch to edit mode.</CardDescription>
+                  <CardDescription>View or edit beneficiary details.</CardDescription>
               </div>
               {canUpdate && !isEditMode && (
                   <Button onClick={() => setIsEditMode(true)}><Edit className="mr-2 h-4 w-4"/>Edit</Button>
@@ -454,13 +410,7 @@ export default function BeneficiaryDetailsPage() {
         </CardHeader>
         <CardContent>
           {!canUpdate && (
-              <Alert>
-                  <ShieldAlert className="h-4 w-4" />
-                  <AlertTitle>Read-Only</AlertTitle>
-                  <AlertDescription>
-                      You have permission to view this beneficiary, but not to edit.
-                  </AlertDescription>
-              </Alert>
+              <Alert><ShieldAlert className="h-4 w-4" /><AlertTitle>Read-Only</AlertTitle><AlertDescription>You do not have permission to edit.</AlertDescription></Alert>
           )}
           <BeneficiaryForm
               beneficiary={formBeneficiaryData}
@@ -479,28 +429,14 @@ export default function BeneficiaryDetailsPage() {
       </Card>
 
       <Card className="max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '200ms'}}>
-        <CardHeader>
-            <CardTitle>Linked To</CardTitle>
-            <CardDescription>This beneficiary is linked to the following initiatives.</CardDescription>
-        </CardHeader>
+        <CardHeader><CardTitle>Linked Initiatives</CardTitle></CardHeader>
         <CardContent>
             {isLinksLoading ? (
-                <div className="flex justify-center items-center py-4">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    <span className="ml-2">Scanning initiatives...</span>
-                </div>
+                <div className="flex justify-center items-center py-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /><span className="ml-2">Scanning...</span></div>
             ) : linkedInitiatives.length > 0 ? (
                 <div className="border rounded-lg overflow-hidden">
                     <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Initiative Name</TableHead>
-                                <TableHead>Type</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Kit Amount (₹)</TableHead>
-                                {canUpdate && <TableHead className="w-[100px] text-right">Actions</TableHead>}
-                            </TableRow>
-                        </TableHeader>
+                        <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Type</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Amount (₹)</TableHead>{canUpdate && <TableHead className="w-[100px] text-right">Actions</TableHead>}</TableRow></TableHeader>
                         <TableBody>
                             {linkedInitiatives.map((link) => (
                                 <TableRow key={link.id}>
@@ -511,38 +447,21 @@ export default function BeneficiaryDetailsPage() {
                                         </Link>
                                     </TableCell>
                                     <TableCell><Badge variant="outline">{link.type}</Badge></TableCell>
-                                    <TableCell>
-                                      <Badge variant={link.beneficiaryStatus === 'Given' || link.beneficiaryStatus === 'Verified' ? 'success' : link.beneficiaryStatus === 'Pending' ? 'secondary' : 'destructive'}>
-                                        {link.beneficiaryStatus === 'Verified' ? <UserCheck className="mr-1 h-3 w-3" /> : link.beneficiaryStatus === 'Given' ? <Check className="mr-1 h-3 w-3"/> : <Hourglass className="mr-1 h-3 w-3" />}
-                                        {link.beneficiaryStatus}
-                                      </Badge>
-                                    </TableCell>
+                                    <TableCell><Badge variant={link.beneficiaryStatus === 'Given' || link.beneficiaryStatus === 'Verified' ? 'success' : 'secondary'}>{link.beneficiaryStatus}</Badge></TableCell>
                                     <TableCell className="text-right font-mono">₹{link.kitAmount.toFixed(2)}</TableCell>
                                     {canUpdate && (
                                         <TableCell className="text-right">
                                             <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" disabled={isUpdatingStatus}>
-                                                        {isUpdatingStatus ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
-                                                    </Button>
-                                                </DropdownMenuTrigger>
+                                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" disabled={isUpdatingStatus}><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                 <DropdownMenuContent>
                                                     <DropdownMenuSub>
-                                                        <DropdownMenuSubTrigger>
-                                                            <ChevronsUpDown className="mr-2 h-4 w-4" />
-                                                            <span>Change Status</span>
-                                                        </DropdownMenuSubTrigger>
+                                                        <DropdownMenuSubTrigger><ChevronsUpDown className="mr-2 h-4 w-4" />Status</DropdownMenuSubTrigger>
                                                         <DropdownMenuPortal>
                                                             <DropdownMenuSubContent>
-                                                                <DropdownMenuRadioGroup
-                                                                    value={link.beneficiaryStatus}
-                                                                    onValueChange={(newStatus) => handleInitiativeStatusChange(link, newStatus as Beneficiary['status'])}
-                                                                >
-                                                                    <DropdownMenuRadioItem value="Pending"><Hourglass className="mr-2"/>Pending</DropdownMenuRadioItem>
-                                                                    <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2"/>Verified</DropdownMenuRadioItem>
-                                                                    <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2"/>Given</DropdownMenuRadioItem>
-                                                                    <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2"/>Hold</DropdownMenuRadioItem>
-                                                                    <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2"/>Need More Details</DropdownMenuRadioItem>
+                                                                <DropdownMenuRadioGroup value={link.beneficiaryStatus} onValueChange={(s) => handleInitiativeStatusChange(link, s as any)}>
+                                                                    <DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem>
                                                                 </DropdownMenuRadioGroup>
                                                             </DropdownMenuSubContent>
                                                         </DropdownMenuPortal>
@@ -557,7 +476,7 @@ export default function BeneficiaryDetailsPage() {
                     </Table>
                 </div>
             ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">This beneficiary is not yet linked to any campaigns or leads.</p>
+                <p className="text-sm text-muted-foreground text-center py-4">Not linked to any initiatives.</p>
             )}
         </CardContent>
       </Card>
