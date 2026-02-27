@@ -82,7 +82,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-} from "@/Dialog";
+} from "@/components/ui/dialog";
 import {
     Select,
     SelectContent,
