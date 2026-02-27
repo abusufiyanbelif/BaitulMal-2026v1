@@ -1,8 +1,22 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+
+import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc, collection, doc, serverTimestamp, writeBatch, setDoc, DocumentReference } from '@/firebase';
+import { 
+    useFirestore, 
+    useStorage, 
+    useAuth, 
+    useMemoFirebase, 
+    useCollection, 
+    useDoc, 
+    collection, 
+    doc, 
+    serverTimestamp, 
+    writeBatch, 
+    setDoc, 
+    DocumentReference 
+} from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -15,7 +29,31 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, CheckCircle2, Hourglass, XCircle, Info, ChevronsUpDown, ChevronDown, ChevronUp, BadgeCheck } from 'lucide-react';
+import { 
+    ArrowLeft, 
+    Edit, 
+    MoreHorizontal, 
+    PlusCircle, 
+    Trash2, 
+    Loader2, 
+    Eye, 
+    ArrowUp, 
+    ArrowDown, 
+    CheckCircle2, 
+    Hourglass, 
+    XCircle, 
+    Info, 
+    ChevronsUpDown, 
+    ChevronDown, 
+    ChevronUp, 
+    BadgeCheck, 
+    Users, 
+    UserCheck, 
+    FileUp, 
+    Search,
+    AlertCircle,
+    CopyPlus
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,7 +82,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/Dialog";
 import {
     Select,
     SelectContent,
@@ -54,10 +92,12 @@ import {
 } from "@/components/ui/select";
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog';
+import { BeneficiaryImportDialog, type ProcessedRecord } from '@/components/beneficiary-import-dialog';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { updateMasterBeneficiaryAction } from '@/app/beneficiaries/actions';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 type SortKey = keyof Beneficiary | 'srNo';
 type BeneficiaryStatus = Beneficiary['status'];
@@ -74,26 +114,54 @@ function SortableHeader({ sortKey, children, className, sortConfig, handleSort }
     );
 };
 
+const StatCard = ({ title, count, description, icon: Icon, colorClass, delay }: { title: string, count: number, description: string, icon: any, colorClass: string, delay: string }) => (
+    <Card className={cn("animate-fade-in-up shadow-sm", delay)} style={{ animationFillMode: 'backwards' }}>
+        <CardContent className="p-4 flex items-start justify-between">
+            <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">{title}</p>
+                <div className="text-2xl font-bold">{count}</div>
+                <p className="text-[10px] text-muted-foreground">{description}</p>
+            </div>
+            <div className={cn("p-2 rounded-full bg-muted", colorClass)}>
+                <Icon className="h-4 w-4" />
+            </div>
+        </CardContent>
+    </Card>
+);
+
 const BeneficiaryRow = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, onStatusChange, onZakatToggle }: { beneficiary: Beneficiary, index: number, canUpdate?: boolean, canDelete?: boolean, onView: (b: Beneficiary) => void, onEdit: (b: Beneficiary) => void, onDelete: (id: string) => void, onStatusChange: (b: Beneficiary, s: BeneficiaryStatus) => void, onZakatToggle: (b: Beneficiary) => void }) => {
     const [isOpen, setIsOpen] = useState(false);
     return (
         <React.Fragment>
-            <TableRow className="bg-background hover:bg-accent/50 cursor-pointer" onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? 'open' : 'closed'}>
-                <TableCell className="w-[120px]">
+            <TableRow className="bg-background hover:bg-accent/50 cursor-pointer border-none" onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? 'open' : 'closed'}>
+                <TableCell className="w-[60px]">
                     <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">{isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</Button>
-                        <span>{index}</span>
+                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                            {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                        </Button>
+                        <span className="text-xs text-muted-foreground">{index}</span>
                     </div>
                 </TableCell>
-                <TableCell className="font-medium"><div>{beneficiary.name}</div><div className="text-xs text-muted-foreground font-mono">{beneficiary.phone}</div></TableCell>
-                <TableCell><Badge variant={beneficiary.status === 'Given' || beneficiary.status === 'Verified' ? 'success' : beneficiary.status === 'Pending' ? 'secondary' : 'outline'}>{beneficiary.status}</Badge></TableCell>
-                <TableCell><Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'}>{beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}</Badge></TableCell>
-                <TableCell className="text-right font-medium">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
-                <TableCell>{beneficiary.referralBy}</TableCell>
-                {(canUpdate || canDelete) && (
+                <TableCell className="font-medium">
+                    <div className="text-sm">{beneficiary.name}</div>
+                    <div className="text-[10px] text-muted-foreground font-mono">{beneficiary.phone || 'N/A'}</div>
+                </TableCell>
+                <TableCell>
+                    <Badge variant={beneficiary.status === 'Given' ? 'success' : beneficiary.status === 'Verified' ? 'success' : beneficiary.status === 'Pending' ? 'secondary' : 'destructive'} className="text-[10px]">
+                        {beneficiary.status}
+                    </Badge>
+                </TableCell>
+                <TableCell>
+                    <Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'} className="text-[10px]">
+                        {beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}
+                    </Badge>
+                </TableCell>
+                <TableCell className="text-right font-mono text-sm">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
+                <TableCell className="text-right font-mono text-sm">₹{(beneficiary.zakatAllocation || 0).toFixed(2)}</TableCell>
+                <TableCell className="text-xs">{beneficiary.referralBy || 'Self'}</TableCell>
                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => onView(beneficiary)}><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
                             {canUpdate && <DropdownMenuItem onClick={() => onEdit(beneficiary)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
@@ -112,16 +180,29 @@ const BeneficiaryRow = ({ beneficiary, index, canUpdate, canDelete, onView, onEd
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </TableCell>
-                )}
             </TableRow>
             {isOpen && (
-                 <TableRow className="bg-muted/20 hover:bg-muted/30">
-                    <TableCell colSpan={8} className="p-4">
-                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6">
-                            <div><p className="text-xs font-semibold uppercase text-muted-foreground">Address</p><p className="text-sm font-medium">{beneficiary.address || 'N/A'}</p></div>
-                            <div><p className="text-xs font-semibold uppercase text-muted-foreground">Age</p><p className="text-sm font-medium">{beneficiary.age || 'N/A'}</p></div>
-                            <div><p className="text-xs font-semibold uppercase text-muted-foreground">Family</p><p className="text-sm font-medium">Total: {beneficiary.members}, Earning: {beneficiary.earningMembers}</p></div>
-                            {beneficiary.notes && <div className="sm:col-span-2 lg:col-span-3"><p className="text-xs font-semibold uppercase text-muted-foreground">Notes</p><p className="text-sm whitespace-pre-wrap">{beneficiary.notes}</p></div>}
+                 <TableRow className="bg-muted/20 border-b">
+                    <TableCell colSpan={8} className="p-4 pt-0">
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs animate-fade-in-down">
+                            <div className="space-y-2">
+                                <div><p className="font-bold text-primary uppercase tracking-tighter">Address</p><p className="text-foreground/80 leading-relaxed">{beneficiary.address || 'N/A'}</p></div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div><p className="font-bold text-primary uppercase tracking-tighter">Family</p><p>Total: {beneficiary.members || 0}, Earning: {beneficiary.earningMembers || 0}</p></div>
+                                    <div><p className="font-bold text-primary uppercase tracking-tighter">ID Proof</p><p>{beneficiary.idProofType || 'N/A'} - {beneficiary.idNumber || 'N/A'}</p></div>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div><p className="font-bold text-primary uppercase tracking-tighter">Age</p><p>{beneficiary.age || 'N/A'}</p></div>
+                                    <div><p className="font-bold text-primary uppercase tracking-tighter">Occupation</p><p>{beneficiary.occupation || 'N/A'}</p></div>
+                                </div>
+                                <div><p className="font-bold text-primary uppercase tracking-tighter">Date Added</p><p>{beneficiary.addedDate || 'N/A'}</p></div>
+                            </div>
+                            <div className="space-y-2">
+                                <div><p className="font-bold text-primary uppercase tracking-tighter">Zakat Allocation</p><p className="font-mono font-bold">₹{(beneficiary.zakatAllocation || 0).toFixed(2)}</p></div>
+                                <div><p className="font-bold text-primary uppercase tracking-tighter">Notes</p><p className="whitespace-pre-wrap italic">{beneficiary.notes || 'No notes.'}</p></div>
+                            </div>
                         </div>
                     </TableCell>
                 </TableRow>
@@ -147,11 +228,13 @@ export default function BeneficiariesPage() {
   const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingBeneficiary, setEditingBeneficiary] = useState<Beneficiary | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [zakatFilter, setZakatFilter] = useState('All');
+  const [referralFilter, setReferralFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
   const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -165,6 +248,26 @@ export default function BeneficiariesPage() {
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.update', false);
   const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.delete', false);
 
+  const referralOptions = useMemo(() => {
+    if (!beneficiaries) return [];
+    const referrals = new Set(beneficiaries.map(b => b.referralBy || 'Self').filter(Boolean));
+    return Array.from(referrals).sort();
+  }, [beneficiaries]);
+
+  const stats = useMemo(() => {
+    if (!beneficiaries) return { total: 0, pending: 0, verified: 0, given: 0, hold: 0, needDetails: 0, totalAmount: 0 };
+    return beneficiaries.reduce((acc, b) => {
+        acc.total++;
+        acc.totalAmount += (b.kitAmount || 0);
+        if (b.status === 'Pending') acc.pending++;
+        else if (b.status === 'Verified') acc.verified++;
+        else if (b.status === 'Given') acc.given++;
+        else if (b.status === 'Hold') acc.hold++;
+        else if (b.status === 'Need More Details') acc.needDetails++;
+        return acc;
+    }, { total: 0, pending: 0, verified: 0, given: 0, hold: 0, needDetails: 0, totalAmount: 0 });
+  }, [beneficiaries]);
+
   const handleSort = (key: SortKey) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -177,21 +280,45 @@ export default function BeneficiariesPage() {
   const handleEdit = (b: Beneficiary) => { router.push(`/beneficiaries/${b.id}?redirect=${pathname}`); };
   const handleDeleteClick = (id: string) => { setBeneficiaryToDelete(id); setIsDeleteDialogOpen(true); };
 
-  const filteredAndSortedBeneficiaries = useMemo(() => {
+  const filteredBeneficiaries = useMemo(() => {
     if (!beneficiaries) return [];
-    let items = beneficiaries.filter(b => (statusFilter === 'All' || b.status === statusFilter) && (b.name?.toLowerCase().includes(searchTerm.toLowerCase()) || b.phone?.includes(searchTerm)));
-    if (sortConfig) items.sort((a, b) => {
-        const aVal = String(a[sortConfig.key as keyof Beneficiary] || '').toLowerCase();
-        const bVal = String(b[sortConfig.key as keyof Beneficiary] || '').toLowerCase();
-        return sortConfig.direction === 'ascending' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    let items = beneficiaries.filter(b => {
+        const matchesSearch = (b.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                               b.phone?.includes(searchTerm) || 
+                               b.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                               b.referralBy?.toLowerCase().includes(searchTerm.toLowerCase()));
+        const matchesStatus = statusFilter === 'All' || b.status === statusFilter;
+        const matchesZakat = zakatFilter === 'All' || (zakatFilter === 'Eligible' ? b.isEligibleForZakat : !b.isEligibleForZakat);
+        const matchesReferral = referralFilter === 'All' || (b.referralBy || 'Self') === referralFilter;
+        return matchesSearch && matchesStatus && matchesZakat && matchesReferral;
     });
+
+    if (sortConfig) {
+        items.sort((a, b) => {
+            if (sortConfig.key === 'srNo') return 0;
+            const aVal = String(getNestedValue(a, sortConfig.key as string, '')).toLowerCase();
+            const bVal = String(getNestedValue(b, sortConfig.key as string, '')).toLowerCase();
+            return sortConfig.direction === 'ascending' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+        });
+    }
     return items;
-  }, [beneficiaries, searchTerm, statusFilter, sortConfig]);
+  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, referralFilter, sortConfig]);
+
+  const groupedBeneficiaries = useMemo(() => {
+    const groups: Record<string, Beneficiary[]> = {};
+    filteredBeneficiaries.forEach(b => {
+        const group = b.referralBy || 'Self';
+        if (!groups[group]) groups[group] = [];
+        groups[group].push(b);
+    });
+    return Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [filteredBeneficiaries]);
 
   const handleStatusChange = (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => {
     if (!firestore || !campaignId || !canUpdate) return;
     const ref = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiary.id);
-    setDoc(ref, { status: newStatus }, { merge: true }).catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { status: newStatus } })));
+    const updateData = { status: newStatus };
+    setDoc(ref, updateData, { merge: true }).catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: updateData })));
   };
 
   const handleZakatToggle = (beneficiary: Beneficiary) => {
@@ -232,17 +359,13 @@ export default function BeneficiariesPage() {
     setIsSubmitting(false);
   };
 
-  const handleSelectExisting = (beneficiaryData: Beneficiary) => {
-    handleFormSubmit({ ...beneficiaryData, kitAmount: 0, status: 'Pending' } as any, beneficiaryData.id);
-  };
-
-  if (isCampaignLoading || areBeneficiariesLoading || isProfileLoading) return <Loader2 className="w-8 h-8 animate-spin mx-auto mt-20" />;
+  if (isCampaignLoading || areBeneficiariesLoading || isProfileLoading) return <BrandedLoader />;
   if (!campaign) return <p className="text-center mt-20">Campaign not found.</p>;
 
   return (
-    <main className="container mx-auto p-4 md:p-8">
+    <main className="container mx-auto p-4 md:p-8 space-y-6">
         <div className="mb-4"><Button variant="outline" asChild><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back</Link></Button></div>
-        <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold">{campaign.name}</h1></div>
+        <h1 className="text-4xl font-bold text-primary tracking-tight">{campaign.name}</h1>
         
         <div className="border-b mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
@@ -263,15 +386,115 @@ export default function BeneficiariesPage() {
             </ScrollArea>
         </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-start justify-between"><div><CardTitle>Beneficiary List ({filteredAndSortedBeneficiaries.length})</CardTitle></div><div className="flex gap-2">{canCreate && <><Button variant="outline" onClick={() => setIsSearchOpen(true)}>Add Existing</Button><Button onClick={() => setIsFormOpen(true)}>Add New</Button></>}</div></CardHeader>
-          <CardContent><div className="flex gap-2 mb-4"><Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /><Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-auto md:w-[180px]"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Pending">Pending</SelectItem></SelectContent></Select></div>
-            <Table><TableHeader><TableRow><SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader><SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name &amp; Phone</SortableHeader><SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader><SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort}>Zakat</SortableHeader><TableHead className="text-right">Kit Amount</TableHead><SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort}>Referred By</SortableHeader><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
-            <TableBody>{filteredAndSortedBeneficiaries.map((b, i) => <BeneficiaryRow key={b.id} beneficiary={b} index={i+1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} />)}</TableBody></Table>
-          </CardContent>
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+            <div className="space-y-1">
+                <h2 className="text-2xl font-bold text-primary">Beneficiary List ({stats.total})</h2>
+                <p className="text-sm text-muted-foreground">Total amount for filtered beneficiaries: <span className="font-bold text-foreground">₹{filteredBeneficiaries.reduce((sum, b) => sum + (b.kitAmount || 0), 0).toFixed(2)}</span></p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="gap-2"><FileUp className="h-4 w-4"/> Import Data</Button>
+                <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="gap-2"><CopyPlus className="h-4 w-4"/> Add from Existing</Button>
+                <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2"><PlusCircle className="h-4 w-4"/> Add New Beneficiary</Button>
+            </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <StatCard title="Total" count={stats.total} description="All beneficiaries" icon={Users} colorClass="text-primary" delay="delay-0" />
+            <StatCard title="Pending" count={stats.pending} description="Awaiting verification" icon={Hourglass} colorClass="text-amber-500" delay="delay-100" />
+            <StatCard title="Verified" count={stats.verified} description="Need confirmed" icon={UserCheck} colorClass="text-green-500" delay="delay-200" />
+            <StatCard title="Given" count={stats.given} description="Kits distributed" icon={CheckCircle2} colorClass="text-emerald-600" delay="delay-300" />
+            <StatCard title="Hold" count={stats.hold} description="Temporarily on hold" icon={XCircle} colorClass="text-red-500" delay="delay-400" />
+            <StatCard title="Need Details" count={stats.needDetails} description="More info needed" icon={Info} colorClass="text-blue-500" delay="delay-500" />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 bg-muted/10 p-4 rounded-xl border">
+            <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search by name, phone, address, referral..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9 text-xs" />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-[150px] h-9 text-xs"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Hold">Hold</SelectItem><SelectItem value="Need More Details">Need Details</SelectItem></SelectContent></Select>
+            <Select value={zakatFilter} onValueChange={setZakatFilter}><SelectTrigger className="w-[150px] h-9 text-xs"><SelectValue placeholder="All Zakat Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Zakat Status</SelectItem><SelectItem value="Eligible">Eligible</SelectItem><SelectItem value="Not Eligible">Not Eligible</SelectItem></SelectContent></Select>
+            <Select value={referralFilter} onValueChange={setReferralFilter}><SelectTrigger className="w-[180px] h-9 text-xs"><SelectValue placeholder="Filter by referral..." /></SelectTrigger><SelectContent><SelectItem value="All">All Referrals</SelectItem>{referralOptions.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent></Select>
+        </div>
+
+        <Card className="overflow-hidden">
+            <CardContent className="p-0">
+                <Table>
+                    <TableHeader className="bg-muted/50">
+                        <TableRow>
+                            <TableHead className="w-[60px]">#</TableHead>
+                            <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name & Phone</SortableHeader>
+                            <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
+                            <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort}>Zakat</SortableHeader>
+                            <TableHead className="text-right">Kit Amount (₹)</TableHead>
+                            <TableHead className="text-right">Zakat Allocation (₹)</TableHead>
+                            <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort}>Referred By</SortableHeader>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {groupedBeneficiaries.length > 0 ? (
+                            <Accordion type="multiple" defaultValue={groupedBeneficiaries.map(([name]) => name)} className="w-full">
+                                {groupedBeneficiaries.map(([groupName, groupItems], gIdx) => (
+                                    <React.Fragment key={groupName}>
+                                        <TableRow className="bg-muted/30 border-b hover:bg-muted/40">
+                                            <TableCell colSpan={8} className="p-0">
+                                                <AccordionItem value={groupName} className="border-none">
+                                                    <AccordionTrigger className="px-4 py-2 hover:no-underline">
+                                                        <div className="flex items-center gap-2">
+                                                            <Users className="h-4 w-4 text-primary" />
+                                                            <span className="font-bold">{groupName} ({groupItems.length} beneficiaries)</span>
+                                                        </div>
+                                                    </AccordionTrigger>
+                                                    <AccordionContent className="p-0">
+                                                        {groupItems.map((b, i) => (
+                                                            <BeneficiaryRow 
+                                                                key={b.id} 
+                                                                beneficiary={b} 
+                                                                index={i + 1} 
+                                                                canUpdate={canUpdate} 
+                                                                canDelete={canDelete} 
+                                                                onView={handleView} 
+                                                                onEdit={handleEdit} 
+                                                                onDelete={handleDeleteClick} 
+                                                                onStatusChange={handleStatusChange} 
+                                                                onZakatToggle={handleZakatToggle} 
+                                                            />
+                                                        ))}
+                                                    </AccordionContent>
+                                                </AccordionItem>
+                                            </TableCell>
+                                        </TableRow>
+                                    </React.Fragment>
+                                ))}
+                            </Accordion>
+                        ) : (
+                            <TableRow><TableCell colSpan={8} className="text-center py-20 text-muted-foreground italic">No beneficiaries found matching your filters.</TableCell></TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </CardContent>
         </Card>
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}><DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Add Beneficiary</DialogTitle></DialogHeader><BeneficiaryForm onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} itemCategories={campaign.itemCategories || []} /></DialogContent></Dialog>
-        <BeneficiarySearchDialog open={isSearchOpen} onOpenChange={setIsSearchOpen} onSelectBeneficiary={handleSelectExisting} currentLeadId={campaignId} initiativeType="campaign" />
+
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader><DialogTitle>Add New Beneficiary</DialogTitle></DialogHeader>
+                <BeneficiaryForm onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} itemCategories={campaign.itemCategories || []} />
+            </DialogContent>
+        </Dialog>
+
+        <BeneficiarySearchDialog open={isSearchOpen} onOpenChange={setIsSearchOpen} onSelectBeneficiary={(b) => handleFormSubmit(b as any, b.id)} currentLeadId={campaignId} initiativeType="campaign" />
+        <BeneficiaryImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} processedRecords={[]} onConfirm={() => {}} isImporting={false} />
+        
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader><AlertDialogTitle>Confirm Deletion</AlertDialogTitle><AlertDialogDescription>This will remove the beneficiary from this campaign. The master record will remain intact.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => {}} className="bg-destructive text-white hover:bg-destructive/90">Delete</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </main>
   );
 }
