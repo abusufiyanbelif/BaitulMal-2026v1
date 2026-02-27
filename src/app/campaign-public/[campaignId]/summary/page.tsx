@@ -8,7 +8,7 @@ import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { doc, collection, DocumentReference } from 'firebase/firestore';
-import Link from 'next/link';
+import Link from 'next/navigation';
 import {
   BarChart,
   Bar,
@@ -54,10 +54,8 @@ const donationCategoryChartConfig = {
 
 export default function PublicCampaignSummaryPage() {
     const params = useParams();
-    const router = useRouter();
     const campaignId = params.campaignId as string;
     const firestore = useFirestore();
-    const { toast } = useToast();
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
     
@@ -75,9 +73,9 @@ export default function PublicCampaignSummaryPage() {
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && campaignId) ? collection(firestore, `campaigns/${campaignId}/beneficiaries`) : null, [firestore, campaignId]);
     const allDonationsCollectionRef = useMemoFirebase(() => (firestore) ? collection(firestore, 'donations') : null, [firestore]);
 
-    const { data: campaign, isLoading: isCampaignLoading, error: campaignError } = useDoc<Campaign>(campaignDocRef);
-    const { data: beneficiaries, isLoading: areBeneficiariesLoading, error: beneficiariesError } = useCollection<Beneficiary>(beneficiariesCollectionRef);
-    const { data: allDonations, isLoading: areDonationsLoading, error: donationsError } = useCollection<Donation>(allDonationsCollectionRef);
+    const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
+    const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
+    const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
     
     const isLoading = isCampaignLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
 
@@ -154,7 +152,7 @@ export default function PublicCampaignSummaryPage() {
             zakatPending, 
             zakatAvailableForGoal, 
             zakatForGoalAmount, 
-            fundTotals: amountsByCategory,
+            amountsByCategory,
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
     }, [allDonations, campaign, beneficiaries]);
@@ -168,22 +166,20 @@ export default function PublicCampaignSummaryPage() {
 
     if (isLoading) return <BrandedLoader />;
 
-    if (!campaign || campaign.authenticityStatus !== 'Verified' || campaign.publicVisibility !== 'Hold' && campaign.publicVisibility !== 'Published') {
-        if (campaign?.publicVisibility !== 'Published') {
-            return (
-                <main className="container mx-auto p-4 md:p-8 text-center">
-                    <p className="text-lg text-muted-foreground">This campaign is not publicly available.</p>
-                    <Button asChild className="mt-4 active:scale-95 transition-transform"><Link href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Campaigns</Link></Button>
-                </main>
-            );
-        }
+    if (!campaign || campaign.publicVisibility !== 'Published') {
+        return (
+            <main className="container mx-auto p-4 md:p-8 text-center">
+                <p className="text-lg text-muted-foreground">This campaign is not publicly available.</p>
+                <Button asChild className="mt-4 active:scale-95 transition-transform"><a href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Campaigns</a></Button>
+            </main>
+        );
     }
     
     const publicDocuments = campaign.documents?.filter(d => d.isPublic) || [];
     
     return (
         <main className="container mx-auto p-4 md:p-8">
-             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform"><Link href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
+             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform"><a href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</a></Button></div>
             
             <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center">
                 {campaign.imageUrl ? (
@@ -273,9 +269,9 @@ export default function PublicCampaignSummaryPage() {
                 )}
 
                 <div className="grid gap-6 sm:grid-cols-3">
-                    <Card className="animate-fade-in-up shadow-sm border-primary/5" style={{ animationDelay: '300ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
-                    <Card className="animate-fade-in-up shadow-sm border-primary/5" style={{ animationDelay: '400ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Kits Provided</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
-                    <Card className="animate-fade-in-up shadow-sm border-primary/5" style={{ animationDelay: '500ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Pending Kits</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '300ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '400ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Kits Provided</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '500ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Pending Kits</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
                 </div>
 
                 {fundingData && (
@@ -286,7 +282,7 @@ export default function PublicCampaignSummaryPage() {
                                 <CardDescription>Tracking of Zakat funds collected and allocated within this campaign.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                               <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-semibold font-mono">₹{fundingData.fundTotals.Zakat.toLocaleString('en-IN')}</span></div>
+                               <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-semibold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
                                 <Separator />
                                 <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
                                     <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Allocated as Cash-in-Hand</span><span className="font-semibold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>

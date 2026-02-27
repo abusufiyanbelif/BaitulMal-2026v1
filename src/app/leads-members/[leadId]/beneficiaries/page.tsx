@@ -1,20 +1,18 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
-import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc, collection, doc, serverTimestamp, setDoc, DocumentReference, writeBatch } from '@/firebase';
+import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc, collection, doc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { FirestorePermissionError } from '@/firebase/errors';
 import type { Beneficiary, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
-import Resizer from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, ChevronsUpDown, CheckCircle2, BadgeCheck, Hourglass, XCircle, Info } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +24,6 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuPortal,
-  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -39,24 +36,15 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
-import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
-import { updateMasterBeneficiaryAction } from '@/app/beneficiaries/actions';
+import { setDoc, DocumentReference } from 'firebase/firestore';
 
 type SortKey = keyof Beneficiary | 'srNo';
 type BeneficiaryStatus = Beneficiary['status'];
@@ -116,17 +104,14 @@ export default function BeneficiariesPage() {
   const router = useRouter();
   const leadId = typeof params?.leadId === "string" ? params.leadId : "";
   const firestore = useFirestore();
-  const storage = useStorage();
-  const auth = useAuth();
   const { toast } = useToast();
   const { userProfile, isLoading: isProfileLoading } = useSession();
+  
   const leadDocRef = useMemoFirebase(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
   const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
   const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, 'leads', leadId, 'beneficiaries') : null, [firestore, leadId]);
   const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
@@ -155,18 +140,9 @@ export default function BeneficiariesPage() {
     setSortConfig({ key, direction });
   };
 
-  const handleView = (b: Beneficiary) => {
-    router.push(`/beneficiaries/${b.id}?redirect=${pathname}`);
-  };
-
-  const handleEdit = (b: Beneficiary) => {
-    router.push(`/beneficiaries/${b.id}?redirect=${pathname}`);
-  };
-
-  const handleDeleteClick = (id: string) => {
-    setBeneficiaryToDelete(id);
-    setIsDeleteDialogOpen(true);
-  };
+  const handleView = (b: Beneficiary) => { router.push(`/beneficiaries/${b.id}?redirect=${pathname}`); };
+  const handleEdit = (b: Beneficiary) => { router.push(`/beneficiaries/${b.id}?redirect=${pathname}`); };
+  const handleDeleteClick = (id: string) => { setBeneficiaryToDelete(id); setIsDeleteDialogOpen(true); };
 
   const filteredAndSortedBeneficiaries = useMemo(() => {
     if (!beneficiaries) return [];
@@ -187,8 +163,8 @@ export default function BeneficiariesPage() {
         <div className="mb-4"><Button variant="outline" asChild><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
         <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold">{lead.name}</h1></div>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Beneficiaries ({filteredAndSortedBeneficiaries.length})</CardTitle><div className="flex gap-2">{canCreate && <Button onClick={() => setIsFormOpen(true)}><PlusCircle className="mr-2 h-4 w-4" /> Add New</Button>}</div></CardHeader>
-          <CardContent><div className="flex gap-2 mb-4"><Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /><Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Pending">Pending</SelectItem></SelectContent></Select></div>
+          <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Beneficiaries ({filteredAndSortedBeneficiaries.length})</CardTitle></CardHeader>
+          <CardContent><div className="flex gap-2 mb-4"><Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /><Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-auto md:w-[180px]"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Pending">Pending</SelectItem></SelectContent></Select></div>
             <Table><TableHeader><TableRow>
                 <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
                 <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>

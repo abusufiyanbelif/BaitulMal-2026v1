@@ -335,17 +335,20 @@ export default function CampaignSummaryPage() {
 
         const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
         const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
-        const fitraTotal = amountsByCategory['Fitra'] || 0;
-        const zakatTotal = amountsByCategory['Zakat'] || 0;
-        const sadaqahTotal = amountsByCategory['Sadaqah'] || 0;
-        const fidiyaTotal = amountsByCategory['Fidiya'] || 0;
-        const interestTotal = amountsByCategory['Interest'] || 0;
-        const lillahTotal = amountsByCategory['Lillah'] || 0;
-        const loanTotal = amountsByCategory['Loan'] || 0;
-        const monthlyContributionTotal = amountsByCategory['Monthly Contribution'] || 0;
-        const grandTotal = fitraTotal + zakatTotal + sadaqahTotal + fidiyaTotal + interestTotal + lillahTotal + loanTotal + monthlyContributionTotal;
+        
+        const fundTotals = {
+            fitra: amountsByCategory['Fitra'] || 0,
+            zakat: amountsByCategory['Zakat'] || 0,
+            sadaqah: amountsByCategory['Sadaqah'] || 0,
+            fidiya: amountsByCategory['Fidiya'] || 0,
+            interest: amountsByCategory['Interest'] || 0,
+            lillah: amountsByCategory['Lillah'] || 0,
+            loan: amountsByCategory['Loan'] || 0,
+            monthlyContribution: amountsByCategory['Monthly Contribution'] || 0,
+            grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
+        };
 
-        return { totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal), totalBeneficiaries: beneficiaries.length, beneficiariesGiven, beneficiariesPending, zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, zakatForGoalAmount, fundTotals: { fitra: fitraTotal, zakat: zakatTotal, sadaqah: sadaqahTotal, fidiya: fidiyaTotal, interest: interestTotal, lillah: lillahTotal, loan: loanTotal, monthlyContribution: monthlyContributionTotal, grandTotal: grandTotal }, donationStatusStats, amountsByCategory };
+        return { totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal), totalBeneficiaries: beneficiaries.length, beneficiariesGiven, beneficiariesPending, zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, zakatForGoalAmount, fundTotals, donationStatusStats, amountsByCategory };
     }, [allDonations, campaign, beneficiaries]);
     
     if (isLoading) return <BrandedLoader />;
@@ -606,7 +609,10 @@ export default function CampaignSummaryPage() {
                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
                             <Separator />
                             <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
-                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Allocated as Cash-in-Hand</span><span className="font-semibold font-mono">₹{(summaryData?.zakatAllocated || 0).toLocaleString('en-IN')}</span></div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Allocated as Cash-in-Hand</span>
+                                    <span className="font-semibold font-mono">₹{(summaryData?.zakatAllocated || 0).toLocaleString('en-IN')}</span>
+                                </div>
                                 <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground">Given</span><span className="font-mono text-green-600">₹{(summaryData?.zakatGiven || 0).toLocaleString('en-IN')}</span></div>
                                  <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground">Pending</span><span className="font-mono text-amber-600">₹{(summaryData?.zakatPending || 0).toLocaleString('en-IN')}</span></div>
                             </div>
