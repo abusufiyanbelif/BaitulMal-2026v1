@@ -3,7 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Check, X, Loader2 } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowLeft, Check, X, Loader2, Quote, Target, Info as InfoIcon } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -14,12 +15,13 @@ import {
 } from "@/components/ui/table";
 import { useInfoSettings } from '@/hooks/use-info-settings';
 import { useDonationInfo } from '@/hooks/use-donation-info';
+import placeholderData from '@/app/lib/placeholder-images.json';
 
 const comparisonData = [
     { feature: 'Status', zakat: 'Obligatory (Fard)', sadaqah: 'Voluntary', lillah: 'Voluntary', fidiya: 'Obligatory Compensation', interest: 'Mandatory disposal' },
     { feature: 'Amount', zakat: 'Fixed (2.5%)', sadaqah: 'Any amount', lillah: 'Any amount', fidiya: 'Fixed per missed fast', interest: 'Total amount earned' },
     { feature: 'Recipient', zakat: 'Specific 8 categories', sadaqah: 'Anyone in need', lillah: 'Institutions/Public', fidiya: 'Poor & Needy', interest: 'Public welfare' },
-    { feature: 'Mosque/School', zakat: <X className="text-destructive" />, sadaqah: <Check className="text-success-foreground" />, lillah: 'Primary use', fidiya: <X className="text-destructive" />, interest: <Check className="text-success-foreground" /> },
+    { feature: 'Mosque/School', zakat: <X className="text-destructive h-4 w-4" />, sadaqah: <Check className="text-success-foreground h-4 w-4" />, lillah: 'Primary use', fidiya: <X className="text-destructive h-4 w-4" />, interest: <Check className="text-success-foreground h-4 w-4" /> },
 ];
 
 export default function DonationInfoPage() {
@@ -53,9 +55,9 @@ export default function DonationInfoPage() {
     }
 
   return (
-    <main className="container mx-auto p-4 md:p-8">
+    <main className="container mx-auto p-4 md:p-8 space-y-8">
       <div className="mb-4">
-        <Button variant="outline" asChild>
+        <Button variant="outline" asChild className="active:scale-95 transition-transform">
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Home
@@ -63,60 +65,133 @@ export default function DonationInfoPage() {
         </Button>
       </div>
 
-      <Card className="max-w-4xl mx-auto animate-fade-in-zoom">
-        <CardHeader>
-          <CardTitle className="text-3xl">Understanding Donation Types in Islam</CardTitle>
-          <CardDescription>
-            In Islam, financial and charitable practices are categorized based on their obligation and purpose. Here is a breakdown of the differences between Zakat, Sadaqah, Fidiya, Lillah, and Interest.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-8">
-          {donationTypes.map((type, index) => (
-            <div key={type.id || index} className="space-y-2">
-              <h2 className="text-2xl font-semibold text-primary">{type.title}</h2>
-              <p className="text-muted-foreground">{type.description}</p>
-              <ul className="list-disc pl-5 space-y-1 text-sm">
-                <li><strong>Where it can be used:</strong> {type.usage}</li>
-                {type.restrictions && <li><strong>Restrictions:</strong> {type.restrictions}</li>}
-                {type.impact && <li><strong>Impact:</strong> {type.impact}</li>}
-                {type.keyUse && <li><strong>Key Use:</strong> {type.keyUse}</li>}
-                {type.application && <li><strong>Application:</strong> {type.application}</li>}
-              </ul>
-            </div>
-          ))}
+      <div className="max-w-5xl mx-auto space-y-12">
+        <section className="text-center space-y-4 animate-fade-in-up">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-primary uppercase">Financial Wisdom in Islam</h1>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                Understanding the distinct categories of charitable giving ensures your contributions are used correctly and fulfill their intended religious and social purposes.
+            </p>
+        </section>
 
-          <div>
-            <h2 className="text-2xl font-semibold text-primary mb-4">At a Glance</h2>
-            <div className="border rounded-lg overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="font-bold w-[150px]">Feature</TableHead>
-                    <TableHead className="font-bold">Zakat</TableHead>
-                    <TableHead className="font-bold">Sadaqah</TableHead>
-                    <TableHead className="font-bold">Lillah</TableHead>
-                    <TableHead className="font-bold">Fidiya</TableHead>
-                    <TableHead className="font-bold">Interest (Disposal)</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {comparisonData.map((row) => (
-                    <TableRow key={row.feature}>
-                      <TableCell className="font-medium">{row.feature}</TableCell>
-                      <TableCell>{row.zakat}</TableCell>
-                      <TableCell>{row.sadaqah}</TableCell>
-                      <TableCell>{row.lillah}</TableCell>
-                      <TableCell>{row.fidiya}</TableCell>
-                      <TableCell>{row.interest}</TableCell>
+        <div className="grid gap-12">
+          {donationTypes.map((type, index) => {
+            const imageData = (placeholderData as any)[type.id];
+            return (
+                <Card key={type.id || index} className="overflow-hidden border-none shadow-xl animate-fade-in-up" style={{ animationDelay: `${index * 150}ms` }}>
+                    <div className="grid md:grid-cols-2">
+                        <div className={cn("relative h-64 md:h-full min-h-[300px]", index % 2 === 1 ? "md:order-last" : "")}>
+                            <Image 
+                                src={imageData?.url || `https://picsum.photos/seed/${type.id}/800/600`}
+                                alt={type.title}
+                                fill
+                                className="object-cover"
+                                data-ai-hint={imageData?.hint || "charity image"}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            <div className="absolute bottom-6 left-6 text-white">
+                                <h2 className="text-3xl font-black tracking-tight">{type.title}</h2>
+                            </div>
+                        </div>
+                        <CardContent className="p-8 space-y-6">
+                            <div className="space-y-4">
+                                <p className="text-lg leading-relaxed text-foreground font-medium">{type.description}</p>
+                                
+                                {type.quranVerse && (
+                                    <blockquote className="border-l-4 border-primary pl-4 py-2 italic text-muted-foreground relative bg-muted/30 rounded-r-lg">
+                                        <Quote className="h-4 w-4 text-primary/40 absolute -top-2 -left-2" />
+                                        "{type.quranVerse}"
+                                        {type.quranSource && (
+                                            <cite className="block text-right not-italic text-xs font-bold text-primary mt-2">
+                                                — {type.quranSource}
+                                            </cite>
+                                        )}
+                                    </blockquote>
+                                )}
+
+                                {type.purposePoints && type.purposePoints.length > 0 && (
+                                    <div className="space-y-3">
+                                        <h4 className="font-bold flex items-center gap-2 text-primary uppercase text-xs tracking-widest">
+                                            <Target className="h-4 w-4" /> 
+                                            Key Objectives:
+                                        </h4>
+                                        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                            {type.purposePoints.map((point, pIdx) => (
+                                                <li key={pIdx} className="flex items-center gap-2 text-sm">
+                                                    <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                                                    {point}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+
+                            <Separator />
+
+                            <div className="grid grid-cols-1 gap-4 text-sm">
+                                <div>
+                                    <span className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground block mb-1">Permissible Usage:</span>
+                                    <p>{type.usage}</p>
+                                </div>
+                                {type.restrictions && (
+                                    <div>
+                                        <span className="font-bold uppercase text-[10px] tracking-widest text-destructive block mb-1">Restrictions:</span>
+                                        <p>{type.restrictions}</p>
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </div>
+                </Card>
+            )
+          })}
+        </div>
+
+        <section className="space-y-6 animate-fade-in-up" style={{ animationDelay: '1s' }}>
+            <div className="text-center space-y-2">
+                <h2 className="text-3xl font-black tracking-tight uppercase">Quick Comparison</h2>
+                <p className="text-muted-foreground">Identifying the primary differences at a glance.</p>
+            </div>
+            <Card className="shadow-lg overflow-hidden">
+                <Table>
+                    <TableHeader className="bg-primary/5">
+                    <TableRow>
+                        <TableHead className="font-black uppercase text-[10px] tracking-wider w-[150px]">Feature</TableHead>
+                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Zakat</TableHead>
+                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Sadaqah</TableHead>
+                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Lillah</TableHead>
+                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Fidiya</TableHead>
+                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Interest</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+                    </TableHeader>
+                    <TableBody>
+                    {comparisonData.map((row) => (
+                        <TableRow key={row.feature} className="hover:bg-muted/50 transition-colors">
+                        <TableCell className="font-bold text-xs bg-muted/20">{row.feature}</TableCell>
+                        <TableCell className="text-xs">{row.zakat}</TableCell>
+                        <TableCell className="text-xs">{row.sadaqah}</TableCell>
+                        <TableCell className="text-xs">{row.lillah}</TableCell>
+                        <TableCell className="text-xs">{row.fidiya}</TableCell>
+                        <TableCell className="text-xs">{row.interest}</TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+            </Card>
+        </section>
 
-        </CardContent>
-      </Card>
+        <Alert className="bg-primary/5 border-primary/20">
+            <InfoIcon className="h-4 w-4 text-primary" />
+            <AlertTitle className="font-bold">Consult a Scholar</AlertTitle>
+            <AlertDescription className="text-sm">
+                While this page provides a general guideline, specific financial situations can vary. We always recommend consulting with a knowledgeable religious scholar for precise rulings on your personal wealth and Zakat calculation.
+            </AlertDescription>
+        </Alert>
+      </div>
     </main>
   );
+}
+
+function cn(...classes: any[]) {
+    return classes.filter(Boolean).join(' ');
 }

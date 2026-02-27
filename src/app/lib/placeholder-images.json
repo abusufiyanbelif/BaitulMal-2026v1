@@ -1,4 +1,23 @@
+
 {
-  "campaign_fallback": "https://picsum.photos/seed/campaign/1280/400",
-  "lead_fallback": "https://picsum.photos/seed/lead/1280/400"
+  "zakat": {
+    "url": "https://picsum.photos/seed/zakat/800/400",
+    "hint": "charity helping"
+  },
+  "sadaqah": {
+    "url": "https://picsum.photos/seed/sadaqah/800/400",
+    "hint": "giving food"
+  },
+  "fidiya": {
+    "url": "https://picsum.photos/seed/fidiya/800/400",
+    "hint": "meal feeding"
+  },
+  "lillah": {
+    "url": "https://picsum.photos/seed/lillah/800/400",
+    "hint": "mosque construction"
+  },
+  "interest": {
+    "url": "https://picsum.photos/seed/interest/800/400",
+    "hint": "public welfare"
+  }
 }

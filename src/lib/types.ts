@@ -36,11 +36,15 @@ export interface DonationTypeInfo {
   id: string;
   title: string;
   description: string;
+  quranVerse?: string;
+  quranSource?: string;
+  purposePoints?: string[];
   usage: string;
   restrictions?: string;
   impact?: string;
   keyUse?: string;
   application?: string;
+  imageHint?: string;
 }
 
 export interface DonationInfoData extends DocumentData {
