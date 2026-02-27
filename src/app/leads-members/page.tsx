@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -221,7 +220,7 @@ export default function LeadPage() {
     
     const completedLeads = leadsWithProgress
       .filter(l => l.status === 'Completed')
-      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-members/${l.id}/summary` }));
+      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
 
     return [...completedCampaigns, ...completedLeads];
   }, [campaignsWithProgress, leadsWithProgress]);
@@ -249,7 +248,7 @@ export default function LeadPage() {
     setIsDeleteDialogOpen(false);
     setIsDeleting(true);
     const result = await deleteLeadAction(leadToDelete.id);
-    toast({ title: result.success ? 'Lead Deleted' : 'Error', description: result.message, variant: result.success ? 'success' : 'destructive' });
+    toast({ title: result.success ? 'Success' : 'Error', description: result.message, variant: result.success ? 'success' : 'destructive' });
     setIsDeleting(false);
     setLeadToDelete(null);
   };
@@ -259,7 +258,7 @@ export default function LeadPage() {
     const docRef = doc(firestore, 'leads', leadToUpdate.id);
     const updateData = { [field]: value };
     updateDoc(docRef, updateData)
-        .then(() => toast({ title: 'Success', description: `Lead updated.`, variant: 'success' }))
+        .then(() => toast({ title: 'Success', description: `Lead updated.` }))
         .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData })));
   };
 
@@ -312,8 +311,8 @@ export default function LeadPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-black tracking-tighter">LEADS & INITIATIVES</h1>
-          <p className="text-muted-foreground text-sm max-w-2xl">Pipeline for vetting and launching new community support opportunities.</p>
+          <h1 className="text-3xl font-black tracking-tighter">LEADS HUB</h1>
+          <p className="text-muted-foreground text-sm max-w-2xl">Manage vetting and launching new community support opportunities.</p>
         </div>
 
         <div className="space-y-2">
@@ -325,7 +324,7 @@ export default function LeadPage() {
         <Card className="animate-fade-in-zoom shadow-md border-primary/5">
           <CardHeader className="p-4 border-b bg-muted/5">
             <div className="flex flex-wrap items-center gap-3">
-                <Input placeholder="Search leads..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs" disabled={isLoading}/>
+                <Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs" disabled={isLoading}/>
                 <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem><SelectItem value="Completed">Completed</SelectItem></SelectContent></Select>
                 <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All Purposes</SelectItem>{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>
                 <div className="flex items-center gap-2 border-l pl-3 ml-1">
@@ -364,7 +363,6 @@ export default function LeadPage() {
               <div className="text-center py-20 bg-muted/10 rounded-2xl border-2 border-dashed">
                   <HandHelping className="h-12 w-12 mx-auto text-muted-foreground/20 mb-4" />
                   <p className="text-muted-foreground font-medium">No leads found.</p>
-                  <Button variant="link" onClick={() => { setSearchTerm(''); setStatusFilter('All'); setPurposeFilter('All'); setDateRange(undefined); setSelectedYear('All'); }}>Reset filters</Button>
               </div>
             )}
           </CardContent>
@@ -372,7 +370,7 @@ export default function LeadPage() {
       </main>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Lead?</AlertDialogTitle><AlertDialogDescription>Permanently erase '{leadToDelete?.name}'?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white hover:bg-destructive/90">Delete Permanently</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Lead?</AlertDialogTitle><AlertDialogDescription>Permanently erase '{leadToDelete?.name}'?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white">Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
         
       <CopyLeadDialog open={!!leadToCopy} onOpenChange={() => setLeadToCopy(null)} lead={leadToCopy} onCopyConfirm={async (opt) => { const res = await copyLeadAction({ sourceLeadId: leadToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setLeadToCopy(null); }}/>

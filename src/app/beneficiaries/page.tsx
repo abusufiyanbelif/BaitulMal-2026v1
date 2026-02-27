@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -120,11 +119,11 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
                                                 value={beneficiary.status}
                                                 onValueChange={(newStatus) => onStatusChange(beneficiary, newStatus as BeneficiaryStatus)}
                                             >
-                                                <DropdownMenuRadioItem value="Pending"><Hourglass className="mr-2"/>Pending</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2"/>Verified</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2"/>Given</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2"/>Hold</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2"/>Need More Details</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Pending"><Hourglass className="mr-2 h-4 w-4"/>Pending</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2 h-4 w-4"/>Verified</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2 h-4 w-4"/>Given</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2 h-4 w-4"/>Hold</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2 h-4 w-4"/>Need Details</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
@@ -133,14 +132,13 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
                              {canUpdate && (
                                 <DropdownMenuItem onClick={() => onZakatToggle(beneficiary)}>
                                     {beneficiary.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
-                                    <span>{beneficiary.isEligibleForZakat ? 'Mark as Not Eligible' : 'Mark as Zakat Eligible'}</span>
+                                    <span>{beneficiary.isEligibleForZakat ? 'Mark Not Eligible' : 'Mark Zakat Eligible'}</span>
                                 </DropdownMenuItem>
                             )}
                             {canDelete && <DropdownMenuSeparator />}
                             {canDelete && (
-                                <DropdownMenuItem onClick={() => onDelete(beneficiary.id)} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Delete
+                                <DropdownMenuItem onClick={() => onDelete(beneficiary.id)} className="text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
                                 </DropdownMenuItem>
                             )}
                         </DropdownMenuContent>
@@ -222,7 +220,7 @@ export default function BeneficiariesPage() {
   
   const handleSyncMasterList = async () => {
     setIsSyncing(true);
-    toast({ title: 'Syncing Master List...', description: 'Please wait while we check all campaigns and leads for new beneficiaries.' });
+    toast({ title: 'Syncing Master List...', description: 'Checking all campaigns and leads.' });
     const result = await syncMasterBeneficiaryListAction();
     if (result.success) {
       toast({ title: 'Sync Complete', description: result.message, variant: 'success' });
@@ -290,7 +288,7 @@ export default function BeneficiariesPage() {
     if (!canUpdate || !userProfile) return;
     const newZakatStatus = !beneficiary.isEligibleForZakat;
     const result = await updateMasterBeneficiaryAction(beneficiary.id, { isEligibleForZakat: newZakatStatus }, { id: userProfile.id, name: userProfile.name });
-    toast({ title: result.success ? 'Zakat Status Updated' : 'Error', description: result.message, variant: result.success ? 'success' : 'destructive' });
+    toast({ title: result.success ? 'Zakat Updated' : 'Error', description: result.message, variant: result.success ? 'success' : 'destructive' });
   };
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
@@ -312,8 +310,7 @@ export default function BeneficiariesPage() {
       <div className="mb-4">
           <Button variant="outline" asChild className="transition-transform active:scale-95">
               <Link href="/">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Home
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
               </Link>
           </Button>
       </div>
@@ -333,19 +330,19 @@ export default function BeneficiariesPage() {
                 <div className="flex flex-wrap items-center gap-2">
                     <Input placeholder="Search..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-sm" />
                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[150px]"><SelectValue placeholder="Filter by status" /></SelectTrigger>
+                        <SelectTrigger className="w-auto md:w-[150px]"><SelectValue placeholder="Filter Status" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="All">All Statuses</SelectItem>
                             <SelectItem value="Verified">Verified</SelectItem>
                             <SelectItem value="Pending">Pending</SelectItem>
                             <SelectItem value="Hold">Hold</SelectItem>
-                            <SelectItem value="Need More Details">Need More Details</SelectItem>
+                            <SelectItem value="Need More Details">Need Details</SelectItem>
                         </SelectContent>
                     </Select>
                      <Select value={zakatFilter} onValueChange={(value) => { setZakatFilter(value); setCurrentPage(1); }}>
-                      <SelectTrigger className="w-auto md:w-[180px]"><SelectValue placeholder="Filter by Zakat" /></SelectTrigger>
+                      <SelectTrigger className="w-auto md:w-[180px]"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
                       <SelectContent>
-                          <SelectItem value="All">All Zakat Status</SelectItem>
+                          <SelectItem value="All">All Zakat</SelectItem>
                           <SelectItem value="Eligible">Eligible</SelectItem>
                           <SelectItem value="Not Eligible">Not Eligible</SelectItem>
                       </SelectContent>
@@ -354,19 +351,17 @@ export default function BeneficiariesPage() {
             </div>
             <div className="flex flex-wrap gap-2 shrink-0">
                 <Button onClick={handleSyncMasterList} disabled={isSyncing} variant="outline" size="sm">
-                    {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
-                    Sync Master List
+                    {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>} Sync
                 </Button>
                 {canCreate && (
                     <Button onClick={handleAdd} size="sm">
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Create Beneficiary
+                        <PlusCircle className="mr-2 h-4 w-4" /> Create
                     </Button>
                 )}
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <div className="w-full overflow-x-auto">
               <Table>
                   <TableHeader>
@@ -377,7 +372,7 @@ export default function BeneficiariesPage() {
                           <SortableHeader sortKey="address" sortConfig={sortConfig} handleSort={handleSort}>Address</SortableHeader>
                            <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort}>Zakat</SortableHeader>
                           <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
-                          {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right">Actions</TableHead>}
+                          {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right pr-4">Actions</TableHead>}
                       </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -396,14 +391,14 @@ export default function BeneficiariesPage() {
                         />
                       ))}
                       {paginatedBeneficiaries.length === 0 && (
-                        <TableRow><TableCell colSpan={canUpdate || canDelete ? 7 : 6} className="text-center h-24 text-muted-foreground">No records found.</TableCell></TableRow>
+                        <TableRow><TableCell colSpan={7} className="text-center h-24 text-muted-foreground">No records found.</TableCell></TableRow>
                       )}
                   </TableBody>
               </Table>
           </div>
         </CardContent>
         {totalPages > 1 && (
-            <CardFooter className="flex items-center justify-between">
+            <CardFooter className="flex items-center justify-between border-t py-4">
               <p className="text-sm text-muted-foreground">Showing {paginatedBeneficiaries.length} of {filteredAndSortedBeneficiaries.length}</p>
               <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
@@ -416,10 +411,10 @@ export default function BeneficiariesPage() {
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
-            <AlertDialogHeader><AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete the beneficiary from the master list and all linked initiatives.</AlertDialogDescription></AlertDialogHeader>
+            <AlertDialogHeader><AlertDialogTitle>Confirm Permanent Deletion</AlertDialogTitle><AlertDialogDescription>This will delete the beneficiary from the master list and all linked initiatives.</AlertDialogDescription></AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white hover:bg-destructive/90">Delete</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

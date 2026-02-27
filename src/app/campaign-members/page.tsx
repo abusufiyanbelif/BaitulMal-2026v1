@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -107,35 +106,29 @@ const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete
                             <>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Change Status</span></DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent>
-                                        <DropdownMenuRadioGroup value={campaign.status} onValueChange={(value) => handleStatusUpdate(campaign, 'status', value)}>
-                                            <DropdownMenuRadioItem value="Upcoming">Upcoming</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Active">Active</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Completed">Completed</DropdownMenuRadioItem>
-                                        </DropdownMenuRadioGroup>
-                                    </DropdownMenuSubContent>
+                                    <DropdownMenuRadioGroup value={campaign.status} onValueChange={(value) => handleStatusUpdate(campaign, 'status', value)}>
+                                        <DropdownMenuRadioItem value="Upcoming">Upcoming</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Active">Active</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Completed">Completed</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Verification</span></DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent>
-                                        <DropdownMenuRadioGroup value={campaign.authenticityStatus} onValueChange={(value) => handleStatusUpdate(campaign, 'authenticityStatus', value as string)}>
-                                            <DropdownMenuRadioItem value="Pending Verification">Pending Verification</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
-                                        </DropdownMenuRadioGroup>
-                                    </DropdownMenuSubContent>
+                                    <DropdownMenuRadioGroup value={campaign.authenticityStatus} onValueChange={(value) => handleStatusUpdate(campaign, 'authenticityStatus', value as string)}>
+                                        <DropdownMenuRadioItem value="Pending Verification">Pending Verification</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent>
-                                        <DropdownMenuRadioGroup value={campaign.publicVisibility} onValueChange={(value) => handleStatusUpdate(campaign, 'publicVisibility', value as string)}>
-                                            <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
-                                        </DropdownMenuRadioGroup>
-                                    </DropdownMenuSubContent>
+                                    <DropdownMenuRadioGroup value={campaign.publicVisibility} onValueChange={(value) => handleStatusUpdate(campaign, 'publicVisibility', value as string)}>
+                                        <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                             </>
                         )}
@@ -339,7 +332,7 @@ export default function CampaignPage() {
 
         <div className="space-y-2">
           <h1 className="text-3xl font-black tracking-tighter">CAMPAIGN HUB</h1>
-          <p className="text-muted-foreground text-sm max-w-2xl">Manage and monitor all community support initiatives from this centralized command center.</p>
+          <p className="text-muted-foreground text-sm max-w-2xl">Manage community initiatives from this command center.</p>
         </div>
 
         <div className="space-y-2">
@@ -389,8 +382,7 @@ export default function CampaignPage() {
             ) : (
               <div className="text-center py-20 bg-muted/10 rounded-xl border-2 border-dashed">
                   <HandHelping className="h-12 w-12 mx-auto text-muted-foreground/20 mb-4" />
-                  <p className="text-muted-foreground font-medium">No campaigns match your filters.</p>
-                  <Button variant="link" onClick={() => { setSearchTerm(''); setStatusFilter('All'); setCategoryFilter('All'); setDateRange(undefined); setSelectedYear('All'); }}>Clear all filters</Button>
+                  <p className="text-muted-foreground font-medium">No campaigns found.</p>
               </div>
             )}
           </CardContent>
@@ -398,7 +390,7 @@ export default function CampaignPage() {
       </main>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Campaign?</AlertDialogTitle><AlertDialogDescription>This will permanently erase all data for '{campaignToDelete?.name}'.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white hover:bg-destructive/90">Delete Permanently</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Campaign?</AlertDialogTitle><AlertDialogDescription>Erase all data for '{campaignToDelete?.name}'?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white">Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
       <CopyCampaignDialog open={!!campaignToCopy} onOpenChange={() => setCampaignToCopy(null)} campaign={campaignToCopy} onCopyConfirm={async (opt) => { const res = await copyCampaignAction({ sourceCampaignId: campaignToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setCampaignToCopy(null); }}/>

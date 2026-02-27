@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
@@ -171,7 +170,7 @@ const BeneficiaryRow = ({ beneficiary, index, canUpdate, canDelete, onView, onEd
                             {canUpdate && (
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><ChevronsUpDown className="mr-2 h-4 w-4" /> Change Status</DropdownMenuSubTrigger>
-                                    <DropdownMenuPortal><DropdownMenuSubContent><DropdownMenuRadioGroup value={beneficiary.status} onValueChange={(s) => onStatusChange(beneficiary, s as any)}><DropdownMenuRadioItem value="Pending"><Hourglass className="mr-2 h-4 w-4"/>Pending</DropdownMenuRadioItem><DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2 h-4 w-4"/>Verified</DropdownMenuRadioItem><DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2 h-4 w-4"/>Given</DropdownMenuRadioItem><DropdownMenuRadioItem value="Hold"><XCircle className="mr-2 h-4 w-4"/>Hold</DropdownMenuRadioItem><DropdownMenuRadioItem value="Need More Details"><Info className="mr-2 h-4 w-4"/>Need Details</DropdownMenuRadioItem></DropdownMenuRadioGroup></DropdownMenuSubContent></DropdownMenuPortal>
+                                    <DropdownMenuPortal><DropdownMenuSubContent><DropdownMenuRadioGroup value={beneficiary.status} onValueChange={(s) => onStatusChange(beneficiary, s as any)}><DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem><DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem><DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem><DropdownMenuRadioItem value="Hold">Hold</DropdownMenuRadioItem><DropdownMenuRadioItem value="Need More Details">Need Details</DropdownMenuRadioItem></DropdownMenuRadioGroup></DropdownMenuSubContent></DropdownMenuPortal>
                                 </DropdownMenuSub>
                             )}
                             {canUpdate && (
@@ -391,32 +390,32 @@ export default function BeneficiariesPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
             <div className="space-y-1">
                 <h2 className="text-2xl font-bold text-primary">Beneficiary List ({stats.total})</h2>
-                <p className="text-sm text-muted-foreground">Total amount for filtered beneficiaries: <span className="font-bold text-foreground">₹{filteredBeneficiaries.reduce((sum, b) => sum + (b.kitAmount || 0), 0).toFixed(2)}</span></p>
+                <p className="text-sm text-muted-foreground">Total amount: <span className="font-bold text-foreground">₹{filteredBeneficiaries.reduce((sum, b) => sum + (b.kitAmount || 0), 0).toFixed(2)}</span></p>
             </div>
             <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="gap-2"><FileUp className="h-4 w-4"/> Import Data</Button>
-                <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="gap-2"><CopyPlus className="h-4 w-4"/> Add from Existing</Button>
-                <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2"><PlusCircle className="h-4 w-4"/> Add New Beneficiary</Button>
+                <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="gap-2"><FileUp className="h-4 w-4"/> Import</Button>
+                <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="gap-2"><CopyPlus className="h-4 w-4"/> Add Existing</Button>
+                <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2"><PlusCircle className="h-4 w-4"/> Add New</Button>
             </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <StatCard title="Total" count={stats.total} description="All beneficiaries" icon={Users} colorClass="text-primary" delay="delay-0" />
-            <StatCard title="Pending" count={stats.pending} description="Awaiting verification" icon={Hourglass} colorClass="text-amber-500" delay="delay-100" />
-            <StatCard title="Verified" count={stats.verified} description="Need confirmed" icon={UserCheck} colorClass="text-green-500" delay="delay-200" />
-            <StatCard title="Given" count={stats.given} description="Kits distributed" icon={CheckCircle2} colorClass="text-emerald-600" delay="delay-300" />
-            <StatCard title="Hold" count={stats.hold} description="Temporarily on hold" icon={XCircle} colorClass="text-red-500" delay="delay-400" />
-            <StatCard title="Need Details" count={stats.needDetails} description="More info needed" icon={Info} colorClass="text-blue-500" delay="delay-500" />
+            <StatCard title="Total" count={stats.total} description="All entries" icon={Users} colorClass="text-primary" delay="delay-0" />
+            <StatCard title="Pending" count={stats.pending} description="Verification needed" icon={Hourglass} colorClass="text-amber-500" delay="delay-100" />
+            <StatCard title="Verified" count={stats.verified} description="Confirmed" icon={UserCheck} colorClass="text-green-500" delay="delay-200" />
+            <StatCard title="Given" count={stats.given} description="Assistance provided" icon={CheckCircle2} colorClass="text-emerald-600" delay="delay-300" />
+            <StatCard title="Hold" count={stats.hold} description="Paused" icon={XCircle} colorClass="text-red-500" delay="delay-400" />
+            <StatCard title="Need Info" count={stats.needDetails} description="More info" icon={Info} colorClass="text-blue-500" delay="delay-500" />
         </div>
 
         <div className="flex flex-wrap items-center gap-3 bg-muted/10 p-4 rounded-xl border">
             <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search by name, phone, address, referral..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9 text-xs" />
+                <Input placeholder="Search name, phone, referral..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9 text-xs" />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-[150px] h-9 text-xs"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Hold">Hold</SelectItem><SelectItem value="Need More Details">Need Details</SelectItem></SelectContent></Select>
-            <Select value={zakatFilter} onValueChange={setZakatFilter}><SelectTrigger className="w-[150px] h-9 text-xs"><SelectValue placeholder="All Zakat Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Zakat Status</SelectItem><SelectItem value="Eligible">Eligible</SelectItem><SelectItem value="Not Eligible">Not Eligible</SelectItem></SelectContent></Select>
-            <Select value={referralFilter} onValueChange={setReferralFilter}><SelectTrigger className="w-[180px] h-9 text-xs"><SelectValue placeholder="Filter by referral..." /></SelectTrigger><SelectContent><SelectItem value="All">All Referrals</SelectItem>{referralOptions.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent></Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-[150px] h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Hold">Hold</SelectItem><SelectItem value="Need More Details">Need Info</SelectItem></SelectContent></Select>
+            <Select value={zakatFilter} onValueChange={setZakatFilter}><SelectTrigger className="w-[150px] h-9 text-xs"><SelectValue placeholder="Zakat" /></SelectTrigger><SelectContent><SelectItem value="All">All Zakat</SelectItem><SelectItem value="Eligible">Eligible</SelectItem><SelectItem value="Not Eligible">Not Eligible</SelectItem></SelectContent></Select>
+            <Select value={referralFilter} onValueChange={setReferralFilter}><SelectTrigger className="w-[180px] h-9 text-xs"><SelectValue placeholder="Referral" /></SelectTrigger><SelectContent><SelectItem value="All">All Referrals</SelectItem>{referralOptions.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent></Select>
         </div>
 
         <Card className="overflow-hidden">
@@ -428,10 +427,10 @@ export default function BeneficiariesPage() {
                             <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name & Phone</SortableHeader>
                             <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
                             <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort}>Zakat</SortableHeader>
-                            <TableHead className="text-right">Kit Amount (₹)</TableHead>
-                            <TableHead className="text-right">Zakat Allocation (₹)</TableHead>
-                            <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort}>Referred By</SortableHeader>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead className="text-right">Kit Amount</TableHead>
+                            <TableHead className="text-right">Zakat Alloc.</TableHead>
+                            <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort}>Referral</SortableHeader>
+                            <TableHead className="text-right pr-4">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -445,23 +444,12 @@ export default function BeneficiariesPage() {
                                                     <AccordionTrigger className="px-4 py-2 hover:no-underline">
                                                         <div className="flex items-center gap-2">
                                                             <Users className="h-4 w-4 text-primary" />
-                                                            <span className="font-bold">{groupName} ({groupItems.length} beneficiaries)</span>
+                                                            <span className="font-bold">{groupName} ({groupItems.length})</span>
                                                         </div>
                                                     </AccordionTrigger>
                                                     <AccordionContent className="p-0">
                                                         {groupItems.map((b, i) => (
-                                                            <BeneficiaryRow 
-                                                                key={b.id} 
-                                                                beneficiary={b} 
-                                                                index={i + 1} 
-                                                                canUpdate={canUpdate} 
-                                                                canDelete={canDelete} 
-                                                                onView={handleView} 
-                                                                onEdit={handleEdit} 
-                                                                onDelete={handleDeleteClick} 
-                                                                onStatusChange={handleStatusChange} 
-                                                                onZakatToggle={handleZakatToggle} 
-                                                            />
+                                                            <BeneficiaryRow key={b.id} beneficiary={b} index={i + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} />
                                                         ))}
                                                     </AccordionContent>
                                                 </AccordionItem>
@@ -471,7 +459,7 @@ export default function BeneficiariesPage() {
                                 ))}
                             </Accordion>
                         ) : (
-                            <TableRow><TableCell colSpan={8} className="text-center py-20 text-muted-foreground italic">No beneficiaries found matching your filters.</TableCell></TableRow>
+                            <TableRow><TableCell colSpan={8} className="text-center py-20 text-muted-foreground italic">No beneficiaries found.</TableCell></TableRow>
                         )}
                     </TableBody>
                 </Table>
@@ -490,10 +478,10 @@ export default function BeneficiariesPage() {
         
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent>
-                <AlertDialogHeader><AlertDialogTitle>Confirm Deletion</AlertDialogTitle><AlertDialogDescription>This will remove the beneficiary from this campaign. The master record will remain intact.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogHeader><AlertDialogTitle>Confirm Removal</AlertDialogTitle><AlertDialogDescription>Remove from this campaign? Master record stays intact.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => {}} className="bg-destructive text-white hover:bg-destructive/90">Delete</AlertDialogAction>
+                    <AlertDialogAction onClick={() => {}} className="bg-destructive text-white">Delete</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

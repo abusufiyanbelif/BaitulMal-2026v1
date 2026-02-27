@@ -51,7 +51,6 @@
     font-feature-settings: "cv03", "cv04", "cv11";
   }
 
-  /* Custom Scrollbar Styles */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -77,6 +76,19 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .animate-marquee {
+    animation: marquee var(--duration, 60s) linear infinite;
+  }
+
+  .animate-marquee:hover {
+    animation-play-state: paused;
   }
 
   @keyframes status-pulse {
@@ -128,16 +140,9 @@
     animation: fade-in-zoom 0.4s ease-out forwards;
   }
 
-  @keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-
-  .animate-marquee {
-    animation: marquee var(--duration, 60s) linear infinite;
-  }
-
-  .animate-marquee:hover {
-    animation-play-state: paused;
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
   }
 }

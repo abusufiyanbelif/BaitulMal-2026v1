@@ -49,14 +49,15 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
   const isCompleted = variant === 'completed';
   const isDonation = variant === 'donation';
 
+  // Double the items for a seamless loop in the marquee
   const displayItems = [...items, ...items];
 
   return (
     <div className={cn(
-      "group border rounded-lg overflow-hidden relative flex items-center mb-2 shadow-sm h-12 transition-all hover:shadow-md",
-      isCompleted ? "bg-muted/30 border-muted" : 
-      isDonation ? "bg-blue-500/5 border-blue-500/10" : 
-      "bg-primary/5 border-primary/10"
+      "group border rounded-lg overflow-hidden relative flex items-center mb-2 shadow-sm h-12 transition-all hover:shadow-md bg-background",
+      isCompleted ? "border-muted" : 
+      isDonation ? "border-blue-500/10" : 
+      "border-primary/10"
     )}>
       <div className={cn(
         "z-30 h-full px-4 flex items-center border-r shadow-md shrink-0 bg-background",
@@ -76,27 +77,24 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         </span>
       </div>
 
-      {showLeftArrow && (
+      <div className="absolute right-2 z-40 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button
           variant="secondary"
           size="icon"
-          className="absolute left-[160px] sm:left-[180px] z-40 h-8 w-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+          className="h-7 w-7 rounded-full shadow-sm"
           onClick={() => scroll('left')}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-      )}
-      
-      {showRightArrow && (
         <Button
           variant="secondary"
           size="icon"
-          className="absolute right-2 z-40 h-8 w-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+          className="h-7 w-7 rounded-full shadow-sm"
           onClick={() => scroll('right')}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
-      )}
+      </div>
 
       <div 
         ref={scrollRef}
@@ -108,7 +106,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
           style={{ '--duration': `${Math.max(30, items.length * 10)}s` } as React.CSSProperties}
         >
           {displayItems.map((item, idx) => (
-            <div key={`${item.id}-${idx}`} className="flex items-center shrink-0 snap-center pr-8 border-r border-dashed border-muted-foreground/20 last:border-0">
+            <div key={`${item.id}-${idx}`} className="flex items-center shrink-0 snap-center pr-8 border-r border-dashed border-muted-foreground/20 last:border-0 h-full">
               <span className={cn(
                 "h-1.5 w-1.5 rounded-full mr-3 shrink-0",
                 isCompleted ? "bg-muted-foreground" : 
@@ -118,10 +116,10 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
               <Link 
                 href={item.href} 
                 className={cn(
-                  "text-sm font-bold transition-colors whitespace-nowrap decoration-primary/30 underline-offset-4 hover:underline",
+                  "text-sm font-bold transition-colors whitespace-nowrap hover:underline underline-offset-4",
                   isCompleted ? "text-muted-foreground hover:text-foreground" : 
                   isDonation ? "text-blue-700/80 hover:text-blue-900" : 
-                  "hover:text-primary"
+                  "text-foreground hover:text-primary"
                 )}
               >
                 {item.text}
@@ -131,7 +129,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         </div>
       </div>
       
-      <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/50 to-transparent pointer-events-none z-20" />
+      <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-background to-transparent pointer-events-none z-20" />
     </div>
   );
 }

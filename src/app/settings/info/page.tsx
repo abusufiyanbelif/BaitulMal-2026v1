@@ -15,7 +15,7 @@ import type { DonationInfoData } from '@/lib/types';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, Info, ListChecks, ImageIcon, FileText } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,7 +28,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
 
 const donationTypeSchema = z.object({
   id: z.string(),
@@ -105,7 +104,7 @@ export default function InfoSettingsPage() {
         setIsSubmitting(true);
         try {
             await setDoc(doc(firestore, 'settings', 'info'), { isDonationInfoPublic }, { merge: true });
-            toast({ title: 'Visibility Updated', description: 'Changes have been saved successfully.', variant: 'success' });
+            toast({ title: 'Visibility Updated', description: 'Changes saved.', variant: 'success' });
         } catch (error) {
             errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings/info', operation: 'write' }));
         } finally {
@@ -126,7 +125,7 @@ export default function InfoSettingsPage() {
             });
 
             await setDoc(doc(firestore, 'settings', 'donationInfo'), { types: typesToSave });
-            toast({ title: 'Content Saved', description: 'Informational content has been updated.', variant: 'success' });
+            toast({ title: 'Content Saved', description: 'Informational content updated.', variant: 'success' });
             forceRefetch();
         } catch (error) {
              errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings/donationInfo', operation: 'write' }));
@@ -137,14 +136,7 @@ export default function InfoSettingsPage() {
 
     const handleAddType = () => {
         const id = `type_${Date.now()}`;
-        append({
-            id,
-            title: 'New Donation Type',
-            description: '',
-            usage: '',
-            purposePointsRaw: '',
-            imageHint: 'charity'
-        });
+        append({ id, title: 'New Donation Type', description: '', usage: '', purposePointsRaw: '', imageHint: 'charity' });
         setActiveTab(id);
     };
 
@@ -164,9 +156,7 @@ export default function InfoSettingsPage() {
             <Alert variant="destructive">
                 <ShieldAlert className="h-4 w-4" />
                 <AlertTitle>Access Denied</AlertTitle>
-                <AlertDescription>
-                    You do not have permission to modify these settings.
-                </AlertDescription>
+                <AlertDescription>Permission denied.</AlertDescription>
             </Alert>
         );
     }
@@ -176,31 +166,22 @@ export default function InfoSettingsPage() {
             <Card className="animate-fade-in-zoom">
                 <CardHeader>
                     <CardTitle>Page Visibility</CardTitle>
-                    <CardDescription>Control which informational pages are visible to the public.</CardDescription>
+                    <CardDescription>Control public informational pages.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4">
                         <div className="space-y-1.5 flex-1">
                             <h3 className="font-semibold">Donation Types Explained</h3>
-                            <p className="text-sm text-muted-foreground">
-                                Detailed information about Zakat, Sadaqah, Lillah, and Interest disposal.
-                            </p>
-                            <div className="flex items-center gap-2 pt-1">
-                                <Button variant="outline" size="sm" asChild>
-                                    <Link href="/info/donation-info" target="_blank">
-                                        <Eye className="mr-2 h-4 w-4" /> Preview Page
-                                    </Link>
-                                </Button>
-                            </div>
+                            <p className="text-sm text-muted-foreground">Detailed information guide for donors.</p>
+                            <Button variant="outline" size="sm" asChild className="mt-2">
+                                <Link href="/info/donation-info" target="_blank">
+                                    <Eye className="mr-2 h-4 w-4" /> Preview Page
+                                </Link>
+                            </Button>
                         </div>
                         <div className="flex items-center space-x-2 pt-4 sm:pt-0">
                             <Label htmlFor="donation-info-public">Public</Label>
-                            <Switch
-                                id="donation-info-public"
-                                checked={isDonationInfoPublic}
-                                onCheckedChange={setIsDonationInfoPublic}
-                                disabled={isSubmitting}
-                            />
+                            <Switch id="donation-info-public" checked={isDonationInfoPublic} onCheckedChange={setIsDonationInfoPublic} disabled={isSubmitting} />
                         </div>
                     </div>
                 </CardHeader>
@@ -212,16 +193,14 @@ export default function InfoSettingsPage() {
                 </CardFooter>
             </Card>
 
-            <Card className="animate-fade-in-up" style={{ animationDelay: '200ms'}}>
+            <Card className="animate-fade-in-up">
                 <CardHeader>
                     <div className="flex items-center justify-between gap-4">
                         <div>
-                            <CardTitle>Content Editor</CardTitle>
-                            <CardDescription>Modify the detailed text and structure for each donation category.</CardDescription>
+                            <CardTitle>Content Manager</CardTitle>
+                            <CardDescription>Manage rich content for donation categories.</CardDescription>
                         </div>
-                        <Button onClick={handleAddType} variant="outline" size="sm">
-                            <Plus className="mr-2 h-4 w-4" /> Add Type
-                        </Button>
+                        <Button onClick={handleAddType} variant="outline" size="sm"><Plus className="mr-2 h-4 w-4" /> Add Type</Button>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0 sm:p-6 pt-0">
@@ -232,11 +211,7 @@ export default function InfoSettingsPage() {
                                     <ScrollArea className="w-full whitespace-nowrap">
                                         <TabsList className="h-auto w-max bg-transparent p-0">
                                             {fields.map((field, index) => (
-                                                <TabsTrigger 
-                                                    key={field.id} 
-                                                    value={field.id}
-                                                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold"
-                                                >
+                                                <TabsTrigger key={field.id} value={field.id} className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold">
                                                     {form.watch(`types.${index}.title`) || 'New Type'}
                                                 </TabsTrigger>
                                             ))}
@@ -249,79 +224,56 @@ export default function InfoSettingsPage() {
                                     <TabsContent key={field.id} value={field.id} className="p-4 sm:p-6 space-y-6">
                                         <div className="flex justify-between items-center">
                                             <h3 className="text-lg font-bold text-primary">Editing: {form.watch(`types.${index}.title`)}</h3>
-                                            <Button 
-                                                type="button" 
-                                                variant="ghost" 
-                                                size="sm" 
-                                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                                onClick={() => {
-                                                    remove(index);
-                                                    if (fields.length > 1) {
-                                                        setActiveTab(fields[index === 0 ? 1 : index - 1].id);
-                                                    }
-                                                }}
-                                            >
-                                                <Trash2 className="mr-2 h-4 w-4"/> Remove Category
+                                            <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(fields[0].id); }}>
+                                                <Trash2 className="mr-2 h-4 w-4"/> Remove
                                             </Button>
                                         </div>
 
                                         <div className="grid gap-6">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <FormField control={form.control} name={`types.${index}.title`} render={({ field }) => (
-                                                    <FormItem><FormLabel>Heading/Title *</FormLabel><FormControl><Input placeholder="e.g. Zakat (Obligatory Charity)" {...field} /></FormControl><FormMessage /></FormItem>
+                                                    <FormItem><FormLabel>Heading/Title *</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                                                 )}/>
                                                 <FormField control={form.control} name={`types.${index}.imageHint`} render={({ field }) => (
-                                                    <FormItem><FormLabel>Image Keyword</FormLabel><FormControl><Input placeholder="e.g. charity, money, poor" {...field} /></FormControl><FormDescription>Thematic keyword for the background image.</FormDescription><FormMessage /></FormItem>
+                                                    <FormItem><FormLabel>Image Keyword</FormLabel><FormControl><Input placeholder="e.g. money, charity" {...field} /></FormControl></FormItem>
                                                 )}/>
                                             </div>
-
                                             <FormField control={form.control} name={`types.${index}.description`} render={({ field }) => (
-                                                <FormItem><FormLabel>General Introduction *</FormLabel><FormControl><Textarea rows={3} placeholder="A brief explanation..." {...field} /></FormControl><FormMessage /></FormItem>
+                                                <FormItem><FormLabel>Introduction *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
                                             )}/>
-
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-lg border p-4 bg-muted/5">
                                                 <div className="space-y-4">
                                                     <h4 className="text-sm font-bold flex items-center gap-2"><Quote className="h-4 w-4"/> Religious Reference</h4>
                                                     <FormField control={form.control} name={`types.${index}.quranVerse`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Reference Text</FormLabel><FormControl><Textarea rows={2} placeholder="Quranic verse or Hadith..." {...field} /></FormControl></FormItem>
+                                                        <FormItem><FormLabel>Verse Text</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl></FormItem>
                                                     )}/>
                                                     <FormField control={form.control} name={`types.${index}.quranSource`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Source Citation</FormLabel><FormControl><Input placeholder="e.g. Surah Al-Baqarah 2:43" {...field} /></FormControl></FormItem>
+                                                        <FormItem><FormLabel>Citation</FormLabel><FormControl><Input placeholder="Surah 2:43" {...field} /></FormControl></FormItem>
                                                     )}/>
                                                 </div>
                                                 <div className="space-y-4">
-                                                    <h4 className="text-sm font-bold flex items-center gap-2"><ListChecks className="h-4 w-4"/> Key Objectives</h4>
+                                                    <h4 className="text-sm font-bold flex items-center gap-2"><ListChecks className="h-4 w-4"/> Key Highlights</h4>
                                                     <FormField control={form.control} name={`types.${index}.purposePointsRaw`} render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>Points (one per line)</FormLabel>
-                                                            <FormControl><Textarea rows={5} placeholder="Enter objectives..." {...field} /></FormControl>
-                                                            <FormDescription>Formats into a bulleted list on the public page.</FormDescription>
-                                                        </FormItem>
+                                                        <FormItem><FormLabel>Points (One per line)</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl></FormItem>
                                                     )}/>
                                                 </div>
                                             </div>
-
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <FormField control={form.control} name={`types.${index}.usage`} render={({ field }) => (
-                                                    <FormItem><FormLabel>Permissible Usage *</FormLabel><FormControl><Textarea rows={3} placeholder="How funds are used..." {...field} /></FormControl></FormItem>
+                                                    <FormItem><FormLabel>Permissible Usage *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
                                                 )}/>
                                                 <FormField control={form.control} name={`types.${index}.restrictions`} render={({ field }) => (
-                                                    <FormItem><FormLabel>Restrictions</FormLabel><FormControl><Textarea rows={3} placeholder="What is forbidden..." {...field} /></FormControl></FormItem>
+                                                    <FormItem><FormLabel>Restrictions</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
                                                 )}/>
                                             </div>
-                                            
-                                            <FormField control={form.control} name={`types.${index}.extraContent`} render={({ field }) => (
-                                                <FormItem><FormLabel>Additional Custom Details</FormLabel><FormControl><Textarea rows={3} placeholder="Other specific rules..." {...field} /></FormControl></FormItem>
-                                            )}/>
                                         </div>
                                     </TabsContent>
                                 ))}
                             </Tabs>
-
-                            <div className="border-t p-6 bg-muted/5 flex justify-end gap-2">
-                                <Button type="submit" disabled={isSubmitting || fields.length === 0} size="lg" className="px-8 shadow-lg transition-all hover:scale-105 active:scale-95">
+                            <div className="border-t p-6 bg-muted/5 flex justify-end">
+                                <Button type="submit" disabled={isSubmitting || fields.length === 0} size="lg">
                                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    <Save className="mr-2 h-4 w-4"/> Save Content
+                                    <Save className="mr-2 h-4 w-4"/> Save All Content
                                 </Button>
                             </div>
                         </form>
