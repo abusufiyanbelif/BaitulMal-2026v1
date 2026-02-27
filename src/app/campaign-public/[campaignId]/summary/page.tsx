@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -163,7 +164,7 @@ export default function PublicCampaignSummaryPage() {
             zakatPending, 
             zakatAvailableForGoal, 
             zakatForGoalAmount, 
-            amountsByCategory,
+            amountsByCategory, // Explicitly return for chart usage
             fundTotals,
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };

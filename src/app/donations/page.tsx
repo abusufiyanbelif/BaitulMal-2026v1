@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -433,7 +434,7 @@ export default function DonationsPage() {
                     <Button variant="outline" onClick={() => setZoom(z => z * 1.2)}><ZoomIn className="mr-2 h-4 w-4"/> Zoom In</Button>
                     <Button variant="outline" onClick={() => setZoom(z => z / 1.2)}><ZoomOut className="mr-2 h-4 w-4"/> Zoom Out</Button>
                     <Button variant="outline" onClick={() => setRotation(r => r + 90)}><RotateCw className="mr-2 h-4 w-4"/> Rotate</Button>
-                    <Button variant="outline" onClick={() => { setZoom(1); setRotation(0); }}><RefreshCw className="mr-2 h-4 w-4"/> Reset</Button>
+                    <Button variant="outline" onClick={() => { setZoom(1); setRotation(0); }}><RefreshCw className="mr-2 h-4 w-4"/> Reset View</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
