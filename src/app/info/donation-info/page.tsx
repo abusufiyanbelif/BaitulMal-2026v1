@@ -82,7 +82,7 @@ export default function DonationInfoPage() {
                 <TabsList className="bg-muted/50 p-1">
                     {donationTypes.map((type) => (
                         <TabsTrigger key={type.id} value={type.id} className="px-6 py-2 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                            {type.id.toUpperCase()}
+                            {type.title?.split(' ')[0].toUpperCase() || type.id.toUpperCase()}
                         </TabsTrigger>
                     ))}
                 </TabsList>
@@ -97,7 +97,7 @@ export default function DonationInfoPage() {
                 <TabsContent key={type.id} value={type.id} className="animate-fade-in-up">
                     <Card className="overflow-hidden border-none shadow-2xl">
                         <div className="relative h-64 md:h-80 w-full flex items-center justify-center bg-secondary/20">
-                            <Image src={displayImageUrl} alt={type.title} fill className="object-cover" priority />
+                            <Image src={displayImageUrl} alt={type.title || 'Header'} fill className="object-cover" priority />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                             <div className="absolute bottom-8 left-8 text-white pr-8">
                                 <h2 className="text-4xl font-black tracking-tight drop-shadow-xl uppercase">{type.title}</h2>
@@ -107,7 +107,7 @@ export default function DonationInfoPage() {
                             <div className="grid md:grid-cols-3 gap-10">
                                 <div className="md:col-span-2 space-y-8">
                                     <div className="space-y-4">
-                                        <p className="text-xl leading-relaxed text-foreground font-semibold">{type.description}</p>
+                                        {type.description && <p className="text-xl leading-relaxed text-foreground font-semibold">{type.description}</p>}
                                         
                                         {type.quranVerse && (
                                             <blockquote className="border-l-4 border-primary pl-6 py-4 italic text-muted-foreground relative bg-muted/30 rounded-r-xl">
@@ -164,10 +164,12 @@ export default function DonationInfoPage() {
                                     )}
 
                                     <div className="space-y-6">
-                                        <div className="p-4 rounded-xl bg-muted/20 border">
-                                            <span className="font-black uppercase text-[10px] tracking-widest text-muted-foreground block mb-2">Permissible Usage:</span>
-                                            <p className="text-sm font-medium leading-relaxed">{type.usage}</p>
-                                        </div>
+                                        {type.usage && (
+                                            <div className="p-4 rounded-xl bg-muted/20 border">
+                                                <span className="font-black uppercase text-[10px] tracking-widest text-muted-foreground block mb-2">Permissible Usage:</span>
+                                                <p className="text-sm font-medium leading-relaxed">{type.usage}</p>
+                                            </div>
+                                        )}
                                         {type.restrictions && (
                                             <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/10">
                                                 <span className="font-black uppercase text-[10px] tracking-widest text-destructive block mb-2">Strict Restrictions:</span>

@@ -12,16 +12,20 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-    
-    function getUserData() {
-        return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    function userDocRef() {
+        return /databases/(default)/documents/users/$(request.auth.uid);
     }
     
     function userExists() {
-        return firestore.exists(/databases/(default)/documents/users/$(request.auth.uid));
+        return firestore.exists(userDocRef());
+    }
+
+    function getUserData() {
+        return firestore.get(userDocRef()).data;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
     
     function isAdmin() {
@@ -63,13 +67,11 @@ service firebase.storage {
     // Path Rules
     // ----------------------------------------------------------------------
 
-    // Donations: Authenticated users can upload. Public can read.
     match /donations/{donationId}/{allPaths=**} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Campaigns & Leads: Access tied to submodule permissions.
     match /campaigns/{campaignId}/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin() || hasPermission('campaigns', 'update');
@@ -85,7 +87,6 @@ service firebase.storage {
         allow write: if isAdmin() || hasPermission('beneficiaries', 'update');
     }
 
-    // Settings: Granular permissions for branding (app), donation info (info), and payments (app).
     match /settings/logo {
         allow read: if true;
         allow write: if isAdmin() || hasSubmodulePermission('settings', 'app', 'update');
@@ -103,13 +104,11 @@ service firebase.storage {
         allow write: if isAdmin() || hasPermission('settings', 'update');
     }
 
-    // User-specific files
     match /users/{userId}/{allPaths=**} {
       allow read: if true;
       allow write: if isOwner(userId) || isAdmin() || hasPermission('users', 'update');
     }
 
-    // Diagnostics
     match /test/{userId}/{allPaths=**} {
       allow read, write: if isOwner(userId) || isAdmin() || hasPermission('diagnostics', 'read');
     }

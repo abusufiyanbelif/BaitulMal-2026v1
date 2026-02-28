@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -35,31 +35,31 @@ import { cn } from '@/lib/utils';
 
 const useCaseSchema = z.object({
   id: z.string(),
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().min(1, 'Description is required'),
+  title: z.string().optional().or(z.literal('')),
+  description: z.string().optional().or(z.literal('')),
   isAllowed: z.boolean().default(true),
 });
 
 const qaItemSchema = z.object({
   id: z.string(),
-  question: z.string().min(1, 'Question is required'),
-  answer: z.string().min(1, 'Answer is required'),
-  reference: z.string().optional(),
+  question: z.string().optional().or(z.literal('')),
+  answer: z.string().optional().or(z.literal('')),
+  reference: z.string().optional().or(z.literal('')),
 });
 
 const donationTypeSchema = z.object({
   id: z.string(),
-  title: z.string().min(1, 'Title is required.'),
-  description: z.string().min(1, 'Introduction is required.'),
-  quranVerse: z.string().optional(),
-  quranSource: z.string().optional(),
-  purposePointsRaw: z.string().optional(),
-  useCasesHeading: z.string().optional(),
+  title: z.string().optional().or(z.literal('')),
+  description: z.string().optional().or(z.literal('')),
+  quranVerse: z.string().optional().or(z.literal('')),
+  quranSource: z.string().optional().or(z.literal('')),
+  purposePointsRaw: z.string().optional().or(z.literal('')),
+  useCasesHeading: z.string().optional().or(z.literal('')),
   useCases: z.array(useCaseSchema),
   qaItems: z.array(qaItemSchema),
-  usage: z.string().min(1, 'Permissible Usage is required.'),
-  restrictions: z.string().optional(),
-  imageUrl: z.string().optional(),
+  usage: z.string().optional().or(z.literal('')),
+  restrictions: z.string().optional().or(z.literal('')),
+  imageUrl: z.string().optional().or(z.literal('')),
   imageFile: z.any().optional(),
 });
 
@@ -172,7 +172,7 @@ export default function InfoSettingsPage() {
         name: 'types'
     });
 
-    const { isDirty, errors } = form.formState;
+    const { isDirty } = form.formState;
 
     useEffect(() => {
         if (infoSettings) {
@@ -216,6 +216,8 @@ export default function InfoSettingsPage() {
         if (!firestore || !storage || !canUpdateSettings) return;
         
         setIsSubmitting(true);
+        const currentTypeName = data.types.find(t => t.id === activeTab)?.title || 'Current Category';
+
         try {
             const typesToSave = await Promise.all(data.types.map(async (t) => {
                 const { purposePointsRaw, imageFile, ...rest } = t;
@@ -235,30 +237,25 @@ export default function InfoSettingsPage() {
                 return {
                     ...rest,
                     imageUrl,
-                    useCases: t.useCases.filter(uc => uc.title.trim() !== '' || uc.description.trim() !== ''),
-                    qaItems: t.qaItems.filter(qa => qa.question.trim() !== '' || qa.answer.trim() !== ''),
+                    useCases: t.useCases.filter(uc => uc.title?.trim() || uc.description?.trim()),
+                    qaItems: t.qaItems.filter(qa => qa.question?.trim() || qa.answer?.trim()),
                     purposePoints: purposePointsRaw ? purposePointsRaw.split('\n').filter(p => p.trim() !== '') : [],
                 };
             }));
 
             await setDoc(doc(firestore, 'settings', 'donationInfo'), { types: typesToSave });
-            toast({ title: 'Content Saved', description: 'Informational content updated.', variant: 'success' });
+            toast({ title: 'Content Saved', description: `Settings for all categories, including '${currentTypeName}', have been updated.`, variant: 'success' });
             forceRefetch();
             form.reset(data); 
-        } catch (error) {
-             errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings/donationInfo', operation: 'write' }));
+        } catch (error: any) {
+             errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+                path: 'settings/donationInfo', 
+                operation: 'write',
+                requestResourceData: { action: `Attempted to save info content from tab: ${currentTypeName}` }
+            }));
         } finally {
             setIsSubmitting(false);
         }
-    };
-
-    const onError = (errors: any) => {
-        console.error("Form validation errors:", errors);
-        toast({
-            title: "Validation Error",
-            description: "Required fields missing. Please check all tabs for warning icons.",
-            variant: "destructive"
-        });
     };
 
     const handleAddType = () => {
@@ -334,20 +331,16 @@ export default function InfoSettingsPage() {
                 </CardHeader>
                 <CardContent className="p-0 pt-0">
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onContentSubmit, onError)}>
+                        <form onSubmit={form.handleSubmit(onContentSubmit)}>
                             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                                 <div className="border-b bg-muted/5 px-4 pt-4 sm:px-6 sm:pt-0">
                                     <ScrollArea className="w-full whitespace-nowrap">
                                         <TabsList className="h-auto w-max bg-transparent p-0">
                                             {fields.map((field, index) => {
                                                 const typeId = form.getValues(`types.${index}.id`);
-                                                const hasError = !!errors.types?.[index];
                                                 return (
-                                                    <TabsTrigger key={field.id} value={typeId} className={cn("rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold", hasError && "text-destructive border-destructive data-[state=active]:border-destructive")}>
-                                                        <div className="flex items-center gap-2">
-                                                            {form.watch(`types.${index}.title`) || 'New Type'}
-                                                            {hasError && <AlertCircle className="h-3 w-3" />}
-                                                        </div>
+                                                    <TabsTrigger key={field.id} value={typeId} className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold">
+                                                        {form.watch(`types.${index}.title`) || 'New Type'}
                                                     </TabsTrigger>
                                                 );
                                             })}
@@ -371,10 +364,10 @@ export default function InfoSettingsPage() {
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                                                     <div className="md:col-span-2 space-y-4">
                                                         <FormField control={form.control} name={`types.${index}.title`} render={({ field }) => (
-                                                            <FormItem><FormLabel>Heading/Title *</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                                            <FormItem><FormLabel>Heading/Title</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                                                         )}/>
                                                         <FormField control={form.control} name={`types.${index}.description`} render={({ field }) => (
-                                                            <FormItem><FormLabel>Introduction *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
+                                                            <FormItem><FormLabel>Introduction</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
                                                         )}/>
                                                     </div>
                                                     <div className="space-y-2">
@@ -444,7 +437,7 @@ export default function InfoSettingsPage() {
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <FormField control={form.control} name={`types.${index}.usage`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Permissible Usage *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
+                                                        <FormItem><FormLabel>Permissible Usage</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
                                                     )}/>
                                                     <FormField control={form.control} name={`types.${index}.restrictions`} render={({ field }) => (
                                                         <FormItem><FormLabel>Restrictions</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
