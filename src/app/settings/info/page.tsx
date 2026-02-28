@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -18,20 +17,21 @@ import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen, Edit, X } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen, Edit, X, CheckCircle2, XCircle, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import Link from 'next/link';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
 const useCaseSchema = z.object({
@@ -82,11 +82,7 @@ const formSchema = z.object({
 type DonationInfoFormValues = z.infer<typeof formSchema>;
 
 function UseCaseEditor({ control, typeIndex, isReadOnly }: { control: any, typeIndex: number, isReadOnly: boolean }) {
-    const { fields, append, remove } = useFieldArray({
-        control,
-        name: `types.${typeIndex}.useCases`
-    });
-
+    const { fields, append, remove } = useFieldArray({ control, name: `types.${typeIndex}.useCases` });
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -144,11 +140,7 @@ function UseCaseEditor({ control, typeIndex, isReadOnly }: { control: any, typeI
 }
 
 function QAEditor({ control, typeIndex, isReadOnly }: { control: any, typeIndex: number, isReadOnly: boolean }) {
-    const { fields, append, remove } = useFieldArray({
-        control,
-        name: `types.${typeIndex}.qaItems`
-    });
-
+    const { fields, append, remove } = useFieldArray({ control, name: `types.${typeIndex}.qaItems` });
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -203,7 +195,6 @@ export default function InfoSettingsPage() {
     const { donationInfoData, isLoading: isDonationInfoLoading, forceRefetch } = useDonationInfo();
     const firestore = useFirestore();
     const storage = useStorage();
-    const auth = useAuth();
     const { toast } = useToast();
 
     const [isDonationInfoPublic, setIsDonationInfoPublic] = useState(false);
@@ -217,15 +208,10 @@ export default function InfoSettingsPage() {
         defaultValues: { types: [] }
     });
 
-    const { fields, append, remove } = useFieldArray({
-        control: form.control,
-        name: 'types'
-    });
+    const { fields, append, remove } = useFieldArray({ control: form.control, name: 'types' });
 
     useEffect(() => {
-        if (infoSettings) {
-            setIsDonationInfoPublic(infoSettings.isDonationInfoPublic || false);
-        }
+        if (infoSettings) setIsDonationInfoPublic(infoSettings.isDonationInfoPublic || false);
     }, [infoSettings]);
     
     useEffect(() => {
@@ -243,14 +229,13 @@ export default function InfoSettingsPage() {
                 hideUsage: !!t.hideUsage,
                 hideRestrictions: !!t.hideRestrictions,
             }));
-            
             form.reset({ types: mappedTypes });
             if (mappedTypes.length > 0) setActiveTab(mappedTypes[0].id);
             setIsInitialized(true);
         }
     }, [donationInfoData, isDonationInfoLoading, isInitialized, form]);
 
-    const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.update;
+    const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.read', false);
 
     const handleSaveVisibility = async () => {
         if (!firestore || !canUpdateSettings) return;
@@ -260,36 +245,27 @@ export default function InfoSettingsPage() {
             toast({ title: 'Visibility Updated', description: 'Changes saved.', variant: 'success' });
         } catch (error) {
             errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings/info', operation: 'write' }));
-        } finally {
-            setIsSubmitting(false);
-        }
+        } finally { setIsSubmitting(false); }
     };
     
     const handleSaveSingleCategory = async (typeIndex: number) => {
         if (!firestore || !storage || !canUpdateSettings) return;
-        
         const data = form.getValues();
         const typeToSave = data.types[typeIndex];
         const categoryLabel = typeToSave.title || typeToSave.id;
-
         setIsSubmitting(true);
         toast({ title: `Saving ${categoryLabel}...`, description: 'Please wait.' });
-
         try {
             const { purposePointsRaw, imageFile, ...rest } = typeToSave;
             let finalImageUrl = rest.imageUrl || '';
-            
             if (imageFile && imageFile.length > 0) {
                 const file = imageFile[0];
-                const resizedBlob = await new Promise<Blob>((resolve) => {
-                    (Resizer as any).imageFileResizer(file, 800, 600, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
-                });
+                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 800, 600, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
                 const filePath = `settings/info/donation_types/${typeToSave.id}.png`;
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
                 finalImageUrl = await getDownloadURL(fileRef);
             }
-
             const processedType = {
                 ...rest,
                 imageUrl: finalImageUrl,
@@ -297,288 +273,68 @@ export default function InfoSettingsPage() {
                 qaItems: typeToSave.qaItems.filter(qa => qa.question?.trim() || qa.answer?.trim()),
                 purposePoints: purposePointsRaw ? purposePointsRaw.split('\n').filter(p => p.trim() !== '') : [],
             };
-
             const currentFullData = (donationInfoData?.types || []).length > 0 ? [...donationInfoData!.types] : [...defaultDonationInfo];
             const existingIdx = currentFullData.findIndex(t => t.id === typeToSave.id);
-            if (existingIdx !== -1) {
-                currentFullData[existingIdx] = processedType as any;
-            } else {
-                currentFullData.push(processedType as any);
-            }
-
+            if (existingIdx !== -1) currentFullData[existingIdx] = processedType as any;
+            else currentFullData.push(processedType as any);
             await setDoc(doc(firestore, 'settings', 'donationInfo'), { types: currentFullData });
-            toast({ title: 'Saved!', description: `${categoryLabel} has been updated and set to Read Mode.`, variant: 'success' });
+            toast({ title: 'Saved!', description: `${categoryLabel} has been updated.`, variant: 'success' });
             setEditModes(prev => ({ ...prev, [typeToSave.id]: false }));
             forceRefetch();
         } catch (error: any) {
-             errorEmitter.emit('permission-error', new FirestorePermissionError({ 
-                path: 'settings/donationInfo', 
-                operation: 'write'
-            }));
-        } finally {
-            setIsSubmitting(false);
-        }
+             errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings/donationInfo', operation: 'write' }));
+        } finally { setIsSubmitting(false); }
     };
 
-    const handleAddType = () => {
-        const id = `type_${Date.now()}`;
-        append({ 
-            id, title: 'New Category', description: '', usage: '', purposePointsRaw: '', 
-            useCases: [], qaItems: [], imageUrl: '',
-            hideKeyHighlights: false, hideUseCases: false, hideQA: false, hideUsage: false, hideRestrictions: false
-        });
-        setActiveTab(id);
-        setEditModes(prev => ({ ...prev, [id]: true }));
-    };
-
-    const toggleEditMode = (id: string) => {
-        setEditModes(prev => ({ ...prev, [id]: !prev[id] }));
-    };
-
-    const isLoading = isSessionLoading || isInfoSettingsLoading || isDonationInfoLoading;
-
-    if (isLoading) {
-        return (
-            <div className="space-y-6">
-                <Card><CardHeader><Skeleton className="h-8 w-48" /></CardHeader><CardContent><Skeleton className="h-24 w-full" /></CardContent></Card>
-                <Card><CardHeader><Skeleton className="h-8 w-64" /></CardHeader><CardContent><Skeleton className="h-[400px] w-full" /></CardContent></Card>
-            </div>
-        );
-    }
-
-    if (!canUpdateSettings) {
-        return (
-            <Alert variant="destructive">
-                <ShieldAlert className="h-4 w-4" />
-                <AlertTitle>Access Denied</AlertTitle>
-                <AlertDescription>You do not have permission to modify these settings.</AlertDescription>
-            </Alert>
-        );
-    }
+    if (isSessionLoading || isInfoSettingsLoading || isDonationInfoLoading) return <BrandedLoader />;
+    if (!canUpdateSettings) return <main className="container mx-auto p-4 md:p-8"><Alert variant="destructive"><ShieldAlert className="h-4 w-4" /><AlertTitle>Access Denied</AlertTitle><AlertDescription>Missing permissions.</AlertDescription></Alert></main>;
     
-    const isVisibilityDirty = isDonationInfoPublic !== (infoSettings?.isDonationInfoPublic || false);
-
     return (
         <div className="space-y-6">
             <Card className="animate-fade-in-zoom shadow-sm">
-                <CardHeader>
-                    <CardTitle>Page Visibility</CardTitle>
-                    <CardDescription>Control public informational pages.</CardDescription>
-                </CardHeader>
+                <CardHeader><CardTitle>Page Visibility</CardTitle><CardDescription>Control public informational pages.</CardDescription></CardHeader>
                 <CardContent className="space-y-6">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-1.5 flex-1">
-                            <h3 className="font-semibold">Donation Types Explained</h3>
-                            <p className="text-sm text-muted-foreground">Detailed information guide for donors.</p>
-                            <Button variant="outline" size="sm" asChild className="mt-2">
-                                <Link href="/info/donation-info" target="_blank">
-                                    <Eye className="mr-2 h-4 w-4" /> Preview Public Page
-                                </Link>
-                            </Button>
-                        </div>
-                        <div className="flex items-center space-x-2 pt-4 sm:pt-0">
-                            <Label htmlFor="donation-info-public">Publicly Available</Label>
-                            <Switch id="donation-info-public" checked={isDonationInfoPublic} onCheckedChange={setIsDonationInfoPublic} disabled={isSubmitting} />
-                        </div>
+                        <div className="space-y-1.5 flex-1"><h3 className="font-semibold">Donation Types Explained</h3><p className="text-sm text-muted-foreground">Detailed information guide for donors.</p><Button variant="outline" size="sm" asChild className="mt-2"><Link href="/info/donation-info" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview Public Page</Link></Button></div>
+                        <div className="flex items-center space-x-2 pt-4 sm:pt-0"><Label htmlFor="donation-info-public">Publicly Available</Label><Switch id="donation-info-public" checked={isDonationInfoPublic} onCheckedChange={setIsDonationInfoPublic} disabled={isSubmitting} /></div>
                     </div>
                 </CardContent>
-                <CardFooter className="justify-end border-t bg-muted/5 p-4">
-                    <Button onClick={handleSaveVisibility} disabled={isSubmitting || !isVisibilityDirty}>
-                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4"/>}
-                        Save Visibility
-                    </Button>
-                </CardFooter>
+                <CardFooter className="justify-end border-t bg-muted/5 p-4"><Button onClick={handleSaveVisibility} disabled={isSubmitting || isDonationInfoPublic === (infoSettings?.isDonationInfoPublic || false)}>{isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4"/>} Save Visibility</Button></CardFooter>
             </Card>
 
             <Card className="animate-fade-in-up border-primary/10 overflow-hidden">
                 <CardHeader className="bg-primary/5">
                     <div className="flex items-center justify-between gap-4">
-                        <div>
-                            <CardTitle>Content Manager</CardTitle>
-                            <CardDescription>Click a tab below to manage its content. Changes are saved per category.</CardDescription>
-                        </div>
-                        <Button onClick={handleAddType} variant="outline" size="sm"><Plus className="mr-2 h-4 w-4" /> Add Category</Button>
+                        <div><CardTitle>Content Manager</CardTitle><CardDescription>Manage each donation category independently.</CardDescription></div>
+                        <Button onClick={() => { const id = `type_${Date.now()}`; append({ id, title: 'New Category', useCases: [], qaItems: [] }); setActiveTab(id); setEditModes(p => ({ ...p, [id]: true })); }} variant="outline" size="sm"><Plus className="mr-2 h-4 w-4" /> Add Category</Button>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <Form {...form}>
-                        <form onSubmit={(e) => e.preventDefault()}>
-                            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                                <div className="bg-muted/10 border-b">
-                                    <ScrollArea className="w-full whitespace-nowrap">
-                                        <TabsList className="h-auto w-max bg-transparent p-0 rounded-none">
-                                            {fields.map((field, index) => {
-                                                const typeId = form.getValues(`types.${index}.id`);
-                                                const title = form.watch(`types.${index}.title`) || 'New Type';
-                                                return (
-                                                    <TabsTrigger 
-                                                        key={field.id} 
-                                                        value={typeId} 
-                                                        className={cn(
-                                                            "rounded-none border-b-2 border-transparent px-6 py-4 font-black uppercase tracking-widest text-muted-foreground transition-all duration-300",
-                                                            "data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
-                                                            "hover:bg-muted/50"
-                                                        )}
-                                                    >
-                                                        {title}
-                                                    </TabsTrigger>
-                                                );
-                                            })}
-                                        </TabsList>
-                                        <ScrollBar orientation="horizontal" />
-                                    </ScrollArea>
-                                </div>
-
-                                {fields.map((field, index) => {
-                                    const typeId = form.getValues(`types.${index}.id`);
-                                    const categoryLabel = form.watch(`types.${index}.title`) || 'this category';
-                                    const isEditingTab = editModes[typeId] || false;
-                                    
-                                    return (
-                                        <TabsContent key={field.id} value={typeId} className="p-4 sm:p-8 space-y-8 animate-fade-in-up mt-0">
-                                            <div className="flex justify-between items-center bg-muted/20 p-4 rounded-lg">
-                                                <div className="flex items-center gap-3">
-                                                    <h3 className="text-xl font-black text-primary uppercase tracking-tight">{categoryLabel}</h3>
-                                                    <Badge variant={isEditingTab ? "default" : "secondary"}>{isEditingTab ? "Edit Mode" : "Read Mode"}</Badge>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    {isEditingTab ? (
-                                                        <Button type="button" variant="outline" size="sm" onClick={() => toggleEditMode(typeId)} disabled={isSubmitting}>
-                                                            <X className="mr-2 h-4 w-4"/> Cancel
-                                                        </Button>
-                                                    ) : (
-                                                        <Button type="button" variant="outline" size="sm" onClick={() => toggleEditMode(typeId)}>
-                                                            <Edit className="mr-2 h-4 w-4"/> Edit Category
-                                                        </Button>
-                                                    )}
-                                                    <Button type="button" variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(form.getValues('types.0.id')); }}>
-                                                        <Trash2 className="h-5 w-5"/>
-                                                    </Button>
-                                                </div>
+                    <Form {...form}><form onSubmit={(e) => e.preventDefault()}>
+                        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                            <div className="bg-muted/10 border-b"><ScrollArea className="w-full whitespace-nowrap"><TabsList className="h-auto w-max bg-transparent p-0 rounded-none">{fields.map((field, index) => { const typeId = form.getValues(`types.${index}.id`); const title = form.watch(`types.${index}.title`) || 'New Type'; return (<TabsTrigger key={field.id} value={typeId} className={cn("rounded-none border-b-2 border-transparent px-6 py-4 font-black uppercase tracking-widest text-muted-foreground transition-all duration-300 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground")}>{title}</TabsTrigger>);})}</TabsList><ScrollBar orientation="horizontal" /></ScrollArea></div>
+                            {fields.map((field, index) => {
+                                const typeId = form.getValues(`types.${index}.id`);
+                                const isEditingTab = editModes[typeId] || false;
+                                return (
+                                    <TabsContent key={field.id} value={typeId} className="p-4 sm:p-8 space-y-8 animate-fade-in-up mt-0">
+                                        <div className="flex justify-between items-center bg-muted/20 p-4 rounded-lg"><div className="flex items-center gap-3"><h3 className="text-xl font-black text-primary uppercase tracking-tight">{form.watch(`types.${index}.title`) || 'Category'}</h3><Badge variant={isEditingTab ? "default" : "secondary"}>{isEditingTab ? "Edit Mode" : "Read Mode"}</Badge></div><div className="flex gap-2">{isEditingTab ? (<Button type="button" variant="outline" size="sm" onClick={() => setEditModes(p => ({...p, [typeId]: false}))} disabled={isSubmitting}><X className="mr-2 h-4 w-4"/> Cancel</Button>) : (<Button type="button" variant="outline" size="sm" onClick={() => setEditModes(p => ({...p, [typeId]: true}))}><Edit className="mr-2 h-4 w-4"/> Edit Category</Button>)}<Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(form.getValues('types.0.id')); }}><Trash2 className="h-5 w-5"/></Button></div></div>
+                                        <div className={cn("grid gap-8 transition-opacity", !isEditingTab && "opacity-70 pointer-events-none")}>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                                                <div className="md:col-span-2 space-y-4"><FormField control={form.control} name={`types.${index}.title`} render={({ field }) => (<FormItem><FormLabel className="font-bold uppercase tracking-tighter">Heading</FormLabel><FormControl><Input {...field} disabled={!isEditingTab} /></FormControl></FormItem>)}/><FormField control={form.control} name={`types.${index}.description`} render={({ field }) => (<FormItem><FormLabel className="font-bold uppercase tracking-tighter">Intro</FormLabel><FormControl><Textarea rows={4} {...field} disabled={!isEditingTab} /></FormControl></FormItem>)} /></div>
+                                                <div className="space-y-2"><FormLabel className="font-bold uppercase tracking-tighter">Header Image</FormLabel><div className="relative aspect-[4/3] w-full rounded-md border-2 border-dashed overflow-hidden flex items-center justify-center bg-muted/30">{form.watch(`types.${index}.imageUrl`) ? (<Image src={form.watch(`types.${index}.imageUrl`)!} alt="Header" fill className="object-cover" unoptimized />) : (<div className="text-center p-4"><ImageIcon className="h-10 w-10 mx-auto text-muted-foreground/40" /></div>)}</div><FormControl><Input type="file" accept="image/*" className="text-xs h-auto py-1" disabled={!isEditingTab} onChange={(e) => { const file = e.target.files?.[0]; if (file) { const reader = new FileReader(); reader.onloadend = () => form.setValue(`types.${index}.imageUrl`, reader.result as string); reader.readAsDataURL(file); form.setValue(`types.${index}.imageFile`, e.target.files); } }} /></FormControl></div>
                                             </div>
-
-                                            <div className={cn("grid gap-8 transition-opacity duration-300", !isEditingTab && "opacity-70 pointer-events-none")}>
-                                                <div className="bg-muted/10 p-4 rounded-lg border border-dashed grid grid-cols-2 md:grid-cols-5 gap-4">
-                                                    <FormField control={form.control} name={`types.${index}.hideKeyHighlights`} render={({ field }) => (
-                                                        <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={!isEditingTab} /></FormControl><FormLabel className="text-[10px] font-bold uppercase cursor-pointer">Hide Highlights</FormLabel></FormItem>
-                                                    )}/>
-                                                    <FormField control={form.control} name={`types.${index}.hideUseCases`} render={({ field }) => (
-                                                        <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={!isEditingTab} /></FormControl><FormLabel className="text-[10px] font-bold uppercase cursor-pointer">Hide Use Cases</FormLabel></FormItem>
-                                                    )}/>
-                                                    <FormField control={form.control} name={`types.${index}.hideQA`} render={({ field }) => (
-                                                        <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={!isEditingTab} /></FormControl><FormLabel className="text-[10px] font-bold uppercase cursor-pointer">Hide Q&A</FormLabel></FormItem>
-                                                    )}/>
-                                                    <FormField control={form.control} name={`types.${index}.hideUsage`} render={({ field }) => (
-                                                        <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={!isEditingTab} /></FormControl><FormLabel className="text-[10px] font-bold uppercase cursor-pointer">Hide Usage</FormLabel></FormItem>
-                                                    )}/>
-                                                    <FormField control={form.control} name={`types.${index}.hideRestrictions`} render={({ field }) => (
-                                                        <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={!isEditingTab} /></FormControl><FormLabel className="text-[10px] font-bold uppercase cursor-pointer">Hide Restrictions</FormLabel></FormItem>
-                                                    )}/>
-                                                </div>
-
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                                                    <div className="md:col-span-2 space-y-4">
-                                                        <FormField control={form.control} name={`types.${index}.title`} render={({ field }) => (
-                                                            <FormItem><FormLabel className="font-bold text-primary uppercase tracking-tighter">Heading/Title</FormLabel><FormControl><Input placeholder="e.g. Zakat (Farz Charity)" {...field} disabled={!isEditingTab} /></FormControl></FormItem>
-                                                        )}/>
-                                                        <FormField control={form.control} name={`types.${index}.description`} render={({ field }) => (
-                                                            <FormItem><FormLabel className="font-bold text-primary uppercase tracking-tighter">Introduction</FormLabel><FormControl><Textarea rows={4} placeholder="Briefly explain what this donation type is..." {...field} disabled={!isEditingTab} /></FormControl></FormItem>
-                                                        )}/>
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <FormLabel className="font-bold text-primary uppercase tracking-tighter">Header Image (Optional)</FormLabel>
-                                                        <div className="relative aspect-[4/3] w-full rounded-md border-2 border-dashed overflow-hidden flex items-center justify-center bg-muted/30">
-                                                            {form.watch(`types.${index}.imageUrl`) ? (
-                                                                <Image 
-                                                                    src={form.watch(`types.${index}.imageUrl`)?.startsWith('data:') ? form.watch(`types.${index}.imageUrl`)! : `/api/image-proxy?url=${encodeURIComponent(form.watch(`types.${index}.imageUrl`)!)}`} 
-                                                                    alt="Header" 
-                                                                    fill 
-                                                                    className="object-cover" 
-                                                                />
-                                                            ) : (
-                                                                <div className="text-center p-4">
-                                                                    <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground/40" />
-                                                                    <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-widest">No custom image</p>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <FormControl>
-                                                            <Input 
-                                                                type="file" 
-                                                                accept="image/png, image/jpeg, image/webp" 
-                                                                className="text-xs h-auto py-1 cursor-pointer"
-                                                                disabled={!isEditingTab}
-                                                                onChange={(e) => {
-                                                                    const file = e.target.files?.[0];
-                                                                    if (file) {
-                                                                        const reader = new FileReader();
-                                                                        reader.onloadend = () => form.setValue(`types.${index}.imageUrl`, reader.result as string, { shouldDirty: true });
-                                                                        reader.readAsDataURL(file);
-                                                                        form.setValue(`types.${index}.imageFile`, e.target.files);
-                                                                    }
-                                                                }}
-                                                            />
-                                                        </FormControl>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-lg border p-4 bg-muted/5">
-                                                    <div className="space-y-4">
-                                                        <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-primary"><Quote className="h-4 w-4"/> Religious Reference</h4>
-                                                        <FormField control={form.control} name={`types.${index}.quranVerse`} render={({ field }) => (
-                                                            <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Verse or Hadith Text</FormLabel><FormControl><Textarea rows={3} placeholder="Paste the translation here..." {...field} disabled={!isEditingTab} /></FormControl></FormItem>
-                                                        )}/>
-                                                        <FormField control={form.control} name={`types.${index}.quranSource`} render={({ field }) => (
-                                                            <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Citation</FormLabel><FormControl><Input {...field} disabled={!isEditingTab} /></FormControl></FormItem>
-                                                        )}/>
-                                                    </div>
-                                                    <div className="space-y-4">
-                                                        <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-primary"><ListChecks className="h-4 w-4"/> Key Highlights</h4>
-                                                        <FormField control={form.control} name={`types.${index}.purposePointsRaw`} render={({ field }) => (
-                                                            <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">List Points (One per line)</FormLabel><FormControl><Textarea rows={6} placeholder="Point 1&#10;Point 2..." {...field} disabled={!isEditingTab} /></FormControl></FormItem>
-                                                        )}/>
-                                                    </div>
-                                                </div>
-
-                                                <div className="space-y-4 rounded-lg border-2 border-primary/10 p-4 bg-primary/5">
-                                                    <FormField control={form.control} name={`types.${index}.useCasesHeading`} render={({ field }) => (
-                                                        <FormItem className="mb-4"><FormLabel className="font-bold">Section Heading for Use Cases</FormLabel><FormControl><Input placeholder="e.g. Detailed Scenarios (Important)" {...field} disabled={!isEditingTab} /></FormControl></FormItem>
-                                                    )}/>
-                                                    <UseCaseEditor control={form.control} typeIndex={index} isReadOnly={!isEditingTab} />
-                                                </div>
-
-                                                <div className="space-y-4 rounded-lg border-2 border-blue-100 p-4 bg-blue-50/30">
-                                                    <QAEditor control={form.control} typeIndex={index} isReadOnly={!isEditingTab} />
-                                                </div>
-
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <FormField control={form.control} name={`types.${index}.usage`} render={({ field }) => (
-                                                        <FormItem><FormLabel className="font-bold text-green-700 uppercase tracking-tighter">Permissible Usage Guidelines</FormLabel><FormControl><Textarea rows={4} placeholder="Where can these funds be spent?" {...field} disabled={!isEditingTab} /></FormControl></FormItem>
-                                                    )}/>
-                                                    <FormField control={form.control} name={`types.${index}.restrictions`} render={({ field }) => (
-                                                        <FormItem><FormLabel className="font-bold text-destructive uppercase tracking-tighter">Strict Restrictions</FormLabel><FormControl><Textarea rows={4} placeholder="Where can these funds NOT be spent?" {...field} disabled={!isEditingTab} /></FormControl></FormItem>
-                                                    )}/>
-                                                </div>
-                                            </div>
-
-                                            <div className="border-t pt-6 flex justify-end">
-                                                <Button 
-                                                    type="button" 
-                                                    size="lg" 
-                                                    onClick={() => handleSaveSingleCategory(index)} 
-                                                    disabled={isSubmitting || !isEditingTab}
-                                                    className="min-w-[240px] font-black uppercase tracking-widest active:scale-95 transition-transform shadow-lg"
-                                                >
-                                                    {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
-                                                    Save {categoryLabel} Changes
-                                                </Button>
-                                            </div>
-                                        </TabsContent>
-                                    );
-                                })}
-                            </Tabs>
-                        </form>
-                    </Form>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-lg border p-4 bg-muted/5"><div className="space-y-4"><h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-primary"><Quote className="h-4 w-4"/> Reference</h4><FormField control={form.control} name={`types.${index}.quranVerse`} render={({ field }) => (<FormItem><FormLabel className="text-[10px] font-bold uppercase">Verse/Hadith</FormLabel><FormControl><Textarea rows={3} {...field} disabled={!isEditingTab} /></FormControl></FormItem>)}/><FormField control={form.control} name={`types.${index}.quranSource`} render={({ field }) => (<FormItem><FormLabel className="text-[10px] font-bold uppercase">Citation</FormLabel><FormControl><Input {...field} disabled={!isEditingTab} /></FormControl></FormItem>)}/></div><div className="space-y-4"><h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-primary"><ListChecks className="h-4 w-4"/> Highlights</h4><FormField control={form.control} name={`types.${index}.purposePointsRaw`} render={({ field }) => (<FormItem><FormLabel className="text-[10px] font-bold uppercase">One per line</FormLabel><FormControl><Textarea rows={6} {...field} disabled={!isEditingTab} /></FormControl></FormItem>)}/></div></div>
+                                            <div className="space-y-4 rounded-lg border-2 border-primary/10 p-4 bg-primary/5"><FormField control={form.control} name={`types.${index}.useCasesHeading`} render={({ field }) => (<FormItem className="mb-4"><FormLabel className="font-bold">Heading for Use Cases</FormLabel><FormControl><Input {...field} disabled={!isEditingTab} /></FormControl></FormItem>)}/><UseCaseEditor control={form.control} typeIndex={index} isReadOnly={!isEditingTab} /></div>
+                                            <div className="space-y-4 rounded-lg border-2 border-blue-100 p-4 bg-blue-50/30"><QAEditor control={form.control} typeIndex={index} isReadOnly={!isEditingTab} /></div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4"><FormField control={form.control} name={`types.${index}.usage`} render={({ field }) => (<FormItem><FormLabel className="font-bold text-green-700 uppercase">Usage Guidelines</FormLabel><FormControl><Textarea rows={4} {...field} disabled={!isEditingTab} /></FormControl></FormItem>)}/><FormField control={form.control} name={`types.${index}.restrictions`} render={({ field }) => (<FormItem><FormLabel className="font-bold text-destructive uppercase">Restrictions</FormLabel><FormControl><Textarea rows={4} {...field} disabled={!isEditingTab} /></FormControl></FormItem>)}/></div>
+                                        </div>
+                                        <div className="border-t pt-6 flex justify-end"><Button type="button" size="lg" onClick={() => handleSaveSingleCategory(index)} disabled={isSubmitting || !isEditingTab}>{isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />} Save {form.watch(`types.${index}.title`) || 'Category'}</Button></div>
+                                    </TabsContent>
+                                );
+                            })}
+                        </Tabs>
+                    </form></Form>
                 </CardContent>
             </Card>
         </div>
