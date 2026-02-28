@@ -13,13 +13,13 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
             "Samaj mein barabari paida karna",
             "Haqdaar tak haq pohanchana"
         ],
-        useCasesHeading: "Practical Use Cases (Zakat Masail)",
+        useCasesHeading: "Detailed Zakat Scenarios (Important)",
         useCases: [
-            { id: 'u1', title: "Ration Kit", description: "Agar mustahiq family faqeer/miskeen category mein hai → Zakat se ration diya ja sakta hai.", isAllowed: true },
-            { id: 'u2', title: "Medical Emergency", description: "Agar patient ke paas ilaaj ke paise nahi → Zakat allowed.", isAllowed: true },
-            { id: 'u3', title: "Debt Relief", description: "Agar koi qarz mein dooba hai aur repay nahi kar sakta → Zakat allowed.", isAllowed: true },
-            { id: 'u4', title: "School Building Banana", description: "Allowed nahi (yeh Lillah se hoga).", isAllowed: false },
-            { id: 'u5', title: "Student Fees", description: "Agar student ghareeb hai aur fees nahi de sakta → Zakat allowed.", isAllowed: true }
+            { id: 'u1', title: "✅ Case 1: Ration Kit", description: "Agar mustahiq family faqeer/miskeen category mein hai → Zakat se ration diya ja sakta hai.", isAllowed: true },
+            { id: 'u2', title: "✅ Case 2: Medical Emergency", description: "Agar patient ke paas ilaaj ke paise nahi → Zakat allowed.", isAllowed: true },
+            { id: 'u3', title: "✅ Case 3: Debt Relief", description: "Agar koi qarz mein dooba hai aur repay nahi kar sakta → Zakat allowed.", isAllowed: true },
+            { id: 'u4', title: "❌ Case 4: School Building Banana", description: "Allowed nahi (yeh Lillah se hoga).", isAllowed: false },
+            { id: 'u5', title: "✅ Case 5: Student Fees", description: "Agar student ghareeb hai aur fees nahi de sakta → Zakat allowed.", isAllowed: true }
         ],
         qaItems: [
             { id: 'q1', question: "Zakat kis par farz hai?", answer: "Har us musalman par jo sahib-e-nisab ho (jis ke paas ek saal tak nisab ke barabar maal rahe).", reference: "Fiqh Ruling" }

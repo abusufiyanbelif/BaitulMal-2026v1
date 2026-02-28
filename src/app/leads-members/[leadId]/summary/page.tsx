@@ -257,7 +257,7 @@ export default function LeadSummaryPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8">
-             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
+             <div className="mb-4"><Button variant="outline" asChild><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                  <div className="space-y-1">
                     {editMode ? ( <Input id="name" value={editableLead.name || ''} onChange={(e) => setEditableLead(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0" /> ) : ( <h1 className="text-3xl font-bold">{lead.name}</h1> )}
@@ -267,9 +267,9 @@ export default function LeadSummaryPage() {
                 </div>
                 <div className="flex gap-2">
                     {!editMode && (
-                        <><DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline" className="active:scale-95 transition-transform"><Download className="mr-2 h-4 w-4" /> Download</Button></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem onClick={() => handleDownload('png')}>Download as Image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')}>Download as PDF</DropdownMenuItem></DropdownMenuContent></DropdownMenu><Button onClick={() => setIsShareDialogOpen(true)} variant="outline" className="active:scale-95 transition-transform"><Share2 className="mr-2 h-4 w-4" /> Share</Button></>
+                        <><DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline"><Download className="mr-2 h-4 w-4" /> Download</Button></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem onClick={() => handleDownload('png')}>Download as Image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')}>Download as PDF</DropdownMenuItem></DropdownMenuContent></DropdownMenu><Button onClick={() => setIsShareDialogOpen(true)} variant="outline"><Share2 className="mr-2 h-4 w-4" /> Share</Button></>
                     )}
-                    {canUpdate && userProfile && ( !editMode ? ( <Button onClick={handleEditClick} className="active:scale-95 transition-transform"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={handleCancel}>Cancel</Button><Button onClick={handleSave} className="active:scale-95 transition-transform"><Save className="mr-2 h-4 w-4" /> Save</Button></div>) )}
+                    {canUpdate && userProfile && ( !editMode ? ( <Button onClick={handleEditClick}><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={handleCancel}>Cancel</Button><Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save</Button></div>) )}
                 </div>
             </div>
 

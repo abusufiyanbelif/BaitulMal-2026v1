@@ -11,10 +11,6 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-    
     function userDocRef() {
         return /databases/(default)/documents/users/$(request.auth.uid);
     }
@@ -27,19 +23,28 @@ service firebase.storage {
         return firestore.get(userDocRef()).data;
     }
     
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
     function isAdmin() {
       return isSignedIn() && 
              userExists() &&
-             'role' in getUserData() &&
-             getUserData().role.lower() == 'admin';
+             getUserData().get('role', 'User').lower() == 'admin';
     }
     
     function hasPermission(module, permission) {
-      return isSignedIn() && 
-             userExists() &&
-             'permissions' in getUserData() &&
-             module in getUserData().permissions &&
-             getUserData().permissions[module][permission] == true;
+        let data = getUserData();
+        return isSignedIn() && 
+               userExists() &&
+               (
+                 isAdmin() ||
+                 (
+                   'permissions' in data &&
+                   module in data.permissions &&
+                   data.permissions[module].get(permission, false) == true
+                 )
+               );
     }
     
     // ----------------------------------------------------------------------

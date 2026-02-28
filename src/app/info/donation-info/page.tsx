@@ -47,7 +47,7 @@ export default function DonationInfoPage() {
             <main className="container mx-auto p-4 md:p-8 text-center">
                 <h1 className="text-2xl font-bold">Page Not Available</h1>
                 <p className="text-muted-foreground mt-2">This informational page is not currently public.</p>
-                 <Button asChild className="mt-6 active:scale-95 transition-transform">
+                 <Button asChild className="mt-6">
                     <Link href="/">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Go Back to Home
@@ -60,7 +60,7 @@ export default function DonationInfoPage() {
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-12">
       <div className="mb-4">
-        <Button variant="outline" asChild className="active:scale-95 transition-transform">
+        <Button variant="outline" asChild>
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Home

@@ -45,33 +45,13 @@ service cloud.firestore {
                );
     }
 
-    function hasSubmodulePermission(module, submodule, permission) {
-        return isSignedIn() && 
-               userExists() &&
-               (
-                 isAdmin() ||
-                 hasPermission(module, permission) ||
-                 (
-                   'permissions' in getUserData() &&
-                   module in getUserData().permissions &&
-                   submodule in getUserData().permissions[module] &&
-                   getUserData().permissions[module][submodule].get(permission, false) == true
-                 )
-               );
-    }
-
     // ----------------------------------------------------------------------
     // Collection Rules
     // ----------------------------------------------------------------------
     
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isAdmin() || 
-                   hasPermission('settings', 'update') ||
-                   (settingId == 'info' && hasSubmodulePermission('settings', 'info', 'update')) ||
-                   (settingId == 'donationInfo' && hasSubmodulePermission('settings', 'info', 'update')) ||
-                   (settingId == 'branding' && hasSubmodulePermission('settings', 'app', 'update')) ||
-                   (settingId == 'payment' && hasSubmodulePermission('settings', 'app', 'update'));
+      allow write: if isAdmin() || hasPermission('settings', 'update');
     }
     
     match /page_hits/{pageId} {
@@ -87,50 +67,40 @@ service cloud.firestore {
     match /campaigns/{campaignId} {
       allow read: if true;
       allow create: if isSignedIn() && (isAdmin() || hasPermission('campaigns', 'create'));
-      allow update: if isSignedIn() && (isAdmin() || hasPermission('campaigns', 'update') || hasSubmodulePermission('campaigns', 'ration', 'update') || hasSubmodulePermission('campaigns', 'summary', 'update'));
+      allow update: if isSignedIn() && (isAdmin() || hasPermission('campaigns', 'update'));
       allow delete: if isSignedIn() && (isAdmin() || hasPermission('campaigns', 'delete'));
 
       match /beneficiaries/{beneficiaryId} {
         allow read: if true;
-        allow create: if isSignedIn() && (isAdmin() || hasSubmodulePermission('campaigns', 'beneficiaries', 'create'));
-        allow update: if isSignedIn() && (isAdmin() || hasSubmodulePermission('campaigns', 'beneficiaries', 'update'));
-        allow delete: if isSignedIn() && (isAdmin() || hasSubmodulePermission('campaigns', 'beneficiaries', 'delete'));
+        allow write: if isSignedIn();
       }
       
       match /donations/{donationId} {
         allow read: if true;
-        allow create: if isSignedIn() && (isAdmin() || hasSubmodulePermission('campaigns', 'donations', 'create'));
-        allow update: if isSignedIn() && (isAdmin() || hasSubmodulePermission('campaigns', 'donations', 'update'));
-        allow delete: if isSignedIn() && (isAdmin() || hasSubmodulePermission('campaigns', 'donations', 'delete'));
+        allow write: if isSignedIn();
       }
     }
     
     match /leads/{leadId} {
       allow read: if true;
       allow create: if isSignedIn() && (isAdmin() || hasPermission('leads-members', 'create'));
-      allow update: if isSignedIn() && (isAdmin() || hasPermission('leads-members', 'update') || hasSubmodulePermission('leads-members', 'summary', 'update'));
+      allow update: if isSignedIn() && (isAdmin() || hasPermission('leads-members', 'update'));
       allow delete: if isSignedIn() && (isAdmin() || hasPermission('leads-members', 'delete'));
 
        match /beneficiaries/{beneficiaryId} {
         allow read: if true;
-        allow create: if isSignedIn() && (isAdmin() || hasSubmodulePermission('leads-members', 'beneficiaries', 'create'));
-        allow update: if isSignedIn() && (isAdmin() || hasSubmodulePermission('leads-members', 'beneficiaries', 'update'));
-        allow delete: if isSignedIn() && (isAdmin() || hasSubmodulePermission('leads-members', 'beneficiaries', 'delete'));
+        allow write: if isSignedIn();
       }
       
       match /donations/{donationId} {
         allow read: if true;
-        allow create: if isSignedIn() && (isAdmin() || hasSubmodulePermission('leads-members', 'donations', 'create'));
-        allow update: if isSignedIn() && (isAdmin() || hasSubmodulePermission('leads-members', 'donations', 'update'));
-        allow delete: if isSignedIn() && (isAdmin() || hasSubmodulePermission('leads-members', 'donations', 'delete'));
+        allow write: if isSignedIn();
       }
     }
     
     match /donations/{donationId} {
       allow read: if true;
-      allow create: if isSignedIn() || isAdmin();
-      allow update: if isSignedIn() && (isAdmin() || isOwner(request.resource.data.uploadedById) || hasPermission('donations', 'update'));
-      allow delete: if isSignedIn() && (isAdmin() || isOwner(resource.data.uploadedById) || hasPermission('donations', 'delete'));
+      allow write: if isSignedIn();
     }
     
     match /beneficiaries/{beneficiaryId} {

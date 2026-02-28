@@ -17,14 +17,14 @@ import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen, AlertCircle } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import Link from 'next/link';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -98,11 +98,11 @@ function UseCaseEditor({ control, typeIndex }: { control: any, typeIndex: number
                                 </FormItem>
                             )}/>
                             <FormField control={control} name={`types.${typeIndex}.useCases.${index}.title`} render={({ field }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-xs">Case Title</FormLabel><FormControl><Input placeholder="e.g. Ration Kit" {...field} /></FormControl></FormItem>
+                                <FormItem className="flex-1"><FormLabel className="text-xs">Title</FormLabel><FormControl><Input placeholder="e.g. Case 1: Ration Kit" {...field} /></FormControl></FormItem>
                             )}/>
                         </div>
                         <FormField control={control} name={`types.${typeIndex}.useCases.${index}.description`} render={({ field }) => (
-                            <FormItem><FormLabel className="text-xs">Rule/Detail</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl></FormItem>
+                            <FormItem><FormLabel className="text-xs">Detail</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl></FormItem>
                         )}/>
                     </div>
                 ))}
@@ -138,7 +138,7 @@ function QAEditor({ control, typeIndex }: { control: any, typeIndex: number }) {
                             <FormItem><FormLabel className="text-xs">Answer</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl></FormItem>
                         )}/>
                         <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.reference`} render={({ field }) => (
-                            <FormItem><FormLabel className="text-xs">Reference (Quran/Hadith/Scholar)</FormLabel><FormControl><Input placeholder="e.g. Surah 2:43 or Fatawa" {...field} /></FormControl></FormItem>
+                            <FormItem><FormLabel className="text-xs">Reference</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                         )}/>
                     </div>
                 ))}
@@ -220,7 +220,6 @@ export default function InfoSettingsPage() {
         toast({ title: `Saving ${categoryLabel}...`, description: 'Please wait.' });
 
         try {
-            // Process the single category data
             const { purposePointsRaw, imageFile, ...rest } = typeToSave;
             let finalImageUrl = rest.imageUrl || '';
             
@@ -238,16 +237,12 @@ export default function InfoSettingsPage() {
             const processedType = {
                 ...rest,
                 imageUrl: finalImageUrl,
-                // Filter out empty use cases and QA items
                 useCases: typeToSave.useCases.filter(uc => uc.title?.trim() || uc.description?.trim()),
                 qaItems: typeToSave.qaItems.filter(qa => qa.question?.trim() || qa.answer?.trim()),
                 purposePoints: purposePointsRaw ? purposePointsRaw.split('\n').filter(p => p.trim() !== '') : [],
             };
 
-            // We update the entire array in Firestore but we only modified one index in our processed list
             const currentFullData = (donationInfoData?.types || []).length > 0 ? [...donationInfoData!.types] : [...defaultDonationInfo];
-            
-            // Find existing index in database or match by ID
             const existingIdx = currentFullData.findIndex(t => t.id === typeToSave.id);
             if (existingIdx !== -1) {
                 currentFullData[existingIdx] = processedType as any;
@@ -261,8 +256,7 @@ export default function InfoSettingsPage() {
         } catch (error: any) {
              errorEmitter.emit('permission-error', new FirestorePermissionError({ 
                 path: 'settings/donationInfo', 
-                operation: 'write',
-                requestResourceData: { category: categoryLabel }
+                operation: 'write'
             }));
         } finally {
             setIsSubmitting(false);
@@ -310,7 +304,7 @@ export default function InfoSettingsPage() {
                         <div className="space-y-1.5 flex-1">
                             <h3 className="font-semibold">Donation Types Explained</h3>
                             <p className="text-sm text-muted-foreground">Detailed information guide for donors.</p>
-                            <Button variant="outline" size="sm" asChild className="mt-2 active:scale-95 transition-transform">
+                            <Button variant="outline" size="sm" asChild className="mt-2">
                                 <Link href="/info/donation-info" target="_blank">
                                     <Eye className="mr-2 h-4 w-4" /> Preview Public Page
                                 </Link>
@@ -323,30 +317,30 @@ export default function InfoSettingsPage() {
                     </div>
                 </CardContent>
                 <CardFooter className="justify-end border-t bg-muted/5 p-4">
-                    <Button onClick={handleSaveVisibility} disabled={isSubmitting || !isVisibilityDirty} className="active:scale-95 transition-transform">
+                    <Button onClick={handleSaveVisibility} disabled={isSubmitting || !isVisibilityDirty}>
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         <Save className="mr-2 h-4 w-4"/> Save Visibility
                     </Button>
                 </CardFooter>
             </Card>
 
-            <Card className="animate-fade-in-up border-primary/10">
+            <Card className="animate-fade-in-up border-primary/10 overflow-hidden">
                 <CardHeader className="bg-primary/5">
                     <div className="flex items-center justify-between gap-4">
                         <div>
                             <CardTitle>Content Manager</CardTitle>
                             <CardDescription>Manage rich content, use cases, and Q&A for each donation type.</CardDescription>
                         </div>
-                        <Button onClick={handleAddType} variant="outline" size="sm" className="active:scale-95 transition-transform"><Plus className="mr-2 h-4 w-4" /> Add New Category</Button>
+                        <Button onClick={handleAddType} variant="outline" size="sm"><Plus className="mr-2 h-4 w-4" /> Add New</Button>
                     </div>
                 </CardHeader>
-                <CardContent className="p-0 pt-0">
+                <CardContent className="p-0">
                     <Form {...form}>
                         <form onSubmit={(e) => e.preventDefault()}>
                             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                                <div className="border-b bg-muted/5 px-4 pt-4 sm:px-6 sm:pt-0">
+                                <div className="bg-muted/10 border-b">
                                     <ScrollArea className="w-full whitespace-nowrap">
-                                        <TabsList className="h-auto w-max bg-transparent p-0">
+                                        <TabsList className="h-auto w-max bg-transparent p-0 rounded-none">
                                             {fields.map((field, index) => {
                                                 const typeId = form.getValues(`types.${index}.id`);
                                                 const title = form.watch(`types.${index}.title`) || 'New Type';
@@ -355,8 +349,8 @@ export default function InfoSettingsPage() {
                                                         key={field.id} 
                                                         value={typeId} 
                                                         className={cn(
-                                                            "rounded-none border-b-2 border-transparent px-4 py-3 font-bold transition-all",
-                                                            "data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md",
+                                                            "rounded-none border-b-2 border-transparent px-6 py-4 font-black uppercase tracking-widest text-muted-foreground transition-all duration-300",
+                                                            "data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
                                                             "hover:bg-muted/50"
                                                         )}
                                                     >
@@ -374,7 +368,7 @@ export default function InfoSettingsPage() {
                                     const categoryLabel = form.watch(`types.${index}.title`) || 'this category';
                                     
                                     return (
-                                        <TabsContent key={field.id} value={typeId} className="p-4 sm:p-6 space-y-8 animate-fade-in-up">
+                                        <TabsContent key={field.id} value={typeId} className="p-4 sm:p-8 space-y-8 animate-fade-in-up mt-0">
                                             <div className="flex justify-between items-center bg-muted/20 p-4 rounded-lg">
                                                 <h3 className="text-xl font-black text-primary uppercase tracking-tight">Editing: {categoryLabel}</h3>
                                                 <Button type="button" variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(form.getValues('types.0.id')); }}>
@@ -386,14 +380,14 @@ export default function InfoSettingsPage() {
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                                                     <div className="md:col-span-2 space-y-4">
                                                         <FormField control={form.control} name={`types.${index}.title`} render={({ field }) => (
-                                                            <FormItem><FormLabel className="font-bold text-primary">Heading/Title</FormLabel><FormControl><Input placeholder="e.g. Zakat (Farz Charity)" {...field} /></FormControl></FormItem>
+                                                            <FormItem><FormLabel className="font-bold text-primary uppercase tracking-tighter">Heading/Title</FormLabel><FormControl><Input placeholder="e.g. Zakat (Farz Charity)" {...field} /></FormControl></FormItem>
                                                         )}/>
                                                         <FormField control={form.control} name={`types.${index}.description`} render={({ field }) => (
-                                                            <FormItem><FormLabel className="font-bold text-primary">Introduction</FormLabel><FormControl><Textarea rows={4} placeholder="Briefly explain what this donation type is..." {...field} /></FormControl></FormItem>
+                                                            <FormItem><FormLabel className="font-bold text-primary uppercase tracking-tighter">Introduction</FormLabel><FormControl><Textarea rows={4} placeholder="Briefly explain what this donation type is..." {...field} /></FormControl></FormItem>
                                                         )}/>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <FormLabel className="font-bold text-primary">Header Image</FormLabel>
+                                                        <FormLabel className="font-bold text-primary uppercase tracking-tighter">Header Image</FormLabel>
                                                         <div className="relative aspect-[4/3] w-full rounded-md border-2 border-dashed overflow-hidden flex items-center justify-center bg-muted/30">
                                                             {form.watch(`types.${index}.imageUrl`) ? (
                                                                 <Image 
@@ -435,7 +429,7 @@ export default function InfoSettingsPage() {
                                                             <FormItem><FormLabel className="text-xs">Verse or Hadith Text</FormLabel><FormControl><Textarea rows={3} placeholder="Paste the translation here..." {...field} /></FormControl></FormItem>
                                                         )}/>
                                                         <FormField control={form.control} name={`types.${index}.quranSource`} render={({ field }) => (
-                                                            <FormItem><FormLabel className="text-xs">Citation (e.g. Sahih Bukhari 123)</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                                                            <FormItem><FormLabel className="text-xs">Citation</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                                                         )}/>
                                                     </div>
                                                     <div className="space-y-4">
@@ -448,7 +442,7 @@ export default function InfoSettingsPage() {
 
                                                 <div className="space-y-4 rounded-lg border-2 border-primary/10 p-4 bg-primary/5">
                                                     <FormField control={form.control} name={`types.${index}.useCasesHeading`} render={({ field }) => (
-                                                        <FormItem className="mb-4"><FormLabel className="font-bold">Section Heading for Use Cases</FormLabel><FormControl><Input placeholder="e.g. Practical Use Cases (Zakat Masail)" {...field} /></FormControl></FormItem>
+                                                        <FormItem className="mb-4"><FormLabel className="font-bold">Section Heading for Use Cases</FormLabel><FormControl><Input placeholder="e.g. Detailed Zakat Scenarios (Important)" {...field} /></FormControl></FormItem>
                                                     )}/>
                                                     <UseCaseEditor control={form.control} typeIndex={index} />
                                                 </div>
@@ -476,7 +470,7 @@ export default function InfoSettingsPage() {
                                                     className="min-w-[240px] font-black uppercase tracking-widest active:scale-95 transition-transform shadow-lg"
                                                 >
                                                     {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
-                                                    Save {categoryLabel} Content
+                                                    Save {categoryLabel} Changes
                                                 </Button>
                                             </div>
                                         </TabsContent>

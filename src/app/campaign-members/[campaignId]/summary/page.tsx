@@ -10,7 +10,7 @@ import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { updateDoc, serverTimestamp, DocumentReference } from 'firebase/firestore';
 import type { Campaign, Beneficiary, Donation, CampaignDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Edit, Save, Share2, Download, UploadCloud, Trash2, File, ShieldAlert, Utensils, LifeBuoy, HandHelping } from 'lucide-react';
@@ -263,7 +263,7 @@ export default function CampaignSummaryPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8">
-             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
+             <div className="mb-4"><Button variant="outline" asChild><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                  <div className="space-y-1">
                     {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => setEditableCampaign(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0" /> ) : ( <h1 className="text-3xl font-bold">{campaign.name}</h1> )}
@@ -271,9 +271,9 @@ export default function CampaignSummaryPage() {
                 </div>
                 <div className="flex gap-2">
                     {!editMode && (
-                        <><DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline" className="active:scale-95 transition-transform"><Download className="mr-2 h-4 w-4" /> Download</Button></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem onClick={() => handleDownload('png')}>Download as Image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')}>Download as PDF</DropdownMenuItem></DropdownMenuContent></DropdownMenu><Button onClick={() => setIsShareDialogOpen(true)} variant="outline" className="active:scale-95 transition-transform"><Share2 className="mr-2 h-4 w-4" /> Share</Button></>
+                        <><DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline"><Download className="mr-2 h-4 w-4" /> Download</Button></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem onClick={() => handleDownload('png')}>Download as Image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')}>Download as PDF</DropdownMenuItem></DropdownMenuContent></DropdownMenu><Button onClick={() => setIsShareDialogOpen(true)} variant="outline"><Share2 className="mr-2 h-4 w-4" /> Share</Button></>
                     )}
-                    {canUpdate && userProfile && ( !editMode ? ( <Button onClick={handleEditClick} className="active:scale-95 transition-transform"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={handleCancel}>Cancel</Button><Button onClick={handleSave} className="active:scale-95 transition-transform"><Save className="mr-2 h-4 w-4" /> Save</Button></div> ) )}
+                    {canUpdate && userProfile && ( !editMode ? ( <Button onClick={handleEditClick}><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={handleCancel}>Cancel</Button><Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save</Button></div> ) )}
                 </div>
             </div>
 
@@ -300,7 +300,7 @@ export default function CampaignSummaryPage() {
                                     <div className="space-y-2">
                                         <Label>Header Image</Label>
                                         <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
-                                        <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
+                                        <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary">
                                             {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-2 text-sm text-center text-muted-foreground"><span className="font-semibold text-primary">Click to upload</span></p></div> )}
                                         </label>
                                     </div>
