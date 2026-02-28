@@ -176,6 +176,8 @@ export default function PublicCampaignSummaryPage() {
     const publicDocuments = campaign.documents?.filter(d => d.isPublic) || [];
     const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
 
+    const chartData = fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
+
     return (
         <main className="container mx-auto p-4 md:p-8">
              <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform"><Link href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
@@ -298,8 +300,8 @@ export default function PublicCampaignSummaryPage() {
                             <CardContent>
                                 {isClient ? (
                                   <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                      <BarChart data={Object.entries(fundingData.amountsByCategory || {}).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
-                                          <CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4}>{Object.entries(fundingData.amountsByCategory || {}).map(([name]) => (<Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />))}</Bar>
+                                      <BarChart data={chartData} layout="vertical" margin={{ right: 20 }}>
+                                          <CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4}>{chartData.map((entry) => (<Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />))}</Bar>
                                       </BarChart>
                                   </ChartContainer>
                                 ) : <Skeleton className="h-[250px] w-full" />}

@@ -120,8 +120,7 @@ const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete
                                         <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
-                                    </DropdownMenuRadioGroup>
+                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
@@ -241,7 +240,7 @@ export default function CampaignPage() {
     
     const completedLeads = leadsWithProgress
       .filter(l => l.status === 'Completed')
-      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-members/${l.id}/summary` }));
+      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/campaign-members/${l.id}/summary` }));
 
     return [...completedCampaigns, ...completedLeads];
   }, [campaignsWithProgress, leadsWithProgress]);
@@ -307,6 +306,7 @@ export default function CampaignPage() {
   if (!isLoading && userProfile && !canViewCampaigns) {
     return (
       <main className="container mx-auto p-4 md:p-8">
+        <div className="mb-4"><Button variant="outline" asChild><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link></Button></div>
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Access Denied</AlertTitle>

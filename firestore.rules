@@ -11,16 +11,20 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function userDoc(userId) {
+      return /databases/$(database)/documents/users/$(userId);
+    }
+
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
     
     function userExists() {
-      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      return exists(userDoc(request.auth.uid));
     }
 
     function getUserData() {
-        return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+        return get(userDoc(request.auth.uid)).data;
     }
     
     function isAdmin() {

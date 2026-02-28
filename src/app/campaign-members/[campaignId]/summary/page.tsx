@@ -252,6 +252,7 @@ export default function CampaignSummaryPage() {
     if (campaignError || beneficiariesError || donationsError) {
         return ( 
           <main className="container mx-auto p-4 md:p-8">
+            <div className="mb-4"><Button variant="outline" asChild><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
             <Alert variant="destructive">
               <ShieldAlert className="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>

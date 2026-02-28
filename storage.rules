@@ -4,46 +4,81 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     
+    // ----------------------------------------------------------------------
+    // Helper Functions
+    // ----------------------------------------------------------------------
+
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Temporarily open for debugging donation uploads
-    match /donations/{donationId}/{allPaths=**} {
-      allow read, write: if true;
-    }
-
-    match /campaigns/{allPaths=**} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
-
-    match /leads/{allPaths=**} {
-      allow read: if true;
-      allow write: if isSignedIn();
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
     
-    match /beneficiaries/{allPaths=**} {
-        allow read: if true;
-        allow write: if isSignedIn();
+    function userDocRef() {
+        return /databases/(default)/documents/users/$(request.auth.uid);
+    }
+    
+    function userExists() {
+        return exists(userDocRef());
     }
 
-    // Settings can be read by anyone (for logo), but only written by auth'd users.
+    function getUserData() {
+        return get(userDocRef()).data;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && 
+             userExists() &&
+             'role' in getUserData() &&
+             getUserData().role.lower() == 'admin';
+    }
+    
+    function hasPermission(module, permission) {
+      return isSignedIn() && 
+             userExists() &&
+             'permissions' in getUserData() &&
+             module in getUserData().permissions &&
+             getUserData().permissions[module][permission] == true;
+    }
+    
+    // ----------------------------------------------------------------------
+    // Path Rules
+    // ----------------------------------------------------------------------
+
+    match /donations/{donationId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /campaigns/{campaignId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() || hasPermission('campaigns', 'update');
+    }
+
+    match /leads/{leadId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() || hasPermission('leads-members', 'update');
+    }
+    
+    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
+        allow read: if true;
+        allow write: if isAdmin() || hasPermission('beneficiaries', 'update');
+    }
+
     match /settings/{allPaths=**} {
         allow read: if true;
-        allow write: if isSignedIn();
+        allow write: if isAdmin() || hasPermission('settings', 'update');
     }
 
-    // User-specific files can only be written by the user themselves.
-    // Reads are open for simplicity, assuming URLs are not guessable.
     match /users/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write: if isSignedIn() && request.auth.uid == userId;
+      allow write: if isOwner(userId) || isAdmin() || hasPermission('users', 'update');
     }
 
-    // Diagnostics path for testing
     match /test/{userId}/{allPaths=**} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if isOwner(userId) || isAdmin() || hasPermission('diagnostics', 'read');
     }
   }
 }

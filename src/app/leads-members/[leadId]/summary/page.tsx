@@ -249,6 +249,7 @@ export default function LeadSummaryPage() {
     if (leadError || beneficiariesError || donationsError) {
         return ( 
           <main className="container mx-auto p-4 md:p-8">
+            <div className="mb-4"><Button variant="outline" asChild><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
             <Alert variant="destructive">
               <ShieldAlert className="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>

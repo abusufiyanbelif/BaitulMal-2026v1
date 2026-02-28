@@ -124,7 +124,8 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
                                                 <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2 h-4 w-4"/>Verified</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2 h-4 w-4"/>Given</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2 h-4 w-4"/>Hold</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2 h-4 w-4"/>Need Details</DropdownMenuRadioGroup>
+                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2 h-4 w-4"/>Need Details</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
@@ -297,6 +298,13 @@ export default function BeneficiariesPage() {
   
   if (!canRead) return (
     <main className="container mx-auto p-4 md:p-8">
+        <div className="mb-4">
+            <Button variant="outline" asChild>
+                <Link href="/">
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
+                </Link>
+            </Button>
+        </div>
         <Alert variant="destructive">
             <ShieldAlert className="h-4 w-4" />
             <AlertTitle>Access Denied</AlertTitle>
@@ -330,7 +338,9 @@ export default function BeneficiariesPage() {
                 <div className="flex flex-wrap items-center gap-2">
                     <Input placeholder="Search..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-sm" />
                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[150px]"><SelectValue placeholder="Filter Status" /></SelectTrigger>
+                        <SelectTrigger className="w-auto md:w-[150px]">
+                            <SelectValue placeholder="Filter Status" />
+                        </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="All">All Statuses</SelectItem>
                             <SelectItem value="Verified">Verified</SelectItem>
@@ -340,7 +350,9 @@ export default function BeneficiariesPage() {
                         </SelectContent>
                     </Select>
                      <Select value={zakatFilter} onValueChange={(value) => { setZakatFilter(value); setCurrentPage(1); }}>
-                      <SelectTrigger className="w-auto md:w-[180px]"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
+                      <SelectTrigger className="w-auto md:w-[180px]">
+                          <SelectValue placeholder="Zakat Eligibility" />
+                      </SelectTrigger>
                       <SelectContent>
                           <SelectItem value="All">All Zakat</SelectItem>
                           <SelectItem value="Eligible">Eligible</SelectItem>

@@ -100,7 +100,8 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                                         <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioGroup>
+                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
@@ -283,9 +284,9 @@ export default function LeadPage() {
   }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, dateRange, selectedYear]);
 
   const sections = [
-    { id: 'active', title: 'Active Leads', items: filteredLeads.filter(c => c.status === 'Active') },
-    { id: 'upcoming', title: 'Upcoming Leads', items: filteredLeads.filter(c => c.status === 'Upcoming') },
-    { id: 'completed', title: 'Completed Leads', items: filteredLeads.filter(c => c.status === 'Completed') }
+    { id: 'active', title: 'Live Initiatives', items: filteredLeads.filter(c => c.status === 'Active') },
+    { id: 'upcoming', title: 'Upcoming Support', items: filteredLeads.filter(c => c.status === 'Upcoming') },
+    { id: 'completed', title: 'Closed Appeals', items: filteredLeads.filter(c => c.status === 'Completed') }
   ].filter(s => s.items.length > 0);
 
   const isLoading = isProfileLoading || isDeleting || isPublicDataLoading;
@@ -293,6 +294,7 @@ export default function LeadPage() {
   if (!isLoading && userProfile && !canViewLeads) {
     return (
       <main className="container mx-auto p-4 md:p-8">
+        <div className="mb-4"><Button variant="outline" asChild><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link></Button></div>
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Access Denied</AlertTitle>
