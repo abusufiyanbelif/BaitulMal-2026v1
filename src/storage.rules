@@ -16,76 +16,100 @@ service firebase.storage {
       return isSignedIn() && request.auth.uid == userId;
     }
     
-    // In Storage Rules, `database` is not a predefined variable.
-    // We must explicitly use `(default)`.
-    function userDocRef() {
-        return /databases/(default)/documents/users/$(request.auth.uid);
+    function getUserData() {
+        return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
     }
     
     function userExists() {
-        return exists(userDocRef());
-    }
-
-    function getUserData() {
-        return get(userDocRef()).data;
+        return firestore.exists(/databases/(default)/documents/users/$(request.auth.uid));
     }
     
     function isAdmin() {
       return isSignedIn() && 
              userExists() &&
-             'role' in getUserData() &&
-             getUserData().role.lower() == 'admin';
+             getUserData().get('role', 'User').lower() == 'admin';
     }
     
     function hasPermission(module, permission) {
-      return isSignedIn() && 
-             userExists() &&
-             'permissions' in getUserData() &&
-             module in getUserData().permissions &&
-             getUserData().permissions[module][permission] == true;
+        let data = getUserData();
+        return isSignedIn() && 
+               userExists() &&
+               (
+                 isAdmin() ||
+                 (
+                   'permissions' in data &&
+                   module in data.permissions &&
+                   data.permissions[module].get(permission, false) == true
+                 )
+               );
+    }
+
+    function hasSubmodulePermission(module, submodule, permission) {
+        let data = getUserData();
+        return isSignedIn() && 
+               userExists() &&
+               (
+                 isAdmin() ||
+                 (
+                   'permissions' in data &&
+                   module in data.permissions &&
+                   submodule in data.permissions[module] &&
+                   data.permissions[module][submodule].get(permission, false) == true
+                 )
+               );
     }
     
     // ----------------------------------------------------------------------
     // Path Rules
     // ----------------------------------------------------------------------
 
-    // Donations: Authenticated users can upload. Public can read (if URL is known).
+    // Donations: Authenticated users can upload. Public can read.
     match /donations/{donationId}/{allPaths=**} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Campaigns: Must be admin or have campaign update permissions to write.
+    // Campaigns & Leads: Access tied to submodule permissions.
     match /campaigns/{campaignId}/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin() || hasPermission('campaigns', 'update');
     }
 
-    // Leads: Must be admin or have lead update permissions to write.
     match /leads/{leadId}/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin() || hasPermission('leads-members', 'update');
     }
     
-    // Master Beneficiaries: Must be admin or have specific beneficiary permissions to write.
     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
         allow read: if true;
         allow write: if isAdmin() || hasPermission('beneficiaries', 'update');
     }
 
-    // Settings: Publicly readable (for logo), but only writable by admins/settings managers.
+    // Settings: Granular permissions for branding (app), donation info (info), and payments (app).
+    match /settings/logo {
+        allow read: if true;
+        allow write: if isAdmin() || hasSubmodulePermission('settings', 'app', 'update');
+    }
+    match /settings/payment_qr {
+        allow read: if true;
+        allow write: if isAdmin() || hasSubmodulePermission('settings', 'app', 'update');
+    }
+    match /settings/donation_types/{allPaths=**} {
+        allow read: if true;
+        allow write: if isAdmin() || hasSubmodulePermission('settings', 'info', 'update');
+    }
     match /settings/{allPaths=**} {
         allow read: if true;
         allow write: if isAdmin() || hasPermission('settings', 'update');
     }
 
-    // User-specific files: Only the owner or an admin/user with permissions can write.
+    // User-specific files
     match /users/{userId}/{allPaths=**} {
       allow read: if true;
       allow write: if isOwner(userId) || isAdmin() || hasPermission('users', 'update');
     }
 
-    // Diagnostics path for testing: Only owner or admin can access.
+    // Diagnostics
     match /test/{userId}/{allPaths=**} {
       allow read, write: if isOwner(userId) || isAdmin() || hasPermission('diagnostics', 'read');
     }

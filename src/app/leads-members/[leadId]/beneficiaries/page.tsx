@@ -324,7 +324,7 @@ export default function BeneficiariesPage() {
     const fileList = data.idProofFile as FileList | undefined;
     if (fileList && fileList.length > 0) {
         const file = fileList[0];
-        const resized = await new Promise<Blob>((res) => { Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (b: any) => res(b as Blob), 'blob'); });
+        const resized = await new Promise<Blob>((resolve) => { Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (b: any) => resolve(b as Blob), 'blob'); });
         const fRef = storageRef(storage, `beneficiaries/${masterRef.id}/id_proof.png`);
         await uploadBytes(fRef, resized);
         idProofUrl = await getDownloadURL(fRef);
