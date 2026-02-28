@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -374,7 +373,7 @@ export default function BeneficiariesPage() {
             <div className="flex flex-wrap gap-2">
                 <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="gap-2"><FileUp className="h-4 w-4"/> Import</Button>
                 <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="gap-2"><CopyPlus className="h-4 w-4"/> Add Existing</Button>
-                <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2"><PlusCircle className="h-4 w-4"/> Add New</Button>
+                <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2"><PlusCircle className="mr-2 h-4 w-4"/> Add New</Button>
             </div>
         </div>
 

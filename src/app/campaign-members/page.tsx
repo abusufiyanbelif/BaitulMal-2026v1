@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -244,13 +243,6 @@ export default function CampaignPage() {
 
     return [...completedCampaigns, ...completedLeads];
   }, [campaignsWithProgress, leadsWithProgress]);
-
-  const memberDonationTickerItems = useMemo(() => {
-    return recentDonationsFormatted.map(item => ({
-        ...item,
-        href: item.href.replace('-public/', '-members/')
-    }));
-  }, [recentDonationsFormatted]);
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();

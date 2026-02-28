@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -232,7 +231,7 @@ export default function BeneficiariesPage() {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!userToDelete || !canDelete) return;
+    if (!beneficiaryToDelete || !canDelete) return;
     setIsDeleteDialogOpen(false);
     const result = await deleteBeneficiaryAction(beneficiaryToDelete!);
     toast({ title: result.success ? 'Deleted' : 'Error', description: result.message, variant: result.success ? 'success' : 'destructive' });

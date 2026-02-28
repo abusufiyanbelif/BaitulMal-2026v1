@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -91,7 +90,8 @@ export default function PublicCampaignSummaryPage() {
 
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
-        const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
+        const amountsByCategory: Record<string, number> = {};
+        donationCategories.forEach(cat => amountsByCategory[cat] = 0);
         let zakatForGoalAmount = 0;
 
         verifiedDonationsList.forEach(d => {
@@ -114,7 +114,7 @@ export default function PublicCampaignSummaryPage() {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
                 if (amountsByCategory.hasOwnProperty(category)) {
                     const allocatedAmount = split.amount * proportionForThisCampaign;
-                    amountsByCategory[category as DonationCategory] += allocatedAmount;
+                    amountsByCategory[category] += allocatedAmount;
                     const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
                     if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
                 }
@@ -297,8 +297,8 @@ export default function PublicCampaignSummaryPage() {
                             <CardContent>
                                 {isClient ? (
                                   <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                      <BarChart data={Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
-                                          <CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4}>{Object.entries(fundingData.amountsByCategory).map(([name]) => (<Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />))}</Bar>
+                                      <BarChart data={Object.entries(fundingData.amountsByCategory || {}).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
+                                          <CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4}>{Object.entries(fundingData.amountsByCategory || {}).map(([name]) => (<Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />))}</Bar>
                                       </BarChart>
                                   </ChartContainer>
                                 ) : <Skeleton className="h-[250px] w-full" />}
