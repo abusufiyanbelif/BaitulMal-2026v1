@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -120,16 +119,14 @@ const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete
                                         <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
-                                    </DropdownMenuRadioGroup>
+                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
                                     <DropdownMenuRadioGroup value={campaign.publicVisibility} onValueChange={(value) => handleStatusUpdate(campaign, 'publicVisibility', value as string)}>
                                         <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
-                                    </DropdownMenuRadioGroup>
+                                        <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                             </>
                         )}

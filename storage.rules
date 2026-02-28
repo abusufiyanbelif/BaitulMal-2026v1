@@ -1,4 +1,3 @@
-
 rules_version = '2';
 
 service firebase.storage {
@@ -21,11 +20,11 @@ service firebase.storage {
     }
     
     function userExists() {
-        return exists(userDocRef());
+        return firestore.exists(userDocRef());
     }
 
     function getUserData() {
-        return get(userDocRef()).data;
+        return firestore.get(userDocRef()).data;
     }
     
     function isAdmin() {

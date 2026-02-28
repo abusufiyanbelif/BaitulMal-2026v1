@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -57,7 +56,7 @@ export default function AppSettingsPage() {
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [qrCodeFile, setQrCodeFile] = useState<File | null>(null);
     
-    const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.app?.update || !!userProfile?.permissions?.settings?.update;
+    const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.update;
 
     const handleFieldChange = useCallback((field: keyof FormDataType, value: string | number) => {
         setEditableData(prev => prev ? { ...prev, [field]: value } : null);

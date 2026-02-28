@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -172,7 +171,7 @@ export default function InfoSettingsPage() {
         name: 'types'
     });
 
-    const { isDirty } = form.formState;
+    const { isDirty, errors } = form.formState;
 
     useEffect(() => {
         if (infoSettings) {
@@ -197,7 +196,7 @@ export default function InfoSettingsPage() {
         }
     }, [donationInfoData, isDonationInfoLoading, isInitialized, form]);
 
-    const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update || !!userProfile?.permissions?.settings?.update;
+    const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.update;
 
     const handleSaveVisibility = async () => {
         if (!firestore || !canUpdateSettings) return;
@@ -339,8 +338,13 @@ export default function InfoSettingsPage() {
                                         <TabsList className="h-auto w-max bg-transparent p-0">
                                             {fields.map((field, index) => {
                                                 const typeId = form.getValues(`types.${index}.id`);
+                                                const hasError = errors.types?.[index];
                                                 return (
-                                                    <TabsTrigger key={field.id} value={typeId} className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold">
+                                                    <TabsTrigger key={field.id} value={typeId} className={cn(
+                                                        "rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold",
+                                                        hasError && "text-destructive border-destructive"
+                                                    )}>
+                                                        {hasError && <AlertCircle className="h-3 w-3 mr-1" />}
                                                         {form.watch(`types.${index}.title`) || 'New Type'}
                                                     </TabsTrigger>
                                                 );
