@@ -11,7 +11,7 @@ import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { updateDoc, serverTimestamp, DocumentReference } from 'firebase/firestore';
 import type { Campaign, Beneficiary, Donation, CampaignDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Edit, Save, Share2, Download, UploadCloud, Trash2, File, ShieldAlert, Utensils, LifeBuoy, HandHelping } from 'lucide-react';

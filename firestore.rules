@@ -41,7 +41,8 @@ service cloud.firestore {
                  isAdmin() ||
                  (
                    'permissions' in data &&
-                   data.permissions.get(module, {}).get(permission, false) == true
+                   module in data.permissions &&
+                   data.permissions[module].get(permission, false) == true
                  )
                );
     }
@@ -54,7 +55,9 @@ service cloud.firestore {
                  isAdmin() ||
                  (
                    'permissions' in data &&
-                   data.permissions.get(module, {}).get(submodule, {}).get(permission, false) == true
+                   module in data.permissions &&
+                   submodule in data.permissions[module] &&
+                   data.permissions[module][submodule].get(permission, false) == true
                  )
                );
     }

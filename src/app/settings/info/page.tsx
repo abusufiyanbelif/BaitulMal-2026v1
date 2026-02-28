@@ -252,19 +252,14 @@ export default function InfoSettingsPage() {
         }
     };
 
-    useEffect(() => {
-        if (Object.keys(errors).length > 0) {
-            const firstErrorTab = errors.types?.findIndex(t => t !== undefined);
-            if (firstErrorTab !== undefined && firstErrorTab !== -1) {
-                const typeLabel = form.getValues(`types.${firstErrorTab}.title`) || 'New Tab';
-                toast({
-                    title: "Validation Error",
-                    description: `Required fields missing in '${typeLabel}'. Please check all marked tabs.`,
-                    variant: "destructive"
-                });
-            }
-        }
-    }, [errors, toast, form]);
+    const onError = (errors: any) => {
+        console.error("Form validation errors:", errors);
+        toast({
+            title: "Validation Error",
+            description: "Required fields missing. Please check all tabs for warning icons.",
+            variant: "destructive"
+        });
+    };
 
     const handleAddType = () => {
         const id = `type_${Date.now()}`;
@@ -339,7 +334,7 @@ export default function InfoSettingsPage() {
                 </CardHeader>
                 <CardContent className="p-0 pt-0">
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onContentSubmit)}>
+                        <form onSubmit={form.handleSubmit(onContentSubmit, onError)}>
                             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                                 <div className="border-b bg-muted/5 px-4 pt-4 sm:px-6 sm:pt-0">
                                     <ScrollArea className="w-full whitespace-nowrap">

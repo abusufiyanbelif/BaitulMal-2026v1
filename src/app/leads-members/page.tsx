@@ -184,7 +184,7 @@ export default function LeadPage() {
   const [leadToCopy, setLeadToCopy] = useState<Lead | null>(null);
   
   const { userProfile, isLoading: isProfileLoading } = useSession();
-  const { leadsWithProgress, campaignsWithProgress, recentDonationsFormatted, isLoading: isPublicDataLoading } = usePublicData();
+  const { leadsWithProgress, campaignsWithProgress, recentDonationsFormatted, isLoading: isDataLoading } = usePublicData();
 
   const activeTickerItems = useMemo(() => {
     const activeCampaigns = campaignsWithProgress
@@ -289,7 +289,7 @@ export default function LeadPage() {
     { id: 'completed', title: 'Closed Appeals', items: filteredLeads.filter(c => c.status === 'Completed') }
   ].filter(s => s.items.length > 0);
 
-  const isLoading = isProfileLoading || isDeleting || isPublicDataLoading;
+  const isLoading = isProfileLoading || isDeleting || isDataLoading;
   
   if (!isLoading && userProfile && !canViewLeads) {
     return (
