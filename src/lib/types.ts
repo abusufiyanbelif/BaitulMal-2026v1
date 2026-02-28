@@ -32,6 +32,20 @@ export interface InfoSettings extends DocumentData {
   isDonationInfoPublic?: boolean;
 }
 
+export interface UseCase {
+  id: string;
+  title: string;
+  description: string;
+  isAllowed: boolean;
+}
+
+export interface QAItem {
+  id: string;
+  question: string;
+  answer: string;
+  reference?: string;
+}
+
 export interface DonationTypeInfo {
   id: string;
   title: string;
@@ -39,7 +53,9 @@ export interface DonationTypeInfo {
   quranVerse?: string;
   quranSource?: string;
   purposePoints?: string[];
-  useCases?: string[];
+  useCasesHeading?: string;
+  useCases: UseCase[];
+  qaItems: QAItem[];
   usage: string;
   restrictions?: string;
   imageUrl?: string;

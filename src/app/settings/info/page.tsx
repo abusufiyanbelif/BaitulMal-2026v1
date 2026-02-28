@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Image from 'next/image';
@@ -18,7 +18,7 @@ import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen, CheckCircle2, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -31,6 +31,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
+
+const useCaseSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
+  isAllowed: z.boolean().default(true),
+});
+
+const qaItemSchema = z.object({
+  id: z.string(),
+  question: z.string().min(1, 'Question is required'),
+  answer: z.string().min(1, 'Answer is required'),
+  reference: z.string().optional(),
+});
 
 const donationTypeSchema = z.object({
   id: z.string(),
@@ -39,7 +54,9 @@ const donationTypeSchema = z.object({
   quranVerse: z.string().optional(),
   quranSource: z.string().optional(),
   purposePointsRaw: z.string().optional(),
-  useCasesRaw: z.string().optional(),
+  useCasesHeading: z.string().optional(),
+  useCases: z.array(useCaseSchema),
+  qaItems: z.array(qaItemSchema),
   usage: z.string().min(1, 'Usage info is required.'),
   restrictions: z.string().optional(),
   imageUrl: z.string().optional(),
@@ -51,6 +68,85 @@ const formSchema = z.object({
 });
 
 type DonationInfoFormValues = z.infer<typeof formSchema>;
+
+function UseCaseEditor({ control, typeIndex }: { control: any, typeIndex: number }) {
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: `types.${typeIndex}.useCases`
+    });
+
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold flex items-center gap-2"><HelpCircle className="h-4 w-4"/> Practical Use Cases</h4>
+                <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `uc_${Date.now()}`, title: '', description: '', isAllowed: true })}>
+                    <Plus className="h-3 w-3 mr-1"/> Add Case
+                </Button>
+            </div>
+            <div className="grid gap-4">
+                {fields.map((field, index) => (
+                    <div key={field.id} className="relative p-4 border rounded-md bg-muted/10 space-y-3">
+                        <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7 text-destructive" onClick={() => remove(index)}>
+                            <Trash2 className="h-4 w-4"/>
+                        </Button>
+                        <div className="flex items-center gap-4">
+                            <FormField control={control} name={`types.${typeIndex}.useCases.${index}.isAllowed`} render={({ field }) => (
+                                <FormItem className="flex flex-col items-center space-y-1">
+                                    <Label className="text-[10px] uppercase font-bold text-muted-foreground">Status</Label>
+                                    <FormControl>
+                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                    </FormControl>
+                                </FormItem>
+                            )}/>
+                            <FormField control={control} name={`types.${typeIndex}.useCases.${index}.title`} render={({ field }) => (
+                                <FormItem className="flex-1"><FormLabel className="text-xs">Case Title</FormLabel><FormControl><Input placeholder="e.g. Ration Kit" {...field} /></FormControl></FormItem>
+                            )}/>
+                        </div>
+                        <FormField control={control} name={`types.${typeIndex}.useCases.${index}.description`} render={({ field }) => (
+                            <FormItem><FormLabel className="text-xs">Rule/Detail</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl></FormItem>
+                        )}/>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+function QAEditor({ control, typeIndex }: { control: any, typeIndex: number }) {
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: `types.${typeIndex}.qaItems`
+    });
+
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold flex items-center gap-2"><BookOpen className="h-4 w-4"/> Questions & Answers</h4>
+                <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `qa_${Date.now()}`, question: '', answer: '', reference: '' })}>
+                    <Plus className="h-3 w-3 mr-1"/> Add Q&A
+                </Button>
+            </div>
+            <div className="grid gap-4">
+                {fields.map((field, index) => (
+                    <div key={field.id} className="relative p-4 border rounded-md bg-muted/10 space-y-3">
+                        <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7 text-destructive" onClick={() => remove(index)}>
+                            <Trash2 className="h-4 w-4"/>
+                        </Button>
+                        <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.question`} render={({ field }) => (
+                            <FormItem><FormLabel className="text-xs">Question</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                        )}/>
+                        <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.answer`} render={({ field }) => (
+                            <FormItem><FormLabel className="text-xs">Answer</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl></FormItem>
+                        )}/>
+                        <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.reference`} render={({ field }) => (
+                            <FormItem><FormLabel className="text-xs">Reference (Quran/Hadith/Scholar)</FormLabel><FormControl><Input placeholder="e.g. Surah 2:43 or Fatawa" {...field} /></FormControl></FormItem>
+                        )}/>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
 
 export default function InfoSettingsPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
@@ -89,19 +185,18 @@ export default function InfoSettingsPage() {
             const mappedTypes = dataToLoad.map(t => ({
                 ...t,
                 purposePointsRaw: (t as any).purposePoints?.join('\n') || '',
-                useCasesRaw: (t as any).useCases?.join('\n') || '',
+                useCases: t.useCases || [],
+                qaItems: t.qaItems || [],
                 imageUrl: t.imageUrl || ''
             }));
             
-            // Only reset if it's the initial load or forceRefetch
             form.reset({ types: mappedTypes });
             
             if (mappedTypes.length > 0 && !activeTab) {
                 setActiveTab(mappedTypes[0].id);
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [donationInfoData, isDonationInfoLoading]);
+    }, [donationInfoData, isDonationInfoLoading, form, activeTab]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -130,8 +225,7 @@ export default function InfoSettingsPage() {
         setIsSubmitting(true);
         try {
             const typesToSave = await Promise.all(data.types.map(async (t) => {
-                const { purposePointsRaw, useCasesRaw, imageFile, ...rest } = t;
-                
+                const { purposePointsRaw, imageFile, ...rest } = t;
                 let imageUrl = rest.imageUrl || '';
                 
                 if (imageFile && imageFile.length > 0) {
@@ -149,7 +243,6 @@ export default function InfoSettingsPage() {
                     ...rest,
                     imageUrl,
                     purposePoints: purposePointsRaw ? purposePointsRaw.split('\n').filter(p => p.trim() !== '') : [],
-                    useCases: useCasesRaw ? useCasesRaw.split('\n').filter(p => p.trim() !== '') : []
                 };
             }));
 
@@ -166,7 +259,7 @@ export default function InfoSettingsPage() {
 
     const handleAddType = () => {
         const id = `type_${Date.now()}`;
-        append({ id, title: 'New Donation Type', description: '', usage: '', purposePointsRaw: '', useCasesRaw: '', imageUrl: '' });
+        append({ id, title: 'New Category', description: '', usage: '', purposePointsRaw: '', useCases: [], qaItems: [], imageUrl: '' });
         setActiveTab(id);
     };
 
@@ -230,7 +323,7 @@ export default function InfoSettingsPage() {
                     <div className="flex items-center justify-between gap-4">
                         <div>
                             <CardTitle>Content Manager</CardTitle>
-                            <CardDescription>Manage rich content for donation categories.</CardDescription>
+                            <CardDescription>Manage rich content, use cases, and Q&A for donation types.</CardDescription>
                         </div>
                         <Button onClick={handleAddType} variant="outline" size="sm"><Plus className="mr-2 h-4 w-4" /> Add Type</Button>
                     </div>
@@ -253,7 +346,7 @@ export default function InfoSettingsPage() {
                                 </div>
 
                                 {fields.map((field, index) => (
-                                    <TabsContent key={field.id} value={field.id} className="p-4 sm:p-6 space-y-6">
+                                    <TabsContent key={field.id} value={field.id} className="p-4 sm:p-6 space-y-8">
                                         <div className="flex justify-between items-center">
                                             <h3 className="text-lg font-bold text-primary">Editing: {form.watch(`types.${index}.title`)}</h3>
                                             <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(fields[0].id); }}>
@@ -261,7 +354,8 @@ export default function InfoSettingsPage() {
                                             </Button>
                                         </div>
 
-                                        <div className="grid gap-6">
+                                        <div className="grid gap-8">
+                                            {/* Basic Info */}
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                                                 <div className="md:col-span-2 space-y-4">
                                                     <FormField control={form.control} name={`types.${index}.title`} render={({ field }) => (
@@ -307,14 +401,15 @@ export default function InfoSettingsPage() {
                                                 </div>
                                             </div>
                                             
+                                            {/* References & Highlights */}
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-lg border p-4 bg-muted/5">
                                                 <div className="space-y-4">
                                                     <h4 className="text-sm font-bold flex items-center gap-2"><Quote className="h-4 w-4"/> Religious Reference</h4>
                                                     <FormField control={form.control} name={`types.${index}.quranVerse`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Verse Text</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl></FormItem>
+                                                        <FormItem><FormLabel>Verse/Hadith Text</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl></FormItem>
                                                     )}/>
                                                     <FormField control={form.control} name={`types.${index}.quranSource`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Citation</FormLabel><FormControl><Input placeholder="Surah 2:43" {...field} /></FormControl></FormItem>
+                                                        <FormItem><FormLabel>Citation Source</FormLabel><FormControl><Input placeholder="e.g. Sahih Bukhari" {...field} /></FormControl></FormItem>
                                                     )}/>
                                                 </div>
                                                 <div className="space-y-4">
@@ -325,13 +420,20 @@ export default function InfoSettingsPage() {
                                                 </div>
                                             </div>
 
-                                            <div className="space-y-4 rounded-lg border p-4 bg-muted/5">
-                                                <h4 className="text-sm font-bold flex items-center gap-2"><HelpCircle className="h-4 w-4"/> Practical Use Cases</h4>
-                                                <FormField control={form.control} name={`types.${index}.useCasesRaw`} render={({ field }) => (
-                                                    <FormItem><FormLabel>Examples (One per line)</FormLabel><FormControl><Textarea rows={4} placeholder="e.g., Medical treatment for orphans" {...field} /></FormControl></FormItem>
+                                            {/* Use Cases */}
+                                            <div className="space-y-4 rounded-lg border p-4 bg-primary/5 border-primary/10">
+                                                <FormField control={form.control} name={`types.${index}.useCasesHeading`} render={({ field }) => (
+                                                    <FormItem className="mb-4"><FormLabel>Section Heading</FormLabel><FormControl><Input placeholder="e.g. Practical Use Cases" {...field} /></FormControl></FormItem>
                                                 )}/>
+                                                <UseCaseEditor control={form.control} typeIndex={index} />
                                             </div>
 
+                                            {/* Q&A Section */}
+                                            <div className="space-y-4 rounded-lg border p-4 bg-blue-50/50 border-blue-100">
+                                                <QAEditor control={form.control} typeIndex={index} />
+                                            </div>
+
+                                            {/* Usage Rules */}
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <FormField control={form.control} name={`types.${index}.usage`} render={({ field }) => (
                                                     <FormItem><FormLabel>Permissible Usage *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>

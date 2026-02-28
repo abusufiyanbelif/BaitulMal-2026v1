@@ -5,7 +5,7 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
     {
         id: 'zakat',
         title: "Zakat – Maal Ki Paaki aur Samaji Insaf",
-        description: "Zakat Islam ka farz rukun hai. Ramzan mein zyada log apni Zakat ada karte hain kyun ke ajr zyada aur narm hota hai.",
+        description: "Zakat Islam ka farz rukun hai. Yeh har sahib-e-nisab musalman par saal mein ek baar farz hai.",
         quranVerse: "Apne maal mein se Zakat ada karo taake tum paak ho jao.",
         quranSource: "Surah At-Tawbah 9:103",
         purposePoints: [
@@ -14,93 +14,70 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
             "Samaj mein barabari paida karna",
             "Haqdaar tak haq pohanchana"
         ],
+        useCasesHeading: "Practical Use Cases (Zakat Masail)",
         useCases: [
-            "Direct financial aid to widowed or orphan-headed families",
-            "Paying for life-saving surgeries for verified Zakat-eligible patients",
-            "Providing basic ration supplies to daily wage workers who cannot earn"
+            { id: 'u1', title: "Ration Kit", description: "Agar mustahiq family faqeer/miskeen category mein hai → Zakat se ration diya ja sakta hai.", isAllowed: true },
+            { id: 'u2', title: "Medical Emergency", description: "Agar patient ke paas ilaaj ke paise nahi → Zakat allowed.", isAllowed: true },
+            { id: 'u3', title: "Debt Relief", description: "Agar koi qarz mein dooba hai aur repay nahi kar sakta → Zakat allowed.", isAllowed: true },
+            { id: 'u4', title: "School Building Banana", description: "Allowed nahi (yeh Lillah se hoga).", isAllowed: false },
+            { id: 'u5', title: "Student Fees", description: "Agar student ghareeb hai aur fees nahi de sakta → Zakat allowed.", isAllowed: true }
         ],
-        usage: "Its use is strictly restricted to eight categories of people defined in the Quran (9:60), including the poor, the needy, those in debt, and stranded travellers.",
-        restrictions: "It cannot be used for infrastructure (like building mosques or schools) or given to immediate family members (parents, children).",
-        imageHint: "charity helping"
+        qaItems: [
+            { id: 'q1', question: "Zakat kis par farz hai?", answer: "Har us musalman par jo sahib-e-nisab ho (jis ke paas ek saal tak nisab ke barabar maal rahe).", reference: "Fiqh Ruling" }
+        ],
+        usage: "Its use is strictly restricted to eight categories defined in the Quran.",
+        restrictions: "Cannot be used for infrastructure or given to parents/children.",
     },
     {
         id: 'sadaqah',
         title: "Sadaqah (Voluntary Charity)",
-        description: "Sadaqah is a broad term for voluntary charity given purely for the sake of Allah. Unlike Zakat, it has no fixed amount or required timing.",
-        quranVerse: "Who is it that would loan Allah a goodly loan so He may multiply it for him many times over?",
-        quranSource: "Surah Al-Baqarah 2:245",
+        description: "Sadaqah is voluntary charity given purely for the sake of Allah to remove hardships.",
         purposePoints: [
             "Seeking pleasure of Allah",
-            "Removing hardship from others",
-            "Purifying the character",
-            "Continuous reward (Sadaqah Jariyah)"
+            "Removing hardship",
+            "Continuous reward (Jariyah)"
         ],
+        useCasesHeading: "Practical Use Cases",
         useCases: [
-            "Emergency relief funds for disaster-hit areas",
-            "Installing water pumps in drought-prone regions (Sadaqah Jariyah)",
-            "Supporting small educational initiatives for the community"
+            { id: 's1', title: "Emergency Aid", description: "Food, clothes or medicine for anyone in need.", isAllowed: true },
+            { id: 's2', title: "Water Projects", description: "Installing pumps or wells.", isAllowed: true }
         ],
-        usage: "It has no restrictions on recipients and can be given to anyone in need, regardless of faith.",
-        impact: "It is often used for immediate relief like food, clothing, and medical care.",
-        imageHint: "giving food"
+        qaItems: [],
+        usage: "Can be given to anyone in need, regardless of faith.",
     },
     {
         id: 'fidiya',
         title: "Fidiya (Compensation)",
-        description: "Fidiya is a religious donation made in Islam when someone is unable to fast during Ramadan due to valid reasons.",
-        quranVerse: "And upon those who are able [to fast, but with hardship] - a ransom [as substitute] of feeding a poor person [each day].",
-        quranSource: "Surah Al-Baqarah 2:184",
-        purposePoints: [
-            "Compensating for missed fasts",
-            "Providing essential meals",
-            "Fulfilling religious duty",
-            "Supporting the elderly and sick"
-        ],
+        description: "Donation made when someone is unable to fast during Ramadan due to valid health reasons.",
+        useCasesHeading: "Usage Examples",
         useCases: [
-            "Providing Suhoor and Iftar meals for the poor during Ramadan",
-            "Bulk purchase of basic food grains for distribution",
-            "Feeding needy travelers who are stranded"
+            { id: 'f1', title: "Feeding Needy", description: "Providing Suhoor/Iftar for those who cannot fast.", isAllowed: true }
         ],
-        usage: "The money is used to provide meals to the poor and needy. Typically, it covers two meals for one person for each missed fast.",
-        keyUse: "It serves as a compensation for missed fasts and is a separate obligation from Zakat.",
-        imageHint: "meal feeding"
+        qaItems: [],
+        usage: "Primarily used to provide meals to the poor and needy.",
     },
     {
         id: 'lillah',
         title: "Lillah (For the Sake of Allah)",
-        description: "Lillah is a type of voluntary Sadaqah typically used to denote donations intended for institutions.",
-        purposePoints: [
-            "Building community infrastructure",
-            "Supporting Islamic education",
-            "Maintaining places of worship",
-            "General public benefit"
-        ],
+        description: "Voluntary Sadaqah intended for institutions and public welfare.",
+        useCasesHeading: "Institutional Support",
         useCases: [
-            "Construction and maintenance of mosques",
-            "Salaries for teachers in community Madrasas",
-            "Payment of electricity and water bills for charitable institutions"
+            { id: 'l1', title: "Mosque Construction", description: "Building or repairing Masjids.", isAllowed: true },
+            { id: 'l2', title: "Madrasa Staff", description: "Salaries for teachers and utilities.", isAllowed: true }
         ],
-        usage: "It is primarily used for the construction and maintenance of mosques, schools (Madrasas), hospitals, and other community infrastructure.",
-        keyUse: "Unlike Zakat, Lillah can be used to cover the running costs (utilities, staff salaries) of Islamic institutions.",
-        imageHint: "mosque construction"
+        qaItems: [],
+        usage: "Used for infrastructure, salaries, and running costs of community institutions.",
     },
     {
         id: 'interest',
-        title: "Interest (Riba/Bank Interest Disposal)",
-        description: "In Islam, taking or giving interest is forbidden. Accumulated bank interest must be disposed of without intention of reward.",
-        purposePoints: [
-            "Purifying one's wealth",
-            "Removing prohibited gains",
-            "Supporting public utility projects",
-            "Assisting the extremely poor"
-        ],
+        title: "Interest (Riba Disposal)",
+        description: "Accumulated bank interest must be disposed of without intention of reward.",
+        useCasesHeading: "Disposal Methods",
         useCases: [
-            "Building or repairing public toilets and sanitation facilities",
-            "Repairing village roads or drainage systems",
-            "Providing simple relief items to the poor where no spiritual reward is expected"
+            { id: 'i1', title: "Public Toilets", description: "Building sanitation facilities.", isAllowed: true },
+            { id: 'i2', title: "Road Repairs", description: "Generic public utility works.", isAllowed: true }
         ],
-        usage: "It must be given away to charity without the intention of reward.",
-        application: "It is commonly used for public utility projects such as building public toilets, repairing roads, or providing generic relief to the poor.",
-        imageHint: "public welfare"
+        qaItems: [],
+        usage: "Must be given away without spiritual reward expectation.",
     }
 ];
