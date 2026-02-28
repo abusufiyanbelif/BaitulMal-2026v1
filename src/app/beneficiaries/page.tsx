@@ -293,7 +293,7 @@ export default function BeneficiariesPage() {
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
   
-  if (isLoading) return <main className="container mx-auto p-4 md:p-8"><Loader2 className="w-8 h-8 animate-spin mx-auto mt-20" /></main>;
+  if (isLoading) return <main className="container mx-auto p-4 md:p-8 flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-primary" /></main>;
   
   if (!canRead) return (
     <main className="container mx-auto p-4 md:p-8">
@@ -376,7 +376,7 @@ export default function BeneficiariesPage() {
                       </TableRow>
                   </TableHeader>
                   <TableBody>
-                      {paginatedBeneficiaries.map((beneficiary, index) => (
+                      {paginatedUsers.map((beneficiary, index) => (
                         <BeneficiaryRow
                             key={beneficiary.id}
                             beneficiary={beneficiary}

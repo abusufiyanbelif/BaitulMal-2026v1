@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -85,6 +84,9 @@ export default function InfoSettingsPage() {
                 useCasesRaw: t.useCases?.join('\n') || ''
             }));
             form.reset({ types: mappedTypes });
+            if (mappedTypes.length > 0 && !activeTab) {
+                setActiveTab(mappedTypes[0].id);
+            }
         } else if (!isDonationInfoLoading) {
             const mappedDefaults = defaultDonationInfo.map(t => ({
                 ...t,
@@ -92,14 +94,11 @@ export default function InfoSettingsPage() {
                 useCasesRaw: t.useCases?.join('\n') || ''
             }));
             form.reset({ types: mappedDefaults });
+            if (mappedDefaults.length > 0 && !activeTab) {
+                setActiveTab(mappedDefaults[0].id);
+            }
         }
-    }, [donationInfoData, isDonationInfoLoading, form]);
-
-    useEffect(() => {
-        if (fields.length > 0 && !activeTab) {
-            setActiveTab(fields[0].id);
-        }
-    }, [fields, activeTab]);
+    }, [donationInfoData, isDonationInfoLoading, form, activeTab]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
