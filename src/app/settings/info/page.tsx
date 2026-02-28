@@ -15,7 +15,7 @@ import { doc, setDoc } from 'firebase/firestore';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListCheck, HelpCircle } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -89,10 +89,10 @@ export default function InfoSettingsPage() {
             
             form.reset({ types: mappedTypes });
             if (mappedTypes.length > 0 && !activeTab) {
-                setActiveTab(mappedTypes[0].id);
+                setActiveTab(fields[0]?.id || mappedTypes[0].id);
             }
         }
-    }, [donationInfoData, isDonationInfoLoading, form, activeTab]);
+    }, [donationInfoData, isDonationInfoLoading, form, activeTab, fields]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -136,7 +136,7 @@ export default function InfoSettingsPage() {
     const handleAddType = () => {
         const id = `type_${Date.now()}`;
         append({ id, title: 'New Donation Type', description: '', usage: '', purposePointsRaw: '', useCasesRaw: '', imageHint: 'charity' });
-        setActiveTab(id);
+        // After appending, fields.length will be updated on next render
     };
 
     const isLoading = isSessionLoading || isInfoSettingsLoading || isDonationInfoLoading;
@@ -254,7 +254,7 @@ export default function InfoSettingsPage() {
                                                     )}/>
                                                 </div>
                                                 <div className="space-y-4">
-                                                    <h4 className="text-sm font-bold flex items-center gap-2"><ListCheck className="h-4 w-4"/> Key Highlights</h4>
+                                                    <h4 className="text-sm font-bold flex items-center gap-2"><ListChecks className="h-4 w-4"/> Key Highlights</h4>
                                                     <FormField control={form.control} name={`types.${index}.purposePointsRaw`} render={({ field }) => (
                                                         <FormItem><FormLabel>Points (One per line)</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl></FormItem>
                                                     )}/>

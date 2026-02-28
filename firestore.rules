@@ -27,7 +27,7 @@ service cloud.firestore {
       return isSignedIn() && 
              userExists() &&
              'role' in getUserData() &&
-             (getUserData().role == 'Admin' || getUserData().role == 'admin');
+             (getUserData().role.lower() == 'admin');
     }
 
     function hasPermission(module, permission) {
