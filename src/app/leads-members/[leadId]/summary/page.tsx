@@ -247,12 +247,6 @@ export default function LeadSummaryPage() {
 
     if (!lead) return <main className="container mx-auto p-4 md:p-8 text-center"><p>Lead not found.</p></main>;
     
-    const handleShare = async () => {
-        if (!lead) return;
-        setShareDialogData({ title: `Lead Summary: ${lead.name}`, text: `Check out progress for ${lead.name}`, url: `${window.location.origin}/leads-public/${leadId}/summary` });
-        setIsShareDialogOpen(true);
-    };
-
     const handleDownload = (format: 'png' | 'pdf') => {
         download(format, { contentRef: summaryRef, documentTitle: `Lead Summary: ${lead?.name}`, documentName: `lead-summary-${leadId}`, brandingSettings, paymentSettings });
     };
