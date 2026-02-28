@@ -22,7 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import Link from 'next/link';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -39,7 +39,6 @@ const donationTypeSchema = z.object({
   usage: z.string().min(1, 'Usage info is required.'),
   restrictions: z.string().optional(),
   imageHint: z.string().optional(),
-  extraContent: z.string().optional(),
 });
 
 const formSchema = z.object({
@@ -85,7 +84,7 @@ export default function InfoSettingsPage() {
             if (mappedTypes.length > 0 && !activeTab) {
                 setActiveTab(mappedTypes[0].id);
             }
-        } else {
+        } else if (!isDonationInfoLoading) {
             const mappedDefaults = defaultDonationInfo.map(t => ({
                 ...t,
                 purposePointsRaw: t.purposePoints?.join('\n') || ''
@@ -95,7 +94,7 @@ export default function InfoSettingsPage() {
                 setActiveTab(mappedDefaults[0].id);
             }
         }
-    }, [donationInfoData, form, activeTab]);
+    }, [donationInfoData, form, activeTab, isDonationInfoLoading]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -198,7 +197,7 @@ export default function InfoSettingsPage() {
                     <div className="flex items-center justify-between gap-4">
                         <div>
                             <CardTitle>Content Manager</CardTitle>
-                            <CardDescription>Manage rich content for donation categories.</CardDescription>
+                            <CardDescription>Manage rich content for donation categories in a tabbed view.</CardDescription>
                         </div>
                         <Button onClick={handleAddType} variant="outline" size="sm"><Plus className="mr-2 h-4 w-4" /> Add Type</Button>
                     </div>

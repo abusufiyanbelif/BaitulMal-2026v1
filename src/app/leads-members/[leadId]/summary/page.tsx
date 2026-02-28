@@ -102,11 +102,6 @@ export default function LeadSummaryPage() {
     
     const isLoading = isLeadLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
 
-    const availableCategories = React.useMemo(() => {
-        const selectedPurpose = leadPurposesConfig.find(p => p.id === editableLead.purpose);
-        return selectedPurpose?.categories || [];
-    }, [editableLead.purpose]);
-
     useEffect(() => {
         if (lead && !editMode) {
              setEditableLead({
@@ -320,6 +315,22 @@ export default function LeadSummaryPage() {
 
         return { totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, beneficiariesGiven, beneficiariesPending, zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, amountsByCategory, fundTotals };
     }, [beneficiaries, allDonations, lead]);
+    
+    if (isLoading) return <BrandedLoader />;
+    
+    if (leadError || beneficiariesError || donationsError) {
+        return ( 
+          <main className="container mx-auto p-4 md:p-8">
+            <Alert variant="destructive">
+              <ShieldAlert className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription><p>Problem fetching data.</p></AlertDescription>
+            </Alert>
+          </main> 
+        );
+    }
+
+    if (!lead) return <main className="container mx-auto p-4 md:p-8 text-center"><p>Lead not found.</p></main>;
     
     const handleShare = async () => {
         if (!lead || !summaryData) return;
