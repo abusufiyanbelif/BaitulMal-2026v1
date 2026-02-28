@@ -120,7 +120,8 @@ const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete
                                         <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioGroup>
+                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>

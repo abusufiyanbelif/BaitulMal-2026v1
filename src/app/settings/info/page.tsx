@@ -18,7 +18,7 @@ import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -170,7 +170,7 @@ export default function InfoSettingsPage() {
         name: 'types'
     });
 
-    const { isDirty } = form.formState;
+    const { isDirty, errors } = form.formState;
 
     useEffect(() => {
         if (infoSettings) {
@@ -178,8 +178,9 @@ export default function InfoSettingsPage() {
         }
     }, [infoSettings]);
     
+    // Only reset the form when data initially arrives and we're not dirty
     useEffect(() => {
-        if (!isDonationInfoLoading && donationInfoData) {
+        if (!isDonationInfoLoading && donationInfoData && !isDirty) {
             const dataToLoad = (donationInfoData.types && donationInfoData.types.length > 0) ? donationInfoData.types : defaultDonationInfo;
             const mappedTypes = dataToLoad.map(t => ({
                 ...t,
@@ -195,7 +196,7 @@ export default function InfoSettingsPage() {
                 setActiveTab(mappedTypes[0].id);
             }
         }
-    }, [donationInfoData, isDonationInfoLoading, form, activeTab]);
+    }, [donationInfoData, isDonationInfoLoading]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -255,6 +256,18 @@ export default function InfoSettingsPage() {
             setIsSubmitting(false);
         }
     };
+
+    // Watch for validation errors and alert the user
+    useEffect(() => {
+        if (Object.keys(errors).length > 0) {
+            console.warn("Form validation errors:", errors);
+            toast({
+                title: "Validation Error",
+                description: "Please check all fields in every category. Some required information is missing.",
+                variant: "destructive"
+            });
+        }
+    }, [errors, toast]);
 
     const handleAddType = () => {
         const id = `type_${Date.now()}`;
