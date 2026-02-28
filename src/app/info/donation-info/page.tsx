@@ -1,9 +1,10 @@
+
 'use client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Quote, Target, Loader2, CheckCircle2, XCircle, BookOpen, ListChecks, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Quote, Target, Loader2, CheckCircle2, XCircle, BookOpen, ListChecks, AlertCircle, Info } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -18,6 +19,7 @@ import { useDonationInfo } from '@/hooks/use-donation-info';
 import { defaultDonationInfo } from '@/lib/donation-info-default';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 const comparisonData = [
     { feature: 'Status', zakat: 'Obligatory (Fard)', sadaqah: 'Voluntary', lillah: 'Voluntary', fidiya: 'Obligatory Compensation', interest: 'Mandatory disposal' },
@@ -91,6 +93,9 @@ export default function DonationInfoPage() {
 
         {donationTypes.map((type) => {
             const displayImageUrl = type.imageUrl ? (type.imageUrl.startsWith('data:') ? type.imageUrl : `/api/image-proxy?url=${encodeURIComponent(type.imageUrl)}`) : `https://picsum.photos/seed/${type.id}/800/600`;
+            
+            const visibleUseCases = type.useCases?.filter(uc => !uc.isHidden && (uc.title?.trim() || uc.description?.trim())) || [];
+            const visibleQA = type.qaItems?.filter(qa => !qa.isHidden && (qa.question?.trim() || qa.answer?.trim())) || [];
 
             return (
                 <TabsContent key={type.id} value={type.id} className="animate-fade-in-up">
@@ -121,21 +126,28 @@ export default function DonationInfoPage() {
                                         )}
                                     </div>
 
-                                    {type.useCases && type.useCases.length > 0 && (
+                                    {!type.hideUseCases && visibleUseCases.length > 0 && (
                                         <div className="space-y-6">
                                             <h3 className="text-2xl font-black tracking-tight text-primary uppercase flex items-center gap-3">
                                                 <Target className="h-6 w-6" /> {type.useCasesHeading || "Practical Use Cases"}
                                             </h3>
-                                            <div className="grid gap-4">
-                                                {type.useCases.map((useCase) => (
-                                                    <div key={useCase.id} className="group p-4 rounded-xl border-2 border-muted bg-card hover:border-primary/30 transition-all">
+                                            <div className="grid gap-6">
+                                                {visibleUseCases.map((useCase) => (
+                                                    <div key={useCase.id} className="group p-6 rounded-xl border-2 border-muted bg-card hover:border-primary/30 transition-all">
                                                         <div className="flex items-start gap-4">
                                                             <div className="mt-1">
                                                                 {useCase.isAllowed ? <CheckCircle2 className="h-6 w-6 text-green-500" /> : <XCircle className="h-6 w-6 text-red-500" />}
                                                             </div>
-                                                            <div className="space-y-1">
+                                                            <div className="space-y-3 flex-1">
                                                                 <h4 className="font-black text-lg uppercase tracking-tight">{useCase.title}</h4>
                                                                 <p className="text-muted-foreground font-medium">{useCase.description}</p>
+                                                                
+                                                                {useCase.quranVerse && (
+                                                                    <div className="mt-4 p-4 bg-muted/50 rounded-lg border-l-4 border-muted-foreground italic text-sm text-muted-foreground">
+                                                                        <p>"{useCase.quranVerse}"</p>
+                                                                        {useCase.quranSource && <p className="text-[10px] font-black uppercase text-primary text-right mt-2">— {useCase.quranSource}</p>}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -146,7 +158,7 @@ export default function DonationInfoPage() {
                                 </div>
 
                                 <div className="space-y-8">
-                                    {type.purposePoints && type.purposePoints.length > 0 && (
+                                    {!type.hideKeyHighlights && type.purposePoints && type.purposePoints.length > 0 && (
                                         <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10">
                                             <h4 className="font-black text-xs uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
                                                 <ListChecks className="h-4 w-4" /> Key Highlights
@@ -163,13 +175,13 @@ export default function DonationInfoPage() {
                                     )}
 
                                     <div className="space-y-6">
-                                        {type.usage && (
+                                        {!type.hideUsage && type.usage && (
                                             <div className="p-4 rounded-xl bg-muted/20 border">
                                                 <span className="font-black uppercase text-[10px] tracking-widest text-muted-foreground block mb-2">Permissible Usage:</span>
                                                 <p className="text-sm font-medium leading-relaxed">{type.usage}</p>
                                             </div>
                                         )}
-                                        {type.restrictions && (
+                                        {!type.hideRestrictions && type.restrictions && (
                                             <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/10">
                                                 <span className="font-black uppercase text-[10px] tracking-widest text-destructive block mb-2">Strict Restrictions:</span>
                                                 <p className="text-sm font-medium leading-relaxed text-destructive/80">{type.restrictions}</p>
@@ -179,18 +191,30 @@ export default function DonationInfoPage() {
                                 </div>
                             </div>
 
-                            {type.qaItems && type.qaItems.length > 0 && (
+                            {!type.hideQA && visibleQA.length > 0 && (
                                 <div className="space-y-8 pt-6 border-t">
                                     <h3 className="text-2xl font-black tracking-tight text-blue-600 uppercase flex items-center gap-3">
                                         <BookOpen className="h-6 w-6" /> Common Questions
                                     </h3>
                                     <div className="grid sm:grid-cols-2 gap-6">
-                                        {type.qaItems.map((qa) => (
-                                            <div key={qa.id} className="space-y-3 bg-blue-50/30 p-6 rounded-2xl border border-blue-100/50">
-                                                <h4 className="font-black text-lg text-blue-900">Q: {qa.question}</h4>
-                                                <p className="font-medium text-slate-700">A: {qa.answer}</p>
+                                        {visibleQA.map((qa) => (
+                                            <div key={qa.id} className="space-y-4 bg-blue-50/30 p-6 rounded-2xl border border-blue-100/50">
+                                                <div className="space-y-2">
+                                                    <h4 className="font-black text-lg text-blue-900">Q: {qa.question}</h4>
+                                                    <p className="font-medium text-slate-700">A: {qa.answer}</p>
+                                                </div>
+                                                
+                                                {qa.quranVerse && (
+                                                    <div className="p-3 bg-white/50 rounded-lg border-l-2 border-blue-200 italic text-xs text-blue-800">
+                                                        <p>"{qa.quranVerse}"</p>
+                                                        {qa.quranSource && <p className="text-[9px] font-black uppercase text-blue-600 text-right mt-1">— {qa.quranSource}</p>}
+                                                    </div>
+                                                )}
+                                                
                                                 {qa.reference && (
-                                                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest pt-2">Ref: {qa.reference}</p>
+                                                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest pt-2 flex items-center gap-1">
+                                                        <Info className="h-3 w-3" /> Reference: {qa.reference}
+                                                    </p>
                                                 )}
                                             </div>
                                         ))}

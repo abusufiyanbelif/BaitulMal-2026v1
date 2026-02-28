@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,26 +18,30 @@ import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import Link from 'next/link';
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const useCaseSchema = z.object({
   id: z.string(),
   title: z.string().optional().or(z.literal('')),
   description: z.string().optional().or(z.literal('')),
   isAllowed: z.boolean().default(true),
+  isHidden: z.boolean().default(false),
+  quranVerse: z.string().optional().or(z.literal('')),
+  quranSource: z.string().optional().or(z.literal('')),
 });
 
 const qaItemSchema = z.object({
@@ -44,6 +49,9 @@ const qaItemSchema = z.object({
   question: z.string().optional().or(z.literal('')),
   answer: z.string().optional().or(z.literal('')),
   reference: z.string().optional().or(z.literal('')),
+  isHidden: z.boolean().default(false),
+  quranVerse: z.string().optional().or(z.literal('')),
+  quranSource: z.string().optional().or(z.literal('')),
 });
 
 const donationTypeSchema = z.object({
@@ -60,6 +68,12 @@ const donationTypeSchema = z.object({
   restrictions: z.string().optional().or(z.literal('')),
   imageUrl: z.string().optional().or(z.literal('')),
   imageFile: z.any().optional(),
+  // Visibility
+  hideKeyHighlights: z.boolean().default(false),
+  hideUseCases: z.boolean().default(false),
+  hideQA: z.boolean().default(false),
+  hideUsage: z.boolean().default(false),
+  hideRestrictions: z.boolean().default(false),
 });
 
 const formSchema = z.object({
@@ -77,33 +91,47 @@ function UseCaseEditor({ control, typeIndex }: { control: any, typeIndex: number
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold flex items-center gap-2"><HelpCircle className="h-4 w-4"/> Practical Use Cases</h4>
-                <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `uc_${Date.now()}`, title: '', description: '', isAllowed: true })}>
-                    <Plus className="h-3 w-3 mr-1"/> Add Case
+                <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-primary"><HelpCircle className="h-4 w-4"/> Scenarios & Rules</h4>
+                <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `uc_${Date.now()}`, title: '', description: '', isAllowed: true, isHidden: false })}>
+                    <Plus className="h-3 w-3 mr-1"/> Add Scenario
                 </Button>
             </div>
             <div className="grid gap-4">
                 {fields.map((field, index) => (
-                    <div key={field.id} className="relative p-4 border rounded-md bg-muted/10 space-y-3">
-                        <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7 text-destructive" onClick={() => remove(index)}>
-                            <Trash2 className="h-4 w-4"/>
-                        </Button>
-                        <div className="flex items-center gap-4">
+                    <div key={field.id} className="relative p-4 border rounded-md bg-muted/10 space-y-4 shadow-sm">
+                        <div className="absolute top-2 right-2 flex items-center gap-2">
+                            <FormField control={control} name={`types.${typeIndex}.useCases.${index}.isHidden`} render={({ field }) => (
+                                <FormItem className="flex items-center space-x-2 space-y-0">
+                                    <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                    <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground cursor-pointer">Hide</FormLabel>
+                                </FormItem>
+                            )}/>
+                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => remove(index)}>
+                                <Trash2 className="h-4 w-4"/>
+                            </Button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <FormField control={control} name={`types.${typeIndex}.useCases.${index}.isAllowed`} render={({ field }) => (
-                                <FormItem className="flex flex-col items-center space-y-1">
-                                    <Label className="text-[10px] uppercase font-bold text-muted-foreground">Status</Label>
-                                    <FormControl>
-                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                    </FormControl>
+                                <FormItem className="flex items-center space-x-2 space-y-0 pt-6">
+                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                    <FormLabel className="text-xs font-bold uppercase">{field.value ? 'Allowed' : 'Restricted'}</FormLabel>
                                 </FormItem>
                             )}/>
                             <FormField control={control} name={`types.${typeIndex}.useCases.${index}.title`} render={({ field }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-xs">Title</FormLabel><FormControl><Input placeholder="e.g. Case 1: Ration Kit" {...field} /></FormControl></FormItem>
+                                <FormItem className="flex-1"><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Scenario Name</FormLabel><FormControl><Input placeholder="e.g. Case 1: Ration Kit" {...field} /></FormControl></FormItem>
                             )}/>
                         </div>
                         <FormField control={control} name={`types.${typeIndex}.useCases.${index}.description`} render={({ field }) => (
-                            <FormItem><FormLabel className="text-xs">Detail</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl></FormItem>
+                            <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Guideline / Rule</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl></FormItem>
                         )}/>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-dashed">
+                            <FormField control={control} name={`types.${typeIndex}.useCases.${index}.quranVerse`} render={({ field }) => (
+                                <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Case Citation (Verse/Hadith)</FormLabel><FormControl><Textarea rows={2} className="text-xs" placeholder="Source text..." {...field} /></FormControl></FormItem>
+                            )}/>
+                            <FormField control={control} name={`types.${typeIndex}.useCases.${index}.quranSource`} render={({ field }) => (
+                                <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Citation Source</FormLabel><FormControl><Input className="text-xs" placeholder="e.g. Sahih Bukhari" {...field} /></FormControl></FormItem>
+                            )}/>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -120,26 +148,39 @@ function QAEditor({ control, typeIndex }: { control: any, typeIndex: number }) {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold flex items-center gap-2"><BookOpen className="h-4 w-4"/> Questions & Answers</h4>
-                <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `qa_${Date.now()}`, question: '', answer: '', reference: '' })}>
-                    <Plus className="h-3 w-3 mr-1"/> Add Q&A
+                <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-blue-700"><BookOpen className="h-4 w-4"/> FAQ Items</h4>
+                <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `qa_${Date.now()}`, question: '', answer: '', reference: '', isHidden: false })}>
+                    <Plus className="h-3 w-3 mr-1"/> Add Question
                 </Button>
             </div>
             <div className="grid gap-4">
                 {fields.map((field, index) => (
-                    <div key={field.id} className="relative p-4 border rounded-md bg-muted/10 space-y-3">
-                        <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7 text-destructive" onClick={() => remove(index)}>
-                            <Trash2 className="h-4 w-4"/>
-                        </Button>
+                    <div key={field.id} className="relative p-4 border rounded-md bg-blue-50/20 space-y-4 shadow-sm">
+                        <div className="absolute top-2 right-2 flex items-center gap-2">
+                            <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.isHidden`} render={({ field }) => (
+                                <FormItem className="flex items-center space-x-2 space-y-0">
+                                    <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                    <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground cursor-pointer">Hide</FormLabel>
+                                </FormItem>
+                            )}/>
+                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => remove(index)}>
+                                <Trash2 className="h-4 w-4"/>
+                            </Button>
+                        </div>
                         <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.question`} render={({ field }) => (
-                            <FormItem><FormLabel className="text-xs">Question</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                            <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Question</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                         )}/>
                         <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.answer`} render={({ field }) => (
-                            <FormItem><FormLabel className="text-xs">Answer</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl></FormItem>
+                            <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Answer</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl></FormItem>
                         )}/>
-                        <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.reference`} render={({ field }) => (
-                            <FormItem><FormLabel className="text-xs">Reference</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
-                        )}/>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-dashed border-blue-200">
+                            <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.quranVerse`} render={({ field }) => (
+                                <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Religious Proof</FormLabel><FormControl><Textarea rows={2} className="text-xs" placeholder="Evidence text..." {...field} /></FormControl></FormItem>
+                            )}/>
+                            <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.quranSource`} render={({ field }) => (
+                                <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Evidence Citation</FormLabel><FormControl><Input className="text-xs" placeholder="e.g. Fatawa..." {...field} /></FormControl></FormItem>
+                            )}/>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -185,7 +226,12 @@ export default function InfoSettingsPage() {
                 purposePointsRaw: (t as any).purposePoints?.join('\n') || '',
                 useCases: (t.useCases || []),
                 qaItems: t.qaItems || [],
-                imageUrl: t.imageUrl || ''
+                imageUrl: t.imageUrl || '',
+                hideKeyHighlights: !!t.hideKeyHighlights,
+                hideUseCases: !!t.hideUseCases,
+                hideQA: !!t.hideQA,
+                hideUsage: !!t.hideUsage,
+                hideRestrictions: !!t.hideRestrictions,
             }));
             
             form.reset({ types: mappedTypes });
@@ -265,7 +311,11 @@ export default function InfoSettingsPage() {
 
     const handleAddType = () => {
         const id = `type_${Date.now()}`;
-        append({ id, title: 'New Category', description: '', usage: '', purposePointsRaw: '', useCases: [], qaItems: [], imageUrl: '' });
+        append({ 
+            id, title: 'New Category', description: '', usage: '', purposePointsRaw: '', 
+            useCases: [], qaItems: [], imageUrl: '',
+            hideKeyHighlights: false, hideUseCases: false, hideQA: false, hideUsage: false, hideRestrictions: false
+        });
         setActiveTab(id);
     };
 
@@ -318,8 +368,8 @@ export default function InfoSettingsPage() {
                 </CardContent>
                 <CardFooter className="justify-end border-t bg-muted/5 p-4">
                     <Button onClick={handleSaveVisibility} disabled={isSubmitting || !isVisibilityDirty}>
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        <Save className="mr-2 h-4 w-4"/> Save Visibility
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4"/>}
+                        Save Visibility
                     </Button>
                 </CardFooter>
             </Card>
@@ -377,6 +427,25 @@ export default function InfoSettingsPage() {
                                             </div>
 
                                             <div className="grid gap-8">
+                                                {/* Visibility Toggles */}
+                                                <div className="bg-muted/10 p-4 rounded-lg border border-dashed grid grid-cols-2 md:grid-cols-5 gap-4">
+                                                    <FormField control={form.control} name={`types.${index}.hideKeyHighlights`} render={({ field }) => (
+                                                        <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><FormLabel className="text-[10px] font-bold uppercase cursor-pointer">Hide Highlights</FormLabel></FormItem>
+                                                    )}/>
+                                                    <FormField control={form.control} name={`types.${index}.hideUseCases`} render={({ field }) => (
+                                                        <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><FormLabel className="text-[10px] font-bold uppercase cursor-pointer">Hide Use Cases</FormLabel></FormItem>
+                                                    )}/>
+                                                    <FormField control={form.control} name={`types.${index}.hideQA`} render={({ field }) => (
+                                                        <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><FormLabel className="text-[10px] font-bold uppercase cursor-pointer">Hide Q&A</FormLabel></FormItem>
+                                                    )}/>
+                                                    <FormField control={form.control} name={`types.${index}.hideUsage`} render={({ field }) => (
+                                                        <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><FormLabel className="text-[10px] font-bold uppercase cursor-pointer">Hide Usage</FormLabel></FormItem>
+                                                    )}/>
+                                                    <FormField control={form.control} name={`types.${index}.hideRestrictions`} render={({ field }) => (
+                                                        <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><FormLabel className="text-[10px] font-bold uppercase cursor-pointer">Hide Restrictions</FormLabel></FormItem>
+                                                    )}/>
+                                                </div>
+
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                                                     <div className="md:col-span-2 space-y-4">
                                                         <FormField control={form.control} name={`types.${index}.title`} render={({ field }) => (
@@ -426,16 +495,16 @@ export default function InfoSettingsPage() {
                                                     <div className="space-y-4">
                                                         <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-primary"><Quote className="h-4 w-4"/> Religious Reference</h4>
                                                         <FormField control={form.control} name={`types.${index}.quranVerse`} render={({ field }) => (
-                                                            <FormItem><FormLabel className="text-xs">Verse or Hadith Text</FormLabel><FormControl><Textarea rows={3} placeholder="Paste the translation here..." {...field} /></FormControl></FormItem>
+                                                            <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Verse or Hadith Text</FormLabel><FormControl><Textarea rows={3} placeholder="Paste the translation here..." {...field} /></FormControl></FormItem>
                                                         )}/>
                                                         <FormField control={form.control} name={`types.${index}.quranSource`} render={({ field }) => (
-                                                            <FormItem><FormLabel className="text-xs">Citation</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                                                            <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Citation</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                                                         )}/>
                                                     </div>
                                                     <div className="space-y-4">
                                                         <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-primary"><ListChecks className="h-4 w-4"/> Key Highlights</h4>
                                                         <FormField control={form.control} name={`types.${index}.purposePointsRaw`} render={({ field }) => (
-                                                            <FormItem><FormLabel className="text-xs">List Points (One per line)</FormLabel><FormControl><Textarea rows={6} placeholder="Point 1&#10;Point 2&#10;Point 3..." {...field} /></FormControl></FormItem>
+                                                            <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">List Points (One per line)</FormLabel><FormControl><Textarea rows={6} placeholder="Point 1&#10;Point 2&#10;Point 3..." {...field} /></FormControl></FormItem>
                                                         )}/>
                                                     </div>
                                                 </div>
@@ -453,10 +522,10 @@ export default function InfoSettingsPage() {
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <FormField control={form.control} name={`types.${index}.usage`} render={({ field }) => (
-                                                        <FormItem><FormLabel className="font-bold text-green-700">Permissible Usage Guidelines</FormLabel><FormControl><Textarea rows={4} placeholder="Where can these funds be spent?" {...field} /></FormControl></FormItem>
+                                                        <FormItem><FormLabel className="font-bold text-green-700 uppercase tracking-tighter">Permissible Usage Guidelines</FormLabel><FormControl><Textarea rows={4} placeholder="Where can these funds be spent?" {...field} /></FormControl></FormItem>
                                                     )}/>
                                                     <FormField control={form.control} name={`types.${index}.restrictions`} render={({ field }) => (
-                                                        <FormItem><FormLabel className="font-bold text-destructive">Strict Restrictions</FormLabel><FormControl><Textarea rows={4} placeholder="Where can these funds NOT be spent?" {...field} /></FormControl></FormItem>
+                                                        <FormItem><FormLabel className="font-bold text-destructive uppercase tracking-tighter">Strict Restrictions</FormLabel><FormControl><Textarea rows={4} placeholder="Where can these funds NOT be spent?" {...field} /></FormControl></FormItem>
                                                     )}/>
                                                 </div>
                                             </div>

@@ -37,6 +37,9 @@ export interface UseCase {
   title: string;
   description: string;
   isAllowed: boolean;
+  isHidden?: boolean;
+  quranVerse?: string;
+  quranSource?: string;
 }
 
 export interface QAItem {
@@ -44,6 +47,9 @@ export interface QAItem {
   question: string;
   answer: string;
   reference?: string;
+  isHidden?: boolean;
+  quranVerse?: string;
+  quranSource?: string;
 }
 
 export interface DonationTypeInfo {
@@ -60,6 +66,13 @@ export interface DonationTypeInfo {
   restrictions?: string;
   imageUrl?: string;
   imageUrlFilename?: string;
+  // Visibility Flags
+  hideKeyHighlights?: boolean;
+  hideUseCases?: boolean;
+  hideQA?: boolean;
+  hideUsage?: boolean;
+  hideRestrictions?: boolean;
+  // Extra fields
   impact?: string;
   keyUse?: string;
   application?: string;
