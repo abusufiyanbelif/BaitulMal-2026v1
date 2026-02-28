@@ -39,6 +39,7 @@ export interface DonationTypeInfo {
   quranVerse?: string;
   quranSource?: string;
   purposePoints?: string[];
+  useCases?: string[];
   usage: string;
   restrictions?: string;
   impact?: string;

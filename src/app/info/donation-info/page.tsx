@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Check, X, Loader2, Quote, Target, Info as InfoIcon } from 'lucide-react';
+import { ArrowLeft, Check, X, Loader2, Quote, Target, Info as InfoIcon, HelpCircle, CheckCircle2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -16,12 +16,13 @@ import {
 import { useInfoSettings } from '@/hooks/use-info-settings';
 import { useDonationInfo } from '@/hooks/use-donation-info';
 import placeholderData from '@/app/lib/placeholder-images.json';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const comparisonData = [
     { feature: 'Status', zakat: 'Obligatory (Fard)', sadaqah: 'Voluntary', lillah: 'Voluntary', fidiya: 'Obligatory Compensation', interest: 'Mandatory disposal' },
     { feature: 'Amount', zakat: 'Fixed (2.5%)', sadaqah: 'Any amount', lillah: 'Any amount', fidiya: 'Fixed per missed fast', interest: 'Total amount earned' },
     { feature: 'Recipient', zakat: 'Specific 8 categories', sadaqah: 'Anyone in need', lillah: 'Institutions/Public', fidiya: 'Poor & Needy', interest: 'Public welfare' },
-    { feature: 'Mosque/School', zakat: <X className="text-destructive h-4 w-4" />, sadaqah: <Check className="text-success-foreground h-4 w-4" />, lillah: 'Primary use', fidiya: <X className="text-destructive h-4 w-4" />, interest: <Check className="text-success-foreground h-4 w-4" /> },
 ];
 
 export default function DonationInfoPage() {
@@ -79,7 +80,7 @@ export default function DonationInfoPage() {
             return (
                 <Card key={type.id || index} className="overflow-hidden border-none shadow-xl animate-fade-in-up" style={{ animationDelay: `${index * 150}ms` }}>
                     <div className="grid md:grid-cols-2">
-                        <div className={cn("relative h-64 md:h-full min-h-[300px]", index % 2 === 1 ? "md:order-last" : "")}>
+                        <div className={cn("relative h-64 md:h-auto min-h-[300px]", index % 2 === 1 ? "md:order-last" : "")}>
                             <Image 
                                 src={imageData?.url || `https://picsum.photos/seed/${type.id}/800/600`}
                                 alt={type.title}
@@ -124,6 +125,23 @@ export default function DonationInfoPage() {
                                         </ul>
                                     </div>
                                 )}
+
+                                {type.useCases && type.useCases.length > 0 && (
+                                    <div className="space-y-3 pt-2">
+                                        <h4 className="font-bold flex items-center gap-2 text-blue-600 uppercase text-xs tracking-widest">
+                                            <HelpCircle className="h-4 w-4" /> 
+                                            Practical Use Cases:
+                                        </h4>
+                                        <ul className="space-y-2">
+                                            {type.useCases.map((useCase, uIdx) => (
+                                                <li key={uIdx} className="flex items-start gap-2 text-sm bg-blue-50/50 p-2 rounded-md border border-blue-100">
+                                                    <CheckCircle2 className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                                                    <span className="text-slate-700">{useCase}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
                             </div>
 
                             <Separator />
@@ -131,12 +149,12 @@ export default function DonationInfoPage() {
                             <div className="grid grid-cols-1 gap-4 text-sm">
                                 <div>
                                     <span className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground block mb-1">Permissible Usage:</span>
-                                    <p>{type.usage}</p>
+                                    <p className="text-foreground/80">{type.usage}</p>
                                 </div>
                                 {type.restrictions && (
                                     <div>
                                         <span className="font-bold uppercase text-[10px] tracking-widest text-destructive block mb-1">Restrictions:</span>
-                                        <p>{type.restrictions}</p>
+                                        <p className="text-foreground/80">{type.restrictions}</p>
                                     </div>
                                 )}
                             </div>
@@ -152,7 +170,7 @@ export default function DonationInfoPage() {
                 <h2 className="text-3xl font-black tracking-tight uppercase">Quick Comparison</h2>
                 <p className="text-muted-foreground">Identifying the primary differences at a glance.</p>
             </div>
-            <Card className="shadow-lg overflow-hidden">
+            <Card className="shadow-lg overflow-hidden border-primary/10">
                 <Table>
                     <TableHeader className="bg-primary/5">
                     <TableRow>
@@ -161,7 +179,6 @@ export default function DonationInfoPage() {
                         <TableHead className="font-black uppercase text-[10px] tracking-wider">Sadaqah</TableHead>
                         <TableHead className="font-black uppercase text-[10px] tracking-wider">Lillah</TableHead>
                         <TableHead className="font-black uppercase text-[10px] tracking-wider">Fidiya</TableHead>
-                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Interest</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -172,7 +189,6 @@ export default function DonationInfoPage() {
                         <TableCell className="text-xs">{row.sadaqah}</TableCell>
                         <TableCell className="text-xs">{row.lillah}</TableCell>
                         <TableCell className="text-xs">{row.fidiya}</TableCell>
-                        <TableCell className="text-xs">{row.interest}</TableCell>
                         </TableRow>
                     ))}
                     </TableBody>
@@ -190,8 +206,4 @@ export default function DonationInfoPage() {
       </div>
     </main>
   );
-}
-
-function cn(...classes: any[]) {
-    return classes.filter(Boolean).join(' ');
 }

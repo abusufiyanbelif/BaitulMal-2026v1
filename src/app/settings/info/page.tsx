@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -14,7 +15,7 @@ import { doc, setDoc } from 'firebase/firestore';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -35,6 +36,7 @@ const donationTypeSchema = z.object({
   quranVerse: z.string().optional(),
   quranSource: z.string().optional(),
   purposePointsRaw: z.string().optional(),
+  useCasesRaw: z.string().optional(),
   usage: z.string().min(1, 'Usage info is required.'),
   restrictions: z.string().optional(),
   imageHint: z.string().optional(),
@@ -79,21 +81,22 @@ export default function InfoSettingsPage() {
         if (donationInfoData && donationInfoData.types) {
             const mappedTypes = donationInfoData.types.map(t => ({
                 ...t,
-                purposePointsRaw: t.purposePoints?.join('\n') || ''
+                purposePointsRaw: t.purposePoints?.join('\n') || '',
+                useCasesRaw: t.useCases?.join('\n') || ''
             }));
             form.reset({ types: mappedTypes });
         } else if (!isDonationInfoLoading) {
             const mappedDefaults = defaultDonationInfo.map(t => ({
                 ...t,
-                purposePointsRaw: t.purposePoints?.join('\n') || ''
+                purposePointsRaw: t.purposePoints?.join('\n') || '',
+                useCasesRaw: t.useCases?.join('\n') || ''
             }));
             form.reset({ types: mappedDefaults });
         }
     }, [donationInfoData, isDonationInfoLoading, form]);
 
-    // Ensure we have an active tab when fields load
     useEffect(() => {
-        if (fields.length > 0 && (!activeTab || !fields.find(f => f.id === activeTab))) {
+        if (fields.length > 0 && !activeTab) {
             setActiveTab(fields[0].id);
         }
     }, [fields, activeTab]);
@@ -118,17 +121,18 @@ export default function InfoSettingsPage() {
         setIsSubmitting(true);
         try {
             const typesToSave = data.types.map(t => {
-                const { purposePointsRaw, ...rest } = t;
+                const { purposePointsRaw, useCasesRaw, ...rest } = t;
                 return {
                     ...rest,
-                    purposePoints: purposePointsRaw ? purposePointsRaw.split('\n').filter(p => p.trim() !== '') : []
+                    purposePoints: purposePointsRaw ? purposePointsRaw.split('\n').filter(p => p.trim() !== '') : [],
+                    useCases: useCasesRaw ? useCasesRaw.split('\n').filter(p => p.trim() !== '') : []
                 };
             });
 
             await setDoc(doc(firestore, 'settings', 'donationInfo'), { types: typesToSave });
             toast({ title: 'Content Saved', description: 'Informational content updated.', variant: 'success' });
             forceRefetch();
-            form.reset(data); // Clear dirty state
+            form.reset(data); 
         } catch (error) {
              errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings/donationInfo', operation: 'write' }));
         } finally {
@@ -138,8 +142,8 @@ export default function InfoSettingsPage() {
 
     const handleAddType = () => {
         const id = `type_${Date.now()}`;
-        append({ id, title: 'New Donation Type', description: '', usage: '', purposePointsRaw: '', imageHint: 'charity' });
-        // The useEffect will catch the new field and set it as active
+        append({ id, title: 'New Donation Type', description: '', usage: '', purposePointsRaw: '', useCasesRaw: '', imageHint: 'charity' });
+        setActiveTab(id);
     };
 
     const isLoading = isSessionLoading || isInfoSettingsLoading || isDonationInfoLoading;
@@ -207,11 +211,11 @@ export default function InfoSettingsPage() {
                         <Button onClick={handleAddType} variant="outline" size="sm"><Plus className="mr-2 h-4 w-4" /> Add Type</Button>
                     </div>
                 </CardHeader>
-                <CardContent className="p-0 sm:p-6 pt-0">
+                <CardContent className="p-0 pt-0">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onContentSubmit)}>
                             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                                <div className="border-b bg-muted/5 px-4 pt-4 sm:px-0 sm:pt-0">
+                                <div className="border-b bg-muted/5 px-4 pt-4 sm:px-6 sm:pt-0">
                                     <ScrollArea className="w-full whitespace-nowrap">
                                         <TabsList className="h-auto w-max bg-transparent p-0">
                                             {fields.map((field, index) => (
@@ -245,6 +249,7 @@ export default function InfoSettingsPage() {
                                             <FormField control={form.control} name={`types.${index}.description`} render={({ field }) => (
                                                 <FormItem><FormLabel>Introduction *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
                                             )}/>
+                                            
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-lg border p-4 bg-muted/5">
                                                 <div className="space-y-4">
                                                     <h4 className="text-sm font-bold flex items-center gap-2"><Quote className="h-4 w-4"/> Religious Reference</h4>
@@ -262,6 +267,14 @@ export default function InfoSettingsPage() {
                                                     )}/>
                                                 </div>
                                             </div>
+
+                                            <div className="space-y-4 rounded-lg border p-4 bg-muted/5">
+                                                <h4 className="text-sm font-bold flex items-center gap-2"><HelpCircle className="h-4 w-4"/> Practical Use Cases</h4>
+                                                <FormField control={form.control} name={`types.${index}.useCasesRaw`} render={({ field }) => (
+                                                    <FormItem><FormLabel>Examples (One per line)</FormLabel><FormControl><Textarea rows={4} placeholder="e.g., Medical treatment for orphans" {...field} /></FormControl></FormItem>
+                                                )}/>
+                                            </div>
+
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <FormField control={form.control} name={`types.${index}.usage`} render={({ field }) => (
                                                     <FormItem><FormLabel>Permissible Usage *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
