@@ -27,7 +27,7 @@ service cloud.firestore {
       return isSignedIn() && 
              userExists() &&
              'role' in getUserData() &&
-             getUserData().role.lower() == 'admin';
+             (getUserData().role == 'Admin' || getUserData().role == 'admin');
     }
 
     function hasPermission(module, permission) {
@@ -63,7 +63,7 @@ service cloud.firestore {
     
     match /page_hits/{pageId} {
         allow read: if hasPermission('analytics', 'read') || isAdmin();
-        allow write: if true; // Page hits are generally safe to increment
+        allow write: if true; 
     }
 
     match /user_lookups/{lookupId} {

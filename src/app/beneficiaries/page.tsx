@@ -124,7 +124,8 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
                                                 <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2 h-4 w-4"/>Verified</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2 h-4 w-4"/>Given</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2 h-4 w-4"/>Hold</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2 h-4 w-4"/>Need Details</DropdownMenuRadioGroup>
+                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2 h-4 w-4"/>Need Details</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
@@ -231,9 +232,9 @@ export default function BeneficiariesPage() {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!beneficiaryToDelete || !canDelete) return;
+    if (!userToDelete || !canDelete) return;
     setIsDeleteDialogOpen(false);
-    const result = await deleteBeneficiaryAction(beneficiaryToDelete);
+    const result = await deleteBeneficiaryAction(beneficiaryToDelete!);
     toast({ title: result.success ? 'Deleted' : 'Error', description: result.message, variant: result.success ? 'success' : 'destructive' });
     setBeneficiaryToDelete(null);
   };
@@ -273,7 +274,7 @@ export default function BeneficiariesPage() {
   }, [beneficiaries, searchTerm, statusFilter, zakatFilter, sortConfig]);
 
   const totalPages = Math.ceil(filteredAndSortedBeneficiaries.length / itemsPerPage);
-  const paginatedBeneficiaries = useMemo(() => {
+  const paginatedBeneficiariesList = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredAndSortedBeneficiaries.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredAndSortedBeneficiaries, currentPage, itemsPerPage]);
@@ -376,7 +377,7 @@ export default function BeneficiariesPage() {
                       </TableRow>
                   </TableHeader>
                   <TableBody>
-                      {paginatedBeneficiaries.map((beneficiary, index) => (
+                      {paginatedBeneficiariesList.map((beneficiary, index) => (
                         <BeneficiaryRow
                             key={beneficiary.id}
                             beneficiary={beneficiary}
@@ -390,7 +391,7 @@ export default function BeneficiariesPage() {
                             onZakatToggle={handleZakatToggle}
                         />
                       ))}
-                      {paginatedBeneficiaries.length === 0 && (
+                      {paginatedBeneficiariesList.length === 0 && (
                         <TableRow><TableCell colSpan={7} className="text-center h-24 text-muted-foreground">No records found.</TableCell></TableRow>
                       )}
                   </TableBody>
@@ -399,7 +400,7 @@ export default function BeneficiariesPage() {
         </CardContent>
         {totalPages > 1 && (
             <CardFooter className="flex items-center justify-between border-t py-4">
-              <p className="text-sm text-muted-foreground">Showing {paginatedBeneficiaries.length} of {filteredAndSortedBeneficiaries.length}</p>
+              <p className="text-sm text-muted-foreground">Showing {paginatedBeneficiariesList.length} of {filteredAndSortedBeneficiaries.length}</p>
               <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
                   <span className="text-sm">{currentPage} / {totalPages}</span>

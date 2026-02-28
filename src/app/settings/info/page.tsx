@@ -15,7 +15,7 @@ import { doc, setDoc } from 'firebase/firestore';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListCheck, HelpCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -92,8 +92,12 @@ export default function InfoSettingsPage() {
     }, [donationInfoData, isDonationInfoLoading, form]);
 
     useEffect(() => {
-        if (fields.length > 0 && !activeTab) {
-            setActiveTab(fields[0].id);
+        if (fields.length > 0) {
+            // Ensure activeTab is always one of the valid field IDs
+            const isValid = fields.some(f => f.id === activeTab);
+            if (!isValid) {
+                setActiveTab(fields[0].id);
+            }
         }
     }, [fields, activeTab]);
 
@@ -257,7 +261,7 @@ export default function InfoSettingsPage() {
                                                     )}/>
                                                 </div>
                                                 <div className="space-y-4">
-                                                    <h4 className="text-sm font-bold flex items-center gap-2"><ListChecks className="h-4 w-4"/> Key Highlights</h4>
+                                                    <h4 className="text-sm font-bold flex items-center gap-2"><ListCheck className="h-4 w-4"/> Key Highlights</h4>
                                                     <FormField control={form.control} name={`types.${index}.purposePointsRaw`} render={({ field }) => (
                                                         <FormItem><FormLabel>Points (One per line)</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl></FormItem>
                                                     )}/>
