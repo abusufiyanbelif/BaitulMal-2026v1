@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -80,8 +81,8 @@ export default function InfoSettingsPage() {
         if (donationInfoData && donationInfoData.types) {
             const mappedTypes = donationInfoData.types.map(t => ({
                 ...t,
-                purposePointsRaw: t.purposePoints?.join('\n') || '',
-                useCasesRaw: t.useCases?.join('\n') || ''
+                purposePointsRaw: (t as any).purposePoints?.join('\n') || '',
+                useCasesRaw: (t as any).useCases?.join('\n') || ''
             }));
             form.reset({ types: mappedTypes });
             if (mappedTypes.length > 0 && !activeTab) {
@@ -218,7 +219,7 @@ export default function InfoSettingsPage() {
                                     <ScrollArea className="w-full whitespace-nowrap">
                                         <TabsList className="h-auto w-max bg-transparent p-0">
                                             {fields.map((field, index) => (
-                                                <TabsTrigger key={field.id} value={field.id} className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold">
+                                                <TabsTrigger key={field.id} value={form.getValues(`types.${index}.id`)} className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold">
                                                     {form.watch(`types.${index}.title`) || 'New Type'}
                                                 </TabsTrigger>
                                             ))}
@@ -228,10 +229,10 @@ export default function InfoSettingsPage() {
                                 </div>
 
                                 {fields.map((field, index) => (
-                                    <TabsContent key={field.id} value={field.id} className="p-4 sm:p-6 space-y-6">
+                                    <TabsContent key={field.id} value={form.getValues(`types.${index}.id`)} className="p-4 sm:p-6 space-y-6">
                                         <div className="flex justify-between items-center">
                                             <h3 className="text-lg font-bold text-primary">Editing: {form.watch(`types.${index}.title`)}</h3>
-                                            <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(fields[0].id); }}>
+                                            <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(form.getValues(`types.0.id`)); }}>
                                                 <Trash2 className="mr-2 h-4 w-4"/> Remove
                                             </Button>
                                         </div>

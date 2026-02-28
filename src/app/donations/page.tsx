@@ -297,7 +297,6 @@ export default function DonationsPage() {
     setIsFormOpen(false);
     const docRef = editingDonation ? doc(firestore, 'donations', editingDonation.id) : doc(collection(firestore, 'donations'));
     
-    // Non-blocking write
     setDoc(docRef, { 
         ...data, 
         uploadedBy: userProfile.name, 

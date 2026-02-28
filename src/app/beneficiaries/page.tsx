@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -376,7 +377,7 @@ export default function BeneficiariesPage() {
                       </TableRow>
                   </TableHeader>
                   <TableBody>
-                      {paginatedUsers.map((beneficiary, index) => (
+                      {paginatedBeneficiaries.map((beneficiary, index) => (
                         <BeneficiaryRow
                             key={beneficiary.id}
                             beneficiary={beneficiary}
