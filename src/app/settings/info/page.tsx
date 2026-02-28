@@ -11,7 +11,6 @@ import { defaultDonationInfo } from '@/lib/donation-info-default';
 import { useFirestore } from '@/firebase/provider';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import type { DonationInfoData } from '@/lib/types';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -68,6 +67,8 @@ export default function InfoSettingsPage() {
         name: 'types'
     });
 
+    const { isDirty } = form.formState;
+
     useEffect(() => {
         if (infoSettings) {
             setIsDonationInfoPublic(infoSettings.isDonationInfoPublic || false);
@@ -81,20 +82,21 @@ export default function InfoSettingsPage() {
                 purposePointsRaw: t.purposePoints?.join('\n') || ''
             }));
             form.reset({ types: mappedTypes });
-            if (mappedTypes.length > 0 && !activeTab) {
-                setActiveTab(mappedTypes[0].id);
-            }
         } else if (!isDonationInfoLoading) {
             const mappedDefaults = defaultDonationInfo.map(t => ({
                 ...t,
                 purposePointsRaw: t.purposePoints?.join('\n') || ''
             }));
             form.reset({ types: mappedDefaults });
-            if (mappedDefaults.length > 0 && !activeTab) {
-                setActiveTab(mappedDefaults[0].id);
-            }
         }
-    }, [donationInfoData, isDonationInfoLoading, form, activeTab]);
+    }, [donationInfoData, isDonationInfoLoading, form]);
+
+    // Ensure we have an active tab when fields load
+    useEffect(() => {
+        if (fields.length > 0 && (!activeTab || !fields.find(f => f.id === activeTab))) {
+            setActiveTab(fields[0].id);
+        }
+    }, [fields, activeTab]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -126,6 +128,7 @@ export default function InfoSettingsPage() {
             await setDoc(doc(firestore, 'settings', 'donationInfo'), { types: typesToSave });
             toast({ title: 'Content Saved', description: 'Informational content updated.', variant: 'success' });
             forceRefetch();
+            form.reset(data); // Clear dirty state
         } catch (error) {
              errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings/donationInfo', operation: 'write' }));
         } finally {
@@ -136,7 +139,7 @@ export default function InfoSettingsPage() {
     const handleAddType = () => {
         const id = `type_${Date.now()}`;
         append({ id, title: 'New Donation Type', description: '', usage: '', purposePointsRaw: '', imageHint: 'charity' });
-        setActiveTab(id);
+        // The useEffect will catch the new field and set it as active
     };
 
     const isLoading = isSessionLoading || isInfoSettingsLoading || isDonationInfoLoading;
@@ -155,11 +158,13 @@ export default function InfoSettingsPage() {
             <Alert variant="destructive">
                 <ShieldAlert className="h-4 w-4" />
                 <AlertTitle>Access Denied</AlertTitle>
-                <AlertDescription>Permission denied.</AlertDescription>
+                <AlertDescription>You do not have permission to modify these settings.</AlertDescription>
             </Alert>
         );
     }
     
+    const isVisibilityDirty = isDonationInfoPublic !== (infoSettings?.isDonationInfoPublic || false);
+
     return (
         <div className="space-y-6">
             <Card className="animate-fade-in-zoom">
@@ -185,7 +190,7 @@ export default function InfoSettingsPage() {
                     </div>
                 </CardContent>
                 <CardFooter className="justify-end border-t bg-muted/5 p-4">
-                    <Button onClick={handleSaveVisibility} disabled={isSubmitting}>
+                    <Button onClick={handleSaveVisibility} disabled={isSubmitting || !isVisibilityDirty}>
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         <Save className="mr-2 h-4 w-4"/> Save Visibility
                     </Button>
@@ -270,7 +275,7 @@ export default function InfoSettingsPage() {
                                 ))}
                             </Tabs>
                             <div className="border-t p-6 bg-muted/5 flex justify-end">
-                                <Button type="submit" disabled={isSubmitting || fields.length === 0} size="lg">
+                                <Button type="submit" disabled={isSubmitting || fields.length === 0 || !isDirty} size="lg">
                                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     <Save className="mr-2 h-4 w-4"/> Save All Content
                                 </Button>
