@@ -175,7 +175,7 @@ export default function PublicCampaignSummaryPage() {
     const publicDocuments = campaign.documents?.filter(d => d.isPublic) || [];
     const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
 
-    const chartData = fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
+    const chartData = fundingData?.fundTotals ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
 
     return (
         <main className="container mx-auto p-4 md:p-8">
@@ -261,7 +261,7 @@ export default function PublicCampaignSummaryPage() {
                                 <div className="space-y-4 text-center md:text-left">
                                     <div><p className="text-sm text-muted-foreground">Raised for Goal</p><p className="text-3xl font-bold">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
                                     <div><p className="text-sm text-muted-foreground">Fundraising Target</p><p className="text-3xl font-bold">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                    <div><p className="text-sm text-muted-foreground">Grand Total Received</p><p className="text-3xl font-bold">₹{(fundingData.fundTotals.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                    <div><p className="text-sm text-muted-foreground">Grand Total Received</p><p className="text-3xl font-bold">₹{(fundingData.fundTotals?.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                 </div>
                             </div>
                         </CardContent>
@@ -282,7 +282,7 @@ export default function PublicCampaignSummaryPage() {
                                 <CardDescription>Tracking of Zakat funds collected and allocated within this initiative.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                               <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-semibold font-mono">₹{fundingData.fundTotals.zakat.toLocaleString('en-IN')}</span></div>
+                               <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-semibold font-mono">₹{(fundingData.fundTotals?.zakat || 0).toLocaleString('en-IN')}</span></div>
                                 <Separator />
                                 <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
                                     <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Allocated as Cash-in-Hand</span><span className="font-semibold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>

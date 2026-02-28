@@ -156,7 +156,7 @@ export default function DonationInfoPage() {
                                                                 {useCase.isAllowed ? <CheckCircle2 className="h-6 w-6 text-green-500" /> : <XCircle className="h-6 w-6 text-red-500" />}
                                                             </div>
                                                             <div className="space-y-3 flex-1">
-                                                                <h4 className="font-black text-lg uppercase tracking-tight">{useCase.title}</h4>
+                                                                {useCase.title && <h4 className="font-black text-lg uppercase tracking-tight">{useCase.title}</h4>}
                                                                 <p className="text-muted-foreground font-medium">{useCase.description}</p>
                                                                 
                                                                 {(useCase.quranVerse || useCase.quranSource) && (

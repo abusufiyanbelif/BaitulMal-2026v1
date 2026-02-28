@@ -9,8 +9,7 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
         quranSource: "Surah Al-Baqarah 2:43",
         purposePoints: [
             "🔹 Nisab Kya Hai? Agar kisi ke paas: 87.48 gram sona ya 612.36 gram chandi ya unki barabar cash/savings ho Aur yeh maal 1 saal tak us ke paas rahe, toh Zakat farz hoti hai.",
-            "🔹 Zakat Kin 8 Categories Ko Di Ja Sakti Hai? (Qur’an 9:60 ke mutabiq) Faqeer, Miskeen, Zakat collectors (Aamil), Dil jorne ke liye (Muallafatul Quloob), Ghulamon ko azaad karana, Qarzdar (debt mein dooba hua), Fi Sabilillah (Allah ke raaste mein), Musafir (Ibn-us-Sabeel)",
-            "🔹 Zakat Kahan Use Nahi Ho Sakti?\n❌ Masjid construction\n❌ Madrasa building\n❌ Hospital building\n❌ Apne walidain, bachon ko\n❌ Infrastructure projects"
+            "🔹 Zakat Kin 8 Categories Ko Di Ja Sakti Hai? (Qur’an 9:60 ke mutabiq) Faqeer, Miskeen, Zakat collectors (Aamil), Dil jorne ke liye (Muallafatul Quloob), Ghulamon ko azaad karana, Qarzdar (debt mein dooba hua), Fi Sabilillah (Allah ke raaste mein), Musafir (Ibn-us-Sabeel)"
         ],
         useCasesHeading: "🔹 Detailed Zakat Scenarios (Important)",
         useCases: [
@@ -20,21 +19,14 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
             { id: 'u4', title: "❌ Case 4: School Building Banana", description: "Allowed nahi (yeh Lillah se hoga).", isAllowed: false, isHidden: false },
             { id: 'u5', title: "✅ Case 5: Student Fees", description: "Agar student ghareeb hai aur fees nahi de sakta → Zakat allowed.", isAllowed: true, isHidden: false }
         ],
-        qaItems: [
-            { id: 'q1', question: "Zakat kis par farz hai?", answer: "Har us musalman par jo sahib-e-nisab ho (jis ke paas ek saal tak nisab ke barabar maal rahe).", reference: "Fiqh Ruling", isHidden: false }
-        ],
-        usage: "🔹 Zakat Dene Ka Tareeqa (How)\n- Niyyat zaroori hai\n- Mustahiq ko milkiyat transfer honi chahiye\n- Direct cash ya goods dono jaiz\n- Organization ke through dene par ensure karein ke Shariah compliance ho",
-        restrictions: "❌ It cannot be used for infrastructure (like building mosques or schools) or given to immediate family members (parents, children).",
+        qaItems: [],
+        usage: "🔹 Zakat Dene Ka Tareeqa (How)\n-Niyyat zaroori hai\n-Mustahiq ko milkiyat transfer honi chahiye\n-Direct cash ya goods dono jaiz\n-Organization ke through dene par ensure karein ke Shariah compliance ho",
+        restrictions: "It cannot be used for infrastructure (like building mosques or schools) or given to immediate family members (parents, children).",
     },
     {
         id: 'sadaqah',
         title: "Sadaqah (Voluntary Charity)",
         description: "Sadaqah is voluntary charity given purely for the sake of Allah to remove hardships.",
-        purposePoints: [
-            "Seeking pleasure of Allah",
-            "Removing hardship",
-            "Continuous reward (Jariyah)"
-        ],
         useCases: [],
         qaItems: [],
         usage: "Can be given to anyone in need, regardless of faith.",
