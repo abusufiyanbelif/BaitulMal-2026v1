@@ -1,3 +1,4 @@
+
 import type { DonationTypeInfo } from './types';
 
 export const defaultDonationInfo: DonationTypeInfo[] = [
@@ -37,10 +38,7 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
             "Continuous reward (Jariyah)"
         ],
         useCasesHeading: "Practical Use Cases",
-        useCases: [
-            { id: 's1', title: "Emergency Aid", description: "Food, clothes or medicine for anyone in need.", isAllowed: true, isHidden: false },
-            { id: 's2', title: "Water Projects", description: "Installing pumps or wells.", isAllowed: true, isHidden: false }
-        ],
+        useCases: [],
         qaItems: [],
         usage: "Can be given to anyone in need, regardless of faith.",
     },
@@ -49,9 +47,7 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
         title: "Fidiya (Compensation)",
         description: "Donation made when someone is unable to fast during Ramadan due to valid health reasons.",
         useCasesHeading: "Usage Examples",
-        useCases: [
-            { id: 'f1', title: "Feeding Needy", description: "Providing Suhoor/Iftar for those who cannot fast.", isAllowed: true, isHidden: false }
-        ],
+        useCases: [],
         qaItems: [],
         usage: "Primarily used to provide meals to the poor and needy.",
     },
@@ -60,10 +56,7 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
         title: "Lillah (For the Sake of Allah)",
         description: "Voluntary Sadaqah intended for institutions and public welfare.",
         useCasesHeading: "Institutional Support",
-        useCases: [
-            { id: 'l1', title: "Mosque Construction", description: "Building or repairing Masjids.", isAllowed: true, isHidden: false },
-            { id: 'l2', title: "Madrasa Staff", description: "Salaries for teachers and utilities.", isAllowed: true, isHidden: false }
-        ],
+        useCases: [],
         qaItems: [],
         usage: "Used for infrastructure, salaries, and running costs of community institutions.",
     },
@@ -72,10 +65,7 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
         title: "Interest (Riba Disposal)",
         description: "Accumulated bank interest must be disposed of without intention of reward.",
         useCasesHeading: "Disposal Methods",
-        useCases: [
-            { id: 'i1', title: "Public Toilets", description: "Building sanitation facilities.", isAllowed: true, isHidden: false },
-            { id: 'i2', title: "Road Repairs", description: "Generic public utility works.", isAllowed: true, isHidden: false }
-        ],
+        useCases: [],
         qaItems: [],
         usage: "Must be given away without spiritual reward expectation.",
     }

@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ArrowLeft, Database, Terminal, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Database, Terminal, ShieldAlert, Info } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SeedPage() {
@@ -53,19 +53,30 @@ export default function SeedPage() {
            <div className="space-y-4">
               <h3 className="text-lg font-semibold">Data Structure Migrations</h3>
               <p className="text-sm text-muted-foreground">Run these commands if you have older data that needs to be updated to the latest application format.</p>
-              <div className="space-y-2">
-                  <div className="p-4 bg-muted rounded-md font-mono text-sm flex items-center gap-2">
-                      <Terminal className="h-4 w-4"/>
-                      <span>npm run db:migrate-categories</span>
+              <div className="space-y-4">
+                  <div className="space-y-2">
+                      <div className="p-4 bg-muted rounded-md font-mono text-sm flex items-center gap-2">
+                          <Terminal className="h-4 w-4"/>
+                          <span>npm run db:migrate-settings</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-primary font-bold pl-2 uppercase tracking-tighter">
+                          <Info className="h-3 w-3"/> Essential: Moves existing branding and payment files to the new folder structure.
+                      </div>
                   </div>
-                  <p className="text-xs text-muted-foreground pl-2">Updates old `rationLists` in Campaigns and Leads to the new `itemCategories` format.</p>
-              </div>
-               <div className="space-y-2">
-                  <div className="p-4 bg-muted rounded-md font-mono text-sm flex items-center gap-2">
-                      <Terminal className="h-4 w-4"/>
-                      <span>npm run db:migrate-beneficiaries</span>
+                  <div className="space-y-2">
+                      <div className="p-4 bg-muted rounded-md font-mono text-sm flex items-center gap-2">
+                          <Terminal className="h-4 w-4"/>
+                          <span>npm run db:migrate-donations</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground pl-2">Updates old `campaignId` donations to the new flexible linking format.</p>
                   </div>
-                  <p className="text-xs text-muted-foreground pl-2">Syncs any beneficiaries from Campaign/Lead subcollections to the master beneficiary list.</p>
+                   <div className="space-y-2">
+                      <div className="p-4 bg-muted rounded-md font-mono text-sm flex items-center gap-2">
+                          <Terminal className="h-4 w-4"/>
+                          <span>npm run db:migrate-beneficiaries</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground pl-2">Syncs any beneficiaries from Campaign/Lead subcollections to the master beneficiary list.</p>
+                  </div>
               </div>
           </div>
 
@@ -75,7 +86,7 @@ export default function SeedPage() {
                   <ShieldAlert className="h-4 w-4" />
                   <AlertTitle>Warning: Destructive Action</AlertTitle>
                   <AlertDescription>
-                      This command will permanently delete all campaigns, beneficiaries, donations, and non-admin users from your database. It will also erase all corresponding files from Firebase Storage. This action is irreversible. The admin user's authentication account will not be deleted.
+                      This command will permanently delete all campaigns, beneficiaries, donations, and non-admin users from your database. It will also erase all corresponding files from Firebase Storage. This action is irreversible.
                   </AlertDescription>
               </Alert>
                <p className="text-sm text-muted-foreground pt-2">Run this command to reset your application's data. After running, you may need to run `npm run db:seed` again to restore the admin's database records.</p>
