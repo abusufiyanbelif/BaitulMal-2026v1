@@ -45,7 +45,7 @@ service cloud.firestore {
     
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isAdmin() || hasPermission('settings', 'update') || hasSubmodulePermission('settings', 'info', 'update') || hasSubmodulePermission('settings', 'app', 'update');
+      allow write: if isAdmin() || hasPermission('settings', 'update') || hasSubmodulePermission('settings', 'app', 'update') || hasSubmodulePermission('settings', 'info', 'update');
     }
     
     match /page_hits/{pageId} {

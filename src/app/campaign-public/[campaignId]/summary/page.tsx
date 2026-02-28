@@ -23,8 +23,7 @@ import {
 import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Share2, Hourglass, Users, Gift, Target, HandHelping, File, CheckCircle2, XCircle, Utensils, LifeBuoy } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft, Share2, Hourglass, Users, Gift, Target, HandHelping, File, Utensils, LifeBuoy } from 'lucide-react';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
 import {
@@ -34,12 +33,10 @@ import {
 } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import Image from 'next/image';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
@@ -175,7 +172,7 @@ export default function PublicCampaignSummaryPage() {
     const publicDocuments = campaign.documents?.filter(d => d.isPublic) || [];
     const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
 
-    const chartData = fundingData?.fundTotals ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
+    const chartData = fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
 
     return (
         <main className="container mx-auto p-4 md:p-8">

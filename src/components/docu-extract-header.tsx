@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import { LogOut, User, LogIn, Settings, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -134,13 +133,18 @@ export function DocuExtractHeader() {
           </DropdownMenu>
         ) : (
           pathname !== '/login' && (
-            <Button asChild variant="outline" className="animate-slide-in-from-top" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
-                <Link href="/login">
-                    <LogIn className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">Organization members login</span>
-                    <span className="sm:hidden">Login</span>
-                </Link>
-            </Button>
+            <div className="flex gap-2 items-center">
+                <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+                    <Link href="/public-initiatives">Initiatives</Link>
+                </Button>
+                <Button asChild variant="outline" size="sm" className="animate-slide-in-from-top" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
+                    <Link href="/login">
+                        <LogIn className="mr-2 h-4 w-4" />
+                        <span className="hidden sm:inline">Members login</span>
+                        <span className="sm:hidden">Login</span>
+                    </Link>
+                </Button>
+            </div>
           )
         )}
       </div>

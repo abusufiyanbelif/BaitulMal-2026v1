@@ -26,7 +26,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { 
     ArrowLeft, 
     Edit, 
@@ -49,8 +48,7 @@ import {
     FileUp,
     CopyPlus,
     Search,
-    ShieldAlert,
-    Image as ImageIcon
+    ShieldAlert
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -94,7 +92,6 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog';
 import { BeneficiaryImportDialog } from '@/components/beneficiary-import-dialog';
-import { updateMasterBeneficiaryAction } from '@/app/beneficiaries/actions';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { BrandedLoader } from '@/components/branded-loader';
 import Resizer from 'react-image-file-resizer';
