@@ -76,25 +76,18 @@ export default function DonationInfoPage() {
 
         <div className="grid gap-12">
           {donationTypes.map((type, index) => {
-            const displayImageUrl = type.imageUrl ? `/api/image-proxy?url=${encodeURIComponent(type.imageUrl)}` : `https://picsum.photos/seed/${type.id}/800/600`;
+            const displayImageUrl = type.imageUrl ? (type.imageUrl.startsWith('data:') ? type.imageUrl : `/api/image-proxy?url=${encodeURIComponent(type.imageUrl)}`) : `https://picsum.photos/seed/${type.id}/800/600`;
 
             return (
                 <Card key={type.id || index} className="overflow-hidden border-none shadow-xl animate-fade-in-up" style={{ animationDelay: `${index * 150}ms` }}>
                     <div className="grid md:grid-cols-2">
                         <div className={cn("relative h-64 md:h-auto min-h-[300px] flex items-center justify-center bg-muted/20", index % 2 === 1 ? "md:order-last" : "")}>
-                            {type.imageUrl ? (
-                                <Image 
-                                    src={displayImageUrl}
-                                    alt={type.title}
-                                    fill
-                                    className="object-cover"
-                                />
-                            ) : (
-                                <div className="flex flex-col items-center gap-3 text-muted-foreground/30">
-                                    <HandHelping className="h-20 w-20" />
-                                    <span className="text-xs uppercase font-bold tracking-widest">No Custom Image</span>
-                                </div>
-                            )}
+                            <Image 
+                                src={displayImageUrl}
+                                alt={type.title}
+                                fill
+                                className="object-cover"
+                            />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                             <div className="absolute bottom-6 left-6 text-white pr-6">
                                 <h2 className="text-3xl font-black tracking-tight drop-shadow-md">{type.title}</h2>

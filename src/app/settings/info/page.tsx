@@ -13,7 +13,7 @@ import { defaultDonationInfo } from '@/lib/donation-info-default';
 import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -93,13 +93,15 @@ export default function InfoSettingsPage() {
                 imageUrl: t.imageUrl || ''
             }));
             
+            // Only reset if it's the initial load or forceRefetch
             form.reset({ types: mappedTypes });
             
             if (mappedTypes.length > 0 && !activeTab) {
                 setActiveTab(mappedTypes[0].id);
             }
         }
-    }, [donationInfoData, isDonationInfoLoading, form, activeTab]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [donationInfoData, isDonationInfoLoading]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -228,7 +230,7 @@ export default function InfoSettingsPage() {
                     <div className="flex items-center justify-between gap-4">
                         <div>
                             <CardTitle>Content Manager</CardTitle>
-                            <CardDescription>Manage rich content for donation categories in a tabbed view.</CardDescription>
+                            <CardDescription>Manage rich content for donation categories.</CardDescription>
                         </div>
                         <Button onClick={handleAddType} variant="outline" size="sm"><Plus className="mr-2 h-4 w-4" /> Add Type</Button>
                     </div>
@@ -274,7 +276,7 @@ export default function InfoSettingsPage() {
                                                     <div className="relative aspect-[4/3] w-full rounded-md border-2 border-dashed overflow-hidden flex items-center justify-center bg-muted/30">
                                                         {form.watch(`types.${index}.imageUrl`) ? (
                                                             <Image 
-                                                                src={`/api/image-proxy?url=${encodeURIComponent(form.watch(`types.${index}.imageUrl`)!)}`} 
+                                                                src={form.watch(`types.${index}.imageUrl`)?.startsWith('data:') ? form.watch(`types.${index}.imageUrl`)! : `/api/image-proxy?url=${encodeURIComponent(form.watch(`types.${index}.imageUrl`)!)}`} 
                                                                 alt="Header" 
                                                                 fill 
                                                                 className="object-cover" 
@@ -291,7 +293,15 @@ export default function InfoSettingsPage() {
                                                             type="file" 
                                                             accept="image/*" 
                                                             className="text-xs h-auto py-1"
-                                                            {...form.register(`types.${index}.imageFile`)} 
+                                                            onChange={(e) => {
+                                                                const file = e.target.files?.[0];
+                                                                if (file) {
+                                                                    const reader = new FileReader();
+                                                                    reader.onloadend = () => form.setValue(`types.${index}.imageUrl`, reader.result as string, { shouldDirty: true });
+                                                                    reader.readAsDataURL(file);
+                                                                    form.setValue(`types.${index}.imageFile`, e.target.files);
+                                                                }
+                                                            }}
                                                         />
                                                     </FormControl>
                                                 </div>

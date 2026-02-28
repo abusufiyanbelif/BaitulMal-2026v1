@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -36,12 +37,6 @@ import { FileUploader } from '@/components/file-uploader';
 import { Switch } from '@/components/ui/switch';
 import { BrandedLoader } from '@/components/branded-loader';
 import {
-  BarChart,
-  Bar,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
   RadialBarChart,
   RadialBar,
   PolarAngleAxis,
@@ -49,17 +44,6 @@ import {
 import Resizer from 'react-image-file-resizer';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
-
-const donationCategoryChartConfig = {
-    Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
-    Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
-    Sadaqah: { label: "Sadaqah", color: "hsl(var(--chart-2))" },
-    Fidiya: { label: "Fidiya", color: "hsl(var(--chart-8))" },
-    Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
-    Interest: { label: "Interest", color: "hsl(var(--chart-3))" },
-    Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
-    'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-5))" },
-} satisfies ChartConfig;
 
 export default function CampaignSummaryPage() {
     const params = useParams();
@@ -494,89 +478,6 @@ export default function CampaignSummaryPage() {
                             )}
                         </CardContent>
                     </Card>
-
-                    <Card className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                        <CardHeader><CardTitle className="flex items-center gap-2"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle></CardHeader>
-                        <CardContent>
-                          {isClient ? (
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                                  <div className="relative h-48 w-full">
-                                      <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
-                                          <RadialBarChart data={[{ name: 'Progress', value: summaryData?.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
-                                            <PolarAngleAxis type="number" domain={[0, 100]} tick={false} /><RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} /><ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                                          </RadialBarChart>
-                                      </ChartContainer>
-                                      <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(summaryData?.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground">Funded</span></div>
-                                  </div>
-                                  <div className="space-y-4 text-center md:text-left">
-                                      <div><p className="text-sm text-muted-foreground">Raised for Goal</p><p className="text-3xl font-bold">₹{(summaryData?.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                      <div><p className="text-sm text-muted-foreground">Fundraising Target</p><p className="text-3xl font-bold">₹{(summaryData?.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                      <div><p className="text-sm text-muted-foreground">Grand Total Received</p><p className="text-3xl font-bold">₹{(summaryData?.fundTotals.grandTotal || 0).toLocaleString('en-IN')}</p></div>
-                                  </div>
-                              </div>
-                          ) : <Skeleton className="w-full h-48" />}
-                        </CardContent>
-                    </Card>
-
-                    <div className="grid gap-6 sm:grid-cols-3">
-                        <Card className="animate-fade-in-up" style={{ animationDelay: '300ms' }}><CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent className="p-4 pt-0"><div className="text-2xl font-bold">{summaryData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
-                        <Card className="animate-fade-in-up" style={{ animationDelay: '400ms' }}><CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">{givenLabel}</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent className="p-4 pt-0"><div className="text-2xl font-bold">{summaryData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
-                        <Card className="animate-fade-in-up" style={{ animationDelay: '500ms' }}><CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">{pendingLabel}</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent className="p-4 pt-0"><div className="text-2xl font-bold">{summaryData?.beneficiariesPending ?? 0}</div></CardContent></Card>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <Card className="animate-fade-in-up border-success/20" style={{ animationDelay: '600ms' }}>
-                            <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Verified</CardTitle><CheckCircle2 className="h-4 w-4 text-success-foreground"/></CardHeader>
-                            <CardContent className="p-4 pt-0"><div className="text-2xl font-bold">{summaryData?.donationStatusStats?.verified.count}</div><p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.verified.amount.toLocaleString('en-IN')}</p></CardContent>
-                        </Card>
-                        <Card className="animate-fade-in-up border-amber-200" style={{ animationDelay: '700ms' }}>
-                            <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground"/></CardHeader>
-                            <CardContent className="p-4 pt-0"><div className="text-2xl font-bold">{summaryData?.donationStatusStats?.pending.count}</div><p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.pending.amount.toLocaleString('en-IN')}</p></CardContent>
-                        </Card>
-                        <Card className="animate-fade-in-up border-destructive/20" style={{ animationDelay: '800ms' }}>
-                            <CardHeader className="p-4 flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Canceled</CardTitle><XCircle className="h-4 w-4 text-destructive"/></CardHeader>
-                            <CardContent className="p-4 pt-0"><div className="text-2xl font-bold">{summaryData?.donationStatusStats?.canceled.count}</div><p className="text-xs text-muted-foreground">₹{summaryData?.donationStatusStats?.canceled.amount.toLocaleString('en-IN')}</p></CardContent>
-                        </Card>
-                    </div>
-
-                    <Card className="animate-fade-in-up" style={{ animationDelay: '900ms' }}>
-                        <CardHeader><CardTitle>Zakat Utilization</CardTitle></CardHeader>
-                        <CardContent className="space-y-3">
-                           <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Total Collected</span><span className="font-semibold font-mono">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <Separator />
-                            <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
-                                <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Allocated</span><span className="font-semibold font-mono">₹{(summaryData?.zakatAllocated || 0).toLocaleString('en-IN')}</span></div>
-                                <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground">Given</span><span className="font-mono text-green-600">₹{(summaryData?.zakatGiven || 0).toLocaleString('en-IN')}</span></div>
-                                 <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground">Pending</span><span className="font-mono text-amber-600">₹{(summaryData?.zakatPending || 0).toLocaleString('en-IN')}</span></div>
-                            </div>
-                            <Separator />
-                            <div className="flex justify-between items-center text-base"><span className="font-bold">Zakat Balance for Goal</span><span className="font-bold text-primary font-mono">₹{(summaryData?.zakatAvailableForGoal || 0).toLocaleString('en-IN')}</span></div>
-                        </CardContent>
-                    </Card>
-
-                    <div className="grid gap-6 lg:grid-cols-2">
-                      <Card className="animate-fade-in-up" style={{ animationDelay: '1000ms' }}>
-                          <CardHeader><CardTitle>Totals by Type</CardTitle></CardHeader>
-                          <CardContent className="space-y-2">
-                            {Object.entries(summaryData?.fundTotals || {}).filter(([k]) => k !== 'grandTotal').map(([key, value]) => (
-                                <div key={key} className="flex justify-between items-center text-sm"><span className="text-muted-foreground capitalize">{key}</span><span className="font-semibold font-mono">₹{(value as number).toLocaleString('en-IN')}</span></div>
-                            ))}
-                            <Separator className="my-2"/><div className="flex justify-between items-center text-base"><span className="font-semibold">Grand Total Received</span><span className="font-bold text-primary font-mono">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                          </CardContent>
-                      </Card>
-                      <Card className="animate-fade-in-up" style={{ animationDelay: '1100ms' }}>
-                          <CardHeader><CardTitle>By Category</CardTitle></CardHeader>
-                          <CardContent>
-                            {isClient ? (
-                              <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                  <BarChart data={Object.entries(summaryData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
-                                      <CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/><XAxis type="number" /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4}>{Object.entries(summaryData?.amountsByCategory || {}).map(([name]) => (<Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />))}</Bar>
-                                  </BarChart>
-                              </ChartContainer>
-                            ) : <Skeleton className="h-[250px] w-full" />}
-                          </CardContent>
-                      </Card>
-                    </div>
                  </div>
             </div>
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
