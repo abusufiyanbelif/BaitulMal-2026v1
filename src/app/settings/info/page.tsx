@@ -78,28 +78,23 @@ export default function InfoSettingsPage() {
     }, [infoSettings]);
     
     useEffect(() => {
-        if (donationInfoData && donationInfoData.types) {
-            const mappedTypes = donationInfoData.types.map(t => ({
+        if (!isDonationInfoLoading) {
+            const dataToLoad = (donationInfoData && donationInfoData.types) ? donationInfoData.types : defaultDonationInfo;
+            const mappedTypes = dataToLoad.map(t => ({
                 ...t,
                 purposePointsRaw: (t as any).purposePoints?.join('\n') || '',
-                useCasesRaw: (t as any).useCases?.join('\n') || ''
+                useCasesRaw: (t as any).useCases?.join('\n') || '',
+                imageHint: t.imageHint || 'charity'
             }));
+            
             form.reset({ types: mappedTypes });
-            if (fields.length > 0 && !activeTab) {
-                setActiveTab(fields[0].id);
-            }
-        } else if (!isDonationInfoLoading) {
-            const mappedDefaults = defaultDonationInfo.map(t => ({
-                ...t,
-                purposePointsRaw: t.purposePoints?.join('\n') || '',
-                useCasesRaw: t.useCases?.join('\n') || ''
-            }));
-            form.reset({ types: mappedDefaults });
-            if (fields.length > 0 && !activeTab) {
-                setActiveTab(fields[0].id);
+            
+            if (mappedTypes.length > 0 && !activeTab) {
+                // Use the internal field id if possible, but for initial load, the ID from data is fine
+                setActiveTab(mappedTypes[0].id);
             }
         }
-    }, [donationInfoData, isDonationInfoLoading, form, fields.length, activeTab]);
+    }, [donationInfoData, isDonationInfoLoading, form]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -214,7 +209,7 @@ export default function InfoSettingsPage() {
                 <CardContent className="p-0 pt-0">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onContentSubmit)}>
-                            <Tabs value={activeTab || fields[0]?.id} onValueChange={setActiveTab} className="w-full">
+                            <Tabs value={activeTab || (fields.length > 0 ? fields[0].id : '')} onValueChange={setActiveTab} className="w-full">
                                 <div className="border-b bg-muted/5 px-4 pt-4 sm:px-6 sm:pt-0">
                                     <ScrollArea className="w-full whitespace-nowrap">
                                         <TabsList className="h-auto w-max bg-transparent p-0">

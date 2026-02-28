@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/table";
 import { useInfoSettings } from '@/hooks/use-info-settings';
 import { useDonationInfo } from '@/hooks/use-donation-info';
-import placeholderData from '@/app/lib/placeholder-images.json';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -77,8 +76,8 @@ export default function DonationInfoPage() {
 
         <div className="grid gap-12">
           {donationTypes.map((type, index) => {
-            const imageSeed = type.imageHint || type.id;
-            const displayImageUrl = `https://picsum.photos/seed/${imageSeed}/800/600`;
+            const imageKeyword = type.imageHint || "charity";
+            const displayImageUrl = `https://picsum.photos/seed/${imageKeyword}/800/600`;
 
             return (
                 <Card key={type.id || index} className="overflow-hidden border-none shadow-xl animate-fade-in-up" style={{ animationDelay: `${index * 150}ms` }}>
@@ -89,7 +88,7 @@ export default function DonationInfoPage() {
                                 alt={type.title}
                                 fill
                                 className="object-cover"
-                                data-ai-hint={type.imageHint || "charity image"}
+                                data-ai-hint={imageKeyword}
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                             <div className="absolute bottom-6 left-6 text-white">

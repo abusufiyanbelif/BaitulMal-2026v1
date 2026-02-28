@@ -55,13 +55,15 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin() || 
                    hasPermission('settings', 'update') ||
-                   (settingId in ['info', 'donationInfo'] && hasSubmodulePermission('settings', 'info', 'update')) ||
-                   (settingId in ['branding', 'payment'] && hasSubmodulePermission('settings', 'app', 'update'));
+                   (settingId == 'info' && hasSubmodulePermission('settings', 'info', 'update')) ||
+                   (settingId == 'donationInfo' && hasSubmodulePermission('settings', 'info', 'update')) ||
+                   (settingId == 'branding' && hasSubmodulePermission('settings', 'app', 'update')) ||
+                   (settingId == 'payment' && hasSubmodulePermission('settings', 'app', 'update'));
     }
     
     match /page_hits/{pageId} {
         allow read: if hasPermission('analytics', 'read') || isAdmin();
-        allow write: if isAdmin() || true; // Page hits are generally safe to increment
+        allow write: if true; // Page hits are generally safe to increment
     }
 
     match /user_lookups/{lookupId} {
