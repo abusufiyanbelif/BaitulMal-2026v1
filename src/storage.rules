@@ -5,7 +5,7 @@ service firebase.storage {
   match /b/{bucket}/o {
     
     // ----------------------------------------------------------------------
-    // Helper Functions (Synced with firestore.rules)
+    // Helper Functions
     // ----------------------------------------------------------------------
 
     function isSignedIn() {
@@ -54,6 +54,7 @@ service firebase.storage {
                userExists() &&
                (
                  isAdmin() ||
+                 hasPermission(module, permission) ||
                  (
                    'permissions' in data &&
                    module in data.permissions &&
@@ -87,18 +88,21 @@ service firebase.storage {
         allow write: if isAdmin() || hasPermission('beneficiaries', 'update');
     }
 
-    match /settings/logo {
+    // Settings sub-folders
+    match /settings/branding/{allPaths=**} {
         allow read: if true;
         allow write: if isAdmin() || hasSubmodulePermission('settings', 'app', 'update');
     }
-    match /settings/payment_qr {
+    match /settings/payment/{allPaths=**} {
         allow read: if true;
         allow write: if isAdmin() || hasSubmodulePermission('settings', 'app', 'update');
     }
-    match /settings/donation_types/{allPaths=**} {
+    match /settings/info/{allPaths=**} {
         allow read: if true;
         allow write: if isAdmin() || hasSubmodulePermission('settings', 'info', 'update');
     }
+    
+    // Fallback for root settings if any
     match /settings/{allPaths=**} {
         allow read: if true;
         allow write: if isAdmin() || hasPermission('settings', 'update');

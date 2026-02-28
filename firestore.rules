@@ -53,6 +53,7 @@ service cloud.firestore {
                userExists() &&
                (
                  isAdmin() ||
+                 hasPermission(module, permission) ||
                  (
                    'permissions' in data &&
                    module in data.permissions &&

@@ -100,16 +100,14 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                                         <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
-                                    </DropdownMenuRadioGroup>
+                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
                                     <DropdownMenuRadioGroup value={lead.publicVisibility} onValueChange={(value) => handleStatusUpdate(lead, 'publicVisibility', value as string)}>
                                         <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
-                                    </DropdownMenuRadioGroup>
+                                        <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                             </>
                         )}
@@ -226,22 +224,15 @@ export default function LeadPage() {
     return [...completedCampaigns, ...completedLeads];
   }, [campaignsWithProgress, leadsWithProgress]);
 
-  const memberDonationTickerItems = useMemo(() => {
-    return recentDonationsFormatted.map(item => ({
-        ...item,
-        href: item.href.replace('-public/', '-members/')
-    }));
-  }, [recentDonationsFormatted]);
-
   const availableYears = useMemo(() => {
     const years = new Set<string>();
     leadsWithProgress.forEach(l => l.startDate && years.add(l.startDate.split('-')[0]));
     return Array.from(years).sort((a, b) => b.localeCompare(a));
   }, [leadsWithProgress]);
 
-  const canCreate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.create', false);
-  const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.update', false);
-  const canDelete = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.leads-members.delete', false);
+  const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.create', false);
+  const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.update', false);
+  const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.delete', false);
   const canViewLeads = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.read', false);
 
   const handleDeleteConfirm = async () => {
@@ -319,7 +310,7 @@ export default function LeadPage() {
 
         <div className="space-y-2">
           <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
-          <NewsTicker items={memberDonationTickerItems} label="Donation Updates" variant="donation" />
+          <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
           <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
         </div>
 
@@ -327,7 +318,7 @@ export default function LeadPage() {
           <CardHeader className="p-4 border-b bg-muted/5">
             <div className="flex flex-wrap items-center gap-3">
                 <Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs" disabled={isLoading}/>
-                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem><SelectItem value="Completed">Completed</SelectItem></SelectContent></Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem></SelectContent></Select>
                 <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All Purposes</SelectItem>{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>
                 <div className="flex items-center gap-2 border-l pl-3 ml-1">
                     <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>

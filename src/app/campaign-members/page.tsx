@@ -120,7 +120,8 @@ const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete
                                         <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioGroup>
+                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
@@ -251,9 +252,9 @@ export default function CampaignPage() {
     return Array.from(years).sort((a, b) => b.localeCompare(a));
   }, [campaignsWithProgress]);
   
-  const canCreate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.create', false);
-  const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.update', false);
-  const canDelete = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.campaigns.delete', false);
+  const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.create', false);
+  const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false);
+  const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.delete', false);
   const canViewCampaigns = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false);
 
   const handleDeleteConfirm = async () => {

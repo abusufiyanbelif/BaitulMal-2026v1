@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -160,7 +160,7 @@ export default function InfoSettingsPage() {
     const [isDonationInfoPublic, setIsDonationInfoPublic] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState<string>('');
-    const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     const form = useForm<DonationInfoFormValues>({
         resolver: zodResolver(formSchema),
@@ -181,23 +181,23 @@ export default function InfoSettingsPage() {
     }, [infoSettings]);
     
     useEffect(() => {
-        if (!isDonationInfoLoading && donationInfoData && !initialDataLoaded) {
+        if (!isDonationInfoLoading && donationInfoData && !isInitialized) {
             const dataToLoad = (donationInfoData.types && donationInfoData.types.length > 0) ? donationInfoData.types : defaultDonationInfo;
             const mappedTypes = dataToLoad.map(t => ({
                 ...t,
                 purposePointsRaw: (t as any).purposePoints?.join('\n') || '',
-                useCases: (t.useCases || []).filter(uc => uc.title || uc.description),
+                useCases: (t.useCases || []),
                 qaItems: t.qaItems || [],
                 imageUrl: t.imageUrl || ''
             }));
             
             form.reset({ types: mappedTypes });
             if (mappedTypes.length > 0) setActiveTab(mappedTypes[0].id);
-            setInitialDataLoaded(true);
+            setIsInitialized(true);
         }
-    }, [donationInfoData, isDonationInfoLoading, initialDataLoaded, form]);
+    }, [donationInfoData, isDonationInfoLoading, isInitialized, form]);
 
-    const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
+    const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update || !!userProfile?.permissions?.settings?.update;
 
     const handleSaveVisibility = async () => {
         if (!firestore || !canUpdateSettings) return;
@@ -216,7 +216,8 @@ export default function InfoSettingsPage() {
         if (!firestore || !storage || !canUpdateSettings) return;
         
         setIsSubmitting(true);
-        const currentTypeName = data.types.find(t => t.id === activeTab)?.title || 'Current Category';
+        const activeTabInfo = data.types.find(t => t.id === activeTab);
+        const currentTypeName = activeTabInfo?.title || activeTab;
 
         try {
             const typesToSave = await Promise.all(data.types.map(async (t) => {
@@ -228,7 +229,7 @@ export default function InfoSettingsPage() {
                     const resizedBlob = await new Promise<Blob>((resolve) => {
                         (Resizer as any).imageFileResizer(file, 800, 600, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
                     });
-                    const filePath = `settings/donation_types/${t.id}.png`;
+                    const filePath = `settings/info/donation_types/${t.id}.png`;
                     const fileRef = storageRef(storage, filePath);
                     await uploadBytes(fileRef, resizedBlob);
                     imageUrl = await getDownloadURL(fileRef);
@@ -244,14 +245,14 @@ export default function InfoSettingsPage() {
             }));
 
             await setDoc(doc(firestore, 'settings', 'donationInfo'), { types: typesToSave });
-            toast({ title: 'Content Saved', description: `Settings for all categories, including '${currentTypeName}', have been updated.`, variant: 'success' });
+            toast({ title: 'Content Saved', description: `Updated content for ${currentTypeName}.`, variant: 'success' });
             forceRefetch();
             form.reset(data); 
         } catch (error: any) {
              errorEmitter.emit('permission-error', new FirestorePermissionError({ 
                 path: 'settings/donationInfo', 
                 operation: 'write',
-                requestResourceData: { action: `Attempted to save info content from tab: ${currentTypeName}` }
+                requestResourceData: { tab: currentTypeName }
             }));
         } finally {
             setIsSubmitting(false);
@@ -301,7 +302,7 @@ export default function InfoSettingsPage() {
                             <p className="text-sm text-muted-foreground">Detailed information guide for donors.</p>
                             <Button variant="outline" size="sm" asChild className="mt-2">
                                 <Link href="/info/donation-info" target="_blank">
-                                    <Eye className="mr-2 h-4 w-4" /> Preview Page
+                                    <Eye className="mr-2 h-4 w-4" /> Preview
                                 </Link>
                             </Button>
                         </div>
@@ -383,7 +384,7 @@ export default function InfoSettingsPage() {
                                                             ) : (
                                                                 <div className="text-center p-4">
                                                                     <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground/40" />
-                                                                    <p className="text-[10px] text-muted-foreground mt-1">No image uploaded</p>
+                                                                    <p className="text-[10px] text-muted-foreground mt-1">No image</p>
                                                                 </div>
                                                             )}
                                                         </div>

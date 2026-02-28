@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -58,7 +57,7 @@ export default function AppSettingsPage() {
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [qrCodeFile, setQrCodeFile] = useState<File | null>(null);
     
-    const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.app?.update;
+    const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.app?.update || !!userProfile?.permissions?.settings?.update;
 
     const handleFieldChange = useCallback((field: keyof FormDataType, value: string | number) => {
         setEditableData(prev => prev ? { ...prev, [field]: value } : null);
@@ -145,7 +144,7 @@ export default function AppSettingsPage() {
                  const resizedBlob = await new Promise<Blob>((resolve) => {
                     (Resizer as any).imageFileResizer(logoFile, 800, 800, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
-                const filePath = 'settings/logo';
+                const filePath = 'settings/branding/logo.png';
                 const fileRef = storageRef(storage, filePath);
                 const uploadResult = await uploadBytes(fileRef, resizedBlob);
                 newLogoUrl = await getDownloadURL(uploadResult.ref);
@@ -164,7 +163,7 @@ export default function AppSettingsPage() {
                 const resizedBlob = await new Promise<Blob>((resolve) => {
                     (Resizer as any).imageFileResizer(qrCodeFile, 800, 800, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
-                const filePath = 'settings/payment_qr';
+                const filePath = 'settings/payment/qr_code.png';
                 const fileRef = storageRef(storage, filePath);
                 const uploadResult = await uploadBytes(fileRef, resizedBlob);
                 newQrCodeUrl = await getDownloadURL(uploadResult.ref);
@@ -204,7 +203,7 @@ export default function AppSettingsPage() {
     const renderImagePreview = (previewUrl: string) => {
         const proxiedUrl = previewUrl.startsWith('http') 
             ? `/api/image-proxy?url=${encodeURIComponent(previewUrl)}`
-            : previewUrl; // It's a data URL, so use it directly
+            : previewUrl; 
         return <img src={proxiedUrl} alt="Preview" className="object-contain p-2 h-full w-full" />;
     };
 
@@ -231,14 +230,8 @@ export default function AppSettingsPage() {
     if (isLoading) {
         return (
             <div className="grid gap-4 md:grid-cols-2">
-                <Card>
-                    <CardHeader><Skeleton className="h-8 w-48" /></CardHeader>
-                    <CardContent><Skeleton className="h-64 w-full" /></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader><Skeleton className="h-8 w-64" /></CardHeader>
-                    <CardContent><Skeleton className="h-64 w-full" /></CardContent>
-                </Card>
+                <Card><CardHeader><Skeleton className="h-8 w-48" /></CardHeader><CardContent><Skeleton className="h-64 w-full" /></CardContent></Card>
+                <Card><CardHeader><Skeleton className="h-8 w-64" /></CardHeader><CardContent><Skeleton className="h-64 w-full" /></CardContent></Card>
             </div>
         )
     }
@@ -272,7 +265,7 @@ export default function AppSettingsPage() {
                 )}
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-                <Card className="animate-slide-in-from-left" style={{ animationDelay: '200ms'}}>
+                <Card className="animate-fade-in-up">
                     <CardHeader>
                         <CardTitle>Branding Settings</CardTitle>
                         <CardDescription>Manage the application logo and watermark.</CardDescription>
@@ -314,7 +307,6 @@ export default function AppSettingsPage() {
                                         <UploadCloud className="mr-2 h-4 w-4" /> Change Logo
                                     </label>
                                     <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
-                                    <p className="text-xs text-muted-foreground text-center">Supported formats: PNG, JPG, WEBP.</p>
                                     {editableData?.logoUrl && (
                                         <Button type="button" variant="destructive" size="sm" className="w-full" onClick={handleRemoveLogo} disabled={isSubmitting}>
                                             <Trash2 className="mr-2 h-4 w-4" /> Remove Logo
@@ -326,10 +318,10 @@ export default function AppSettingsPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="animate-slide-in-from-right" style={{ animationDelay: '300ms'}}>
+                <Card className="animate-fade-in-up">
                     <CardHeader>
-                        <CardTitle>Organization, Payment &amp; Contact Settings</CardTitle>
-                        <CardDescription>Configure QR code, UPI, and contact details for receipts and the footer.</CardDescription>
+                        <CardTitle>Contact & Payment</CardTitle>
+                        <CardDescription>Configure organizational and payment details.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                          <div className="space-y-4">
@@ -343,7 +335,7 @@ export default function AppSettingsPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="address">Address</Label>
-                                <Textarea id="address" value={displayData.address || ''} onChange={(e) => handleFieldChange('address', e.target.value)} placeholder="Full address of the organization" disabled={isFormDisabled} />
+                                <Textarea id="address" value={displayData.address || ''} onChange={(e) => handleFieldChange('address', e.target.value)} placeholder="Full address" disabled={isFormDisabled} />
                             </div>
                         </div>
                         <Separator />
@@ -361,26 +353,15 @@ export default function AppSettingsPage() {
                                             </div>
                                         )}
                                     </div>
-                                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <Label htmlFor="qrWidth">Width (px)</Label>
-                                            <Input id="qrWidth" type="number" placeholder="e.g., 128" value={displayData.qrWidth || ''} onChange={(e) => handleFieldChange('qrWidth', e.target.value)} disabled={isFormDisabled} />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <Label htmlFor="qrHeight">Height (px)</Label>
-                                            <Input id="qrHeight" type="number" placeholder="e.g., 128" value={displayData.qrHeight || ''} onChange={(e) => handleFieldChange('qrHeight', e.target.value)} disabled={isFormDisabled} />
-                                        </div>
-                                    </div>
                                      {isEditMode && (
                                         <div className="space-y-2 w-full text-center">
                                             <label htmlFor="qr-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 w-full cursor-pointer">
                                                 <UploadCloud className="mr-2 h-4 w-4" /> Change QR Code
                                             </label>
                                             <Input id="qr-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setQrCodeFile(e.target.files[0])} />
-                                            <p className="text-xs text-muted-foreground">Supported formats: PNG, JPG, WEBP.</p>
                                             {editableData?.qrCodeUrl && (
                                                 <Button type="button" variant="destructive" size="sm" className="w-full" onClick={handleRemoveQrCode} disabled={isSubmitting}>
-                                                    <Trash2 className="mr-2 h-4 w-4" /> Remove QR Code
+                                                    <Trash2 className="mr-2 h-4 w-4" /> Remove QR
                                                 </Button>
                                             )}
                                         </div>
@@ -392,11 +373,6 @@ export default function AppSettingsPage() {
                                 <Label htmlFor="upiId">UPI ID</Label>
                                 <Input id="upiId" value={displayData.upiId || ''} onChange={(e) => handleFieldChange('upiId', e.target.value)} placeholder="e.g. 1234567890@upi" disabled={isFormDisabled} />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="paymentMobile">Payment Mobile Number</Label>
-                                <Input id="paymentMobile" value={displayData.paymentMobileNumber || ''} onChange={(e) => handleFieldChange('paymentMobileNumber', e.target.value)} placeholder="e.g. 9876543210" disabled={isFormDisabled} />
-                            </div>
-                            <Separator />
                              <div className="space-y-2">
                                 <Label htmlFor="contactEmail">Contact Email</Label>
                                 <Input id="contactEmail" value={displayData.contactEmail || ''} onChange={(e) => handleFieldChange('contactEmail', e.target.value)} placeholder="e.g. contact@example.com" disabled={isFormDisabled} />
@@ -404,15 +380,6 @@ export default function AppSettingsPage() {
                              <div className="space-y-2">
                                 <Label htmlFor="contactPhone">Contact Phone</Label>
                                 <Input id="contactPhone" value={displayData.contactPhone || ''} onChange={(e) => handleFieldChange('contactPhone', e.target.value)} placeholder="e.g. 9876543210" disabled={isFormDisabled} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="website">Website URL</Label>
-                                <Input id="website" value={displayData.website || ''} onChange={(e) => handleFieldChange('website', e.target.value)} placeholder="https://example.com" disabled={isFormDisabled} />
-                            </div>
-                            <Separator/>
-                            <div className="space-y-2">
-                                <Label htmlFor="copyright">Copyright Text</Label>
-                                <Textarea id="copyright" value={displayData.copyright || ''} onChange={(e) => handleFieldChange('copyright', e.target.value as string)} placeholder="e.g. © 2026 Your Org Name. All Rights Reserved." disabled={isFormDisabled} />
                             </div>
                         </div>
                     </CardContent>
