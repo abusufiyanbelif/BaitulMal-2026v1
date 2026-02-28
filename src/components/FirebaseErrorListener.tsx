@@ -14,14 +14,15 @@ export function FirebaseErrorListener() {
 
   useEffect(() => {
     const handleError = (error: FirestorePermissionError) => {
-      // Log to console for developer visibility in the workstation logs
+      // Log to console for developer visibility
       console.error("Firebase Permission Denied:", error.message);
 
       // Display a user-friendly but detailed toast
+      // We use a longer duration for these critical errors
       toast({
         variant: 'destructive',
         title: 'Access Denied',
-        description: `You don't have permission to perform this action. Path: ${error.request.path}. Operation: ${error.request.method}.`,
+        description: `You don't have permission to perform this action. Path: ${error.request.path}. Operation: ${error.request.method}. Please ensure your account has the required module permissions.`,
         duration: 10000,
       });
     };

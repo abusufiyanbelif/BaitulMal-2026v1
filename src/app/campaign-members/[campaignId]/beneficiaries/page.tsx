@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
@@ -30,6 +29,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { 
     ArrowLeft, 
     Edit, 
@@ -171,7 +171,7 @@ const BeneficiaryRow = ({ beneficiary, index, canUpdate, canDelete, onView, onEd
                             {canUpdate && (
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><ChevronsUpDown className="mr-2 h-4 w-4" /> Change Status</DropdownMenuSubTrigger>
-                                    <DropdownMenuPortal><DropdownMenuSubContent><DropdownMenuRadioGroup value={beneficiary.status} onValueChange={(s) => onStatusChange(beneficiary, s as any)}><DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem><DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem><DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem><DropdownMenuRadioItem value="Hold">Hold</DropdownMenuRadioItem><DropdownMenuRadioItem value="Need More Details">Need Details</DropdownMenuRadioItem></DropdownMenuRadioGroup></DropdownMenuSubContent></DropdownMenuPortal>
+                                    <DropdownMenuPortal><DropdownMenuSubContent><DropdownMenuRadioGroup value={beneficiary.status} onValueChange={(s) => onStatusChange(beneficiary, s as any)}><DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem><DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem><DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem><DropdownMenuRadioItem value="Hold">Hold</DropdownMenuRadioItem><DropdownMenuRadioItem value="Need More Details">Need Details</DropdownMenuRadioGroup></DropdownMenuSubContent></DropdownMenuPortal>
                                 </DropdownMenuSub>
                             )}
                             {canUpdate && (
@@ -343,7 +343,7 @@ export default function BeneficiariesPage() {
     const fileList = data.idProofFile as FileList | undefined;
     if (fileList && fileList.length > 0) {
         const file = fileList[0];
-        const resized = await new Promise<Blob>((res) => { Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (b: any) => res(b as Blob), 'blob'); });
+        const resized = await new Promise<Blob>((resolve) => { Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (b: any) => resolve(b as Blob), 'blob'); });
         const fRef = storageRef(storage, `beneficiaries/${masterRef.id}/id_proof.png`);
         await uploadBytes(fRef, resized);
         idProofUrl = await getDownloadURL(fRef);
@@ -396,7 +396,7 @@ export default function BeneficiariesPage() {
             <div className="flex flex-wrap gap-2">
                 <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="gap-2"><FileUp className="h-4 w-4"/> Import</Button>
                 <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="gap-2"><CopyPlus className="h-4 w-4"/> Add Existing</Button>
-                <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2"><PlusCircle className="h-4 w-4"/> Add New</Button>
+                <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2"><PlusCircle className="mr-2 h-4 w-4"/> Add New</Button>
             </div>
         </div>
 

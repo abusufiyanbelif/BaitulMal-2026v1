@@ -39,6 +39,7 @@ service cloud.firestore {
         if (!isSignedIn() || !userExists()) return false;
         let userData = getUserData();
         let p = userData.get('permissions', {});
+        // Check for top-level module permission OR specific submodule permission
         return isAdmin() || 
                p.get(module, {}).get(permission, false) == true ||
                p.get(module, {}).get(submodule, {}).get(permission, false) == true;
@@ -50,7 +51,12 @@ service cloud.firestore {
     
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isAdmin() || hasPermission('settings', 'update') || (settingId == 'donationInfo' && hasSubmodulePermission('settings', 'info', 'update')) || (settingId == 'info' && hasSubmodulePermission('settings', 'info', 'update')) || (settingId == 'branding' && hasSubmodulePermission('settings', 'app', 'update')) || (settingId == 'payment' && hasSubmodulePermission('settings', 'app', 'update'));
+      allow write: if isAdmin() || 
+                      hasPermission('settings', 'update') || 
+                      (settingId == 'donationInfo' && hasSubmodulePermission('settings', 'info', 'update')) || 
+                      (settingId == 'info' && hasSubmodulePermission('settings', 'info', 'update')) || 
+                      (settingId == 'branding' && hasSubmodulePermission('settings', 'app', 'update')) || 
+                      (settingId == 'payment' && hasSubmodulePermission('settings', 'app', 'update'));
     }
     
     match /page_hits/{pageId} {
