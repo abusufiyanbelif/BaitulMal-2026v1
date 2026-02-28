@@ -12,13 +12,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useInfoSettings } from '@/hooks/use-info-settings';
 import { useDonationInfo } from '@/hooks/use-donation-info';
 import { defaultDonationInfo } from '@/lib/donation-info-default';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const typeIcons: Record<string, any> = {
     zakat: Coins,

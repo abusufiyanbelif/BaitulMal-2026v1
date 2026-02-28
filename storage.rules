@@ -15,10 +15,6 @@ service firebase.storage {
         return /databases/(default)/documents/users/$(request.auth.uid);
     }
     
-    function userExists() {
-        return firestore.exists(userDocRef());
-    }
-
     function getUserData() {
         return firestore.get(userDocRef()).data;
     }
@@ -29,19 +25,19 @@ service firebase.storage {
     
     function isAdmin() {
       return isSignedIn() && 
-             userExists() &&
+             firestore.exists(userDocRef()) &&
              getUserData().get('role', 'User') == 'Admin';
     }
     
     function hasPermission(module, permission) {
-        if (!isSignedIn() || !userExists()) return false;
+        if (!isSignedIn() || !firestore.exists(userDocRef())) return false;
         let data = getUserData();
         let p = data.get('permissions', {});
         return isAdmin() || p.get(module, {}).get(permission, false) == true;
     }
 
     function hasSubmodulePermission(module, submodule, permission) {
-        if (!isSignedIn() || !userExists()) return false;
+        if (!isSignedIn() || !firestore.exists(userDocRef())) return false;
         let data = getUserData();
         let p = data.get('permissions', {});
         return isAdmin() || 
@@ -87,7 +83,6 @@ service firebase.storage {
         allow write: if isAdmin() || hasPermission('settings', 'update');
     }
     
-    // Fallback for root settings if any
     match /settings/{allPaths=**} {
         allow read: if true;
         allow write: if isAdmin() || hasPermission('settings', 'update');
