@@ -1,9 +1,9 @@
 'use client';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Check, X, Loader2, Quote, Target, Info as InfoIcon, HelpCircle, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Quote, Target, Info as InfoIcon, HelpCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -77,16 +77,19 @@ export default function DonationInfoPage() {
         <div className="grid gap-12">
           {donationTypes.map((type, index) => {
             const imageData = (placeholderData as any)[type.id];
+            const imageSeed = type.imageHint || type.id;
+            const displayImageUrl = `https://picsum.photos/seed/${imageSeed}/800/600`;
+
             return (
                 <Card key={type.id || index} className="overflow-hidden border-none shadow-xl animate-fade-in-up" style={{ animationDelay: `${index * 150}ms` }}>
                     <div className="grid md:grid-cols-2">
                         <div className={cn("relative h-64 md:h-auto min-h-[300px]", index % 2 === 1 ? "md:order-last" : "")}>
                             <Image 
-                                src={imageData?.url || `https://picsum.photos/seed/${type.id}/800/600`}
+                                src={displayImageUrl}
                                 alt={type.title}
                                 fill
                                 className="object-cover"
-                                data-ai-hint={imageData?.hint || "charity image"}
+                                data-ai-hint={type.imageHint || "charity image"}
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                             <div className="absolute bottom-6 left-6 text-white">

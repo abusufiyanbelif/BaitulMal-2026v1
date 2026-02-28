@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -85,8 +84,8 @@ export default function InfoSettingsPage() {
                 useCasesRaw: (t as any).useCases?.join('\n') || ''
             }));
             form.reset({ types: mappedTypes });
-            if (mappedTypes.length > 0 && !activeTab) {
-                setActiveTab(mappedTypes[0].id);
+            if (fields.length > 0 && !activeTab) {
+                setActiveTab(fields[0].id);
             }
         } else if (!isDonationInfoLoading) {
             const mappedDefaults = defaultDonationInfo.map(t => ({
@@ -95,11 +94,11 @@ export default function InfoSettingsPage() {
                 useCasesRaw: t.useCases?.join('\n') || ''
             }));
             form.reset({ types: mappedDefaults });
-            if (mappedDefaults.length > 0 && !activeTab) {
-                setActiveTab(mappedDefaults[0].id);
+            if (fields.length > 0 && !activeTab) {
+                setActiveTab(fields[0].id);
             }
         }
-    }, [donationInfoData, isDonationInfoLoading, form, activeTab]);
+    }, [donationInfoData, isDonationInfoLoading, form, fields.length]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -143,7 +142,9 @@ export default function InfoSettingsPage() {
     const handleAddType = () => {
         const id = `type_${Date.now()}`;
         append({ id, title: 'New Donation Type', description: '', usage: '', purposePointsRaw: '', useCasesRaw: '', imageHint: 'charity' });
-        setActiveTab(id);
+        // Setting active tab to the new field's dynamic id
+        const newField = form.getValues('types');
+        setActiveTab(fields[fields.length - 1].id);
     };
 
     const isLoading = isSessionLoading || isInfoSettingsLoading || isDonationInfoLoading;
@@ -214,12 +215,12 @@ export default function InfoSettingsPage() {
                 <CardContent className="p-0 pt-0">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onContentSubmit)}>
-                            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                            <Tabs value={activeTab || fields[0]?.id} onValueChange={setActiveTab} className="w-full">
                                 <div className="border-b bg-muted/5 px-4 pt-4 sm:px-6 sm:pt-0">
                                     <ScrollArea className="w-full whitespace-nowrap">
                                         <TabsList className="h-auto w-max bg-transparent p-0">
                                             {fields.map((field, index) => (
-                                                <TabsTrigger key={field.id} value={form.getValues(`types.${index}.id`)} className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold">
+                                                <TabsTrigger key={field.id} value={field.id} className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold">
                                                     {form.watch(`types.${index}.title`) || 'New Type'}
                                                 </TabsTrigger>
                                             ))}
@@ -229,10 +230,10 @@ export default function InfoSettingsPage() {
                                 </div>
 
                                 {fields.map((field, index) => (
-                                    <TabsContent key={field.id} value={form.getValues(`types.${index}.id`)} className="p-4 sm:p-6 space-y-6">
+                                    <TabsContent key={field.id} value={field.id} className="p-4 sm:p-6 space-y-6">
                                         <div className="flex justify-between items-center">
                                             <h3 className="text-lg font-bold text-primary">Editing: {form.watch(`types.${index}.title`)}</h3>
-                                            <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(form.getValues(`types.0.id`)); }}>
+                                            <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(fields[0].id); }}>
                                                 <Trash2 className="mr-2 h-4 w-4"/> Remove
                                             </Button>
                                         </div>
