@@ -179,24 +179,22 @@ export default function InfoSettingsPage() {
         }
     }, [infoSettings]);
     
+    // Load initial data only once or when force refetched
     useEffect(() => {
-        if (!isDonationInfoLoading && donationInfoData && !isDirty) {
+        if (!isDonationInfoLoading && donationInfoData && fields.length === 0) {
             const dataToLoad = (donationInfoData.types && donationInfoData.types.length > 0) ? donationInfoData.types : defaultDonationInfo;
             const mappedTypes = dataToLoad.map(t => ({
                 ...t,
                 purposePointsRaw: (t as any).purposePoints?.join('\n') || '',
-                useCases: t.useCases || [],
+                useCases: (t.useCases || []).filter(uc => uc.title || uc.description),
                 qaItems: t.qaItems || [],
                 imageUrl: t.imageUrl || ''
             }));
             
             form.reset({ types: mappedTypes });
-            
-            if (mappedTypes.length > 0 && !activeTab) {
-                setActiveTab(mappedTypes[0].id);
-            }
+            if (mappedTypes.length > 0) setActiveTab(mappedTypes[0].id);
         }
-    }, [donationInfoData, isDonationInfoLoading, isDirty, form, activeTab]);
+    }, [donationInfoData, isDonationInfoLoading, form, fields.length]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -216,12 +214,6 @@ export default function InfoSettingsPage() {
     const onContentSubmit = async (data: DonationInfoFormValues) => {
         if (!firestore || !storage || !canUpdateSettings) return;
         
-        const hasFilesToUpload = data.types.some(t => t.imageFile && t.imageFile.length > 0);
-        if (hasFilesToUpload && !auth?.currentUser) {
-            toast({ title: "Authentication Error", description: "User not authenticated.", variant: "destructive" });
-            return;
-        }
-
         setIsSubmitting(true);
         try {
             const typesToSave = await Promise.all(data.types.map(async (t) => {
@@ -242,6 +234,9 @@ export default function InfoSettingsPage() {
                 return {
                     ...rest,
                     imageUrl,
+                    // Filter out empty use cases and QAs
+                    useCases: t.useCases.filter(uc => uc.title.trim() !== '' || uc.description.trim() !== ''),
+                    qaItems: t.qaItems.filter(qa => qa.question.trim() !== '' || qa.answer.trim() !== ''),
                     purposePoints: purposePointsRaw ? purposePointsRaw.split('\n').filter(p => p.trim() !== '') : [],
                 };
             }));
@@ -257,18 +252,17 @@ export default function InfoSettingsPage() {
         }
     };
 
+    // Print specific errors to the console and toast
     useEffect(() => {
         if (Object.keys(errors).length > 0) {
             const firstErrorTab = errors.types?.findIndex(t => t !== undefined);
             if (firstErrorTab !== undefined && firstErrorTab !== -1) {
-                const typeId = form.getValues(`types.${firstErrorTab}.id`);
-                if (typeId) {
-                    toast({
-                        title: "Validation Error",
-                        description: `Required fields are missing in '${form.getValues(`types.${firstErrorTab}.title`)}'. Please check all marked tabs.`,
-                        variant: "destructive"
-                    });
-                }
+                const typeLabel = form.getValues(`types.${firstErrorTab}.title`) || 'New Tab';
+                toast({
+                    title: "Validation Error",
+                    description: `Required fields missing in '${typeLabel}'. Please check all marked tabs.`,
+                    variant: "destructive"
+                });
             }
         }
     }, [errors, toast, form]);

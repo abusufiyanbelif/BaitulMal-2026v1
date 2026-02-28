@@ -424,7 +424,7 @@ export default function BeneficiariesPage() {
             <CardContent className="p-0">
                 <Table>
                     <TableHeader>
-                        <TableRow className="bg-muted/50">
+                        <TableRow>
                             <TableHead className="w-[60px]">#</TableHead>
                             <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name & Phone</SortableHeader>
                             <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>

@@ -42,13 +42,15 @@ service cloud.firestore {
     }
 
     function hasSubmodulePermission(module, submodule, permission) {
+        let data = getUserData();
         return isSignedIn() && 
                userExists() &&
-               'permissions' in getUserData() &&
-               module in getUserData().permissions &&
-               submodule in getUserData().permissions[module] &&
+               'permissions' in data &&
+               module in data.permissions &&
                (
-                 (permission in getUserData().permissions[module][submodule] && getUserData().permissions[module][submodule][permission] == true) ||
+                 (submodule in data.permissions[module] && 
+                  permission in data.permissions[module][submodule] && 
+                  data.permissions[module][submodule][permission] == true) ||
                  isAdmin()
                );
     }
