@@ -141,9 +141,9 @@ export default function DonationInfoPage() {
                                                                 <h4 className="font-black text-lg uppercase tracking-tight">{useCase.title}</h4>
                                                                 <p className="text-muted-foreground font-medium">{useCase.description}</p>
                                                                 
-                                                                {useCase.quranVerse && (
+                                                                {(useCase.quranVerse || useCase.quranSource) && (
                                                                     <div className="mt-4 p-4 bg-muted/50 rounded-lg border-l-4 border-muted-foreground italic text-sm text-muted-foreground">
-                                                                        <p>"{useCase.quranVerse}"</p>
+                                                                        {useCase.quranVerse && <p>"{useCase.quranVerse}"</p>}
                                                                         {useCase.quranSource && <p className="text-[10px] font-black uppercase text-primary text-right mt-2">— {useCase.quranSource}</p>}
                                                                     </div>
                                                                 )}
@@ -203,9 +203,9 @@ export default function DonationInfoPage() {
                                                     <p className="font-medium text-slate-700">A: {qa.answer}</p>
                                                 </div>
                                                 
-                                                {qa.quranVerse && (
+                                                {(qa.quranVerse || qa.quranSource) && (
                                                     <div className="p-3 bg-white/50 rounded-lg border-l-2 border-blue-200 italic text-xs text-blue-800">
-                                                        <p>"{qa.quranVerse}"</p>
+                                                        {qa.quranVerse && <p>"{qa.quranVerse}"</p>}
                                                         {qa.quranSource && <p className="text-[9px] font-black uppercase text-blue-600 text-right mt-1">— {qa.quranSource}</p>}
                                                     </div>
                                                 )}

@@ -10,33 +10,27 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function userDoc(userId) {
-      return /databases/$(database)/documents/users/$(userId);
-    }
-
-    function userExists() {
-      return exists(userDoc(request.auth.uid));
+    function userDocRef() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
     }
 
     function getUserData() {
-        return get(userDoc(request.auth.uid)).data;
+        return exists(userDocRef()) ? get(userDocRef()).data : {};
     }
     
     function isAdmin() {
-      return isSignedIn() && 
-             userExists() &&
-             getUserData().get('role', 'User') == 'Admin';
+      return isSignedIn() && getUserData().get('role', 'User') == 'Admin';
     }
 
     function hasPermission(module, permission) {
-        if (!isSignedIn() || !userExists()) return false;
+        if (!isSignedIn()) return false;
         let userData = getUserData();
         let p = userData.get('permissions', {});
         return isAdmin() || p.get(module, {}).get(permission, false) == true;
     }
 
     function hasSubmodulePermission(module, submodule, permission) {
-        if (!isSignedIn() || !userExists()) return false;
+        if (!isSignedIn()) return false;
         let userData = getUserData();
         let p = userData.get('permissions', {});
         // Check for top-level module permission OR specific submodule permission
