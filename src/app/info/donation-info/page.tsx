@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Quote, Target, Loader2, CheckCircle2, XCircle, BookOpen, ListChecks, AlertCircle, Info } from 'lucide-react';
+import { ArrowLeft, Quote, Target, Loader2, CheckCircle2, XCircle, BookOpen, ListChecks, AlertCircle, Info, Coins, Heart, Utensils, Building2, Ban } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -19,6 +19,14 @@ import { defaultDonationInfo } from '@/lib/donation-info-default';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+
+const typeIcons: Record<string, any> = {
+    zakat: Coins,
+    sadaqah: Heart,
+    fidiya: Utensils,
+    lillah: Building2,
+    interest: Ban,
+};
 
 const comparisonData = [
     { feature: 'Status', zakat: 'Obligatory (Fard)', sadaqah: 'Voluntary', lillah: 'Voluntary', fidiya: 'Obligatory Compensation', interest: 'Mandatory disposal' },
@@ -91,7 +99,9 @@ export default function DonationInfoPage() {
         </div>
 
         {donationTypes.map((type) => {
-            const displayImageUrl = type.imageUrl ? (type.imageUrl.startsWith('data:') ? type.imageUrl : `/api/image-proxy?url=${encodeURIComponent(type.imageUrl)}`) : `https://picsum.photos/seed/${type.id}/800/600`;
+            const IconComponent = typeIcons[type.id] || Info;
+            const hasImage = !!type.imageUrl;
+            const displayImageUrl = type.imageUrl ? (type.imageUrl.startsWith('data:') ? type.imageUrl : `/api/image-proxy?url=${encodeURIComponent(type.imageUrl)}`) : null;
             
             const visibleUseCases = type.useCases?.filter(uc => !uc.isHidden && (uc.title?.trim() || uc.description?.trim())) || [];
             const visibleQA = type.qaItems?.filter(qa => !qa.isHidden && (qa.question?.trim() || qa.answer?.trim())) || [];
@@ -99,8 +109,16 @@ export default function DonationInfoPage() {
             return (
                 <TabsContent key={type.id} value={type.id} className="animate-fade-in-up">
                     <Card className="overflow-hidden border-none shadow-2xl">
-                        <div className="relative h-64 md:h-80 w-full flex items-center justify-center bg-secondary/20">
-                            <Image src={displayImageUrl} alt={type.title || 'Header'} fill className="object-cover" priority />
+                        <div className="relative h-64 md:h-80 w-full flex items-center justify-center bg-primary/10">
+                            {displayImageUrl ? (
+                                <Image src={displayImageUrl} alt={type.title || 'Header'} fill className="object-cover" priority />
+                            ) : (
+                                <div className="flex flex-col items-center gap-4">
+                                    <div className="p-6 rounded-full bg-primary/20 text-primary">
+                                        <IconComponent className="h-24 w-24" />
+                                    </div>
+                                </div>
+                            )}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                             <div className="absolute bottom-8 left-8 text-white pr-8">
                                 <h2 className="text-4xl font-black tracking-tight drop-shadow-xl uppercase">{type.title}</h2>

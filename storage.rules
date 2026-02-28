@@ -76,15 +76,15 @@ service firebase.storage {
     // Settings sub-folders
     match /settings/branding/{allPaths=**} {
         allow read: if true;
-        allow write: if isAdmin() || hasSubmodulePermission('settings', 'app', 'update') || hasPermission('settings', 'update');
+        allow write: if isAdmin() || hasPermission('settings', 'update');
     }
     match /settings/payment/{allPaths=**} {
         allow read: if true;
-        allow write: if isAdmin() || hasSubmodulePermission('settings', 'app', 'update') || hasPermission('settings', 'update');
+        allow write: if isAdmin() || hasPermission('settings', 'update');
     }
     match /settings/info/{allPaths=**} {
         allow read: if true;
-        allow write: if isAdmin() || hasSubmodulePermission('settings', 'info', 'update') || hasPermission('settings', 'update');
+        allow write: if isAdmin() || hasPermission('settings', 'update');
     }
     
     // Fallback for root settings if any

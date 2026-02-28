@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -123,10 +123,10 @@ function UseCaseEditor({ control, typeIndex }: { control: any, typeIndex: number
                         )}/>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-dashed">
                             <FormField control={control} name={`types.${typeIndex}.useCases.${index}.quranVerse`} render={({ field }) => (
-                                <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Case Citation (Verse/Hadith)</FormLabel><FormControl><Textarea rows={2} className="text-xs" placeholder="Source text..." {...field} /></FormControl></FormItem>
+                                <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Religious Proof (Verse/Hadith)</FormLabel><FormControl><Textarea rows={2} className="text-xs" placeholder="Religious evidence text..." {...field} /></FormControl></FormItem>
                             )}/>
                             <FormField control={control} name={`types.${typeIndex}.useCases.${index}.quranSource`} render={({ field }) => (
-                                <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Citation Source</FormLabel><FormControl><Input className="text-xs" placeholder="e.g. Sahih Bukhari" {...field} /></FormControl></FormItem>
+                                <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Proof Citation</FormLabel><FormControl><Input className="text-xs" placeholder="e.g. Sahih Muslim..." {...field} /></FormControl></FormItem>
                             )}/>
                         </div>
                     </div>
@@ -452,7 +452,7 @@ export default function InfoSettingsPage() {
                                                         )}/>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <FormLabel className="font-bold text-primary uppercase tracking-tighter">Header Image</FormLabel>
+                                                        <FormLabel className="font-bold text-primary uppercase tracking-tighter">Header Image (Optional)</FormLabel>
                                                         <div className="relative aspect-[4/3] w-full rounded-md border-2 border-dashed overflow-hidden flex items-center justify-center bg-muted/30">
                                                             {form.watch(`types.${index}.imageUrl`) ? (
                                                                 <Image 
