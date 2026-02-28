@@ -88,13 +88,14 @@ export default function InfoSettingsPage() {
             }));
             
             form.reset({ types: mappedTypes });
-            
-            if (mappedTypes.length > 0 && !activeTab) {
-                // Use the internal field id if possible, but for initial load, the ID from data is fine
-                setActiveTab(mappedTypes[0].id);
-            }
         }
     }, [donationInfoData, isDonationInfoLoading, form]);
+
+    useEffect(() => {
+        if (fields.length > 0 && !activeTab) {
+            setActiveTab(fields[0].id);
+        }
+    }, [fields, activeTab]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -209,7 +210,7 @@ export default function InfoSettingsPage() {
                 <CardContent className="p-0 pt-0">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onContentSubmit)}>
-                            <Tabs value={activeTab || (fields.length > 0 ? fields[0].id : '')} onValueChange={setActiveTab} className="w-full">
+                            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                                 <div className="border-b bg-muted/5 px-4 pt-4 sm:px-6 sm:pt-0">
                                     <ScrollArea className="w-full whitespace-nowrap">
                                         <TabsList className="h-auto w-max bg-transparent p-0">
