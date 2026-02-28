@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -90,8 +91,7 @@ export default function PublicCampaignSummaryPage() {
 
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
-        const amountsByCategory: Record<string, number> = {};
-        donationCategories.forEach(cat => amountsByCategory[cat] = 0);
+        const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
         let zakatForGoalAmount = 0;
 
         verifiedDonationsList.forEach(d => {
@@ -114,7 +114,7 @@ export default function PublicCampaignSummaryPage() {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
                 if (amountsByCategory.hasOwnProperty(category)) {
                     const allocatedAmount = split.amount * proportionForThisCampaign;
-                    amountsByCategory[category] += allocatedAmount;
+                    amountsByCategory[category as DonationCategory] += allocatedAmount;
                     const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
                     if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
                 }
@@ -259,7 +259,7 @@ export default function PublicCampaignSummaryPage() {
                                 <div className="space-y-4 text-center md:text-left">
                                     <div><p className="text-sm text-muted-foreground">Raised for Goal</p><p className="text-3xl font-bold">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
                                     <div><p className="text-sm text-muted-foreground">Fundraising Target</p><p className="text-3xl font-bold">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                    <div><p className="text-sm text-muted-foreground">Grand Total Received</p><p className="text-3xl font-bold">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                    <div><p className="text-sm text-muted-foreground">Grand Total Received</p><p className="text-3xl font-bold">₹{(fundingData.fundTotals.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                 </div>
                             </div>
                         </CardContent>
