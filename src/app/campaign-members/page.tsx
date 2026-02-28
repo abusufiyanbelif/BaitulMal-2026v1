@@ -21,9 +21,9 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSub,
   DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuSubTrigger
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,

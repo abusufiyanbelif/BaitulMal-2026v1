@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -67,7 +66,6 @@ const donationTypeSchema = z.object({
   restrictions: z.string().optional().or(z.literal('')),
   imageUrl: z.string().optional().or(z.literal('')),
   imageFile: z.any().optional(),
-  // Visibility
   hideKeyHighlights: z.boolean().default(false),
   hideUseCases: z.boolean().default(false),
   hideQA: z.boolean().default(false),
@@ -426,7 +424,6 @@ export default function InfoSettingsPage() {
                                             </div>
 
                                             <div className="grid gap-8">
-                                                {/* Visibility Toggles */}
                                                 <div className="bg-muted/10 p-4 rounded-lg border border-dashed grid grid-cols-2 md:grid-cols-5 gap-4">
                                                     <FormField control={form.control} name={`types.${index}.hideKeyHighlights`} render={({ field }) => (
                                                         <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><FormLabel className="text-[10px] font-bold uppercase cursor-pointer">Hide Highlights</FormLabel></FormItem>

@@ -1,4 +1,3 @@
-
 rules_version = '2';
 
 service firebase.storage {
@@ -31,37 +30,23 @@ service firebase.storage {
     function isAdmin() {
       return isSignedIn() && 
              userExists() &&
-             getUserData().get('role', 'User').lower() == 'admin';
+             getUserData().get('role', 'User') == 'Admin';
     }
     
     function hasPermission(module, permission) {
+        if (!isSignedIn() || !userExists()) return false;
         let data = getUserData();
-        return isSignedIn() && 
-               userExists() &&
-               (
-                 isAdmin() ||
-                 (
-                   'permissions' in data &&
-                   module in data.permissions &&
-                   data.permissions[module].get(permission, false) == true
-                 )
-               );
+        let p = data.get('permissions', {});
+        return isAdmin() || p.get(module, {}).get(permission, false) == true;
     }
 
     function hasSubmodulePermission(module, submodule, permission) {
+        if (!isSignedIn() || !userExists()) return false;
         let data = getUserData();
-        return isSignedIn() && 
-               userExists() &&
-               (
-                 isAdmin() ||
-                 hasPermission(module, permission) ||
-                 (
-                   'permissions' in data &&
-                   module in data.permissions &&
-                   submodule in data.permissions[module] &&
-                   data.permissions[module][submodule].get(permission, false) == true
-                 )
-               );
+        let p = data.get('permissions', {});
+        return isAdmin() || 
+               p.get(module, {}).get(permission, false) == true ||
+               p.get(module, {}).get(submodule, {}).get(permission, false) == true;
     }
     
     // ----------------------------------------------------------------------
@@ -91,15 +76,15 @@ service firebase.storage {
     // Settings sub-folders
     match /settings/branding/{allPaths=**} {
         allow read: if true;
-        allow write: if isAdmin() || hasSubmodulePermission('settings', 'app', 'update');
+        allow write: if isAdmin() || hasSubmodulePermission('settings', 'app', 'update') || hasPermission('settings', 'update');
     }
     match /settings/payment/{allPaths=**} {
         allow read: if true;
-        allow write: if isAdmin() || hasSubmodulePermission('settings', 'app', 'update');
+        allow write: if isAdmin() || hasSubmodulePermission('settings', 'app', 'update') || hasPermission('settings', 'update');
     }
     match /settings/info/{allPaths=**} {
         allow read: if true;
-        allow write: if isAdmin() || hasSubmodulePermission('settings', 'info', 'update');
+        allow write: if isAdmin() || hasSubmodulePermission('settings', 'info', 'update') || hasPermission('settings', 'update');
     }
     
     // Fallback for root settings if any

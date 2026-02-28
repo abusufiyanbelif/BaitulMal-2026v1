@@ -1,4 +1,3 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -26,37 +25,23 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && 
              userExists() &&
-             getUserData().get('role', 'User').lower() == 'admin';
+             getUserData().get('role', 'User') == 'Admin';
     }
 
     function hasPermission(module, permission) {
+        if (!isSignedIn() || !userExists()) return false;
         let userData = getUserData();
-        return isSignedIn() && 
-               userExists() &&
-               (
-                 isAdmin() ||
-                 (
-                   'permissions' in userData &&
-                   module in userData.permissions &&
-                   userData.permissions[module].get(permission, false) == true
-                 )
-               );
+        let p = userData.get('permissions', {});
+        return isAdmin() || p.get(module, {}).get(permission, false) == true;
     }
 
     function hasSubmodulePermission(module, submodule, permission) {
+        if (!isSignedIn() || !userExists()) return false;
         let userData = getUserData();
-        return isSignedIn() && 
-               userExists() &&
-               (
-                 isAdmin() ||
-                 hasPermission(module, permission) ||
-                 (
-                   'permissions' in userData &&
-                   module in userData.permissions &&
-                   submodule in userData.permissions[module] &&
-                   userData.permissions[module][submodule].get(permission, false) == true
-                 )
-               );
+        let p = userData.get('permissions', {});
+        return isAdmin() || 
+               p.get(module, {}).get(permission, false) == true ||
+               p.get(module, {}).get(submodule, {}).get(permission, false) == true;
     }
 
     // ----------------------------------------------------------------------
