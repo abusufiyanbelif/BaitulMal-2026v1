@@ -1,8 +1,7 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useForm, useFieldArray, useWatch } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Image from 'next/image';
@@ -18,7 +17,7 @@ import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -31,7 +30,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
 
 const useCaseSchema = z.object({
   id: z.string(),
@@ -196,7 +194,7 @@ export default function InfoSettingsPage() {
                 setActiveTab(mappedTypes[0].id);
             }
         }
-    }, [donationInfoData, isDonationInfoLoading, form, activeTab]);
+    }, [donationInfoData, isDonationInfoLoading, form]); // Removed activeTab to avoid infinite loop
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -335,116 +333,122 @@ export default function InfoSettingsPage() {
                                 <div className="border-b bg-muted/5 px-4 pt-4 sm:px-6 sm:pt-0">
                                     <ScrollArea className="w-full whitespace-nowrap">
                                         <TabsList className="h-auto w-max bg-transparent p-0">
-                                            {fields.map((field, index) => (
-                                                <TabsTrigger key={field.id} value={field.id} className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold">
-                                                    {form.watch(`types.${index}.title`) || 'New Type'}
-                                                </TabsTrigger>
-                                            ))}
+                                            {fields.map((field, index) => {
+                                                const typeId = form.getValues(`types.${index}.id`);
+                                                return (
+                                                    <TabsTrigger key={field.id} value={typeId} className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold">
+                                                        {form.watch(`types.${index}.title`) || 'New Type'}
+                                                    </TabsTrigger>
+                                                );
+                                            })}
                                         </TabsList>
                                         <ScrollBar orientation="horizontal" />
                                     </ScrollArea>
                                 </div>
 
-                                {fields.map((field, index) => (
-                                    <TabsContent key={field.id} value={field.id} className="p-4 sm:p-6 space-y-8">
-                                        <div className="flex justify-between items-center">
-                                            <h3 className="text-lg font-bold text-primary">Editing: {form.watch(`types.${index}.title`)}</h3>
-                                            <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(fields[0].id); }}>
-                                                <Trash2 className="h-4 w-4"/>
-                                            </Button>
-                                        </div>
+                                {fields.map((field, index) => {
+                                    const typeId = form.getValues(`types.${index}.id`);
+                                    return (
+                                        <TabsContent key={field.id} value={typeId} className="p-4 sm:p-6 space-y-8">
+                                            <div className="flex justify-between items-center">
+                                                <h3 className="text-lg font-bold text-primary">Editing: {form.watch(`types.${index}.title`)}</h3>
+                                                <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(form.getValues('types.0.id')); }}>
+                                                    <Trash2 className="h-4 w-4"/>
+                                                </Button>
+                                            </div>
 
-                                        <div className="grid gap-8">
-                                            {/* Basic Info */}
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                                                <div className="md:col-span-2 space-y-4">
-                                                    <FormField control={form.control} name={`types.${index}.title`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Heading/Title *</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                                                    )}/>
-                                                    <FormField control={form.control} name={`types.${index}.description`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Introduction *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
-                                                    )}/>
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <FormLabel>Header Image</FormLabel>
-                                                    <div className="relative aspect-[4/3] w-full rounded-md border-2 border-dashed overflow-hidden flex items-center justify-center bg-muted/30">
-                                                        {form.watch(`types.${index}.imageUrl`) ? (
-                                                            <Image 
-                                                                src={form.watch(`types.${index}.imageUrl`)?.startsWith('data:') ? form.watch(`types.${index}.imageUrl`)! : `/api/image-proxy?url=${encodeURIComponent(form.watch(`types.${index}.imageUrl`)!)}`} 
-                                                                alt="Header" 
-                                                                fill 
-                                                                className="object-cover" 
-                                                            />
-                                                        ) : (
-                                                            <div className="text-center p-4">
-                                                                <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground/40" />
-                                                                <p className="text-[10px] text-muted-foreground mt-1">No image uploaded</p>
-                                                            </div>
-                                                        )}
+                                            <div className="grid gap-8">
+                                                {/* Basic Info */}
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                                                    <div className="md:col-span-2 space-y-4">
+                                                        <FormField control={form.control} name={`types.${index}.title`} render={({ field }) => (
+                                                            <FormItem><FormLabel>Heading/Title *</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                                        )}/>
+                                                        <FormField control={form.control} name={`types.${index}.description`} render={({ field }) => (
+                                                            <FormItem><FormLabel>Introduction *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
+                                                        )}/>
                                                     </div>
-                                                    <FormControl>
-                                                        <Input 
-                                                            type="file" 
-                                                            accept="image/*" 
-                                                            className="text-xs h-auto py-1"
-                                                            onChange={(e) => {
-                                                                const file = e.target.files?.[0];
-                                                                if (file) {
-                                                                    const reader = new FileReader();
-                                                                    reader.onloadend = () => form.setValue(`types.${index}.imageUrl`, reader.result as string, { shouldDirty: true });
-                                                                    reader.readAsDataURL(file);
-                                                                    form.setValue(`types.${index}.imageFile`, e.target.files);
-                                                                }
-                                                            }}
-                                                        />
-                                                    </FormControl>
+                                                    <div className="space-y-2">
+                                                        <FormLabel>Header Image</FormLabel>
+                                                        <div className="relative aspect-[4/3] w-full rounded-md border-2 border-dashed overflow-hidden flex items-center justify-center bg-muted/30">
+                                                            {form.watch(`types.${index}.imageUrl`) ? (
+                                                                <Image 
+                                                                    src={form.watch(`types.${index}.imageUrl`)?.startsWith('data:') ? form.watch(`types.${index}.imageUrl`)! : `/api/image-proxy?url=${encodeURIComponent(form.watch(`types.${index}.imageUrl`)!)}`} 
+                                                                    alt="Header" 
+                                                                    fill 
+                                                                    className="object-cover" 
+                                                                />
+                                                            ) : (
+                                                                <div className="text-center p-4">
+                                                                    <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground/40" />
+                                                                    <p className="text-[10px] text-muted-foreground mt-1">No image uploaded</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <FormControl>
+                                                            <Input 
+                                                                type="file" 
+                                                                accept="image/*" 
+                                                                className="text-xs h-auto py-1"
+                                                                onChange={(e) => {
+                                                                    const file = e.target.files?.[0];
+                                                                    if (file) {
+                                                                        const reader = new FileReader();
+                                                                        reader.onloadend = () => form.setValue(`types.${index}.imageUrl`, reader.result as string, { shouldDirty: true });
+                                                                        reader.readAsDataURL(file);
+                                                                        form.setValue(`types.${index}.imageFile`, e.target.files);
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </FormControl>
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* References & Highlights */}
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-lg border p-4 bg-muted/5">
+                                                    <div className="space-y-4">
+                                                        <h4 className="text-sm font-bold flex items-center gap-2"><Quote className="h-4 w-4"/> Religious Reference</h4>
+                                                        <FormField control={form.control} name={`types.${index}.quranVerse`} render={({ field }) => (
+                                                            <FormItem><FormLabel>Verse/Hadith Text</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl></FormItem>
+                                                        )}/>
+                                                        <FormField control={form.control} name={`types.${index}.quranSource`} render={({ field }) => (
+                                                            <FormItem><FormLabel>Citation Source</FormLabel><FormControl><Input placeholder="e.g. Sahih Bukhari" {...field} /></FormControl></FormItem>
+                                                        )}/>
+                                                    </div>
+                                                    <div className="space-y-4">
+                                                        <h4 className="text-sm font-bold flex items-center gap-2"><ListChecks className="h-4 w-4"/> Key Highlights</h4>
+                                                        <FormField control={form.control} name={`types.${index}.purposePointsRaw`} render={({ field }) => (
+                                                            <FormItem><FormLabel>Points (One per line)</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl></FormItem>
+                                                        )}/>
+                                                    </div>
+                                                </div>
+
+                                                {/* Use Cases */}
+                                                <div className="space-y-4 rounded-lg border p-4 bg-primary/5 border-primary/10">
+                                                    <FormField control={form.control} name={`types.${index}.useCasesHeading`} render={({ field }) => (
+                                                        <FormItem className="mb-4"><FormLabel>Section Heading</FormLabel><FormControl><Input placeholder="e.g. Practical Use Cases" {...field} /></FormControl></FormItem>
+                                                    )}/>
+                                                    <UseCaseEditor control={form.control} typeIndex={index} />
+                                                </div>
+
+                                                {/* Q&A Section */}
+                                                <div className="space-y-4 rounded-lg border p-4 bg-blue-50/50 border-blue-100">
+                                                    <QAEditor control={form.control} typeIndex={index} />
+                                                </div>
+
+                                                {/* Usage Rules */}
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <FormField control={form.control} name={`types.${index}.usage`} render={({ field }) => (
+                                                        <FormItem><FormLabel>Permissible Usage *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
+                                                    )}/>
+                                                    <FormField control={form.control} name={`types.${index}.restrictions`} render={({ field }) => (
+                                                        <FormItem><FormLabel>Restrictions</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
+                                                    )}/>
                                                 </div>
                                             </div>
-                                            
-                                            {/* References & Highlights */}
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-lg border p-4 bg-muted/5">
-                                                <div className="space-y-4">
-                                                    <h4 className="text-sm font-bold flex items-center gap-2"><Quote className="h-4 w-4"/> Religious Reference</h4>
-                                                    <FormField control={form.control} name={`types.${index}.quranVerse`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Verse/Hadith Text</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl></FormItem>
-                                                    )}/>
-                                                    <FormField control={form.control} name={`types.${index}.quranSource`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Citation Source</FormLabel><FormControl><Input placeholder="e.g. Sahih Bukhari" {...field} /></FormControl></FormItem>
-                                                    )}/>
-                                                </div>
-                                                <div className="space-y-4">
-                                                    <h4 className="text-sm font-bold flex items-center gap-2"><ListChecks className="h-4 w-4"/> Key Highlights</h4>
-                                                    <FormField control={form.control} name={`types.${index}.purposePointsRaw`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Points (One per line)</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl></FormItem>
-                                                    )}/>
-                                                </div>
-                                            </div>
-
-                                            {/* Use Cases */}
-                                            <div className="space-y-4 rounded-lg border p-4 bg-primary/5 border-primary/10">
-                                                <FormField control={form.control} name={`types.${index}.useCasesHeading`} render={({ field }) => (
-                                                    <FormItem className="mb-4"><FormLabel>Section Heading</FormLabel><FormControl><Input placeholder="e.g. Practical Use Cases" {...field} /></FormControl></FormItem>
-                                                )}/>
-                                                <UseCaseEditor control={form.control} typeIndex={index} />
-                                            </div>
-
-                                            {/* Q&A Section */}
-                                            <div className="space-y-4 rounded-lg border p-4 bg-blue-50/50 border-blue-100">
-                                                <QAEditor control={form.control} typeIndex={index} />
-                                            </div>
-
-                                            {/* Usage Rules */}
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <FormField control={form.control} name={`types.${index}.usage`} render={({ field }) => (
-                                                    <FormItem><FormLabel>Permissible Usage *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
-                                                )}/>
-                                                <FormField control={form.control} name={`types.${index}.restrictions`} render={({ field }) => (
-                                                    <FormItem><FormLabel>Restrictions</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
-                                                )}/>
-                                            </div>
-                                        </div>
-                                    </TabsContent>
-                                ))}
+                                        </TabsContent>
+                                    );
+                                })}
                             </Tabs>
                             <div className="border-t p-6 bg-muted/5 flex justify-end">
                                 <Button type="submit" disabled={isSubmitting || fields.length === 0 || !isDirty} size="lg">

@@ -1,10 +1,9 @@
-
 'use client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Quote, Target, Info as InfoIcon, HelpCircle, CheckCircle2, Loader2, HandHelping, XCircle, BookOpen } from 'lucide-react';
+import { ArrowLeft, Quote, Target, Info as InfoIcon, HelpCircle, CheckCircle2, Loader2, HandHelping, XCircle, BookOpen, ListChecks } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -16,6 +15,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useInfoSettings } from '@/hooks/use-info-settings';
 import { useDonationInfo } from '@/hooks/use-donation-info';
+import { defaultDonationInfo } from '@/lib/donation-info-default';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -32,7 +32,9 @@ export default function DonationInfoPage() {
     const { donationInfoData, isLoading: isContentLoading } = useDonationInfo();
 
     const isLoading = isInfoLoading || isContentLoading;
-    const donationTypes = donationInfoData?.types || [];
+    const donationTypes = (donationInfoData?.types && donationInfoData.types.length > 0) 
+        ? donationInfoData.types 
+        : defaultDonationInfo;
 
     if (isLoading) {
         return (

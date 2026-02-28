@@ -1,4 +1,3 @@
-
 import type { DonationTypeInfo } from './types';
 
 export const defaultDonationInfo: DonationTypeInfo[] = [
