@@ -126,8 +126,7 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
                                                 <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2 h-4 w-4"/>Verified</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2 h-4 w-4"/>Given</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2 h-4 w-4"/>Hold</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2 h-4 w-4"/>Need Details</DropdownMenuRadioItem>
-                                            </DropdownMenuRadioGroup>
+                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2 h-4 w-4"/>Need Details</DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
@@ -196,10 +195,10 @@ export default function BeneficiariesPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<string | null>(null);
   
-  const canCreate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.beneficiaries.create', false);
-  const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.beneficiaries.update', false);
-  const canDelete = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.beneficiaries.delete', false);
-  const canRead = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.beneficiaries.read', false);
+  const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.create', false);
+  const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.update', false);
+  const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.delete', false);
+  const canRead = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.read', false);
 
   const handleAdd = () => {
     if (!canCreate) return;

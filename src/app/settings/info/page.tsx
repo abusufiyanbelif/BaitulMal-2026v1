@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -194,7 +195,7 @@ export default function InfoSettingsPage() {
                 setActiveTab(mappedTypes[0].id);
             }
         }
-    }, [donationInfoData, isDonationInfoLoading, form]); // Removed activeTab to avoid infinite loop
+    }, [donationInfoData, isDonationInfoLoading, form, activeTab]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -358,7 +359,6 @@ export default function InfoSettingsPage() {
                                             </div>
 
                                             <div className="grid gap-8">
-                                                {/* Basic Info */}
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                                                     <div className="md:col-span-2 space-y-4">
                                                         <FormField control={form.control} name={`types.${index}.title`} render={({ field }) => (
@@ -404,7 +404,6 @@ export default function InfoSettingsPage() {
                                                     </div>
                                                 </div>
                                                 
-                                                {/* References & Highlights */}
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-lg border p-4 bg-muted/5">
                                                     <div className="space-y-4">
                                                         <h4 className="text-sm font-bold flex items-center gap-2"><Quote className="h-4 w-4"/> Religious Reference</h4>
@@ -423,7 +422,6 @@ export default function InfoSettingsPage() {
                                                     </div>
                                                 </div>
 
-                                                {/* Use Cases */}
                                                 <div className="space-y-4 rounded-lg border p-4 bg-primary/5 border-primary/10">
                                                     <FormField control={form.control} name={`types.${index}.useCasesHeading`} render={({ field }) => (
                                                         <FormItem className="mb-4"><FormLabel>Section Heading</FormLabel><FormControl><Input placeholder="e.g. Practical Use Cases" {...field} /></FormControl></FormItem>
@@ -431,12 +429,10 @@ export default function InfoSettingsPage() {
                                                     <UseCaseEditor control={form.control} typeIndex={index} />
                                                 </div>
 
-                                                {/* Q&A Section */}
                                                 <div className="space-y-4 rounded-lg border p-4 bg-blue-50/50 border-blue-100">
                                                     <QAEditor control={form.control} typeIndex={index} />
                                                 </div>
 
-                                                {/* Usage Rules */}
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <FormField control={form.control} name={`types.${index}.usage`} render={({ field }) => (
                                                         <FormItem><FormLabel>Permissible Usage *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
