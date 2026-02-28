@@ -1,18 +1,18 @@
+
 import type { DonationTypeInfo } from './types';
 
 export const defaultDonationInfo: DonationTypeInfo[] = [
     {
         id: 'zakat',
         title: "Zakat – Islam ka Farz Rukun",
-        description: "Zakat Islam ke 5 Arkaan (Five Pillars) mein se ek hai. Har sahib-e-Nisab Muslim par saal mein ek martaba 2.5% apni jama poonji par farz hai.",
+        description: "🔹 Zakat Kya Hai? Zakat Islam ke 5 Arkaan (Five Pillars) mein se ek hai. Har sahib-e-Nisab Muslim par saal mein ek martaba 2.5% apni jama poonji par farz hai.",
         quranVerse: "Namaz qayam karo aur Zakat ada karo.",
         quranSource: "Surah Al-Baqarah 2:43",
         purposePoints: [
-            "🔹 Nisab: 87.48 gram sona / 612.36 gram chandi ya unki barabar cash/savings (1 saal tak).",
-            "🔹 Kin 8 Categories Ko Di Ja Sakti Hai? (Quran 9:60):",
-            "1. Faqeer (Nidhaar), 2. Miskeen (Mohtaj), 3. Aamil (Zakat collect karne wale), 4. Muallafatul Quloob (Dil jorne ke liye), 5. Ghulamon ko azaad karana, 6. Qarzdar (Debt relief), 7. Fi Sabilillah (Allah ke raaste mein), 8. Musafir (Ibn-us-Sabeel)."
+            "🔹 Nisab Kya Hai? Agar kisi ke paas: 87.48 gram sona ya 612.36 gram chandi ya unki barabar cash/savings ho Aur yeh maal 1 saal tak us ke paas rahe, toh Zakat farz hoti hai.",
+            "🔹 Zakat Kin 8 Categories Ko Di Ja Sakti Hai? (Qur’an 9:60 ke mutabiq) Faqeer, Miskeen ,Zakat collectors (Aamil), Dil jorne ke liye (Muallafatul Quloob), Ghulamon ko azaad karana, Qarzdar (debt mein dooba hua), Fi Sabilillah (Allah ke raaste mein), Musafir (Ibn-us-Sabeel)"
         ],
-        useCasesHeading: "Detailed Zakat Scenarios (Important)",
+        useCasesHeading: "🔹 Detailed Zakat Scenarios (Important)",
         useCases: [
             { id: 'u1', title: "✅ Case 1: Ration Kit", description: "Agar mustahiq family faqeer/miskeen category mein hai → Zakat se ration diya ja sakta hai.", isAllowed: true, isHidden: false },
             { id: 'u2', title: "✅ Case 2: Medical Emergency", description: "Agar patient ke paas ilaaj ke paise nahi → Zakat allowed.", isAllowed: true, isHidden: false },
@@ -23,8 +23,8 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
         qaItems: [
             { id: 'q1', question: "Zakat kis par farz hai?", answer: "Har us musalman par jo sahib-e-nisab ho (jis ke paas ek saal tak nisab ke barabar maal rahe).", reference: "Fiqh Ruling", isHidden: false }
         ],
-        usage: "Tareeqa (How): Niyyat zaroori hai. Mustahiq ko milkiyat transfer honi chahiye. Direct cash ya goods dono jaiz. Organization ke through dene par ensure karein ke Shariah compliance ho.",
-        restrictions: "Kahan Use Nahi Ho Sakti: Masjid construction, Madrasa building, Hospital building, Infrastructure projects, ya apne walidain/bachon ko dena sakht mana hai.",
+        usage: "🔹 Zakat Dene Ka Tareeqa (How)\n-Niyyat zaroori hai\n-Mustahiq ko milkiyat transfer honi chahiye\n-Direct cash ya goods dono jaiz\n-Organization ke through dene par ensure karein ke Shariah compliance ho",
+        restrictions: "❌ Masjid construction\n❌ Madrasa building\n❌ Hospital building\n❌ Apne walidain, bachon ko\n❌ Infrastructure projects\n\nIt cannot be used for infrastructure or given to immediate family members (parents, children).",
     },
     {
         id: 'sadaqah',
@@ -35,7 +35,6 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
             "Removing hardship",
             "Continuous reward (Jariyah)"
         ],
-        useCasesHeading: "Practical Use Cases",
         useCases: [],
         qaItems: [],
         usage: "Can be given to anyone in need, regardless of faith.",
@@ -44,7 +43,6 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
         id: 'fidiya',
         title: "Fidiya (Compensation)",
         description: "Donation made when someone is unable to fast during Ramadan due to valid health reasons.",
-        useCasesHeading: "Usage Examples",
         useCases: [],
         qaItems: [],
         usage: "Primarily used to provide meals to the poor and needy.",
@@ -53,7 +51,6 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
         id: 'lillah',
         title: "Lillah (For the Sake of Allah)",
         description: "Voluntary Sadaqah intended for institutions and public welfare.",
-        useCasesHeading: "Institutional Support",
         useCases: [],
         qaItems: [],
         usage: "Used for infrastructure, salaries, and running costs of community institutions.",
@@ -62,7 +59,6 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
         id: 'interest',
         title: "Interest (Riba Disposal)",
         description: "Accumulated bank interest must be disposed of without intention of reward.",
-        useCasesHeading: "Disposal Methods",
         useCases: [],
         qaItems: [],
         usage: "Must be given away without spiritual reward expectation.",

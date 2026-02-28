@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -181,7 +182,7 @@ const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete
         </CardFooter>
         </Card>
     );
-}
+};
 
 export default function CampaignPage() {
   const router = useRouter();

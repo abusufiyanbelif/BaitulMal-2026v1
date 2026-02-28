@@ -210,7 +210,7 @@ export interface DonationLink {
 }
 
 export interface TransactionDetail {
-  id: string; // For react-hook-form key
+  id: string;
   amount: number;
   transactionId?: string;
   screenshotUrl?: string;
@@ -226,7 +226,7 @@ export interface Donation extends DocumentData {
   donorPhone: string;
   receiverName: string;
   amount: number;
-  type?: DonationCategory; // For single-category donations
+  type?: DonationCategory;
   typeSplit: { category: DonationCategory; amount: number, forFundraising?: boolean }[];
   linkSplit?: DonationLink[];
   donationType: 'Cash' | 'Online Payment' | 'Check' | 'Other';
@@ -239,8 +239,8 @@ export interface Donation extends DocumentData {
   uploadedById: string;
   createdAt?: Timestamp | FieldValue;
   transactions?: TransactionDetail[];
-  campaignId?: string; // Legacy field
-  campaignName?: string; // Legacy field
+  campaignId?: string;
+  campaignName?: string;
   contributionFromDate?: string;
   contributionToDate?: string;
 }
@@ -263,16 +263,4 @@ export interface UserProfile extends DocumentData {
   idProofUrl?: string;
   organizationGroup?: GroupId | null;
   organizationRole?: string;
-}
-
-export interface OrganizationMember {
-  id: string;
-  name: string;
-  role: string;
-  group: 'founder' | 'co-founder' | 'finance' | 'member';
-  imageUrl?: string;
-}
-
-export interface OrganizationSettings extends DocumentData {
-  members?: OrganizationMember[];
 }

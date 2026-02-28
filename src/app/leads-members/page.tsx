@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -32,17 +33,19 @@ import { usePublicData } from '@/hooks/use-public-data';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 
-const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handleStatusUpdate, handleCopyClick, handleDeleteClick }: { 
-    lead: Lead & { collected: number; progress: number; }, 
-    index: number,
-    router: any,
-    canUpdate: boolean,
-    canCreate: boolean,
-    canDelete: boolean,
-    handleStatusUpdate: any,
-    handleCopyClick: any,
-    handleDeleteClick: any
-}) => {
+interface LeadCardProps {
+    lead: Lead & { collected: number; progress: number; };
+    index: number;
+    router: ReturnType<typeof useRouter>;
+    canUpdate: boolean;
+    canCreate: boolean;
+    canDelete: boolean;
+    handleStatusUpdate: (leadToUpdate: Lead, field: 'status' | 'authenticityStatus' | 'publicVisibility', value: string) => Promise<void>;
+    handleCopyClick: (lead: Lead) => void;
+    handleDeleteClick: (lead: Lead) => void;
+}
+
+const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handleStatusUpdate, handleCopyClick, handleDeleteClick }: LeadCardProps) => {
     const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : 
                          lead.purpose === 'Medical' ? HeartPulse : 
                          lead.purpose === 'Relief' ? LifeBuoy : 
@@ -218,7 +221,7 @@ export default function LeadPage() {
     
     const completedLeads = leadsWithProgress
       .filter(l => l.status === 'Completed')
-      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
+      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-members/${l.id}/summary` }));
 
     return [...completedCampaigns, ...completedLeads];
   }, [campaignsWithProgress, leadsWithProgress]);
