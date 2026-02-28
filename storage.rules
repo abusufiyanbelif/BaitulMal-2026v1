@@ -47,6 +47,22 @@ service firebase.storage {
                  )
                );
     }
+
+    function hasSubmodulePermission(module, submodule, permission) {
+        let data = getUserData();
+        return isSignedIn() && 
+               userExists() &&
+               (
+                 isAdmin() ||
+                 hasPermission(module, permission) ||
+                 (
+                   'permissions' in data &&
+                   module in data.permissions &&
+                   submodule in data.permissions[module] &&
+                   data.permissions[module][submodule].get(permission, false) == true
+                 )
+               );
+    }
     
     // ----------------------------------------------------------------------
     // Path Rules
@@ -72,6 +88,21 @@ service firebase.storage {
         allow write: if isAdmin() || hasPermission('beneficiaries', 'update');
     }
 
+    // Settings sub-folders
+    match /settings/branding/{allPaths=**} {
+        allow read: if true;
+        allow write: if isAdmin() || hasSubmodulePermission('settings', 'app', 'update');
+    }
+    match /settings/payment/{allPaths=**} {
+        allow read: if true;
+        allow write: if isAdmin() || hasSubmodulePermission('settings', 'app', 'update');
+    }
+    match /settings/info/{allPaths=**} {
+        allow read: if true;
+        allow write: if isAdmin() || hasSubmodulePermission('settings', 'info', 'update');
+    }
+    
+    // Fallback for root settings if any
     match /settings/{allPaths=**} {
         allow read: if true;
         allow write: if isAdmin() || hasPermission('settings', 'update');

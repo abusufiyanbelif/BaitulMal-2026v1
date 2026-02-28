@@ -72,11 +72,6 @@ export interface DonationTypeInfo {
   hideQA?: boolean;
   hideUsage?: boolean;
   hideRestrictions?: boolean;
-  // Extra fields
-  impact?: string;
-  keyUse?: string;
-  application?: string;
-  extraContent?: string;
 }
 
 export interface DonationInfoData extends DocumentData {

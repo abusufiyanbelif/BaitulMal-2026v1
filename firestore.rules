@@ -15,10 +15,6 @@ service cloud.firestore {
       return /databases/$(database)/documents/users/$(userId);
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-    
     function userExists() {
       return exists(userDoc(request.auth.uid));
     }
@@ -34,14 +30,31 @@ service cloud.firestore {
     }
 
     function hasPermission(module, permission) {
+        let userData = getUserData();
         return isSignedIn() && 
                userExists() &&
                (
                  isAdmin() ||
                  (
-                   'permissions' in getUserData() &&
-                   module in getUserData().permissions &&
-                   getUserData().permissions[module].get(permission, false) == true
+                   'permissions' in userData &&
+                   module in userData.permissions &&
+                   userData.permissions[module].get(permission, false) == true
+                 )
+               );
+    }
+
+    function hasSubmodulePermission(module, submodule, permission) {
+        let userData = getUserData();
+        return isSignedIn() && 
+               userExists() &&
+               (
+                 isAdmin() ||
+                 hasPermission(module, permission) ||
+                 (
+                   'permissions' in userData &&
+                   module in userData.permissions &&
+                   submodule in userData.permissions[module] &&
+                   userData.permissions[module][submodule].get(permission, false) == true
                  )
                );
     }
@@ -52,11 +65,11 @@ service cloud.firestore {
     
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isAdmin() || hasPermission('settings', 'update');
+      allow write: if isAdmin() || hasPermission('settings', 'update') || (settingId == 'donationInfo' && hasSubmodulePermission('settings', 'info', 'update')) || (settingId == 'info' && hasSubmodulePermission('settings', 'info', 'update')) || (settingId == 'branding' && hasSubmodulePermission('settings', 'app', 'update')) || (settingId == 'payment' && hasSubmodulePermission('settings', 'app', 'update'));
     }
     
     match /page_hits/{pageId} {
-        allow read: if hasPermission('analytics', 'read') || isAdmin();
+        allow read: if isAdmin() || hasPermission('analytics', 'read');
         allow write: if true; 
     }
 
@@ -112,6 +125,9 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
+      function isOwner(uId) {
+        return isSignedIn() && request.auth.uid == uId;
+      }
       allow get: if isOwner(userId) || hasPermission('users', 'read') || isAdmin();
       allow list: if hasPermission('users', 'read') || hasPermission('settings', 'update') || isAdmin();
       allow create: if isOwner(userId) || hasPermission('users', 'create') || isAdmin();
