@@ -76,7 +76,7 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
     );
     
     return (
-        <React.Fragment>
+        <>
             <TableRow className="bg-background hover:bg-accent/50 data-[state=open]:bg-accent/50 cursor-pointer" onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? 'open' : 'closed'}>
                 <TableCell className="w-[100px]">
                      <div className="flex items-center gap-2">
@@ -160,7 +160,7 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
                     </TableCell>
                 </TableRow>
             )}
-        </React.Fragment>
+        </>
     );
 }
 

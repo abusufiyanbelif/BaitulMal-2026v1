@@ -63,7 +63,17 @@ interface CampaignCardProps {
     handleDeleteClick: (campaign: Campaign) => void;
 }
 
-const CampaignCard = ({ campaign, index, router, canUpdate, canCreate, canDelete, handleStatusUpdate, handleCopyClick, handleDeleteClick }: CampaignCardProps) => {
+const CampaignCard = ({ 
+    campaign, 
+    index, 
+    router, 
+    canUpdate, 
+    canCreate, 
+    canDelete, 
+    handleStatusUpdate, 
+    handleCopyClick, 
+    handleDeleteClick 
+}: CampaignCardProps) => {
     const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
 
     return (
@@ -238,7 +248,7 @@ export default function CampaignPage() {
     
     const completedLeads = leadsWithProgress
       .filter(l => l.status === 'Completed')
-      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/campaign-members/${l.id}/summary` }));
+      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-members/${l.id}/summary` }));
 
     return [...completedCampaigns, ...completedLeads];
   }, [campaignsWithProgress, leadsWithProgress]);
@@ -323,7 +333,7 @@ export default function CampaignPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-black tracking-tighter">CAMPAIGN HUB</h1>
+          <h1 className="text-3xl font-bold tracking-tighter">CAMPAIGN HUB</h1>
           <p className="text-muted-foreground text-sm max-w-2xl">Manage community initiatives from this command center.</p>
         </div>
 
@@ -357,7 +367,7 @@ export default function CampaignPage() {
                   <AccordionItem key={section.id} value={section.id} className="border rounded-lg px-4 bg-card/50">
                     <AccordionTrigger className="hover:no-underline py-4">
                       <div className="flex items-center gap-3">
-                        <span className="text-lg font-black tracking-tight uppercase">{section.title}</span>
+                        <span className="text-lg font-bold tracking-tight uppercase">{section.title}</span>
                         <Badge variant="secondary" className="rounded-full px-2 py-0 h-5 text-[10px]">{section.items.length}</Badge>
                       </div>
                     </AccordionTrigger>

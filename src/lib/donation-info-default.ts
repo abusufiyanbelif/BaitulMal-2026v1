@@ -19,8 +19,15 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
             { id: 'u4', title: "❌ Case 4: School Building Banana", description: "Allowed nahi (yeh Lillah se hoga).", isAllowed: false, isHidden: false },
             { id: 'u5', title: "✅ Case 5: Student Fees", description: "Agar student ghareeb hai aur fees nahi de sakta → Zakat allowed.", isAllowed: true, isHidden: false }
         ],
-        qaItems: [],
-        usage: "🔹 Zakat Dene Ka Tareeqa (How)\n-Niyyat zaroori hai\n-Mustahiq ko milkiyat transfer honi chahiye\n-Direct cash ya goods dono jaiz\n-Organization ke through dene par ensure karein ke Shariah compliance ho",
+        qaItems: [
+            { 
+                id: 'q1', 
+                question: "Zakat Dene Ka Tareeqa (How)?", 
+                answer: "- Niyyat zaroori hai\n- Mustahiq ko milkiyat transfer honi chahiye\n- Direct cash ya goods dono jaiz\n- Organization ke through dene par ensure karein ke Shariah compliance ho", 
+                isHidden: false 
+            }
+        ],
+        usage: "Its use is strictly restricted to eight categories of people defined in the Quran (9:60), including the poor, the needy, those in debt, and stranded travellers.",
         restrictions: "It cannot be used for infrastructure (like building mosques or schools) or given to immediate family members (parents, children).",
     },
     {

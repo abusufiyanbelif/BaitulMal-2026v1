@@ -133,7 +133,7 @@ const StatCard = ({ title, count, description, icon: Icon, colorClass, delay }: 
 const BeneficiaryRow = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, onStatusChange, onZakatToggle }: { beneficiary: Beneficiary, index: number, canUpdate?: boolean, canDelete?: boolean, onView: (b: Beneficiary) => void, onEdit: (b: Beneficiary) => void, onDelete: (id: string) => void, onStatusChange: (b: Beneficiary, s: BeneficiaryStatus) => void, onZakatToggle: (b: Beneficiary) => void }) => {
     const [isOpen, setIsOpen] = useState(false);
     return (
-        <React.Fragment>
+        <>
             <TableRow className="bg-background hover:bg-accent/50 cursor-pointer border-none" onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? 'open' : 'closed'}>
                 <TableCell className="w-[60px]">
                     <div className="flex items-center gap-2">
@@ -198,7 +198,7 @@ const BeneficiaryRow = ({ beneficiary, index, canUpdate, canDelete, onView, onEd
                     </TableCell>
                 </TableRow>
             )}
-        </React.Fragment>
+        </>
     );
 };
 

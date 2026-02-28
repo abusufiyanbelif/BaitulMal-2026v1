@@ -81,7 +81,7 @@ const formSchema = z.object({
 
 type DonationInfoFormValues = z.infer<typeof formSchema>;
 
-function UseCaseEditor({ control, typeId, typeIndex, isReadOnly }: { control: any, typeId: string, typeIndex: number, isReadOnly: boolean }) {
+function UseCaseEditor({ control, typeIndex, isReadOnly }: { control: any, typeIndex: number, isReadOnly: boolean }) {
     const { fields, append, remove } = useFieldArray({ control, name: `types.${typeIndex}.useCases` });
     return (
         <div className="space-y-4">
@@ -139,7 +139,7 @@ function UseCaseEditor({ control, typeId, typeIndex, isReadOnly }: { control: an
     );
 }
 
-function QAEditor({ control, typeId, typeIndex, isReadOnly }: { control: any, typeId: string, typeIndex: number, isReadOnly: boolean }) {
+function QAEditor({ control, typeIndex, isReadOnly }: { control: any, typeIndex: number, isReadOnly: boolean }) {
     const { fields, append, remove } = useFieldArray({ control, name: `types.${typeIndex}.qaItems` });
     return (
         <div className="space-y-4">
@@ -370,13 +370,13 @@ export default function InfoSettingsPage() {
                                                     <FormField control={form.control} name={`types.${index}.useCasesHeading`} render={({ field: uhField }) => (<FormItem className="flex-1 mr-4"><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Use Case Heading</FormLabel><FormControl><Input {...uhField} disabled={!isEditingTab} /></FormControl></FormItem>)}/>
                                                     <FormField control={form.control} name={`types.${index}.hideUseCases`} render={({ field: hideField }) => (<FormItem className="flex items-center space-x-2 space-y-0"><FormControl><Checkbox checked={hideField.value} onCheckedChange={hideField.onChange} disabled={!isEditingTab}/></FormControl><FormLabel className="text-[10px] font-bold uppercase cursor-pointer">Hide Section</FormLabel></FormItem>)}/>
                                                 </div>
-                                                <UseCaseEditor control={form.control} typeId={typeId} typeIndex={index} isReadOnly={!isEditingTab} />
+                                                <UseCaseEditor control={form.control} typeIndex={index} isReadOnly={!isEditingTab} />
                                             </div>
                                             <div className="space-y-4 rounded-lg border-2 border-blue-100 p-4 bg-blue-50/30">
                                                 <div className="flex items-center justify-end">
                                                     <FormField control={form.control} name={`types.${index}.hideQA`} render={({ field: hideField }) => (<FormItem className="flex items-center space-x-2 space-y-0"><FormControl><Checkbox checked={hideField.value} onCheckedChange={hideField.onChange} disabled={!isEditingTab}/></FormControl><FormLabel className="text-[10px] font-bold uppercase cursor-pointer">Hide Section</FormLabel></FormItem>)}/>
                                                 </div>
-                                                <QAEditor control={form.control} typeId={typeId} typeIndex={index} isReadOnly={!isEditingTab} />
+                                                <QAEditor control={form.control} typeIndex={index} isReadOnly={!isEditingTab} />
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div className="space-y-2">
