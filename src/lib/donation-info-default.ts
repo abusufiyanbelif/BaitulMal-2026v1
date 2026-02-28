@@ -4,9 +4,7 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
     {
         id: 'zakat',
         title: "Zakat – Islam ka Farz Rukun",
-        description: "🔹 Zakat Kya Hai?\nZakat Islam ke 5 Arkaan (Five Pillars) mein se ek hai. Har sahib-e-Nisab Muslim par saal mein ek martaba 2.5% apni jama poonji par farz hai.",
-        quranVerse: "Namaz qayam karo aur Zakat ada karo.",
-        quranSource: "Surah Al-Baqarah 2:43",
+        description: "🔹 Zakat Kya Hai?\nZakat Islam ke 5 Arkaan (Five Pillars) mein se ek hai. Har sahib-e-Nisab Muslim par saal mein ek martaba 2.5% apni jama poonji par farz hai.\n\nQur’an: “Namaz qayam karo aur Zakat ada karo.” — (Surah Al-Baqarah 2:43)",
         purposePoints: [
             "🔹 Nisab Kya Hai? Agar kisi ke paas: 87.48 gram sona ya 612.36 gram chandi ya unki barabar cash/savings ho Aur yeh maal 1 saal tak us ke paas rahe, toh Zakat farz hoti hai.",
             "🔹 Zakat Kin 8 Categories Ko Di Ja Sakti Hai? (Qur’an 9:60 ke mutabiq) Faqeer, Miskeen, Zakat collectors (Aamil), Dil jorne ke liye (Muallafatul Quloob), Ghulamon ko azaad karana, Qarzdar (debt mein dooba hua), Fi Sabilillah (Allah ke raaste mein), Musafir (Ibn-us-Sabeel)"
