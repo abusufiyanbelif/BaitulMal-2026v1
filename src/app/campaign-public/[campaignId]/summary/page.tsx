@@ -150,23 +150,7 @@ export default function PublicCampaignSummaryPage() {
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
 
-        return { 
-            totalCollectedForGoal, 
-            fundingProgress, 
-            targetAmount: fundingGoal, 
-            remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal), 
-            totalBeneficiaries: beneficiaries.length, 
-            beneficiariesGiven, 
-            beneficiariesPending, 
-            zakatAllocated, 
-            zakatGiven, 
-            zakatPending, 
-            zakatAvailableForGoal, 
-            zakatForGoalAmount, 
-            amountsByCategory, 
-            fundTotals,
-            grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
-        };
+        return { totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, totalBeneficiaries: beneficiaries.length, beneficiariesGiven, beneficiariesPending, zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, amountsByCategory, fundTotals, grandTotal: fundTotals.grandTotal };
     }, [allDonations, campaign, beneficiaries]);
 
     const handleShare = async () => {
@@ -182,7 +166,7 @@ export default function PublicCampaignSummaryPage() {
         return (
             <main className="container mx-auto p-4 md:p-8 text-center">
                 <p className="text-lg text-muted-foreground">This campaign is not publicly available.</p>
-                <Button asChild className="mt-4 active:scale-95 transition-transform"><a href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Campaigns</a></Button>
+                <Button asChild className="mt-4 active:scale-95 transition-transform"><Link href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Campaigns</Link></Button>
             </main>
         );
     }
@@ -192,7 +176,7 @@ export default function PublicCampaignSummaryPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8">
-             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform"><a href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</a></Button></div>
+             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform"><Link href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
             
             <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center">
                 {campaign.imageUrl ? (
@@ -295,7 +279,7 @@ export default function PublicCampaignSummaryPage() {
                                 <CardDescription>Tracking of Zakat funds collected and allocated within this initiative.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                               <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-semibold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
+                               <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-semibold font-mono">₹{fundingData.fundTotals.zakat.toLocaleString('en-IN')}</span></div>
                                 <Separator />
                                 <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
                                     <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Allocated as Cash-in-Hand</span><span className="font-semibold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>

@@ -170,7 +170,7 @@ const BeneficiaryRow = ({ beneficiary, index, canUpdate, canDelete, onView, onEd
                             {canUpdate && (
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><ChevronsUpDown className="mr-2 h-4 w-4" /> Change Status</DropdownMenuSubTrigger>
-                                    <DropdownMenuPortal><DropdownMenuSubContent><DropdownMenuRadioGroup value={beneficiary.status} onValueChange={(s) => onStatusChange(beneficiary, s as any)}><DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem><DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem><DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem><DropdownMenuRadioItem value="Hold">Hold</DropdownMenuRadioItem><DropdownMenuRadioItem value="Need More Details">Need Details</DropdownMenuRadioItem></DropdownMenuRadioGroup></DropdownMenuSubContent></DropdownMenuPortal>
+                                    <DropdownMenuPortal><DropdownMenuSubContent><DropdownMenuRadioGroup value={beneficiary.status} onValueChange={(s) => onStatusChange(beneficiary, s as any)}><DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem><DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem><DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem><DropdownMenuRadioItem value="Hold">Hold</DropdownMenuRadioItem><DropdownMenuRadioItem value="Need More Details">Need Details</DropdownMenuRadioGroup></DropdownMenuSubContent></DropdownMenuPortal>
                                 </DropdownMenuSub>
                             )}
                             {canUpdate && (

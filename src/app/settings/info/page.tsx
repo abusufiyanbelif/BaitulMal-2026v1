@@ -75,7 +75,7 @@ export default function InfoSettingsPage() {
     }, [infoSettings]);
     
     useEffect(() => {
-        if (donationInfoData) {
+        if (donationInfoData && donationInfoData.types) {
             const mappedTypes = donationInfoData.types.map(t => ({
                 ...t,
                 purposePointsRaw: t.purposePoints?.join('\n') || ''
@@ -94,7 +94,7 @@ export default function InfoSettingsPage() {
                 setActiveTab(mappedDefaults[0].id);
             }
         }
-    }, [donationInfoData, form, activeTab, isDonationInfoLoading]);
+    }, [donationInfoData, isDonationInfoLoading, form, activeTab]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -183,7 +183,7 @@ export default function InfoSettingsPage() {
                             <Switch id="donation-info-public" checked={isDonationInfoPublic} onCheckedChange={setIsDonationInfoPublic} disabled={isSubmitting} />
                         </div>
                     </div>
-                </CardHeader>
+                </CardContent>
                 <CardFooter className="justify-end border-t bg-muted/5 p-4">
                     <Button onClick={handleSaveVisibility} disabled={isSubmitting}>
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

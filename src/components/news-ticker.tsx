@@ -49,8 +49,8 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
   const isCompleted = variant === 'completed';
   const isDonation = variant === 'donation';
 
-  // Double the items for a seamless loop in the marquee
-  const displayItems = [...items, ...items];
+  // Triple items for a truly seamless loop
+  const displayItems = [...items, ...items, ...items];
 
   return (
     <div className={cn(
@@ -82,7 +82,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
           variant="secondary"
           size="icon"
           className="h-7 w-7 rounded-full shadow-sm"
-          onClick={() => scroll('left')}
+          onClick={(e) => { e.preventDefault(); scroll('left'); }}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -90,7 +90,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
           variant="secondary"
           size="icon"
           className="h-7 w-7 rounded-full shadow-sm"
-          onClick={() => scroll('right')}
+          onClick={(e) => { e.preventDefault(); scroll('right'); }}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -99,14 +99,14 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
       <div 
         ref={scrollRef}
         onScroll={checkScroll}
-        className="flex-1 flex items-center overflow-x-auto scrollbar-hide snap-x snap-mandatory px-4"
+        className="flex-1 flex items-center overflow-hidden relative"
       >
         <div 
-          className="flex items-center gap-4 animate-marquee"
-          style={{ '--duration': `${Math.max(30, items.length * 10)}s` } as React.CSSProperties}
+          className="flex items-center gap-4 animate-marquee whitespace-nowrap h-full"
+          style={{ '--duration': `${Math.max(40, items.length * 15)}s` } as React.CSSProperties}
         >
           {displayItems.map((item, idx) => (
-            <div key={`${item.id}-${idx}`} className="flex items-center shrink-0 snap-center pr-8 border-r border-dashed border-muted-foreground/20 last:border-0 h-full">
+            <div key={`${item.id}-${idx}`} className="flex items-center shrink-0 pr-8 border-r border-dashed border-muted-foreground/20 last:border-0 h-full py-3">
               <span className={cn(
                 "h-1.5 w-1.5 rounded-full mr-3 shrink-0",
                 isCompleted ? "bg-muted-foreground" : 

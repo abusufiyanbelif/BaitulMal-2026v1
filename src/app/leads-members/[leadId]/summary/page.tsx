@@ -313,7 +313,7 @@ export default function LeadSummaryPage() {
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
 
-        return { totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, beneficiariesGiven, beneficiariesPending, zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, amountsByCategory, fundTotals };
+        return { totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, totalBeneficiaries: beneficiaries.length, beneficiariesGiven, beneficiariesPending, zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, amountsByCategory, fundTotals };
     }, [beneficiaries, allDonations, lead]);
     
     if (isLoading) return <BrandedLoader />;

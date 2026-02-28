@@ -579,7 +579,7 @@ export default function CampaignSummaryPage() {
                     </div>
                  </div>
             </div>
-            <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={{ title: `Campaign: ${campaign.name}`, text: `Progress update for ${campaign.name}`, url: `${window.location.origin}/campaign-public/${campaignId}/summary` }} />
+            <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
         </main>
     );
 }
