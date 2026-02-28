@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useFirestore, useMemoFirebase, useCollection, collection, doc, updateDoc } from '@/firebase';
+import { useFirestore, useMemoFirebase, useCollection, collection, doc } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import type { Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -40,8 +40,6 @@ import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterB
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn, getNestedValue } from '@/lib/utils';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 
 type SortKey = keyof Beneficiary | 'srNo';
 type BeneficiaryStatus = Beneficiary['status'];
@@ -126,8 +124,7 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
                                                 <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2 h-4 w-4"/>Verified</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2 h-4 w-4"/>Given</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2 h-4 w-4"/>Hold</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2 h-4 w-4"/>Need Details</DropdownMenuRadioItem>
-                                            </DropdownMenuRadioGroup>
+                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2 h-4 w-4"/>Need Details</DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>

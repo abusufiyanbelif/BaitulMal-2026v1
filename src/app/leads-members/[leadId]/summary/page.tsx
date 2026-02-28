@@ -244,63 +244,6 @@ export default function LeadSummaryPage() {
     const handleEditClick = () => setEditMode(true);
     const handleCancel = () => setEditMode(false);
 
-    const summaryData = React.useMemo(() => {
-        if (!beneficiaries || !allDonations || !lead) return null;
-        const donations = allDonations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id));
-        const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
-        const amountsByCategory: Record<string, number> = {};
-        donationCategories.forEach(cat => amountsByCategory[cat] = 0);
-        let zakatForGoalAmount = 0;
-        
-        verifiedDonationsList.forEach(d => {
-            const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id);
-            if (!leadAllocation) return;
-            const allocationProportion = leadAllocation.amount / (d.amount || 1);
-            const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
-            splits.forEach(split => {
-                const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                if (amountsByCategory.hasOwnProperty(category)) {
-                    const allocatedAmount = split.amount * allocationProportion;
-                    amountsByCategory[category] += allocatedAmount;
-                    const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
-                    if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
-                }
-            });
-        });
-
-        const zakatAllocated = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation).reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
-        const zakatGiven = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation && b.status === 'Given').reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
-        const zakatPending = zakatAllocated - zakatGiven;
-        const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
-        
-        const totalCollectedForGoal = Object.entries(amountsByCategory)
-            .filter(([category]) => lead.allowedDonationTypes?.includes(category as DonationCategory))
-            .reduce((sum, [category, amount]) => {
-                if (category === 'Zakat') return sum + zakatAvailableForGoal;
-                return sum + amount;
-            }, 0);
-
-        const fundingGoal = lead.targetAmount || 0;
-        const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
-        
-        const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
-        const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
-
-        const fundTotals = {
-            fitra: amountsByCategory['Fitra'] || 0,
-            zakat: amountsByCategory['Zakat'] || 0,
-            sadaqah: amountsByCategory['Sadaqah'] || 0,
-            fidiya: amountsByCategory['Fidiya'] || 0,
-            interest: amountsByCategory['Interest'] || 0,
-            lillah: amountsByCategory['Lillah'] || 0,
-            loan: amountsByCategory['Loan'] || 0,
-            monthlyContribution: amountsByCategory['Monthly Contribution'] || 0,
-            grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
-        };
-
-        return { totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, totalBeneficiaries: beneficiaries.length, beneficiariesGiven, beneficiariesPending, zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, amountsByCategory, fundTotals };
-    }, [beneficiaries, allDonations, lead]);
-    
     if (isLoading) return <BrandedLoader />;
     
     if (leadError || beneficiariesError || donationsError) {
@@ -318,7 +261,7 @@ export default function LeadSummaryPage() {
     if (!lead) return <main className="container mx-auto p-4 md:p-8 text-center"><p>Lead not found.</p></main>;
     
     const handleShare = async () => {
-        if (!lead || !summaryData) return;
+        if (!lead) return;
         setShareDialogData({ title: `Lead Summary: ${lead.name}`, text: `Check out progress for ${lead.name}`, url: `${window.location.origin}/leads-public/${leadId}/summary` });
         setIsShareDialogOpen(true);
     };

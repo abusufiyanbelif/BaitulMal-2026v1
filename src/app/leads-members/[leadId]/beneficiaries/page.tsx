@@ -25,7 +25,7 @@ import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/table';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { 
@@ -50,7 +50,8 @@ import {
     FileUp,
     CopyPlus,
     Search,
-    ShieldAlert
+    ShieldAlert,
+    ImageIcon
 } from 'lucide-react';
 import {
   DropdownMenu,

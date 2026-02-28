@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Quote, Target, Info as InfoIcon, HelpCircle, CheckCircle2, Loader2, HandHelping, XCircle, BookOpen, ListChecks } from 'lucide-react';
+import { ArrowLeft, Quote, Target, Loader2, CheckCircle2, XCircle, BookOpen, ListChecks } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -17,8 +17,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useInfoSettings } from '@/hooks/use-info-settings';
 import { useDonationInfo } from '@/hooks/use-donation-info';
 import { defaultDonationInfo } from '@/lib/donation-info-default';
-import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
@@ -238,7 +236,7 @@ export default function DonationInfoPage() {
 
       <div className="max-w-5xl mx-auto">
         <Alert className="bg-primary/5 border-primary/20 p-6 rounded-2xl shadow-sm">
-            <InfoIcon className="h-6 w-6 text-primary" />
+            <AlertCircle className="h-6 w-6 text-primary" />
             <AlertTitle className="font-black uppercase text-sm tracking-widest ml-2">Consult a Scholar</AlertTitle>
             <AlertDescription className="text-base font-medium ml-2 mt-2">
                 While this page provides general guidelines, specific financial situations can vary. We always recommend consulting with a knowledgeable religious scholar for precise rulings on your personal wealth and Zakat calculation.

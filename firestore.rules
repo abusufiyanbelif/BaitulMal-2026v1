@@ -31,13 +31,17 @@ service cloud.firestore {
     }
 
     function hasPermission(module, permission) {
+        let data = getUserData();
         return isSignedIn() && 
                userExists() &&
-               'permissions' in getUserData() &&
-               module in getUserData().permissions &&
                (
-                 (permission in getUserData().permissions[module] && getUserData().permissions[module][permission] == true) ||
-                 isAdmin()
+                 isAdmin() ||
+                 (
+                   'permissions' in data &&
+                   module in data.permissions &&
+                   permission in data.permissions[module] && 
+                   data.permissions[module][permission] == true
+                 )
                );
     }
 
@@ -45,13 +49,15 @@ service cloud.firestore {
         let data = getUserData();
         return isSignedIn() && 
                userExists() &&
-               'permissions' in data &&
-               module in data.permissions &&
                (
-                 (submodule in data.permissions[module] && 
-                  permission in data.permissions[module][submodule] && 
-                  data.permissions[module][submodule][permission] == true) ||
-                 isAdmin()
+                 isAdmin() ||
+                 (
+                   'permissions' in data &&
+                   module in data.permissions &&
+                   submodule in data.permissions[module] && 
+                   permission in data.permissions[module][submodule] && 
+                   data.permissions[module][submodule][permission] == true
+                 )
                );
     }
 

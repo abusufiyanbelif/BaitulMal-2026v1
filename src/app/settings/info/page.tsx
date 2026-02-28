@@ -160,6 +160,7 @@ export default function InfoSettingsPage() {
     const [isDonationInfoPublic, setIsDonationInfoPublic] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState<string>('');
+    const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
     const form = useForm<DonationInfoFormValues>({
         resolver: zodResolver(formSchema),
@@ -179,9 +180,8 @@ export default function InfoSettingsPage() {
         }
     }, [infoSettings]);
     
-    // Load initial data only once or when force refetched
     useEffect(() => {
-        if (!isDonationInfoLoading && donationInfoData && fields.length === 0) {
+        if (!isDonationInfoLoading && donationInfoData && !initialDataLoaded) {
             const dataToLoad = (donationInfoData.types && donationInfoData.types.length > 0) ? donationInfoData.types : defaultDonationInfo;
             const mappedTypes = dataToLoad.map(t => ({
                 ...t,
@@ -193,8 +193,9 @@ export default function InfoSettingsPage() {
             
             form.reset({ types: mappedTypes });
             if (mappedTypes.length > 0) setActiveTab(mappedTypes[0].id);
+            setInitialDataLoaded(true);
         }
-    }, [donationInfoData, isDonationInfoLoading, form, fields.length]);
+    }, [donationInfoData, isDonationInfoLoading, initialDataLoaded, form]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -234,7 +235,6 @@ export default function InfoSettingsPage() {
                 return {
                     ...rest,
                     imageUrl,
-                    // Filter out empty use cases and QAs
                     useCases: t.useCases.filter(uc => uc.title.trim() !== '' || uc.description.trim() !== ''),
                     qaItems: t.qaItems.filter(qa => qa.question.trim() !== '' || qa.answer.trim() !== ''),
                     purposePoints: purposePointsRaw ? purposePointsRaw.split('\n').filter(p => p.trim() !== '') : [],
@@ -252,7 +252,6 @@ export default function InfoSettingsPage() {
         }
     };
 
-    // Print specific errors to the console and toast
     useEffect(() => {
         if (Object.keys(errors).length > 0) {
             const firstErrorTab = errors.types?.findIndex(t => t !== undefined);
