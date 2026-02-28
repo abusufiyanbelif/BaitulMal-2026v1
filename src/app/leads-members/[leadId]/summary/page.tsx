@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, useStorage, useAuth, collection, doc } from '@/firebase';
@@ -9,16 +9,15 @@ import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { updateDoc, serverTimestamp, DocumentReference } from 'firebase/firestore';
-import type { Lead, Beneficiary, Donation, DonationCategory, CampaignDocument } from '@/lib/types';
+import type { Lead, Beneficiary, Donation, CampaignDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2, Users, Edit, Save, Share2, Hourglass, Download, Gift, UploadCloud, Trash2, Target, File, ShieldAlert, CheckCircle2, XCircle, GraduationCap, HeartPulse, LifeBuoy, Info, HandHelping } from 'lucide-react';
+import { ArrowLeft, Edit, Save, Share2, Download, UploadCloud, Trash2, File, ShieldAlert, GraduationCap, HeartPulse, LifeBuoy, Info, HandHelping } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 import { useToast } from '@/hooks/use-toast';
@@ -27,20 +26,12 @@ import { Label } from '@/components/ui/label';
 import { cn, getNestedValue } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ShareDialog } from '@/components/share-dialog';
-import { Checkbox } from '@/components/ui/checkbox';
-import { leadPurposesConfig, donationCategories } from '@/lib/modules';
+import { donationCategories } from '@/lib/modules';
 import { Badge } from '@/components/ui/badge';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import type { ChartConfig } from '@/components/ui/chart';
 import { Separator } from '@/components/ui/separator';
 import { FileUploader } from '@/components/file-uploader';
 import { Switch } from '@/components/ui/switch';
 import { BrandedLoader } from '@/components/branded-loader';
-import {
-  RadialBarChart,
-  RadialBar,
-  PolarAngleAxis,
-} from 'recharts';
 import Resizer from 'react-image-file-resizer';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -70,11 +61,6 @@ export default function LeadSummaryPage() {
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
     const summaryRef = useRef<HTMLDivElement>(null);
-    const [isClient, setIsClient] = useState(false);
-
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
 
     const leadDocRef = useMemoFirebase(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);

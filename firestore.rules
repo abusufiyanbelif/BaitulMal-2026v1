@@ -30,8 +30,7 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && 
              userExists() &&
-             'role' in getUserData() &&
-             (getUserData().role.lower() == 'admin');
+             getUserData().get('role', 'User').lower() == 'admin';
     }
 
     function hasPermission(module, permission) {
@@ -42,9 +41,7 @@ service cloud.firestore {
                  isAdmin() ||
                  (
                    'permissions' in data &&
-                   module in data.permissions &&
-                   permission in data.permissions[module] && 
-                   data.permissions[module][permission] == true
+                   data.permissions.get([module, permission], false) == true
                  )
                );
     }
@@ -57,10 +54,7 @@ service cloud.firestore {
                  isAdmin() ||
                  (
                    'permissions' in data &&
-                   module in data.permissions &&
-                   submodule in data.permissions[module] && 
-                   permission in data.permissions[module][submodule] && 
-                   data.permissions[module][submodule][permission] == true
+                   data.permissions.get([module, submodule, permission], false) == true
                  )
                );
     }
