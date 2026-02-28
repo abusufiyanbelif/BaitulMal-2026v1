@@ -351,10 +351,6 @@ export default function CampaignSummaryPage() {
 
     if (!campaign) return <main className="container mx-auto p-4 md:p-8 text-center"><p>Campaign not found.</p></main>;
     
-    const itemName = campaign.category === 'Ration' ? 'Kits' : 'Items/Services';
-    const givenLabel = `${itemName} Provided`;
-    const pendingLabel = `Pending ${itemName}`;
-
     const handleDownload = (format: 'png' | 'pdf') => {
         download(format, {
             contentRef: summaryRef,

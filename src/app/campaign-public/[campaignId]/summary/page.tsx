@@ -40,6 +40,7 @@ import { Separator } from '@/components/ui/separator';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },

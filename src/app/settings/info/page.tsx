@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -31,6 +31,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const useCaseSchema = z.object({
   id: z.string(),
@@ -49,14 +50,14 @@ const qaItemSchema = z.object({
 const donationTypeSchema = z.object({
   id: z.string(),
   title: z.string().min(1, 'Title is required.'),
-  description: z.string().min(1, 'Description is required.'),
+  description: z.string().min(1, 'Introduction is required.'),
   quranVerse: z.string().optional(),
   quranSource: z.string().optional(),
   purposePointsRaw: z.string().optional(),
   useCasesHeading: z.string().optional(),
   useCases: z.array(useCaseSchema),
   qaItems: z.array(qaItemSchema),
-  usage: z.string().min(1, 'Usage info is required.'),
+  usage: z.string().min(1, 'Permissible Usage is required.'),
   restrictions: z.string().optional(),
   imageUrl: z.string().optional(),
   imageFile: z.any().optional(),
@@ -178,7 +179,6 @@ export default function InfoSettingsPage() {
         }
     }, [infoSettings]);
     
-    // Only reset the form when data initially arrives and we're not dirty
     useEffect(() => {
         if (!isDonationInfoLoading && donationInfoData && !isDirty) {
             const dataToLoad = (donationInfoData.types && donationInfoData.types.length > 0) ? donationInfoData.types : defaultDonationInfo;
@@ -196,7 +196,7 @@ export default function InfoSettingsPage() {
                 setActiveTab(mappedTypes[0].id);
             }
         }
-    }, [donationInfoData, isDonationInfoLoading]);
+    }, [donationInfoData, isDonationInfoLoading, isDirty, form, activeTab]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -257,17 +257,21 @@ export default function InfoSettingsPage() {
         }
     };
 
-    // Watch for validation errors and alert the user
     useEffect(() => {
         if (Object.keys(errors).length > 0) {
-            console.warn("Form validation errors:", errors);
-            toast({
-                title: "Validation Error",
-                description: "Please check all fields in every category. Some required information is missing.",
-                variant: "destructive"
-            });
+            const firstErrorTab = errors.types?.findIndex(t => t !== undefined);
+            if (firstErrorTab !== undefined && firstErrorTab !== -1) {
+                const typeId = form.getValues(`types.${firstErrorTab}.id`);
+                if (typeId) {
+                    toast({
+                        title: "Validation Error",
+                        description: `Required fields are missing in '${form.getValues(`types.${firstErrorTab}.title`)}'. Please check all marked tabs.`,
+                        variant: "destructive"
+                    });
+                }
+            }
         }
-    }, [errors, toast]);
+    }, [errors, toast, form]);
 
     const handleAddType = () => {
         const id = `type_${Date.now()}`;
@@ -349,9 +353,13 @@ export default function InfoSettingsPage() {
                                         <TabsList className="h-auto w-max bg-transparent p-0">
                                             {fields.map((field, index) => {
                                                 const typeId = form.getValues(`types.${index}.id`);
+                                                const hasError = !!errors.types?.[index];
                                                 return (
-                                                    <TabsTrigger key={field.id} value={typeId} className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold">
-                                                        {form.watch(`types.${index}.title`) || 'New Type'}
+                                                    <TabsTrigger key={field.id} value={typeId} className={cn("rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold", hasError && "text-destructive border-destructive data-[state=active]:border-destructive")}>
+                                                        <div className="flex items-center gap-2">
+                                                            {form.watch(`types.${index}.title`) || 'New Type'}
+                                                            {hasError && <AlertCircle className="h-3 w-3" />}
+                                                        </div>
                                                     </TabsTrigger>
                                                 );
                                             })}
@@ -448,7 +456,7 @@ export default function InfoSettingsPage() {
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <FormField control={form.control} name={`types.${index}.usage`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Permissible Usage *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
+                                                        <FormItem><FormLabel>Permissible Usage *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
                                                     )}/>
                                                     <FormField control={form.control} name={`types.${index}.restrictions`} render={({ field }) => (
                                                         <FormItem><FormLabel>Restrictions</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
