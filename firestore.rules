@@ -26,7 +26,7 @@ service cloud.firestore {
         if (!isSignedIn()) return false;
         let userData = getUserData();
         let p = userData.get('permissions', {});
-        // Check for base permission OR explicit key
+        // Check for base permission OR explicit key using safe .get()
         return isAdmin() || 
                p.get(module, {}).get(permission, false) == true;
     }
@@ -35,7 +35,7 @@ service cloud.firestore {
         if (!isSignedIn()) return false;
         let userData = getUserData();
         let p = userData.get('permissions', {});
-        // Check for top-level module permission OR specific submodule permission
+        // Check for top-level module permission OR specific submodule permission using safe .get()
         return isAdmin() || 
                p.get(module, {}).get(permission, false) == true ||
                p.get(module, {}).get(submodule, {}).get(permission, false) == true;

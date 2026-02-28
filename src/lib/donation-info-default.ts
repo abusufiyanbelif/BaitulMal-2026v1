@@ -3,15 +3,14 @@ import type { DonationTypeInfo } from './types';
 export const defaultDonationInfo: DonationTypeInfo[] = [
     {
         id: 'zakat',
-        title: "Zakat – Maal Ki Paaki aur Samaji Insaf",
-        description: "Zakat Islam ka farz rukun hai. Yeh har sahib-e-nisab musalman par saal mein ek baar farz hai.",
-        quranVerse: "Apne maal mein se Zakat ada karo taake tum paak ho jao.",
-        quranSource: "Surah At-Tawbah 9:103",
+        title: "Zakat – Islam ka Farz Rukun",
+        description: "Zakat Islam ke 5 Arkaan (Five Pillars) mein se ek hai. Har sahib-e-Nisab Muslim par saal mein ek martaba 2.5% apni jama poonji par farz hai.",
+        quranVerse: "Namaz qayam karo aur Zakat ada karo.",
+        quranSource: "Surah Al-Baqarah 2:43",
         purposePoints: [
-            "Maal ko paak karna",
-            "Ghurbat kam karna",
-            "Samaj mein barabari paida karna",
-            "Haqdaar tak haq pohanchana"
+            "🔹 Nisab: 87.48 gram sona / 612.36 gram chandi ya unki barabar cash/savings (1 saal tak).",
+            "🔹 Kin 8 Categories Ko Di Ja Sakti Hai? (Quran 9:60):",
+            "1. Faqeer (Nidhaar), 2. Miskeen (Mohtaj), 3. Aamil (Zakat collect karne wale), 4. Muallafatul Quloob (Dil jorne ke liye), 5. Ghulamon ko azaad karana, 6. Qarzdar (Debt relief), 7. Fi Sabilillah (Allah ke raaste mein), 8. Musafir (Ibn-us-Sabeel)."
         ],
         useCasesHeading: "Detailed Zakat Scenarios (Important)",
         useCases: [
@@ -24,8 +23,8 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
         qaItems: [
             { id: 'q1', question: "Zakat kis par farz hai?", answer: "Har us musalman par jo sahib-e-nisab ho (jis ke paas ek saal tak nisab ke barabar maal rahe).", reference: "Fiqh Ruling", isHidden: false }
         ],
-        usage: "Its use is strictly restricted to eight categories defined in the Quran.",
-        restrictions: "Cannot be used for infrastructure or given to parents/children.",
+        usage: "Tareeqa (How): Niyyat zaroori hai. Mustahiq ko milkiyat transfer honi chahiye. Direct cash ya goods dono jaiz. Organization ke through dene par ensure karein ke Shariah compliance ho.",
+        restrictions: "Kahan Use Nahi Ho Sakti: Masjid construction, Madrasa building, Hospital building, Infrastructure projects, ya apne walidain/bachon ko dena sakht mana hai.",
     },
     {
         id: 'sadaqah',

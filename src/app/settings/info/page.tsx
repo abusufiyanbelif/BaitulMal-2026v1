@@ -195,6 +195,7 @@ export default function InfoSettingsPage() {
     const { donationInfoData, isLoading: isDonationInfoLoading, forceRefetch } = useDonationInfo();
     const firestore = useFirestore();
     const storage = useStorage();
+    const auth = useAuth();
     const { toast } = useToast();
 
     const [isDonationInfoPublic, setIsDonationInfoPublic] = useState(false);
@@ -235,7 +236,7 @@ export default function InfoSettingsPage() {
         }
     }, [donationInfoData, isDonationInfoLoading, isInitialized, form]);
 
-    const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.read', false);
+    const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.update', false);
 
     const handleSaveVisibility = async () => {
         if (!firestore || !canUpdateSettings) return;
