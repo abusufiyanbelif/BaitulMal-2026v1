@@ -1,5 +1,3 @@
-
-
 'use client';
 import { getAuth } from 'firebase/auth';
 import type { User, UserInfo } from 'firebase/auth';
@@ -78,21 +76,17 @@ function buildAuthObject(currentUser: User | null): FirebaseAuthObject | null {
 function buildRequestObject(context: SecurityRuleContext): SecurityRuleRequest {
   let authObject: FirebaseAuthObject | null = null;
   try {
-    // Safely attempt to get the current user.
     const firebaseAuth = getAuth();
     const currentUser = firebaseAuth.currentUser;
     if (currentUser) {
       authObject = buildAuthObject(currentUser);
     }
-  } catch (e: any) {
-    // This will catch errors if the Firebase app is not yet initialized.
-    // In this case, we'll proceed without auth information.
-  }
+  } catch (e: any) {}
 
   return {
     auth: authObject,
     method: context.operation,
-    path: `/databases/(default)/documents/${context.path}`,
+    path: `/databases/(default)/documents/${context.path.startsWith('/') ? context.path.substring(1) : context.path}`,
     resource: context.requestResourceData ? { data: context.requestResourceData } : undefined,
   };
 }
@@ -103,12 +97,8 @@ function buildRequestObject(context: SecurityRuleContext): SecurityRuleRequest {
  * @returns A string containing the error message and the JSON payload.
  */
 function buildErrorMessage(requestObject: SecurityRuleRequest): string {
-  // A safe stringify replacer to handle special Firestore values like FieldValue.
   const replacer = (key: string, value: any) => {
     if (typeof value === 'object' && value !== null) {
-      // Crude check for FieldValue types (like serverTimestamp) which don't have public properties for identification
-      // A more robust check might be needed if more FieldValue types are used.
-      // This implementation avoids crashing on circular references or non-serializable objects.
       if (Object.keys(value).length === 0 && !(value instanceof Date)) {
         return `[FieldValue: ${key}]`;
       }
@@ -120,12 +110,6 @@ function buildErrorMessage(requestObject: SecurityRuleRequest): string {
 ${JSON.stringify(requestObject, replacer, 2)}`;
 }
 
-
-/**
- * A custom error class designed to be consumed by an LLM for debugging.
- * It structures the error information to mimic the request object
- * available in Firestore Security Rules.
- */
 export class FirestorePermissionError extends Error {
   public readonly request: SecurityRuleRequest;
 

@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -129,7 +128,7 @@ export default function DonationInfoPage() {
                             <div className="grid md:grid-cols-3 gap-10">
                                 <div className="md:col-span-2 space-y-8">
                                     <div className="space-y-4">
-                                        {type.description && <p className="text-xl leading-relaxed text-foreground font-semibold">{type.description}</p>}
+                                        {type.description && <p className="text-xl leading-relaxed text-foreground font-semibold whitespace-pre-wrap">{type.description}</p>}
                                         
                                         {type.quranVerse && (
                                             <blockquote className="border-l-4 border-primary pl-6 py-4 italic text-muted-foreground relative bg-muted/30 rounded-r-xl">
@@ -183,9 +182,9 @@ export default function DonationInfoPage() {
                                             </h4>
                                             <ul className="space-y-3">
                                                 {type.purposePoints.map((point, pIdx) => (
-                                                    <li key={pIdx} className="flex items-center gap-3 text-sm font-bold">
-                                                        <div className="h-2 w-2 rounded-full bg-primary shrink-0" />
-                                                        {point}
+                                                    <li key={pIdx} className="flex items-start gap-3 text-sm font-bold">
+                                                        <div className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5" />
+                                                        <span className="whitespace-pre-wrap">{point}</span>
                                                     </li>
                                                 ))}
                                             </ul>
@@ -196,13 +195,13 @@ export default function DonationInfoPage() {
                                         {!type.hideUsage && type.usage && (
                                             <div className="p-4 rounded-xl bg-muted/20 border">
                                                 <span className="font-black uppercase text-[10px] tracking-widest text-muted-foreground block mb-2">Permissible Usage:</span>
-                                                <p className="text-sm font-medium leading-relaxed">{type.usage}</p>
+                                                <p className="text-sm font-medium leading-relaxed whitespace-pre-wrap">{type.usage}</p>
                                             </div>
                                         )}
                                         {!type.hideRestrictions && type.restrictions && (
                                             <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/10">
                                                 <span className="font-black uppercase text-[10px] tracking-widest text-destructive block mb-2">Strict Restrictions:</span>
-                                                <p className="text-sm font-medium leading-relaxed text-destructive/80">{type.restrictions}</p>
+                                                <p className="text-sm font-medium leading-relaxed text-destructive/80 whitespace-pre-wrap">{type.restrictions}</p>
                                             </div>
                                         )}
                                     </div>

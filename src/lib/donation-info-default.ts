@@ -1,16 +1,16 @@
-
 import type { DonationTypeInfo } from './types';
 
 export const defaultDonationInfo: DonationTypeInfo[] = [
     {
         id: 'zakat',
         title: "Zakat – Islam ka Farz Rukun",
-        description: "🔹 Zakat Kya Hai? Zakat Islam ke 5 Arkaan (Five Pillars) mein se ek hai. Har sahib-e-Nisab Muslim par saal mein ek martaba 2.5% apni jama poonji par farz hai.",
+        description: "🔹 Zakat Kya Hai?\nZakat Islam ke 5 Arkaan (Five Pillars) mein se ek hai. Har sahib-e-Nisab Muslim par saal mein ek martaba 2.5% apni jama poonji par farz hai.",
         quranVerse: "Namaz qayam karo aur Zakat ada karo.",
         quranSource: "Surah Al-Baqarah 2:43",
         purposePoints: [
             "🔹 Nisab Kya Hai? Agar kisi ke paas: 87.48 gram sona ya 612.36 gram chandi ya unki barabar cash/savings ho Aur yeh maal 1 saal tak us ke paas rahe, toh Zakat farz hoti hai.",
-            "🔹 Zakat Kin 8 Categories Ko Di Ja Sakti Hai? (Qur’an 9:60 ke mutabiq) Faqeer, Miskeen ,Zakat collectors (Aamil), Dil jorne ke liye (Muallafatul Quloob), Ghulamon ko azaad karana, Qarzdar (debt mein dooba hua), Fi Sabilillah (Allah ke raaste mein), Musafir (Ibn-us-Sabeel)"
+            "🔹 Zakat Kin 8 Categories Ko Di Ja Sakti Hai? (Qur’an 9:60 ke mutabiq) Faqeer, Miskeen, Zakat collectors (Aamil), Dil jorne ke liye (Muallafatul Quloob), Ghulamon ko azaad karana, Qarzdar (debt mein dooba hua), Fi Sabilillah (Allah ke raaste mein), Musafir (Ibn-us-Sabeel)",
+            "🔹 Zakat Kahan Use Nahi Ho Sakti?\n❌ Masjid construction\n❌ Madrasa building\n❌ Hospital building\n❌ Apne walidain, bachon ko\n❌ Infrastructure projects"
         ],
         useCasesHeading: "🔹 Detailed Zakat Scenarios (Important)",
         useCases: [
@@ -23,8 +23,8 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
         qaItems: [
             { id: 'q1', question: "Zakat kis par farz hai?", answer: "Har us musalman par jo sahib-e-nisab ho (jis ke paas ek saal tak nisab ke barabar maal rahe).", reference: "Fiqh Ruling", isHidden: false }
         ],
-        usage: "🔹 Zakat Dene Ka Tareeqa (How)\n-Niyyat zaroori hai\n-Mustahiq ko milkiyat transfer honi chahiye\n-Direct cash ya goods dono jaiz\n-Organization ke through dene par ensure karein ke Shariah compliance ho",
-        restrictions: "❌ Masjid construction\n❌ Madrasa building\n❌ Hospital building\n❌ Apne walidain, bachon ko\n❌ Infrastructure projects\n\nIt cannot be used for infrastructure or given to immediate family members (parents, children).",
+        usage: "🔹 Zakat Dene Ka Tareeqa (How)\n- Niyyat zaroori hai\n- Mustahiq ko milkiyat transfer honi chahiye\n- Direct cash ya goods dono jaiz\n- Organization ke through dene par ensure karein ke Shariah compliance ho",
+        restrictions: "❌ It cannot be used for infrastructure (like building mosques or schools) or given to immediate family members (parents, children).",
     },
     {
         id: 'sadaqah',
