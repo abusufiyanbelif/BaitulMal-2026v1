@@ -47,7 +47,7 @@ export default function DonationInfoPage() {
             <main className="container mx-auto p-4 md:p-8 text-center">
                 <h1 className="text-2xl font-bold">Page Not Available</h1>
                 <p className="text-muted-foreground mt-2">This informational page is not currently public.</p>
-                 <Button asChild className="mt-6">
+                 <Button asChild className="mt-6 active:scale-95 transition-transform">
                     <Link href="/">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Go Back to Home
@@ -80,7 +80,7 @@ export default function DonationInfoPage() {
             <ScrollArea className="w-full sm:w-auto">
                 <TabsList className="bg-muted/50 p-1">
                     {donationTypes.map((type) => (
-                        <TabsTrigger key={type.id} value={type.id} className="px-6 py-2 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                        <TabsTrigger key={type.id} value={type.id} className="px-6 py-2 font-black uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                             {type.title?.split(' ')[0].toUpperCase() || type.id.toUpperCase()}
                         </TabsTrigger>
                     ))}

@@ -171,8 +171,6 @@ export default function InfoSettingsPage() {
         name: 'types'
     });
 
-    const { isDirty, errors } = form.formState;
-
     useEffect(() => {
         if (infoSettings) {
             setIsDonationInfoPublic(infoSettings.isDonationInfoPublic || false);
@@ -211,47 +209,60 @@ export default function InfoSettingsPage() {
         }
     };
     
-    const onContentSubmit = async (data: DonationInfoFormValues) => {
+    const handleSaveSingleCategory = async (typeIndex: number) => {
         if (!firestore || !storage || !canUpdateSettings) return;
         
+        const data = form.getValues();
+        const typeToSave = data.types[typeIndex];
+        const categoryLabel = typeToSave.title || typeToSave.id;
+
         setIsSubmitting(true);
-        const activeTabInfo = data.types.find(t => t.id === activeTab);
-        const currentTypeName = activeTabInfo?.title || activeTab;
+        toast({ title: `Saving ${categoryLabel}...`, description: 'Please wait.' });
 
         try {
-            const typesToSave = await Promise.all(data.types.map(async (t) => {
-                const { purposePointsRaw, imageFile, ...rest } = t;
-                let imageUrl = rest.imageUrl || '';
-                
-                if (imageFile && imageFile.length > 0) {
-                    const file = imageFile[0];
-                    const resizedBlob = await new Promise<Blob>((resolve) => {
-                        (Resizer as any).imageFileResizer(file, 800, 600, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
-                    });
-                    const filePath = `settings/info/donation_types/${t.id}.png`;
-                    const fileRef = storageRef(storage, filePath);
-                    await uploadBytes(fileRef, resizedBlob);
-                    imageUrl = await getDownloadURL(fileRef);
-                }
+            // Process the single category data
+            const { purposePointsRaw, imageFile, ...rest } = typeToSave;
+            let finalImageUrl = rest.imageUrl || '';
+            
+            if (imageFile && imageFile.length > 0) {
+                const file = imageFile[0];
+                const resizedBlob = await new Promise<Blob>((resolve) => {
+                    (Resizer as any).imageFileResizer(file, 800, 600, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                });
+                const filePath = `settings/info/donation_types/${typeToSave.id}.png`;
+                const fileRef = storageRef(storage, filePath);
+                await uploadBytes(fileRef, resizedBlob);
+                finalImageUrl = await getDownloadURL(fileRef);
+            }
 
-                return {
-                    ...rest,
-                    imageUrl,
-                    useCases: t.useCases.filter(uc => uc.title?.trim() || uc.description?.trim()),
-                    qaItems: t.qaItems.filter(qa => qa.question?.trim() || qa.answer?.trim()),
-                    purposePoints: purposePointsRaw ? purposePointsRaw.split('\n').filter(p => p.trim() !== '') : [],
-                };
-            }));
+            const processedType = {
+                ...rest,
+                imageUrl: finalImageUrl,
+                // Filter out empty use cases and QA items
+                useCases: typeToSave.useCases.filter(uc => uc.title?.trim() || uc.description?.trim()),
+                qaItems: typeToSave.qaItems.filter(qa => qa.question?.trim() || qa.answer?.trim()),
+                purposePoints: purposePointsRaw ? purposePointsRaw.split('\n').filter(p => p.trim() !== '') : [],
+            };
 
-            await setDoc(doc(firestore, 'settings', 'donationInfo'), { types: typesToSave });
-            toast({ title: 'Content Saved', description: `Updated content for ${currentTypeName}.`, variant: 'success' });
+            // We update the entire array in Firestore but we only modified one index in our processed list
+            const currentFullData = (donationInfoData?.types || []).length > 0 ? [...donationInfoData!.types] : [...defaultDonationInfo];
+            
+            // Find existing index in database or match by ID
+            const existingIdx = currentFullData.findIndex(t => t.id === typeToSave.id);
+            if (existingIdx !== -1) {
+                currentFullData[existingIdx] = processedType as any;
+            } else {
+                currentFullData.push(processedType as any);
+            }
+
+            await setDoc(doc(firestore, 'settings', 'donationInfo'), { types: currentFullData });
+            toast({ title: 'Saved!', description: `${categoryLabel} content has been updated.`, variant: 'success' });
             forceRefetch();
-            form.reset(data); 
         } catch (error: any) {
              errorEmitter.emit('permission-error', new FirestorePermissionError({ 
                 path: 'settings/donationInfo', 
                 operation: 'write',
-                requestResourceData: { tab: currentTypeName }
+                requestResourceData: { category: categoryLabel }
             }));
         } finally {
             setIsSubmitting(false);
@@ -289,7 +300,7 @@ export default function InfoSettingsPage() {
 
     return (
         <div className="space-y-6">
-            <Card className="animate-fade-in-zoom">
+            <Card className="animate-fade-in-zoom shadow-sm">
                 <CardHeader>
                     <CardTitle>Page Visibility</CardTitle>
                     <CardDescription>Control public informational pages.</CardDescription>
@@ -299,53 +310,57 @@ export default function InfoSettingsPage() {
                         <div className="space-y-1.5 flex-1">
                             <h3 className="font-semibold">Donation Types Explained</h3>
                             <p className="text-sm text-muted-foreground">Detailed information guide for donors.</p>
-                            <Button variant="outline" size="sm" asChild className="mt-2">
+                            <Button variant="outline" size="sm" asChild className="mt-2 active:scale-95 transition-transform">
                                 <Link href="/info/donation-info" target="_blank">
-                                    <Eye className="mr-2 h-4 w-4" /> Preview
+                                    <Eye className="mr-2 h-4 w-4" /> Preview Public Page
                                 </Link>
                             </Button>
                         </div>
                         <div className="flex items-center space-x-2 pt-4 sm:pt-0">
-                            <Label htmlFor="donation-info-public">Public</Label>
+                            <Label htmlFor="donation-info-public">Publicly Available</Label>
                             <Switch id="donation-info-public" checked={isDonationInfoPublic} onCheckedChange={setIsDonationInfoPublic} disabled={isSubmitting} />
                         </div>
                     </div>
                 </CardContent>
                 <CardFooter className="justify-end border-t bg-muted/5 p-4">
-                    <Button onClick={handleSaveVisibility} disabled={isSubmitting || !isVisibilityDirty}>
+                    <Button onClick={handleSaveVisibility} disabled={isSubmitting || !isVisibilityDirty} className="active:scale-95 transition-transform">
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         <Save className="mr-2 h-4 w-4"/> Save Visibility
                     </Button>
                 </CardFooter>
             </Card>
 
-            <Card className="animate-fade-in-up">
-                <CardHeader>
+            <Card className="animate-fade-in-up border-primary/10">
+                <CardHeader className="bg-primary/5">
                     <div className="flex items-center justify-between gap-4">
                         <div>
                             <CardTitle>Content Manager</CardTitle>
-                            <CardDescription>Manage rich content, use cases, and Q&A for donation types.</CardDescription>
+                            <CardDescription>Manage rich content, use cases, and Q&A for each donation type.</CardDescription>
                         </div>
-                        <Button onClick={handleAddType} variant="outline" size="sm"><Plus className="mr-2 h-4 w-4" /> Add Type</Button>
+                        <Button onClick={handleAddType} variant="outline" size="sm" className="active:scale-95 transition-transform"><Plus className="mr-2 h-4 w-4" /> Add New Category</Button>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0 pt-0">
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onContentSubmit)}>
+                        <form onSubmit={(e) => e.preventDefault()}>
                             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                                 <div className="border-b bg-muted/5 px-4 pt-4 sm:px-6 sm:pt-0">
                                     <ScrollArea className="w-full whitespace-nowrap">
                                         <TabsList className="h-auto w-max bg-transparent p-0">
                                             {fields.map((field, index) => {
                                                 const typeId = form.getValues(`types.${index}.id`);
-                                                const hasError = errors.types?.[index];
+                                                const title = form.watch(`types.${index}.title`) || 'New Type';
                                                 return (
-                                                    <TabsTrigger key={field.id} value={typeId} className={cn(
-                                                        "rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold",
-                                                        hasError && "text-destructive border-destructive"
-                                                    )}>
-                                                        {hasError && <AlertCircle className="h-3 w-3 mr-1" />}
-                                                        {form.watch(`types.${index}.title`) || 'New Type'}
+                                                    <TabsTrigger 
+                                                        key={field.id} 
+                                                        value={typeId} 
+                                                        className={cn(
+                                                            "rounded-none border-b-2 border-transparent px-4 py-3 font-bold transition-all",
+                                                            "data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md",
+                                                            "hover:bg-muted/50"
+                                                        )}
+                                                    >
+                                                        {title}
                                                     </TabsTrigger>
                                                 );
                                             })}
@@ -356,12 +371,14 @@ export default function InfoSettingsPage() {
 
                                 {fields.map((field, index) => {
                                     const typeId = form.getValues(`types.${index}.id`);
+                                    const categoryLabel = form.watch(`types.${index}.title`) || 'this category';
+                                    
                                     return (
-                                        <TabsContent key={field.id} value={typeId} className="p-4 sm:p-6 space-y-8">
-                                            <div className="flex justify-between items-center">
-                                                <h3 className="text-lg font-bold text-primary">Editing: {form.watch(`types.${index}.title`)}</h3>
-                                                <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(form.getValues('types.0.id')); }}>
-                                                    <Trash2 className="h-4 w-4"/>
+                                        <TabsContent key={field.id} value={typeId} className="p-4 sm:p-6 space-y-8 animate-fade-in-up">
+                                            <div className="flex justify-between items-center bg-muted/20 p-4 rounded-lg">
+                                                <h3 className="text-xl font-black text-primary uppercase tracking-tight">Editing: {categoryLabel}</h3>
+                                                <Button type="button" variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(form.getValues('types.0.id')); }}>
+                                                    <Trash2 className="h-5 w-5"/>
                                                 </Button>
                                             </div>
 
@@ -369,14 +386,14 @@ export default function InfoSettingsPage() {
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                                                     <div className="md:col-span-2 space-y-4">
                                                         <FormField control={form.control} name={`types.${index}.title`} render={({ field }) => (
-                                                            <FormItem><FormLabel>Heading/Title</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                                                            <FormItem><FormLabel className="font-bold text-primary">Heading/Title</FormLabel><FormControl><Input placeholder="e.g. Zakat (Farz Charity)" {...field} /></FormControl></FormItem>
                                                         )}/>
                                                         <FormField control={form.control} name={`types.${index}.description`} render={({ field }) => (
-                                                            <FormItem><FormLabel>Introduction</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
+                                                            <FormItem><FormLabel className="font-bold text-primary">Introduction</FormLabel><FormControl><Textarea rows={4} placeholder="Briefly explain what this donation type is..." {...field} /></FormControl></FormItem>
                                                         )}/>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <FormLabel>Header Image</FormLabel>
+                                                        <FormLabel className="font-bold text-primary">Header Image</FormLabel>
                                                         <div className="relative aspect-[4/3] w-full rounded-md border-2 border-dashed overflow-hidden flex items-center justify-center bg-muted/30">
                                                             {form.watch(`types.${index}.imageUrl`) ? (
                                                                 <Image 
@@ -388,15 +405,15 @@ export default function InfoSettingsPage() {
                                                             ) : (
                                                                 <div className="text-center p-4">
                                                                     <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground/40" />
-                                                                    <p className="text-[10px] text-muted-foreground mt-1">No image</p>
+                                                                    <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-widest">No header image</p>
                                                                 </div>
                                                             )}
                                                         </div>
                                                         <FormControl>
                                                             <Input 
                                                                 type="file" 
-                                                                accept="image/*" 
-                                                                className="text-xs h-auto py-1"
+                                                                accept="image/png, image/jpeg, image/webp" 
+                                                                className="text-xs h-auto py-1 cursor-pointer"
                                                                 onChange={(e) => {
                                                                     const file = e.target.files?.[0];
                                                                     if (file) {
@@ -413,52 +430,59 @@ export default function InfoSettingsPage() {
                                                 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-lg border p-4 bg-muted/5">
                                                     <div className="space-y-4">
-                                                        <h4 className="text-sm font-bold flex items-center gap-2"><Quote className="h-4 w-4"/> Religious Reference</h4>
+                                                        <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-primary"><Quote className="h-4 w-4"/> Religious Reference</h4>
                                                         <FormField control={form.control} name={`types.${index}.quranVerse`} render={({ field }) => (
-                                                            <FormItem><FormLabel>Verse/Hadith Text</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl></FormItem>
+                                                            <FormItem><FormLabel className="text-xs">Verse or Hadith Text</FormLabel><FormControl><Textarea rows={3} placeholder="Paste the translation here..." {...field} /></FormControl></FormItem>
                                                         )}/>
                                                         <FormField control={form.control} name={`types.${index}.quranSource`} render={({ field }) => (
-                                                            <FormItem><FormLabel>Citation Source</FormLabel><FormControl><Input placeholder="e.g. Sahih Bukhari" {...field} /></FormControl></FormItem>
+                                                            <FormItem><FormLabel className="text-xs">Citation (e.g. Sahih Bukhari 123)</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                                                         )}/>
                                                     </div>
                                                     <div className="space-y-4">
-                                                        <h4 className="text-sm font-bold flex items-center gap-2"><ListChecks className="h-4 w-4"/> Key Highlights</h4>
+                                                        <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-primary"><ListChecks className="h-4 w-4"/> Key Highlights</h4>
                                                         <FormField control={form.control} name={`types.${index}.purposePointsRaw`} render={({ field }) => (
-                                                            <FormItem><FormLabel>Points (One per line)</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl></FormItem>
+                                                            <FormItem><FormLabel className="text-xs">List Points (One per line)</FormLabel><FormControl><Textarea rows={6} placeholder="Point 1&#10;Point 2&#10;Point 3..." {...field} /></FormControl></FormItem>
                                                         )}/>
                                                     </div>
                                                 </div>
 
-                                                <div className="space-y-4 rounded-lg border p-4 bg-primary/5 border-primary/10">
+                                                <div className="space-y-4 rounded-lg border-2 border-primary/10 p-4 bg-primary/5">
                                                     <FormField control={form.control} name={`types.${index}.useCasesHeading`} render={({ field }) => (
-                                                        <FormItem className="mb-4"><FormLabel>Section Heading</FormLabel><FormControl><Input placeholder="e.g. Practical Use Cases" {...field} /></FormControl></FormItem>
+                                                        <FormItem className="mb-4"><FormLabel className="font-bold">Section Heading for Use Cases</FormLabel><FormControl><Input placeholder="e.g. Practical Use Cases (Zakat Masail)" {...field} /></FormControl></FormItem>
                                                     )}/>
                                                     <UseCaseEditor control={form.control} typeIndex={index} />
                                                 </div>
 
-                                                <div className="space-y-4 rounded-lg border p-4 bg-blue-50/50 border-blue-100">
+                                                <div className="space-y-4 rounded-lg border-2 border-blue-100 p-4 bg-blue-50/30">
                                                     <QAEditor control={form.control} typeIndex={index} />
                                                 </div>
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <FormField control={form.control} name={`types.${index}.usage`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Permissible Usage</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
+                                                        <FormItem><FormLabel className="font-bold text-green-700">Permissible Usage Guidelines</FormLabel><FormControl><Textarea rows={4} placeholder="Where can these funds be spent?" {...field} /></FormControl></FormItem>
                                                     )}/>
                                                     <FormField control={form.control} name={`types.${index}.restrictions`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Restrictions</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl></FormItem>
+                                                        <FormItem><FormLabel className="font-bold text-destructive">Strict Restrictions</FormLabel><FormControl><Textarea rows={4} placeholder="Where can these funds NOT be spent?" {...field} /></FormControl></FormItem>
                                                     )}/>
                                                 </div>
+                                            </div>
+
+                                            <div className="border-t pt-6 flex justify-end">
+                                                <Button 
+                                                    type="button" 
+                                                    size="lg" 
+                                                    onClick={() => handleSaveSingleCategory(index)} 
+                                                    disabled={isSubmitting}
+                                                    className="min-w-[240px] font-black uppercase tracking-widest active:scale-95 transition-transform shadow-lg"
+                                                >
+                                                    {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
+                                                    Save {categoryLabel} Content
+                                                </Button>
                                             </div>
                                         </TabsContent>
                                     );
                                 })}
                             </Tabs>
-                            <div className="border-t p-6 bg-muted/5 flex justify-end">
-                                <Button type="submit" disabled={isSubmitting || fields.length === 0 || !isDirty} size="lg">
-                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    <Save className="mr-2 h-4 w-4"/> Save All Content
-                                </Button>
-                            </div>
                         </form>
                     </Form>
                 </CardContent>
