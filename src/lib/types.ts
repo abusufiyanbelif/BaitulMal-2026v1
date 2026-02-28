@@ -42,10 +42,11 @@ export interface DonationTypeInfo {
   useCases?: string[];
   usage: string;
   restrictions?: string;
+  imageUrl?: string;
+  imageUrlFilename?: string;
   impact?: string;
   keyUse?: string;
   application?: string;
-  imageHint?: string;
   extraContent?: string;
 }
 

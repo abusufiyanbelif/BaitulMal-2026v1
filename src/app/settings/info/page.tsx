@@ -1,20 +1,24 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import Image from 'next/image';
 import { useSession } from '@/hooks/use-session';
 import { useInfoSettings } from '@/hooks/use-info-settings';
 import { useDonationInfo } from '@/hooks/use-donation-info';
 import { defaultDonationInfo } from '@/lib/donation-info-default';
-import { useFirestore } from '@/firebase/provider';
+import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
+import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -38,7 +42,8 @@ const donationTypeSchema = z.object({
   useCasesRaw: z.string().optional(),
   usage: z.string().min(1, 'Usage info is required.'),
   restrictions: z.string().optional(),
-  imageHint: z.string().optional(),
+  imageUrl: z.string().optional(),
+  imageFile: z.any().optional(),
 });
 
 const formSchema = z.object({
@@ -52,6 +57,8 @@ export default function InfoSettingsPage() {
     const { infoSettings, isLoading: isInfoSettingsLoading } = useInfoSettings();
     const { donationInfoData, isLoading: isDonationInfoLoading, forceRefetch } = useDonationInfo();
     const firestore = useFirestore();
+    const storage = useStorage();
+    const auth = useAuth();
     const { toast } = useToast();
 
     const [isDonationInfoPublic, setIsDonationInfoPublic] = useState(false);
@@ -76,7 +83,6 @@ export default function InfoSettingsPage() {
         }
     }, [infoSettings]);
     
-    // Optimized effect to prevent "Maximum update depth exceeded"
     useEffect(() => {
         if (!isDonationInfoLoading && donationInfoData) {
             const dataToLoad = (donationInfoData.types && donationInfoData.types.length > 0) ? donationInfoData.types : defaultDonationInfo;
@@ -84,17 +90,16 @@ export default function InfoSettingsPage() {
                 ...t,
                 purposePointsRaw: (t as any).purposePoints?.join('\n') || '',
                 useCasesRaw: (t as any).useCases?.join('\n') || '',
-                imageHint: t.imageHint || 'charity'
+                imageUrl: t.imageUrl || ''
             }));
             
             form.reset({ types: mappedTypes });
             
-            // Only set default active tab if not already set
             if (mappedTypes.length > 0 && !activeTab) {
                 setActiveTab(mappedTypes[0].id);
             }
         }
-    }, [donationInfoData, isDonationInfoLoading, form]); // Removed fields and activeTab from dependencies
+    }, [donationInfoData, isDonationInfoLoading, form, activeTab]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -112,17 +117,39 @@ export default function InfoSettingsPage() {
     };
     
     const onContentSubmit = async (data: DonationInfoFormValues) => {
-        if (!firestore || !canUpdateSettings) return;
+        if (!firestore || !storage || !canUpdateSettings) return;
+        
+        const hasFilesToUpload = data.types.some(t => t.imageFile && t.imageFile.length > 0);
+        if (hasFilesToUpload && !auth?.currentUser) {
+            toast({ title: "Authentication Error", description: "User not authenticated.", variant: "destructive" });
+            return;
+        }
+
         setIsSubmitting(true);
         try {
-            const typesToSave = data.types.map(t => {
-                const { purposePointsRaw, useCasesRaw, ...rest } = t;
+            const typesToSave = await Promise.all(data.types.map(async (t) => {
+                const { purposePointsRaw, useCasesRaw, imageFile, ...rest } = t;
+                
+                let imageUrl = rest.imageUrl || '';
+                
+                if (imageFile && imageFile.length > 0) {
+                    const file = imageFile[0];
+                    const resizedBlob = await new Promise<Blob>((resolve) => {
+                        (Resizer as any).imageFileResizer(file, 800, 600, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    });
+                    const filePath = `settings/donation_types/${t.id}.png`;
+                    const fileRef = storageRef(storage, filePath);
+                    await uploadBytes(fileRef, resizedBlob);
+                    imageUrl = await getDownloadURL(fileRef);
+                }
+
                 return {
                     ...rest,
+                    imageUrl,
                     purposePoints: purposePointsRaw ? purposePointsRaw.split('\n').filter(p => p.trim() !== '') : [],
                     useCases: useCasesRaw ? useCasesRaw.split('\n').filter(p => p.trim() !== '') : []
                 };
-            });
+            }));
 
             await setDoc(doc(firestore, 'settings', 'donationInfo'), { types: typesToSave });
             toast({ title: 'Content Saved', description: 'Informational content updated.', variant: 'success' });
@@ -137,7 +164,7 @@ export default function InfoSettingsPage() {
 
     const handleAddType = () => {
         const id = `type_${Date.now()}`;
-        append({ id, title: 'New Donation Type', description: '', usage: '', purposePointsRaw: '', useCasesRaw: '', imageHint: 'charity' });
+        append({ id, title: 'New Donation Type', description: '', usage: '', purposePointsRaw: '', useCasesRaw: '', imageUrl: '' });
         setActiveTab(id);
     };
 
@@ -227,23 +254,48 @@ export default function InfoSettingsPage() {
                                     <TabsContent key={field.id} value={field.id} className="p-4 sm:p-6 space-y-6">
                                         <div className="flex justify-between items-center">
                                             <h3 className="text-lg font-bold text-primary">Editing: {form.watch(`types.${index}.title`)}</h3>
-                                            <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(fields[0].id); }}>
-                                                <Trash2 className="mr-2 h-4 w-4"/> Remove
+                                            <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(fields[0].id); }}>
+                                                <Trash2 className="h-4 w-4"/>
                                             </Button>
                                         </div>
 
                                         <div className="grid gap-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <FormField control={form.control} name={`types.${index}.title`} render={({ field }) => (
-                                                    <FormItem><FormLabel>Heading/Title *</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                                                )}/>
-                                                <FormField control={form.control} name={`types.${index}.imageHint`} render={({ field }) => (
-                                                    <FormItem><FormLabel>Image Keyword</FormLabel><FormControl><Input placeholder="e.g. money, charity" {...field} /></FormControl></FormItem>
-                                                )}/>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                                                <div className="md:col-span-2 space-y-4">
+                                                    <FormField control={form.control} name={`types.${index}.title`} render={({ field }) => (
+                                                        <FormItem><FormLabel>Heading/Title *</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                                    )}/>
+                                                    <FormField control={form.control} name={`types.${index}.description`} render={({ field }) => (
+                                                        <FormItem><FormLabel>Introduction *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
+                                                    )}/>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <FormLabel>Header Image</FormLabel>
+                                                    <div className="relative aspect-[4/3] w-full rounded-md border-2 border-dashed overflow-hidden flex items-center justify-center bg-muted/30">
+                                                        {form.watch(`types.${index}.imageUrl`) ? (
+                                                            <Image 
+                                                                src={`/api/image-proxy?url=${encodeURIComponent(form.watch(`types.${index}.imageUrl`)!)}`} 
+                                                                alt="Header" 
+                                                                fill 
+                                                                className="object-cover" 
+                                                            />
+                                                        ) : (
+                                                            <div className="text-center p-4">
+                                                                <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground/40" />
+                                                                <p className="text-[10px] text-muted-foreground mt-1">No image uploaded</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <FormControl>
+                                                        <Input 
+                                                            type="file" 
+                                                            accept="image/*" 
+                                                            className="text-xs h-auto py-1"
+                                                            {...form.register(`types.${index}.imageFile`)} 
+                                                        />
+                                                    </FormControl>
+                                                </div>
                                             </div>
-                                            <FormField control={form.control} name={`types.${index}.description`} render={({ field }) => (
-                                                <FormItem><FormLabel>Introduction *</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
-                                            )}/>
                                             
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-lg border p-4 bg-muted/5">
                                                 <div className="space-y-4">
