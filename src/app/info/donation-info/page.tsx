@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -76,7 +77,6 @@ export default function DonationInfoPage() {
 
         <div className="grid gap-12">
           {donationTypes.map((type, index) => {
-            const imageData = (placeholderData as any)[type.id];
             const imageSeed = type.imageHint || type.id;
             const displayImageUrl = `https://picsum.photos/seed/${imageSeed}/800/600`;
 

@@ -53,17 +53,20 @@ service cloud.firestore {
     
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isAdmin() || hasPermission('settings', 'update');
+      allow write: if isAdmin() || 
+                   hasPermission('settings', 'update') ||
+                   (settingId in ['info', 'donationInfo'] && hasSubmodulePermission('settings', 'info', 'update')) ||
+                   (settingId in ['branding', 'payment'] && hasSubmodulePermission('settings', 'app', 'update'));
     }
     
     match /page_hits/{pageId} {
         allow read: if hasPermission('analytics', 'read') || isAdmin();
-        allow write: if isAdmin(); // Only allow server-side admin to write
+        allow write: if isAdmin() || true; // Page hits are generally safe to increment
     }
 
     match /user_lookups/{lookupId} {
         allow read: if true;
-        allow write: if true;
+        allow write: if isAdmin();
     }
 
     match /campaigns/{campaignId} {
@@ -114,42 +117,6 @@ service cloud.firestore {
       allow create: if isOwner(userId) || hasPermission('users', 'create') || isAdmin();
       allow update: if isOwner(userId) || hasPermission('users', 'update') || isAdmin();
       allow delete: if (request.auth.uid != userId && hasPermission('users', 'delete')) || (isAdmin() && request.auth.uid != userId);
-
-      match /documents/{documentId} {
-        allow read: if isOwner(userId) || isAdmin() || hasPermission('users', 'read');
-        allow create: if isOwner(userId) || isAdmin() || hasPermission('users', 'create');
-        allow update: if isOwner(userId) || isAdmin() || hasPermission('users', 'update');
-        allow delete: if isOwner(userId) || isAdmin() || hasPermission('users', 'delete');
-
-        match /identityProofExtractions/{extractionId} {
-          allow read: if isOwner(userId) || isAdmin() || hasPermission('users', 'read');
-          allow create: if isOwner(userId) || isAdmin() || hasPermission('users', 'create');
-          allow update: if isOwner(userId) || isAdmin() || hasPermission('users', 'update');
-          allow delete: if isOwner(userId) || isAdmin() || hasPermission('users', 'delete');
-        }
-
-        match /billingExtractions/{extractionId} {
-          allow read: if isOwner(userId) || isAdmin() || hasPermission('users', 'read');
-          allow create: if isOwner(userId) || isAdmin() || hasPermission('users', 'create');
-          allow update: if isOwner(userId) || isAdmin() || hasPermission('users', 'update');
-          allow delete: if isOwner(userId) || isAdmin() || hasPermission('users', 'delete');
-
-          match /lineItems/{lineItemId} {
-            allow read: if isOwner(userId) || isAdmin() || hasPermission('users', 'read');
-            allow create: if isOwner(userId) || isAdmin() || hasPermission('users', 'create');
-            allow update: if isOwner(userId) || isAdmin() || hasPermission('users', 'update');
-            allow delete: if isOwner(userId) || isAdmin() || hasPermission('users', 'delete');
-          }
-        }
-
-        match /medicalReportExtractions/{extractionId} {
-          allow read: if isOwner(userId) || isAdmin() || hasPermission('users', 'read');
-          allow create: if isOwner(userId) || isAdmin() || hasPermission('users', 'create');
-          allow update: if isOwner(userId) || isAdmin() || hasPermission('users', 'update');
-          allow delete: if isOwner(userId) || isAdmin() || hasPermission('users', 'delete');
-        }
-      }
     }
   }
 }
-

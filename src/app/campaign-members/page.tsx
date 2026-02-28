@@ -337,7 +337,7 @@ export default function CampaignPage() {
 
         <div className="space-y-2">
           <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
-          <NewsTicker items={memberDonationTickerItems} label="Donation Updates" variant="donation" />
+          <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
           <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
         </div>
 

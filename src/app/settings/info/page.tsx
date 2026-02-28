@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -98,7 +99,7 @@ export default function InfoSettingsPage() {
                 setActiveTab(fields[0].id);
             }
         }
-    }, [donationInfoData, isDonationInfoLoading, form, fields.length]);
+    }, [donationInfoData, isDonationInfoLoading, form, fields.length, activeTab]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -142,9 +143,7 @@ export default function InfoSettingsPage() {
     const handleAddType = () => {
         const id = `type_${Date.now()}`;
         append({ id, title: 'New Donation Type', description: '', usage: '', purposePointsRaw: '', useCasesRaw: '', imageHint: 'charity' });
-        // Setting active tab to the new field's dynamic id
-        const newField = form.getValues('types');
-        setActiveTab(fields[fields.length - 1].id);
+        setActiveTab(id);
     };
 
     const isLoading = isSessionLoading || isInfoSettingsLoading || isDonationInfoLoading;
