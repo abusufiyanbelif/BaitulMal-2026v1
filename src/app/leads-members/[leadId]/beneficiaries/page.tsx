@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -423,8 +422,8 @@ export default function BeneficiariesPage() {
         <Card className="overflow-hidden">
             <CardContent className="p-0">
                 <Table>
-                    <TableHeader className="bg-muted/50">
-                        <TableRow>
+                    <TableHeader>
+                        <TableRow className="bg-muted/50">
                             <TableHead className="w-[60px]">#</TableHead>
                             <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name & Phone</SortableHeader>
                             <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>

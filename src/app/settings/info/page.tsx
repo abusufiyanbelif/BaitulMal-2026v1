@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -77,9 +76,10 @@ export default function InfoSettingsPage() {
         }
     }, [infoSettings]);
     
+    // Optimized effect to prevent "Maximum update depth exceeded"
     useEffect(() => {
-        if (!isDonationInfoLoading) {
-            const dataToLoad = (donationInfoData && donationInfoData.types && donationInfoData.types.length > 0) ? donationInfoData.types : defaultDonationInfo;
+        if (!isDonationInfoLoading && donationInfoData) {
+            const dataToLoad = (donationInfoData.types && donationInfoData.types.length > 0) ? donationInfoData.types : defaultDonationInfo;
             const mappedTypes = dataToLoad.map(t => ({
                 ...t,
                 purposePointsRaw: (t as any).purposePoints?.join('\n') || '',
@@ -88,11 +88,13 @@ export default function InfoSettingsPage() {
             }));
             
             form.reset({ types: mappedTypes });
+            
+            // Only set default active tab if not already set
             if (mappedTypes.length > 0 && !activeTab) {
-                setActiveTab(fields[0]?.id || mappedTypes[0].id);
+                setActiveTab(mappedTypes[0].id);
             }
         }
-    }, [donationInfoData, isDonationInfoLoading, form, activeTab, fields]);
+    }, [donationInfoData, isDonationInfoLoading, form]); // Removed fields and activeTab from dependencies
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.info?.update;
 
@@ -136,7 +138,7 @@ export default function InfoSettingsPage() {
     const handleAddType = () => {
         const id = `type_${Date.now()}`;
         append({ id, title: 'New Donation Type', description: '', usage: '', purposePointsRaw: '', useCasesRaw: '', imageHint: 'charity' });
-        // After appending, fields.length will be updated on next render
+        setActiveTab(id);
     };
 
     const isLoading = isSessionLoading || isInfoSettingsLoading || isDonationInfoLoading;
