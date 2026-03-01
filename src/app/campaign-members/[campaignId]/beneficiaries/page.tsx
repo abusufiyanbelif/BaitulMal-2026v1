@@ -17,7 +17,7 @@ import {
     DocumentReference 
 } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { FirestorePermissionError } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import type { Beneficiary, Campaign, RationItem, ItemCategory } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -49,7 +49,8 @@ import {
     UserCheck, 
     FileUp, 
     Search,
-    CopyPlus
+    CopyPlus,
+    ShieldAlert
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -94,21 +95,21 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { updateMasterBeneficiaryAction } from '@/app/beneficiaries/actions';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BrandedLoader } from '@/components/branded-loader';
 
 type SortKey = keyof Beneficiary | 'srNo';
 type BeneficiaryStatus = Beneficiary['status'];
 
-const GRID_COLS_CLASS = "grid grid-cols-[60px_1fr_100px_100px_120px_120px_120px_60px] items-center";
-
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:text-primary transition-colors flex items-center gap-1", className)} onClick={() => handleSort(sortKey)}>
-            {children}
-            {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
-        </div>
+        <TableHead className={cn("cursor-pointer hover:bg-muted/50", className)} onClick={() => handleSort(sortKey)}>
+            <div className="flex items-center gap-2">
+                {children}
+                {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
+            </div>
+        </TableHead>
     );
 }
 
@@ -126,94 +127,6 @@ const StatCard = ({ title, count, description, icon: Icon, colorClass, delay }: 
         </CardContent>
     </Card>
 );
-
-const BeneficiaryRow = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, onStatusChange, onZakatToggle }: { beneficiary: Beneficiary, index: number, canUpdate?: boolean, canDelete?: boolean, onView: (b: Beneficiary) => void, onEdit: (b: Beneficiary) => void, onDelete: (id: string) => void, onStatusChange: (b: Beneficiary, s: BeneficiaryStatus) => void, onZakatToggle: (b: Beneficiary) => void }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    return (
-        <div className="border-b last:border-0">
-            <div className={cn("px-4 py-3 hover:bg-accent/50 transition-colors cursor-pointer", GRID_COLS_CLASS)} onClick={() => setIsOpen(!isOpen)}>
-                <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
-                        {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                    </Button>
-                    <span className="text-xs text-muted-foreground">{index}</span>
-                </div>
-                <div className="font-medium pr-4">
-                    <div className="text-sm truncate">{beneficiary.name}</div>
-                    <div className="text-[10px] text-muted-foreground font-mono">{beneficiary.phone || 'N/A'}</div>
-                </div>
-                <div>
-                    <Badge variant={beneficiary.status === 'Given' ? 'success' : beneficiary.status === 'Verified' ? 'success' : beneficiary.status === 'Pending' ? 'secondary' : 'destructive'} className="text-[10px]">
-                        {beneficiary.status}
-                    </Badge>
-                </div>
-                <div>
-                    <Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'} className="text-[10px]">
-                        {beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}
-                    </Badge>
-                </div>
-                <div className="text-right font-mono text-sm px-4">₹{(beneficiary.kitAmount || 0).toFixed(2)}</div>
-                <div className="text-right font-mono text-sm px-4">₹{(beneficiary.zakatAllocation || 0).toFixed(2)}</div>
-                <div className="text-xs truncate px-4">{beneficiary.referralBy || 'Self'}</div>
-                <div className="text-right" onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => onView(beneficiary)}><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
-                            {canUpdate && <DropdownMenuItem onClick={() => onEdit(beneficiary)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
-                            {canUpdate && <DropdownMenuSeparator />}
-                            {canUpdate && (
-                                <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger><ChevronsUpDown className="mr-2 h-4 w-4" /> Change Status</DropdownMenuSubTrigger>
-                                    <DropdownMenuPortal>
-                                        <DropdownMenuSubContent>
-                                            <DropdownMenuRadioGroup value={beneficiary.status} onValueChange={(s) => onStatusChange(beneficiary, s as any)}>
-                                                <DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Hold">Hold</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details">Need Details</DropdownMenuRadioItem>
-                                            </DropdownMenuRadioGroup>
-                                        </DropdownMenuSubContent>
-                                    </DropdownMenuPortal>
-                                </DropdownMenuSub>
-                            )}
-                            {canUpdate && (
-                                <DropdownMenuItem onClick={() => onZakatToggle(beneficiary)}>{beneficiary.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}{beneficiary.isEligibleForZakat ? 'Not Zakat Eligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>
-                            )}
-                            {canDelete && <DropdownMenuSeparator />}
-                            {canDelete && <DropdownMenuItem onClick={() => onDelete(beneficiary.id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
-            {isOpen && (
-                 <div className="bg-muted/20 p-4 border-t">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs animate-fade-in-down">
-                        <div className="space-y-2">
-                            <div><p className="font-bold text-primary uppercase tracking-tighter">Address</p><p className="text-foreground/80 leading-relaxed">{beneficiary.address || 'N/A'}</p></div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <div><p className="font-bold text-primary uppercase tracking-tighter">Family</p><p>Total: {beneficiary.members || 0}, Earning: {beneficiary.earningMembers || 0}</p></div>
-                                <div><p className="font-bold text-primary uppercase tracking-tighter">ID Proof</p><p>{beneficiary.idProofType || 'N/A'} - {beneficiary.idNumber || 'N/A'}</p></div>
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <div className="grid grid-cols-2 gap-2">
-                                <div><p className="font-bold text-primary uppercase tracking-tighter">Age</p><p>{beneficiary.age || 'N/A'}</p></div>
-                                <div><p className="font-bold text-primary uppercase tracking-tighter">Occupation</p><p>{beneficiary.occupation || 'N/A'}</p></div>
-                            </div>
-                            <div><p className="font-bold text-primary uppercase tracking-tighter">Date Added</p><p>{beneficiary.addedDate || 'N/A'}</p></div>
-                        </div>
-                        <div className="space-y-2">
-                            <div><p className="font-bold text-primary uppercase tracking-tighter">Zakat Allocation</p><p className="font-mono font-bold">₹{(beneficiary.zakatAllocation || 0).toFixed(2)}</p></div>
-                            <div><p className="font-bold text-primary uppercase tracking-tighter">Notes</p><p className="whitespace-pre-wrap italic">{beneficiary.notes || 'No notes.'}</p></div>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
 
 export default function BeneficiariesPage() {
   const params = useParams();
@@ -283,10 +196,6 @@ export default function BeneficiariesPage() {
     setCurrentPage(1);
   };
 
-  const handleView = (b: Beneficiary) => { router.push(`/beneficiaries/${b.id}?redirect=${pathname}`); };
-  const handleEdit = (b: Beneficiary) => { router.push(`/beneficiaries/${b.id}?redirect=${pathname}`); };
-  const handleDeleteClick = (id: string) => { setBeneficiaryToDelete(id); setIsDeleteDialogOpen(true); };
-
   const filteredBeneficiaries = useMemo(() => {
     if (!beneficiaries) return [];
     let items = beneficiaries.filter(b => {
@@ -316,16 +225,6 @@ export default function BeneficiariesPage() {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredBeneficiaries.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredBeneficiaries, currentPage, itemsPerPage]);
-
-  const groupedBeneficiaries = useMemo(() => {
-    const groups: Record<string, Beneficiary[]> = {};
-    paginatedBeneficiariesList.forEach(b => {
-        const group = b.referralBy || 'Self';
-        if (!groups[group]) groups[group] = [];
-        groups[group].push(b);
-    });
-    return Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
-  }, [paginatedBeneficiariesList]);
 
   const handleStatusChange = (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => {
     if (!firestore || !campaignId || !canUpdate) return;
@@ -455,40 +354,78 @@ export default function BeneficiariesPage() {
 
         <Card className="rounded-lg border bg-card overflow-hidden shadow-sm">
             <div className="w-full overflow-x-auto">
-                <div className="min-w-[1000px]">
-                    <div className={cn("bg-muted/50 border-b text-[10px] font-bold uppercase tracking-wider text-muted-foreground p-4", GRID_COLS_CLASS)}>
-                        <div className="flex items-center gap-2">#</div>
-                        <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name & Phone</SortableHeader>
-                        <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
-                        <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort}>Zakat</SortableHeader>
-                        <div className="text-right px-4">Kit Amount</div>
-                        <div className="text-right px-4">Zakat Alloc.</div>
-                        <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort} className="px-4">Referral</SortableHeader>
-                        <div className="text-right pr-2">Actions</div>
-                    </div>
-                    
-                    {groupedBeneficiaries.length > 0 ? (
-                        <Accordion type="multiple" defaultValue={groupedBeneficiaries.map(([name]) => name)} className="w-full">
-                            {groupedBeneficiaries.map(([groupName, groupItems]) => (
-                                <AccordionItem key={groupName} value={groupName} className="border-b last:border-0">
-                                    <AccordionTrigger className="px-4 py-3 bg-muted/20 hover:no-underline">
-                                        <div className="flex items-center gap-2">
-                                            <Users className="h-4 w-4 text-primary" />
-                                            <span className="font-bold text-sm tracking-tight">{groupName} ({groupItems.length})</span>
-                                        </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent className="p-0">
-                                        {groupItems.map((b, i) => (
-                                            <BeneficiaryRow key={b.id} beneficiary={b} index={(currentPage - 1) * itemsPerPage + i + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} />
-                                        ))}
-                                    </AccordionContent>
-                                </AccordionItem>
-                            ))}
-                        </Accordion>
-                    ) : (
-                        <div className="text-center py-20 text-muted-foreground italic text-sm">No beneficiaries found matching your criteria.</div>
-                    )}
-                </div>
+                <Table>
+                    <TableHeader className="bg-muted/50">
+                        <TableRow>
+                            <TableHead className="w-[60px]">#</TableHead>
+                            <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name & Phone</SortableHeader>
+                            <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="w-[120px]">Status</SortableHeader>
+                            <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort} className="w-[120px]">Zakat</SortableHeader>
+                            <SortableHeader sortKey="kitAmount" sortConfig={sortConfig} handleSort={handleSort} className="w-[120px] text-right px-4">Amount</SortableHeader>
+                            <SortableHeader sortKey="zakatAllocation" sortConfig={sortConfig} handleSort={handleSort} className="w-[140px] text-right px-4">Zakat Alloc.</SortableHeader>
+                            <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort} className="w-[150px] px-4">Referral</SortableHeader>
+                            <TableHead className="w-[80px] text-right pr-4">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {paginatedBeneficiariesList.map((b, idx) => (
+                            <TableRow key={b.id} className="hover:bg-accent/50 transition-colors">
+                                <TableCell className="text-xs text-muted-foreground">{(currentPage - 1) * itemsPerPage + idx + 1}</TableCell>
+                                <TableCell>
+                                    <div className="font-medium text-sm">{b.name}</div>
+                                    <div className="text-[10px] text-muted-foreground font-mono">{b.phone || 'N/A'}</div>
+                                </TableCell>
+                                <TableCell>
+                                    <Badge variant={b.status === 'Given' ? 'success' : b.status === 'Verified' ? 'success' : b.status === 'Pending' ? 'secondary' : 'destructive'} className="text-[10px]">
+                                        {b.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell>
+                                    <Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[10px]">
+                                        {b.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="text-right font-mono text-sm px-4">₹{(b.kitAmount || 0).toFixed(2)}</TableCell>
+                                <TableCell className="text-right font-mono text-sm px-4">₹{(b.zakatAllocation || 0).toFixed(2)}</TableCell>
+                                <TableCell className="text-xs truncate px-4">{b.referralBy || 'Self'}</TableCell>
+                                <TableCell className="text-right pr-4">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => handleView(b)}><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
+                                            {canUpdate && <DropdownMenuItem onClick={() => handleEdit(b)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
+                                            {canUpdate && <DropdownMenuSeparator />}
+                                            {canUpdate && (
+                                                <DropdownMenuSub>
+                                                    <DropdownMenuSubTrigger><ChevronsUpDown className="mr-2 h-4 w-4" /> Status</DropdownMenuSubTrigger>
+                                                    <DropdownMenuPortal>
+                                                        <DropdownMenuSubContent>
+                                                            <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s as any)}>
+                                                                <DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem>
+                                                                <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
+                                                                <DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem>
+                                                            </DropdownMenuRadioGroup>
+                                                        </DropdownMenuSubContent>
+                                                    </DropdownMenuPortal>
+                                                </DropdownMenuSub>
+                                            )}
+                                            {canUpdate && (
+                                                <DropdownMenuItem onClick={() => handleZakatToggle(b)}>{b.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}{b.isEligibleForZakat ? 'Not Zakat Eligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>
+                                            )}
+                                            {canDelete && <DropdownMenuSeparator />}
+                                            {canDelete && <DropdownMenuItem onClick={() => handleDeleteClick(b.id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                        {paginatedBeneficiariesList.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={8} className="text-center py-20 text-muted-foreground italic text-sm">No beneficiaries found matching your criteria.</TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
             </div>
             {totalPages > 1 && (
                 <CardFooter className="flex items-center justify-between border-t py-4">

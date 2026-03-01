@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -100,7 +99,7 @@ export function PublicLeadsView() {
   const [selectedMonth, setSelectedMonth] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
-  const { isLoading, campaignsWithProgress, leadsWithProgress, recentDonationsFormatted } = usePublicData();
+  const { isLoading, leadsWithProgress, campaignsWithProgress, recentDonationsFormatted } = usePublicData();
 
   const activeTickerItems = useMemo(() => {
     const activeCampaigns = campaignsWithProgress
