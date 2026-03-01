@@ -12,16 +12,18 @@ import {
     useDoc, 
     collection, 
     doc, 
-    setDoc, 
-    DocumentReference,
-    writeBatch,
-    serverTimestamp
+    serverTimestamp, 
+    writeBatch, 
+    updateDoc,
+    DocumentReference 
 } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import type { Beneficiary, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
+import Resizer from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import Link from 'next/link';
@@ -29,32 +31,30 @@ import { Badge } from '@/components/ui/badge';
 import { 
     ArrowLeft, 
     PlusCircle, 
-    Loader2, 
     Eye, 
     CheckCircle2, 
     Hourglass, 
     XCircle, 
     Info, 
-    ChevronsUpDown,
-    Users,
-    UserCheck,
-    FileUp,
-    CopyPlus,
+    Users, 
+    UserCheck, 
     Search,
+    CopyPlus,
     MoreHorizontal,
+    ShieldAlert,
 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuPortal,
-  DropdownMenuSeparator,
   DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
 import {
     Dialog,
@@ -70,22 +70,19 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
+import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
-import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
-import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog';
-import { BrandedLoader } from '@/components/branded-loader';
-import Resizer from 'react-image-file-resizer';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateMasterBeneficiaryAction } from '@/app/beneficiaries/actions';
+import { BrandedLoader } from '@/components/branded-loader';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { ShieldAlert } from 'lucide-react';
 
 type BeneficiaryStatus = Beneficiary['status'];
 
 const StatCard = ({ title, count, description, icon: Icon, colorClass }: { title: string, count: number, description: string, icon: any, colorClass?: string }) => (
-    <Card className="flex-1 min-w-[150px] shadow-sm hover:shadow-md transition-all">
+    <Card className="flex-1 min-w-[150px] interactive-hover border-primary/5">
         <CardContent className="p-4 flex items-start justify-between">
             <div className="space-y-1">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{title}</p>
@@ -99,8 +96,8 @@ const StatCard = ({ title, count, description, icon: Icon, colorClass }: { title
 
 export default function BeneficiariesPage() {
   const params = useParams();
-  const pathname = usePathname();
   const router = useRouter();
+  const pathname = usePathname();
   const leadId = typeof params?.leadId === "string" ? params.leadId : "";
   const firestore = useFirestore();
   const storage = useStorage();
@@ -111,7 +108,7 @@ export default function BeneficiariesPage() {
   const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
   const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, 'leads', leadId, 'beneficiaries') : null, [firestore, leadId]);
   const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
-  
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -130,9 +127,7 @@ export default function BeneficiariesPage() {
   const filteredBeneficiaries = useMemo(() => {
     if (!beneficiaries) return [];
     return beneficiaries.filter(b => {
-        const matchesSearch = (b.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                               b.phone?.includes(searchTerm) || 
-                               b.address?.toLowerCase().includes(searchTerm.toLowerCase()));
+        const matchesSearch = (b.name?.toLowerCase().includes(searchTerm.toLowerCase()) || b.phone?.includes(searchTerm) || b.address?.toLowerCase().includes(searchTerm.toLowerCase()));
         const matchesStatus = statusFilter === 'All' || b.status === statusFilter;
         const matchesZakat = zakatFilter === 'All' || (zakatFilter === 'Eligible' ? b.isEligibleForZakat : !b.isEligibleForZakat);
         const matchesReferral = referralFilter === 'All' || b.referralBy === referralFilter;
@@ -212,18 +207,16 @@ export default function BeneficiariesPage() {
     batch.set(leadSubRef, fullData, { merge: true });
     batch.update(doc(firestore, 'leads', leadId), { targetAmount: (lead.targetAmount || 0) + (data.kitAmount || 0) });
     
-    await batch.commit().then(() => { toast({ title: 'Success', description: 'Beneficiary added.' }); setIsFormOpen(false); }).catch(e => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadSubRef.path, operation: 'create' }));
-    });
+    await batch.commit().then(() => { toast({ title: 'Success', description: 'Beneficiary added.' }); setIsFormOpen(false); }).catch(e => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadSubRef.path, operation: 'create' })));
     setIsSubmitting(false);
   };
 
   if (isLeadLoading || areBeneficiariesLoading || isProfileLoading) return <BrandedLoader />;
-  if (!lead) return <div className="p-8 text-center"><p>Lead not found.</p><Button asChild variant="outline" className="mt-4"><Link href="/leads-members"><ArrowLeft className="mr-2"/>Back</Link></Button></div>;
+  if (!lead) return <p className="text-center mt-20">Lead not found.</p>;
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6">
-        <div className="mb-4"><Button variant="outline" asChild><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
+        <div className="mb-4"><Button variant="outline" asChild className="interactive-hover font-bold uppercase"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
         <h1 className="text-3xl font-black tracking-tight text-primary uppercase">{lead.name}</h1>
         
         <div className="border-b mb-4">
@@ -231,7 +224,7 @@ export default function BeneficiariesPage() {
                 <div className="flex w-max space-x-2 pb-2">
                     {canReadSummary && ( <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold uppercase tracking-wide transition-all duration-200", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link> )}
                     <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold uppercase tracking-wide transition-all duration-200", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item List</Link>
-                    {canReadBeneficiaries && ( <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold uppercase tracking-wide transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary Details</Link> )}
+                    {canReadBeneficiaries && ( <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold uppercase tracking-wide transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link> )}
                     {canReadDonations && ( <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold uppercase tracking-wide transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link> )}
                 </div>
                 <ScrollBar orientation="horizontal" />
@@ -242,19 +235,19 @@ export default function BeneficiariesPage() {
             <CardHeader className="pb-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div className="space-y-1">
-                        <CardTitle className="text-2xl font-black text-primary uppercase">Beneficiary Details ({stats.total})</CardTitle>
-                        <CardDescription className="font-bold text-foreground">Total amount for current page: <span className="text-primary font-mono">₹{filteredBeneficiaries.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage).reduce((sum, b) => sum + (b.kitAmount || 0), 0).toFixed(2)}</span></CardDescription>
+                        <CardTitle className="text-2xl font-black text-primary uppercase tracking-tighter">Beneficiary Details ({stats.total})</CardTitle>
+                        <CardDescription className="font-bold text-foreground">Showing current page results grouped by assigned item categories.</CardDescription>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="gap-2 font-bold uppercase interactive-hover"><CopyPlus className="h-4 w-4"/> Select from Master</Button>
-                        <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2 font-bold uppercase interactive-hover"><PlusCircle className="h-4 w-4"/> Add New</Button>
+                        <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2 font-black uppercase tracking-widest interactive-hover shadow-lg"><PlusCircle className="h-4 w-4"/> Add New</Button>
                     </div>
                 </div>
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                    <StatCard title="Total" count={stats.total} description="All entries" icon={Users} />
-                    <StatCard title="Pending" count={stats.pending} description="Verification" icon={Hourglass} colorClass="text-amber-500" />
+                    <StatCard title="Total" count={stats.total} description="Lead entries" icon={Users} />
+                    <StatCard title="Pending" count={stats.pending} description="Wait verification" icon={Hourglass} colorClass="text-amber-500" />
                     <StatCard title="Verified" count={stats.verified} description="Confirmed" icon={CheckCircle2} colorClass="text-blue-500" />
                     <StatCard title="Given" count={stats.given} description="Disbursed" icon={UserCheck} colorClass="text-green-600" />
                     <StatCard title="Hold" count={stats.hold} description="Paused" icon={XCircle} colorClass="text-destructive" />
@@ -286,7 +279,7 @@ export default function BeneficiariesPage() {
                         <div>Name & Phone</div>
                         <div className="text-center">Status</div>
                         <div className="text-center">Zakat</div>
-                        <div className="text-right">Req. Amt (₹)</div>
+                        <div className="text-right">Kit Amount (₹)</div>
                         <div className="text-right">Alloc. (₹)</div>
                         <div className="text-right">Referral</div>
                         <div className="text-right">Opt</div>
@@ -295,7 +288,7 @@ export default function BeneficiariesPage() {
                     <Accordion type="multiple" defaultValue={Object.keys(groupedBeneficiaries)} className="w-full">
                         {Object.entries(groupedBeneficiaries).map(([catName, list]) => (
                             <AccordionItem key={catName} value={catName} className="border-none">
-                                <AccordionTrigger className="hover:no-underline bg-muted/10 px-4 py-3 border-b group [&[data-state=open]]:bg-primary/5">
+                                <AccordionTrigger className="hover:no-underline bg-muted/10 px-4 py-3 border-b group [&[data-state=open]]:bg-primary/5 transition-colors">
                                     <div className="flex items-center gap-3"><span className="text-sm font-black text-primary uppercase tracking-tight">{catName} ({list.length})</span></div>
                                 </AccordionTrigger>
                                 <AccordionContent className="p-0">
@@ -310,9 +303,9 @@ export default function BeneficiariesPage() {
                                             <div className="text-right text-[10px] font-bold uppercase truncate pl-2">{b.referralBy}</div>
                                             <div className="text-right">
                                                 <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="font-bold"><Eye className="mr-2 h-4 w-4"/> Details</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="font-bold"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
                                                         {canUpdate && (
                                                             <DropdownMenuSub>
                                                                 <DropdownMenuSubTrigger className="font-bold">Status</DropdownMenuSubTrigger>
@@ -327,7 +320,7 @@ export default function BeneficiariesPage() {
                                                                 </DropdownMenuSubContent></DropdownMenuPortal>
                                                             </DropdownMenuSub>
                                                         )}
-                                                        {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold">{b.isEligibleForZakat ? 'Mark Not Eligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
+                                                        {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </div>
@@ -337,15 +330,15 @@ export default function BeneficiariesPage() {
                             </AccordionItem>
                         ))}
                     </Accordion>
-                    {filteredBeneficiaries.length === 0 && <div className="text-center py-20 text-muted-foreground font-bold uppercase tracking-widest bg-muted/5">No records found.</div>}
+                    {filteredBeneficiaries.length === 0 && <div className="text-center py-20 text-muted-foreground font-bold uppercase tracking-widest bg-muted/5">No beneficiaries found matching your filters.</div>}
                 </div>
             </CardContent>
             {totalPages > 1 && (
                 <CardFooter className="flex items-center justify-between border-t py-4">
-                    <p className="text-xs text-muted-foreground">Page {currentPage} of {totalPages}</p>
+                    <p className="text-xs text-muted-foreground">Showing page {currentPage} of {totalPages}</p>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Prev</Button>
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold uppercase h-8">Prev</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold uppercase h-8">Next</Button>
                     </div>
                 </CardFooter>
             )}

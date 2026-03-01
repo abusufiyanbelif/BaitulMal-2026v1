@@ -14,13 +14,13 @@ import {
     doc, 
     serverTimestamp, 
     writeBatch, 
-    setDoc, 
+    updateDoc,
     DocumentReference 
 } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Beneficiary, Campaign, ItemCategory } from '@/lib/types';
+import type { Beneficiary, Campaign } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import Resizer from 'react-image-file-resizer';
@@ -31,19 +31,17 @@ import { Badge } from '@/components/ui/badge';
 import { 
     ArrowLeft, 
     PlusCircle, 
-    Loader2, 
     Eye, 
     CheckCircle2, 
     Hourglass, 
     XCircle, 
     Info, 
-    ChevronsUpDown, 
     Users, 
     UserCheck, 
-    FileUp, 
     Search,
     CopyPlus,
     MoreHorizontal,
+    ShieldAlert,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -79,6 +77,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { updateMasterBeneficiaryAction } from '@/app/beneficiaries/actions';
 import { BrandedLoader } from '@/components/branded-loader';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 type BeneficiaryStatus = Beneficiary['status'];
 
@@ -218,7 +217,7 @@ export default function BeneficiariesPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6">
-        <div className="mb-4"><Button variant="outline" asChild><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
+        <div className="mb-4"><Button variant="outline" asChild className="interactive-hover font-bold uppercase"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
         <h1 className="text-3xl font-black tracking-tight text-primary uppercase">{campaign.name}</h1>
         
         <div className="border-b mb-4">
@@ -237,12 +236,12 @@ export default function BeneficiariesPage() {
             <CardHeader className="pb-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div className="space-y-1">
-                        <CardTitle className="text-2xl font-black text-primary uppercase">Beneficiary List ({stats.total})</CardTitle>
-                        <CardDescription className="font-bold text-foreground">Total amount for current page: <span className="text-primary font-mono font-black">₹{filteredBeneficiaries.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage).reduce((sum, b) => sum + (b.kitAmount || 0), 0).toFixed(2)}</span></CardDescription>
+                        <CardTitle className="text-2xl font-black text-primary uppercase tracking-tighter">Beneficiary List ({stats.total})</CardTitle>
+                        <CardDescription className="font-bold text-foreground">Showing current page results grouped by assigned item categories.</CardDescription>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="gap-2 font-bold uppercase interactive-hover"><CopyPlus className="h-4 w-4"/> Select from Master</Button>
-                        <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2 font-bold uppercase interactive-hover"><PlusCircle className="h-4 w-4"/> Add New</Button>
+                        <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2 font-black uppercase tracking-widest interactive-hover shadow-lg"><PlusCircle className="h-4 w-4"/> Add New</Button>
                     </div>
                 </div>
             </CardHeader>
@@ -337,10 +336,10 @@ export default function BeneficiariesPage() {
             </CardContent>
             {totalPages > 1 && (
                 <CardFooter className="flex items-center justify-between border-t py-4">
-                    <p className="text-xs text-muted-foreground">Page {currentPage} of {totalPages}</p>
+                    <p className="text-xs text-muted-foreground">Showing page {currentPage} of {totalPages}</p>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Prev</Button>
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold uppercase h-8">Prev</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold uppercase h-8">Next</Button>
                     </div>
                 </CardFooter>
             )}

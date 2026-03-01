@@ -43,9 +43,21 @@
     @apply min-h-screen bg-background text-foreground antialiased font-sans;
   }
 
-  /* Universal Hover & Animation System */
+  /* Universal Hover & Interaction System */
   .interactive-hover {
     @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:scale-95;
+  }
+
+  /* Hover background for navigation items and rows */
+  .hover-bg-primary {
+    @apply hover:bg-primary/10 transition-colors;
+  }
+
+  /* Table Grid Alignment Utility */
+  .table-grid-align {
+    display: grid;
+    grid-template-columns: 60px 1fr 100px 100px 120px 120px 120px 60px;
+    align-items: center;
   }
 
   @keyframes marquee {
