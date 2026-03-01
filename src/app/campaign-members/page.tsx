@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -63,7 +64,7 @@ interface CampaignCardProps {
     handleDeleteClick: (campaign: Campaign) => void;
 }
 
-const CampaignCard = ({ 
+function CampaignCard({ 
     campaign, 
     index, 
     router, 
@@ -73,7 +74,7 @@ const CampaignCard = ({
     handleStatusUpdate, 
     handleCopyClick, 
     handleDeleteClick 
-}: CampaignCardProps) => {
+}: CampaignCardProps) {
     const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
 
     return (
@@ -191,7 +192,7 @@ const CampaignCard = ({
         </CardFooter>
         </Card>
     );
-};
+}
 
 export default function CampaignPage() {
   const router = useRouter();

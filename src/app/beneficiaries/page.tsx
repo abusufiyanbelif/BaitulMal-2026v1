@@ -1,8 +1,9 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useFirestore, useMemoFirebase, useCollection, collection, doc } from '@/firebase';
+import { useFirestore, useMemoFirebase, useCollection, collection, doc, updateDoc } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import type { Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,8 @@ import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterB
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn, getNestedValue } from '@/lib/utils';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 type SortKey = keyof Beneficiary | 'srNo';
 type BeneficiaryStatus = Beneficiary['status'];
@@ -53,7 +56,7 @@ function SortableHeader({ sortKey, children, className, sortConfig, handleSort }
             </div>
         </TableHead>
     );
-};
+}
 
 function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, onStatusChange, onZakatToggle }: {
     beneficiary: Beneficiary;

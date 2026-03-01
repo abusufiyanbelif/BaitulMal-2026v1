@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -235,7 +236,7 @@ export default function InfoSettingsPage() {
         }
     }, [donationInfoData, isDonationInfoLoading, isInitialized, form]);
 
-    const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.update', false);
+    const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.update', false) || !!getNestedValue(userProfile, 'permissions.settings.info.update', false);
 
     const handleSaveVisibility = async () => {
         if (!firestore || !canUpdateSettings) return;
@@ -269,8 +270,8 @@ export default function InfoSettingsPage() {
             const processedType = {
                 ...rest,
                 imageUrl: finalImageUrl,
-                useCases: typeToSave.useCases.filter(uc => uc.title?.trim() || uc.description?.trim()),
-                qaItems: typeToSave.qaItems.filter(qa => qa.question?.trim() || qa.answer?.trim()),
+                useCases: typeToSave.useCases.filter(uc => uc.title?.trim()), // Clean blank scenarios
+                qaItems: typeToSave.qaItems.filter(qa => qa.question?.trim()), // Clean blank questions
                 purposePoints: purposePointsRaw ? purposePointsRaw.split('\n').filter(p => p.trim() !== '') : [],
             };
             const currentFullData = (donationInfoData?.types || []).length > 0 ? [...donationInfoData!.types] : [...defaultDonationInfo];

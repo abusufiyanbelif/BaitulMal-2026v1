@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -45,7 +46,14 @@ service cloud.firestore {
     
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isAdmin() || hasPermission('settings', 'update') || hasSubmodulePermission('settings', 'app', 'update') || hasSubmodulePermission('settings', 'info', 'update');
+      allow write: if isAdmin() || 
+                     hasPermission('settings', 'update') || 
+                     hasPermission('settings', 'create') ||
+                     hasPermission('settings', 'delete') ||
+                     hasSubmodulePermission('settings', settingId, 'update') ||
+                     (settingId == 'donationInfo' && hasSubmodulePermission('settings', 'info', 'update')) ||
+                     (settingId == 'branding' && hasSubmodulePermission('settings', 'app', 'update')) ||
+                     (settingId == 'payment' && hasSubmodulePermission('settings', 'app', 'update'));
     }
     
     match /page_hits/{pageId} {
