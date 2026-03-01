@@ -141,7 +141,8 @@ export default function LeadSummaryPage() {
             await updateDoc(leadDocRef, { documents: newDocs, updatedAt: serverTimestamp() });
             toast({ title: "Visibility Updated", description: `'${docToToggle.name}' visibility toggled.` });
         } catch (serverError: any) {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: { documents: newDocs } }));
+            const permissionError = new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: { documents: newDocs } });
+            errorEmitter.emit('permission-error', permissionError);
         }
     };
 
@@ -218,7 +219,8 @@ export default function LeadSummaryPage() {
 
         updateDoc(leadDocRef, saveData)
             .catch(async (serverError: any) => {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: saveData }));
+                const permissionError = new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: saveData });
+                errorEmitter.emit('permission-error', permissionError);
             })
             .finally(() => {
                 toast({ title: 'Success', description: 'Lead summary updated.', variant: 'success' });

@@ -51,7 +51,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { usePublicData } from '@/hooks/use-public-data';
 
-function CampaignCard({ 
+const CampaignCard = ({ 
     campaign, 
     index, 
     router, 
@@ -71,7 +71,7 @@ function CampaignCard({
     handleStatusUpdate: (campaignToUpdate: Campaign, field: 'status' | 'authenticityStatus' | 'publicVisibility', value: string) => Promise<void>;
     handleCopyClick: (campaign: Campaign) => void;
     handleDeleteClick: (campaign: Campaign) => void;
-}) {
+}) => {
     const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
 
     return (
@@ -127,14 +127,16 @@ function CampaignCard({
                                         <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioGroup>
+                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
                                     <DropdownMenuRadioGroup value={campaign.publicVisibility} onValueChange={(value) => handleStatusUpdate(campaign, 'publicVisibility', value as string)}>
                                         <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioGroup>
+                                        <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                             </>
                         )}
@@ -264,7 +266,10 @@ export default function CampaignPage() {
     const updateData = { [field]: value };
     updateDoc(docRef, updateData)
         .then(() => toast({ title: 'Success', description: `Campaign updated.`, variant: 'success' }))
-        .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData })));
+        .catch(err => {
+            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData });
+            errorEmitter.emit('permission-error', permissionError);
+        });
   };
   
   const filteredCampaigns = useMemo(() => {

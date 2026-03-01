@@ -16,18 +16,20 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() && 
+             exists(userDocRef()) &&
              get(userDocRef()).data.get('role', 'User') == 'Admin';
     }
 
     function hasPermission(module, permission) {
-        if (!isSignedIn()) return false;
+        if (!isSignedIn() || !exists(userDocRef())) return false;
         let userData = get(userDocRef()).data;
+        let p = userData.get('permissions', {});
         return userData.get('role', 'User') == 'Admin' || 
-               userData.get('permissions', {}).get(module, {}).get(permission, false) == true;
+               p.get(module, {}).get(permission, false) == true;
     }
 
     function hasSubmodulePermission(module, submodule, permission) {
-        if (!isSignedIn()) return false;
+        if (!isSignedIn() || !exists(userDocRef())) return false;
         let userData = get(userDocRef()).data;
         let p = userData.get('permissions', {});
         let mod = p.get(module, {});

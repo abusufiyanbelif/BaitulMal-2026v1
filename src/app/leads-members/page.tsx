@@ -101,14 +101,16 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                                         <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioGroup>
+                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
                                     <DropdownMenuRadioGroup value={lead.publicVisibility} onValueChange={(value) => handleStatusUpdate(lead, 'publicVisibility', value as string)}>
                                         <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
                                         <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioGroup>
+                                        <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
                                 </DropdownMenuSub>
                             </>
                         )}
@@ -238,7 +240,10 @@ export default function LeadPage() {
     const updateData = { [field]: value };
     updateDoc(docRef, updateData)
         .then(() => toast({ title: 'Success', description: `Lead updated.` }))
-        .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData })));
+        .catch(err => {
+            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData });
+            errorEmitter.emit('permission-error', permissionError);
+        });
   };
 
   const filteredLeads = useMemo(() => {

@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -37,7 +36,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -304,11 +302,12 @@ export default function DonationsPage() {
         createdAt: editingDonation ? (editingDonation as any).createdAt : serverTimestamp()
     }, { merge: true })
     .catch(async (serverError) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
+        const permissionError = new FirestorePermissionError({
             path: docRef.path,
             operation: editingDonation ? 'update' : 'create',
             requestResourceData: data,
-        }));
+        });
+        errorEmitter.emit('permission-error', permissionError);
     });
     toast({ title: "Donation Saved", description: "The record is being synchronized in the background." });
   };

@@ -138,7 +138,8 @@ export default function CampaignSummaryPage() {
             await updateDoc(campaignDocRef, { documents: newDocuments, updatedAt: serverTimestamp() });
             toast({ title: "Visibility Updated", description: `'${docToToggle.name}' visibility toggled.` });
         } catch (serverError: any) {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: { documents: newDocuments } }));
+            const permissionError = new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: { documents: newDocuments } });
+            errorEmitter.emit('permission-error', permissionError);
         }
     };
 
@@ -221,7 +222,8 @@ export default function CampaignSummaryPage() {
 
         updateDoc(campaignDocRef, saveData)
             .catch(async (serverError: any) => {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: saveData }));
+                const permissionError = new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: saveData });
+                errorEmitter.emit('permission-error', permissionError);
             })
             .finally(() => {
                 toast({ title: 'Success', description: 'Campaign summary updated.', variant: 'success' });

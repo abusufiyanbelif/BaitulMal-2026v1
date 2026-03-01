@@ -131,7 +131,7 @@ const StatCard = ({ title, count, description, icon: Icon, colorClass, delay }: 
 const BeneficiaryRow = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, onStatusChange, onZakatToggle }: { beneficiary: Beneficiary, index: number, canUpdate?: boolean, canDelete?: boolean, onView: (b: Beneficiary) => void, onEdit: (b: Beneficiary) => void, onDelete: (id: string) => void, onStatusChange: (b: Beneficiary, s: BeneficiaryStatus) => void, onZakatToggle: (b: Beneficiary) => void }) => {
     const [isOpen, setIsOpen] = useState(false);
     return (
-        <>
+        <React.Fragment>
             <TableRow className="bg-background hover:bg-accent/50 cursor-pointer border-none" onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? 'open' : 'closed'}>
                 <TableCell className="w-[60px]">
                     <div className="flex items-center gap-2">
@@ -168,7 +168,7 @@ const BeneficiaryRow = ({ beneficiary, index, canUpdate, canDelete, onView, onEd
                             {canUpdate && (
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><ChevronsUpDown className="mr-2 h-4 w-4" /> Status</DropdownMenuSubTrigger>
-                                    <DropdownMenuPortal><DropdownMenuSubContent><DropdownMenuRadioGroup value={beneficiary.status} onValueChange={(s) => onStatusChange(beneficiary, s as any)}><DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem><DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem><DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioGroup></DropdownMenuSubContent></DropdownMenuPortal>
+                                    <DropdownMenuPortal><DropdownMenuSubContent><DropdownMenuRadioGroup value={beneficiary.status} onValueChange={(s) => onStatusChange(beneficiary, s as any)}><DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem><DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem><DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem></DropdownMenuRadioGroup></DropdownMenuSubContent></DropdownMenuPortal>
                                 </DropdownMenuSub>
                             )}
                             {canDelete && <DropdownMenuItem onClick={() => onDelete(beneficiary.id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
@@ -196,7 +196,7 @@ const BeneficiaryRow = ({ beneficiary, index, canUpdate, canDelete, onView, onEd
                     </TableCell>
                 </TableRow>
             )}
-        </>
+        </React.Fragment>
     );
 };
 
@@ -261,7 +261,8 @@ export default function BeneficiariesPage() {
     const updateData = { status: newStatus };
     setDoc(ref, updateData, { merge: true })
       .catch(async (err: any) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: updateData }));
+        const permissionError = new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: updateData });
+        errorEmitter.emit('permission-error', permissionError);
       });
   };
 
@@ -335,7 +336,10 @@ export default function BeneficiariesPage() {
     batch.set(leadSubRef, fullData, { merge: true });
     batch.update(doc(firestore, 'leads', leadId), { targetAmount: (lead.targetAmount || 0) + (data.kitAmount || 0) });
     
-    await batch.commit().then(() => { toast({ title: 'Success', description: 'Beneficiary added.' }); setIsFormOpen(false); }).catch(e => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadSubRef.path, operation: 'create' })));
+    await batch.commit().then(() => { toast({ title: 'Success', description: 'Beneficiary added.' }); setIsFormOpen(false); }).catch(e => {
+        const permissionError = new FirestorePermissionError({ path: leadSubRef.path, operation: 'create' });
+        errorEmitter.emit('permission-error', permissionError);
+    });
     setIsSubmitting(false);
   };
 
