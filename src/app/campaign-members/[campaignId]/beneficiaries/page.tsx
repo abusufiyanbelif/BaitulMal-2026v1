@@ -171,7 +171,7 @@ const BeneficiaryRow = ({ beneficiary, index, canUpdate, canDelete, onView, onEd
                             {canUpdate && (
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><ChevronsUpDown className="mr-2 h-4 w-4" /> Change Status</DropdownMenuSubTrigger>
-                                    <DropdownMenuPortal><DropdownMenuSubContent><DropdownMenuRadioGroup value={beneficiary.status} onValueChange={(s) => onStatusChange(beneficiary, s as any)}><DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem><DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem><DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem><DropdownMenuRadioItem value="Hold">Hold</DropdownMenuRadioItem><DropdownMenuRadioItem value="Need More Details">Need Details</DropdownMenuRadioGroup></DropdownMenuSubContent></DropdownMenuPortal>
+                                    <DropdownMenuPortal><DropdownMenuSubContent><DropdownMenuRadioGroup value={beneficiary.status} onValueChange={(s) => onStatusChange(beneficiary, s as any)}><DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem><DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem><DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem><DropdownMenuRadioItem value="Hold">Hold</DropdownMenuRadioItem><DropdownMenuRadioItem value="Need More Details">Need Details</DropdownMenuRadioItem></DropdownMenuRadioGroup></DropdownMenuSubContent></DropdownMenuPortal>
                                 </DropdownMenuSub>
                             )}
                             {canUpdate && (
@@ -460,7 +460,7 @@ export default function BeneficiariesPage() {
                     <TableBody>
                         {groupedBeneficiaries.length > 0 ? (
                             <Accordion type="multiple" defaultValue={groupedBeneficiaries.map(([name]) => name)} className="w-full">
-                                {groupedBeneficiaries.map(([groupName, groupItems], gIdx) => (
+                                {groupedBeneficiaries.map(([groupName, groupItems]) => (
                                     <React.Fragment key={groupName}>
                                         <TableRow className="bg-muted/30 border-b hover:bg-muted/40">
                                             <TableCell colSpan={8} className="p-0">

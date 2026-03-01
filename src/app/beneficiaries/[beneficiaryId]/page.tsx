@@ -1,26 +1,24 @@
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter, useParams, useSearchParams, usePathname } from 'next/navigation';
-import { useFirestore, useStorage, useAuth, useMemoFirebase, useDoc, getDocs, getDoc, doc, type DocumentReference, collection, query, type CollectionReference, uploadBytes, getDownloadURL, deleteObject, storageRef } from '@/firebase';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
+import { useFirestore, useStorage, useAuth, useMemoFirebase, useDoc, getDocs, getDoc, doc, type DocumentReference, collection } from '@/firebase';
 import Resizer from 'react-image-file-resizer';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { ArrowLeft, Save, Edit, ShieldAlert, FolderKanban, Lightbulb, UserCheck, Check, Hourglass, Loader2, MoreHorizontal, ChevronsUpDown, BadgeCheck, Info, XCircle, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, Eye, Loader2, ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, DropdownMenuPortal, DropdownMenuRadioGroup, DropdownMenuRadioItem } from '@/components/ui/dropdown-menu';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { updateMasterBeneficiaryAction, updateInitiativeBeneficiaryDetailsAction, updateBeneficiaryStatusInInitiativeAction } from '../actions';
 import { useSession } from '@/hooks/use-session';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { storageRef, uploadBytes, getDownloadURL } from '@/firebase';
 
 interface LinkedInitiative {
     id: string;
@@ -83,7 +81,7 @@ export default function BeneficiaryDetailsPage() {
     }
   }, [initiativeContext, firestore, beneficiaryId]);
 
-  const { data: beneficiary, isLoading: isBeneficiaryLoading, error: beneficiaryError, forceRefetch } = useDoc<Beneficiary>(beneficiaryDocRef);
+  const { data: beneficiary, isLoading: isBeneficiaryLoading, forceRefetch } = useDoc<Beneficiary>(beneficiaryDocRef);
   
   const formBeneficiaryData = useMemo(() => {
       if (!beneficiary) return null;
@@ -122,7 +120,7 @@ export default function BeneficiaryDetailsPage() {
 
   useEffect(() => { if (beneficiary) fetchLinkedInitiatives(); }, [beneficiary, fetchLinkedInitiatives]);
 
-  const canUpdate = currentUserProfile?.role === 'Admin' || !!currentUserProfile?.permissions?.beneficiaries?.update;
+  const canUpdate = currentUserProfile?.role === 'Admin' || !!getNestedValue(currentUserProfile, 'permissions.beneficiaries.update', false);
 
   const handleSave = async (data: BeneficiaryFormData) => {
     if (!beneficiaryId || !canUpdate || !currentUserProfile || !storage) return;
@@ -156,7 +154,7 @@ export default function BeneficiaryDetailsPage() {
   const handleInitiativeStatusChange = async (initiative: LinkedInitiative, newStatus: Beneficiary['status']) => {
     const res = await updateBeneficiaryStatusInInitiativeAction(initiative.type.toLowerCase() as any, initiative.id, beneficiaryId, newStatus);
     if (res.success) { fetchLinkedInitiatives(); toast({ title: "Updated" }); }
-  }
+  };
 
   const isLoading = isBeneficiaryLoading || isProfileLoading || isInitiativeDataLoading;
   const backHref = redirectUrl || '/beneficiaries';
@@ -224,7 +222,7 @@ export default function BeneficiaryDetailsPage() {
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuSub>
                                                         <DropdownMenuSubTrigger>Status</DropdownMenuSubTrigger>
-                                                        <DropdownMenuPortal><DropdownMenuSubContent><DropdownMenuRadioGroup value={link.beneficiaryStatus} onValueChange={(s) => handleInitiativeStatusChange(link, s as any)}><DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem><DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem><DropdownMenuRadioItem value="Given">Given</SelectItem></DropdownMenuRadioGroup></DropdownMenuSubContent></DropdownMenuPortal>
+                                                        <DropdownMenuPortal><DropdownMenuSubContent><DropdownMenuRadioGroup value={link.beneficiaryStatus} onValueChange={(s) => handleInitiativeStatusChange(link, s as any)}><DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem><DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem><DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem></DropdownMenuRadioGroup></DropdownMenuSubContent></DropdownMenuPortal>
                                                     </DropdownMenuSub>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -240,4 +238,23 @@ export default function BeneficiaryDetailsPage() {
       </Card>
     </main>
   );
+}
+
+function Table({ children }: { children: React.ReactNode }) {
+    return <table className="w-full text-sm text-left">{children}</table>;
+}
+function TableHeader({ children }: { children: React.ReactNode }) {
+    return <thead className="bg-muted/50 text-muted-foreground font-medium border-b">{children}</thead>;
+}
+function TableRow({ children }: { children: React.ReactNode }) {
+    return <tr className="border-b last:border-0 hover:bg-muted/30 transition-colors">{children}</tr>;
+}
+function TableHead({ children, className }: { children: React.ReactNode, className?: string }) {
+    return <th className={cn("px-4 py-3", className)}>{children}</th>;
+}
+function TableBody({ children }: { children: React.ReactNode }) {
+    return <tbody>{children}</tbody>;
+}
+function TableCell({ children, className }: { children: React.ReactNode, className?: string }) {
+    return <td className={cn("px-4 py-3 align-middle", className)}>{children}</td>;
 }

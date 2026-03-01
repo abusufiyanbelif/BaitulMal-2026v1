@@ -440,7 +440,7 @@ export default function BeneficiariesPage() {
                     <TableBody>
                         {groupedBeneficiaries.length > 0 ? (
                             <Accordion type="multiple" defaultValue={groupedBeneficiaries.map(([name]) => name)} className="w-full">
-                                {groupedBeneficiaries.map(([groupName, groupItems], gIdx) => (
+                                {groupedBeneficiaries.map(([groupName, groupItems]) => (
                                     <React.Fragment key={groupName}>
                                         <TableRow className="bg-muted/30 border-b hover:bg-muted/40">
                                             <TableCell colSpan={8} className="p-0">

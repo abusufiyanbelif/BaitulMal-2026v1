@@ -51,6 +51,18 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { usePublicData } from '@/hooks/use-public-data';
 
+interface CampaignCardProps {
+    campaign: Campaign & { collected: number; progress: number; };
+    index: number;
+    router: ReturnType<typeof useRouter>;
+    canUpdate: boolean;
+    canCreate: boolean;
+    canDelete: boolean;
+    handleStatusUpdate: (campaignToUpdate: Campaign, field: 'status' | 'authenticityStatus' | 'publicVisibility', value: string) => Promise<void>;
+    handleCopyClick: (campaign: Campaign) => void;
+    handleDeleteClick: (campaign: Campaign) => void;
+}
+
 const CampaignCard = ({ 
     campaign, 
     index, 
@@ -61,17 +73,7 @@ const CampaignCard = ({
     handleStatusUpdate, 
     handleCopyClick, 
     handleDeleteClick 
-}: {
-    campaign: Campaign & { collected: number; progress: number; };
-    index: number;
-    router: ReturnType<typeof useRouter>;
-    canUpdate: boolean;
-    canCreate: boolean;
-    canDelete: boolean;
-    handleStatusUpdate: (campaignToUpdate: Campaign, field: 'status' | 'authenticityStatus' | 'publicVisibility', value: string) => Promise<void>;
-    handleCopyClick: (campaign: Campaign) => void;
-    handleDeleteClick: (campaign: Campaign) => void;
-}) => {
+}: CampaignCardProps) => {
     const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
 
     return (
@@ -191,7 +193,7 @@ const CampaignCard = ({
         </CardFooter>
         </Card>
     );
-}
+};
 
 export default function CampaignPage() {
   const router = useRouter();
