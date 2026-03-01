@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -78,7 +79,7 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
     );
     
     return (
-        <>
+        <React.Fragment>
             <TableRow className="bg-background hover:bg-accent/50 data-[state=open]:bg-accent/50 cursor-pointer" onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? 'open' : 'closed'}>
                 <TableCell className="w-[100px]">
                      <div className="flex items-center gap-2">
@@ -121,11 +122,11 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
                                                 value={beneficiary.status}
                                                 onValueChange={(newStatus) => onStatusChange(beneficiary, newStatus as BeneficiaryStatus)}
                                             >
-                                                <DropdownMenuRadioItem value="Pending"><Hourglass className="mr-2 h-4 w-4"/>Pending</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Verified"><BadgeCheck className="mr-2 h-4 w-4"/>Verified</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Given"><CheckCircle2 className="mr-2 h-4 w-4"/>Given</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Hold"><XCircle className="mr-2 h-4 w-4"/>Hold</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details"><Info className="mr-2 h-4 w-4"/>Need Details</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Hold">Hold</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details">Need Details</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
@@ -163,7 +164,7 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
                     </TableCell>
                 </TableRow>
             )}
-        </>
+        </React.Fragment>
     );
 }
 

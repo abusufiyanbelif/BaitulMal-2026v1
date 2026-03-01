@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -100,15 +101,15 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 type SortKey = keyof Beneficiary | 'srNo';
 type BeneficiaryStatus = Beneficiary['status'];
 
+const GRID_COLS_CLASS = "grid grid-cols-[60px_1fr_100px_100px_120px_120px_120px_60px] items-center";
+
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <TableHead className={cn("cursor-pointer hover:bg-muted/50", className)} onClick={() => handleSort(sortKey)}>
-            <div className="flex items-center gap-2 whitespace-nowrap">
-                {children}
-                {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
-            </div>
-        </TableHead>
+        <div className={cn("cursor-pointer hover:text-primary transition-colors flex items-center gap-1", className)} onClick={() => handleSort(sortKey)}>
+            {children}
+            {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+        </div>
     );
 };
 
@@ -130,34 +131,32 @@ const StatCard = ({ title, count, description, icon: Icon, colorClass, delay }: 
 const BeneficiaryRow = ({ beneficiary, index, canUpdate, canDelete, onView, onEdit, onDelete, onStatusChange, onZakatToggle }: { beneficiary: Beneficiary, index: number, canUpdate?: boolean, canDelete?: boolean, onView: (b: Beneficiary) => void, onEdit: (b: Beneficiary) => void, onDelete: (id: string) => void, onStatusChange: (b: Beneficiary, s: BeneficiaryStatus) => void, onZakatToggle: (b: Beneficiary) => void }) => {
     const [isOpen, setIsOpen] = useState(false);
     return (
-        <React.Fragment>
-            <TableRow className="bg-background hover:bg-accent/50 cursor-pointer border-none" onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? 'open' : 'closed'}>
-                <TableCell className="w-[60px]">
-                    <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" className="h-6 w-6">
-                            {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                        </Button>
-                        <span className="text-xs text-muted-foreground">{index}</span>
-                    </div>
-                </TableCell>
-                <TableCell className="font-medium">
-                    <div className="text-sm">{beneficiary.name}</div>
+        <div className="border-b last:border-0">
+            <div className={cn("px-4 py-3 hover:bg-accent/50 transition-colors cursor-pointer", GRID_COLS_CLASS)} onClick={() => setIsOpen(!isOpen)}>
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                        {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                    </Button>
+                    <span className="text-xs text-muted-foreground">{index}</span>
+                </div>
+                <div className="font-medium pr-4">
+                    <div className="text-sm truncate">{beneficiary.name}</div>
                     <div className="text-[10px] text-muted-foreground font-mono">{beneficiary.phone || 'N/A'}</div>
-                </TableCell>
-                <TableCell>
+                </div>
+                <div>
                     <Badge variant={beneficiary.status === 'Given' ? 'success' : beneficiary.status === 'Verified' ? 'success' : beneficiary.status === 'Pending' ? 'secondary' : 'destructive'} className="text-[10px]">
                         {beneficiary.status}
                     </Badge>
-                </TableCell>
-                <TableCell>
+                </div>
+                <div>
                     <Badge variant={beneficiary.isEligibleForZakat ? 'success' : 'outline'} className="text-[10px]">
                         {beneficiary.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}
                     </Badge>
-                </TableCell>
-                <TableCell className="text-right font-mono text-sm">₹{(beneficiary.kitAmount || 0).toFixed(2)}</TableCell>
-                <TableCell className="text-right font-mono text-sm">₹{(beneficiary.zakatAllocation || 0).toFixed(2)}</TableCell>
-                <TableCell className="text-xs">{beneficiary.referralBy || 'Self'}</TableCell>
-                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                </div>
+                <div className="text-right font-mono text-sm px-4">₹{(beneficiary.kitAmount || 0).toFixed(2)}</div>
+                <div className="text-right font-mono text-sm px-4">₹{(beneficiary.zakatAllocation || 0).toFixed(2)}</div>
+                <div className="text-xs truncate px-4">{beneficiary.referralBy || 'Self'}</div>
+                <div className="text-right" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -181,29 +180,27 @@ const BeneficiaryRow = ({ beneficiary, index, canUpdate, canDelete, onView, onEd
                             {canDelete && <DropdownMenuItem onClick={() => onDelete(beneficiary.id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                </TableCell>
-            </TableRow>
+                </div>
+            </div>
             {isOpen && (
-                 <TableRow className="bg-muted/20 border-b">
-                    <TableCell colSpan={8} className="p-4 pt-0">
-                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs animate-fade-in-down">
-                            <div className="space-y-2">
-                                <div><p className="font-bold text-primary uppercase tracking-tighter">Address</p><p className="text-foreground/80 leading-relaxed">{beneficiary.address || 'N/A'}</p></div>
-                                <div><p className="font-bold text-primary uppercase tracking-tighter">Notes</p><p className="whitespace-pre-wrap italic">{beneficiary.notes || 'No notes.'}</p></div>
-                            </div>
-                            <div className="space-y-2">
-                                <div><p className="font-bold text-primary uppercase tracking-tighter">Age</p><p>{beneficiary.age || 'N/A'}</p></div>
-                                <div><p className="font-bold text-primary uppercase tracking-tighter">Occupation</p><p>{beneficiary.occupation || 'N/A'}</p></div>
-                            </div>
-                            <div className="space-y-2">
-                                <div><p className="font-bold text-primary uppercase tracking-tighter">Family</p><p>Total: {beneficiary.members || 0}, Earning: {beneficiary.earningMembers || 0}</p></div>
-                                <div><p className="font-bold text-primary uppercase tracking-tighter">ID Proof</p><p>{beneficiary.idProofType || 'N/A'} - {beneficiary.idNumber || 'N/A'}</p></div>
-                            </div>
+                 <div className="bg-muted/20 p-4 border-t">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs animate-fade-in-down">
+                        <div className="space-y-2">
+                            <div><p className="font-bold text-primary uppercase tracking-tighter">Address</p><p className="text-foreground/80 leading-relaxed">{beneficiary.address || 'N/A'}</p></div>
+                            <div><p className="font-bold text-primary uppercase tracking-tighter">Notes</p><p className="whitespace-pre-wrap italic">{beneficiary.notes || 'No notes.'}</p></div>
                         </div>
-                    </TableCell>
-                </TableRow>
+                        <div className="space-y-2">
+                            <div><p className="font-bold text-primary uppercase tracking-tighter">Age</p><p>{beneficiary.age || 'N/A'}</p></div>
+                            <div><p className="font-bold text-primary uppercase tracking-tighter">Occupation</p><p>{beneficiary.occupation || 'N/A'}</p></div>
+                        </div>
+                        <div className="space-y-2">
+                            <div><p className="font-bold text-primary uppercase tracking-tighter">Family</p><p>Total: {beneficiary.members || 0}, Earning: {beneficiary.earningMembers || 0}</p></div>
+                            <div><p className="font-bold text-primary uppercase tracking-tighter">ID Proof</p><p>{beneficiary.idProofType || 'N/A'} - {beneficiary.idNumber || 'N/A'}</p></div>
+                        </div>
+                    </div>
+                </div>
             )}
-        </React.Fragment>
+        </div>
     );
 };
 
@@ -429,53 +426,40 @@ export default function BeneficiariesPage() {
             </Select>
         </div>
 
-        <Card className="overflow-hidden">
-            <CardContent className="p-0">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[60px]">#</TableHead>
-                            <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name & Phone</SortableHeader>
-                            <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
-                            <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort}>Zakat</SortableHeader>
-                            <TableHead className="text-right">Amount (₹)</TableHead>
-                            <TableHead className="text-right">Zakat Allocation (₹)</TableHead>
-                            <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort}>Referral</SortableHeader>
-                            <TableHead className="text-right pr-4">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {groupedBeneficiaries.length > 0 ? (
-                            <Accordion type="multiple" defaultValue={groupedBeneficiaries.map(([name]) => name)} className="w-full">
-                                {groupedBeneficiaries.map(([groupName, groupItems]) => (
-                                    <React.Fragment key={groupName}>
-                                        <TableRow className="bg-muted/30 border-b hover:bg-muted/40">
-                                            <TableCell colSpan={8} className="p-0">
-                                                <AccordionItem value={groupName} className="border-none">
-                                                    <AccordionTrigger className="px-4 py-2 hover:no-underline">
-                                                        <div className="flex items-center gap-2">
-                                                            <Users className="h-4 w-4 text-primary" />
-                                                            <span className="font-bold">{groupName} ({groupItems.length})</span>
-                                                        </div>
-                                                    </AccordionTrigger>
-                                                    <AccordionContent className="p-0">
-                                                        {groupItems.map((b, i) => (
-                                                            <BeneficiaryRow key={b.id} beneficiary={b} index={i + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={() => {}} />
-                                                        ))}
-                                                    </AccordionContent>
-                                                </AccordionItem>
-                                            </TableCell>
-                                        </TableRow>
-                                    </React.Fragment>
+        <div className="rounded-lg border bg-card overflow-hidden shadow-sm">
+            <div className={cn("bg-muted/50 border-b text-[10px] font-bold uppercase tracking-wider text-muted-foreground p-4", GRID_COLS_CLASS)}>
+                <div className="flex items-center gap-2">#</div>
+                <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name & Phone</SortableHeader>
+                <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
+                <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort}>Zakat</SortableHeader>
+                <div className="text-right px-4">Amount (₹)</div>
+                <div className="text-right px-4">Zakat Allocation (₹)</div>
+                <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort} className="px-4">Referral</SortableHeader>
+                <div className="text-right pr-2">Actions</div>
+            </div>
+            
+            {groupedBeneficiaries.length > 0 ? (
+                <Accordion type="multiple" defaultValue={groupedBeneficiaries.map(([name]) => name)} className="w-full">
+                    {groupedBeneficiaries.map(([groupName, groupItems]) => (
+                        <AccordionItem key={groupName} value={groupName} className="border-b last:border-0">
+                            <AccordionTrigger className="px-4 py-3 bg-muted/20 hover:no-underline">
+                                <div className="flex items-center gap-2">
+                                    <Users className="h-4 w-4 text-primary" />
+                                    <span className="font-bold text-sm tracking-tight">{groupName} ({groupItems.length})</span>
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="p-0">
+                                {groupItems.map((b, i) => (
+                                    <BeneficiaryRow key={b.id} beneficiary={b} index={i + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={() => {}} />
                                 ))}
-                            </Accordion>
-                        ) : (
-                            <TableRow><TableCell colSpan={8} className="text-center py-20 text-muted-foreground italic">No beneficiaries found.</TableCell></TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
+            ) : (
+                <div className="text-center py-20 text-muted-foreground italic text-sm">No beneficiaries found.</div>
+            )}
+        </div>
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
