@@ -64,17 +64,7 @@ interface CampaignCardProps {
     handleDeleteClick: (campaign: Campaign) => void;
 }
 
-const CampaignCard = ({ 
-    campaign, 
-    index, 
-    router, 
-    canUpdate, 
-    canCreate, 
-    canDelete, 
-    handleStatusUpdate, 
-    handleCopyClick, 
-    handleDeleteClick 
-}: CampaignCardProps) => {
+function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete, handleStatusUpdate, handleCopyClick, handleDeleteClick }: CampaignCardProps) {
     const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
 
     return (
@@ -206,7 +196,7 @@ const CampaignCard = ({
           </CardFooter>
         </Card>
     );
-};
+}
 
 export default function CampaignPage() {
   const router = useRouter();
