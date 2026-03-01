@@ -50,10 +50,9 @@ service cloud.firestore {
                      hasPermission('settings', 'update') || 
                      hasPermission('settings', 'create') ||
                      hasPermission('settings', 'delete') ||
-                     hasSubmodulePermission('settings', settingId, 'update') ||
-                     (settingId == 'donationInfo' && hasSubmodulePermission('settings', 'info', 'update')) ||
-                     (settingId == 'branding' && hasSubmodulePermission('settings', 'app', 'update')) ||
-                     (settingId == 'payment' && hasSubmodulePermission('settings', 'app', 'update'));
+                     (settingId == 'donationInfo' && (hasSubmodulePermission('settings', 'info', 'update') || hasSubmodulePermission('settings', 'info', 'create') || hasSubmodulePermission('settings', 'info', 'delete'))) ||
+                     (settingId == 'branding' && (hasSubmodulePermission('settings', 'app', 'update') || hasSubmodulePermission('settings', 'app', 'create'))) ||
+                     (settingId == 'payment' && (hasSubmodulePermission('settings', 'app', 'update') || hasSubmodulePermission('settings', 'app', 'create')));
     }
     
     match /page_hits/{pageId} {

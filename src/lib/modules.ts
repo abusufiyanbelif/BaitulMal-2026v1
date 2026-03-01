@@ -89,13 +89,13 @@ export const modules = [
   {
     id: 'campaigns',
     name: 'Campaigns',
-    permissions: ['create', 'read', 'update', 'delete'] as const,
+    permissions: crudPermissions,
     subModules: campaignSubModules,
   },
   {
     id: 'leads-members',
     name: 'Leads',
-    permissions: ['create', 'read', 'update', 'delete'] as const,
+    permissions: crudPermissions,
     subModules: leadSubModules,
   },
   { id: 'beneficiaries', name: 'Beneficiaries', permissions: crudPermissions },
@@ -122,8 +122,8 @@ type SubModulePermissions<T extends Readonly<any[]>> = {
 };
 
 type CampaignPermissions = Partial<Record<Permission, boolean>> & SubModulePermissions<typeof campaignSubModules>;
-type LeadPermissions = Partial<Record<"create" | "read" | "update" | "delete", boolean>> & SubModulePermissions<typeof leadSubModules>;
-type SettingsPermissions = Partial<Record<"create" | "read" | "update" | "delete", boolean>> & SubModulePermissions<typeof settingsSubModules>;
+type LeadPermissions = Partial<Record<Permission, boolean>> & SubModulePermissions<typeof leadSubModules>;
+type SettingsPermissions = Partial<Record<Permission, boolean>> & SubModulePermissions<typeof settingsSubModules>;
 
 
 export type UserPermissions = Partial<
