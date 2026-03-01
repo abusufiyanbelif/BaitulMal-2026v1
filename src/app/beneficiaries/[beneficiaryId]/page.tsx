@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
@@ -139,7 +140,7 @@ export default function BeneficiaryDetailsPage() {
     const { idProofFile, idProofDeleted, ...formData } = data;
     const { status, kitAmount, zakatAllocation, ...masterData } = formData;
     
-    await updateMasterBeneficiaryAction(beneficiaryId, { ...masterData, idProofUrl }, { id: currentUserProfile.id, name: currentUserProfile.name });
+    await updateMasterBeneficiaryAction(beneficiaryId, { ...masterData, idProofUrl, addedDate: beneficiary?.addedDate || new Date().toISOString().split('T')[0] }, { id: currentUserProfile.id, name: currentUserProfile.name });
     
     if (initiativeContext) {
         await updateInitiativeBeneficiaryDetailsAction(initiativeContext.type, initiativeContext.id, beneficiaryId, { ...formData, idProofUrl, id: beneficiaryId });
@@ -181,11 +182,11 @@ export default function BeneficiaryDetailsPage() {
               <div className="border-b">
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex w-max space-x-2">
-                        {canReadSummary && ( <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/summary`} className="px-3 py-1.5 text-sm font-medium text-muted-foreground">Summary</Link> )}
-                        {canReadRation && ( <Link href={`/campaign-members/${initiativeId}`} className="px-3 py-1.5 text-sm font-medium text-muted-foreground">Item Lists</Link> )}
-                        {initiativeType === 'Lead' && ( <Link href={`/leads-members/${initiativeId}`} className="px-3 py-1.5 text-sm font-medium text-muted-foreground">Item List</Link> )}
+                        {canReadSummary && ( <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/summary`} className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 rounded-md">Summary</Link> )}
+                        {canReadRation && ( <Link href={`/campaign-members/${initiativeId}`} className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 rounded-md">Item Lists</Link> )}
+                        {initiativeType === 'Lead' && ( <Link href={`/leads-members/${initiativeId}`} className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 rounded-md">Item List</Link> )}
                         {canReadBeneficiaries && ( <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/beneficiaries`} className="px-3 py-1.5 text-sm font-medium bg-primary text-primary-foreground rounded-md shadow">Beneficiary List</Link> )}
-                        {canReadDonations && ( <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/donations`} className="px-3 py-1.5 text-sm font-medium text-muted-foreground">Donations</Link> )}
+                        {canReadDonations && ( <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/donations`} className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 rounded-md">Donations</Link> )}
                     </div>
                 </ScrollArea>
             </div>
@@ -206,17 +207,24 @@ export default function BeneficiaryDetailsPage() {
         <CardHeader><CardTitle>Linked Initiatives</CardTitle></CardHeader>
         <CardContent>
             {isLinksLoading ? ( <Loader2 className="h-6 w-6 animate-spin mx-auto" /> ) : linkedInitiatives.length > 0 ? (
-                <div className="border rounded-lg overflow-hidden">
-                    <Table>
-                        <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Amount (₹)</TableHead>{canUpdate && <TableHead className="text-right">Actions</TableHead>}</TableRow></TableHeader>
-                        <TableBody>
+                <div className="border rounded-lg overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
+                            <tr>
+                                <th className="px-4 py-3">Name</th>
+                                <th className="px-4 py-3">Status</th>
+                                <th className="px-4 py-3 text-right">Amount (₹)</th>
+                                {canUpdate && <th className="px-4 py-3 text-right">Actions</th>}
+                            </tr>
+                        </thead>
+                        <tbody>
                             {linkedInitiatives.map((link) => (
-                                <TableRow key={link.id}>
-                                    <TableCell><Link href={link.type === 'Campaign' ? `/campaign-members/${link.id}/beneficiaries` : `/leads-members/${link.id}/beneficiaries`} className="font-medium text-primary hover:underline">{link.name}</Link></TableCell>
-                                    <TableCell><Badge variant="outline">{link.beneficiaryStatus}</Badge></TableCell>
-                                    <TableCell className="text-right font-mono">₹{link.kitAmount.toFixed(2)}</TableCell>
+                                <tr key={link.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                                    <td className="px-4 py-3 align-middle"><Link href={link.type === 'Campaign' ? `/campaign-members/${link.id}/beneficiaries` : `/leads-members/${link.id}/beneficiaries`} className="font-medium text-primary hover:underline">{link.name}</Link></td>
+                                    <td className="px-4 py-3 align-middle"><Badge variant="outline">{link.beneficiaryStatus}</Badge></td>
+                                    <td className="px-4 py-3 align-middle text-right font-mono">₹{link.kitAmount.toFixed(2)}</td>
                                     {canUpdate && (
-                                        <TableCell className="text-right">
+                                        <td className="px-4 py-3 align-middle text-right">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
@@ -234,35 +242,16 @@ export default function BeneficiaryDetailsPage() {
                                                     </DropdownMenuSub>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
-                                        </TableCell>
+                                        </td>
                                     )}
-                                </TableRow>
+                                </tr>
                             ))}
-                        </TableBody>
-                    </Table>
+                        </tbody>
+                    </table>
                 </div>
             ) : ( <p className="text-sm text-muted-foreground text-center py-4">No links found.</p> )}
         </CardContent>
       </Card>
     </main>
   );
-}
-
-function Table({ children }: { children: React.ReactNode }) {
-    return <table className="w-full text-sm text-left">{children}</table>;
-}
-function TableHeader({ children }: { children: React.ReactNode }) {
-    return <thead className="bg-muted/50 text-muted-foreground font-medium border-b">{children}</thead>;
-}
-function TableRow({ children }: { children: React.ReactNode }) {
-    return <tr className="border-b last:border-0 hover:bg-muted/30 transition-colors">{children}</tr>;
-}
-function TableHead({ children, className }: { children: React.ReactNode, className?: string }) {
-    return <th className={cn("px-4 py-3", className)}>{children}</th>;
-}
-function TableBody({ children }: { children: React.ReactNode }) {
-    return <tbody>{children}</tbody>;
-}
-function TableCell({ children, className }: { children: React.ReactNode, className?: string }) {
-    return <td className={cn("px-4 py-3 align-middle", className)}>{children}</td>;
 }

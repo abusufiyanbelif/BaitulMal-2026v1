@@ -212,7 +212,7 @@ export function PublicLeadsView() {
                 <div className="flex items-center gap-4">
                   <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
                   <span className="text-2xl font-black tracking-tight uppercase">{section.title}</span>
-                  <Badge variant="secondary" className="rounded-full h-6 px-3">{section.items.length}</Badge>
+                  <span className="inline-flex items-center justify-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold">{section.items.length}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pt-6">

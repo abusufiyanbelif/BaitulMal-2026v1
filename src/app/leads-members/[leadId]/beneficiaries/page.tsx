@@ -25,7 +25,6 @@ import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { 
     ArrowLeft, 
@@ -79,7 +78,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/dialog";
 import {
     Select,
     SelectContent,
@@ -111,7 +110,7 @@ function SortableHeader({ sortKey, children, className, sortConfig, handleSort }
             {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
         </div>
     );
-};
+}
 
 const StatCard = ({ title, count, description, icon: Icon, colorClass, delay }: { title: string, count: number, description: string, icon: any, colorClass: string, delay: string }) => (
     <Card className={cn("animate-fade-in-up shadow-sm", delay)} style={{ animationFillMode: 'backwards' }}>
@@ -427,38 +426,42 @@ export default function BeneficiariesPage() {
         </div>
 
         <div className="rounded-lg border bg-card overflow-hidden shadow-sm">
-            <div className={cn("bg-muted/50 border-b text-[10px] font-bold uppercase tracking-wider text-muted-foreground p-4", GRID_COLS_CLASS)}>
-                <div className="flex items-center gap-2">#</div>
-                <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name & Phone</SortableHeader>
-                <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
-                <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort}>Zakat</SortableHeader>
-                <div className="text-right px-4">Amount (₹)</div>
-                <div className="text-right px-4">Zakat Allocation (₹)</div>
-                <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort} className="px-4">Referral</SortableHeader>
-                <div className="text-right pr-2">Actions</div>
+            <div className="w-full overflow-x-auto">
+                <div className="min-w-[1000px]">
+                    <div className={cn("bg-muted/50 border-b text-[10px] font-bold uppercase tracking-wider text-muted-foreground p-4", GRID_COLS_CLASS)}>
+                        <div className="flex items-center gap-2">#</div>
+                        <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name & Phone</SortableHeader>
+                        <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
+                        <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort}>Zakat</SortableHeader>
+                        <div className="text-right px-4">Amount (₹)</div>
+                        <div className="text-right px-4">Zakat Allocation (₹)</div>
+                        <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort} className="px-4">Referral</SortableHeader>
+                        <div className="text-right pr-2">Actions</div>
+                    </div>
+                    
+                    {groupedBeneficiaries.length > 0 ? (
+                        <Accordion type="multiple" defaultValue={groupedBeneficiaries.map(([name]) => name)} className="w-full">
+                            {groupedBeneficiaries.map(([groupName, groupItems]) => (
+                                <AccordionItem key={groupName} value={groupName} className="border-b last:border-0">
+                                    <AccordionTrigger className="px-4 py-3 bg-muted/20 hover:no-underline">
+                                        <div className="flex items-center gap-2">
+                                            <Users className="h-4 w-4 text-primary" />
+                                            <span className="font-bold text-sm tracking-tight">{groupName} ({groupItems.length})</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="p-0">
+                                        {groupItems.map((b, i) => (
+                                            <BeneficiaryRow key={b.id} beneficiary={b} index={i + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={() => {}} />
+                                        ))}
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))}
+                        </Accordion>
+                    ) : (
+                        <div className="text-center py-20 text-muted-foreground italic text-sm">No beneficiaries found.</div>
+                    )}
+                </div>
             </div>
-            
-            {groupedBeneficiaries.length > 0 ? (
-                <Accordion type="multiple" defaultValue={groupedBeneficiaries.map(([name]) => name)} className="w-full">
-                    {groupedBeneficiaries.map(([groupName, groupItems]) => (
-                        <AccordionItem key={groupName} value={groupName} className="border-b last:border-0">
-                            <AccordionTrigger className="px-4 py-3 bg-muted/20 hover:no-underline">
-                                <div className="flex items-center gap-2">
-                                    <Users className="h-4 w-4 text-primary" />
-                                    <span className="font-bold text-sm tracking-tight">{groupName} ({groupItems.length})</span>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="p-0">
-                                {groupItems.map((b, i) => (
-                                    <BeneficiaryRow key={b.id} beneficiary={b} index={i + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={() => {}} />
-                                ))}
-                            </AccordionContent>
-                        </AccordionItem>
-                    ))}
-                </Accordion>
-            ) : (
-                <div className="text-center py-20 text-muted-foreground italic text-sm">No beneficiaries found.</div>
-            )}
         </div>
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
