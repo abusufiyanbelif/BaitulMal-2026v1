@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { leadPurposesConfig } from '@/lib/modules';
 import Image from 'next/image';
 import { usePublicData } from '@/hooks/use-public-data';
