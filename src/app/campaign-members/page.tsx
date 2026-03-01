@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -69,7 +70,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
 
     return (
         <Card 
-            className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full" 
+            className="flex flex-col interactive-hover overflow-hidden h-full group" 
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
             onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}
         >
@@ -80,7 +81,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                   alt={campaign.name}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="object-cover"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
             ) : (
                 <FallbackIcon className="h-16 w-16 text-muted-foreground/40" />
@@ -98,7 +99,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)} className="cursor-pointer">
+                        <DropdownMenuItem onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)} className="cursor-pointer font-bold">
                             <Edit className="mr-2 h-4 w-4" />
                             View Details
                         </DropdownMenuItem>
@@ -106,7 +107,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         {canUpdate && (
                             <>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger><span>Change Status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger><span className="font-bold">Change Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
                                             <DropdownMenuRadioGroup value={campaign.status} onValueChange={(value) => handleStatusUpdate(campaign, 'status', value)}>
@@ -118,7 +119,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger><span>Verification</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger><span className="font-bold">Verification</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
                                             <DropdownMenuRadioGroup value={campaign.authenticityStatus} onValueChange={(value) => handleStatusUpdate(campaign, 'authenticityStatus', value as string)}>
@@ -126,19 +127,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                                                 <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
-                                            </DropdownMenuRadioGroup>
-                                        </DropdownMenuSubContent>
-                                    </DropdownMenuPortal>
-                                </DropdownMenuSub>
-                                <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
-                                    <DropdownMenuPortal>
-                                        <DropdownMenuSubContent>
-                                            <DropdownMenuRadioGroup value={campaign.publicVisibility} onValueChange={(value) => handleStatusUpdate(campaign, 'publicVisibility', value as string)}>
-                                                <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details">Need Details</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
@@ -147,7 +136,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         )}
                         <DropdownMenuSeparator />
                         {canCreate && (
-                            <DropdownMenuItem onClick={() => handleCopyClick(campaign)} className="cursor-pointer">
+                            <DropdownMenuItem onClick={() => handleCopyClick(campaign)} className="cursor-pointer font-bold">
                                 <Copy className="mr-2 h-4 w-4" />
                                 Copy
                             </DropdownMenuItem>
@@ -155,7 +144,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         {canDelete && (
                             <>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(campaign); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(campaign); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer font-bold">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Delete
                                 </DropdownMenuItem>
@@ -168,29 +157,29 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
           </CardHeader>
           <CardContent className="flex-grow space-y-3 p-4 pt-0">
               <div className="flex justify-between items-center text-xs">
-                <Badge variant="secondary" className="text-[10px]">{campaign.category}</Badge>
+                <Badge variant="secondary" className="text-[10px] uppercase font-black">{campaign.category}</Badge>
                 <Badge 
                   variant={campaign.status === 'Active' ? 'success' : campaign.status === 'Completed' ? 'secondary' : 'outline'}
-                  className={cn("text-[10px]", campaign.status === 'Active' && "animate-status-pulse")}
+                  className={cn("text-[10px] uppercase font-black", campaign.status === 'Active' && "animate-status-pulse")}
                 >
                   {campaign.status}
                 </Badge>
             </div>
             {(campaign.targetAmount || 0) > 0 && (
                 <div className="space-y-1.5">
-                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
+                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase">
                         <span>Collected: ₹{campaign.collected.toLocaleString('en-IN')}</span>
                         <span>{Math.round(campaign.progress)}%</span>
                     </div>
                     <Progress value={campaign.progress} className="h-1.5" />
-                    <p className="text-center text-[10px] text-muted-foreground/70">Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</p>
+                    <p className="text-center text-[10px] text-muted-foreground/70 font-mono">Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</p>
                 </div>
             )}
           </CardContent>
           <CardFooter className="p-2 border-t bg-muted/5">
-            <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold" size="sm" variant="ghost">
+            <Button asChild className="w-full text-xs font-black uppercase tracking-widest" size="sm" variant="ghost">
                 <Link href={`/campaign-members/${campaign.id}/summary`}>
-                    Manage Campaign
+                    Manage Initiative
                 </Link>
             </Button>
           </CardFooter>
@@ -219,7 +208,7 @@ export default function CampaignPage() {
   const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted, isLoading: isDataLoading } = usePublicData();
 
   const activeTickerItems = useMemo(() => {
-    const activeCampaigns = campaignsWithProgress
+    const activeCampaigns = (campaignsWithProgress || [])
       .filter(c => c.status === 'Active')
       .map(c => {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
@@ -230,7 +219,7 @@ export default function CampaignPage() {
           };
       });
     
-    const activeLeads = leadsWithProgress
+    const activeLeads = (leadsWithProgress || [])
       .filter(l => l.status === 'Active')
       .map(l => {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
@@ -246,7 +235,7 @@ export default function CampaignPage() {
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
-    campaignsWithProgress.forEach(c => c.startDate && years.add(c.startDate.split('-')[0]));
+    (campaignsWithProgress || []).forEach(c => c.startDate && years.add(c.startDate.split('-')[0]));
     return Array.from(years).sort((a, b) => b.localeCompare(a));
   }, [campaignsWithProgress]);
   
@@ -278,6 +267,7 @@ export default function CampaignPage() {
   };
   
   const filteredCampaigns = useMemo(() => {
+    if (!campaignsWithProgress) return [];
     let items = campaignsWithProgress.filter(c => 
         (statusFilter === 'All' || c.status === statusFilter) &&
         (categoryFilter === 'All' || c.category === categoryFilter) &&
@@ -322,13 +312,13 @@ export default function CampaignPage() {
     <>
       <main className="container mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <Button variant="outline" asChild size="sm"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
-          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold"><Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New Campaign</Link></Button>}
+          <Button variant="outline" asChild size="sm" className="interactive-hover"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
+          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold uppercase tracking-widest interactive-hover"><Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New Campaign</Link></Button>}
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tighter uppercase">Campaign Hub</h1>
-          <p className="text-muted-foreground text-sm max-w-2xl">Manage community initiatives and ration distributions from this command center.</p>
+          <h1 className="text-3xl font-black tracking-tighter uppercase">Campaign Hub</h1>
+          <p className="text-muted-foreground text-sm max-w-2xl font-medium leading-relaxed">Centralized management for organizational initiatives, budget vetting, and donation tracking.</p>
         </div>
 
         <div className="space-y-2">
@@ -337,34 +327,35 @@ export default function CampaignPage() {
         </div>
 
         <Card className="animate-fade-in-zoom shadow-md border-primary/5">
-          <CardHeader className="p-4 sm:p-6 border-b bg-muted/5">
+          <CardHeader className="p-4 sm:p-6 border-b bg-muted/10">
             <div className="flex flex-wrap items-center gap-3">
-                <Input placeholder="Search campaigns..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs" disabled={isLoading}/>
-                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All Categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
+                <Input placeholder="Search name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs" disabled={isLoading}/>
+                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold uppercase"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold uppercase"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All Categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
                 <div className="flex items-center gap-2 border-l pl-3 ml-1">
-                    <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                    <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal", !dateRange && "text-muted-foreground")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                    <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold uppercase"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+                    <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold uppercase", !dateRange && "text-muted-foreground")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                     {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
                 </div>
             </div>
           </CardHeader>
-          <CardContent className="p-4 sm:p-6">
+          <CardContent className="p-4 sm:p-6 bg-card/30">
             {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-lg" />)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-xl" />)}
               </div>
             ) : sections.length > 0 ? (
-              <Accordion type="multiple" defaultValue={['active']} className="space-y-4">
+              <Accordion type="multiple" defaultValue={['active']} className="space-y-6">
                 {sections.map(section => (
-                  <AccordionItem key={section.id} value={section.id} className="border rounded-lg px-4 bg-card/50">
-                    <AccordionTrigger className="hover:no-underline py-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg font-bold tracking-tight uppercase">{section.title}</span>
-                        <Badge variant="secondary" className="rounded-full px-2 py-0 h-5 text-[10px]">{section.items.length}</Badge>
+                  <AccordionItem key={section.id} value={section.id} className="border rounded-xl px-4 bg-card shadow-sm">
+                    <AccordionTrigger className="hover:no-underline py-5 group">
+                      <div className="flex items-center gap-4">
+                        <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
+                        <span className="text-lg font-black tracking-tight uppercase">{section.title}</span>
+                        <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-black">{section.items.length}</Badge>
                       </div>
                     </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-6">
+                    <AccordionContent className="pt-2 pb-8">
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {section.items.map((campaign, idx) => (
                           <CampaignCard key={campaign.id} campaign={campaign} index={idx} router={router} canUpdate={canUpdate} canCreate={canCreate} canDelete={canDelete} handleStatusUpdate={handleStatusUpdate} handleCopyClick={setCampaignToCopy} handleDeleteClick={setCampaignToDelete}/>
@@ -375,9 +366,9 @@ export default function CampaignPage() {
                 ))}
               </Accordion>
             ) : (
-              <div className="text-center py-20 bg-muted/10 rounded-xl border-2 border-dashed">
-                  <HandHelping className="h-12 w-12 mx-auto text-muted-foreground/20 mb-4" />
-                  <p className="text-muted-foreground font-medium">No campaigns found.</p>
+              <div className="text-center py-24 bg-muted/10 rounded-2xl border-2 border-dashed">
+                  <HandHelping className="h-16 w-16 mx-auto text-muted-foreground/20 mb-4" />
+                  <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">No initiatives found.</p>
               </div>
             )}
           </CardContent>
@@ -385,7 +376,7 @@ export default function CampaignPage() {
       </main>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Campaign?</AlertDialogTitle><AlertDialogDescription>Erase all data for '{campaignToDelete?.name}'?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white">Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-black uppercase text-destructive">Delete Initiative?</AlertDialogTitle><AlertDialogDescription className="font-medium">Permanently erase all data for '{campaignToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold interactive-hover">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
       <CopyCampaignDialog open={!!campaignToCopy} onOpenChange={() => setCampaignToCopy(null)} campaign={campaignToCopy} onCopyConfirm={async (opt) => { const res = await copyCampaignAction({ sourceCampaignId: campaignToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setCampaignToCopy(null); }}/>

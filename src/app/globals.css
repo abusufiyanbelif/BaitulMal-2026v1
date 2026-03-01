@@ -5,36 +5,34 @@
 
 @layer base {
   :root {
-    --background: 140 40% 96%;
-    --foreground: 142 70% 25%;
-    --card: 140 60% 99%;
-    --card-foreground: 142 70% 25%;
-    --popover: 140 60% 99%;
-    --popover-foreground: 142 70% 25%;
+    --background: 140 40% 98%;
+    --foreground: 142 70% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 142 70% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 142 70% 15%;
     --primary: 142.1 76.2% 36.3%;
-    --primary-foreground: 140 50% 98%;
-    --secondary: 142 70% 92%;
-    --secondary-foreground: 142 70% 25%;
-    --muted: 142 50% 96%;
-    --muted-foreground: 142 25% 40%;
-    --accent: 142 70% 92%;
-    --accent-foreground: 142 80% 20%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 142 30% 95%;
+    --secondary-foreground: 142 70% 20%;
+    --muted: 142 20% 96%;
+    --muted-foreground: 142 15% 45%;
+    --accent: 142 40% 92%;
+    --accent-foreground: 142 80% 15%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --success: 142 70% 88%;
     --success-foreground: 142 80% 20%;
-    --border: 142 25% 65%;
-    --input: 142 25% 65%;
+    --border: 142 20% 85%;
+    --input: 142 20% 85%;
     --ring: 142.1 76.2% 36.3%;
+    --radius: 0.75rem;
+    
     --chart-1: 142.1 76.2% 36.3%;
     --chart-2: 221.2 83.2% 53.3%;
     --chart-3: 346.8 77.2% 49.8%;
     --chart-4: 47.9 95.8% 53.1%;
     --chart-5: 262.1 83.3% 57.8%;
-    --chart-6: 25 95% 53%;
-    --chart-7: 195 95% 53%;
-    --chart-8: 310 95% 53%;
-    --radius: 0.5rem;
   }
 
   * {
@@ -42,7 +40,12 @@
   }
 
   body {
-    @apply min-h-screen bg-background text-foreground antialiased;
+    @apply min-h-screen bg-background text-foreground antialiased font-sans;
+  }
+
+  /* Universal Hover & Animation System */
+  .interactive-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:scale-95;
   }
 
   @keyframes marquee {
@@ -54,14 +57,9 @@
     animation: marquee var(--duration, 60s) linear infinite;
   }
 
-  .animate-marquee:hover {
-    animation-play-state: paused;
-  }
-
   @keyframes status-pulse {
-    0% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.1); }
-    100% { opacity: 1; transform: scale(1); }
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.05); }
   }
 
   .animate-status-pulse {
@@ -70,15 +68,15 @@
 
   @keyframes zoom-in-out {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
+    50% { transform: scale(1.05); }
   }
 
   .animate-zoom-in-out {
-    animation: zoom-in-out 3s ease-in-out infinite;
+    animation: zoom-in-out 4s ease-in-out infinite;
   }
 
   @keyframes fade-in-up {
-    from { opacity: 0; transform: translateY(15px); }
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
@@ -87,12 +85,12 @@
   }
 
   @keyframes fade-in-zoom {
-    from { opacity: 0; transform: scale(0.95); }
+    from { opacity: 0; transform: scale(0.98); }
     to { opacity: 1; transform: scale(1); }
   }
 
   .animate-fade-in-zoom {
-    animation: fade-in-zoom 0.4s ease-out forwards;
+    animation: fade-in-zoom 0.3s ease-out forwards;
   }
 
   @keyframes shimmer {
