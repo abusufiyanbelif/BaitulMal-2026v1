@@ -1,10 +1,6 @@
 
 /** @type {import('tailwindcss').Config} */
 const config = {
-  // Force cache invalidation by adding a comment.
-  // Force cache invalidation again.
-  // Force a cache invalidation one more time to fix ChunkLoadError.
-  // And again to resolve the EADDRINUSE error.
   darkMode: ['class'],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -13,11 +9,6 @@ const config = {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        body: ['var(--font-body)', 'sans-serif'],
-        headline: ['var(--font-body)', 'sans-serif'],
-        code: ['var(--font-code)', 'monospace'],
-      },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
@@ -107,14 +98,6 @@ const config = {
             '0%': { transform: 'translateY(20%)', opacity: '0' },
             '100%': { transform: 'translateY(0)', opacity: '1' },
         },
-        'slide-in-from-left': {
-            '0%': { transform: 'translateX(-20%)', opacity: '0' },
-            '100%': { transform: 'translateX(0)', opacity: '1' },
-        },
-        'slide-in-from-right': {
-            '0%': { transform: 'translateX(20%)', opacity: '0' },
-            '100%': { transform: 'translateX(0)', opacity: '1' },
-        },
         'fade-in-up': {
             '0%': { opacity: '0', transform: 'translateY(15px)' },
             '100%': { opacity: '1', transform: 'translateY(0)' },
@@ -130,7 +113,7 @@ const config = {
         },
         'zoom-in-out': {
             '0%, 100%': { transform: 'scale(1)' },
-            '50%': { transform: 'scale(1.5)' },
+            '50%': { transform: 'scale(1.1)' },
         },
       },
       animation: {
@@ -138,12 +121,10 @@ const config = {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'slide-in-from-top': 'slide-in-from-top 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'slide-in-from-bottom': 'slide-in-from-bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-        'slide-in-from-left': 'slide-in-from-left 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-        'slide-in-from-right': 'slide-in-from-right 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'fade-in-up': 'fade-in-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'fade-in-zoom': 'fade-in-zoom 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'shimmer': 'shimmer 2s infinite',
-        'zoom-in-out': 'zoom-in-out 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'zoom-in-out': 'zoom-in-out 3s ease-in-out infinite',
       },
     },
   },

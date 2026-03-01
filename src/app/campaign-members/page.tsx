@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -175,8 +176,8 @@ const CampaignCard = ({
                   </DropdownMenu>
             </div>
             <CardDescription className="text-[10px] uppercase font-bold tracking-wider">{campaign.startDate} to {campaign.endDate}</CardDescription>
-        </CardHeader>
-        <CardContent className="flex-grow space-y-3 p-4 pt-0">
+          </CardHeader>
+          <CardContent className="flex-grow space-y-3 p-4 pt-0">
               <div className="flex justify-between items-center text-xs">
                 <Badge variant="secondary" className="text-[10px]">{campaign.category}</Badge>
                 <Badge 
@@ -196,14 +197,14 @@ const CampaignCard = ({
                     <p className="text-center text-[10px] text-muted-foreground/70">Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</p>
                 </div>
             )}
-        </CardContent>
-        <CardFooter className="p-2 border-t bg-muted/5">
+          </CardContent>
+          <CardFooter className="p-2 border-t bg-muted/5">
             <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold" size="sm" variant="ghost">
                 <Link href={`/campaign-members/${campaign.id}/summary`}>
                     Manage Campaign
                 </Link>
             </Button>
-        </CardFooter>
+          </CardFooter>
         </Card>
     );
 };
