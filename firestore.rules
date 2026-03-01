@@ -15,29 +15,26 @@ service cloud.firestore {
       return /databases/$(database)/documents/users/$(request.auth.uid);
     }
 
-    function getUserData() {
-        return exists(userDocRef()) ? get(userDocRef()).data : {};
-    }
-    
     function isAdmin() {
-      return isSignedIn() && getUserData().get('role', 'User') == 'Admin';
+      return isSignedIn() && 
+             get(userDocRef()).data.get('role', 'User') == 'Admin';
     }
 
     function hasPermission(module, permission) {
         if (!isSignedIn()) return false;
-        let userData = getUserData();
-        let p = userData.get('permissions', {});
-        return isAdmin() || 
-               p.get(module, {}).get(permission, false) == true;
+        let userData = get(userDocRef()).data;
+        return userData.get('role', 'User') == 'Admin' || 
+               userData.get('permissions', {}).get(module, {}).get(permission, false) == true;
     }
 
     function hasSubmodulePermission(module, submodule, permission) {
         if (!isSignedIn()) return false;
-        let userData = getUserData();
+        let userData = get(userDocRef()).data;
         let p = userData.get('permissions', {});
-        return isAdmin() || 
-               p.get(module, {}).get(permission, false) == true ||
-               p.get(module, {}).get(submodule, {}).get(permission, false) == true;
+        let mod = p.get(module, {});
+        return userData.get('role', 'User') == 'Admin' || 
+               mod.get(permission, false) == true ||
+               mod.get(submodule, {}).get(permission, false) == true;
     }
 
     // ----------------------------------------------------------------------
@@ -50,9 +47,9 @@ service cloud.firestore {
                      hasPermission('settings', 'update') || 
                      hasPermission('settings', 'create') ||
                      hasPermission('settings', 'delete') ||
-                     (settingId == 'donationInfo' && (hasSubmodulePermission('settings', 'info', 'update') || hasSubmodulePermission('settings', 'info', 'create') || hasSubmodulePermission('settings', 'info', 'delete'))) ||
-                     (settingId == 'branding' && (hasSubmodulePermission('settings', 'app', 'update') || hasSubmodulePermission('settings', 'app', 'create'))) ||
-                     (settingId == 'payment' && (hasSubmodulePermission('settings', 'app', 'update') || hasSubmodulePermission('settings', 'app', 'create')));
+                     (settingId == 'donationInfo' && hasSubmodulePermission('settings', 'info', 'update')) ||
+                     (settingId == 'branding' && hasSubmodulePermission('settings', 'app', 'update')) ||
+                     (settingId == 'payment' && hasSubmodulePermission('settings', 'app', 'update'));
     }
     
     match /page_hits/{pageId} {

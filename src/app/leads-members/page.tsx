@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -190,10 +191,9 @@ export default function LeadPage() {
       .filter(c => c.status === 'Active')
       .map(c => {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
-          const prefix = (c as any).isUpdated ? '✨ UPDATED: ' : '';
           return {
               id: c.id,
-              text: `${prefix}Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
+              text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/campaign-members/${c.id}/summary`
           };
       });
@@ -202,27 +202,14 @@ export default function LeadPage() {
       .filter(l => l.status === 'Active')
       .map(l => {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
-          const prefix = (l as any).isUpdated ? '✨ UPDATED: ' : '';
           return {
               id: l.id,
-              text: `${prefix}Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
+              text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/leads-members/${l.id}/summary`
           };
       });
 
     return [...activeCampaigns, ...activeLeads];
-  }, [campaignsWithProgress, leadsWithProgress]);
-
-  const completedTickerItems = useMemo(() => {
-    const completedCampaigns = campaignsWithProgress
-      .filter(c => c.status === 'Completed')
-      .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-members/${c.id}/summary` }));
-    
-    const completedLeads = leadsWithProgress
-      .filter(l => l.status === 'Completed')
-      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-members/${l.id}/summary` }));
-
-    return [...completedCampaigns, ...completedLeads];
   }, [campaignsWithProgress, leadsWithProgress]);
 
   const availableYears = useMemo(() => {
@@ -312,7 +299,6 @@ export default function LeadPage() {
         <div className="space-y-2">
           <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
           <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
-          <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
         </div>
 
         <Card className="animate-fade-in-zoom shadow-md border-primary/5">

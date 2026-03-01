@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -76,7 +77,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
     const primaryInitiative = donation.linkSplit?.[0]?.linkName || (donation as any).campaignName || 'Unlinked';
 
     return (
-        <React.Fragment>
+        <>
             <TableRow onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? "open" : "closed"} className="cursor-pointer bg-background hover:bg-accent/50">
                 <TableCell className="pl-4">
                     <div className="flex items-center gap-2">
@@ -195,7 +196,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                     </TableCell>
                 </TableRow>
             )}
-        </React.Fragment>
+        </>
     )
 }
 

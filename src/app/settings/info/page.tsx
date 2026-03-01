@@ -195,7 +195,6 @@ export default function InfoSettingsPage() {
     const { donationInfoData, isLoading: isDonationInfoLoading, forceRefetch } = useDonationInfo();
     const firestore = useFirestore();
     const storage = useStorage();
-    const auth = useAuth();
     const { toast } = useToast();
 
     const [isDonationInfoPublic, setIsDonationInfoPublic] = useState(false);
@@ -270,8 +269,8 @@ export default function InfoSettingsPage() {
             const processedType = {
                 ...rest,
                 imageUrl: finalImageUrl,
-                useCases: typeToSave.useCases.filter(uc => uc.title?.trim()), // Clean blank scenarios
-                qaItems: typeToSave.qaItems.filter(qa => qa.question?.trim()), // Clean blank questions
+                useCases: typeToSave.useCases.filter(uc => uc.title?.trim()), 
+                qaItems: typeToSave.qaItems.filter(qa => qa.question?.trim()), 
                 purposePoints: purposePointsRaw ? purposePointsRaw.split('\n').filter(p => p.trim() !== '') : [],
             };
             const currentFullData = (donationInfoData?.types || []).length > 0 ? [...donationInfoData!.types] : [...defaultDonationInfo];

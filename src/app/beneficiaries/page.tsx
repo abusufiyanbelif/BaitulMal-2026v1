@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useFirestore, useMemoFirebase, useCollection, collection, doc, updateDoc } from '@/firebase';
+import { useFirestore, useMemoFirebase, useCollection, collection, doc } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import type { Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
