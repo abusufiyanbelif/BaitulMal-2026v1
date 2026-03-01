@@ -8,6 +8,7 @@ import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { doc, collection, DocumentReference } from 'firebase/firestore';
+import Link from 'next/link';
 import {
   BarChart,
   Bar,
@@ -164,7 +165,11 @@ export default function PublicCampaignSummaryPage() {
         return (
             <main className="container mx-auto p-4 md:p-8 text-center">
                 <p className="text-lg text-muted-foreground">This campaign is not publicly available.</p>
-                <Button asChild className="mt-4 active:scale-95 transition-transform"><Link href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Campaigns</Link></Button>
+                <Button asChild className="mt-4 active:scale-95 transition-transform">
+                    <Link href="/campaign-public">
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Campaigns
+                    </Link>
+                </Button>
             </main>
         );
     }

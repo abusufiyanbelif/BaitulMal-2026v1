@@ -81,7 +81,7 @@ export default function BeneficiaryDetailsPage() {
     }
   }, [initiativeContext, firestore, beneficiaryId]);
 
-  const { data: beneficiary, isLoading: isBeneficiaryLoading, forceRefetch } = useDoc<Beneficiary>(beneficiaryDocRef);
+  const { data: beneficiary, isLoading: isBeneficiaryLoading, forceRefetch: forceRefetchMaster } = useDoc<Beneficiary>(beneficiaryDocRef);
   
   const formBeneficiaryData = useMemo(() => {
       if (!beneficiary) return null;
@@ -147,7 +147,7 @@ export default function BeneficiaryDetailsPage() {
 
     toast({ title: 'Success', description: 'Beneficiary updated.' });
     if (redirectUrl) router.push(redirectUrl);
-    else { forceRefetch(); setIsEditMode(false); }
+    else { forceRefetchMaster(); setIsEditMode(false); }
     setIsSubmitting(false);
   };
 
@@ -222,7 +222,15 @@ export default function BeneficiaryDetailsPage() {
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuSub>
                                                         <DropdownMenuSubTrigger>Status</DropdownMenuSubTrigger>
-                                                        <DropdownMenuPortal><DropdownMenuSubContent><DropdownMenuRadioGroup value={link.beneficiaryStatus} onValueChange={(s) => handleInitiativeStatusChange(link, s as any)}><DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem><DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem><DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem></DropdownMenuRadioGroup></DropdownMenuSubContent></DropdownMenuPortal>
+                                                        <DropdownMenuPortal>
+                                                            <DropdownMenuSubContent>
+                                                                <DropdownMenuRadioGroup value={link.beneficiaryStatus} onValueChange={(s) => handleInitiativeStatusChange(link, s as any)}>
+                                                                    <DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem>
+                                                                </DropdownMenuRadioGroup>
+                                                            </DropdownMenuSubContent>
+                                                        </DropdownMenuPortal>
                                                     </DropdownMenuSub>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>

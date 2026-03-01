@@ -116,29 +116,41 @@ const CampaignCard = ({
                             <>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Change Status</span></DropdownMenuSubTrigger>
-                                    <DropdownMenuRadioGroup value={campaign.status} onValueChange={(value) => handleStatusUpdate(campaign, 'status', value)}>
-                                        <DropdownMenuRadioItem value="Upcoming">Upcoming</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Active">Active</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Completed">Completed</DropdownMenuRadioItem>
-                                    </DropdownMenuRadioGroup>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuRadioGroup value={campaign.status} onValueChange={(value) => handleStatusUpdate(campaign, 'status', value)}>
+                                                <DropdownMenuRadioItem value="Upcoming">Upcoming</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Active">Active</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Completed">Completed</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Verification</span></DropdownMenuSubTrigger>
-                                    <DropdownMenuRadioGroup value={campaign.authenticityStatus} onValueChange={(value) => handleStatusUpdate(campaign, 'authenticityStatus', value as string)}>
-                                        <DropdownMenuRadioItem value="Pending Verification">Pending Verification</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
-                                    </DropdownMenuRadioGroup>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuRadioGroup value={campaign.authenticityStatus} onValueChange={(value) => handleStatusUpdate(campaign, 'authenticityStatus', value as string)}>
+                                                <DropdownMenuRadioItem value="Pending Verification">Pending Verification</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Rejected">Rejected</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger><span>Publication</span></DropdownMenuSubTrigger>
-                                    <DropdownMenuRadioGroup value={campaign.publicVisibility} onValueChange={(value) => handleStatusUpdate(campaign, 'publicVisibility', value as string)}>
-                                        <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
-                                        <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
-                                    </DropdownMenuRadioGroup>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuRadioGroup value={campaign.publicVisibility} onValueChange={(value) => handleStatusUpdate(campaign, 'publicVisibility', value as string)}>
+                                                <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Ready to Publish">Ready to Publish</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
                                 </DropdownMenuSub>
                             </>
                         )}
@@ -151,7 +163,7 @@ const CampaignCard = ({
                         )}
                         {canDelete && (
                             <>
-                                {canCreate && <DropdownMenuSeparator />}
+                                <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(campaign); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Delete
