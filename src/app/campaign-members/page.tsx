@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -323,7 +322,7 @@ export default function CampaignPage() {
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Access Denied</AlertTitle>
-          <AlertDescription>Missing permissions.</AlertDescription>
+          <AlertDescription>Missing permissions to manage campaigns.</AlertDescription>
         </Alert>
       </main>
     );
@@ -338,8 +337,8 @@ export default function CampaignPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tighter">CAMPAIGN HUB</h1>
-          <p className="text-muted-foreground text-sm max-w-2xl">Manage community initiatives from this command center.</p>
+          <h1 className="text-3xl font-bold tracking-tighter uppercase">Campaign Hub</h1>
+          <p className="text-muted-foreground text-sm max-w-2xl">Manage community initiatives and ration distributions from this command center.</p>
         </div>
 
         <div className="space-y-2">

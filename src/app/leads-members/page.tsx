@@ -293,7 +293,7 @@ export default function LeadPage() {
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Access Denied</AlertTitle>
-          <AlertDescription>Missing permissions.</AlertDescription>
+          <AlertDescription>Missing permissions to manage leads.</AlertDescription>
         </Alert>
       </main>
     );
@@ -308,7 +308,7 @@ export default function LeadPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-black tracking-tighter">LEADS HUB</h1>
+          <h1 className="text-3xl font-black tracking-tighter uppercase">Leads Hub</h1>
           <p className="text-muted-foreground text-sm max-w-2xl">Manage vetting and launching new community support opportunities.</p>
         </div>
 

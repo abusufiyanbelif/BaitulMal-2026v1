@@ -1,7 +1,6 @@
-
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { 
     useFirestore, 
@@ -25,7 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import Resizer from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -242,6 +241,9 @@ export default function BeneficiariesPage() {
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending'});
   const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
   const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
@@ -278,6 +280,7 @@ export default function BeneficiariesPage() {
         direction = 'descending';
     }
     setSortConfig({ key, direction });
+    setCurrentPage(1);
   };
 
   const handleView = (b: Beneficiary) => { router.push(`/beneficiaries/${b.id}?redirect=${pathname}`); };
@@ -308,15 +311,21 @@ export default function BeneficiariesPage() {
     return items;
   }, [beneficiaries, searchTerm, statusFilter, zakatFilter, referralFilter, sortConfig]);
 
+  const totalPages = Math.ceil(filteredBeneficiaries.length / itemsPerPage);
+  const paginatedBeneficiariesList = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredBeneficiaries.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredBeneficiaries, currentPage, itemsPerPage]);
+
   const groupedBeneficiaries = useMemo(() => {
     const groups: Record<string, Beneficiary[]> = {};
-    filteredBeneficiaries.forEach(b => {
+    paginatedBeneficiariesList.forEach(b => {
         const group = b.referralBy || 'Self';
         if (!groups[group]) groups[group] = [];
         groups[group].push(b);
     });
     return Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
-  }, [filteredBeneficiaries]);
+  }, [paginatedBeneficiariesList]);
 
   const handleStatusChange = (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => {
     if (!firestore || !campaignId || !canUpdate) return;
@@ -392,7 +401,7 @@ export default function BeneficiariesPage() {
 
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
             <div className="space-y-1">
-                <h2 className="text-2xl font-bold text-primary">Beneficiary List ({stats.total})</h2>
+                <h2 className="text-2xl font-bold text-primary">Beneficiary List ({filteredBeneficiaries.length})</h2>
                 <p className="text-sm text-muted-foreground">Total amount: <span className="font-bold text-foreground">₹{filteredBeneficiaries.reduce((sum, b) => sum + (b.kitAmount || 0), 0).toFixed(2)}</span></p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -414,9 +423,9 @@ export default function BeneficiariesPage() {
         <div className="flex flex-wrap items-center gap-3 bg-muted/10 p-4 rounded-xl border">
             <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search name, phone, referral..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9 text-xs" />
+                <Input placeholder="Search name, phone, referral..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-9 h-9 text-xs" />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
                 <SelectTrigger className="w-[150px] h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
                 <SelectContent>
                     <SelectItem value="All">All Statuses</SelectItem>
@@ -427,7 +436,7 @@ export default function BeneficiariesPage() {
                     <SelectItem value="Need More Details">Need Info</SelectItem>
                 </SelectContent>
             </Select>
-            <Select value={zakatFilter} onValueChange={setZakatFilter}>
+            <Select value={zakatFilter} onValueChange={(v) => { setZakatFilter(v); setCurrentPage(1); }}>
                 <SelectTrigger className="w-[150px] h-9 text-xs"><SelectValue placeholder="Zakat" /></SelectTrigger>
                 <SelectContent>
                     <SelectItem value="All">All Zakat</SelectItem>
@@ -435,7 +444,7 @@ export default function BeneficiariesPage() {
                     <SelectItem value="Not Eligible">Not Eligible</SelectItem>
                 </SelectContent>
             </Select>
-            <Select value={referralFilter} onValueChange={setReferralFilter}>
+            <Select value={referralFilter} onValueChange={(v) => { setReferralFilter(v); setCurrentPage(1); }}>
                 <SelectTrigger className="w-[180px] h-9 text-xs"><SelectValue placeholder="Referral" /></SelectTrigger>
                 <SelectContent>
                     <SelectItem value="All">All Referrals</SelectItem>
@@ -444,7 +453,7 @@ export default function BeneficiariesPage() {
             </Select>
         </div>
 
-        <div className="rounded-lg border bg-card overflow-hidden shadow-sm">
+        <Card className="rounded-lg border bg-card overflow-hidden shadow-sm">
             <div className="w-full overflow-x-auto">
                 <div className="min-w-[1000px]">
                     <div className={cn("bg-muted/50 border-b text-[10px] font-bold uppercase tracking-wider text-muted-foreground p-4", GRID_COLS_CLASS)}>
@@ -470,18 +479,28 @@ export default function BeneficiariesPage() {
                                     </AccordionTrigger>
                                     <AccordionContent className="p-0">
                                         {groupItems.map((b, i) => (
-                                            <BeneficiaryRow key={b.id} beneficiary={b} index={i + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} />
+                                            <BeneficiaryRow key={b.id} beneficiary={b} index={(currentPage - 1) * itemsPerPage + i + 1} canUpdate={canUpdate} canDelete={canDelete} onView={handleView} onEdit={handleEdit} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} onZakatToggle={handleZakatToggle} />
                                         ))}
                                     </AccordionContent>
                                 </AccordionItem>
                             ))}
                         </Accordion>
                     ) : (
-                        <div className="text-center py-20 text-muted-foreground italic text-sm">No beneficiaries found.</div>
+                        <div className="text-center py-20 text-muted-foreground italic text-sm">No beneficiaries found matching your criteria.</div>
                     )}
                 </div>
             </div>
-        </div>
+            {totalPages > 1 && (
+                <CardFooter className="flex items-center justify-between border-t py-4">
+                    <p className="text-sm text-muted-foreground">Showing {paginatedBeneficiariesList.length} of {filteredBeneficiaries.length}</p>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
+                        <span className="text-sm">{currentPage} / {totalPages}</span>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
+                    </div>
+                </CardFooter>
+            )}
+        </Card>
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -10,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, ArrowUp, ArrowDown, DatabaseZap, Loader2, Eye, CheckCircle2, Hourglass, XCircle, Info, ChevronsUpDown, ChevronDown, ChevronUp, BadgeCheck, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, ArrowUp, ArrowDown, DatabaseZap, Loader2, Eye, CheckCircle2, Hourglass, XCircle, Info, ChevronsUpDown, ChevronDown, ChevronUp, ShieldAlert } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import {
   DropdownMenu,
@@ -83,7 +82,7 @@ function BeneficiaryRow({ beneficiary, index, canUpdate, canDelete, onView, onEd
             <TableRow className="bg-background hover:bg-accent/50 data-[state=open]:bg-accent/50 cursor-pointer" onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? 'open' : 'closed'}>
                 <TableCell className="w-[100px]">
                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 data-[state=open]:bg-accent" data-state={isOpen ? 'open' : 'closed'}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
                             {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                         </Button>
                         <span>{index}</span>
@@ -310,7 +309,7 @@ export default function BeneficiariesPage() {
         <Alert variant="destructive">
             <ShieldAlert className="h-4 w-4" />
             <AlertTitle>Access Denied</AlertTitle>
-            <AlertDescription>Missing permissions.</AlertDescription>
+            <AlertDescription>Missing permissions to view beneficiaries.</AlertDescription>
         </Alert>
     </main>
   );
