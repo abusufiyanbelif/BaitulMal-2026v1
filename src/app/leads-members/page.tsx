@@ -72,7 +72,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
           </div>
           <CardHeader className="p-4">
             <div className="flex justify-between items-start gap-2">
-                <CardTitle className="w-full break-words text-sm sm:text-base font-black line-clamp-2 tracking-tight text-primary">{lead.name}</CardTitle>
+                <CardTitle className="w-full break-words text-sm sm:text-base font-normal line-clamp-2 tracking-tight text-primary">{lead.name}</CardTitle>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-primary" onClick={(e) => e.stopPropagation()}>
@@ -80,35 +80,35 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onClick={() => router.push(`/leads-members/${lead.id}/summary`)} className="cursor-pointer font-bold text-primary">
+                        <DropdownMenuItem onClick={() => router.push(`/leads-members/${lead.id}/summary`)} className="cursor-pointer font-normal text-primary">
                             <Edit className="mr-2 h-4 w-4" />
-                            View details
+                            View Details
                         </DropdownMenuItem>
                         {canUpdate && <DropdownMenuSeparator />}
                         {canUpdate && (
                             <>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="font-bold text-primary"><span>Change status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="font-normal text-primary"><span>Change Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
                                             <DropdownMenuRadioGroup value={lead.status} onValueChange={(value) => handleStatusUpdate(lead, 'status', value)}>
-                                                <DropdownMenuRadioItem value="Upcoming" className="font-bold">Upcoming</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Active" className="font-bold">Active</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Completed" className="font-bold">Completed</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Upcoming" className="font-normal">Upcoming</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Active" className="font-normal">Active</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Completed" className="font-normal">Completed</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="font-bold text-primary"><span>Verification</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="font-normal text-primary"><span>Verification</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
                                             <DropdownMenuRadioGroup value={lead.authenticityStatus} onValueChange={(value) => handleStatusUpdate(lead, 'authenticityStatus', value as string)}>
-                                                <DropdownMenuRadioItem value="Pending Verification" className="font-bold">Pending</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Verified" className="font-bold">Verified</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="On Hold" className="font-bold">On hold</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Rejected" className="font-bold">Rejected</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details" className="font-bold">Need details</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Pending Verification" className="font-normal">Pending</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Verified" className="font-normal">Verified</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="On Hold" className="font-normal">On Hold</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Rejected" className="font-normal">Rejected</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details" className="font-normal">Need Details</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
@@ -117,15 +117,15 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                         )}
                         <DropdownMenuSeparator />
                         {canCreate && (
-                            <DropdownMenuItem onClick={() => handleCopyClick(lead)} className="cursor-pointer font-bold text-primary">
+                            <DropdownMenuItem onClick={() => handleCopyClick(lead)} className="cursor-pointer font-normal text-primary">
                                 <Copy className="mr-2 h-4 w-4" />
-                                Copy appeal
+                                Copy Appeal
                             </DropdownMenuItem>
                         )}
                         {canDelete && (
                             <>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(lead); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer font-bold">
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(lead); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer font-normal">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Delete
                                 </DropdownMenuItem>
@@ -134,33 +134,33 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                     </DropdownMenuContent>
                   </DropdownMenu>
             </div>
-            <CardDescription className="text-[10px] font-bold tracking-normal text-muted-foreground">{lead.startDate} to {lead.endDate}</CardDescription>
+            <CardDescription className="text-[10px] font-normal tracking-normal text-muted-foreground">{lead.startDate} to {lead.endDate}</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow space-y-3 p-4 pt-0">
               <div className="flex justify-between items-center text-xs">
-                <Badge variant="secondary" className="text-[10px] font-black">{lead.purpose}</Badge>
+                <Badge variant="secondary" className="text-[10px] font-normal">{lead.purpose}</Badge>
                 <Badge 
                   variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
-                  className={cn("text-[10px] font-black", lead.status === 'Active' && "animate-status-pulse")}
+                  className={cn("text-[10px] font-normal", lead.status === 'Active' && "animate-status-pulse")}
                 >
                   {lead.status}
                 </Badge>
             </div>
               {(lead.targetAmount || 0) > 0 && (
                 <div className="space-y-1.5">
-                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground tracking-tight">
+                    <div className="flex justify-between text-[10px] font-normal text-primary/60 tracking-tight">
                         <span>Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
                         <span>{Math.round(lead.progress)}%</span>
                     </div>
                     <Progress value={lead.progress} className="h-1.5" />
-                    <p className="text-center text-[10px] text-muted-foreground font-mono font-bold">Goal: ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</p>
+                    <p className="text-center text-[10px] text-muted-foreground font-mono font-normal">Goal: ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</p>
                 </div>
             )}
         </CardContent>
          <CardFooter className="p-2 border-t bg-primary/5">
-            <Button asChild className="w-full text-xs font-black tracking-tight text-primary hover:bg-primary hover:text-white" size="sm" variant="ghost">
+            <Button asChild className="w-full text-xs font-normal tracking-tight text-primary hover:bg-primary hover:text-white" size="sm" variant="ghost">
                 <Link href={`/leads-members/${lead.id}/summary`}>
-                    Manage appeal
+                    Manage Appeal
                 </Link>
             </Button>
         </CardFooter>
@@ -240,7 +240,7 @@ export default function LeadPage() {
     const docRef = doc(firestore, 'leads', leadToUpdate.id);
     const updateData = { [field]: value };
     updateDoc(docRef, updateData)
-        .then(() => toast({ title: 'Success', description: `Lead updated.`, variant: 'success' }))
+        .then(() => toast({ title: 'Success', description: `Lead Updated.`, variant: 'success' }))
         .catch(err => {
             const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData });
             errorEmitter.emit('permission-error', permissionError);
@@ -249,29 +249,29 @@ export default function LeadPage() {
 
   const filteredLeads = useMemo(() => {
     if (!leadsWithProgress) return [];
-    let items = leadsWithProgress.filter(c => 
-        (statusFilter === 'All' || c.status === statusFilter) &&
-        (purposeFilter === 'All' || c.purpose === purposeFilter) &&
+    let items = leadsWithProgress.filter(l => 
+        (statusFilter === 'All' || l.status === statusFilter) &&
+        (purposeFilter === 'All' || l.purpose === purposeFilter) &&
         c.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (dateRange?.from) {
         const from = startOfDay(dateRange.from);
         const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
-        items = items.filter(c => {
-            const d = parseISO(c.startDate);
+        items = items.filter(l => {
+            const d = parseISO(l.startDate);
             return d >= from && d <= to;
         });
     } else if (selectedYear !== 'All') {
-        items = items.filter(c => c.startDate?.startsWith(selectedYear));
+        items = items.filter(l => l.startDate?.startsWith(selectedYear));
     }
     return items;
   }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => [
-    { id: 'active', title: 'Live initiatives', items: filteredLeads.filter(c => c.status === 'Active') },
-    { id: 'upcoming', title: 'Upcoming support', items: filteredLeads.filter(c => c.status === 'Upcoming') },
-    { id: 'completed', title: 'Closed appeals', items: filteredLeads.filter(c => c.status === 'Completed') }
+    { id: 'active', title: 'Live Initiatives', items: filteredLeads.filter(c => c.status === 'Active') },
+    { id: 'upcoming', title: 'Upcoming Support', items: filteredLeads.filter(c => c.status === 'Upcoming') },
+    { id: 'completed', title: 'Closed Appeals', items: filteredLeads.filter(c => c.status === 'Completed') }
   ].filter(s => s.items.length > 0), [filteredLeads]);
 
   const isLoading = isProfileLoading || isDeleting || isDataLoading;
@@ -279,10 +279,10 @@ export default function LeadPage() {
   if (!isLoading && userProfile && !canViewLeads) {
     return (
       <main className="container mx-auto p-4 md:p-8">
-        <div className="mb-4"><Button variant="outline" asChild className="text-primary border-primary/20"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to home</Link></Button></div>
+        <div className="mb-4"><Button variant="outline" asChild className="text-primary border-primary/20 font-normal"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link></Button></div>
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
-          <AlertTitle>Access denied</AlertTitle>
+          <AlertTitle>Access Denied</AlertTitle>
           <AlertDescription>Missing permissions to manage leads.</AlertDescription>
         </Alert>
       </main>
@@ -293,29 +293,29 @@ export default function LeadPage() {
     <>
       <main className="container mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <Button variant="outline" asChild size="sm" className="interactive-hover font-bold border-primary/20 text-primary hover:bg-primary/10"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
-          {canCreate && !isLoading && <Button asChild size="sm" className="font-black tracking-tight interactive-hover shadow-lg bg-primary hover:bg-primary/90 text-white"><Link href="/leads-members/create"><Plus className="mr-2 h-4 w-4" /> New appeal</Link></Button>}
+          <Button variant="outline" asChild size="sm" className="interactive-hover font-normal border-primary/20 text-primary hover:bg-primary/10"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
+          {canCreate && !isLoading && <Button asChild size="sm" className="font-normal tracking-tight interactive-hover shadow-lg bg-primary hover:bg-primary/90 text-white"><Link href="/leads-members/create"><Plus className="mr-2 h-4 w-4" /> New Appeal</Link></Button>}
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-black tracking-tight text-primary">Leads hub</h1>
-          <p className="text-primary text-sm max-w-2xl font-bold leading-relaxed opacity-70">Vetting and managing individual cases requiring organizational support.</p>
+          <h1 className="text-3xl font-normal tracking-tight text-primary">Leads Hub</h1>
+          <p className="text-primary text-sm max-w-2xl font-normal leading-relaxed opacity-70">Vetting and managing individual cases requiring organizational support.</p>
         </div>
 
         <div className="space-y-2">
-          <NewsTicker items={activeTickerItems} label="Live updates" variant="active" />
-          <NewsTicker items={recentDonationsFormatted} label="Donation updates" variant="donation" />
+          <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
+          <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
         </div>
 
         <Card className="animate-fade-in-zoom shadow-md border-primary/5 bg-white">
           <CardHeader className="p-4 border-b bg-primary/5">
             <div className="flex flex-wrap items-center gap-3">
-                <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-bold" disabled={isLoading}/>
-                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
-                <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
+                <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-normal" disabled={isLoading}/>
+                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-normal border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
+                <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs font-normal border-primary/20 text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
                 <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
-                    <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                    <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-black border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                    <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-normal border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+                    <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal border-primary/20", !dateRange ? "text-primary/60" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                     {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
                 </div>
             </div>
@@ -332,8 +332,8 @@ export default function LeadPage() {
                     <AccordionTrigger className="hover:no-underline py-5 group">
                       <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
-                        <span className="text-lg font-black tracking-tight text-primary">{section.title}</span>
-                        <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-black bg-primary/10 text-primary">{section.items.length}</Badge>
+                        <span className="text-lg font-normal tracking-tight text-primary">{section.title}</span>
+                        <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-normal bg-primary/10 text-primary">{section.items.length}</Badge>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-8">
@@ -349,7 +349,7 @@ export default function LeadPage() {
             ) : (
               <div className="text-center py-24 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
                   <Lightbulb className="h-16 w-16 mx-auto text-primary/20 mb-4" />
-                  <p className="text-primary/60 font-bold text-sm">No appeals found matching criteria.</p>
+                  <p className="text-primary/60 font-normal text-sm">No Appeals Found Matching Criteria.</p>
               </div>
             )}
           </CardContent>
@@ -357,7 +357,7 @@ export default function LeadPage() {
       </main>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-black text-destructive">Delete appeal?</AlertDialogTitle><AlertDialogDescription className="font-bold text-primary/80">Permanently erase all data for '{leadToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-black hover:bg-destructive/90">Confirm deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-normal text-destructive">Delete Appeal?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/80">Permanently erase all data for '{leadToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-normal text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-normal hover:bg-destructive/90">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
         
       <CopyLeadDialog open={!!leadToCopy} onOpenChange={() => setLeadToCopy(null)} lead={leadToCopy} onCopyConfirm={async (opt) => { const res = await copyLeadAction({ sourceLeadId: leadToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setLeadToCopy(null); }}/>

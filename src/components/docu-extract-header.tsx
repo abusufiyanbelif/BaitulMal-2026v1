@@ -67,7 +67,7 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight animate-fade-in-zoom" style={{ color: '#1b9d4a', animationDelay: '0.2s', animationFillMode: 'backwards' }}>
+          <h1 className="text-lg sm:text-xl md:text-2xl font-normal tracking-tight animate-fade-in-zoom" style={{ color: '#1b9d4a', animationDelay: '0.2s', animationFillMode: 'backwards' }}>
             {isBrandingLoading ? <Skeleton className="h-8 w-64 md:w-80" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
           </h1>
         </Link>
@@ -85,7 +85,7 @@ export function DocuExtractHeader() {
                             src={userProfile?.idProofUrl || ''}
                             alt={userProfile?.name || 'User'}
                           />
-                          <AvatarFallback className="bg-primary text-white font-black">
+                          <AvatarFallback className="bg-primary text-white font-normal">
                             {getInitials(userProfile?.name)}
                           </AvatarFallback>
                         </Avatar>
@@ -94,43 +94,43 @@ export function DocuExtractHeader() {
                     <DropdownMenuContent className="w-64 mt-2" align="end" forceMount>
                       <DropdownMenuLabel className="font-normal p-4">
                         <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-black tracking-tight leading-none text-primary">
+                          <p className="text-sm font-normal tracking-tight leading-none text-primary">
                             {userProfile?.name || 'User'}
                           </p>
-                          <p className="text-xs font-medium text-muted-foreground pt-1">
+                          <p className="text-xs font-normal text-muted-foreground pt-1">
                             {user.email}
                           </p>
-                          <Badge variant="outline" className="w-fit mt-2 text-[10px] font-black border-primary/20 text-primary">{userProfile.role}</Badge>
+                          <Badge variant="outline" className="w-fit mt-2 text-[10px] font-normal border-primary/20 text-primary">{userProfile.role}</Badge>
                         </div>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                       <DropdownMenuItem asChild className="cursor-pointer font-bold h-11">
+                       <DropdownMenuItem asChild className="cursor-pointer font-normal h-11">
                         <Link href="/dashboard">
                           <LayoutDashboard className="mr-2 h-4 w-4 text-primary" />
                           <span>Dashboard</span>
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="cursor-pointer font-bold h-11">
+                      <DropdownMenuItem asChild className="cursor-pointer font-normal h-11">
                         <Link href="/profile">
                           <User className="mr-2 h-4 w-4 text-primary" />
-                          <span>Account settings</span>
+                          <span>Account Settings</span>
                         </Link>
                       </DropdownMenuItem>
                       {userProfile.role === 'Admin' && (
-                        <DropdownMenuItem asChild className="cursor-pointer font-bold h-11">
+                        <DropdownMenuItem asChild className="cursor-pointer font-normal h-11">
                           <Link href="/settings">
                             <Settings className="mr-2 h-4 w-4 text-primary" />
-                            <span>System admin</span>
+                            <span>System Admin</span>
                           </Link>
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={handleLogout}
-                        className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer font-black h-11"
+                        className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer font-normal h-11"
                       >
                         <LogOut className="mr-2 h-4 w-4" />
-                        <span>Log out</span>
+                        <span>Log Out</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -138,13 +138,13 @@ export function DocuExtractHeader() {
             ) : (
               pathname !== '/login' && (
                 <div className="flex gap-2 items-center">
-                    <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex font-bold tracking-tight text-xs hover:bg-[#1b9d4a1a] text-[#1b9d4a]">
+                    <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex font-normal tracking-tight text-xs hover:bg-[#1b9d4a1a] text-[#1b9d4a]">
                         <Link href="/public-initiatives">Initiatives</Link>
                     </Button>
-                    <Button asChild size="sm" className="font-black tracking-tight text-xs interactive-hover px-6 animate-slide-in-from-top bg-[#1b9d4a] text-white hover:bg-[#1b9d4aee]" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
+                    <Button asChild size="sm" className="font-normal tracking-tight text-xs interactive-hover px-6 animate-slide-in-from-top bg-[#1b9d4a] text-white hover:bg-[#1b9d4aee]" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
                         <Link href="/login">
                             <LogIn className="mr-2 h-4 w-4" />
-                            Members sign in
+                            Members Sign In
                         </Link>
                     </Button>
                 </div>
