@@ -34,7 +34,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                 return (
                     <Card 
                         key={lead.id} 
-                        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full" 
+                        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/10" 
                         style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
                         onClick={() => router.push(`/leads-public/${lead.id}/summary`)}
                     >
@@ -48,12 +48,12 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                                   className="object-cover"
                                 />
                             ) : (
-                                <FallbackIcon className="h-16 w-16 text-muted-foreground/40" />
+                                <FallbackIcon className="h-16 w-16 text-primary/40" />
                             )}
                         </div>
                         <CardHeader className="p-4">
                             <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 text-primary">{lead.name}</CardTitle>
-                            <CardDescription className="text-[10px] uppercase font-bold tracking-wider">{lead.startDate} to {lead.endDate}</CardDescription>
+                            <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">{lead.startDate} to {lead.endDate}</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-grow space-y-3 p-4 pt-0">
                             <div className="flex justify-between items-center text-xs">
@@ -76,7 +76,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                             )}
                         </CardContent>
                          <CardFooter className="p-2 border-t bg-primary/5">
-                            <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold hover:bg-primary hover:text-white" size="sm" variant="ghost">
+                            <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
                                 <Link href={`/leads-public/${lead.id}/summary`}>
                                     View Details
                                 </Link>
@@ -176,7 +176,7 @@ export function PublicLeadsView() {
     <div className="space-y-8">
       <div className="space-y-4">
           <h1 className="text-4xl font-black tracking-tighter uppercase text-primary">PUBLIC LEADS</h1>
-          <p className="text-muted-foreground text-lg">Verified community appeals requiring your support.</p>
+          <p className="text-muted-foreground text-lg font-medium">Verified community appeals requiring your support.</p>
           
           <div className="space-y-2">
             <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
@@ -185,12 +185,12 @@ export function PublicLeadsView() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 pt-4 bg-primary/5 p-4 rounded-xl border border-primary/10">
-              <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-primary" disabled={isLoading}/>
-              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold uppercase border-primary/20"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
-              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold uppercase border-primary/20"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All Purposes</SelectItem>{[...new Set(leadsWithProgress.map(l => l.purpose))].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
+              <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-primary text-foreground" disabled={isLoading}/>
+              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold uppercase border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
+              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold uppercase border-primary/20 text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All Purposes</SelectItem>{[...new Set(leadsWithProgress.map(l => l.purpose))].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
               <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
-                  <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold uppercase border-primary/20"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                  <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold uppercase border-primary/20", !dateRange && "text-muted-foreground")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); setSelectedMonth('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                  <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold uppercase border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+                  <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold uppercase border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); setSelectedMonth('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                   {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setSelectedMonth('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
               </div>
         </div>
@@ -220,7 +220,7 @@ export function PublicLeadsView() {
       ) : (
         <div className="text-center py-20 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
             <Lightbulb className="h-12 w-12 mx-auto text-primary/20 mb-4" />
-            <p className="text-primary/60 font-bold">No appeals found matching criteria.</p>
+            <p className="text-primary/60 font-bold uppercase tracking-widest text-sm">No appeals found matching criteria.</p>
         </div>
       )}
     </div>

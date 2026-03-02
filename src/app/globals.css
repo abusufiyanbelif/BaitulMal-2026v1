@@ -4,26 +4,26 @@
 
 @layer base {
   :root {
-    --background: 0 0% 99%;
-    --foreground: 142 10% 10%;
+    --background: 142 30% 98%;
+    --foreground: 142 80% 12%; /* Deep Forest Green instead of black */
     --card: 0 0% 100%;
-    --card-foreground: 142 10% 10%;
+    --card-foreground: 142 80% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 142 10% 10%;
-    --primary: 142 71% 45%;
+    --popover-foreground: 142 80% 12%;
+    --primary: 142 71% 45%; /* Brand Green */
     --primary-foreground: 0 0% 100%;
-    --secondary: 142 71% 96%;
+    --secondary: 142 40% 94%;
     --secondary-foreground: 142 71% 25%;
-    --muted: 142 10% 95%;
-    --muted-foreground: 142 10% 40%;
+    --muted: 142 20% 92%;
+    --muted-foreground: 142 40% 35%; /* Medium Green */
     --accent: 142 71% 92%;
     --accent-foreground: 142 71% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --success: 142 70% 88%;
     --success-foreground: 142 80% 20%;
-    --border: 142 20% 90%;
-    --input: 142 20% 90%;
+    --border: 142 20% 88%;
+    --input: 142 20% 88%;
     --ring: 142 71% 45%;
     --radius: 0.75rem;
     
@@ -47,7 +47,7 @@
 
   /* Universal Hover & Interaction System */
   .interactive-hover {
-    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 hover:border-primary/30 hover:bg-primary/[0.02];
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 hover:border-primary/30 hover:bg-primary/[0.03];
   }
 
   @keyframes marquee {
