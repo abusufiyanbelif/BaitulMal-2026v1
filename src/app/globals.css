@@ -4,46 +4,46 @@
 
 @layer base {
   :root {
-    /* Brand Green Theme (#1b9d4a) - HSL: 142 71% 36% */
-    --background: 0 0% 100%;
-    --foreground: 142 71% 36%; 
+    /* Requested Background: #8fbca0 - HSL: 143 25% 65% */
+    --background: 143 25% 65%;
+    /* Requested Text: #4d805f - HSL: 141 25% 40% */
+    --foreground: 141 25% 40%; 
     
-    --card: 0 0% 100%;
-    --card-foreground: 142 71% 36%;
+    --card: 143 25% 68%;
+    --card-foreground: 141 25% 35%;
     
-    --popover: 0 0% 100%;
-    --popover-foreground: 142 71% 36%;
+    --popover: 143 25% 65%;
+    --popover-foreground: 141 25% 30%;
     
-    /* Primary Brand Color: #1b9d4a */
-    --primary: 142 71% 36%; 
-    --primary-foreground: 0 0% 100%;
+    --primary: 141 25% 35%; 
+    --primary-foreground: 143 25% 95%;
     
-    --secondary: 142 71% 96%;
-    --secondary-foreground: 142 71% 36%;
+    --secondary: 143 25% 70%;
+    --secondary-foreground: 141 25% 30%;
     
-    --muted: 142 10% 96%;
-    --muted-foreground: 142 71% 36% / 0.8;
+    --muted: 143 15% 60%;
+    --muted-foreground: 141 20% 45%;
     
-    --accent: 142 71% 96%;
-    --accent-foreground: 142 71% 36%;
+    --accent: 143 25% 60%;
+    --accent-foreground: 141 25% 30%;
     
-    --destructive: 0 84% 60%;
+    --destructive: 0 84% 40%;
     --destructive-foreground: 0 0% 100%;
     
-    --success: 142 71% 36%;
+    --success: 141 25% 35%;
     --success-foreground: 0 0% 100%;
     
-    --border: 142 20% 90%;
-    --input: 142 20% 85%;
-    --ring: 142 71% 36%;
+    --border: 141 25% 55%;
+    --input: 141 25% 55%;
+    --ring: 141 25% 35%;
     
     --radius: 0.75rem;
     
-    --chart-1: 142 71% 36%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 158 49% 38%;
-    --chart-4: 122 39% 49%;
-    --chart-5: 202 97% 37%;
+    --chart-1: 141 25% 30%;
+    --chart-2: 141 25% 40%;
+    --chart-3: 141 25% 50%;
+    --chart-4: 141 25% 60%;
+    --chart-5: 141 25% 70%;
   }
 
   * {
@@ -54,12 +54,13 @@
     @apply min-h-screen bg-background text-foreground antialiased font-sans font-normal;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-normal tracking-tight;
-    color: #1b9d4a; 
+  /* Force non-bold weights globally as requested */
+  h1, h2, h3, h4, h5, h6, strong, b, .font-bold, .font-semibold, .font-black, .font-medium {
+    @apply font-normal !important;
+    color: inherit;
   }
 
-  /* Custom Scrollbars - Brand Green */
+  /* Custom Scrollbars */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -68,11 +69,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #1b9d4a;
+    background: hsl(var(--primary));
     border-radius: 10px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #1b9d4aee;
+    background: hsl(var(--primary) / 0.8);
   }
 
   .interactive-hover {
@@ -90,7 +91,7 @@
 
   @keyframes status-pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.7; transform: scale(1.05); }
+    50% { opacity: 0.7; transform: scale(1.02); }
   }
 
   .animate-status-pulse {
