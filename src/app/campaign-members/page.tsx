@@ -73,7 +73,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
             onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}
         >
-          <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
+          <div className="relative h-32 w-full bg-secondary flex items-center justify-center border-b border-primary/5">
             {campaign.imageUrl ? (
                 <Image
                   src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`}
@@ -83,13 +83,13 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
             ) : (
-                <FallbackIcon className="h-16 w-16 text-muted-foreground/40" />
+                <FallbackIcon className="h-16 w-16 text-primary/30" />
             )}
           </div>
           <CardHeader className="p-4">
             <div className="flex justify-between items-start gap-2">
-                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 uppercase tracking-tight">
-                    {campaign.campaignNumber && <span className="text-primary">#{campaign.campaignNumber} </span>}{campaign.name}
+                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 uppercase tracking-tight text-primary">
+                    {campaign.campaignNumber && <span>#{campaign.campaignNumber} </span>}{campaign.name}
                 </CardTitle>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -176,7 +176,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
             )}
           </CardContent>
           <CardFooter className="p-2 border-t bg-muted/5">
-            <Button asChild className="w-full text-xs font-black uppercase tracking-widest" size="sm" variant="ghost">
+            <Button asChild className="w-full text-xs font-black uppercase tracking-widest hover:bg-primary hover:text-white" size="sm" variant="ghost">
                 <Link href={`/campaign-members/${campaign.id}/summary`}>
                     Manage Initiative
                 </Link>
@@ -312,11 +312,11 @@ export default function CampaignPage() {
       <main className="container mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <Button variant="outline" asChild size="sm" className="interactive-hover font-bold uppercase"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
-          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold uppercase tracking-widest interactive-hover"><Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New Campaign</Link></Button>}
+          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold uppercase tracking-widest interactive-hover shadow-md"><Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New Campaign</Link></Button>}
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-black tracking-tighter uppercase">Campaign Hub</h1>
+          <h1 className="text-3xl font-black tracking-tighter uppercase text-primary">Campaign Hub</h1>
           <p className="text-muted-foreground text-sm max-w-2xl font-medium leading-relaxed">Centralized management for organizational initiatives, budget vetting, and donation tracking.</p>
         </div>
 
@@ -325,16 +325,16 @@ export default function CampaignPage() {
           <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
         </div>
 
-        <Card className="animate-fade-in-zoom shadow-md border-primary/5">
-          <CardHeader className="p-4 sm:p-6 border-b bg-muted/10">
+        <Card className="animate-fade-in-zoom shadow-md border-primary/10">
+          <CardHeader className="p-4 sm:p-6 border-b bg-primary/5">
             <div className="flex flex-wrap items-center gap-3">
-                <Input placeholder="Search name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs" disabled={isLoading}/>
-                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold uppercase"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold uppercase"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All Categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
-                <div className="flex items-center gap-2 border-l pl-3 ml-1">
-                    <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold uppercase"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                    <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold uppercase", !dateRange && "text-muted-foreground")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
-                    {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
+                <Input placeholder="Search name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary" disabled={isLoading}/>
+                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold uppercase border-primary/20"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold uppercase border-primary/20"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All Categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
+                <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
+                    <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold uppercase border-primary/20"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+                    <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold uppercase border-primary/20", !dateRange && "text-muted-foreground")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                    {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
                 </div>
             </div>
           </CardHeader>
@@ -346,12 +346,12 @@ export default function CampaignPage() {
             ) : sections.length > 0 ? (
               <Accordion type="multiple" defaultValue={['active']} className="space-y-6">
                 {sections.map(section => (
-                  <AccordionItem key={section.id} value={section.id} className="border rounded-xl px-4 bg-card shadow-sm">
+                  <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-sm overflow-hidden">
                     <AccordionTrigger className="hover:no-underline py-5 group">
                       <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
-                        <span className="text-lg font-black tracking-tight uppercase">{section.title}</span>
-                        <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-black">{section.items.length}</Badge>
+                        <span className="text-lg font-black tracking-tight uppercase text-primary">{section.title}</span>
+                        <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-black bg-primary/10 text-primary">{section.items.length}</Badge>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-8">
@@ -365,9 +365,9 @@ export default function CampaignPage() {
                 ))}
               </Accordion>
             ) : (
-              <div className="text-center py-24 bg-muted/10 rounded-2xl border-2 border-dashed">
-                  <HandHelping className="h-16 w-16 mx-auto text-muted-foreground/20 mb-4" />
-                  <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">No initiatives found.</p>
+              <div className="text-center py-24 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
+                  <HandHelping className="h-16 w-16 mx-auto text-primary/20 mb-4" />
+                  <p className="text-primary/60 font-bold uppercase tracking-widest text-sm">No initiatives found matching filters.</p>
               </div>
             )}
           </CardContent>

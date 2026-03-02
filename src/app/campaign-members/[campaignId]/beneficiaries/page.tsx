@@ -80,14 +80,14 @@ type BeneficiaryStatus = Beneficiary['status'];
 const gridClass = "grid grid-cols-[60px_1fr_100px_100px_120px_120px_120px_60px]";
 
 const StatCard = ({ title, count, description, icon: Icon, colorClass }: { title: string, count: number, description: string, icon: any, colorClass?: string }) => (
-    <Card className="flex-1 min-w-[150px] interactive-hover border-primary/5">
+    <Card className="flex-1 min-w-[150px] interactive-hover border-primary/10 shadow-sm">
         <CardContent className="p-4 flex items-start justify-between">
             <div className="space-y-1">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{title}</p>
-                <p className="text-2xl font-black">{count}</p>
+                <p className="text-2xl font-black text-primary">{count}</p>
                 <p className="text-[10px] text-muted-foreground whitespace-nowrap">{description}</p>
             </div>
-            <Icon className={cn("h-4 w-4", colorClass || "text-muted-foreground/40")} />
+            <Icon className={cn("h-4 w-4", colorClass || "text-primary/40")} />
         </CardContent>
     </Card>
 );
@@ -215,10 +215,10 @@ export default function BeneficiariesPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6">
-        <div className="mb-4"><Button variant="outline" asChild className="interactive-hover font-bold uppercase"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
+        <div className="mb-4"><Button variant="outline" asChild className="interactive-hover font-bold uppercase border-primary/20 text-primary"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
         <h1 className="text-3xl font-black tracking-tight text-primary uppercase">{campaign.name}</h1>
         
-        <div className="border-b mb-4">
+        <div className="border-b border-primary/10 mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-2 pb-2">
                     {canReadSummary && ( <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold uppercase tracking-wide transition-all duration-200", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link> )}
@@ -230,16 +230,16 @@ export default function BeneficiariesPage() {
             </ScrollArea>
         </div>
 
-        <Card className="animate-fade-in-zoom shadow-md border-primary/10">
+        <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
             <CardHeader className="pb-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div className="space-y-1">
                         <CardTitle className="text-2xl font-black text-primary uppercase tracking-tighter">Beneficiary List ({stats.total})</CardTitle>
-                        <CardDescription className="font-bold text-foreground">Showing current page results grouped by assigned item categories.</CardDescription>
+                        <CardDescription className="font-bold text-foreground/70">Showing current page results grouped by assigned item categories.</CardDescription>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="gap-2 font-bold uppercase interactive-hover"><CopyPlus className="h-4 w-4"/> Select from Master</Button>
-                        <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2 font-black uppercase tracking-widest interactive-hover shadow-lg"><PlusCircle className="h-4 w-4"/> Add New</Button>
+                        <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="gap-2 font-bold uppercase interactive-hover border-primary/20 text-primary"><CopyPlus className="h-4 w-4"/> Select from Master</Button>
+                        <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2 font-black uppercase tracking-widest interactive-hover shadow-lg bg-primary text-white"><PlusCircle className="h-4 w-4"/> Add New</Button>
                     </div>
                 </div>
             </CardHeader>
@@ -253,27 +253,27 @@ export default function BeneficiariesPage() {
                     <StatCard title="Need Details" count={stats.needDetails} description="Incomplete" icon={Info} colorClass="text-muted-foreground" />
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 bg-muted/30 p-3 rounded-lg border">
+                <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-3 rounded-lg border border-primary/10">
                     <div className="relative flex-1 min-w-[240px]">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9 text-xs" />
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-primary/50" />
+                        <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9 text-xs border-primary/20 focus-visible:ring-primary" />
                     </div>
                     <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[140px] h-9 text-xs font-bold uppercase"><SelectValue placeholder="Status" /></SelectTrigger>
+                        <SelectTrigger className="w-[140px] h-9 text-xs font-bold uppercase border-primary/20"><SelectValue placeholder="Status" /></SelectTrigger>
                         <SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Hold">Hold</SelectItem><SelectItem value="Need More Details">Need Details</SelectItem></SelectContent>
                     </Select>
                     <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[140px] h-9 text-xs font-bold uppercase"><SelectValue placeholder="Zakat" /></SelectTrigger>
+                        <SelectTrigger className="w-[140px] h-9 text-xs font-bold uppercase border-primary/20"><SelectValue placeholder="Zakat" /></SelectTrigger>
                         <SelectContent><SelectItem value="All">All Zakat</SelectItem><SelectItem value="Eligible">Eligible</SelectItem><SelectItem value="Not Eligible">Not Eligible</SelectItem></SelectContent>
                     </Select>
                     <Select value={referralFilter} onValueChange={v => { setReferralFilter(v); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[180px] h-9 text-xs font-bold uppercase"><SelectValue placeholder="Referral" /></SelectTrigger>
+                        <SelectTrigger className="w-[180px] h-9 text-xs font-bold uppercase border-primary/20"><SelectValue placeholder="Referral" /></SelectTrigger>
                         <SelectContent><SelectItem value="All">All Referrals</SelectItem>{uniqueReferrals.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
                     </Select>
                 </div>
 
-                <div className="border rounded-lg overflow-hidden bg-card min-w-[900px]">
-                    <div className={cn("bg-muted/50 border-b py-3 px-4 text-[10px] uppercase font-black tracking-widest text-muted-foreground", gridClass)}>
+                <div className="border border-primary/10 rounded-lg overflow-hidden bg-card min-w-[900px]">
+                    <div className={cn("bg-primary/5 border-b border-primary/10 py-3 px-4 text-[10px] uppercase font-black tracking-widest text-primary/70", gridClass)}>
                         <div>#</div>
                         <div>Name & Phone</div>
                         <div className="text-center">Status</div>
@@ -287,24 +287,24 @@ export default function BeneficiariesPage() {
                     <Accordion type="multiple" defaultValue={Object.keys(groupedBeneficiaries)} className="w-full">
                         {Object.entries(groupedBeneficiaries).map(([catName, list]) => (
                             <AccordionItem key={catName} value={catName} className="border-none">
-                                <AccordionTrigger className="hover:no-underline bg-muted/10 px-4 py-3 border-b group [&[data-state=open]]:bg-primary/5 transition-colors">
+                                <AccordionTrigger className="hover:no-underline bg-primary/5 px-4 py-3 border-b border-primary/10 group [&[data-state=open]]:bg-primary/10 transition-colors">
                                     <div className="flex items-center gap-3"><span className="text-sm font-black text-primary uppercase tracking-tight">{catName} ({list.length})</span></div>
                                 </AccordionTrigger>
                                 <AccordionContent className="p-0">
                                     {list.map((b, idx) => (
-                                        <div key={b.id} className={cn("items-center py-3 px-4 border-b last:border-0 hover:bg-muted/20 transition-colors text-sm", gridClass)}>
+                                        <div key={b.id} className={cn("items-center py-3 px-4 border-b border-primary/5 last:border-0 hover:bg-primary/5 transition-colors text-sm", gridClass)}>
                                             <div className="text-muted-foreground font-mono text-xs">{((currentPage-1)*itemsPerPage) + idx + 1}</div>
                                             <div className="truncate"><div className="font-black text-foreground truncate">{b.name}</div><div className="text-[10px] text-muted-foreground font-mono">{b.phone || 'N/A'}</div></div>
                                             <div className="flex justify-center"><Badge variant={b.status === 'Given' ? 'success' : 'outline'} className="text-[9px] px-2 py-0 h-5 font-black uppercase tracking-tighter">{b.status}</Badge></div>
                                             <div className="flex justify-center"><Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[9px] px-2 py-0 h-5 font-black uppercase tracking-tighter">{b.isEligibleForZakat ? 'YES' : 'NO'}</Badge></div>
-                                            <div className="text-right font-mono font-bold">₹{(b.kitAmount || 0).toLocaleString()}</div>
+                                            <div className="text-right font-mono font-bold text-primary">₹{(b.kitAmount || 0).toLocaleString()}</div>
                                             <div className="text-right font-mono text-muted-foreground">₹{(b.zakatAllocation || 0).toLocaleString()}</div>
                                             <div className="text-right text-[10px] font-bold uppercase truncate pl-2">{b.referralBy}</div>
                                             <div className="text-right">
                                                 <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="font-bold"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="font-bold text-primary"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
                                                         {canUpdate && (
                                                             <DropdownMenuSub>
                                                                 <DropdownMenuSubTrigger className="font-bold">Status</DropdownMenuSubTrigger>
@@ -319,7 +319,7 @@ export default function BeneficiariesPage() {
                                                                 </DropdownMenuSubContent></DropdownMenuPortal>
                                                             </DropdownMenuSub>
                                                         )}
-                                                        {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
+                                                        {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold text-primary">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </div>
@@ -329,15 +329,15 @@ export default function BeneficiariesPage() {
                             </AccordionItem>
                         ))}
                     </Accordion>
-                    {filteredBeneficiaries.length === 0 && <div className="text-center py-20 text-muted-foreground font-bold uppercase tracking-widest bg-muted/5">No beneficiaries found matching your filters.</div>}
+                    {filteredBeneficiaries.length === 0 && <div className="text-center py-20 text-primary/40 font-bold uppercase tracking-widest bg-primary/5">No beneficiaries found matching filters.</div>}
                 </div>
             </CardContent>
             {totalPages > 1 && (
-                <CardFooter className="flex items-center justify-between border-t py-4">
-                    <p className="text-xs text-muted-foreground">Showing page {currentPage} of {totalPages}</p>
+                <CardFooter className="flex items-center justify-between border-t border-primary/10 py-4 bg-primary/5">
+                    <p className="text-xs text-muted-foreground font-bold">Showing page {currentPage} of {totalPages}</p>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold uppercase h-8">Prev</Button>
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold uppercase h-8">Next</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold uppercase h-8 border-primary/20 text-primary">Prev</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold uppercase h-8 border-primary/20 text-primary">Next</Button>
                     </div>
                 </CardFooter>
             )}
