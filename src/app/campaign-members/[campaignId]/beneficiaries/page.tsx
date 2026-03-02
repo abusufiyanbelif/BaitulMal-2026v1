@@ -256,7 +256,7 @@ export default function BeneficiariesPage() {
                 <div className="flex flex-wrap items-center gap-3 bg-muted/30 p-3 rounded-lg border">
                     <div className="relative flex-1 min-w-[240px]">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-9 h-9 text-xs" />
+                        <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9 text-xs" />
                     </div>
                     <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
                         <SelectTrigger className="w-[140px] h-9 text-xs font-bold uppercase"><SelectValue placeholder="Status" /></SelectTrigger>
