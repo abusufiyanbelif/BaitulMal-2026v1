@@ -74,6 +74,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { updateMasterBeneficiaryAction } from '@/app/beneficiaries/actions';
 import { BrandedLoader } from '@/components/branded-loader';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 type BeneficiaryStatus = Beneficiary['status'];
 
@@ -296,14 +297,14 @@ export default function BeneficiariesPage() {
                                             <div className="truncate"><div className="font-black text-foreground truncate">{b.name}</div><div className="text-[10px] text-muted-foreground font-mono">{b.phone || 'N/A'}</div></div>
                                             <div className="flex justify-center"><Badge variant={b.status === 'Given' ? 'success' : 'outline'} className="text-[9px] px-2 py-0 h-5 font-black uppercase tracking-tighter">{b.status}</Badge></div>
                                             <div className="flex justify-center"><Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[9px] px-2 py-0 h-5 font-black uppercase tracking-tighter">{b.isEligibleForZakat ? 'YES' : 'NO'}</Badge></div>
-                                            <div className="text-right font-mono font-bold">₹{(b.kitAmount || 0).toLocaleString()}</div>
+                                            <div className="text-right font-mono font-bold text-primary">₹{(b.kitAmount || 0).toLocaleString()}</div>
                                             <div className="text-right font-mono text-muted-foreground">₹{(b.zakatAllocation || 0).toLocaleString()}</div>
                                             <div className="text-right text-[10px] font-bold uppercase truncate pl-2">{b.referralBy}</div>
                                             <div className="text-right">
                                                 <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="font-bold"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="font-bold text-primary"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
                                                         {canUpdate && (
                                                             <DropdownMenuSub>
                                                                 <DropdownMenuSubTrigger className="font-bold">Status</DropdownMenuSubTrigger>
@@ -318,7 +319,7 @@ export default function BeneficiariesPage() {
                                                                 </DropdownMenuSubContent></DropdownMenuPortal>
                                                             </DropdownMenuSub>
                                                         )}
-                                                        {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
+                                                        {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold text-primary">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </div>
@@ -333,10 +334,10 @@ export default function BeneficiariesPage() {
             </CardContent>
             {totalPages > 1 && (
                 <CardFooter className="flex items-center justify-between border-t py-4">
-                    <p className="text-xs text-muted-foreground">Showing page {currentPage} of {totalPages}</p>
+                    <p className="text-xs text-muted-foreground font-bold">Showing page {currentPage} of {totalPages}</p>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold uppercase h-8">Prev</Button>
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold uppercase h-8">Next</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold uppercase h-8 border-primary/20 text-primary">Prev</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold uppercase h-8 border-primary/20 text-primary">Next</Button>
                     </div>
                 </CardFooter>
             )}
