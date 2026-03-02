@@ -66,6 +66,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog';
@@ -74,7 +75,6 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { updateMasterBeneficiaryAction } from '@/app/beneficiaries/actions';
 import { BrandedLoader } from '@/components/branded-loader';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 type BeneficiaryStatus = Beneficiary['status'];
 
@@ -346,7 +346,7 @@ export default function BeneficiariesPage() {
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader><DialogTitle className="text-xl font-black text-primary uppercase tracking-tighter">Add New Beneficiary</DialogTitle></DialogHeader>
-                <BeneficiaryForm onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} itemCategories={lead.itemCategories || []} />
+                <BeneficiaryForm onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} itemCategories={lead?.itemCategories || []} />
             </DialogContent>
         </Dialog>
 

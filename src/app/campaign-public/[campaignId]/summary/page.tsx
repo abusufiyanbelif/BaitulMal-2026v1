@@ -263,7 +263,7 @@ export default function PublicCampaignSummaryPage() {
                                 <div className="space-y-4 text-center md:text-left text-foreground">
                                     <div><p className="text-sm text-muted-foreground">Raised for Goal</p><p className="text-3xl font-bold">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
                                     <div><p className="text-sm text-muted-foreground">Fundraising Target</p><p className="text-3xl font-bold">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                    <div><p className="text-sm text-muted-foreground">Grand Total Received</p><p className="text-3xl font-bold">₹{(fundingData.fundTotals?.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                    <div><p className="text-sm text-muted-foreground">Grand Total Received</p><p className="text-3xl font-bold">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                 </div>
                             </div>
                         </CardContent>

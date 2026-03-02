@@ -4,32 +4,34 @@
 
 @layer base {
   :root {
-    --background: 142 30% 98%;
-    --foreground: 142 80% 12%; /* Deep Forest Green instead of black */
+    --background: 124 30% 98%;
+    /* Bright Green #3BB143 -> HSL 124 50% 46% */
+    --foreground: 124 50% 46%; 
     --card: 0 0% 100%;
-    --card-foreground: 142 80% 12%;
+    --card-foreground: 124 50% 46%;
     --popover: 0 0% 100%;
-    --popover-foreground: 142 80% 12%;
-    --primary: 142 71% 45%; /* Brand Green */
+    --popover-foreground: 124 50% 46%;
+    /* Forest Green #0B6623 -> HSL 136 81% 22% */
+    --primary: 136 81% 22%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 142 40% 94%;
-    --secondary-foreground: 142 71% 25%;
-    --muted: 142 20% 92%;
-    --muted-foreground: 142 40% 35%; /* Medium Green */
-    --accent: 142 71% 92%;
-    --accent-foreground: 142 71% 10%;
+    --secondary: 124 40% 94%;
+    --secondary-foreground: 136 81% 15%;
+    --muted: 124 20% 92%;
+    --muted-foreground: 124 40% 40%;
+    --accent: 124 71% 92%;
+    --accent-foreground: 136 81% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --success: 142 70% 88%;
     --success-foreground: 142 80% 20%;
-    --border: 142 20% 88%;
-    --input: 142 20% 88%;
-    --ring: 142 71% 45%;
+    --border: 124 20% 88%;
+    --input: 124 20% 88%;
+    --ring: 136 81% 22%;
     --radius: 0.75rem;
     
-    --chart-1: 142 71% 45%;
-    --chart-2: 221.2 83.2% 53.3%;
-    --chart-3: 346.8 77.2% 49.8%;
+    --chart-1: 136 81% 22%;
+    --chart-2: 124 50% 46%;
+    --chart-3: 142 71% 45%;
     --chart-4: 47.9 95.8% 53.1%;
     --chart-5: 262.1 83.3% 57.8%;
     --chart-6: 24 95% 53%;
@@ -45,9 +47,8 @@
     @apply min-h-screen bg-background text-foreground antialiased font-sans;
   }
 
-  /* Universal Hover & Interaction System */
   .interactive-hover {
-    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 hover:border-primary/30 hover:bg-primary/[0.03];
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 hover:border-primary/30 hover:bg-primary/5;
   }
 
   @keyframes marquee {

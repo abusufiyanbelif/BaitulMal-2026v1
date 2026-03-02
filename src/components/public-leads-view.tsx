@@ -101,7 +101,7 @@ export function PublicLeadsView() {
   const { isLoading, leadsWithProgress, campaignsWithProgress, recentDonationsFormatted } = usePublicData();
 
   const activeTickerItems = useMemo(() => {
-    const activeCampaigns = campaignsWithProgress
+    const activeCampaigns = (campaignsWithProgress || [])
       .filter(c => c.status === 'Active')
       .map(c => {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
@@ -112,7 +112,7 @@ export function PublicLeadsView() {
           };
       });
     
-    const activeLeads = leadsWithProgress
+    const activeLeads = (leadsWithProgress || [])
       .filter(l => l.status === 'Active')
       .map(l => {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
@@ -127,11 +127,11 @@ export function PublicLeadsView() {
   }, [campaignsWithProgress, leadsWithProgress]);
 
   const completedTickerItems = useMemo(() => {
-    const completedCampaigns = campaignsWithProgress
+    const completedCampaigns = (campaignsWithProgress || [])
       .filter(c => c.status === 'Completed')
       .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-public/${c.id}/summary` }));
     
-    const completedLeads = leadsWithProgress
+    const completedLeads = (leadsWithProgress || [])
       .filter(l => l.status === 'Completed')
       .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
 
@@ -140,7 +140,7 @@ export function PublicLeadsView() {
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
-    leadsWithProgress.forEach(l => l.startDate && years.add(l.startDate.split('-')[0]));
+    (leadsWithProgress || []).forEach(l => l.startDate && years.add(l.startDate.split('-')[0]));
     return Array.from(years).sort((a, b) => b.localeCompare(a));
   }, [leadsWithProgress]);
   
@@ -190,8 +190,8 @@ export function PublicLeadsView() {
               <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold uppercase border-primary/20 text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All Purposes</SelectItem>{[...new Set(leadsWithProgress.map(l => l.purpose))].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
               <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
                   <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold uppercase border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                  <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold uppercase border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); setSelectedMonth('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
-                  {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setSelectedMonth('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
+                  <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold uppercase border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                  {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
               </div>
         </div>
       </div>
