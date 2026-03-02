@@ -137,7 +137,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
         </CardHeader>
         <CardContent className="flex-grow space-y-3 p-4 pt-0">
               <div className="flex justify-between items-center text-xs">
-                <Badge variant="secondary" className="text-[10px] font-normal">{lead.purpose}</Badge>
+                <Badge variant="outline" className="text-[10px] font-normal">{lead.purpose}</Badge>
                 <Badge 
                   variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
                   className={cn("text-[10px] font-normal", lead.status === 'Active' && "animate-status-pulse")}

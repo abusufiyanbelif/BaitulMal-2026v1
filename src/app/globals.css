@@ -15,7 +15,8 @@
     --popover: 135 25% 96%;
     --popover-foreground: 141 25% 30%;
     
-    --primary: 141 25% 35%; 
+    /* Primary: #1b9d4a (HSL: 142 71% 36%) */
+    --primary: 142 71% 36%; 
     --primary-foreground: 143 25% 95%;
     
     --secondary: 135 25% 92%;
@@ -56,6 +57,11 @@
 
   body {
     @apply min-h-screen bg-background text-foreground antialiased font-sans font-normal;
+  }
+
+  /* Headings use the brand green */
+  h1, h2, h3, h4, h5, h6 {
+    color: hsl(var(--primary));
   }
 
   /* Custom Scrollbars */

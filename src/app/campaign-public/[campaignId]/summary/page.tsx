@@ -284,7 +284,7 @@ export default function PublicCampaignSummaryPage() {
                                 <CardDescription>Tracking of Zakat funds collected and allocated within this initiative.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                               <div className="flex justify-between items-center text-sm text-primary font-bold"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-semibold font-mono">₹{(fundingData.amountsByCategory.Zakat || 0).toLocaleString('en-IN')}</span></div>
+                               <div className="flex justify-between items-center text-sm text-primary font-bold"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-semibold font-mono">₹{(fundingData.amountsByCategory?.Zakat || 0).toLocaleString('en-IN')}</span></div>
                                 <Separator />
                                 <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
                                     <div className="flex justify-between items-center text-sm text-primary font-bold"><span className="text-muted-foreground">Allocated as Cash-in-Hand</span><span className="font-semibold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>

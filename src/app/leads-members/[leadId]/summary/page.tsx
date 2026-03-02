@@ -17,7 +17,6 @@ import {
     type DocumentReference,
     updateDoc,
     serverTimestamp,
-    deleteObject,
     storageRef,
     uploadBytes,
     getDownloadURL
