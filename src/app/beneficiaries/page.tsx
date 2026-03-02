@@ -134,7 +134,15 @@ export default function BeneficiariesPage() {
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
   if (isLoading) return <BrandedLoader />;
-  if (!canRead) return <main className="container mx-auto p-8"><Alert variant="destructive"><ShieldAlert className="h-4 w-4"/><AlertTitle>Access Denied</AlertTitle><AlertDescription>Missing permissions to view beneficiaries.</AlertDescription></Alert></main>;
+  if (!canRead) return (
+    <main className="container mx-auto p-8">
+        <Alert variant="destructive">
+            <ShieldAlert className="h-4 w-4"/>
+            <AlertTitle>Access Denied</AlertTitle>
+            <AlertDescription>Missing permissions to view beneficiaries.</AlertDescription>
+        </Alert>
+    </main>
+  );
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6">
