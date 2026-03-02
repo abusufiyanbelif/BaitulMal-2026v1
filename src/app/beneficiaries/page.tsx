@@ -238,10 +238,9 @@ export default function BeneficiariesPage() {
                                                     {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold text-primary">{b.isEligibleForZakat ? 'Mark Not Eligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
                                                     {canDelete && <DropdownMenuSeparator />}
                                                     {canDelete && <DropdownMenuItem onClick={async () => { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); }} className="text-destructive font-bold"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                                </DropdownMenu>
+                                            </div>
                                         </div>
-                                    </div>
                                 ))}
                             </AccordionContent>
                         </AccordionItem>

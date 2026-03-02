@@ -4,26 +4,26 @@
 
 @layer base {
   :root {
-    --background: 158 30% 99%;
-    --foreground: 158 60% 5%;
+    --background: 158 30% 99.5%;
+    --foreground: 158 60% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 158 60% 5%;
+    --card-foreground: 158 60% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 158 60% 5%;
+    --popover-foreground: 158 60% 10%;
     --primary: 158 64% 45%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 158 30% 94%;
+    --secondary: 158 30% 96%;
     --secondary-foreground: 158 60% 15%;
-    --muted: 158 20% 92%;
-    --muted-foreground: 158 20% 35%;
-    --accent: 158 40% 90%;
+    --muted: 158 20% 94%;
+    --muted-foreground: 158 20% 40%;
+    --accent: 158 40% 92%;
     --accent-foreground: 158 60% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --success: 142 70% 88%;
     --success-foreground: 142 80% 20%;
-    --border: 158 20% 88%;
-    --input: 158 20% 88%;
+    --border: 158 20% 90%;
+    --input: 158 20% 90%;
     --ring: 158 64% 45%;
     --radius: 0.75rem;
     
@@ -47,7 +47,7 @@
 
   /* Universal Hover & Interaction System */
   .interactive-hover {
-    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-95;
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 hover:border-primary/30 hover:bg-primary/[0.02];
   }
 
   @keyframes marquee {

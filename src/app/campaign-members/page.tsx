@@ -158,7 +158,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
               <div className="flex justify-between items-center text-xs">
                 <Badge variant="secondary" className="text-[10px] uppercase font-black">{campaign.category}</Badge>
                 <Badge 
-                  variant={campaign.status === 'Active' ? 'success' : campaign.status === 'Completed' ? 'secondary' : 'outline'}
+                  variant={campaign.status === 'Active' ? 'success' : 'outline'}
                   className={cn("text-[10px] uppercase font-black", campaign.status === 'Active' && "animate-status-pulse")}
                 >
                   {campaign.status}

@@ -49,7 +49,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                                   className="object-cover"
                                 />
                             ) : (
-                                <FallbackIcon className="h-16 w-16 text-primary/30" />
+                                <FallbackIcon className="h-16 w-16 text-muted-foreground/40" />
                             )}
                         </div>
                         <CardHeader className="p-4">
@@ -168,6 +168,12 @@ export function PublicLeadsView() {
     }
     return items.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
   }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, dateRange, selectedYear, selectedMonth]);
+
+  const sections = useMemo(() => [
+    { id: 'active', title: 'Live Initiatives', items: filteredLeads.filter(c => c.status === 'Active') },
+    { id: 'upcoming', title: 'Upcoming Support', items: filteredLeads.filter(c => c.status === 'Upcoming') },
+    { id: 'completed', title: 'Closed Appeals', items: filteredLeads.filter(c => c.status === 'Completed') }
+  ].filter(s => s.items.length > 0), [filteredLeads]);
   
   return (
     <div className="space-y-8">

@@ -268,11 +268,11 @@ export default function LeadPage() {
     return items;
   }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, dateRange, selectedYear]);
 
-  const sections = [
+  const sections = useMemo(() => [
     { id: 'active', title: 'Live Initiatives', items: filteredLeads.filter(c => c.status === 'Active') },
     { id: 'upcoming', title: 'Upcoming Support', items: filteredLeads.filter(c => c.status === 'Upcoming') },
     { id: 'completed', title: 'Closed Appeals', items: filteredLeads.filter(c => c.status === 'Completed') }
-  ].filter(s => s.items.length > 0);
+  ].filter(s => s.items.length > 0), [filteredLeads]);
 
   const isLoading = isProfileLoading || isDeleting || isDataLoading;
   if (isLoading) return <BrandedLoader />;
