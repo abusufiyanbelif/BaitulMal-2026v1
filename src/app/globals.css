@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -51,13 +50,6 @@
   /* Hover background for navigation items and rows */
   .hover-bg-primary {
     @apply hover:bg-primary/10 transition-colors;
-  }
-
-  /* Table Grid Alignment Utility */
-  .table-grid-align {
-    display: grid;
-    grid-template-columns: 60px 1fr 100px 100px 120px 120px 120px 60px;
-    align-items: center;
   }
 
   @keyframes marquee {

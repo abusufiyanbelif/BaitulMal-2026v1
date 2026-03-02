@@ -1,4 +1,3 @@
-
 /** @type {import('tailwindcss').Config} */
 const config = {
   darkMode: ['class'],
@@ -9,6 +8,11 @@ const config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['PT Sans', 'ui-sans-serif', 'system-ui'],
+        headline: ['PT Sans', 'ui-sans-serif', 'system-ui'],
+        code: ['Source Code Pro', 'ui-monospace', 'SFMono-Regular'],
+      },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
@@ -75,20 +79,12 @@ const config = {
       },
       keyframes: {
         'accordion-down': {
-          from: {
-            height: '0',
-          },
-          to: {
-            height: 'var(--radix-accordion-content-height)',
-          },
+          from: { height: '0' },
+          to: { height: 'var(--radix-accordion-content-height)' },
         },
         'accordion-up': {
-          from: {
-            height: 'var(--radix-accordion-content-height)',
-          },
-          to: {
-            height: '0',
-          },
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0' },
         },
         'slide-in-from-top': {
             '0%': { transform: 'translateY(-20%)', opacity: '0' },
@@ -107,9 +103,7 @@ const config = {
             '100%': { opacity: '1', transform: 'scale(1)' },
         },
         'shimmer': {
-          '100%': {
-            transform: 'translateX(100%)',
-          },
+          '100%': { transform: 'translateX(100%)' },
         },
         'zoom-in-out': {
             '0%, 100%': { transform: 'scale(1)' },
