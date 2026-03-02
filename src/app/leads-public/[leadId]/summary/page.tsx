@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -269,7 +268,7 @@ export default function PublicLeadSummaryPage() {
 
                 <div className="grid gap-6 sm:grid-cols-3">
                     <Card className="animate-fade-in-up" style={{ animationDelay: '300ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
-                    <Card className="animate-fade-in-up" style={{ animationDelay: '400ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Assistance Provided</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
+                    <Card className="animate-fade-in-up" style={{ animationDelay: '400ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Assistance Provided</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
                     <Card className="animate-fade-in-up" style={{ animationDelay: '500ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
                 </div>
 

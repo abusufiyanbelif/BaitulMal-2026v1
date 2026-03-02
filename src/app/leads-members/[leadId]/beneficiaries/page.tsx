@@ -5,7 +5,6 @@ import { useParams, useRouter, usePathname } from 'next/navigation';
 import { 
     useFirestore, 
     useStorage, 
-    useAuth, 
     useMemoFirebase, 
     useCollection, 
     useDoc, 
@@ -40,7 +39,6 @@ import {
     Search,
     CopyPlus,
     MoreHorizontal,
-    ShieldAlert,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -76,9 +74,10 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { updateMasterBeneficiaryAction } from '@/app/beneficiaries/actions';
 import { BrandedLoader } from '@/components/branded-loader';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 type BeneficiaryStatus = Beneficiary['status'];
+
+const gridClass = "grid grid-cols-[60px_1fr_100px_100px_120px_120px_120px_60px]";
 
 const StatCard = ({ title, count, description, icon: Icon, colorClass }: { title: string, count: number, description: string, icon: any, colorClass?: string }) => (
     <Card className="flex-1 min-w-[150px] interactive-hover border-primary/5">
@@ -272,8 +271,8 @@ export default function BeneficiariesPage() {
                     </Select>
                 </div>
 
-                <div className="border rounded-lg overflow-hidden bg-card">
-                    <div className="grid grid-cols-[60px_1fr_100px_100px_120px_120px_120px_60px] bg-muted/50 border-b py-3 px-4 text-[10px] uppercase font-black tracking-widest text-muted-foreground">
+                <div className="border rounded-lg overflow-hidden bg-card min-w-[900px]">
+                    <div className={cn("bg-muted/50 border-b py-3 px-4 text-[10px] uppercase font-black tracking-widest text-muted-foreground", gridClass)}>
                         <div>#</div>
                         <div>Name & Phone</div>
                         <div className="text-center">Status</div>
@@ -292,7 +291,7 @@ export default function BeneficiariesPage() {
                                 </AccordionTrigger>
                                 <AccordionContent className="p-0">
                                     {list.map((b, idx) => (
-                                        <div key={b.id} className="grid grid-cols-[60px_1fr_100px_100px_120px_120px_120px_60px] items-center py-3 px-4 border-b last:border-0 hover:bg-muted/20 transition-colors text-sm">
+                                        <div key={b.id} className={cn("items-center py-3 px-4 border-b last:border-0 hover:bg-muted/20 transition-colors text-sm", gridClass)}>
                                             <div className="text-muted-foreground font-mono text-xs">{((currentPage-1)*itemsPerPage) + idx + 1}</div>
                                             <div className="truncate"><div className="font-black text-foreground truncate">{b.name}</div><div className="text-[10px] text-muted-foreground font-mono">{b.phone || 'N/A'}</div></div>
                                             <div className="flex justify-center"><Badge variant={b.status === 'Given' ? 'success' : 'outline'} className="text-[9px] px-2 py-0 h-5 font-black uppercase tracking-tighter">{b.status}</Badge></div>

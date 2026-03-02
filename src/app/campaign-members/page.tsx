@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -89,7 +88,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
           </div>
           <CardHeader className="p-4">
             <div className="flex justify-between items-start gap-2">
-                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2">
+                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 uppercase tracking-tight">
                     {campaign.campaignNumber && <span className="text-primary">#{campaign.campaignNumber} </span>}{campaign.name}
                 </CardTitle>
                   <DropdownMenu>
@@ -312,7 +311,7 @@ export default function CampaignPage() {
     <>
       <main className="container mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <Button variant="outline" asChild size="sm" className="interactive-hover"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
+          <Button variant="outline" asChild size="sm" className="interactive-hover font-bold uppercase"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
           {canCreate && !isLoading && <Button asChild size="sm" className="font-bold uppercase tracking-widest interactive-hover"><Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New Campaign</Link></Button>}
         </div>
 

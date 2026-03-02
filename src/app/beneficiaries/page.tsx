@@ -13,7 +13,6 @@ import {
     ArrowLeft, 
     PlusCircle, 
     DatabaseZap, 
-    Loader2, 
     Eye, 
     Users, 
     UserCheck, 
@@ -43,9 +42,12 @@ import { useToast } from '@/hooks/use-toast';
 import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterBeneficiaryAction } from './actions';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn, getNestedValue } from '@/lib/utils';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+
+const gridClass = "grid grid-cols-[60px_1fr_100px_100px_120px_120px_120px_60px]";
 
 const StatCard = ({ title, count, description, icon: Icon, colorClass }: { title: string, count: number, description: string, icon: any, colorClass?: string }) => (
     <Card className="flex-1 min-w-[150px] interactive-hover border-primary/5">
@@ -103,9 +105,17 @@ export default function BeneficiariesPage() {
     }, { total: 0, pending: 0, verified: 0, given: 0, hold: 0, needDetails: 0 });
   }, [beneficiaries]);
 
-  const paginatedBeneficiaries = useMemo(() => {
+  const groupedBeneficiaries = useMemo(() => {
+    const groups: Record<string, Beneficiary[]> = {};
     const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredBeneficiaries.slice(startIndex, startIndex + itemsPerPage);
+    const paginated = filteredBeneficiaries.slice(startIndex, startIndex + itemsPerPage);
+    
+    paginated.forEach(b => {
+        const referral = b.referralBy || 'Self / General';
+        if (!groups[referral]) groups[referral] = [];
+        groups[referral].push(b);
+    });
+    return groups;
   }, [filteredBeneficiaries, currentPage]);
 
   const totalPages = Math.ceil(filteredBeneficiaries.length / itemsPerPage);
@@ -133,7 +143,7 @@ export default function BeneficiariesPage() {
       <div className="border-b mb-4">
         <div className="flex gap-2 pb-2">
             <Link href="/beneficiaries/summary" className={cn("px-4 py-2 text-sm font-bold uppercase tracking-wide rounded-md transition-all", pathname === '/beneficiaries/summary' ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
-            <Link href="/beneficiaries" className={cn("px-4 py-2 text-sm font-bold uppercase tracking-wide rounded-md transition-all", pathname === '/beneficiaries' ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Master List</Link>
+            <Link href="/beneficiaries" className={cn("px-4 py-2 text-sm font-bold uppercase tracking-wide rounded-md transition-all", pathname === '/beneficiaries' ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Master Hub</Link>
         </div>
       </div>
 
@@ -142,7 +152,7 @@ export default function BeneficiariesPage() {
           <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
             <div className="space-y-1">
                 <CardTitle className="text-2xl font-black uppercase tracking-tighter text-primary">Master Beneficiary Hub ({stats.total})</CardTitle>
-                <CardDescription className="font-bold text-foreground">Global record management for all organizational aid recipients.</CardDescription>
+                <CardDescription className="font-bold text-foreground">Global record management for all organizational aid recipients grouped by referral.</CardDescription>
             </div>
             <div className="flex gap-2">
                 <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync Complete' : 'Sync Failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="outline" size="sm" className="font-bold uppercase interactive-hover"><DatabaseZap className="mr-2 h-4 w-4"/> Sync Hub</Button>
@@ -171,8 +181,8 @@ export default function BeneficiariesPage() {
                 </Select>
             </div>
 
-            <div className="border rounded-lg overflow-hidden bg-card">
-                <div className="grid grid-cols-[60px_1fr_100px_100px_120px_120px_120px_60px] bg-muted/50 border-b py-3 px-4 text-[10px] uppercase font-black tracking-widest text-muted-foreground">
+            <div className="border rounded-lg overflow-hidden bg-card min-w-[900px]">
+                <div className={cn("bg-muted/50 border-b py-3 px-4 text-[10px] uppercase font-black tracking-widest text-muted-foreground", gridClass)}>
                     <div>#</div>
                     <div>Name & Phone</div>
                     <div className="text-center">Status</div>
@@ -183,45 +193,54 @@ export default function BeneficiariesPage() {
                     <div className="text-right">Opt</div>
                 </div>
                 
-                <div className="w-full">
-                    {paginatedBeneficiaries.map((b, idx) => (
-                        <div key={b.id} className="grid grid-cols-[60px_1fr_100px_100px_120px_120px_120px_60px] items-center py-3 px-4 border-b last:border-0 hover:bg-muted/20 transition-colors text-sm">
-                            <div className="text-muted-foreground font-mono text-xs">{((currentPage-1)*itemsPerPage) + idx + 1}</div>
-                            <div className="truncate"><div className="font-black text-foreground truncate">{b.name}</div><div className="text-[10px] text-muted-foreground font-mono">{b.phone || 'No Phone'}</div></div>
-                            <div className="flex justify-center"><Badge variant={b.status === 'Verified' ? 'success' : 'outline'} className="text-[9px] px-2 py-0 h-5 font-black uppercase tracking-tighter">{b.status}</Badge></div>
-                            <div className="flex justify-center"><Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[9px] px-2 py-0 h-5 font-black uppercase tracking-tighter">{b.isEligibleForZakat ? 'YES' : 'NO'}</Badge></div>
-                            <div className="text-right font-mono font-bold">₹{(b.kitAmount || 0).toLocaleString()}</div>
-                            <div className="text-right font-mono text-muted-foreground">₹{(b.zakatAllocation || 0).toLocaleString()}</div>
-                            <div className="text-right text-[10px] font-bold uppercase truncate pl-2">{b.referralBy}</div>
-                            <div className="text-right">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="font-bold"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
-                                        {canUpdate && (
-                                            <DropdownMenuSub>
-                                                <DropdownMenuSubTrigger className="font-bold">Status</DropdownMenuSubTrigger>
-                                                <DropdownMenuPortal><DropdownMenuSubContent>
-                                                    <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
-                                                        <DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem>
-                                                        <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
-                                                        <DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem>
-                                                        <DropdownMenuRadioItem value="Hold">Hold</DropdownMenuRadioItem>
-                                                        <DropdownMenuRadioItem value="Need More Details">Need Details</DropdownMenuRadioItem>
-                                                    </DropdownMenuRadioGroup>
-                                                </DropdownMenuSubContent></DropdownMenuPortal>
-                                            </DropdownMenuSub>
-                                        )}
-                                        {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold">{b.isEligibleForZakat ? 'Mark Not Eligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
-                                        {canDelete && <DropdownMenuSeparator />}
-                                        {canDelete && <DropdownMenuItem onClick={async () => { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); }} className="text-destructive font-bold"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                        </div>
+                <Accordion type="multiple" defaultValue={Object.keys(groupedBeneficiaries)} className="w-full">
+                    {Object.entries(groupedBeneficiaries).map(([referral, list]) => (
+                        <AccordionItem key={referral} value={referral} className="border-none">
+                            <AccordionTrigger className="hover:no-underline bg-muted/10 px-4 py-3 border-b group [&[data-state=open]]:bg-primary/5 transition-colors">
+                                <div className="flex items-center gap-3"><span className="text-sm font-black text-primary uppercase tracking-tight">{referral} ({list.length})</span></div>
+                            </AccordionTrigger>
+                            <AccordionContent className="p-0">
+                                {list.map((b, idx) => (
+                                    <div key={b.id} className={cn("items-center py-3 px-4 border-b last:border-0 hover:bg-muted/20 transition-colors text-sm", gridClass)}>
+                                        <div className="text-muted-foreground font-mono text-xs">{((currentPage-1)*itemsPerPage) + idx + 1}</div>
+                                        <div className="truncate"><div className="font-black text-foreground truncate">{b.name}</div><div className="text-[10px] text-muted-foreground font-mono">{b.phone || 'No Phone'}</div></div>
+                                        <div className="flex justify-center"><Badge variant={b.status === 'Verified' ? 'success' : 'outline'} className="text-[9px] px-2 py-0 h-5 font-black uppercase tracking-tighter">{b.status}</Badge></div>
+                                        <div className="flex justify-center"><Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[9px] px-2 py-0 h-5 font-black uppercase tracking-tighter">{b.isEligibleForZakat ? 'YES' : 'NO'}</Badge></div>
+                                        <div className="text-right font-mono font-bold">₹{(b.kitAmount || 0).toLocaleString()}</div>
+                                        <div className="text-right font-mono text-muted-foreground">₹{(b.zakatAllocation || 0).toLocaleString()}</div>
+                                        <div className="text-right text-[10px] font-bold uppercase truncate pl-2">{b.referralBy}</div>
+                                        <div className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="font-bold"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
+                                                    {canUpdate && (
+                                                        <DropdownMenuSub>
+                                                            <DropdownMenuSubTrigger className="font-bold">Status</DropdownMenuSubTrigger>
+                                                            <DropdownMenuPortal><DropdownMenuSubContent>
+                                                                <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
+                                                                    <DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Hold">Hold</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Need More Details">Need Details</DropdownMenuRadioItem>
+                                                                </DropdownMenuRadioGroup>
+                                                            </DropdownMenuSubContent></DropdownMenuPortal>
+                                                        </DropdownMenuSub>
+                                                    )}
+                                                    {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold">{b.isEligibleForZakat ? 'Mark Not Eligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
+                                                    {canDelete && <DropdownMenuSeparator />}
+                                                    {canDelete && <DropdownMenuItem onClick={async () => { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); }} className="text-destructive font-bold"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </div>
+                                ))}
+                            </AccordionContent>
+                        </AccordionItem>
                     ))}
-                    {filteredBeneficiaries.length === 0 && <div className="text-center py-20 text-muted-foreground font-bold uppercase tracking-widest bg-muted/5">No beneficiaries found in the hub.</div>}
-                </div>
+                </Accordion>
+                {filteredBeneficiaries.length === 0 && <div className="text-center py-20 text-muted-foreground font-bold uppercase tracking-widest bg-muted/5">No beneficiaries found in the hub.</div>}
             </div>
         </CardContent>
         {totalPages > 1 && (
