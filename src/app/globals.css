@@ -4,27 +4,27 @@
 
 @layer base {
   :root {
-    /* Background: #8fbca0 */
-    --background: 143 25% 65%;
+    /* Background: #f1f9f3 */
+    --background: 135 25% 96%;
     /* Normal Text: #4d805f */
     --foreground: 141 25% 40%; 
     
-    --card: 143 25% 68%;
+    --card: 135 25% 98%;
     --card-foreground: 141 25% 35%;
     
-    --popover: 143 25% 65%;
+    --popover: 135 25% 96%;
     --popover-foreground: 141 25% 30%;
     
     --primary: 141 25% 35%; 
     --primary-foreground: 143 25% 95%;
     
-    --secondary: 143 25% 70%;
+    --secondary: 135 25% 92%;
     --secondary-foreground: 141 25% 30%;
     
-    --muted: 143 15% 60%;
+    --muted: 135 15% 85%;
     --muted-foreground: 141 20% 45%;
     
-    --accent: 143 25% 60%;
+    --accent: 135 25% 90%;
     --accent-foreground: 141 25% 30%;
     
     --destructive: 0 84% 40%;
@@ -33,21 +33,21 @@
     --success: 141 25% 35%;
     --success-foreground: 0 0% 100%;
     
-    --border: 141 25% 55%;
-    --input: 141 25% 55%;
+    --border: 141 25% 85%;
+    --input: 141 25% 85%;
     --ring: 141 25% 35%;
     
     --radius: 0.75rem;
     
-    /* Vibrant Chart Colors from User Image */
-    --chart-1: 346 77% 50%; /* Sadaqah - Red */
-    --chart-2: 326 100% 50%; /* Fitra - Pink */
-    --chart-3: 221 83% 53%; /* Zakat - Blue */
-    --chart-4: 25 95% 53%; /* Lillah - Orange */
-    --chart-5: 262 83% 58%; /* Interest - Purple */
-    --chart-6: 191 91% 42%; /* Loan - Cyan */
-    --chart-7: 45 93% 47%; /* Fidiya - Yellow */
-    --chart-8: 142 71% 45%; /* Monthly Contribution - Green */
+    /* Vibrant Chart Colors for Categories */
+    --chart-1: 142 71% 45%;  /* Zakat - Green */
+    --chart-2: 142 76% 36%;  /* Sadaqah - Darker Green */
+    --chart-3: 221 83% 53%;  /* Fitra - Blue */
+    --chart-4: 25 95% 53%;   /* Lillah - Orange */
+    --chart-5: 262 83% 58%;  /* Interest - Purple */
+    --chart-6: 191 91% 42%;  /* Loan - Cyan */
+    --chart-7: 0 0% 0%;      /* Fidiya - Black */
+    --chart-8: 45 93% 47%;   /* Monthly - Gold */
   }
 
   * {

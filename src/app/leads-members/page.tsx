@@ -147,7 +147,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
             </div>
               {(lead.targetAmount || 0) > 0 && (
                 <div className="space-y-1.5">
-                    <div className="flex justify-between text-[10px] font-normal tracking-tight opacity-60">
+                    <div className="flex justify-between text-[10px] font-normal opacity-60 tracking-tight">
                         <span>Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
                         <span>{Math.round(lead.progress)}%</span>
                     </div>

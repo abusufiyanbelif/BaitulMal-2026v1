@@ -86,14 +86,14 @@ import {
 import type { ChartConfig } from '@/components/ui/chart';
 
 const donationCategoryChartConfig = {
-    Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
+    Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
     Sadaqah: { label: "Sadaqah", color: "hsl(var(--chart-2))" },
-    Fidiya: { label: "Fidiya", color: "hsl(var(--chart-8))" },
+    Fidiya: { label: "Fidiya", color: "hsl(var(--chart-7))" },
     Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
-    Interest: { label: "Interest", color: "hsl(var(--chart-3))" },
+    Interest: { label: "Interest", color: "hsl(var(--chart-5))" },
     Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
-    'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-5))" },
+    'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-8))" },
 } satisfies ChartConfig;
 
 export default function CampaignSummaryPage() {
@@ -563,6 +563,17 @@ export default function CampaignSummaryPage() {
                     </CardContent>
                 </Card>
             </div>
+            
+            {!(isProfileLoading) && !userProfile && (
+                <Alert variant="destructive" className="mt-6">
+                    <ShieldAlert className="h-4 w-4" />
+                    <AlertTitle>Private Summary</AlertTitle>
+                    <AlertDescription>
+                        This is the members-only summary view. To see the public page, use the share link or go to Public Initiatives.
+                    </AlertDescription>
+                </Alert>
+            )}
+
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
         </main>
     );

@@ -22,7 +22,7 @@ import {
 import type { Lead, Beneficiary, Donation, DonationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Share2, Hourglass, Users, Gift, Target, HandHelping, File, CheckCircle2, XCircle, GraduationCap, HeartPulse, LifeBuoy, Info } from 'lucide-react';
+import { ArrowLeft, Loader2, Share2, Hourglass, Users, Gift, Target, HandHelping, File } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
@@ -40,14 +40,14 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const donationCategoryChartConfig = {
-    Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
+    Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
     Sadaqah: { label: "Sadaqah", color: "hsl(var(--chart-2))" },
-    Fidiya: { label: "Fidiya", color: "hsl(var(--chart-8))" },
+    Fidiya: { label: "Fidiya", color: "hsl(var(--chart-7))" },
     Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
-    Interest: { label: "Interest", color: "hsl(var(--chart-3))" },
+    Interest: { label: "Interest", color: "hsl(var(--chart-5))" },
     Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
-    'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-5))" },
+    'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-8))" },
 } satisfies ChartConfig;
 
 export default function PublicLeadSummaryPage() {
@@ -168,11 +168,6 @@ export default function PublicLeadSummaryPage() {
     }
     
     const publicDocuments = lead.documents?.filter(d => d.isPublic) || [];
-    const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : 
-                         lead.purpose === 'Medical' ? HeartPulse : 
-                         lead.purpose === 'Relief' ? LifeBuoy : 
-                         lead.purpose === 'Other' ? Info : HandHelping;
-
     const chartData = fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
 
     return (
@@ -180,9 +175,7 @@ export default function PublicLeadSummaryPage() {
              <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
             
             <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center">
-                {lead.imageUrl ? (
-                    <Image src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`} alt={lead.name} fill sizes="100vw" className="object-cover" priority />
-                ) : ( <FallbackIcon className="w-24 h-24 text-muted-foreground/30" /> )}
+                {lead.imageUrl && ( <Image src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`} alt={lead.name} fill sizes="100vw" className="object-cover" priority /> )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-6"><h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{lead.name}</h1><p className="text-sm text-white/90 shadow-md">{lead.status}</p></div>
             </div>
@@ -254,12 +247,12 @@ export default function PublicLeadSummaryPage() {
                                             </RadialBarChart>
                                         </ChartContainer>
                                     ) : <Skeleton className="w-full h-full rounded-full" />}
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground">Funded</span></div>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold">Funded</span></div>
                                 </div>
                                 <div className="space-y-4 text-center md:text-left">
-                                    <div><p className="text-sm text-muted-foreground">Raised for Goal</p><p className="text-3xl font-bold">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                    <div><p className="text-sm text-muted-foreground">Fundraising Target</p><p className="text-3xl font-bold">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                    <div><p className="text-sm text-muted-foreground">Grand Total Received</p><p className="text-3xl font-bold">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                    <div><p className="text-sm text-muted-foreground uppercase font-black tracking-tighter">Raised for Goal</p><p className="text-3xl font-black">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                    <div><p className="text-sm text-muted-foreground uppercase font-black tracking-tighter">Fundraising Target</p><p className="text-3xl font-bold">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                    <div><p className="text-sm text-muted-foreground uppercase font-black tracking-tighter">Grand Total Received</p><p className="text-3xl font-bold">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                 </div>
                             </div>
                         </CardContent>
