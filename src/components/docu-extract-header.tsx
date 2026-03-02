@@ -55,8 +55,8 @@ export function DocuExtractHeader() {
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                     alt="Baitulmal Logo"
-                    width={brandingSettings?.logoWidth || 120}
-                    height={brandingSettings?.logoHeight || 60}
+                    width={120}
+                    height={60}
                     className="object-contain drop-shadow-sm"
                     style={{
                       maxHeight: '3.5rem',
@@ -67,7 +67,7 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-lg sm:text-xl md:text-2xl font-black font-headline text-[#138808] tracking-tight animate-fade-in-zoom" style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}>
+          <h1 className="text-lg sm:text-xl md:text-2xl font-black text-[#138808] tracking-tight animate-fade-in-zoom" style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}>
             {isBrandingLoading ? <Skeleton className="h-8 w-64 md:w-80" /> : "Baitulmal Samajik Sanstha Solapur"}
           </h1>
         </Link>
@@ -141,7 +141,7 @@ export function DocuExtractHeader() {
                     <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex font-bold uppercase tracking-widest text-xs hover:bg-primary/10 text-primary">
                         <Link href="/public-initiatives">Initiatives</Link>
                     </Button>
-                    <Button asChild size="sm" className="font-black uppercase tracking-widest text-xs interactive-hover px-6 animate-slide-in-from-top" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
+                    <Button asChild size="sm" className="font-black uppercase tracking-widest text-xs interactive-hover px-6 animate-slide-in-from-top bg-[#0B6623] hover:bg-[#0B6623]/90 text-white" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
                         <Link href="/login">
                             <LogIn className="mr-2 h-4 w-4" />
                             Sign In

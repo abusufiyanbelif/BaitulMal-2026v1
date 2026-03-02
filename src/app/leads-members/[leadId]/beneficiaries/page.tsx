@@ -39,6 +39,7 @@ import {
     Search,
     CopyPlus,
     MoreHorizontal,
+    ShieldAlert
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -239,7 +240,7 @@ export default function BeneficiariesPage() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                         <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="gap-2 font-bold uppercase interactive-hover border-primary/20 text-primary"><CopyPlus className="h-4 w-4"/> Select from Master</Button>
-                        <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2 font-black uppercase tracking-widest interactive-hover shadow-lg bg-primary text-white"><PlusCircle className="h-4 w-4"/> Add New</Button>
+                        <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2 font-black uppercase tracking-widest interactive-hover shadow-lg bg-[#0B6623] hover:bg-[#0B6623]/90 text-white"><PlusCircle className="h-4 w-4"/> Add New</Button>
                     </div>
                 </div>
             </CardHeader>

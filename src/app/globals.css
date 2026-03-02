@@ -4,41 +4,44 @@
 
 @layer base {
   :root {
-    /* Background: Very faint Tea Green tint */
-    --background: 100 40% 98%;
-    /* Foreground: Deep Forest Green (Darker Indian Green variant) */
+    /* Background: Light Tea Green tint */
+    --background: 100 40% 96%;
+    /* Foreground: Deep Forest Green (No Black) */
     --foreground: 115 89% 12%; 
     --card: 0 0% 100%;
     --card-foreground: 115 89% 12%;
     --popover: 0 0% 100%;
     --popover-foreground: 115 89% 12%;
-    /* Primary: Forest Green #0B6623 */
-    --primary: 136 81% 22%;
+    /* Primary: Indian Green #138808 */
+    --primary: 115 89% 28%;
     --primary-foreground: 0 0% 100%;
-    /* Secondary: Mint Green #98FF98 variant */
-    --secondary: 120 70% 92%;
+    /* Secondary: Mint Green #98FF98 */
+    --secondary: 120 100% 92%;
     --secondary-foreground: 136 81% 10%;
-    /* Muted: Light Green #90EE90 variant */
+    /* Muted: Light Green tint */
     --muted: 120 50% 94%;
     --muted-foreground: 115 40% 30%;
     /* Accent: Tea Green #D0F0C0 */
     --accent: 100 60% 85%;
     --accent-foreground: 115 89% 10%;
+    /* Destructive: Soft Red */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --success: 142 70% 88%;
-    --success-foreground: 142 80% 20%;
+    /* Success: Kelly Green #4CBB17 */
+    --success: 120 78% 41%;
+    --success-foreground: 0 0% 100%;
     --border: 120 30% 88%;
     --input: 120 30% 88%;
-    --ring: 136 81% 22%;
+    --ring: 115 89% 28%;
     --radius: 0.75rem;
     
-    --chart-1: 136 81% 22%;
-    --chart-2: 115 89% 28%;
-    --chart-3: 142 71% 45%;
-    --chart-4: 47.9 95.8% 53.1%;
-    --chart-5: 262.1 83.3% 57.8%;
-    --chart-6: 24 95% 53%;
+    /* Charts using Mosaic Greens */
+    --chart-1: 115 89% 28%;  /* Indian Green */
+    --chart-2: 136 81% 22%;  /* Forest Green */
+    --chart-3: 120 78% 41%;  /* Kelly Green */
+    --chart-4: 100 60% 85%;  /* Tea Green */
+    --chart-5: 120 100% 80%; /* Mint Green */
+    --chart-6: 120 50% 70%;  /* Light Green */
     --chart-7: 173 58% 39%;
     --chart-8: 43 74% 66%;
   }
@@ -49,6 +52,11 @@
 
   body {
     @apply min-h-screen bg-background text-foreground antialiased font-sans;
+  }
+
+  /* Force all text to India Green or Forest Green shades, no pure black */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-primary font-bold;
   }
 
   .interactive-hover {

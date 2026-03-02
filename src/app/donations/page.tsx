@@ -337,7 +337,7 @@ export default function DonationsPage() {
             <h1 className="text-3xl font-black uppercase tracking-tighter text-primary">Donations Hub</h1>
             <div className="flex gap-2">
                 <Button variant="outline" onClick={handleSync} disabled={isSyncing} className="font-bold uppercase tracking-widest text-[10px] border-primary/20 text-primary"><DatabaseZap className="mr-2 h-4 w-4"/> Sync Hub</Button>
-                <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="font-black uppercase tracking-widest text-xs interactive-hover shadow-lg"><PlusCircle className="mr-2 h-4 w-4" /> Add Record</Button>
+                <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="font-black uppercase tracking-widest text-xs interactive-hover shadow-lg bg-[#0B6623] hover:bg-[#0B6623]/90 text-white"><PlusCircle className="mr-2 h-4 w-4" /> Add Record</Button>
             </div>
         </div>
 
@@ -433,7 +433,7 @@ export default function DonationsPage() {
                 )}
                 <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2">
                     <Button variant="outline" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold uppercase text-[10px] border-primary/20 text-primary"><ZoomIn className="mr-2 h-4 w-4"/> Zoom In</Button>
-                    <Button variant="outline" size="sm" onClick={() => setZoom(z => z / 1.2)} className="font-bold uppercase text-[10px] border-primary/20 text-primary"><ZoomOut className="mr-2 h-4 w-4"/> Zoom Out</Button>
+                    <Button variant="outline" size="sm" onClick={() => setZoom(z => z / 1.2) } className="font-bold uppercase text-[10px] border-primary/20 text-primary"><ZoomOut className="mr-2 h-4 w-4"/> Zoom Out</Button>
                     <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold uppercase text-[10px] border-primary/20 text-primary"><RotateCw className="mr-2 h-4 w-4"/> Rotate</Button>
                     <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold uppercase text-[10px] border-primary/20 text-primary"><RefreshCw className="mr-2 h-4 w-4"/> Reset</Button>
                 </DialogFooter>

@@ -378,7 +378,7 @@ export default function LeadSummaryPage() {
                     {!editMode && (
                         <><DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline"><Download className="mr-2 h-4 w-4" /> Download</Button></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem onClick={() => handleDownload('png')}>Download as Image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')}>Download as PDF</DropdownMenuItem></DropdownMenuContent></DropdownMenu><Button onClick={() => { setShareDialogData({ title: `Lead: ${lead.name}`, text: lead.description || '', url: window.location.origin + `/leads-public/${leadId}/summary` }); setIsShareDialogOpen(true); }} variant="outline"><Share2 className="mr-2 h-4 w-4" /> Share</Button></>
                     )}
-                    {canUpdate && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)}><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)}>Cancel</Button><Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save</Button></div>) )}
+                    {canUpdate && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} className="bg-[#0B6623] hover:bg-[#0B6623]/90 text-white"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)}>Cancel</Button><Button onClick={handleSave} className="bg-[#0B6623] hover:bg-[#0B6623]/90 text-white"><Save className="mr-2 h-4 w-4" /> Save</Button></div>) )}
                 </div>
             </div>
 
@@ -387,7 +387,7 @@ export default function LeadSummaryPage() {
                   <div className="flex w-max space-x-2">
                       {canReadSummary && ( <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/leads-members/${leadId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Summary</Link> )}
                       <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/leads-members/${leadId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Item List</Link>
-                      {canReadBeneficiaries && ( <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Beneficiary Details</Link> )}
+                      {canReadBeneficiaries && ( <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Beneficiary List</Link> )}
                       {canReadDonations && ( <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Donations</Link> )}
                   </div>
               </ScrollArea>
@@ -412,21 +412,21 @@ export default function LeadSummaryPage() {
                                                 </RadialBarChart>
                                             </ChartContainer>
                                         ) : <Skeleton className="w-full h-full rounded-full" />}
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground">Funded</span></div>
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold">Funded</span></div>
                                     </div>
-                                    <div className="space-y-4 text-center md:text-left">
-                                        <div><p className="text-sm text-muted-foreground">Raised for Goal</p><p className="text-3xl font-bold text-foreground">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                        <div><p className="text-sm text-muted-foreground">Target Goal</p><p className="text-3xl font-bold text-muted-foreground/60">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                        <div><p className="text-sm text-muted-foreground">Grand Total Received (All categories)</p><p className="text-2xl font-bold text-foreground">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                    <div className="space-y-4 text-center md:text-left text-[#138808]">
+                                        <div><p className="text-sm text-muted-foreground uppercase font-black tracking-tighter">Raised for Goal</p><p className="text-3xl font-black">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                        <div><p className="text-sm text-muted-foreground uppercase font-black tracking-tighter">Target Goal</p><p className="text-3xl font-black text-muted-foreground/60">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                        <div><p className="text-sm text-muted-foreground uppercase font-black tracking-tighter">Grand Total Received</p><p className="text-2xl font-black">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
                         <div className="grid gap-6 sm:grid-cols-3">
-                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-foreground">{fundingData.totalBeneficiaries}</div></CardContent></Card>
-                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Assistance Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-foreground">{fundingData.beneficiariesGiven}</div></CardContent></Card>
-                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-foreground">{fundingData.beneficiariesPending}</div></CardContent></Card>
+                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-black uppercase text-primary">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-black text-foreground">{fundingData.totalBeneficiaries}</div></CardContent></Card>
+                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-black uppercase text-primary">Assistance Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-black text-foreground">{fundingData.beneficiariesGiven}</div></CardContent></Card>
+                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-black uppercase text-primary">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-black text-foreground">{fundingData.beneficiariesPending}</div></CardContent></Card>
                         </div>
 
                         <div className="grid gap-6 lg:grid-cols-2">
@@ -436,15 +436,15 @@ export default function LeadSummaryPage() {
                                     <CardDescription>Tracking of Zakat funds collected and allocated.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
-                                    <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-semibold font-mono text-foreground">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
+                                    <div className="flex justify-between items-center text-sm font-bold"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-mono text-foreground">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
                                     <Separator />
                                     <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
-                                        <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Allocated as Cash-in-Hand</span><span className="font-semibold font-mono text-foreground">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
-                                        <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground">Paid out</span><span className="font-mono text-green-600">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                        <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground">Remaining to Pay</span><span className="font-mono text-amber-600">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-sm font-bold"><span className="text-muted-foreground">Allocated as Cash-in-Hand</span><span className="font-mono text-foreground">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-xs pl-4 font-bold"><span className="text-muted-foreground">Paid out</span><span className="font-mono text-success">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-xs pl-4 font-bold"><span className="text-muted-foreground">Remaining to Pay</span><span className="font-mono text-orange-600">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                     </div>
                                     <Separator />
-                                    <div className="flex justify-between items-center text-base"><span className="font-bold text-foreground">Zakat Balance for Goal</span><span className="font-bold text-primary font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
+                                    <div className="flex justify-between items-center text-base font-black"><span className="text-foreground">Zakat Balance for Goal</span><span className="text-primary font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
                                 </CardContent>
                             </Card>
 
@@ -466,7 +466,7 @@ export default function LeadSummaryPage() {
 
                  <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
                         <CardHeader className="bg-primary/5"><CardTitle>Lead Details</CardTitle></CardHeader>
-                        <CardContent className="space-y-4 pt-6">
+                        <CardContent className="space-y-4 pt-6 text-[#138808]">
                             {editMode ? (
                                 <div className="space-y-6">
                                     <div className="space-y-2">
@@ -489,13 +489,13 @@ export default function LeadSummaryPage() {
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
-                                        <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed text-foreground/90">{lead.description || 'No description provided.'}</p>
+                                        <p className="mt-1 text-sm font-bold whitespace-pre-wrap leading-relaxed text-foreground">{lead.description || 'No description provided.'}</p>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Purpose</p><p className="font-semibold text-foreground">{lead.purpose} {lead.category && `(${lead.category})`}</p></div>
-                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Target Goal</p><p className="font-semibold font-mono text-foreground">₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Start Date</p><p className="font-semibold text-foreground">{lead.startDate || 'N/A'}</p></div>
-                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">End Date</p><p className="font-semibold text-foreground">{lead.endDate || 'N/A'}</p></div>
+                                        <div className="space-y-1"><p className="text-xs font-black text-muted-foreground uppercase tracking-tighter">Purpose</p><p className="font-black uppercase text-foreground">{lead.purpose} {lead.category && `(${lead.category})`}</p></div>
+                                        <div className="space-y-1"><p className="text-xs font-black text-muted-foreground uppercase tracking-tighter">Target Goal</p><p className="font-black font-mono text-foreground">₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                        <div className="space-y-1"><p className="text-xs font-black text-muted-foreground uppercase tracking-tighter">Start Date</p><p className="font-black text-foreground">{lead.startDate || 'N/A'}</p></div>
+                                        <div className="space-y-1"><p className="text-xs font-black text-muted-foreground uppercase tracking-tighter">End Date</p><p className="font-black text-foreground">{lead.endDate || 'N/A'}</p></div>
                                     </div>
                                 </>
                             )}
@@ -520,12 +520,12 @@ export default function LeadSummaryPage() {
                                                     </div>
                                                     <div className="flex items-center gap-4">
                                                         <div className="flex items-center gap-2"><Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} /><Label className="text-xs text-foreground">Public</Label></div>
-                                                        <Button variant="ghost" size="icon" onClick={() => handleRemoveExistingDocument(doc.url)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleRemoveExistingDocument(doc.url)}><Trash2 className="h-4 w-4" /></Button>
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
-                                    ) : <p className="text-sm text-muted-foreground">No artifacts.</p>}
+                                    ) : <p className="text-sm text-muted-foreground font-bold">No artifacts.</p>}
                                 </div>
                             ) : (
                                 lead.documents && lead.documents.length > 0 ? (
@@ -536,15 +536,15 @@ export default function LeadSummaryPage() {
                                                     <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
                                                         <File className="w-10 h-10 text-muted-foreground" />
                                                     </div>
-                                                    <div className="p-2 text-center text-[10px] font-medium truncate text-foreground">{doc.name}</div>
+                                                    <div className="p-2 text-center text-[10px] font-black text-primary uppercase truncate">{doc.name}</div>
                                                 </a>
                                                 <CardFooter className="p-2 border-t mt-auto flex justify-center w-full gap-2">
-                                                    {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-xs text-foreground">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"}>{doc.isPublic ? "Public" : "Private"}</Badge> )}
+                                                    {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-xs text-foreground font-bold">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"} className="font-black uppercase text-[10px]">{doc.isPublic ? "Public" : "Private"}</Badge> )}
                                                 </CardFooter>
                                             </Card>
                                         ))}
                                     </div>
-                                ) : <p className="text-sm text-muted-foreground">No artifacts.</p>
+                                ) : <p className="text-sm text-muted-foreground font-bold">No artifacts.</p>
                             )}
                         </CardContent>
                     </Card>

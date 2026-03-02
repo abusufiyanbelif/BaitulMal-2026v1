@@ -1,14 +1,10 @@
-
 'use client';
 import { useBranding } from '@/hooks/use-branding';
-import { useSession } from '@/hooks/use-session';
 import { cn } from '@/lib/utils';
 
 export function Watermark() {
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
-    const { isLoading: isSessionLoading } = useSession();
     
-    // Show a fallback or nothing while loading brand settings
     if (isBrandingLoading) {
         return null;
     }
@@ -20,12 +16,12 @@ export function Watermark() {
     }
 
     return (
-        <div className="fixed inset-0 -z-10 flex items-center justify-center pointer-events-none opacity-[0.05]">
+        <div className="fixed inset-0 -z-10 flex items-center justify-center pointer-events-none opacity-[0.12] mix-blend-multiply grayscale brightness-110 contrast-125">
             <img
                 src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                 alt="Watermark"
-                width={500}
-                height={500}
+                width={600}
+                height={600}
                 className={cn(
                     "object-contain transition-transform duration-300"
                 )}
