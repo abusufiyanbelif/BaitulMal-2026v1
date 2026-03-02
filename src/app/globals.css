@@ -55,7 +55,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-black uppercase tracking-tighter;
+    @apply font-black tracking-tight;
     color: #1b9d4a; 
   }
 

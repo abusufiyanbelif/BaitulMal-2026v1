@@ -4,9 +4,10 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, Utensils, LifeBuoy } from 'lucide-react';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useSession } from '@/hooks/use-session';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, collection } from 'firebase/firestore';
+import { useCollection } from '@/firebase/firestore/use-collection';
 import type { Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -89,7 +90,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
           </div>
           <CardHeader className="p-4">
             <div className="flex justify-between items-start gap-2">
-                <CardTitle className="w-full break-words text-sm sm:text-base font-black line-clamp-2 uppercase tracking-tight text-primary">
+                <CardTitle className="w-full break-words text-sm sm:text-base font-black line-clamp-2 tracking-tight text-primary">
                     {campaign.campaignNumber && <span className="text-primary">#{campaign.campaignNumber} </span>}{campaign.name}
                 </CardTitle>
                   <DropdownMenu>
@@ -101,13 +102,13 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                         <DropdownMenuItem onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)} className="cursor-pointer font-bold text-primary">
                             <Edit className="mr-2 h-4 w-4" />
-                            View Details
+                            View details
                         </DropdownMenuItem>
                         {canUpdate && <DropdownMenuSeparator />}
                         {canUpdate && (
                             <>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="font-bold text-primary"><span>Change Status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="font-bold text-primary"><span>Change status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
                                             <DropdownMenuRadioGroup value={campaign.status} onValueChange={(value) => handleStatusUpdate(campaign, 'status', value)}>
@@ -125,9 +126,9 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                                             <DropdownMenuRadioGroup value={campaign.authenticityStatus} onValueChange={(value) => handleStatusUpdate(campaign, 'authenticityStatus', value as string)}>
                                                 <DropdownMenuRadioItem value="Pending Verification" className="font-bold">Pending</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Verified" className="font-bold">Verified</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="On Hold" className="font-bold">On Hold</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="On Hold" className="font-bold">On hold</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Rejected" className="font-bold">Rejected</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details" className="font-bold">Need Details</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details" className="font-bold">Need details</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
@@ -138,7 +139,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         {canCreate && (
                             <DropdownMenuItem onClick={() => handleCopyClick(campaign)} className="cursor-pointer font-bold text-primary">
                                 <Copy className="mr-2 h-4 w-4" />
-                                Copy Initiative
+                                Copy initiative
                             </DropdownMenuItem>
                         )}
                         {canDelete && (
@@ -153,21 +154,21 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                     </DropdownMenuContent>
                   </DropdownMenu>
             </div>
-            <CardDescription className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">{campaign.startDate} to {campaign.endDate}</CardDescription>
+            <CardDescription className="text-[10px] font-bold tracking-normal text-muted-foreground">{campaign.startDate} to {campaign.endDate}</CardDescription>
           </CardHeader>
           <CardContent className="flex-grow space-y-3 p-4 pt-0">
               <div className="flex justify-between items-center text-xs">
-                <Badge variant="secondary" className="text-[10px] uppercase font-black">{campaign.category}</Badge>
+                <Badge variant="secondary" className="text-[10px] font-black">{campaign.category}</Badge>
                 <Badge 
                   variant={campaign.status === 'Active' ? 'success' : 'outline'}
-                  className={cn("text-[10px] uppercase font-black", campaign.status === 'Active' && "animate-status-pulse")}
+                  className={cn("text-[10px] font-black", campaign.status === 'Active' && "animate-status-pulse")}
                 >
                   {campaign.status}
                 </Badge>
             </div>
             {(campaign.targetAmount || 0) > 0 && (
                 <div className="space-y-1.5">
-                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase">
+                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
                         <span>Raised: ₹{campaign.collected.toLocaleString('en-IN')}</span>
                         <span>{Math.round(campaign.progress)}%</span>
                     </div>
@@ -177,9 +178,9 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
             )}
           </CardContent>
           <CardFooter className="p-2 border-t bg-primary/5">
-            <Button asChild className="w-full text-xs font-black uppercase tracking-widest hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
+            <Button asChild className="w-full text-xs font-black tracking-tight hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
                 <Link href={`/campaign-members/${campaign.id}/summary`}>
-                    Manage Initiative
+                    Manage initiative
                 </Link>
             </Button>
           </CardFooter>
@@ -249,7 +250,7 @@ export default function CampaignPage() {
     setIsDeleteDialogOpen(false);
     setIsDeleting(true);
     const result = await deleteCampaignAction(campaignToDelete.id);
-    toast({ title: result.success ? 'Campaign Deleted' : 'Deletion Failed', description: result.message, variant: result.success ? 'success' : 'destructive' });
+    toast({ title: result.success ? 'Campaign deleted' : 'Deletion failed', description: result.message, variant: result.success ? 'success' : 'destructive' });
     setIsDeleting(false);
     setCampaignToDelete(null);
   };
@@ -289,9 +290,9 @@ export default function CampaignPage() {
 
   const sections = useMemo(() => {
     return [
-      { id: 'active', title: 'Active Campaigns', items: filteredCampaigns.filter(c => c.status === 'Active') },
-      { id: 'upcoming', title: 'Upcoming Campaigns', items: filteredCampaigns.filter(c => c.status === 'Upcoming') },
-      { id: 'completed', title: 'Completed Campaigns', items: filteredCampaigns.filter(c => c.status === 'Completed') }
+      { id: 'active', title: 'Active campaigns', items: filteredCampaigns.filter(c => c.status === 'Active') },
+      { id: 'upcoming', title: 'Upcoming campaigns', items: filteredCampaigns.filter(c => c.status === 'Upcoming') },
+      { id: 'completed', title: 'Completed campaigns', items: filteredCampaigns.filter(c => c.status === 'Completed') }
     ].filter(s => s.items.length > 0);
   }, [filteredCampaigns]);
 
@@ -300,10 +301,10 @@ export default function CampaignPage() {
   if (!isLoading && userProfile && !canViewCampaigns) {
     return (
       <main className="container mx-auto p-4 md:p-8 text-primary">
-        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 text-primary"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link></Button></div>
+        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 text-primary"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to home</Link></Button></div>
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
-          <AlertTitle>Access Denied</AlertTitle>
+          <AlertTitle>Access denied</AlertTitle>
           <AlertDescription>Missing permissions to manage campaigns.</AlertDescription>
         </Alert>
       </main>
@@ -319,27 +320,27 @@ export default function CampaignPage() {
           </Button>
           {canCreate && !isLoading && (
             <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-white font-bold">
-              <Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New Campaign</Link>
+              <Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New campaign</Link>
             </Button>
           )}
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-black tracking-tighter uppercase text-primary">Campaign Hub</h1>
+          <h1 className="text-3xl font-black tracking-tight text-primary">Campaign hub</h1>
           <p className="text-primary text-sm max-w-2xl font-bold leading-relaxed opacity-70">Organization-wide initiatives, budget vetting, and strategic tracking.</p>
         </div>
 
         <div className="space-y-2">
-          <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
-          <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
+          <NewsTicker items={activeTickerItems} label="Live updates" variant="active" />
+          <NewsTicker items={recentDonationsFormatted} label="Donation updates" variant="donation" />
         </div>
 
         <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
           <CardHeader className="p-4 sm:p-6 border-b bg-primary/5">
             <div className="flex flex-wrap items-center gap-3">
                 <Input placeholder="Search initiatives..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-bold" disabled={isLoading}/>
-                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All Categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
                 <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
                     <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
                     <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
@@ -359,7 +360,7 @@ export default function CampaignPage() {
                     <AccordionTrigger className="hover:no-underline py-5 group">
                       <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
-                        <span className="text-lg font-black tracking-tight uppercase text-primary">{section.title}</span>
+                        <span className="text-lg font-black tracking-tight text-primary">{section.title}</span>
                         <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-black bg-primary/10 text-primary">{section.items.length}</Badge>
                       </div>
                     </AccordionTrigger>
@@ -376,7 +377,7 @@ export default function CampaignPage() {
             ) : (
               <div className="text-center py-24 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
                   <HandHelping className="h-16 w-16 mx-auto text-primary/20 mb-4" />
-                  <p className="text-primary/60 font-black uppercase tracking-widest text-sm">No initiatives found matching filters.</p>
+                  <p className="text-primary/60 font-black tracking-tight text-sm">No initiatives found matching filters.</p>
               </div>
             )}
           </CardContent>
@@ -384,7 +385,7 @@ export default function CampaignPage() {
       </main>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-black uppercase text-destructive">Delete Initiative?</AlertDialogTitle><AlertDialogDescription className="font-bold text-primary/80">Permanently erase all data for '{campaignToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-black hover:bg-destructive/90">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-black text-destructive">Delete initiative?</AlertDialogTitle><AlertDialogDescription className="font-bold text-primary/80">Permanently erase all data for '{campaignToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-black hover:bg-destructive/90">Confirm deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
       <CopyCampaignDialog open={!!campaignToCopy} onOpenChange={() => setCampaignToCopy(null)} campaign={campaignToCopy} onCopyConfirm={async (opt) => { const res = await copyCampaignAction({ sourceCampaignId: campaignToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setCampaignToCopy(null); }}/>
