@@ -67,7 +67,7 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-lg sm:text-xl md:text-2xl font-black text-[#138808] tracking-tighter animate-fade-in-zoom" style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}>
+          <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tighter animate-fade-in-zoom" style={{ color: '#138808', animationDelay: '0.2s', animationFillMode: 'backwards' }}>
             {isBrandingLoading ? <Skeleton className="h-8 w-64 md:w-80" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
           </h1>
         </Link>
@@ -94,7 +94,7 @@ export function DocuExtractHeader() {
                     <DropdownMenuContent className="w-64 mt-2" align="end" forceMount>
                       <DropdownMenuLabel className="font-normal p-4">
                         <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-black uppercase tracking-tight leading-none text-foreground">
+                          <p className="text-sm font-black uppercase tracking-tight leading-none">
                             {userProfile?.name || 'User'}
                           </p>
                           <p className="text-xs font-medium text-muted-foreground pt-1">
@@ -104,20 +104,20 @@ export function DocuExtractHeader() {
                         </div>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                       <DropdownMenuItem asChild className="cursor-pointer font-bold h-11 text-foreground">
+                       <DropdownMenuItem asChild className="cursor-pointer font-bold h-11">
                         <Link href="/dashboard">
                           <LayoutDashboard className="mr-2 h-4 w-4 text-primary" />
                           <span>Dashboard</span>
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="cursor-pointer font-bold h-11 text-foreground">
+                      <DropdownMenuItem asChild className="cursor-pointer font-bold h-11">
                         <Link href="/profile">
                           <User className="mr-2 h-4 w-4 text-primary" />
                           <span>Account Settings</span>
                         </Link>
                       </DropdownMenuItem>
                       {userProfile.role === 'Admin' && (
-                        <DropdownMenuItem asChild className="cursor-pointer font-bold h-11 text-foreground">
+                        <DropdownMenuItem asChild className="cursor-pointer font-bold h-11">
                           <Link href="/settings">
                             <Settings className="mr-2 h-4 w-4 text-primary" />
                             <span>System Admin</span>

@@ -116,9 +116,10 @@ export function PublicLeadsView() {
       .filter(l => l.status === 'Active')
       .map(l => {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
+          const prefix = (l as any).isUpdated ? '✨ UPDATED: ' : '';
           return {
               id: l.id,
-              text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
+              text: `${prefix}Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
               href: `/leads-public/${l.id}/summary`
           };
       });
@@ -218,7 +219,7 @@ export function PublicLeadsView() {
           ))}
         </Accordion>
       ) : (
-        <div className="text-center py-20 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
+        <div className="text-center py-24 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
             <Lightbulb className="h-12 w-12 mx-auto text-primary/20 mb-4" />
             <p className="text-primary/60 font-bold uppercase tracking-widest text-sm">No appeals found matching criteria.</p>
         </div>

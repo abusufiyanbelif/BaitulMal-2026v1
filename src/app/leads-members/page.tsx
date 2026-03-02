@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info } from 'lucide-react';
-import { useFirestore, doc, updateDoc } from 'firebase/firestore';
-import { useSession } from '@/hooks/use-session';
+import { useFirestore, useSession } from '@/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 import type { Lead } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -312,7 +312,7 @@ export default function LeadPage() {
             <div className="flex flex-wrap items-center gap-3">
                 <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary text-[#082F11] font-bold" disabled={isLoading}/>
                 <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-black uppercase border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
-                <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs font-black uppercase border-primary/20 text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
+                <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs font-bold uppercase border-primary/20 text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
                 <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
                     <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-black uppercase border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
                     <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold uppercase border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
