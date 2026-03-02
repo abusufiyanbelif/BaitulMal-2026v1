@@ -12,10 +12,10 @@
     --card-foreground: 136 81% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 136 81% 11%;
-    /* Primary: Forest Green #0B6623 */
-    --primary: 136 81% 22%;
+    /* Primary: India Green #138808 */
+    --primary: 115 89% 28%;
     --primary-foreground: 0 0% 100%;
-    /* Secondary: India Green #138808 for headings */
+    /* Secondary: India Green #138808 */
     --secondary: 115 89% 28%;
     --secondary-foreground: 0 0% 100%;
     /* Muted: Light Green tint */
@@ -54,9 +54,9 @@
     @apply min-h-screen bg-background text-foreground antialiased font-sans;
   }
 
-  /* Forest Green for all primary buttons #0B6623 */
+  /* India Green for all primary buttons #138808 */
   button.bg-primary, .btn-forest, [data-state=active] {
-    background-color: #0B6623 !important;
+    background-color: #138808 !important;
     color: white !important;
   }
 

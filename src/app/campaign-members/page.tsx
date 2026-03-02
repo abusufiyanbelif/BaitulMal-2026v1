@@ -84,7 +84,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
             ) : (
-                <FallbackIcon className="h-16 w-16 text-primary/30" />
+                <FallbackIcon className="h-16 w-16 text-primary/10" />
             )}
           </div>
           <CardHeader className="p-4">
@@ -313,7 +313,7 @@ export default function CampaignPage() {
       <main className="container mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <Button variant="outline" asChild size="sm" className="interactive-hover font-bold uppercase border-primary/20 text-primary"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
-          {canCreate && !isLoading && <Button asChild size="sm" className="font-black uppercase tracking-widest interactive-hover shadow-lg bg-[#0B6623] hover:bg-[#0B6623]/90 text-white"><Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New Campaign</Link></Button>}
+          {canCreate && !isLoading && <Button asChild size="sm" className="font-black uppercase tracking-widest interactive-hover shadow-lg bg-primary hover:bg-primary/90 text-white"><Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New Campaign</Link></Button>}
         </div>
 
         <div className="space-y-2">

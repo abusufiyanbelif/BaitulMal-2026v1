@@ -48,7 +48,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                                   className="object-cover"
                                 />
                             ) : (
-                                <FallbackIcon className="h-16 w-16 text-primary/40" />
+                                <FallbackIcon className="h-16 w-16 text-primary/10" />
                             )}
                         </div>
                         <CardHeader className="p-4">

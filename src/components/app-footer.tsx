@@ -1,4 +1,3 @@
-
 'use client';
 import { useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -99,7 +98,7 @@ export function AppFooter() {
                       />
                   )
               )}
-              {isLoading ? <Skeleton className="h-6 w-48" /> : <h3 className="font-semibold text-base">{brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}</h3>}
+              {isLoading ? <Skeleton className="h-6 w-48" /> : <h3 className="font-semibold text-base text-primary">{brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}</h3>}
             </div>
             {isLoading ? <Skeleton className="h-4 w-full" /> : paymentSettings?.address && <p className="text-xs text-muted-foreground">{paymentSettings.address}</p>}
             <div className="text-xs text-muted-foreground space-y-1">
@@ -141,7 +140,7 @@ export function AppFooter() {
 
             {/* Payment Info */}
             <div className="flex flex-col items-center gap-2 transition-transform duration-300 ease-in-out hover:scale-105 animate-slide-in-from-bottom" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
-                {isLoading ? <Skeleton className="h-6 w-1/2" /> : <h3 className="font-semibold text-base">For Donations</h3>}
+                {isLoading ? <Skeleton className="h-6 w-1/2" /> : <h3 className="font-semibold text-base text-primary">For Donations</h3>}
                 {isLoading ? <Skeleton className="h-5 w-4/5" /> : paymentSettings?.upiId && (
                     <div className="flex items-center gap-2 transition-all hover:text-primary">
                     <QrCode className="h-4 w-4" />
@@ -217,7 +216,7 @@ export function AppFooter() {
             {isLoading ? (
                 <Skeleton className="h-4 w-1/2 mx-auto" />
             ) : (
-                <p>{paymentSettings?.copyright || "© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved."}</p>
+                <p className="text-primary">{paymentSettings?.copyright || "© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved."}</p>
             )}
         </div>
       </div>
