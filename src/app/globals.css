@@ -4,17 +4,17 @@
 
 @layer base {
   :root {
-    /* Brand Green Theme (#1b9d4a) */
+    /* Brand Green Theme (#1b9d4a) - HSL: 142 71% 36% */
     --background: 0 0% 100%;
-    --foreground: 142 71% 10%; /* Very dark green for readability */
+    --foreground: 142 71% 36%; 
     
     --card: 0 0% 100%;
-    --card-foreground: 142 71% 10%;
+    --card-foreground: 142 71% 36%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 142 71% 10%;
+    --popover-foreground: 142 71% 36%;
     
-    /* Primary Brand Color: #1b9d4a (HSL: 142 71% 36%) */
+    /* Primary Brand Color: #1b9d4a */
     --primary: 142 71% 36%; 
     --primary-foreground: 0 0% 100%;
     
@@ -22,7 +22,7 @@
     --secondary-foreground: 142 71% 36%;
     
     --muted: 142 10% 96%;
-    --muted-foreground: 142 71% 25%;
+    --muted-foreground: 142 71% 36% / 0.8;
     
     --accent: 142 71% 96%;
     --accent-foreground: 142 71% 36%;
@@ -56,20 +56,20 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-black uppercase tracking-tighter;
-    color: #1b9d4a; /* Specific Brand Green */
+    color: #1b9d4a; 
   }
 
-  /* Custom Scrollbars */
+  /* Custom Scrollbars - Brand Green */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
     background: #1b9d4a;
-    border-radius: 5px;
+    border-radius: 10px;
   }
   ::-webkit-scrollbar-thumb:hover {
     background: #1b9d4aee;

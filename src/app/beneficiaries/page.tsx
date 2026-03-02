@@ -20,8 +20,6 @@ import {
     ShieldAlert,
     Trash2,
     ChevronDown,
-    ChevronUp,
-    Download
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -116,7 +114,7 @@ export default function BeneficiariesPage() {
             <DatabaseZap className="mr-2 h-4 w-4"/> Sync Master List
           </Button>
           {canCreate && (
-            <Button onClick={() => router.push('/beneficiaries/create')} size="sm" className="bg-success hover:bg-success/90 text-white font-bold">
+            <Button onClick={() => router.push('/beneficiaries/create')} size="sm" className="bg-primary hover:bg-primary/90 text-white font-bold">
               <PlusCircle className="mr-2 h-4 w-4" /> Create Beneficiary
             </Button>
           )}
@@ -129,7 +127,7 @@ export default function BeneficiariesPage() {
           <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-primary/20 focus-visible:ring-primary font-medium" />
         </div>
         <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
-          <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="All">All Statuses</SelectItem>
             <SelectItem value="Verified">Verified</SelectItem>
@@ -140,7 +138,7 @@ export default function BeneficiariesPage() {
           </SelectContent>
         </Select>
         <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPage(1); }}>
-          <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20"><SelectValue placeholder="Zakat Status" /></SelectTrigger>
+          <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Zakat Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="All">All Zakat Status</SelectItem>
             <SelectItem value="Eligible">Eligible</SelectItem>
@@ -170,10 +168,10 @@ export default function BeneficiariesPage() {
                     <ChevronDown className="h-4 w-4 text-primary shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                   </div>
                 </AccordionTrigger>
-                <div className="font-mono text-xs text-muted-foreground">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
-                <div className="font-bold text-[#1B5E20] truncate pr-2">{b.name}</div>
-                <div className="font-mono text-xs text-muted-foreground">{b.phone || 'N/A'}</div>
-                <div className="text-xs text-muted-foreground truncate pr-2">{b.address || 'N/A'}</div>
+                <div className="font-mono text-xs text-primary/60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
+                <div className="font-bold text-primary truncate pr-2">{b.name}</div>
+                <div className="font-mono text-xs text-primary/60">{b.phone || 'N/A'}</div>
+                <div className="text-xs text-primary/60 truncate pr-2">{b.address || 'N/A'}</div>
                 <div className="text-center">
                   <Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[10px] h-5 px-2 font-bold uppercase">
                     {b.isEligibleForZakat ? 'Eligible' : 'No'}
@@ -194,11 +192,11 @@ export default function BeneficiariesPage() {
                           <DropdownMenuSubTrigger className="font-bold text-primary">Status</DropdownMenuSubTrigger>
                           <DropdownMenuPortal><DropdownMenuSubContent>
                             <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
-                              <DropdownMenuRadioItem value="Pending" className="text-xs font-bold">Pending</DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="Verified" className="text-xs font-bold">Verified</DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="Given" className="text-xs font-bold">Given</DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="Hold" className="text-xs font-bold">Hold</DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="Need More Details" className="text-xs font-bold">Need Details</DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="Pending" className="text-xs font-bold text-primary">Pending</DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="Verified" className="text-xs font-bold text-primary">Verified</DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="Given" className="text-xs font-bold text-primary">Given</DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="Hold" className="text-xs font-bold text-primary">Hold</DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="Need More Details" className="text-xs font-bold text-primary">Need Details</DropdownMenuRadioItem>
                             </DropdownMenuRadioGroup>
                           </DropdownMenuSubContent></DropdownMenuPortal>
                         </DropdownMenuSub>
@@ -206,7 +204,7 @@ export default function BeneficiariesPage() {
                       {canDelete && (
                         <>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={async () => { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); }} className="text-destructive font-bold"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                          <DropdownMenuItem onClick={async () => { if(confirm('Are you sure?')) { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); } }} className="text-destructive font-bold"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
                         </>
                       )}
                     </DropdownMenuContent>
@@ -214,30 +212,30 @@ export default function BeneficiariesPage() {
                 </div>
               </div>
               <AccordionContent className="bg-primary/[0.01] px-4 pt-0 pb-4 border-t border-primary/5">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 px-12">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 px-12 text-primary">
                   <div className="space-y-1">
                     <p className="text-[10px] font-black uppercase text-primary/60 tracking-wider">Address</p>
-                    <p className="text-sm font-bold text-[#1B5E20]">{b.address || 'N/A'}</p>
+                    <p className="text-sm font-bold">{b.address || 'N/A'}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-black uppercase text-primary/60 tracking-wider">Age</p>
-                    <p className="text-sm font-bold text-[#1B5E20]">{b.age || 'N/A'}</p>
+                    <p className="text-sm font-bold">{b.age || 'N/A'}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-black uppercase text-primary/60 tracking-wider">Occupation</p>
-                    <p className="text-sm font-bold text-[#1B5E20]">{b.occupation || 'N/A'}</p>
+                    <p className="text-sm font-bold">{b.occupation || 'N/A'}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-black uppercase text-primary/60 tracking-wider">Family</p>
-                    <p className="text-sm font-bold text-[#1B5E20]">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
+                    <p className="text-sm font-bold">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-black uppercase text-primary/60 tracking-wider">ID Proof</p>
-                    <p className="text-sm font-bold text-[#1B5E20]">{b.idProofType || 'N/A'} - {b.idNumber || 'N/A'}</p>
+                    <p className="text-sm font-bold">{b.idProofType || 'N/A'} - {b.idNumber || 'N/A'}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-black uppercase text-primary/60 tracking-wider">Date Added</p>
-                    <p className="text-sm font-bold text-[#1B5E20]">{b.addedDate || 'N/A'}</p>
+                    <p className="text-sm font-bold">{b.addedDate || 'N/A'}</p>
                   </div>
                 </div>
               </AccordionContent>
@@ -245,7 +243,7 @@ export default function BeneficiariesPage() {
           ))}
         </Accordion>
         {paginatedBeneficiaries.length === 0 && (
-          <div className="text-center py-20 bg-primary/[0.02] text-muted-foreground italic">No beneficiaries found matching criteria.</div>
+          <div className="text-center py-20 bg-primary/[0.02] text-primary/40 italic">No beneficiaries found matching criteria.</div>
         )}
       </div>
 
@@ -253,8 +251,8 @@ export default function BeneficiariesPage() {
         <div className="flex items-center justify-between border-t pt-4">
           <p className="text-xs font-bold text-primary/60 uppercase">Page {currentPage} of {totalPages}</p>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 text-primary">Previous</Button>
-            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 text-primary">Next</Button>
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 text-primary hover:bg-primary/10">Previous</Button>
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 text-primary hover:bg-primary/10">Next</Button>
           </div>
         </div>
       )}
