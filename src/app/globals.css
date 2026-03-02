@@ -6,7 +6,7 @@
   :root {
     /* Background: Lighter Tea Green tint #F2FAF0 */
     --background: 100 40% 96%;
-    /* Foreground: Deep Forest Green #082F11 - Darker for readability */
+    /* Foreground: Deep Forest Green #082F11 - Darker for readability, No Black */
     --foreground: 136 81% 11%; 
     --card: 0 0% 100%;
     --card-foreground: 136 81% 11%;

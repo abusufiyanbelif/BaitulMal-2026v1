@@ -86,11 +86,11 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                     </div>
                 </TableCell>
                 <TableCell>
-                    <div className="font-bold text-foreground">{donation.donorName}</div>
+                    <div className="font-bold text-[#082F11]">{donation.donorName}</div>
                     <div className="text-xs text-muted-foreground font-mono">{donation.donorPhone}</div>
                 </TableCell>
                 <TableCell className="text-right font-black font-mono text-primary">₹{donation.amount.toFixed(2)}</TableCell>
-                <TableCell className="whitespace-nowrap text-xs font-medium text-foreground">{donation.donationDate}</TableCell>
+                <TableCell className="whitespace-nowrap text-xs font-bold text-[#082F11]">{donation.donationDate}</TableCell>
                 <TableCell><Badge variant="secondary" className="text-[10px] uppercase font-black">{donation.donationType}</Badge></TableCell>
                 <TableCell>
                     <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'} className="text-[10px] uppercase font-black">
@@ -124,20 +124,20 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <h4 className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-primary"><DollarSign className="h-3 w-3"/> Category Breakdown</h4>
+                                    <h4 className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-[#082F11]"><DollarSign className="h-3 w-3"/> Category Breakdown</h4>
                                     <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
                                         <Table>
                                             <TableHeader><TableRow className="bg-primary/5"><TableHead className="h-8 py-0 text-[9px] uppercase font-black text-primary">Category</TableHead><TableHead className="text-right h-8 py-0 text-[9px] uppercase font-black text-primary">Amount</TableHead></TableRow></TableHeader>
                                             <TableBody>
                                                 {(donation.typeSplit || []).map(split => (
-                                                    <TableRow key={split.category} className="h-8"><TableCell className="py-1 text-xs font-bold text-foreground">{split.category}</TableCell><TableCell className="text-right font-black font-mono py-1 text-primary text-xs">₹{split.amount.toFixed(2)}</TableCell></TableRow>
+                                                    <TableRow key={split.category} className="h-8"><TableCell className="py-1 text-xs font-bold text-[#082F11]">{split.category}</TableCell><TableCell className="text-right font-black font-mono py-1 text-primary text-xs">₹{split.amount.toFixed(2)}</TableCell></TableRow>
                                                 ))}
                                             </TableBody>
                                         </Table>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <h4 className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-primary"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
+                                    <h4 className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-[#082F11]"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
                                     <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
                                         <Table>
                                             <TableHeader><TableRow className="bg-primary/5"><TableHead className="h-8 py-0 text-[9px] uppercase font-black text-primary">Initiative</TableHead><TableHead className="text-right h-8 py-0 text-[9px] uppercase font-black text-primary">Amount</TableHead></TableRow></TableHeader>
@@ -146,7 +146,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                                     <TableRow key={link.linkId} className="h-8">
                                                         <TableCell className="flex items-center gap-2 py-1">
                                                             {link.linkType === 'campaign' ? <FolderKanban className="h-3 w-3 text-primary/40" /> : <Lightbulb className="h-3 w-3 text-primary/40" />}
-                                                            <span className="text-[10px] font-black uppercase text-foreground">{link.linkName}</span>
+                                                            <span className="text-[10px] font-black uppercase text-[#082F11]">{link.linkName}</span>
                                                         </TableCell>
                                                         <TableCell className="text-right font-black font-mono py-1 text-primary text-xs">₹{link.amount.toFixed(2)}</TableCell>
                                                     </TableRow>
@@ -160,7 +160,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <h4 className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-primary"><ImageIcon className="h-3 w-3"/> Transaction Records</h4>
+                                <h4 className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-[#082F11]"><ImageIcon className="h-3 w-3"/> Transaction Records</h4>
                                 <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
                                     <Table>
                                         <TableHeader>
@@ -175,7 +175,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                             {(donation.transactions || []).map((tx) => (
                                                 <TableRow key={tx.id}>
                                                     <TableCell className="font-black font-mono text-primary text-xs py-2">₹{tx.amount.toFixed(2)}</TableCell>
-                                                    <TableCell className="font-mono text-[10px] py-2 text-foreground">{tx.transactionId || 'N/A'}</TableCell>
+                                                    <TableCell className="font-mono text-[10px] py-2 text-[#082F11]">{tx.transactionId || 'N/A'}</TableCell>
                                                     <TableCell className="text-[10px] font-bold text-muted-foreground py-2">{tx.date || donation.donationDate}</TableCell>
                                                     <TableCell className="text-right py-2">
                                                         {tx.screenshotUrl ? (
@@ -344,7 +344,7 @@ export default function DonationsPage() {
         <Card className="shadow-md border-primary/10 bg-white">
             <CardHeader className="bg-primary/5 p-4 border-b">
                 <div className="flex flex-wrap gap-2">
-                    <Input placeholder="Search donor, phone, ID..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-primary text-foreground"/>
+                    <Input placeholder="Search donor, phone, ID..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-primary text-[#082F11] font-bold"/>
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
                         <SelectTrigger className="w-[180px] h-9 text-xs font-black uppercase border-primary/20 text-primary"><SelectValue placeholder="All Statuses"/></SelectTrigger>
                         <SelectContent>
@@ -357,7 +357,7 @@ export default function DonationsPage() {
                 </div>
             </CardHeader>
             <CardContent className="p-0">
-                <div className="w-full overflow-x-auto">
+                <div className="w-full overflow-auto">
                     <Table>
                         <TableHeader>
                             <TableRow className="bg-primary/5">
@@ -415,9 +415,9 @@ export default function DonationsPage() {
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent>
-                <AlertDialogHeader><AlertDialogTitle className="font-black uppercase text-destructive">Delete Donation Record?</AlertDialogTitle><AlertDialogDescription className="font-bold text-foreground/80">This will permanently erase the record and all transaction screenshots. This action cannot be reversed.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogHeader><AlertDialogTitle className="font-black uppercase text-destructive">Delete Donation Record?</AlertDialogTitle><AlertDialogDescription className="font-bold text-[#082F11]/80">This will permanently erase the record and all transaction screenshots. This action cannot be reversed.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
+                    <AlertDialogCancel className="font-bold text-[#082F11]">Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-black hover:bg-destructive/90">Confirm Deletion</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>

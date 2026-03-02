@@ -131,7 +131,7 @@ export default function BeneficiariesPage() {
         const matchesStatus = statusFilter === 'All' || b.status === statusFilter;
         const matchesZakat = zakatFilter === 'All' || (zakatFilter === 'Eligible' ? b.isEligibleForZakat : !b.isEligibleForZakat);
         const matchesReferral = referralFilter === 'All' || b.referralBy === referralFilter;
-        return matchesSearch && matchesStatus && matchesZakat && matchesReferral;
+        return matchesSearch && matchesStatus && zakat && matchesReferral;
     });
   }, [beneficiaries, searchTerm, statusFilter, zakatFilter, referralFilter]);
 
@@ -236,7 +236,7 @@ export default function BeneficiariesPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div className="space-y-1">
                         <CardTitle className="text-2xl font-black text-primary uppercase tracking-tighter">Beneficiary Details ({stats.total})</CardTitle>
-                        <CardDescription className="font-bold text-foreground/70">Paginated results grouped by requirement categories.</CardDescription>
+                        <CardDescription className="font-bold text-[#082F11]/70">Paginated results grouped by requirement categories.</CardDescription>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="gap-2 font-bold uppercase interactive-hover border-primary/20 text-primary"><CopyPlus className="h-4 w-4"/> Select from Master</Button>
@@ -257,7 +257,7 @@ export default function BeneficiariesPage() {
                 <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-3 rounded-lg border border-primary/10">
                     <div className="relative flex-1 min-w-[240px]">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-primary/50" />
-                        <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9 text-xs border-primary/20 focus-visible:ring-primary text-foreground" />
+                        <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9 text-xs border-primary/20 focus-visible:ring-primary text-[#082F11] font-bold" />
                     </div>
                     <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
                         <SelectTrigger className="w-[140px] h-9 text-xs font-bold uppercase border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
@@ -295,12 +295,12 @@ export default function BeneficiariesPage() {
                                     {list.map((b, idx) => (
                                         <div key={b.id} className={cn("items-center py-3 px-4 border-b border-primary/5 last:border-0 hover:bg-primary/5 transition-colors text-sm", gridClass)}>
                                             <div className="text-muted-foreground font-mono text-xs">{((currentPage-1)*itemsPerPage) + idx + 1}</div>
-                                            <div className="truncate"><div className="font-black text-foreground truncate">{b.name}</div><div className="text-[10px] text-muted-foreground font-mono">{b.phone || 'N/A'}</div></div>
+                                            <div className="truncate"><div className="font-black text-[#082F11] truncate">{b.name}</div><div className="text-[10px] text-muted-foreground font-mono">{b.phone || 'N/A'}</div></div>
                                             <div className="flex justify-center"><Badge variant={b.status === 'Given' ? 'success' : 'outline'} className="text-[9px] px-2 py-0 h-5 font-black uppercase tracking-tighter">{b.status}</Badge></div>
                                             <div className="flex justify-center"><Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[9px] px-2 py-0 h-5 font-black uppercase tracking-tighter">{b.isEligibleForZakat ? 'YES' : 'NO'}</Badge></div>
                                             <div className="text-right font-mono font-bold text-primary">₹{(b.kitAmount || 0).toLocaleString()}</div>
                                             <div className="text-right font-mono text-muted-foreground">₹{(b.zakatAllocation || 0).toLocaleString()}</div>
-                                            <div className="text-right text-[10px] font-bold uppercase truncate pl-2 text-foreground">{b.referralBy}</div>
+                                            <div className="text-right text-[10px] font-bold uppercase truncate pl-2 text-[#082F11]">{b.referralBy}</div>
                                             <div className="text-right">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
