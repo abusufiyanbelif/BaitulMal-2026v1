@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, Utensils, LifeBuoy } from 'lucide-react';
-import { useFirestore, doc, updateDoc, collection } from 'firebase/firestore';
+import { useFirestore, doc, updateDoc } from 'firebase/firestore';
 import { useSession } from '@/hooks/use-session';
 import type { Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';

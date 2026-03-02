@@ -6,13 +6,13 @@
   :root {
     /* Background: Lighter Tea Green tint #F2FAF0 */
     --background: 100 40% 96%;
-    /* Foreground: Deep Forest Green #082F11 (Zero Black) */
+    /* Foreground: Deep Forest Green #082F11 - Darker for readability */
     --foreground: 136 81% 11%; 
     --card: 0 0% 100%;
     --card-foreground: 136 81% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 136 81% 11%;
-    /* Primary: India Green #138808 */
+    /* Primary: India Green #138808 for icons/accents */
     --primary: 115 89% 28%;
     --primary-foreground: 0 0% 100%;
     /* Secondary: Mint Green */
@@ -54,13 +54,14 @@
     @apply min-h-screen bg-background text-foreground antialiased font-sans;
   }
 
-  /* Forest Green for all primary buttons */
-  .btn-forest {
-    @apply bg-[#0B6623] hover:bg-[#0B6623]/90 text-white font-bold uppercase tracking-widest;
+  /* Forest Green for all primary buttons #0B6623 */
+  button.bg-primary, .btn-forest, [data-state=active] {
+    background-color: #0B6623 !important;
+    color: white !important;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply text-primary font-bold;
+    @apply text-foreground font-black uppercase tracking-tighter;
   }
 
   .interactive-hover {
