@@ -70,7 +70,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
 
     return (
         <Card 
-            className="flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white" 
+            className="flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white shadow-sm" 
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
             onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}
         >
@@ -287,18 +287,20 @@ export default function CampaignPage() {
     return items;
   }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, dateRange, selectedYear]);
 
-  const sections = [
-    { id: 'active', title: 'Active Campaigns', items: filteredCampaigns.filter(c => c.status === 'Active') },
-    { id: 'upcoming', title: 'Upcoming Campaigns', items: filteredCampaigns.filter(c => c.status === 'Upcoming') },
-    { id: 'completed', title: 'Completed Campaigns', items: filteredCampaigns.filter(c => c.status === 'Completed') }
-  ].filter(s => s.items.length > 0);
+  const sections = useMemo(() => {
+    return [
+      { id: 'active', title: 'Active Campaigns', items: filteredCampaigns.filter(c => c.status === 'Active') },
+      { id: 'upcoming', title: 'Upcoming Campaigns', items: filteredCampaigns.filter(c => c.status === 'Upcoming') },
+      { id: 'completed', title: 'Completed Campaigns', items: filteredCampaigns.filter(c => c.status === 'Completed') }
+    ].filter(s => s.items.length > 0);
+  }, [filteredCampaigns]);
 
   const isLoading = isProfileLoading || isDeleting || isDataLoading;
   
   if (!isLoading && userProfile && !canViewCampaigns) {
     return (
-      <main className="container mx-auto p-4 md:p-8">
-        <div className="mb-4"><Button variant="outline" asChild className="text-primary border-primary/20"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link></Button></div>
+      <main className="container mx-auto p-4 md:p-8 text-primary">
+        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 text-primary"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link></Button></div>
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Access Denied</AlertTitle>
@@ -312,8 +314,14 @@ export default function CampaignPage() {
     <>
       <main className="container mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <Button variant="outline" asChild size="sm" className="interactive-hover font-bold uppercase border-primary/20 text-primary"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
-          {canCreate && !isLoading && <Button asChild size="sm" className="font-black uppercase tracking-widest interactive-hover shadow-lg bg-primary hover:bg-primary/90 text-white"><Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New Campaign</Link></Button>}
+          <Button variant="outline" asChild size="sm" className="font-bold border-primary/20 text-primary hover:bg-primary/10">
+            <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link>
+          </Button>
+          {canCreate && !isLoading && (
+            <Button asChild size="sm" className="bg-success hover:bg-success/90 text-white font-bold">
+              <Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New Campaign</Link>
+            </Button>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -330,11 +338,11 @@ export default function CampaignPage() {
           <CardHeader className="p-4 sm:p-6 border-b bg-primary/5">
             <div className="flex flex-wrap items-center gap-3">
                 <Input placeholder="Search initiatives..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-bold" disabled={isLoading}/>
-                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-black uppercase border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-black uppercase border-primary/20 text-primary"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All Categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All Categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
                 <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
-                    <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-black uppercase border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                    <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-black uppercase border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                    <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+                    <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                     {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
                 </div>
             </div>

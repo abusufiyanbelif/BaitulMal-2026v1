@@ -336,8 +336,12 @@ export default function DonationsPage() {
         <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-black uppercase tracking-tighter text-primary">Donations Hub</h1>
             <div className="flex gap-2">
-                <Button variant="outline" onClick={handleSync} disabled={isSyncing} className="font-bold uppercase tracking-widest text-[10px] border-primary/20 text-primary"><DatabaseZap className="mr-2 h-4 w-4"/> Sync Hub</Button>
-                <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="font-black uppercase tracking-widest text-xs interactive-hover shadow-lg bg-primary hover:bg-primary/90 text-white"><PlusCircle className="mr-2 h-4 w-4" /> Add Record</Button>
+                <Button variant="outline" onClick={handleSync} disabled={isSyncing} className="font-bold uppercase tracking-widest text-[10px] border-primary/20 text-primary">
+                  <DatabaseZap className="mr-2 h-4 w-4"/> Sync Hub
+                </Button>
+                <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="bg-success hover:bg-success/90 text-white font-black uppercase tracking-widest text-xs">
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add Record
+                </Button>
             </div>
         </div>
 
