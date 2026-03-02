@@ -99,7 +99,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)} className="cursor-pointer font-normal">
+                        <DropdownMenuItem onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)} className="cursor-pointer font-bold">
                             <Edit className="mr-2 h-4 w-4" />
                             View Details
                         </DropdownMenuItem>
@@ -107,27 +107,27 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         {canUpdate && (
                             <>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="font-normal"><span>Change Status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="font-bold"><span>Change Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
                                             <DropdownMenuRadioGroup value={campaign.status} onValueChange={(value) => handleStatusUpdate(campaign, 'status', value)}>
-                                                <DropdownMenuRadioItem value="Upcoming" className="font-normal">Upcoming</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Active" className="font-normal">Active</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Completed" className="font-normal">Completed</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Upcoming" className="font-bold">Upcoming</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Active" className="font-bold">Active</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Completed" className="font-bold">Completed</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="font-normal"><span>Verification</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="font-bold"><span>Verification</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
                                             <DropdownMenuRadioGroup value={campaign.authenticityStatus} onValueChange={(value) => handleStatusUpdate(campaign, 'authenticityStatus', value as string)}>
-                                                <DropdownMenuRadioItem value="Pending Verification" className="font-normal">Pending</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Verified" className="font-normal">Verified</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="On Hold" className="font-normal">On Hold</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Rejected" className="font-normal">Rejected</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details" className="font-normal">Need Details</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Pending Verification" className="font-bold">Pending</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Verified" className="font-bold">Verified</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="On Hold" className="font-bold">On Hold</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Rejected" className="font-bold">Rejected</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details" className="font-bold">Need Details</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
@@ -136,7 +136,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         )}
                         <DropdownMenuSeparator />
                         {canCreate && (
-                            <DropdownMenuItem onClick={() => handleCopyClick(campaign)} className="cursor-pointer font-normal">
+                            <DropdownMenuItem onClick={() => handleCopyClick(campaign)} className="cursor-pointer font-bold">
                                 <Copy className="mr-2 h-4 w-4" />
                                 Copy Initiative
                             </DropdownMenuItem>
@@ -144,7 +144,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         {canDelete && (
                             <>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(campaign); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer font-normal">
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(campaign); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer font-bold">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Delete
                                 </DropdownMenuItem>
@@ -179,7 +179,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
           <CardFooter className="p-2 border-t bg-primary/5">
             <Button asChild className="w-full text-xs font-bold tracking-tight" size="sm" variant="ghost">
                 <Link href={`/campaign-members/${campaign.id}/summary`}>
-                    Manage Initiative
+                    View Details
                 </Link>
             </Button>
           </CardFooter>

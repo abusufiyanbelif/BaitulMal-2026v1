@@ -83,6 +83,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
@@ -156,6 +157,24 @@ export default function CampaignSummaryPage() {
             setNewDocuments([]);
         }
     }, [campaign, editMode]);
+
+    const beneficiaryGroups = useMemo(() => {
+        if (!campaign || !beneficiaries) return [];
+        
+        const categories = (campaign.itemCategories || []).filter(c => c.name !== 'Item Price List');
+        
+        return categories.map(cat => {
+            const count = beneficiaries.filter(b => b.itemCategoryId === cat.id).length;
+            const kitAmount = cat.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+            return {
+                id: cat.id,
+                name: cat.name,
+                count,
+                kitAmount,
+                totalAmount: count * kitAmount
+            };
+        });
+    }, [campaign, beneficiaries]);
 
     const fundingData = useMemo(() => {
         if (!allDonations || !campaign || !beneficiaries) return null;
@@ -443,6 +462,52 @@ export default function CampaignSummaryPage() {
                             <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Kits Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesGiven}</div></CardContent></Card>
                             <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesPending}</div></CardContent></Card>
                         </div>
+
+                        <Card className="shadow-sm border-primary/5 bg-white">
+                            <CardHeader>
+                                <CardTitle className="font-bold">Beneficiary Groups</CardTitle>
+                                <CardDescription>Breakdown of requirements by family size category.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="border rounded-lg overflow-hidden">
+                                    <Table>
+                                        <TableHeader className="bg-primary/5">
+                                            <TableRow>
+                                                <TableHead className="font-bold text-primary">Category Name</TableHead>
+                                                <TableHead className="text-right font-bold text-primary">Total Beneficiaries</TableHead>
+                                                <TableHead className="text-right font-bold text-primary">Kit Amount (per kit)</TableHead>
+                                                <TableHead className="text-right font-bold text-primary">Total Kit Amount (per category)</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {beneficiaryGroups.map((group) => (
+                                                <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
+                                                    <TableCell className="font-medium text-primary">{group.name}</TableCell>
+                                                    <TableCell className="text-right font-bold">{group.count}</TableCell>
+                                                    <TableCell className="text-right font-mono font-bold">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
+                                                    <TableCell className="text-right font-mono font-bold">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                            {beneficiaryGroups.length === 0 && (
+                                                <TableRow>
+                                                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">No categories defined yet.</TableCell>
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                        {beneficiaryGroups.length > 0 && (
+                                            <tfoot className="bg-primary/5 border-t">
+                                                <TableRow>
+                                                    <TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Total</TableCell>
+                                                    <TableCell className="text-right font-mono font-bold text-primary text-lg">
+                                                        ₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}
+                                                    </TableCell>
+                                                </TableRow>
+                                            </tfoot>
+                                        )}
+                                    </Table>
+                                </div>
+                            </CardContent>
+                        </Card>
 
                         <div className="grid gap-6 lg:grid-cols-2">
                             <Card className="shadow-sm border-primary/5 bg-white">

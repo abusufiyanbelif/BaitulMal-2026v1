@@ -79,7 +79,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onClick={() => router.push(`/leads-members/${lead.id}/summary`)} className="cursor-pointer font-normal">
+                        <DropdownMenuItem onClick={() => router.push(`/leads-members/${lead.id}/summary`)} className="cursor-pointer font-bold">
                             <Edit className="mr-2 h-4 w-4" />
                             View Details
                         </DropdownMenuItem>
@@ -87,27 +87,27 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                         {canUpdate && (
                             <>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="font-normal"><span>Change Status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="font-bold"><span>Change Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
                                             <DropdownMenuRadioGroup value={lead.status} onValueChange={(value) => handleStatusUpdate(lead, 'status', value)}>
-                                                <DropdownMenuRadioItem value="Upcoming" className="font-normal">Upcoming</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Active" className="font-normal">Active</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Completed" className="font-normal">Completed</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Upcoming" className="font-bold">Upcoming</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Active" className="font-bold">Active</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Completed" className="font-bold">Completed</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="font-normal"><span>Verification</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="font-bold"><span>Verification</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
                                             <DropdownMenuRadioGroup value={lead.authenticityStatus} onValueChange={(value) => handleStatusUpdate(lead, 'authenticityStatus', value as string)}>
-                                                <DropdownMenuRadioItem value="Pending Verification" className="font-normal">Pending</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Verified" className="font-normal">Verified</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="On Hold" className="font-normal">On Hold</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Rejected" className="font-normal">Rejected</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details" className="font-normal">Need Details</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Pending Verification" className="font-bold">Pending</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Verified" className="font-bold">Verified</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="On Hold" className="font-bold">On Hold</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Rejected" className="font-bold">Rejected</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details" className="font-bold">Need Details</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
@@ -116,7 +116,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                         )}
                         <DropdownMenuSeparator />
                         {canCreate && (
-                            <DropdownMenuItem onClick={() => handleCopyClick(lead)} className="cursor-pointer font-normal">
+                            <DropdownMenuItem onClick={() => handleCopyClick(lead)} className="cursor-pointer font-bold">
                                 <Copy className="mr-2 h-4 w-4" />
                                 Copy Appeal
                             </DropdownMenuItem>
@@ -124,7 +124,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                         {canDelete && (
                             <>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(lead); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer font-normal">
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(lead); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer font-bold">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Delete
                                 </DropdownMenuItem>
@@ -159,7 +159,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
          <CardFooter className="p-2 border-t bg-primary/5">
             <Button asChild className="w-full text-xs font-bold tracking-tight hover:bg-primary hover:text-white" size="sm" variant="ghost">
                 <Link href={`/leads-members/${lead.id}/summary`}>
-                    Manage Appeal
+                    View Details
                 </Link>
             </Button>
         </CardFooter>

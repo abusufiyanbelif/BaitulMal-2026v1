@@ -23,7 +23,7 @@ import {
 
 import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { ArrowLeft, Loader2, Share2, Hourglass, Users, Gift, Target, HandHelping, File, Utensils, LifeBuoy } from 'lucide-react';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
@@ -38,6 +38,7 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
@@ -76,6 +77,24 @@ export default function PublicCampaignSummaryPage() {
     const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
     
     const isLoading = isCampaignLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
+
+    const beneficiaryGroups = useMemo(() => {
+        if (!campaign || !beneficiaries) return [];
+        
+        const categories = (campaign.itemCategories || []).filter(c => c.name !== 'Item Price List');
+        
+        return categories.map(cat => {
+            const count = beneficiaries.filter(b => b.itemCategoryId === cat.id).length;
+            const kitAmount = cat.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+            return {
+                id: cat.id,
+                name: cat.name,
+                count,
+                kitAmount,
+                totalAmount: count * kitAmount
+            };
+        });
+    }, [campaign, beneficiaries]);
 
     const fundingData = useMemo(() => {
         if (!allDonations || !campaign || !beneficiaries) return null;
@@ -164,7 +183,7 @@ export default function PublicCampaignSummaryPage() {
     if (!campaign || campaign.publicVisibility !== 'Published') {
         return (
             <main className="container mx-auto p-4 md:p-8 text-center text-primary">
-                <p className="text-lg text-muted-foreground">This campaign is not publicly available.</p>
+                <p className="text-lg text-muted-foreground font-bold">This campaign is not publicly available.</p>
                 <Button asChild className="mt-4 active:scale-95 transition-transform font-bold">
                     <Link href="/campaign-public">
                         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Campaigns
@@ -188,7 +207,7 @@ export default function PublicCampaignSummaryPage() {
                     <Image src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`} alt={campaign.name} fill sizes="100vw" className="object-cover" priority />
                 ) : ( <FallbackIcon className="w-24 h-24 text-muted-foreground/30" /> )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-6"><h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{campaign.name}</h1><p className="text-sm text-white/90 shadow-md">{campaign.status}</p></div>
+                <div className="absolute bottom-0 left-0 p-6"><h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{campaign.name}</h1><p className="text-sm text-white/90 shadow-md font-bold">{campaign.status}</p></div>
             </div>
 
             <div className="flex justify-end items-center mb-4 flex-wrap gap-2">
@@ -197,24 +216,24 @@ export default function PublicCampaignSummaryPage() {
 
             <div className="space-y-6" ref={summaryRef}>
                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
-                    <CardHeader className="bg-primary/5"><CardTitle>Campaign Details</CardTitle></CardHeader>
+                    <CardHeader className="bg-primary/5"><CardTitle className="font-bold">Campaign Details</CardTitle></CardHeader>
                     <CardContent className="space-y-4 pt-6 text-foreground">
                         <div className="space-y-2 text-primary">
                             <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
-                            <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed">{campaign.description || 'No description provided.'}</p>
+                            <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed font-bold">{campaign.description || 'No description provided.'}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 text-primary">
-                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary">₹{(campaign.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
-                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground">Category</p><p className="mt-1 text-lg font-bold text-primary">{campaign.category}</p></div>
-                             <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground">Start Date</p><p className="mt-1 text-lg font-bold text-primary">{campaign.startDate}</p></div>
-                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground">End Date</p><p className="mt-1 text-lg font-bold text-primary">{campaign.endDate}</p></div>
+                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary">₹{(campaign.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
+                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase">Category</p><p className="mt-1 text-lg font-bold text-primary">{campaign.category}</p></div>
+                             <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase">Start Date</p><p className="mt-1 text-lg font-bold text-primary">{campaign.startDate}</p></div>
+                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase">End Date</p><p className="mt-1 text-lg font-bold text-primary">{campaign.endDate}</p></div>
                         </div>
                     </CardContent>
                 </Card>
 
                 {publicDocuments.length > 0 && (
                     <Card className="animate-fade-in-up bg-white border-primary/10" style={{ animationDelay: '100ms' }}>
-                        <CardHeader><CardTitle>Public Artifacts</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="font-bold">Public Artifacts</CardTitle></CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                 {publicDocuments.map((doc) => {
@@ -244,8 +263,8 @@ export default function PublicCampaignSummaryPage() {
                 {fundingData && (
                     <Card className="animate-fade-in-up shadow-sm border-primary/5 bg-white" style={{ animationDelay: '200ms' }}>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
-                            <CardDescription>Verified donations against the goal for this campaign.</CardDescription>
+                            <CardTitle className="flex items-center gap-2 font-bold"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
+                            <CardDescription className="font-bold">Verified donations against the goal for this campaign.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -276,20 +295,66 @@ export default function PublicCampaignSummaryPage() {
                     <Card className="animate-fade-in-up bg-white border-primary/10" style={{ animationDelay: '500ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Pending Kits</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
                 </div>
 
+                <Card className="shadow-sm border-primary/5 bg-white">
+                    <CardHeader>
+                        <CardTitle className="font-bold">Beneficiary Groups</CardTitle>
+                        <CardDescription>Breakdown of requirements by category.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="border rounded-lg overflow-hidden">
+                            <Table>
+                                <TableHeader className="bg-primary/5">
+                                    <TableRow>
+                                        <TableHead className="font-bold text-primary">Category Name</TableHead>
+                                        <TableHead className="text-right font-bold text-primary">Total Beneficiaries</TableHead>
+                                        <TableHead className="text-right font-bold text-primary">Kit Amount (per kit)</TableHead>
+                                        <TableHead className="text-right font-bold text-primary">Total Kit Amount (per category)</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {beneficiaryGroups.map((group) => (
+                                        <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
+                                            <TableCell className="font-bold text-primary">{group.name}</TableCell>
+                                            <TableCell className="text-right font-bold">{group.count}</TableCell>
+                                            <TableCell className="text-right font-mono font-bold">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
+                                            <TableCell className="text-right font-mono font-bold">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                    {beneficiaryGroups.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">No categories defined yet.</TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                                {beneficiaryGroups.length > 0 && (
+                                    <tfoot className="bg-primary/5 border-t">
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Total</TableCell>
+                                            <TableCell className="text-right font-mono font-bold text-primary text-lg">
+                                                ₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}
+                                            </TableCell>
+                                        </TableRow>
+                                    </tfoot>
+                                )}
+                            </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+
                 {fundingData && (
                     <div className="grid gap-6 lg:grid-cols-2">
                         <Card className="animate-fade-in-up shadow-sm border-primary/5 bg-white" style={{ animationDelay: '600ms' }}>
                             <CardHeader>
-                                <CardTitle>Zakat Utilization</CardTitle>
-                                <CardDescription>Tracking of Zakat funds collected and allocated within this initiative.</CardDescription>
+                                <CardTitle className="font-bold">Zakat Utilization</CardTitle>
+                                <CardDescription className="font-bold">Tracking of Zakat funds collected and allocated within this initiative.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                               <div className="flex justify-between items-center text-sm text-primary font-bold"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.fundTotals?.zakat || 0).toLocaleString('en-IN')}</span></div>
+                               <div className="flex justify-between items-center text-sm text-primary font-bold"><span className="text-muted-foreground uppercase tracking-tight">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.fundTotals?.zakat || 0).toLocaleString('en-IN')}</span></div>
                                 <Separator />
                                 <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
-                                    <div className="flex justify-between items-center text-sm text-primary font-bold"><span className="text-muted-foreground">Allocated as Cash-in-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
-                                    <div className="flex justify-between items-center text-xs pl-4 text-primary font-bold"><span className="text-muted-foreground">Given</span><span className="font-mono text-green-600 font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                     <div className="flex justify-between items-center text-xs pl-4 text-primary font-bold"><span className="text-muted-foreground">Pending</span><span className="font-mono text-amber-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                                    <div className="flex justify-between items-center text-sm text-primary font-bold"><span className="text-muted-foreground uppercase tracking-tight">Allocated as Cash-in-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
+                                    <div className="flex justify-between items-center text-xs pl-4 text-primary font-bold"><span className="text-muted-foreground uppercase tracking-tight">Given</span><span className="font-mono text-green-600 font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
+                                     <div className="flex justify-between items-center text-xs pl-4 text-primary font-bold"><span className="text-muted-foreground uppercase tracking-tight">Pending</span><span className="font-mono text-amber-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                 </div>
                                 <Separator />
                                 <div className="flex justify-between items-center text-base text-primary font-bold"><span>Zakat Balance for Goal</span><span className="text-primary font-mono font-bold">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
@@ -297,7 +362,7 @@ export default function PublicCampaignSummaryPage() {
                         </Card>
 
                         <Card className="animate-fade-in-up shadow-sm border-primary/5 bg-white" style={{ animationDelay: '700ms' }}>
-                            <CardHeader><CardTitle>Donations by Category</CardTitle></CardHeader>
+                            <CardHeader><CardTitle className="font-bold">Donations by Category</CardTitle></CardHeader>
                             <CardContent>
                                 {isClient ? (
                                   <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
