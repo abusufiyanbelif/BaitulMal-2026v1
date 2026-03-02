@@ -54,7 +54,7 @@ export function DocuExtractHeader() {
                 validLogoUrl && (
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
-                    alt="Baitulmal Logo"
+                    alt={`${brandingSettings?.name || 'Baitulmal'} Logo`}
                     width={brandingSettings?.logoWidth || 120}
                     height={brandingSettings?.logoHeight || 60}
                     className="object-contain drop-shadow-sm"
@@ -68,7 +68,7 @@ export function DocuExtractHeader() {
             )}
             </div>
           <h1 className="text-lg sm:text-xl md:text-2xl font-black font-headline text-foreground tracking-tight animate-fade-in-zoom" style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}>
-            {isBrandingLoading ? <Skeleton className="h-8 w-64 md:w-80" /> : (brandingSettings?.name || 'Baitulmal Solapur')}
+            {isBrandingLoading ? <Skeleton className="h-8 w-64 md:w-80" /> : (brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur')}
           </h1>
         </Link>
 

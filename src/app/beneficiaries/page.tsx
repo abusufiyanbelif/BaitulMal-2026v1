@@ -180,10 +180,10 @@ export default function BeneficiariesPage() {
             <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-3 rounded-lg border border-primary/10">
                 <div className="relative flex-1 min-w-[240px]">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-primary/50" />
-                    <Input placeholder="Search name or phone..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-9 h-9 text-xs border-primary/20 focus-visible:ring-primary" />
+                    <Input placeholder="Search name or phone..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-9 h-9 text-xs border-primary/20 focus-visible:ring-primary text-foreground" />
                 </div>
                 <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[140px] h-9 text-xs font-bold uppercase border-primary/20"><SelectValue placeholder="Status" /></SelectTrigger>
+                    <SelectTrigger className="w-[140px] h-9 text-xs font-bold uppercase border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
                     <SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Hold">Hold</SelectItem><SelectItem value="Need More Details">Need Details</SelectItem></SelectContent>
                 </Select>
             </div>
@@ -203,7 +203,7 @@ export default function BeneficiariesPage() {
                 <Accordion type="multiple" defaultValue={Object.keys(groupedBeneficiaries)} className="w-full">
                     {Object.entries(groupedBeneficiaries).map(([referral, list]) => (
                         <AccordionItem key={referral} value={referral} className="border-none">
-                            <AccordionTrigger className="hover:no-underline bg-primary/5 px-4 py-3 border-b border-primary/10 group [&[data-state=open]]:bg-primary/10 transition-colors">
+                            <AccordionTrigger className="hover:no-underline bg-primary/10 px-4 py-3 border-b border-primary/10 group transition-colors">
                                 <div className="flex items-center gap-3"><span className="text-sm font-black text-primary uppercase tracking-tight">{referral} ({list.length})</span></div>
                             </AccordionTrigger>
                             <AccordionContent className="p-0">
@@ -215,7 +215,7 @@ export default function BeneficiariesPage() {
                                         <div className="flex justify-center"><Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[9px] px-2 py-0 h-5 font-black uppercase tracking-tighter">{b.isEligibleForZakat ? 'YES' : 'NO'}</Badge></div>
                                         <div className="text-right font-mono font-bold text-primary">₹{(b.kitAmount || 0).toLocaleString()}</div>
                                         <div className="text-right font-mono text-muted-foreground">₹{(b.zakatAllocation || 0).toLocaleString()}</div>
-                                        <div className="text-right text-[10px] font-bold uppercase truncate pl-2">{b.referralBy}</div>
+                                        <div className="text-right text-[10px] font-bold uppercase truncate pl-2 text-foreground">{b.referralBy}</div>
                                         <div className="text-right">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>

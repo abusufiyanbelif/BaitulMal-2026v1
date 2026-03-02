@@ -369,7 +369,7 @@ export default function LeadSummaryPage() {
              <div className="mb-4"><Button variant="outline" asChild><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                  <div className="space-y-1">
-                    {editMode ? ( <Input id="name" value={editableLead.name || ''} onChange={(e) => setEditableLead(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0" /> ) : ( <h1 className="text-3xl font-bold">{lead.name}</h1> )}
+                    {editMode ? ( <Input id="name" value={editableLead.name || ''} onChange={(e) => setEditableLead(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-foreground" /> ) : ( <h1 className="text-3xl font-bold text-foreground">{lead.name}</h1> )}
                     {editMode ? (
                          <Select value={editableLead.status} onValueChange={(value) => setEditableLead(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1"><SelectValue placeholder="Select a status" /></SelectTrigger><SelectContent><SelectItem value="Upcoming">Upcoming</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem></SelectContent></Select>
                     ): ( <p className="text-muted-foreground">{lead.status}</p> )}
@@ -396,7 +396,7 @@ export default function LeadSummaryPage() {
             <div className="space-y-6" ref={summaryRef}>
                 {fundingData && (
                     <div className="grid gap-6 animate-fade-in-up">
-                        <Card className="shadow-sm border-primary/5">
+                        <Card className="shadow-sm border-primary/5 bg-white">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
                                 <CardDescription>Verified donations for this lead.</CardDescription>
@@ -415,40 +415,40 @@ export default function LeadSummaryPage() {
                                         <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground">Funded</span></div>
                                     </div>
                                     <div className="space-y-4 text-center md:text-left">
-                                        <div><p className="text-sm text-muted-foreground">Raised for Goal</p><p className="text-3xl font-bold">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                        <div><p className="text-sm text-muted-foreground">Raised for Goal</p><p className="text-3xl font-bold text-foreground">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
                                         <div><p className="text-sm text-muted-foreground">Target Goal</p><p className="text-3xl font-bold text-muted-foreground/60">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                        <div><p className="text-sm text-muted-foreground">Grand Total Received (All categories)</p><p className="text-2xl font-bold">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                        <div><p className="text-sm text-muted-foreground">Grand Total Received (All categories)</p><p className="text-2xl font-bold text-foreground">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
                         <div className="grid gap-6 sm:grid-cols-3">
-                            <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{fundingData.totalBeneficiaries}</div></CardContent></Card>
-                            <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Assistance Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{fundingData.beneficiariesGiven}</div></CardContent></Card>
-                            <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{fundingData.beneficiariesPending}</div></CardContent></Card>
+                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-foreground">{fundingData.totalBeneficiaries}</div></CardContent></Card>
+                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Assistance Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-foreground">{fundingData.beneficiariesGiven}</div></CardContent></Card>
+                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-foreground">{fundingData.beneficiariesPending}</div></CardContent></Card>
                         </div>
 
                         <div className="grid gap-6 lg:grid-cols-2">
-                            <Card className="shadow-sm border-primary/5">
+                            <Card className="shadow-sm border-primary/5 bg-white">
                                 <CardHeader>
                                     <CardTitle>Zakat Utilization</CardTitle>
                                     <CardDescription>Tracking of Zakat funds collected and allocated.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
-                                    <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-semibold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
+                                    <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-semibold font-mono text-foreground">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
                                     <Separator />
                                     <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
-                                        <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Allocated as Cash-in-Hand</span><span className="font-semibold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Allocated as Cash-in-Hand</span><span className="font-semibold font-mono text-foreground">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
                                         <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground">Paid out</span><span className="font-mono text-green-600">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
                                         <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground">Remaining to Pay</span><span className="font-mono text-amber-600">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                     </div>
                                     <Separator />
-                                    <div className="flex justify-between items-center text-base"><span className="font-bold">Zakat Balance for Goal</span><span className="font-bold text-primary font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
+                                    <div className="flex justify-between items-center text-base"><span className="font-bold text-foreground">Zakat Balance for Goal</span><span className="font-bold text-primary font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
                                 </CardContent>
                             </Card>
 
-                            <Card className="shadow-sm border-primary/5">
+                            <Card className="shadow-sm border-primary/5 bg-white">
                                 <CardHeader><CardTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5"/> Donations by Category</CardTitle></CardHeader>
                                 <CardContent>
                                     {isClient ? (
@@ -464,7 +464,7 @@ export default function LeadSummaryPage() {
                     </div>
                 )}
 
-                 <Card className="animate-fade-in-zoom shadow-md border-primary/10">
+                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
                         <CardHeader className="bg-primary/5"><CardTitle>Lead Details</CardTitle></CardHeader>
                         <CardContent className="space-y-4 pt-6">
                             {editMode ? (
@@ -476,10 +476,10 @@ export default function LeadSummaryPage() {
                                             {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-2 text-sm text-center text-muted-foreground"><span className="font-semibold text-primary">Click to upload</span></p></div> )}
                                         </label>
                                     </div>
-                                    <div><Label htmlFor="description">Description</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} /></div>
+                                    <div><Label htmlFor="description">Description</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} className="text-foreground" /></div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1"><Label htmlFor="requiredAmount">Req. Amount (₹)</Label><Input id="requiredAmount" type="number" value={editableLead.requiredAmount || 0} onChange={(e) => handleFieldChange('requiredAmount', e.target.value)} /></div>
-                                        <div className="space-y-1"><Label htmlFor="targetAmount">Goal (₹)</Label><Input id="targetAmount" type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} /></div>
+                                        <div className="space-y-1"><Label htmlFor="requiredAmount">Req. Amount (₹)</Label><Input id="requiredAmount" type="number" value={editableLead.requiredAmount || 0} onChange={(e) => handleFieldChange('requiredAmount', e.target.value)} className="text-foreground" /></div>
+                                        <div className="space-y-1"><Label htmlFor="targetAmount">Goal (₹)</Label><Input id="targetAmount" type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-foreground" /></div>
                                     </div>
                                 </div>
                             ) : (
@@ -489,20 +489,20 @@ export default function LeadSummaryPage() {
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
-                                        <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed">{lead.description || 'No description provided.'}</p>
+                                        <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed text-foreground/90">{lead.description || 'No description provided.'}</p>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Purpose</p><p className="font-semibold">{lead.purpose} {lead.category && `(${lead.category})`}</p></div>
-                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Target Goal</p><p className="font-semibold font-mono">₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Start Date</p><p className="font-semibold">{lead.startDate || 'N/A'}</p></div>
-                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">End Date</p><p className="font-semibold">{lead.endDate || 'N/A'}</p></div>
+                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Purpose</p><p className="font-semibold text-foreground">{lead.purpose} {lead.category && `(${lead.category})`}</p></div>
+                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Target Goal</p><p className="font-semibold font-mono text-foreground">₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Start Date</p><p className="font-semibold text-foreground">{lead.startDate || 'N/A'}</p></div>
+                                        <div className="space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">End Date</p><p className="font-semibold text-foreground">{lead.endDate || 'N/A'}</p></div>
                                     </div>
                                 </>
                             )}
                         </CardContent>
                     </Card>
 
-                    <Card className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                    <Card className="animate-fade-in-up bg-white" style={{ animationDelay: '100ms' }}>
                         <CardHeader><CardTitle>Lead Artifacts</CardTitle></CardHeader>
                         <CardContent>
                            {editMode ? (
@@ -516,10 +516,10 @@ export default function LeadSummaryPage() {
                                             {existingDocuments.map((doc) => (
                                                 <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md gap-4">
                                                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:underline truncate"><p className="truncate">{doc.name}</p></a>
+                                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:underline truncate text-foreground"><p className="truncate">{doc.name}</p></a>
                                                     </div>
                                                     <div className="flex items-center gap-4">
-                                                        <div className="flex items-center gap-2"><Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} /><Label className="text-xs">Public</Label></div>
+                                                        <div className="flex items-center gap-2"><Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} /><Label className="text-xs text-foreground">Public</Label></div>
                                                         <Button variant="ghost" size="icon" onClick={() => handleRemoveExistingDocument(doc.url)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                                     </div>
                                                 </div>
@@ -531,15 +531,15 @@ export default function LeadSummaryPage() {
                                 lead.documents && lead.documents.length > 0 ? (
                                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                         {lead.documents.map((doc) => (
-                                            <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all flex flex-col active:scale-95">
+                                            <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all flex flex-col active:scale-95 bg-white border-primary/10">
                                                 <a href={doc.url} target="_blank" rel="noopener noreferrer" className="group block flex-grow">
                                                     <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
                                                         <File className="w-10 h-10 text-muted-foreground" />
                                                     </div>
-                                                    <div className="p-2 text-center text-[10px] font-medium truncate">{doc.name}</div>
+                                                    <div className="p-2 text-center text-[10px] font-medium truncate text-foreground">{doc.name}</div>
                                                 </a>
                                                 <CardFooter className="p-2 border-t mt-auto flex justify-center w-full gap-2">
-                                                    {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-xs">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"}>{doc.isPublic ? "Public" : "Private"}</Badge> )}
+                                                    {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-xs text-foreground">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"}>{doc.isPublic ? "Public" : "Private"}</Badge> )}
                                                 </CardFooter>
                                             </Card>
                                         ))}

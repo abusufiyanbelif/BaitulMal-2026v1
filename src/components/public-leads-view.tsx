@@ -34,7 +34,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                 return (
                     <Card 
                         key={lead.id} 
-                        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/10" 
+                        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/10 bg-white" 
                         style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
                         onClick={() => router.push(`/leads-public/${lead.id}/summary`)}
                     >

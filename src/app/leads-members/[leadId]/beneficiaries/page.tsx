@@ -287,7 +287,7 @@ export default function BeneficiariesPage() {
                     <Accordion type="multiple" defaultValue={Object.keys(groupedBeneficiaries)} className="w-full">
                         {Object.entries(groupedBeneficiaries).map(([catName, list]) => (
                             <AccordionItem key={catName} value={catName} className="border-none">
-                                <AccordionTrigger className="hover:no-underline bg-primary/5 px-4 py-3 border-b border-primary/10 group [&[data-state=open]]:bg-primary/10 transition-colors">
+                                <AccordionTrigger className="hover:no-underline bg-primary/10 px-4 py-3 border-b border-primary/10 group transition-colors">
                                     <div className="flex items-center gap-3"><span className="text-sm font-black text-primary uppercase tracking-tight">{catName} ({list.length})</span></div>
                                 </AccordionTrigger>
                                 <AccordionContent className="p-0">

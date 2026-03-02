@@ -341,7 +341,7 @@ export default function DonationsPage() {
             </div>
         </div>
 
-        <Card className="shadow-md border-primary/10">
+        <Card className="shadow-md border-primary/10 bg-white">
             <CardHeader className="bg-primary/5 p-4 border-b">
                 <div className="flex flex-wrap gap-2">
                     <Input placeholder="Search donor, phone, ID..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-primary text-foreground"/>
