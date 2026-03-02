@@ -19,18 +19,42 @@ import {
   RadialBarChart,
   RadialBar,
   PolarAngleAxis,
+  PieChart,
+  Pie
 } from 'recharts';
 
 import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Share2, Hourglass, Users, Gift, Target, HandHelping, File, Utensils, LifeBuoy } from 'lucide-react';
+import { 
+    ArrowLeft, 
+    Loader2, 
+    Share2, 
+    Hourglass, 
+    Users, 
+    Gift, 
+    Target, 
+    HandHelping, 
+    File, 
+    Utensils, 
+    LifeBuoy,
+    TrendingUp,
+    PieChart as PieChartIcon,
+    ZoomIn,
+    ZoomOut,
+    RotateCw,
+    RefreshCw,
+    ImageIcon
+} from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import Image from 'next/image';
@@ -39,6 +63,7 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
@@ -51,6 +76,13 @@ const donationCategoryChartConfig = {
     'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-8))" },
 } satisfies ChartConfig;
 
+const donationPaymentTypeChartConfig = {
+    Cash: { label: "Cash", color: "hsl(var(--chart-1))" },
+    'Online Payment': { label: "Online Payment", color: "hsl(var(--chart-2))" },
+    Check: { label: "Check", color: "hsl(var(--chart-5))" },
+    Other: { label: "Other", color: "hsl(var(--chart-4))" },
+} satisfies ChartConfig;
+
 export default function PublicCampaignSummaryPage() {
     const params = useParams();
     const campaignId = params.campaignId as string;
@@ -61,12 +93,15 @@ export default function PublicCampaignSummaryPage() {
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
 
+    const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+    const [imageToView, setImageToView] = useState<{url: string, name: string} | null>(null);
+    const [zoom, setZoom] = useState(1);
+    const [rotation, setRotation] = useState(0);
+
     const summaryRef = useRef<HTMLDivElement>(null);
     const [isClient, setIsClient] = useState(false);
 
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
+    useEffect(() => { setIsClient(true); }, []);
 
     const campaignDocRef = useMemoFirebase(() => (firestore && campaignId) ? doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign> : null, [firestore, campaignId]);
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && campaignId) ? collection(firestore, `campaigns/${campaignId}/beneficiaries`) : null, [firestore, campaignId]);
@@ -80,19 +115,11 @@ export default function PublicCampaignSummaryPage() {
 
     const beneficiaryGroups = useMemo(() => {
         if (!campaign || !beneficiaries) return [];
-        
         const categories = (campaign.itemCategories || []).filter(c => c.name !== 'Item Price List');
-        
         return categories.map(cat => {
             const count = beneficiaries.filter(b => b.itemCategoryId === cat.id).length;
             const kitAmount = cat.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
-            return {
-                id: cat.id,
-                name: cat.name,
-                count,
-                kitAmount,
-                totalAmount: count * kitAmount
-            };
+            return { id: cat.id, name: cat.name, count, kitAmount, totalAmount: count * kitAmount };
         });
     }, [campaign, beneficiaries]);
 
@@ -109,6 +136,7 @@ export default function PublicCampaignSummaryPage() {
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
+        const amountsByPaymentType: Record<string, number> = {};
         let zakatForGoalAmount = 0;
 
         verifiedDonationsList.forEach(d => {
@@ -121,6 +149,9 @@ export default function PublicCampaignSummaryPage() {
             } else { return; }
 
             if (amountForThisCampaign === 0) return;
+
+            const paymentType = d.donationType || 'Other';
+            amountsByPaymentType[paymentType] = (amountsByPaymentType[paymentType] || 0) + 1;
 
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
             const proportionForThisCampaign = amountForThisCampaign / totalDonationAmount;
@@ -150,26 +181,24 @@ export default function PublicCampaignSummaryPage() {
                 return sum + amount;
             }, 0);
 
-        const fundingGoal = campaign.targetAmount || 0;
-        const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
-        
-        const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
-        const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
-
-        const fundTotals = {
-            fitra: amountsByCategory['Fitra'] || 0,
-            zakat: amountsByCategory['Zakat'] || 0,
-            sadaqah: amountsByCategory['Sadaqah'] || 0,
-            fidiya: amountsByCategory['Fidiya'] || 0,
-            interest: amountsByCategory['Interest'] || 0,
-            lillah: amountsByCategory['Lillah'] || 0,
-            loan: amountsByCategory['Loan'] || 0,
-            monthlyContribution: amountsByCategory['Monthly Contribution'] || 0,
+        return { 
+            totalCollectedForGoal, 
+            fundingProgress: (campaign.targetAmount || 0) > 0 ? (totalCollectedForGoal / campaign.targetAmount!) * 100 : 0, 
+            targetAmount: campaign.targetAmount || 0, 
+            totalBeneficiaries: beneficiaries.length, 
+            beneficiariesGiven: beneficiaries.filter(b => b.status === 'Given').length, 
+            beneficiariesPending: beneficiaries.length - beneficiaries.filter(b => b.status === 'Given').length, 
+            zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, amountsByCategory, amountsByPaymentType,
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
-
-        return { totalCollectedForGoal, fundingProgress, targetAmount: fundingGoal, totalBeneficiaries: beneficiaries.length, beneficiariesGiven, beneficiariesPending, zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, amountsByCategory, fundTotals, grandTotal: fundTotals.grandTotal };
     }, [allDonations, campaign, beneficiaries]);
+
+    const paymentTypeChartData = useMemo(() => {
+        if (!fundingData?.amountsByPaymentType) return [];
+        return Object.entries(fundingData.amountsByPaymentType).map(([name, value]) => ({
+            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})`
+        }));
+    }, [fundingData]);
 
     const handleShare = async () => {
         if (!campaign) return;
@@ -178,31 +207,33 @@ export default function PublicCampaignSummaryPage() {
         setIsShareDialogOpen(true);
     };
 
+    const handleViewImage = (url: string, name: string) => {
+        setImageToView({ url, name });
+        setZoom(1);
+        setRotation(0);
+        setIsImageViewerOpen(true);
+    };
+
     if (isLoading) return <BrandedLoader />;
 
     if (!campaign || campaign.publicVisibility !== 'Published') {
         return (
-            <main className="container mx-auto p-4 md:p-8 text-center text-primary">
-                <p className="text-lg text-muted-foreground font-bold">This campaign is not publicly available.</p>
-                <Button asChild className="mt-4 active:scale-95 transition-transform font-bold">
-                    <Link href="/campaign-public">
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Campaigns
-                    </Link>
-                </Button>
+            <main className="container mx-auto p-4 md:p-8 text-center text-primary font-bold">
+                <p className="text-lg text-muted-foreground">This campaign is not publicly available.</p>
+                <Button asChild className="mt-4 active:scale-95 transition-transform"><Link href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Campaigns</Link></Button>
             </main>
         );
     }
     
     const publicDocuments = campaign.documents?.filter(d => d.isPublic) || [];
     const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
-
     const chartData = fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary">
              <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform font-bold"><Link href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
             
-            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center">
+            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center cursor-pointer" onClick={() => campaign.imageUrl && handleViewImage(campaign.imageUrl, campaign.name)}>
                 {campaign.imageUrl ? (
                     <Image src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`} alt={campaign.name} fill sizes="100vw" className="object-cover" priority />
                 ) : ( <FallbackIcon className="w-24 h-24 text-muted-foreground/30" /> )}
@@ -218,11 +249,11 @@ export default function PublicCampaignSummaryPage() {
                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
                     <CardHeader className="bg-primary/5"><CardTitle className="font-bold">Campaign Details</CardTitle></CardHeader>
                     <CardContent className="space-y-4 pt-6 text-foreground">
-                        <div className="space-y-2 text-primary">
+                        <div className="space-y-2 text-primary font-bold">
                             <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
-                            <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed font-bold">{campaign.description || 'No description provided.'}</p>
+                            <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed">{campaign.description || 'No description provided.'}</p>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 text-primary">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 text-primary font-bold">
                             <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary">₹{(campaign.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
                             <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase">Category</p><p className="mt-1 text-lg font-bold text-primary">{campaign.category}</p></div>
                              <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase">Start Date</p><p className="mt-1 text-lg font-bold text-primary">{campaign.startDate}</p></div>
@@ -237,21 +268,17 @@ export default function PublicCampaignSummaryPage() {
                         <CardContent>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                 {publicDocuments.map((doc) => {
-                                    const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+                                    const isImg = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
                                     return (
-                                        <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col hover:-translate-y-1 bg-white border-primary/10">
-                                            <a href={doc.url} target="_blank" rel="noopener noreferrer" className="group block h-full">
+                                        <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col hover:-translate-y-1 bg-white border-primary/10 cursor-pointer" onClick={() => isImg ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}>
+                                            <div className="group block h-full">
                                                 <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
-                                                    {isImage ? (
-                                                        <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="100vw" className="object-cover" />
-                                                    ) : (
-                                                        <File className="w-10 h-10 text-muted-foreground" />
-                                                    )}
+                                                    {isImg ? <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="100vw" className="object-cover" /> : <File className="w-10 h-10 text-muted-foreground" />}
                                                 </div>
-                                                <div className="p-2 text-center text-primary">
-                                                    <p className="text-[10px] font-bold truncate group-hover:underline">{doc.name}</p>
+                                                <div className="p-2 text-center text-primary font-bold">
+                                                    <p className="text-[10px] truncate group-hover:underline">{doc.name}</p>
                                                 </div>
-                                            </a>
+                                            </div>
                                         </Card>
                                     )
                                 })}
@@ -261,123 +288,157 @@ export default function PublicCampaignSummaryPage() {
                 )}
 
                 {fundingData && (
-                    <Card className="animate-fade-in-up shadow-sm border-primary/5 bg-white" style={{ animationDelay: '200ms' }}>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 font-bold"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
-                            <CardDescription className="font-bold">Verified donations against the goal for this campaign.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                                <div className="relative h-48 w-full">
-                                    {isClient ? (
-                                        <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
-                                            <RadialBarChart data={[{ name: 'Progress', value: fundingData.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
-                                                <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                                <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} />
-                                            </RadialBarChart>
-                                        </ChartContainer>
-                                    ) : <Skeleton className="w-full h-full rounded-full" />}
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold">Funded</span></div>
-                                </div>
-                                <div className="space-y-4 text-center md:text-left text-primary">
-                                    <div><p className="text-sm text-muted-foreground uppercase font-bold tracking-tighter">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                    <div><p className="text-sm text-muted-foreground uppercase font-bold tracking-tighter">Fundraising Target</p><p className="text-3xl font-bold text-primary">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                    <div><p className="text-sm text-muted-foreground uppercase font-bold tracking-tighter">Grand Total Received</p><p className="text-3xl font-bold text-primary">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-
-                <div className="grid gap-6 sm:grid-cols-3">
-                    <Card className="animate-fade-in-up bg-white border-primary/10" style={{ animationDelay: '300ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
-                    <Card className="animate-fade-in-up bg-white border-primary/10" style={{ animationDelay: '400ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Kits Provided</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
-                    <Card className="animate-fade-in-up bg-white border-primary/10" style={{ animationDelay: '500ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Pending Kits</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
-                </div>
-
-                <Card className="shadow-sm border-primary/5 bg-white">
-                    <CardHeader>
-                        <CardTitle className="font-bold">Beneficiary Groups</CardTitle>
-                        <CardDescription>Breakdown of requirements by category.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="border rounded-lg overflow-hidden">
-                            <Table>
-                                <TableHeader className="bg-primary/5">
-                                    <TableRow>
-                                        <TableHead className="font-bold text-primary">Category Name</TableHead>
-                                        <TableHead className="text-right font-bold text-primary">Total Beneficiaries</TableHead>
-                                        <TableHead className="text-right font-bold text-primary">Kit Amount (per kit)</TableHead>
-                                        <TableHead className="text-right font-bold text-primary">Total Kit Amount (per category)</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {beneficiaryGroups.map((group) => (
-                                        <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
-                                            <TableCell className="font-bold text-primary">{group.name}</TableCell>
-                                            <TableCell className="text-right font-bold">{group.count}</TableCell>
-                                            <TableCell className="text-right font-mono font-bold">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
-                                            <TableCell className="text-right font-mono font-bold">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                    {beneficiaryGroups.length === 0 && (
-                                        <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">No categories defined yet.</TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                                {beneficiaryGroups.length > 0 && (
-                                    <tfoot className="bg-primary/5 border-t">
-                                        <TableRow>
-                                            <TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Total</TableCell>
-                                            <TableCell className="text-right font-mono font-bold text-primary text-lg">
-                                                ₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}
-                                            </TableCell>
-                                        </TableRow>
-                                    </tfoot>
-                                )}
-                            </Table>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {fundingData && (
-                    <div className="grid gap-6 lg:grid-cols-2">
-                        <Card className="animate-fade-in-up shadow-sm border-primary/5 bg-white" style={{ animationDelay: '600ms' }}>
+                    <div className="grid gap-6 animate-fade-in-up">
+                        <Card className="shadow-sm border-primary/5 bg-white">
                             <CardHeader>
-                                <CardTitle className="font-bold">Zakat Utilization</CardTitle>
-                                <CardDescription className="font-bold">Tracking of Zakat funds collected and allocated within this initiative.</CardDescription>
+                                <CardTitle className="flex items-center gap-2 font-bold"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
+                                <CardDescription className="font-bold">Verified donations against the goal for this campaign.</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-3">
-                               <div className="flex justify-between items-center text-sm text-primary font-bold"><span className="text-muted-foreground uppercase tracking-tight">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.fundTotals?.zakat || 0).toLocaleString('en-IN')}</span></div>
-                                <Separator />
-                                <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
-                                    <div className="flex justify-between items-center text-sm text-primary font-bold"><span className="text-muted-foreground uppercase tracking-tight">Allocated as Cash-in-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
-                                    <div className="flex justify-between items-center text-xs pl-4 text-primary font-bold"><span className="text-muted-foreground uppercase tracking-tight">Given</span><span className="font-mono text-green-600 font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                     <div className="flex justify-between items-center text-xs pl-4 text-primary font-bold"><span className="text-muted-foreground uppercase tracking-tight">Pending</span><span className="font-mono text-amber-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                                    <div className="relative h-48 w-full">
+                                        {isClient ? (
+                                            <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
+                                                <RadialBarChart data={[{ name: 'Progress', value: fundingData.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
+                                                    <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                                    <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} />
+                                                </RadialBarChart>
+                                            </ChartContainer>
+                                        ) : <Skeleton className="w-full h-full rounded-full" />}
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold">Funded</span></div>
+                                    </div>
+                                    <div className="space-y-4 text-center md:text-left text-primary font-bold">
+                                        <div><p className="text-sm text-muted-foreground uppercase tracking-tighter">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                        <div><p className="text-sm text-muted-foreground uppercase tracking-tighter">Fundraising Target</p><p className="text-3xl font-bold text-primary">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                        <div><p className="text-sm text-muted-foreground uppercase tracking-tighter">Grand Total Received</p><p className="text-3xl font-bold text-primary">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                    </div>
                                 </div>
-                                <Separator />
-                                <div className="flex justify-between items-center text-base text-primary font-bold"><span>Zakat Balance for Goal</span><span className="text-primary font-mono font-bold">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
                             </CardContent>
                         </Card>
 
-                        <Card className="animate-fade-in-up shadow-sm border-primary/5 bg-white" style={{ animationDelay: '700ms' }}>
-                            <CardHeader><CardTitle className="font-bold">Donations by Category</CardTitle></CardHeader>
+                        <div className="grid gap-6 sm:grid-cols-3">
+                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
+                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Kits Provided</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
+                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Pending Kits</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
+                        </div>
+
+                        <Card className="shadow-sm border-primary/5 bg-white">
+                            <CardHeader><CardTitle className="font-bold">Beneficiary Groups</CardTitle><CardDescription className="font-bold">Breakdown of requirements by category.</CardDescription></CardHeader>
                             <CardContent>
-                                {isClient ? (
-                                  <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                      <BarChart data={chartData} layout="vertical" margin={{ right: 20 }}>
-                                          <CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4}>{chartData.map((entry) => (<Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />))}</Bar>
-                                      </BarChart>
-                                  </ChartContainer>
-                                ) : <Skeleton className="h-[250px] w-full" />}
+                                <div className="border rounded-lg overflow-hidden">
+                                    <Table>
+                                        <TableHeader className="bg-primary/5">
+                                            <TableRow>
+                                                <TableHead className="font-bold text-primary">Category Name</TableHead>
+                                                <TableHead className="text-right font-bold text-primary">Total Beneficiaries</TableHead>
+                                                <TableHead className="text-right font-bold text-primary">Kit Amount (per kit)</TableHead>
+                                                <TableHead className="text-right font-bold text-primary">Total Kit Amount (per category)</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {beneficiaryGroups.map((group) => (
+                                                <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
+                                                    <TableCell className="font-bold text-primary">{group.name}</TableCell>
+                                                    <TableCell className="text-right font-bold">{group.count}</TableCell>
+                                                    <TableCell className="text-right font-mono font-bold">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
+                                                    <TableCell className="text-right font-mono font-bold">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                        {beneficiaryGroups.length > 0 && (
+                                            <tfoot className="bg-primary/5 border-t">
+                                                <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Total</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell></TableRow>
+                                            </tfoot>
+                                        )}
+                                    </Table>
+                                </div>
                             </CardContent>
                         </Card>
+
+                        <div className="grid gap-6 lg:grid-cols-2">
+                            <Card className="shadow-sm border-primary/5 bg-white">
+                                <CardHeader><CardTitle className="font-bold text-primary">Fund Totals by Type</CardTitle></CardHeader>
+                                <CardContent className="space-y-2">
+                                    {donationCategories.map(cat => (
+                                        <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary">
+                                            <span className="text-muted-foreground font-normal">{cat === 'Interest' ? 'Interest (for disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
+                                            <span className="font-mono">₹{(fundingData.amountsByCategory[cat] || 0).toLocaleString('en-IN')}</span>
+                                        </div>
+                                    ))}
+                                    <Separator className="my-2" />
+                                    <div className="flex justify-between items-center text-lg font-bold text-primary"><span>Grand Total Received</span><span className="font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</span></div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="shadow-sm border-primary/5 bg-white">
+                                <CardHeader><CardTitle className="font-bold">Zakat Utilization</CardTitle><CardDescription className="font-bold">Tracking of Zakat funds collected and allocated.</CardDescription></CardHeader>
+                                <CardContent className="space-y-3">
+                                   <div className="flex justify-between items-center text-sm text-primary font-bold"><span className="text-muted-foreground font-normal uppercase tracking-tight">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.amountsByCategory.Zakat || 0).toLocaleString('en-IN')}</span></div>
+                                    <Separator />
+                                    <div className="pl-4 border-l-2 border-dashed space-y-2 py-2 text-primary font-bold">
+                                        <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground font-normal uppercase tracking-tight">Allocated as Cash-in-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground font-normal uppercase tracking-tight">Given</span><span className="font-mono text-green-600 font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
+                                         <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground font-normal uppercase tracking-tight">Pending</span><span className="font-mono text-amber-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                                    </div>
+                                    <Separator />
+                                    <div className="flex justify-between items-center text-base text-primary font-bold"><span>Zakat Balance for Goal</span><span className="text-primary font-mono font-bold">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        <div className="grid gap-6 lg:grid-cols-2">
+                            <Card className="shadow-sm border-primary/5 bg-white">
+                                <CardHeader><CardTitle className="font-bold">Donations by Category</CardTitle></CardHeader>
+                                <CardContent>
+                                    {isClient ? (
+                                      <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
+                                          <BarChart data={chartData} layout="vertical" margin={{ right: 20 }}>
+                                              <CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4}>{chartData.map((entry) => (<Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />))}</Bar>
+                                          </BarChart>
+                                      </ChartContainer>
+                                    ) : <Skeleton className="h-[250px] w-full" />}
+                                </CardContent>
+                            </Card>
+
+                            <Card className="shadow-sm border-primary/5 bg-white">
+                                <CardHeader><CardTitle className="flex items-center gap-2 font-bold"><PieChartIcon className="h-5 w-5"/> Donations by Payment Type</CardTitle></CardHeader>
+                                <CardContent>
+                                    {isClient ? (
+                                        <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
+                                            <PieChart>
+                                                <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                                <Pie data={paymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80}>
+                                                    {paymentTypeChartData.map((entry) => (<Cell key={`cell-${entry.name}`} fill={entry.fill} />))}
+                                                </Pie>
+                                                <ChartLegend content={<ChartLegendContent />} />
+                                            </PieChart>
+                                        </ChartContainer>
+                                    ) : <Skeleton className="h-[250px] w-full" />}
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
                 )}
             </div>
 
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
+
+            <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
+                <DialogContent className="max-w-4xl">
+                    <DialogHeader><DialogTitle className="font-bold">{imageToView?.name}</DialogTitle></DialogHeader>
+                    {imageToView && (
+                        <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
+                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                        </div>
+                    )}
+                    <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold"><ZoomIn className="mr-2 h-4 w-4"/> Zoom In</Button>
+                        <Button variant="outline" size="sm" onClick={() => setZoom(z => z / 1.2)} className="font-bold"><ZoomOut className="mr-2 h-4 w-4"/> Zoom Out</Button>
+                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold"><RotateCw className="mr-2 h-4 w-4"/> Rotate</Button>
+                        <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold"><RefreshCw className="mr-2 h-4 w-4"/> Reset</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </main>
     );
 }

@@ -194,7 +194,7 @@ export default function LeadPage() {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
           return {
               id: c.id,
-              text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
+              text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/campaign-members/${c.id}/summary`
           };
       });
@@ -205,7 +205,7 @@ export default function LeadPage() {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
           return {
               id: l.id,
-              text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
+              text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/leads-members/${l.id}/summary`
           };
       });

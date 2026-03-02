@@ -48,16 +48,23 @@ import {
     Users,
     Gift,
     Hourglass,
-    TrendingUp
+    TrendingUp,
+    PieChart as PieChartIcon,
+    ZoomIn,
+    ZoomOut,
+    RotateCw,
+    RefreshCw,
+    ImageIcon
 } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
 import { Label } from '@/components/ui/label';
 import { cn, getNestedValue } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
 import { Badge } from '@/components/ui/badge';
@@ -78,11 +85,15 @@ import {
   RadialBarChart,
   RadialBar,
   PolarAngleAxis,
+  PieChart,
+  Pie
 } from 'recharts';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent
 } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -96,6 +107,13 @@ const donationCategoryChartConfig = {
     Interest: { label: "Interest", color: "hsl(var(--chart-5))" },
     Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
     'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-8))" },
+} satisfies ChartConfig;
+
+const donationPaymentTypeChartConfig = {
+    Cash: { label: "Cash", color: "hsl(var(--chart-1))" },
+    'Online Payment': { label: "Online Payment", color: "hsl(var(--chart-2))" },
+    Check: { label: "Check", color: "hsl(var(--chart-5))" },
+    Other: { label: "Other", color: "hsl(var(--chart-4))" },
 } satisfies ChartConfig;
 
 export default function LeadSummaryPage() {
@@ -123,15 +141,21 @@ export default function LeadSummaryPage() {
 
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
+
+    const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+    const [imageToView, setImageToView] = useState<{url: string, name: string} | null>(null);
+    const [zoom, setZoom] = useState(1);
+    const [rotation, setRotation] = useState(0);
+
     const summaryRef = useRef<HTMLDivElement>(null);
 
     const leadDocRef = useMemoFirebase(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
     const allDonationsCollectionRef = useMemoFirebase(() => (firestore) ? collection(firestore, 'donations') : null, [firestore]);
 
-    const { data: lead, isLoading: isLeadLoading, error: leadError } = useDoc<Lead>(leadDocRef);
-    const { data: beneficiaries, isLoading: areBeneficiariesLoading, error: beneficiariesError } = useCollection<Beneficiary>(beneficiariesCollectionRef);
-    const { data: allDonations, isLoading: areDonationsLoading, error: donationsError } = useCollection<Donation>(allDonationsCollectionRef);
+    const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
+    const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
+    const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
     
     useEffect(() => { setIsClient(true); }, []);
 
@@ -165,19 +189,11 @@ export default function LeadSummaryPage() {
 
     const beneficiaryGroups = useMemo(() => {
         if (!lead || !beneficiaries) return [];
-        
         const categories = (lead.itemCategories || []).filter(c => c.name !== 'Item Price List');
-        
         return categories.map(cat => {
             const count = beneficiaries.filter(b => b.itemCategoryId === cat.id).length;
             const kitAmount = cat.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
-            return {
-                id: cat.id,
-                name: cat.name,
-                count,
-                kitAmount,
-                totalAmount: count * kitAmount
-            };
+            return { id: cat.id, name: cat.name, count, kitAmount, totalAmount: count * kitAmount };
         });
     }, [lead, beneficiaries]);
 
@@ -188,11 +204,16 @@ export default function LeadSummaryPage() {
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
+        const amountsByPaymentType: Record<string, number> = {};
         let zakatForGoalAmount = 0;
 
         verifiedDonationsList.forEach(d => {
             const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id);
             if (!leadAllocation) return;
+
+            const paymentType = d.donationType || 'Other';
+            amountsByPaymentType[paymentType] = (amountsByPaymentType[paymentType] || 0) + 1;
+
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
             const allocationProportion = leadAllocation.amount / totalDonationAmount;
             const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
@@ -201,23 +222,14 @@ export default function LeadSummaryPage() {
                 if (amountsByCategory.hasOwnProperty(category)) {
                     const allocatedAmount = split.amount * allocationProportion;
                     amountsByCategory[category as DonationCategory] += allocatedAmount;
-
                     const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
-                    if (category === 'Zakat' && isForFundraising) {
-                        zakatForGoalAmount += allocatedAmount;
-                    }
+                    if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
                 }
             });
         });
         
-        const zakatAllocated = beneficiaries
-            .filter(b => b.isEligibleForZakat && b.zakatAllocation)
-            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
-        
-        const zakatGiven = beneficiaries
-            .filter(b => b.isEligibleForZakat && b.zakatAllocation && b.status === 'Given')
-            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
-        
+        const zakatAllocated = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation).reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
+        const zakatGiven = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation && b.status === 'Given').reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
         const zakatPending = zakatAllocated - zakatGiven;
         const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
         
@@ -228,28 +240,26 @@ export default function LeadSummaryPage() {
                 return sum + amount;
             }, 0);
 
-        const fundingGoal = lead.targetAmount || 0;
-        const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
-        
-        const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
-        const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
-
         return {
             totalCollectedForGoal,
-            fundingProgress,
-            targetAmount: fundingGoal,
-            remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal),
+            fundingProgress: (lead.targetAmount || 0) > 0 ? (totalCollectedForGoal / lead.targetAmount!) * 100 : 0,
+            targetAmount: lead.targetAmount || 0,
             amountsByCategory,
-            zakatAllocated,
-            zakatGiven,
-            zakatPending,
-            zakatAvailableForGoal,
+            amountsByPaymentType,
+            zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal,
             totalBeneficiaries: beneficiaries.length,
-            beneficiariesGiven,
-            beneficiariesPending,
+            beneficiariesGiven: beneficiaries.filter(b => b.status === 'Given').length,
+            beneficiariesPending: beneficiaries.length - beneficiaries.filter(b => b.status === 'Given').length,
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
     }, [allDonations, lead, beneficiaries]);
+
+    const paymentTypeChartData = useMemo(() => {
+        if (!fundingData?.amountsByPaymentType) return [];
+        return Object.entries(fundingData.amountsByPaymentType).map(([name, value]) => ({
+            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})`
+        }));
+    }, [fundingData]);
 
     const handleFieldChange = (field: keyof Lead, value: any) => {
         setEditableLead(p => (p ? { ...p, [field]: value } : null));
@@ -260,19 +270,13 @@ export default function LeadSummaryPage() {
         if (file) {
             setImageFile(file);
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
+            reader.onloadend = () => { setImagePreview(reader.result as string); };
             reader.readAsDataURL(file);
             setIsImageDeleted(false);
         }
     };
     
-    const handleRemoveImage = () => {
-        setImageFile(null);
-        setImagePreview(null);
-        setIsImageDeleted(true);
-    };
+    const handleRemoveImage = () => { setImageFile(null); setImagePreview(null); setIsImageDeleted(true); };
 
     const handleRemoveExistingDocument = (urlToRemove: string) => {
         setExistingDocuments(prev => prev.filter(doc => doc.url !== urlToRemove));
@@ -284,9 +288,7 @@ export default function LeadSummaryPage() {
 
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
         if (!leadDocRef || !lead?.documents || !canUpdate) return;
-        const newDocs = lead.documents.map(doc => 
-            doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc
-        );
+        const newDocs = lead.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
         try {
             await updateDoc(leadDocRef, { documents: newDocs, updatedAt: serverTimestamp() });
             toast({ title: "Visibility Updated", description: `'${docToToggle.name}' visibility toggled.` });
@@ -302,21 +304,17 @@ export default function LeadSummaryPage() {
 
     const handleSave = async () => {
         if (!leadDocRef || !userProfile || !canUpdate || !storage) return;
-        
         const hasFileToUpload = !!imageFile || newDocuments.length > 0;
         if (hasFileToUpload && !auth?.currentUser) {
             toast({ title: "Authentication Error", description: "User not authenticated yet.", variant: "destructive" });
             return;
         }
-
         let imageUrl = editableLead.imageUrl || '';
         if (isImageDeleted && imageUrl) {
             imageUrl = '';
         } else if (imageFile) {
             try {
-                const resizedBlob = await new Promise<Blob>((resolve) => {
-                    (Resizer as any).imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
-                });
+                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
                 const filePath = `leads/${leadId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
@@ -326,7 +324,6 @@ export default function LeadSummaryPage() {
                 return;
             }
         }
-        
         const documentUploadPromises = newDocuments.map(async (file) => {
             const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
             const fileRef = storageRef(storage, `leads/${leadId}/documents/${safeFileName}`);
@@ -334,10 +331,8 @@ export default function LeadSummaryPage() {
             const url = await getDownloadURL(fileRef);
             return { name: file.name, url, uploadedAt: new Date().toISOString(), isPublic: false };
         });
-
         const uploadedDocuments = await Promise.all(documentUploadPromises);
         const finalDocuments = [...existingDocuments, ...uploadedDocuments];
-
         const saveData: Partial<Lead> = {
             name: editableLead.name || '',
             description: editableLead.description || '',
@@ -355,19 +350,20 @@ export default function LeadSummaryPage() {
             documents: finalDocuments,
             updatedAt: serverTimestamp(),
         };
-
         updateDoc(leadDocRef, saveData)
-            .catch(async (serverError: any) => {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: saveData }));
-            })
-            .finally(() => {
-                toast({ title: 'Success', description: 'Lead summary updated.', variant: 'success' });
-                setEditMode(false);
-            });
+            .catch(async (serverError: any) => { errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: saveData })); })
+            .finally(() => { toast({ title: 'Success', description: 'Lead summary updated.', variant: 'success' }); setEditMode(false); });
     };
     
     const handleDownload = (format: 'png' | 'pdf') => {
         download(format, { contentRef: summaryRef, documentTitle: `Lead Summary: ${lead?.name}`, documentName: `lead-summary-${leadId}`, brandingSettings, paymentSettings });
+    };
+
+    const handleViewImage = (url: string, name: string) => {
+        setImageToView({ url, name });
+        setZoom(1);
+        setRotation(0);
+        setIsImageViewerOpen(true);
     };
 
     const isLoading = isLeadLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
@@ -375,11 +371,7 @@ export default function LeadSummaryPage() {
     if (isLoading) return <BrandedLoader />;
     if (!lead) return <main className="container mx-auto p-4 md:p-8 text-center"><p>Lead not found.</p></main>;
     
-    const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : 
-                         lead.purpose === 'Medical' ? HeartPulse : 
-                         lead.purpose === 'Relief' ? LifeBuoy : 
-                         lead.purpose === 'Other' ? Info : HandHelping;
-
+    const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : lead.purpose === 'Medical' ? HeartPulse : lead.purpose === 'Relief' ? LifeBuoy : lead.purpose === 'Other' ? Info : HandHelping;
     const chartData = fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
 
     return (
@@ -390,7 +382,7 @@ export default function LeadSummaryPage() {
                     {editMode ? ( <Input id="name" value={editableLead.name || ''} onChange={(e) => setEditableLead(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary">{lead.name}</h1> )}
                     {editMode ? (
                          <Select value={editableLead.status} onValueChange={(value) => setEditableLead(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1"><SelectValue placeholder="Select a status" /></SelectTrigger><SelectContent><SelectItem value="Upcoming">Upcoming</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem></SelectContent></Select>
-                    ): ( <p className="text-muted-foreground">{lead.status}</p> )}
+                    ): ( <p className="text-muted-foreground font-bold">{lead.status}</p> )}
                 </div>
                 <div className="flex gap-2">
                     {!editMode && (
@@ -417,7 +409,7 @@ export default function LeadSummaryPage() {
                         <Card className="shadow-sm border-primary/5 bg-white">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 font-bold"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
-                                <CardDescription className="font-normal">Verified donations for this lead.</CardDescription>
+                                <CardDescription className="font-bold">Verified donations for this lead.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -432,7 +424,7 @@ export default function LeadSummaryPage() {
                                         ) : <Skeleton className="w-full h-full rounded-full" />}
                                         <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold">Funded</span></div>
                                     </div>
-                                    <div className="space-y-4 text-center md:text-left text-primary">
+                                    <div className="space-y-4 text-center md:text-left text-primary font-bold">
                                         <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
                                         <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
                                         <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Grand Total Received</p><p className="text-2xl font-bold text-primary">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
@@ -448,10 +440,7 @@ export default function LeadSummaryPage() {
                         </div>
 
                         <Card className="shadow-sm border-primary/5 bg-white">
-                            <CardHeader>
-                                <CardTitle className="font-bold">Beneficiary Groups</CardTitle>
-                                <CardDescription>Breakdown of requirements by family size or category.</CardDescription>
-                            </CardHeader>
+                            <CardHeader><CardTitle className="font-bold">Beneficiary Groups</CardTitle><CardDescription className="font-bold">Breakdown of requirements by family size or category.</CardDescription></CardHeader>
                             <CardContent>
                                 <div className="border rounded-lg overflow-hidden">
                                     <Table>
@@ -466,26 +455,16 @@ export default function LeadSummaryPage() {
                                         <TableBody>
                                             {beneficiaryGroups.map((group) => (
                                                 <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
-                                                    <TableCell className="font-medium text-primary">{group.name}</TableCell>
+                                                    <TableCell className="font-bold text-primary">{group.name}</TableCell>
                                                     <TableCell className="text-right font-bold">{group.count}</TableCell>
                                                     <TableCell className="text-right font-mono font-bold">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
                                                     <TableCell className="text-right font-mono font-bold">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
                                                 </TableRow>
                                             ))}
-                                            {beneficiaryGroups.length === 0 && (
-                                                <TableRow>
-                                                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">No categories defined yet.</TableCell>
-                                                </TableRow>
-                                            )}
                                         </TableBody>
                                         {beneficiaryGroups.length > 0 && (
                                             <tfoot className="bg-primary/5 border-t">
-                                                <TableRow>
-                                                    <TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Total</TableCell>
-                                                    <TableCell className="text-right font-mono font-bold text-primary text-lg">
-                                                        ₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}
-                                                    </TableCell>
-                                                </TableRow>
+                                                <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Total</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell></TableRow>
                                             </tfoot>
                                         )}
                                     </Table>
@@ -495,23 +474,36 @@ export default function LeadSummaryPage() {
 
                         <div className="grid gap-6 lg:grid-cols-2">
                             <Card className="shadow-sm border-primary/5 bg-white">
-                                <CardHeader>
-                                    <CardTitle className="font-bold">Zakat Utilization</CardTitle>
-                                    <CardDescription className="font-normal">Tracking of Zakat funds collected and allocated.</CardDescription>
-                                </CardHeader>
+                                <CardHeader><CardTitle className="font-bold text-primary">Fund Totals by Type</CardTitle></CardHeader>
+                                <CardContent className="space-y-2">
+                                    {donationCategories.map(cat => (
+                                        <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary">
+                                            <span className="text-muted-foreground font-normal">{cat === 'Interest' ? 'Interest (for disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
+                                            <span className="font-mono">₹{(fundingData.amountsByCategory[cat] || 0).toLocaleString('en-IN')}</span>
+                                        </div>
+                                    ))}
+                                    <Separator className="my-2" />
+                                    <div className="flex justify-between items-center text-lg font-bold text-primary"><span>Grand Total Received</span><span className="font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</span></div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="shadow-sm border-primary/5 bg-white">
+                                <CardHeader><CardTitle className="font-bold">Zakat Utilization</CardTitle><CardDescription className="font-bold">Tracking of Zakat funds collected and allocated.</CardDescription></CardHeader>
                                 <CardContent className="space-y-3">
-                                    <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Total Zakat Collected</span><span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
+                                    <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground font-normal uppercase tracking-tight">Total Zakat Collected</span><span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
                                     <Separator />
                                     <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
-                                        <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Allocated as Cash-in-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
-                                        <div className="flex justify-between items-center text-xs pl-4 font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Paid out</span><span className="font-mono text-success font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                        <div className="flex justify-between items-center text-xs pl-4 font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Remaining to Pay</span><span className="font-mono text-orange-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground font-normal uppercase tracking-tight">Allocated as Cash-in-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-xs pl-4 font-bold text-primary"><span className="text-muted-foreground font-normal uppercase tracking-tight">Paid out</span><span className="font-mono text-success font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-xs pl-4 font-bold text-primary"><span className="text-muted-foreground font-normal uppercase tracking-tight">Remaining to Pay</span><span className="font-mono text-orange-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                     </div>
                                     <Separator />
                                     <div className="flex justify-between items-center text-base font-bold text-primary"><span>Zakat Balance for Goal</span><span className="text-primary font-mono font-bold">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
                                 </CardContent>
                             </Card>
+                        </div>
 
+                        <div className="grid gap-6 lg:grid-cols-2">
                             <Card className="shadow-sm border-primary/5 bg-white">
                                 <CardHeader><CardTitle className="flex items-center gap-2 font-bold"><TrendingUp className="h-5 w-5"/> Donations by Category</CardTitle></CardHeader>
                                 <CardContent>
@@ -524,19 +516,25 @@ export default function LeadSummaryPage() {
                                     ) : <Skeleton className="h-[250px] w-full" />}
                                 </CardContent>
                             </Card>
+
+                            <Card className="shadow-sm border-primary/5 bg-white">
+                                <CardHeader><CardTitle className="flex items-center gap-2 font-bold"><PieChartIcon className="h-5 w-5"/> Donations by Payment Type</CardTitle></CardHeader>
+                                <CardContent>
+                                    {isClient ? (
+                                        <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
+                                            <PieChart>
+                                                <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                                <Pie data={paymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80}>
+                                                    {paymentTypeChartData.map((entry) => (<Cell key={`cell-${entry.name}`} fill={entry.fill} />))}
+                                                </Pie>
+                                                <ChartLegend content={<ChartLegendContent />} />
+                                            </PieChart>
+                                        </ChartContainer>
+                                    ) : <Skeleton className="h-[250px] w-full" />}
+                                </CardContent>
+                            </Card>
                         </div>
                     </div>
-                )}
-
-                {/* Private Page Alert when logged out */}
-                {!(isProfileLoading) && !userProfile && (
-                    <Alert variant="destructive">
-                        <ShieldAlert className="h-4 w-4" />
-                        <AlertTitle className="font-bold">Private Summary</AlertTitle>
-                        <AlertDescription className="font-normal">
-                            This is the members-only summary view. To see the public page, use the share link or go to Public Initiatives.
-                        </AlertDescription>
-                    </Alert>
                 )}
 
                  <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
@@ -548,7 +546,7 @@ export default function LeadSummaryPage() {
                                         <Label className="font-bold">Header Image</Label>
                                         <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
                                         <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary">
-                                            {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-2 text-sm text-center text-muted-foreground"><span className="font-bold text-primary">Click to upload</span></p></div> )}
+                                            {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click to upload</span></p></div> )}
                                         </label>
                                     </div>
                                     <div><Label htmlFor="description" className="font-bold">Description</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} className="text-primary font-bold" /></div>
@@ -559,12 +557,12 @@ export default function LeadSummaryPage() {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center">
+                                    <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer" onClick={() => lead.imageUrl && handleViewImage(lead.imageUrl, lead.name)}>
                                         {lead.imageUrl ? ( <Image src={lead.imageUrl} alt={lead.name} fill sizes="100vw" className="object-cover" /> ) : ( <FallbackIcon className="h-20 w-20 text-primary/10" /> )}
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
-                                        <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed">{lead.description || 'No description provided.'}</p>
+                                        <p className="mt-1 text-sm font-bold whitespace-pre-wrap leading-relaxed">{lead.description || 'No description provided.'}</p>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                                         <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Purpose</p><p className="font-bold uppercase text-primary">{lead.purpose} {lead.category && `(${lead.category})`}</p></div>
@@ -591,7 +589,7 @@ export default function LeadSummaryPage() {
                                             {existingDocuments.map((doc) => (
                                                 <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md gap-4">
                                                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm font-bold hover:underline truncate text-primary"><p className="truncate">{doc.name}</p></a>
+                                                        <Button variant="link" className="p-0 h-auto font-bold truncate text-primary" onClick={() => doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i) ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}><p className="truncate">{doc.name}</p></Button>
                                                     </div>
                                                     <div className="flex items-center gap-4">
                                                         <div className="flex items-center gap-2"><Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} /><Label className="text-xs text-foreground font-bold">Public</Label></div>
@@ -600,32 +598,52 @@ export default function LeadSummaryPage() {
                                                 </div>
                                             ))}
                                         </div>
-                                    ) : <p className="text-sm text-muted-foreground font-normal">No artifacts.</p>}
+                                    ) : <p className="text-sm text-muted-foreground font-bold">No artifacts.</p>}
                                 </div>
                             ) : (
                                 lead.documents && lead.documents.length > 0 ? (
                                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                        {lead.documents.map((doc) => (
-                                            <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all flex flex-col active:scale-95 bg-white border-primary/10">
-                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" className="group block flex-grow">
-                                                    <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
-                                                        <File className="w-10 h-10 text-muted-foreground" />
+                                        {lead.documents.map((doc) => {
+                                            const isImg = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+                                            return (
+                                                <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all flex flex-col active:scale-95 bg-white border-primary/10 cursor-pointer" onClick={() => isImg ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}>
+                                                    <div className="group block flex-grow">
+                                                        <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
+                                                            {isImg ? <Image src={doc.url} alt={doc.name} fill sizes="100vw" className="object-cover" /> : <File className="w-10 h-10 text-muted-foreground" />}
+                                                        </div>
+                                                        <div className="p-2 text-center text-[10px] font-bold text-primary uppercase truncate">{doc.name}</div>
                                                     </div>
-                                                    <div className="p-2 text-center text-[10px] font-bold text-primary uppercase truncate">{doc.name}</div>
-                                                </a>
-                                                <CardFooter className="p-2 border-t mt-auto flex justify-center w-full gap-2">
-                                                    {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-xs text-foreground font-bold">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"} className="font-bold uppercase text-[10px]">{doc.isPublic ? "Public" : "Private"}</Badge> )}
-                                                </CardFooter>
-                                            </Card>
-                                        ))}
+                                                    <CardFooter className="p-2 border-t mt-auto flex justify-center w-full gap-2" onClick={e => e.stopPropagation()}>
+                                                        {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-xs text-foreground font-bold">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"} className="font-bold uppercase text-[10px]">{doc.isPublic ? "Public" : "Private"}</Badge> )}
+                                                    </CardFooter>
+                                                </Card>
+                                            );
+                                        })}
                                     </div>
-                                ) : <p className="text-sm text-muted-foreground font-normal">No artifacts.</p>
+                                ) : <p className="text-sm text-muted-foreground font-bold">No artifacts.</p>
                             )}
                         </CardContent>
                     </Card>
             </div>
 
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
+
+            <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
+                <DialogContent className="max-w-4xl">
+                    <DialogHeader><DialogTitle className="font-bold">{imageToView?.name}</DialogTitle></DialogHeader>
+                    {imageToView && (
+                        <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
+                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                        </div>
+                    )}
+                    <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold"><ZoomIn className="mr-2 h-4 w-4"/> Zoom In</Button>
+                        <Button variant="outline" size="sm" onClick={() => setZoom(z => z / 1.2)} className="font-bold"><ZoomOut className="mr-2 h-4 w-4"/> Zoom Out</Button>
+                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold"><RotateCw className="mr-2 h-4 w-4"/> Rotate</Button>
+                        <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold"><RefreshCw className="mr-2 h-4 w-4"/> Reset</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </main>
     );
 }
