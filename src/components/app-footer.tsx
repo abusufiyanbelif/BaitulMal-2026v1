@@ -98,7 +98,7 @@ export function AppFooter() {
                       />
                   )
               )}
-              {isLoading ? <Skeleton className="h-6 w-48" /> : <h3 className="font-semibold text-base text-primary">{brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}</h3>}
+              {isLoading ? <Skeleton className="h-6 w-48" /> : <h3 className="font-bold text-base text-primary">{brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}</h3>}
             </div>
             {isLoading ? <Skeleton className="h-4 w-full" /> : paymentSettings?.address && <p className="text-xs text-muted-foreground">{paymentSettings.address}</p>}
             <div className="text-xs text-muted-foreground space-y-1">

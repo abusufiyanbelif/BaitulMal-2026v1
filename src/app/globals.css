@@ -58,12 +58,6 @@
     @apply min-h-screen bg-background text-foreground antialiased font-sans font-normal;
   }
 
-  /* Strict Non-Bold Standard */
-  h1, h2, h3, h4, h5, h6, strong, b, .font-bold, .font-semibold, .font-black, .font-medium {
-    @apply font-normal !important;
-    color: inherit;
-  }
-
   /* Custom Scrollbars */
   ::-webkit-scrollbar {
     width: 8px;

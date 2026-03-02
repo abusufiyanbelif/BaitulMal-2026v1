@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -83,13 +82,13 @@ export default function Home() {
                   </div>
               </section>
 
+              <WisdomAndReflection />
+
               <div className="space-y-2">
                 <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
                 <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
                 <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
               </div>
-
-              <WisdomAndReflection />
 
               <div className="space-y-6">
                 <OverallFundingSummary />
