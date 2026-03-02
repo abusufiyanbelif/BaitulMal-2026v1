@@ -275,7 +275,6 @@ export default function LeadPage() {
   ].filter(s => s.items.length > 0), [filteredLeads]);
 
   const isLoading = isProfileLoading || isDeleting || isDataLoading;
-  if (isLoading) return <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mt-20" />;
   
   if (!isLoading && userProfile && !canViewLeads) {
     return (

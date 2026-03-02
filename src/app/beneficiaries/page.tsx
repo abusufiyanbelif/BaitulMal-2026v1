@@ -133,6 +133,7 @@ export default function BeneficiariesPage() {
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
   if (isLoading) return <BrandedLoader />;
+  
   if (!canRead) return (
     <main className="container mx-auto p-8">
         <Alert variant="destructive">
@@ -163,7 +164,7 @@ export default function BeneficiariesPage() {
             </div>
             <div className="flex gap-2">
                 <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync Complete' : 'Sync Failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="outline" size="sm" className="font-black uppercase tracking-widest text-[10px] border-primary/20 text-primary"><DatabaseZap className="mr-2 h-4 w-4"/> Sync Hub</Button>
-                {canCreate && <Button onClick={() => router.push('/beneficiaries/create')} size="sm" className="font-black uppercase tracking-widest interactive-hover shadow-lg bg-[#0B6623] hover:bg-[#0B6623]/90 text-white"><PlusCircle className="mr-2 h-4 w-4" /> Create New</Button>}
+                {canCreate && <Button onClick={() => router.push('/beneficiaries/create')} size="sm" className="font-black uppercase tracking-widest interactive-hover shadow-lg bg-primary hover:bg-primary/90 text-white"><PlusCircle className="mr-2 h-4 w-4" /> Create New</Button>}
             </div>
           </div>
         </CardHeader>

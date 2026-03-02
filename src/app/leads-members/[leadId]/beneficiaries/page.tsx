@@ -260,16 +260,36 @@ export default function BeneficiariesPage() {
                         <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9 text-xs border-primary/20 focus-visible:ring-primary text-[#138808] font-bold" />
                     </div>
                     <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[140px] h-9 text-xs font-bold uppercase border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
-                        <SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Hold">Hold</SelectItem><SelectItem value="Need More Details">Need Details</SelectItem></SelectContent>
+                        <SelectTrigger className="w-[140px] h-9 text-xs font-bold uppercase border-primary/20 text-primary">
+                            <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="All">All Statuses</SelectItem>
+                            <SelectItem value="Pending">Pending</SelectItem>
+                            <SelectItem value="Verified">Verified</SelectItem>
+                            <SelectItem value="Given">Given</SelectItem>
+                            <SelectItem value="Hold">Hold</SelectItem>
+                            <SelectItem value="Need More Details">Need Details</SelectItem>
+                        </SelectContent>
                     </Select>
                     <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[140px] h-9 text-xs font-bold uppercase border-primary/20 text-primary"><SelectValue placeholder="Zakat" /></SelectTrigger>
-                        <SelectContent><SelectItem value="All">All Zakat</SelectItem><SelectItem value="Eligible">Eligible</SelectItem><SelectItem value="Not Eligible">Not Eligible</SelectItem></SelectContent>
+                        <SelectTrigger className="w-[140px] h-9 text-xs font-bold uppercase border-primary/20 text-primary">
+                            <SelectValue placeholder="Zakat" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="All">All Zakat</SelectItem>
+                            <SelectItem value="Eligible">Eligible</SelectItem>
+                            <SelectItem value="Not Eligible">Not Eligible</SelectItem>
+                        </SelectContent>
                     </Select>
                     <Select value={referralFilter} onValueChange={v => { setReferralFilter(v); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[180px] h-9 text-xs font-bold uppercase border-primary/20 text-primary"><SelectValue placeholder="Referral" /></SelectTrigger>
-                        <SelectContent><SelectItem value="All">All Referrals</SelectItem>{uniqueReferrals.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                        <SelectTrigger className="w-[180px] h-9 text-xs font-bold uppercase border-primary/20 text-primary">
+                            <SelectValue placeholder="Referral" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="All">All Referrals</SelectItem>
+                            {uniqueReferrals.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                        </SelectContent>
                     </Select>
                 </div>
 
@@ -312,7 +332,7 @@ export default function BeneficiariesPage() {
                                                                 <DropdownMenuPortal><DropdownMenuSubContent>
                                                                     <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s as any)}>
                                                                         <DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem>
-                                                                        <DropdownMenuRadioItem value="Verified">Verified</SelectItem>
+                                                                        <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
                                                                         <DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem>
                                                                         <DropdownMenuRadioItem value="Hold">Hold</DropdownMenuRadioItem>
                                                                         <DropdownMenuRadioItem value="Need More Details">Need Details</DropdownMenuRadioItem>

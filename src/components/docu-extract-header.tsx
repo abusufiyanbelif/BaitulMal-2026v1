@@ -144,7 +144,7 @@ export function DocuExtractHeader() {
                     <Button asChild size="sm" className="font-black uppercase tracking-widest text-xs interactive-hover px-6 animate-slide-in-from-top bg-primary text-white" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
                         <Link href="/login">
                             <LogIn className="mr-2 h-4 w-4" />
-                            Sign In
+                            Members Sign In
                         </Link>
                     </Button>
                 </div>
