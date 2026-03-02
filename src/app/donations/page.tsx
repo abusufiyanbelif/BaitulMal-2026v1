@@ -415,7 +415,7 @@ export default function DonationsPage() {
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent>
-                <AlertDialogHeader><AlertDialogTitle className="font-black uppercase text-destructive">Delete Donation Record?</AlertDialogTitle><AlertDialogDescription className="font-bold">This will permanently erase the record and all transaction screenshots. This action cannot be reversed.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogHeader><AlertDialogTitle className="font-black uppercase text-destructive">Delete Donation Record?</AlertDialogTitle><AlertDialogDescription className="font-bold text-foreground/80">This will permanently erase the record and all transaction screenshots. This action cannot be reversed.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-black hover:bg-destructive/90">Confirm Deletion</AlertDialogAction>

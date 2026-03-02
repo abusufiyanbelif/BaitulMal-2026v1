@@ -4,26 +4,26 @@
 
 @layer base {
   :root {
-    /* Background: Light Tea Green tint */
+    /* Background: Lighter Tea Green tint #F2FAF0 */
     --background: 100 40% 96%;
-    /* Foreground: Deep Forest Green (No Black) */
-    --foreground: 115 89% 12%; 
+    /* Foreground: Deep Forest Green #082F11 (Zero Black) */
+    --foreground: 136 81% 11%; 
     --card: 0 0% 100%;
-    --card-foreground: 115 89% 12%;
+    --card-foreground: 136 81% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 115 89% 12%;
-    /* Primary: Indian Green #138808 */
+    --popover-foreground: 136 81% 11%;
+    /* Primary: India Green #138808 */
     --primary: 115 89% 28%;
     --primary-foreground: 0 0% 100%;
-    /* Secondary: Mint Green #98FF98 */
-    --secondary: 120 100% 92%;
+    /* Secondary: Mint Green */
+    --secondary: 158 64% 92%;
     --secondary-foreground: 136 81% 10%;
     /* Muted: Light Green tint */
     --muted: 120 50% 94%;
     --muted-foreground: 115 40% 30%;
     /* Accent: Tea Green #D0F0C0 */
     --accent: 100 60% 85%;
-    --accent-foreground: 115 89% 10%;
+    --accent-foreground: 136 81% 10%;
     /* Destructive: Soft Red */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
@@ -54,7 +54,11 @@
     @apply min-h-screen bg-background text-foreground antialiased font-sans;
   }
 
-  /* Force all text to India Green or Forest Green shades, no pure black */
+  /* Forest Green for all primary buttons */
+  .btn-forest {
+    @apply bg-[#0B6623] hover:bg-[#0B6623]/90 text-white font-bold uppercase tracking-widest;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     @apply text-primary font-bold;
   }
