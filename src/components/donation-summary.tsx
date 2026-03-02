@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { usePublicData } from '@/hooks/use-public-data';
@@ -30,13 +28,16 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-const donationCategoryChartConfig = donationCategories.reduce((acc, category, index) => {
-  acc[category.replace(/\s+/g, '')] = {
-    label: category,
-    color: `hsl(var(--chart-${index + 1}))`,
-  };
-  return acc;
-}, {} as ChartConfig);
+const donationCategoryChartConfig = {
+  Fitra: { label: "Fitra", color: "hsl(var(--chart-2))" },
+  Zakat: { label: "Zakat", color: "hsl(var(--chart-3))" },
+  Sadaqah: { label: "Sadaqah", color: "hsl(var(--chart-1))" },
+  Fidiya: { label: "Fidiya", color: "hsl(var(--chart-7))" },
+  Interest: { label: "Interest", color: "hsl(var(--chart-5))" },
+  Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
+  Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
+  MonthlyContribution: { label: "Monthly Contribution", color: "hsl(var(--chart-8))" },
+} satisfies ChartConfig;
 
 export function DonationSummary() {
   const { isLoading, yearlySummary, categorySummary } = usePublicData();
@@ -51,7 +52,7 @@ export function DonationSummary() {
   }
   
   if (!yearlySummary || !categorySummary) {
-    return <p>No donation data available.</p>;
+    return <p className="font-normal">No donation data available.</p>;
   }
 
   return (
@@ -59,36 +60,36 @@ export function DonationSummary() {
       <Card className="animate-fade-in-up" style={{ animationDelay: '800ms', animationFillMode: 'backwards' }}>
         <CardHeader>
           <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-normal">
                 <Calendar className="h-6 w-6 text-primary" />
                 Yearly Financial Summary
               </CardTitle>
-              <span className="text-2xl font-bold">{yearlySummary[0]?.year || new Date().getFullYear()}</span>
+              <span className="text-2xl font-normal">{yearlySummary[0]?.year || new Date().getFullYear()}</span>
           </div>
-          <CardDescription>A year-by-year breakdown of funds received against fundraising goals.</CardDescription>
+          <CardDescription className="font-normal">A year-by-year breakdown of funds received against fundraising goals.</CardDescription>
         </CardHeader>
         <CardContent>
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-[100px]">Year</TableHead>
-                        <TableHead>Fundraising Goal</TableHead>
-                        <TableHead>Donations for Goal</TableHead>
-                        <TableHead>Overall Donations</TableHead>
-                        <TableHead className="text-right">Progress</TableHead>
+                        <TableHead className="w-[100px] font-normal">Year</TableHead>
+                        <TableHead className="font-normal">Goal</TableHead>
+                        <TableHead className="font-normal">Raised for Goal</TableHead>
+                        <TableHead className="font-normal">Total Received</TableHead>
+                        <TableHead className="text-right font-normal">Progress</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {yearlySummary.map(({ year, totalTarget, totalGoalReceived, overallTotalReceived, progress }) => (
                         <TableRow key={year}>
-                            <TableCell className="font-bold">{year}</TableCell>
-                            <TableCell>₹{totalTarget.toLocaleString('en-IN')}</TableCell>
-                            <TableCell>₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
-                            <TableCell>₹{overallTotalReceived.toLocaleString('en-IN')}</TableCell>
+                            <TableCell className="font-normal">{year}</TableCell>
+                            <TableCell className="font-normal">₹{totalTarget.toLocaleString('en-IN')}</TableCell>
+                            <TableCell className="font-normal">₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
+                            <TableCell className="font-normal">₹{overallTotalReceived.toLocaleString('en-IN')}</TableCell>
                             <TableCell className="text-right w-[150px]">
                                 <div className="flex items-center gap-2">
                                     <Progress value={progress} className="h-2 flex-1" />
-                                    <span className="text-xs font-mono">{Math.round(progress)}%</span>
+                                    <span className="text-xs font-normal">{Math.round(progress)}%</span>
                                 </div>
                             </TableCell>
                         </TableRow>
@@ -100,19 +101,19 @@ export function DonationSummary() {
       
       <Card className="animate-fade-in-up" style={{ animationDelay: '900ms', animationFillMode: 'backwards' }}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 font-normal">
             <PieChartIcon className="h-6 w-6 text-primary" />
             Donations by Category
           </CardTitle>
-           <CardDescription>A lifetime breakdown of all donations by their category.</CardDescription>
+           <CardDescription className="font-normal">A lifetime breakdown of all donations by their category.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={donationCategoryChartConfig} className="h-[200px] w-full">
+          <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
             <PieChart>
               <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-              <Pie data={categorySummary} dataKey="value" nameKey="name" innerRadius={40} outerRadius={60} strokeWidth={2}>
+              <Pie data={categorySummary} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} strokeWidth={2}>
                 {categorySummary.map((entry: any) => (
-                  <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                  <Cell key={`cell-${entry.name}`} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />
                 ))}
               </Pie>
               <ChartLegend content={<ChartLegendContent nameKey="name" />} />

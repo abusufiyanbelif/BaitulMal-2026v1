@@ -173,7 +173,7 @@ export function PublicLeadsView() {
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-          <h1 className="text-4xl font-normal tracking-tight">Public leads</h1>
+          <h1 className="text-4xl font-normal tracking-tight text-primary">Public leads</h1>
           <p className="text-lg font-normal opacity-80">Verified community appeals requiring your support.</p>
           
           <div className="space-y-2">
@@ -202,7 +202,7 @@ export function PublicLeadsView() {
         <Accordion type="multiple" defaultValue={['active']} className="space-y-6">
           {sections.map(section => (
             <AccordionItem key={section.id} value={section.id} className="border-none">
-              <AccordionTrigger className="hover:no-underline group">
+              <AccordionTrigger className="hover:no-underline group font-normal">
                 <div className="flex items-center gap-4">
                   <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
                   <span className="text-2xl font-normal tracking-tight">{section.title}</span>

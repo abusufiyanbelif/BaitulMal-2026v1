@@ -4,9 +4,9 @@
 
 @layer base {
   :root {
-    /* Requested Background: #8fbca0 - HSL: 143 25% 65% */
+    /* Background: #8fbca0 */
     --background: 143 25% 65%;
-    /* Requested Text: #4d805f - HSL: 141 25% 40% */
+    /* Normal Text: #4d805f */
     --foreground: 141 25% 40%; 
     
     --card: 143 25% 68%;
@@ -39,11 +39,15 @@
     
     --radius: 0.75rem;
     
-    --chart-1: 141 25% 30%;
-    --chart-2: 141 25% 40%;
-    --chart-3: 141 25% 50%;
-    --chart-4: 141 25% 60%;
-    --chart-5: 141 25% 70%;
+    /* Vibrant Chart Colors from User Image */
+    --chart-1: 346 77% 50%; /* Sadaqah - Red */
+    --chart-2: 326 100% 50%; /* Fitra - Pink */
+    --chart-3: 221 83% 53%; /* Zakat - Blue */
+    --chart-4: 25 95% 53%; /* Lillah - Orange */
+    --chart-5: 262 83% 58%; /* Interest - Purple */
+    --chart-6: 191 91% 42%; /* Loan - Cyan */
+    --chart-7: 45 93% 47%; /* Fidiya - Yellow */
+    --chart-8: 142 71% 45%; /* Monthly Contribution - Green */
   }
 
   * {
@@ -54,7 +58,7 @@
     @apply min-h-screen bg-background text-foreground antialiased font-sans font-normal;
   }
 
-  /* Force non-bold weights globally as requested */
+  /* Strict Non-Bold Standard */
   h1, h2, h3, h4, h5, h6, strong, b, .font-bold, .font-semibold, .font-black, .font-medium {
     @apply font-normal !important;
     color: inherit;

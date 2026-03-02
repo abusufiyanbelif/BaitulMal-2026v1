@@ -172,7 +172,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         <span>{Math.round(campaign.progress)}%</span>
                     </div>
                     <Progress value={campaign.progress} className="h-1.5" />
-                    <p className="text-center text-[10px] text-muted-foreground font-mono font-normal">Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</p>
+                    <p className="text-center text-[10px] text-muted-foreground font-normal">Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</p>
                 </div>
             )}
           </CardContent>
@@ -303,8 +303,8 @@ export default function CampaignPage() {
         <div className="mb-4"><Button variant="outline" asChild className="font-normal border-primary/20"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link></Button></div>
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
-          <AlertTitle>Access Denied</AlertTitle>
-          <AlertDescription>Missing permissions to manage campaigns.</AlertDescription>
+          <AlertTitle className="font-normal">Access Denied</AlertTitle>
+          <AlertDescription className="font-normal">Missing permissions to manage campaigns.</AlertDescription>
         </Alert>
       </main>
     );
@@ -356,7 +356,7 @@ export default function CampaignPage() {
               <Accordion type="multiple" defaultValue={['active']} className="space-y-6">
                 {sections.map(section => (
                   <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white/50 shadow-sm overflow-hidden">
-                    <AccordionTrigger className="hover:no-underline py-5 group">
+                    <AccordionTrigger className="hover:no-underline py-5 group font-normal">
                       <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
                         <span className="text-lg font-normal tracking-tight">{section.title}</span>
