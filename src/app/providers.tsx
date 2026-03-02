@@ -1,7 +1,6 @@
-
 'use client';
 
-import { ReactNode, Suspense } from 'react';
+import { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@/app/auth-provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
@@ -17,8 +16,10 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <FirebaseClientProvider>
-      <AuthProvider>
-          <div className="relative">
+      <div className="relative min-h-screen">
+        {/* Render watermark here so it persists during AuthProvider state changes */}
+        <Watermark />
+        <AuthProvider>
             <div className="relative z-10 flex min-h-screen flex-col">
               <DocuExtractHeader />
               <main className={cn("flex-1 w-full", isLoginPage && "flex items-center justify-center p-4")}>
@@ -26,9 +27,8 @@ export function Providers({ children }: { children: ReactNode }) {
               </main>
               <AppFooter />
             </div>
-            <Watermark />
-          </div>
-      </AuthProvider>
+        </AuthProvider>
+      </div>
       <Toaster />
     </FirebaseClientProvider>
   );

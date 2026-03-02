@@ -24,7 +24,7 @@ import {
 import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Share2, Hourglass, Users, Gift, Target, HandHelping, File, Utensils, LifeBuoy } from 'lucide-react';
+import { ArrowLeft, Loader2, Share2, Hourglass, Users, Gift, Target, HandHelping, File, Utensils, LifeBuoy } from 'lucide-react';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
 import {

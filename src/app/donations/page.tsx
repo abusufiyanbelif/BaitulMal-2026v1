@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, MoreHorizontal, Edit, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, DollarSign, FolderKanban, Lightbulb, Trash2, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, Check, Image as ImageIcon } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Edit, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, DollarSign, FolderKanban, Lightbulb, Trash2, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, Check, ImageIcon } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,

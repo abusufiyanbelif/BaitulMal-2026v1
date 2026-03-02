@@ -463,6 +463,17 @@ export default function LeadSummaryPage() {
                     </div>
                 )}
 
+                {/* Private Page Alert when logged out */}
+                {!(isProfileLoading) && !userProfile && (
+                    <Alert variant="destructive">
+                        <ShieldAlert className="h-4 w-4" />
+                        <AlertTitle>Private Summary</AlertTitle>
+                        <AlertDescription>
+                            This is the members-only summary view. To see the public page, use the share link or go to Public Initiatives.
+                        </AlertDescription>
+                    </Alert>
+                )}
+
                  <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
                         <CardHeader className="bg-primary/5"><CardTitle>Lead Details</CardTitle></CardHeader>
                         <CardContent className="space-y-4 pt-6 text-primary">
@@ -548,16 +559,6 @@ export default function LeadSummaryPage() {
                         </CardContent>
                     </Card>
             </div>
-            
-            {!(isProfileLoading) && !userProfile && (
-                <Alert variant="destructive" className="mt-6">
-                    <ShieldAlert className="h-4 w-4" />
-                    <AlertTitle>Private Summary</AlertTitle>
-                    <AlertDescription>
-                        This is the members-only summary view. To see the public page, use the share link or go to Public Initiatives.
-                    </AlertDescription>
-                </Alert>
-            )}
 
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
         </main>
