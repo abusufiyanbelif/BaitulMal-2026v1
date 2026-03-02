@@ -372,10 +372,10 @@ export default function CampaignSummaryPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8">
-             <div className="mb-4"><Button variant="outline" asChild><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
+             <div className="mb-4"><Button variant="outline" asChild className="font-bold"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                  <div className="space-y-1">
-                    {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => setEditableCampaign(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-foreground" /> ) : ( <h1 className="text-3xl font-bold text-foreground">{campaign.name}</h1> )}
+                    {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => setEditableCampaign(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary">{campaign.name}</h1> )}
                     {editMode ? ( <Select value={editableCampaign.status} onValueChange={(value) => setEditableCampaign(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1"><SelectValue placeholder="Select a status" /></SelectTrigger><SelectContent><SelectItem value="Upcoming">Upcoming</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem></SelectContent></Select> ): ( <p className="text-muted-foreground">{campaign.status}</p> )}
                 </div>
                 <div className="flex gap-2">
@@ -383,27 +383,27 @@ export default function CampaignSummaryPage() {
                         <>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline"><Download className="mr-2 h-4 w-4" /> Download</Button>
+                                    <Button variant="outline" className="font-bold"><Download className="mr-2 h-4 w-4" /> Download</Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                     <DropdownMenuItem onClick={() => handleDownload('png')}>Download as Image (PNG)</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleDownload('pdf')}>Download as PDF</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                            <Button onClick={() => { setShareDialogData({ title: `Campaign: ${campaign.name}`, text: campaign.description || '', url: window.location.origin + `/campaign-public/${campaignId}/summary` }); setIsShareDialogOpen(true); }} variant="outline"><Share2 className="mr-2 h-4 w-4" /> Share</Button>
+                            <Button onClick={() => { setShareDialogData({ title: `Campaign: ${campaign.name}`, text: campaign.description || '', url: window.location.origin + `/campaign-public/${campaignId}/summary` }); setIsShareDialogOpen(true); }} variant="outline" className="font-bold"><Share2 className="mr-2 h-4 w-4" /> Share</Button>
                         </>
                     )}
-                    {canUpdate && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)}><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)}>Cancel</Button><Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save</Button></div> ) )}
+                    {canUpdate && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} className="font-bold"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold">Cancel</Button><Button onClick={handleSave} className="font-bold"><Save className="mr-2 h-4 w-4" /> Save</Button></div> ) )}
                 </div>
             </div>
 
              <div className="border-b mb-4">
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex w-max space-x-2">
-                        {canReadSummary && ( <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Summary</Link> )}
-                        {canReadRation && ( <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Item Lists</Link> )}
-                        {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Beneficiary List</Link> )}
-                         {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Donations</Link> )}
+                        {canReadSummary && ( <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Summary</Link> )}
+                        {canReadRation && ( <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Item Lists</Link> )}
+                        {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Beneficiary List</Link> )}
+                         {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Donations</Link> )}
                     </div>
                 </ScrollArea>
             </div>
@@ -413,8 +413,8 @@ export default function CampaignSummaryPage() {
                     <div className="grid gap-6 animate-fade-in-up">
                         <Card className="shadow-sm border-primary/5 bg-white">
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
-                                <CardDescription>Verified donations for this campaign.</CardDescription>
+                                <CardTitle className="flex items-center gap-2 font-bold"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
+                                <CardDescription className="font-normal">Verified donations for this campaign.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -427,44 +427,44 @@ export default function CampaignSummaryPage() {
                                                 </RadialBarChart>
                                             </ChartContainer>
                                         ) : <Skeleton className="w-full h-full rounded-full" />}
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground">Funded</span></div>
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold">Funded</span></div>
                                     </div>
                                     <div className="space-y-4 text-center md:text-left">
-                                        <div><p className="text-sm text-muted-foreground">Raised for Goal</p><p className="text-3xl font-bold text-foreground">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                        <div><p className="text-sm text-muted-foreground">Target Goal</p><p className="text-3xl font-bold text-muted-foreground/60">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                        <div><p className="text-sm text-muted-foreground">Grand Total Received (All categories)</p><p className="text-2xl font-bold text-foreground">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                        <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                        <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                        <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Grand Total Received</p><p className="text-2xl font-bold text-primary">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
                         <div className="grid gap-6 sm:grid-cols-3">
-                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-foreground">{fundingData.totalBeneficiaries}</div></CardContent></Card>
-                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Kits Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-foreground">{fundingData.beneficiariesGiven}</div></CardContent></Card>
-                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-foreground">{fundingData.beneficiariesPending}</div></CardContent></Card>
+                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.totalBeneficiaries}</div></CardContent></Card>
+                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Kits Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesGiven}</div></CardContent></Card>
+                            <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesPending}</div></CardContent></Card>
                         </div>
 
                         <div className="grid gap-6 lg:grid-cols-2">
                             <Card className="shadow-sm border-primary/5 bg-white">
                                 <CardHeader>
-                                    <CardTitle>Zakat Utilization</CardTitle>
-                                    <CardDescription>Tracking of Zakat funds collected and allocated.</CardDescription>
+                                    <CardTitle className="font-bold">Zakat Utilization</CardTitle>
+                                    <CardDescription className="font-normal">Tracking of Zakat funds collected and allocated.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
-                                    <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Total Zakat Collected</span><span className="font-semibold font-mono text-foreground">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
+                                    <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Total Zakat Collected</span><span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
                                     <Separator />
                                     <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
-                                        <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Allocated as Cash-in-Hand</span><span className="font-semibold font-mono text-foreground">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
-                                        <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground">Paid out</span><span className="font-mono text-green-600">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                        <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground">Remaining to Pay</span><span className="font-mono text-amber-600">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Allocated as Cash-in-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-xs pl-4 font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Paid out</span><span className="font-mono text-green-600">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-xs pl-4 font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Remaining to Pay</span><span className="font-mono text-amber-600">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                     </div>
                                     <Separator />
-                                    <div className="flex justify-between items-center text-base"><span className="font-bold text-foreground">Zakat Balance for Goal</span><span className="font-bold text-primary font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
+                                    <div className="flex justify-between items-center text-base font-bold text-primary"><span>Zakat Balance for Goal</span><span className="font-bold text-primary font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
                                 </CardContent>
                             </Card>
 
                             <Card className="shadow-sm border-primary/5 bg-white">
-                                <CardHeader><CardTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5"/> Donations by Category</CardTitle></CardHeader>
+                                <CardHeader><CardTitle className="flex items-center gap-2 font-bold"><TrendingUp className="h-5 w-5"/> Donations by Category</CardTitle></CardHeader>
                                 <CardContent>
                                     {isClient ? (
                                     <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
@@ -483,8 +483,8 @@ export default function CampaignSummaryPage() {
                 {!(isProfileLoading) && !userProfile && (
                     <Alert variant="destructive">
                         <ShieldAlert className="h-4 w-4" />
-                        <AlertTitle>Private Summary</AlertTitle>
-                        <AlertDescription>
+                        <AlertTitle className="font-bold">Private Summary</AlertTitle>
+                        <AlertDescription className="font-normal">
                             This is the members-only summary view. To see the public page, use the share link or go to Public Initiatives.
                         </AlertDescription>
                     </Alert>
@@ -492,22 +492,22 @@ export default function CampaignSummaryPage() {
 
                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
                     <CardHeader className="bg-primary/5">
-                        <CardTitle>Campaign Details</CardTitle>
+                        <CardTitle className="font-bold">Campaign Details</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6">
                         {editMode ? (
                             <div className="space-y-6">
                                 <div className="space-y-2">
-                                    <Label>Header Image</Label>
+                                    <Label className="font-bold">Header Image</Label>
                                     <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
                                     <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary">
-                                        {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-2 text-sm text-center text-muted-foreground"><span className="font-semibold text-primary">Click to upload</span></p></div> )}
+                                        {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-2 text-sm text-center text-muted-foreground"><span className="font-bold text-primary">Click to upload</span></p></div> )}
                                     </label>
                                 </div>
-                                <div><Label htmlFor="description">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground" rows={4} /></div>
+                                <div><Label htmlFor="description" className="font-bold">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground" rows={4} /></div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1"><Label htmlFor="startDate">Start Date</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="text-foreground" /></div>
-                                    <div className="space-y-1"><Label htmlFor="endDate">End Date</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="text-foreground" /></div>
+                                    <div className="space-y-1"><Label htmlFor="startDate" className="font-bold">Start Date</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="text-foreground" /></div>
+                                    <div className="space-y-1"><Label htmlFor="endDate" className="font-bold">End Date</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="text-foreground" /></div>
                                 </div>
                             </div>
                         ) : (
@@ -521,7 +521,7 @@ export default function CampaignSummaryPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
-                                    <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed text-foreground/90">{campaign.description || 'No description provided.'}</p>
+                                    <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed text-foreground/90 font-normal">{campaign.description || 'No description provided.'}</p>
                                 </div>
                             </>
                         )}
@@ -529,29 +529,29 @@ export default function CampaignSummaryPage() {
                 </Card>
 
                 <Card className="animate-fade-in-up bg-white" style={{ animationDelay: '100ms' }}>
-                    <CardHeader><CardTitle>Artifacts & Documents</CardTitle></CardHeader>
+                    <CardHeader><CardTitle className="font-bold">Artifacts & Documents</CardTitle></CardHeader>
                     <CardContent>
                        {editMode ? (
                             <div className="space-y-4">
-                                <Label>Upload New Artifacts</Label>
+                                <Label className="font-bold">Upload New Artifacts</Label>
                                 <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
                                 <Separator />
-                                <Label>Manage Existing</Label>
+                                <Label className="font-bold">Manage Existing</Label>
                                 {existingDocuments.length > 0 ? (
                                     <div className="space-y-3">
                                         {existingDocuments.map((doc) => (
                                             <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md gap-4">
                                                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:underline truncate text-foreground"><p className="truncate">{doc.name}</p></a>
+                                                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm font-bold hover:underline truncate text-foreground"><p className="truncate">{doc.name}</p></a>
                                                 </div>
                                                 <div className="flex items-center gap-4">
-                                                    <div className="flex items-center gap-2"><Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} /><Label className="text-xs text-foreground">Public</Label></div>
+                                                    <div className="flex items-center gap-2"><Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} /><Label className="text-xs text-foreground font-bold">Public</Label></div>
                                                     <Button variant="ghost" size="icon" onClick={() => handleRemoveExistingDocument(doc.url)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
-                                ) : <p className="text-sm text-muted-foreground">None.</p>}
+                                ) : <p className="text-sm text-muted-foreground font-normal">None.</p>}
                             </div>
                         ) : (
                             campaign.documents && campaign.documents.length > 0 ? (
@@ -560,15 +560,15 @@ export default function CampaignSummaryPage() {
                                         <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all flex flex-col active:scale-95 bg-white border-primary/10">
                                             <a href={doc.url} target="_blank" rel="noopener noreferrer" className="group block flex-grow">
                                                 <div className="relative aspect-square w-full bg-muted flex items-center justify-center"><File className="w-10 h-10 text-muted-foreground" /></div>
-                                                <div className="p-2 text-center text-[10px] font-medium truncate text-foreground">{doc.name}</div>
+                                                <div className="p-2 text-center text-[10px] font-bold truncate text-foreground">{doc.name}</div>
                                             </a>
                                             <CardFooter className="p-2 border-t mt-auto flex justify-center w-full gap-2">
-                                                {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-xs text-foreground">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"}>{doc.isPublic ? "Public" : "Private"}</Badge> )}
+                                                {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-xs text-foreground font-bold">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"}>{doc.isPublic ? "Public" : "Private"}</Badge> )}
                                             </CardFooter>
                                         </Card>
                                     ))}
                                 </div>
-                            ) : <p className="text-sm text-muted-foreground">None.</p>
+                            ) : <p className="text-sm text-muted-foreground font-normal">None.</p>
                         )}
                     </CardContent>
                 </Card>

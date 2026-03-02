@@ -59,9 +59,10 @@
     @apply min-h-screen bg-background text-foreground antialiased font-sans font-normal;
   }
 
-  /* Headings use the brand green */
+  /* Headings use the brand green and are bold */
   h1, h2, h3, h4, h5, h6 {
-    color: hsl(var(--primary));
+    @apply font-bold;
+    color: #1b9d4a;
   }
 
   /* Custom Scrollbars */
@@ -73,11 +74,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary));
+    background: #1b9d4a;
     border-radius: 10px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.8);
+    background: #1b9d4a/0.8;
   }
 
   .interactive-hover {

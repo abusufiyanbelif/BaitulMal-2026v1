@@ -89,7 +89,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
           </div>
           <CardHeader className="p-4">
             <div className="flex justify-between items-start gap-2">
-                <CardTitle className="w-full break-words text-sm sm:text-base font-normal line-clamp-2 tracking-tight">
+                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight">
                     {campaign.campaignNumber && <span className="text-primary">#{campaign.campaignNumber} </span>}{campaign.name}
                 </CardTitle>
                   <DropdownMenu>
@@ -177,7 +177,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
             )}
           </CardContent>
           <CardFooter className="p-2 border-t bg-primary/5">
-            <Button asChild className="w-full text-xs font-normal tracking-tight" size="sm" variant="ghost">
+            <Button asChild className="w-full text-xs font-bold tracking-tight" size="sm" variant="ghost">
                 <Link href={`/campaign-members/${campaign.id}/summary`}>
                     Manage Initiative
                 </Link>
@@ -300,10 +300,10 @@ export default function CampaignPage() {
   if (!isLoading && userProfile && !canViewCampaigns) {
     return (
       <main className="container mx-auto p-4 md:p-8">
-        <div className="mb-4"><Button variant="outline" asChild className="font-normal border-primary/20"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link></Button></div>
+        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link></Button></div>
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
-          <AlertTitle className="font-normal">Access Denied</AlertTitle>
+          <AlertTitle className="font-bold">Access Denied</AlertTitle>
           <AlertDescription className="font-normal">Missing permissions to manage campaigns.</AlertDescription>
         </Alert>
       </main>
@@ -314,18 +314,18 @@ export default function CampaignPage() {
     <>
       <main className="container mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <Button variant="outline" asChild size="sm" className="font-normal border-primary/20 hover:bg-primary/10">
+          <Button variant="outline" asChild size="sm" className="font-bold border-primary/20 hover:bg-primary/10">
             <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link>
           </Button>
           {canCreate && !isLoading && (
-            <Button asChild size="sm" className="font-normal">
+            <Button asChild size="sm" className="font-bold">
               <Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New Campaign</Link>
             </Button>
           )}
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-normal tracking-tight">Campaign Hub</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Campaign Hub</h1>
           <p className="text-sm max-w-2xl font-normal leading-relaxed opacity-70">Organization-wide initiatives, budget vetting, and strategic tracking.</p>
         </div>
 
@@ -338,11 +338,11 @@ export default function CampaignPage() {
           <CardHeader className="p-4 sm:p-6 border-b bg-primary/5">
             <div className="flex flex-wrap items-center gap-3">
                 <Input placeholder="Search initiatives..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary font-normal" disabled={isLoading}/>
-                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-normal border-primary/20"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-normal border-primary/20"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All Categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All Categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
                 <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
-                    <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-normal border-primary/20"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                    <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal border-primary/20", !dateRange ? "text-muted-foreground" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                    <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+                    <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20", !dateRange ? "text-muted-foreground" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                     {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
                 </div>
             </div>
@@ -356,11 +356,11 @@ export default function CampaignPage() {
               <Accordion type="multiple" defaultValue={['active']} className="space-y-6">
                 {sections.map(section => (
                   <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white/50 shadow-sm overflow-hidden">
-                    <AccordionTrigger className="hover:no-underline py-5 group font-normal">
+                    <AccordionTrigger className="hover:no-underline py-5 group font-bold">
                       <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
-                        <span className="text-lg font-normal tracking-tight">{section.title}</span>
-                        <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-normal bg-primary/10">{section.items.length}</Badge>
+                        <span className="text-lg font-bold tracking-tight">{section.title}</span>
+                        <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-bold bg-primary/10">{section.items.length}</Badge>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-8">
@@ -376,7 +376,7 @@ export default function CampaignPage() {
             ) : (
               <div className="text-center py-24 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
                   <HandHelping className="h-16 w-16 mx-auto text-primary/20 mb-4" />
-                  <p className="font-normal tracking-tight text-sm opacity-60">No Initiatives Found Matching Filters.</p>
+                  <p className="font-bold tracking-tight text-sm opacity-60">No Initiatives Found Matching Filters.</p>
               </div>
             )}
           </CardContent>
@@ -384,7 +384,7 @@ export default function CampaignPage() {
       </main>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-normal text-destructive">Delete Initiative?</AlertDialogTitle><AlertDialogDescription className="font-normal opacity-80">Permanently erase all data for '{campaignToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-normal">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-normal hover:bg-destructive/90">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete Initiative?</AlertDialogTitle><AlertDialogDescription className="font-normal opacity-80">Permanently erase all data for '{campaignToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
       <CopyCampaignDialog open={!!campaignToCopy} onOpenChange={() => setCampaignToCopy(null)} campaign={campaignToCopy} onCopyConfirm={async (opt) => { const res = await copyCampaignAction({ sourceCampaignId: campaignToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setCampaignToCopy(null); }}/>

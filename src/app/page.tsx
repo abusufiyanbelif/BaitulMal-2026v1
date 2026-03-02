@@ -63,17 +63,17 @@ export default function Home() {
                   <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary">
                       Baitulmal Samajik Sanstha Solapur
                   </h1>
-                  <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
+                  <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground font-normal">
                       An overview of our organization's impact and activities. Join us in making a difference.
                   </p>
                   <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-                      <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95">
+                      <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold">
                           <Link href="/campaign-public">
                               <FolderKanban className="mr-2 h-5 w-5" />
                               View Campaigns
                           </Link>
                       </Button>
-                      <Button asChild size="lg" variant="secondary" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95">
+                      <Button asChild size="lg" variant="secondary" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold">
                           <Link href="/leads-public">
                               <Lightbulb className="mr-2 h-5 w-5" />
                               View Leads
