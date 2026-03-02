@@ -175,7 +175,7 @@ export function PublicLeadsView() {
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-          <h1 className="text-4xl font-black tracking-tighter uppercase text-primary">PUBLIC LEADS</h1>
+          <h1 className="text-4xl font-black tracking-tighter uppercase text-[#138808]">PUBLIC LEADS</h1>
           <p className="text-muted-foreground text-lg font-medium">Verified community appeals requiring your support.</p>
           
           <div className="space-y-2">

@@ -4,28 +4,32 @@
 
 @layer base {
   :root {
-    --background: 115 30% 98%;
-    /* India Green #138808 -> HSL 115 89% 28% */
-    --foreground: 115 89% 28%; 
+    /* Background: Very faint Tea Green tint */
+    --background: 100 40% 98%;
+    /* Foreground: Deep Forest Green (Darker Indian Green variant) */
+    --foreground: 115 89% 12%; 
     --card: 0 0% 100%;
-    --card-foreground: 115 89% 28%;
+    --card-foreground: 115 89% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 115 89% 28%;
-    /* Forest Green #0B6623 -> HSL 136 81% 22% */
+    --popover-foreground: 115 89% 12%;
+    /* Primary: Forest Green #0B6623 */
     --primary: 136 81% 22%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 115 40% 94%;
-    --secondary-foreground: 136 81% 15%;
-    --muted: 115 20% 92%;
-    --muted-foreground: 115 40% 40%;
-    --accent: 115 71% 92%;
-    --accent-foreground: 136 81% 10%;
+    /* Secondary: Mint Green #98FF98 variant */
+    --secondary: 120 70% 92%;
+    --secondary-foreground: 136 81% 10%;
+    /* Muted: Light Green #90EE90 variant */
+    --muted: 120 50% 94%;
+    --muted-foreground: 115 40% 30%;
+    /* Accent: Tea Green #D0F0C0 */
+    --accent: 100 60% 85%;
+    --accent-foreground: 115 89% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --success: 142 70% 88%;
     --success-foreground: 142 80% 20%;
-    --border: 115 20% 88%;
-    --input: 115 20% 88%;
+    --border: 120 30% 88%;
+    --input: 120 30% 88%;
     --ring: 136 81% 22%;
     --radius: 0.75rem;
     
@@ -48,7 +52,7 @@
   }
 
   .interactive-hover {
-    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 hover:border-primary/30 hover:bg-primary/5;
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 hover:border-primary/30 hover:bg-accent/30;
   }
 
   @keyframes marquee {
