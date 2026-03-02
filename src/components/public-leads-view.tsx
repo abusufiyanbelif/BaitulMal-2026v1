@@ -95,7 +95,6 @@ export function PublicLeadsView() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [purposeFilter, setPurposeFilter] = useState('All');
   const [selectedYear, setSelectedYear] = useState('All');
-  const [selectedMonth, setSelectedMonth] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   const { isLoading, leadsWithProgress, campaignsWithProgress, recentDonationsFormatted } = usePublicData();
@@ -107,7 +106,7 @@ export function PublicLeadsView() {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
           return {
               id: c.id,
-              text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
+              text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/campaign-public/${c.id}/summary`
           };
       });
@@ -162,10 +161,9 @@ export function PublicLeadsView() {
         });
     } else if (selectedYear !== 'All') {
         items = items.filter(l => l.startDate?.startsWith(selectedYear));
-        if (selectedMonth !== 'All') items = items.filter(l => l.startDate?.split('-')[1] === selectedMonth);
     }
     return items.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-  }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, dateRange, selectedYear, selectedMonth]);
+  }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => [
     { id: 'active', title: 'Live Initiatives', items: filteredLeads.filter(c => c.status === 'Active') },

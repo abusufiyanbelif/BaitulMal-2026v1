@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info } from 'lucide-react';
-import { useFirestore, useSession } from '@/firebase';
+import { useFirestore } from '@/firebase/provider';
+import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc } from 'firebase/firestore';
 import type { Lead } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -30,7 +31,6 @@ import { NewsTicker } from '@/components/news-ticker';
 import { usePublicData } from '@/hooks/use-public-data';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { BrandedLoader } from '@/components/branded-loader';
 
 interface LeadCardProps {
     lead: Lead & { collected: number; progress: number; };
@@ -203,9 +203,10 @@ export default function LeadPage() {
       .filter(l => l.status === 'Active')
       .map(l => {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
+          const prefix = (l as any).isUpdated ? '✨ UPDATED: ' : '';
           return {
               id: l.id,
-              text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
+              text: `${prefix}Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
               href: `/leads-members/${l.id}/summary`
           };
       });

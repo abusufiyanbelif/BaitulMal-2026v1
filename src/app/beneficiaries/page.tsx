@@ -6,7 +6,7 @@ import { useFirestore, useMemoFirebase, useCollection, collection } from '@/fire
 import { useSession } from '@/hooks/use-session';
 import type { Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { 

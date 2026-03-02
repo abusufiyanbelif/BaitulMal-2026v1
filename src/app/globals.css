@@ -6,13 +6,13 @@
   :root {
     /* Background: Lighter Tea Green tint #F2FAF0 */
     --background: 100 40% 96%;
-    /* Foreground: Deep Forest Green #082F11 - Darker for readability, No Black */
+    /* Foreground: Deep Forest Green #082F11 - No pure black */
     --foreground: 136 81% 11%; 
     --card: 0 0% 100%;
     --card-foreground: 136 81% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 136 81% 11%;
-    /* Primary: Forest Green #0B6623 for main buttons */
+    /* Primary: Forest Green #0B6623 */
     --primary: 136 81% 22%;
     --primary-foreground: 0 0% 100%;
     /* Secondary: India Green #138808 for headings */
@@ -102,7 +102,7 @@
   }
 
   @keyframes fade-in-up {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(15px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
