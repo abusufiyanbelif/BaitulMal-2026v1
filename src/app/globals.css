@@ -4,49 +4,43 @@
 
 @layer base {
   :root {
-    /* Brand Foundation - Component Color Breakdown */
-    --background: 0 0% 100%; /* #FFFFFF - Pure White */
-    --foreground: 124 55% 24%; /* #1B5E20 - Deep Forest Green */
+    /* India Green Mosaic Theme */
+    --background: 120 30% 97%; /* #F2FAF0 - Soft Tea Green Background */
+    --foreground: 115 94% 9%; /* #082F11 - High-contrast Deep Forest Green */
     
     --card: 0 0% 100%;
-    --card-foreground: 124 55% 24%;
+    --card-foreground: 115 94% 9%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 124 55% 24%;
+    --popover-foreground: 115 94% 9%;
     
-    /* Action & Interaction (CTA) - Matching vibrant green in image */
-    --primary: 142 71% 36%; /* #16a34a - Vibrant Leaf Green */
-    --primary-foreground: 0 0% 100%; /* Pure White text on primary */
+    /* India Green Identity (#138808) */
+    --primary: 115 94% 28%; 
+    --primary-foreground: 0 0% 100%;
     
-    /* Secondary (Generate style) */
-    --secondary: 0 0% 96%; /* #f1f5f1 - Light Mint */
-    --secondary-foreground: 124 55% 24%;
+    --secondary: 120 30% 92%; /* #E8F5E9 */
+    --secondary-foreground: 115 94% 9%;
     
-    /* Muted (Inactive/Background fills) */
-    --muted: 129 44% 94%; /* #E8F5E9 - Very Pale Green */
-    --muted-foreground: 124 55% 35%;
+    --muted: 120 30% 92%;
+    --muted-foreground: 115 94% 20%;
     
-    --accent: 142 71% 95%; /* Pale green hover tint */
-    --accent-foreground: 142 71% 36%;
+    --accent: 115 94% 95%;
+    --accent-foreground: 115 94% 28%;
     
-    /* UI Accents */
-    --destructive: 0 84% 60%; /* #ef4444 */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     
-    --success: 142 71% 36%; /* #16a34a */
+    --success: 115 94% 28%;
     --success-foreground: 0 0% 100%;
     
-    --info: 202 97% 37%; /* #0277BD */
-    
-    /* Borders & Inputs */
-    --border: 0 0% 88%; /* #E0E0E0 */
-    --input: 0 0% 82%; /* #D1D1D1 */
-    --ring: 142 71% 36%;
+    --border: 115 94% 90%;
+    --input: 115 94% 85%;
+    --ring: 115 94% 28%;
     
     --radius: 0.75rem;
     
-    --chart-1: 124 55% 24%; /* #1B5E20 */
-    --chart-2: 142 71% 36%; /* #16a34a */
+    --chart-1: 115 94% 28%;
+    --chart-2: 115 94% 45%;
     --chart-3: 158 49% 38%;
     --chart-4: 122 39% 49%;
     --chart-5: 202 97% 37%;
@@ -57,20 +51,16 @@
   }
 
   body {
-    @apply min-h-screen bg-background text-foreground antialiased font-sans;
+    @apply min-h-screen bg-background text-foreground antialiased font-sans font-medium;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-black uppercase tracking-tighter;
-    color: hsl(var(--foreground)); /* Standardized to Deep Forest Green #1B5E20 */
+    color: hsl(var(--primary)); /* Standardized to India Green #138808 */
   }
 
   .interactive-hover {
     @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-95;
-    &:hover {
-      background-color: hsla(124, 55%, 24%, 0.05);
-      border-color: hsla(124, 55%, 24%, 0.2);
-    }
   }
 
   @keyframes marquee {
