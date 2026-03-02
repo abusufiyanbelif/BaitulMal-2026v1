@@ -45,7 +45,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn, getNestedValue } from '@/lib/utils';
 import { BrandedLoader } from '@/components/branded-loader';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const gridClass = "grid grid-cols-[60px_1fr_100px_100px_120px_120px_120px_60px]";
 
