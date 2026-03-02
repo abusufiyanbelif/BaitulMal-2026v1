@@ -3,7 +3,7 @@
 import { LogOut, User, LogIn, Settings, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuth } from '@/firebase/provider';
+import { useAuth } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { signOut } from '@/lib/auth';
@@ -67,7 +67,7 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tighter animate-fade-in-zoom" style={{ color: '#138808', animationDelay: '0.2s', animationFillMode: 'backwards' }}>
+          <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tighter animate-fade-in-zoom" style={{ color: '#1B5E20', animationDelay: '0.2s', animationFillMode: 'backwards' }}>
             {isBrandingLoading ? <Skeleton className="h-8 w-64 md:w-80" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
           </h1>
         </Link>
@@ -94,7 +94,7 @@ export function DocuExtractHeader() {
                     <DropdownMenuContent className="w-64 mt-2" align="end" forceMount>
                       <DropdownMenuLabel className="font-normal p-4">
                         <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-black uppercase tracking-tight leading-none text-[#138808]">
+                          <p className="text-sm font-black uppercase tracking-tight leading-none text-primary">
                             {userProfile?.name || 'User'}
                           </p>
                           <p className="text-xs font-medium text-muted-foreground pt-1">

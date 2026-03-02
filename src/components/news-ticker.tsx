@@ -60,10 +60,10 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
       "border-primary/10"
     )}>
       <div className={cn(
-        "z-30 h-full px-4 flex items-center border-r shadow-md shrink-0 bg-background",
-        isCompleted ? "text-muted-foreground" : 
-        isDonation ? "text-blue-600" : 
-        "text-primary"
+        "z-30 h-full px-4 flex items-center border-r shadow-md shrink-0",
+        isCompleted ? "bg-muted text-muted-foreground" : 
+        isDonation ? "bg-blue-600 text-white" : 
+        "bg-foreground text-white" /* Top News Ticker: Background Deep Forest Green (#1B5E20) | Text White */
       )}>
         {isCompleted ? (
           <CheckCircle2 className="h-4 w-4 mr-2" />

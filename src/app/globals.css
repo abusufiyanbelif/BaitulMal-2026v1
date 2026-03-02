@@ -4,43 +4,52 @@
 
 @layer base {
   :root {
-    /* Background: Light Tea Green tint #F2FAF0 */
-    --background: 100 40% 97%;
-    /* Foreground: India Green #138808 (Readable shade) */
-    --foreground: 115 89% 25%; 
+    /* Brand Foundation */
+    --background: 0 0% 100%; /* #FFFFFF - Pure White */
+    --foreground: 124 55% 24%; /* #1B5E20 - Deep Forest Green */
+    
     --card: 0 0% 100%;
-    --card-foreground: 115 89% 25%;
+    --card-foreground: 124 55% 24%;
+    
     --popover: 0 0% 100%;
-    --popover-foreground: 115 89% 25%;
-    /* Primary: India Green #138808 */
-    --primary: 115 89% 28%;
-    --primary-foreground: 0 0% 100%;
-    /* Secondary: Kelly Green #4CBB17 */
-    --secondary: 120 78% 41%;
-    --secondary-foreground: 0 0% 100%;
-    /* Muted: Lighter Tea Green */
-    --muted: 120 50% 96%;
-    --muted-foreground: 115 40% 40%;
-    /* Accent: Tea Green #D0F0C0 */
-    --accent: 100 60% 85%;
-    --accent-foreground: 115 89% 20%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --success: 120 78% 41%;
+    --popover-foreground: 124 55% 24%;
+    
+    /* Action & Interaction (CTA) */
+    --primary: 158 49% 38%; /* #31906E - Dark Mint */
+    --primary-foreground: 0 0% 100%; /* Pure White text on primary */
+    
+    /* Secondary (Generate style) */
+    --secondary: 0 0% 100%;
+    --secondary-foreground: 158 49% 38%;
+    
+    /* Muted (Inactive/Background fills) */
+    --muted: 129 44% 94%; /* #E8F5E9 - Very Pale Green */
+    --muted-foreground: 124 55% 35%;
+    
+    --accent: 158 49% 95%;
+    --accent-foreground: 158 49% 38%;
+    
+    /* UI Accents */
+    --destructive: 0 66% 47%; /* #C62828 - High Contrast Red */
+    --destructive-foreground: 0 0% 100%;
+    
+    --success: 122 39% 49%; /* #4CAF50 - Vibrant Leaf Green */
     --success-foreground: 0 0% 100%;
-    --border: 120 30% 88%;
-    --input: 120 30% 88%;
-    --ring: 115 89% 28%;
+    
+    --info: 202 97% 37%; /* #0277BD - Professional Blue */
+    
+    /* Borders & Inputs */
+    --border: 0 0% 88%; /* #E0E0E0 - Light Grey */
+    --input: 0 0% 82%; /* #D1D1D1 - Field Border */
+    --ring: 158 49% 38%; /* #31906E - Dark Mint focus */
+    
     --radius: 0.75rem;
     
-    --chart-1: 115 89% 28%;  /* Indian Green */
-    --chart-2: 136 81% 22%;  /* Forest Green */
-    --chart-3: 120 78% 41%;  /* Kelly Green */
-    --chart-4: 100 60% 85%;  /* Tea Green */
-    --chart-5: 120 100% 80%; /* Mint Green */
-    --chart-6: 120 50% 70%;  /* Light Green */
-    --chart-7: 173 58% 39%;
-    --chart-8: 43 74% 66%;
+    --chart-1: 124 55% 24%; /* #1B5E20 */
+    --chart-2: 158 49% 38%; /* #31906E */
+    --chart-3: 122 39% 49%;
+    --chart-4: 158 49% 95%;
+    --chart-5: 202 97% 37%;
   }
 
   * {
@@ -51,24 +60,18 @@
     @apply min-h-screen bg-background text-foreground antialiased font-sans;
   }
 
-  /* India Green for all primary buttons and active states */
-  button.bg-primary, .btn-forest, [data-state=active] {
-    background-color: #138808 !important;
-    color: white !important;
-  }
-
   h1, h2, h3, h4, h5, h6 {
     @apply font-black uppercase tracking-tighter;
-    color: #138808; /* Indian Green for all Headings */
-  }
-
-  /* Deep Forest Green for all other text strings (no pure black) */
-  p, span, label, div, td, th {
-    color: #138808; 
+    color: hsl(var(--foreground));
   }
 
   .interactive-hover {
-    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 hover:border-primary/30 hover:bg-accent/30;
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-95;
+    /* Interactive Hover: #0D3311 (Midnight Green) tint */
+    &:hover {
+      background-color: hsla(126, 59%, 13%, 0.05);
+      border-color: hsla(126, 59%, 13%, 0.2);
+    }
   }
 
   @keyframes marquee {
