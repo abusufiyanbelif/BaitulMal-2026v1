@@ -160,7 +160,7 @@ export default function BeneficiariesPage() {
           <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
             <div className="space-y-1">
                 <CardTitle className="text-2xl font-black uppercase tracking-tighter text-primary">Master Beneficiary Hub ({stats.total})</CardTitle>
-                <CardDescription className="font-bold text-foreground">Global record management for all organizational aid recipients grouped by referral.</CardDescription>
+                <CardDescription className="font-bold text-foreground">Global record management grouped by referral source.</CardDescription>
             </div>
             <div className="flex gap-2">
                 <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync Complete' : 'Sync Failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="outline" size="sm" className="font-bold uppercase interactive-hover"><DatabaseZap className="mr-2 h-4 w-4"/> Sync Hub</Button>
@@ -248,7 +248,7 @@ export default function BeneficiariesPage() {
                         </AccordionItem>
                     ))}
                 </Accordion>
-                {filteredBeneficiaries.length === 0 && <div className="text-center py-20 text-muted-foreground font-bold uppercase tracking-widest bg-muted/5">No beneficiaries found in the hub.</div>}
+                {filteredBeneficiaries.length === 0 && <div className="text-center py-20 text-muted-foreground font-bold uppercase tracking-widest bg-muted/5">No beneficiaries found.</div>}
             </div>
         </CardContent>
         {totalPages > 1 && (
