@@ -45,18 +45,18 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                   className="object-cover"
                                 />
                             ) : (
-                                <FallbackIcon className="h-16 w-16 text-muted-foreground/40" />
+                                <FallbackIcon className="h-16 w-16 text-primary/10" />
                             )}
                         </div>
                         <CardHeader className="p-4">
-                            <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2">
+                            <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 text-primary">
                                 {campaign.campaignNumber && <span className="text-primary">#{campaign.campaignNumber} </span>}{campaign.name}
                             </CardTitle>
-                            <CardDescription className="text-[10px] uppercase font-bold tracking-wider">{campaign.startDate} to {campaign.endDate}</CardDescription>
+                            <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">{campaign.startDate} to {campaign.endDate}</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-grow space-y-3 p-4 pt-0">
                             <div className="flex justify-between items-center text-xs">
-                                <Badge variant="outline" className="text-[10px]">{campaign.category}</Badge>
+                                <Badge variant="outline" className="text-[10px] border-primary/20 text-primary">{campaign.category}</Badge>
                                 <Badge 
                                   variant={campaign.status === 'Active' ? 'success' : 'outline'}
                                   className={cn("text-[10px]", campaign.status === 'Active' && "animate-status-pulse")}
@@ -75,7 +75,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                             )}
                         </CardContent>
                         <CardFooter className="p-2 border-t bg-muted/5">
-                            <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold" size="sm" variant="ghost">
+                            <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
                                 <Link href={`/campaign-public/${campaign.id}/summary`}>
                                     View Details
                                 </Link>
@@ -103,10 +103,9 @@ export function PublicCampaignsView() {
       .filter(c => c.status === 'Active')
       .map(c => {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
-          const prefix = (c as any).isUpdated ? '✨ UPDATED: ' : '';
           return {
               id: c.id,
-              text: `${prefix}Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
+              text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
               href: `/campaign-public/${c.id}/summary`
           };
       });
@@ -115,10 +114,9 @@ export function PublicCampaignsView() {
       .filter(l => l.status === 'Active')
       .map(l => {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
-          const prefix = (l as any).isUpdated ? '✨ UPDATED: ' : '';
           return {
               id: l.id,
-              text: `${prefix}Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
+              text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
               href: `/leads-public/${l.id}/summary`
           };
       });
@@ -175,8 +173,8 @@ export function PublicCampaignsView() {
   return (
     <div className="space-y-8">
        <div className="space-y-4">
-          <h1 className="text-4xl font-black tracking-tighter">OUR CAMPAIGNS</h1>
-          <p className="text-muted-foreground text-lg">Transparent tracking of our community support projects.</p>
+          <h1 className="text-4xl font-black tracking-tighter text-[#138808]">OUR CAMPAIGNS</h1>
+          <p className="text-[#138808] text-lg font-bold">Transparent tracking of our community support projects.</p>
           
           <div className="space-y-2">
             <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
@@ -184,14 +182,14 @@ export function PublicCampaignsView() {
             <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 pt-4 bg-muted/10 p-4 rounded-xl border">
-              <Input placeholder="Search campaigns..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs" disabled={isLoading}/>
-              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All Categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
-              <div className="flex items-center gap-2 border-l pl-3 ml-1">
-                  <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                  <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal", !dateRange && "text-muted-foreground")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Date Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); setSelectedMonth('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
-                  {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedYear('All'); setSelectedMonth('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
+          <div className="flex flex-wrap items-center gap-2 pt-4 bg-primary/5 p-4 rounded-xl border border-primary/10">
+              <Input placeholder="Search campaigns..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary text-[#138808] font-bold" disabled={isLoading}/>
+              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold uppercase border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold uppercase border-primary/20 text-primary"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All Categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
+              <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
+                  <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold uppercase border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+                  <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold uppercase border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                  {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
               </div>
         </div>
       </div>
@@ -207,8 +205,8 @@ export function PublicCampaignsView() {
               <AccordionTrigger className="hover:no-underline group">
                 <div className="flex items-center gap-4">
                   <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
-                  <span className="text-2xl font-black tracking-tight uppercase">{section.title}</span>
-                  <Badge variant="secondary" className="rounded-full h-6 px-3">{section.items.length}</Badge>
+                  <span className="text-2xl font-black tracking-tight uppercase text-primary">{section.title}</span>
+                  <Badge variant="secondary" className="rounded-full h-6 px-3 bg-primary/10 text-primary border-primary/20">{section.items.length}</Badge>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pt-6">
@@ -218,9 +216,9 @@ export function PublicCampaignsView() {
           ))}
         </Accordion>
       ) : (
-        <div className="text-center py-20 bg-muted/10 rounded-2xl border-2 border-dashed">
-            <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground/20 mb-4" />
-            <p className="text-muted-foreground">No campaigns found matching your criteria.</p>
+        <div className="text-center py-20 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
+            <FolderKanban className="h-12 w-12 mx-auto text-primary/20 mb-4" />
+            <p className="text-primary/60 font-bold uppercase tracking-widest text-sm">No campaigns found matching criteria.</p>
         </div>
       )}
     </div>

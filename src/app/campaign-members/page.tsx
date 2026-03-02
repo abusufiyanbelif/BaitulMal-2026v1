@@ -318,7 +318,7 @@ export default function CampaignPage() {
 
         <div className="space-y-2">
           <h1 className="text-3xl font-black tracking-tighter uppercase text-primary">Campaign Hub</h1>
-          <p className="text-[#082F11] text-sm max-w-2xl font-bold leading-relaxed opacity-70">Organization-wide initiatives, budget vetting, and strategic tracking.</p>
+          <p className="text-[#138808] text-sm max-w-2xl font-bold leading-relaxed opacity-70">Organization-wide initiatives, budget vetting, and strategic tracking.</p>
         </div>
 
         <div className="space-y-2">
@@ -329,7 +329,7 @@ export default function CampaignPage() {
         <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
           <CardHeader className="p-4 sm:p-6 border-b bg-primary/5">
             <div className="flex flex-wrap items-center gap-3">
-                <Input placeholder="Search initiatives..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary text-[#082F11] font-bold" disabled={isLoading}/>
+                <Input placeholder="Search initiatives..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary text-[#138808] font-bold" disabled={isLoading}/>
                 <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-black uppercase border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
                 <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-black uppercase border-primary/20 text-primary"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All Categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
                 <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
@@ -376,7 +376,7 @@ export default function CampaignPage() {
       </main>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-black uppercase text-destructive">Delete Initiative?</AlertDialogTitle><AlertDialogDescription className="font-bold text-[#082F11]/80">Permanently erase all data for '{campaignToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold text-[#082F11]">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-black hover:bg-destructive/90">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-black uppercase text-destructive">Delete Initiative?</AlertDialogTitle><AlertDialogDescription className="font-bold text-[#138808]/80">Permanently erase all data for '{campaignToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold text-[#138808]">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-black hover:bg-destructive/90">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
       <CopyCampaignDialog open={!!campaignToCopy} onOpenChange={() => setCampaignToCopy(null)} campaign={campaignToCopy} onCopyConfirm={async (opt) => { const res = await copyCampaignAction({ sourceCampaignId: campaignToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setCampaignToCopy(null); }}/>

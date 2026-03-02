@@ -4,30 +4,28 @@
 
 @layer base {
   :root {
-    /* Background: Lighter Tea Green tint #F2FAF0 */
-    --background: 100 40% 96%;
-    /* Foreground: Deep Forest Green #082F11 - No pure black */
-    --foreground: 136 81% 11%; 
+    /* Background: Light Tea Green tint #F2FAF0 */
+    --background: 100 40% 97%;
+    /* Foreground: India Green #138808 (Readable shade) */
+    --foreground: 115 89% 25%; 
     --card: 0 0% 100%;
-    --card-foreground: 136 81% 11%;
+    --card-foreground: 115 89% 25%;
     --popover: 0 0% 100%;
-    --popover-foreground: 136 81% 11%;
+    --popover-foreground: 115 89% 25%;
     /* Primary: India Green #138808 */
     --primary: 115 89% 28%;
     --primary-foreground: 0 0% 100%;
-    /* Secondary: India Green #138808 */
-    --secondary: 115 89% 28%;
+    /* Secondary: Kelly Green #4CBB17 */
+    --secondary: 120 78% 41%;
     --secondary-foreground: 0 0% 100%;
-    /* Muted: Light Green tint */
-    --muted: 120 50% 94%;
-    --muted-foreground: 115 40% 30%;
+    /* Muted: Lighter Tea Green */
+    --muted: 120 50% 96%;
+    --muted-foreground: 115 40% 40%;
     /* Accent: Tea Green #D0F0C0 */
     --accent: 100 60% 85%;
-    --accent-foreground: 136 81% 10%;
-    /* Destructive: Soft Red */
+    --accent-foreground: 115 89% 20%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    /* Success: Kelly Green #4CBB17 */
     --success: 120 78% 41%;
     --success-foreground: 0 0% 100%;
     --border: 120 30% 88%;
@@ -35,7 +33,6 @@
     --ring: 115 89% 28%;
     --radius: 0.75rem;
     
-    /* Charts using Mosaic Greens */
     --chart-1: 115 89% 28%;  /* Indian Green */
     --chart-2: 136 81% 22%;  /* Forest Green */
     --chart-3: 120 78% 41%;  /* Kelly Green */
@@ -54,7 +51,7 @@
     @apply min-h-screen bg-background text-foreground antialiased font-sans;
   }
 
-  /* India Green for all primary buttons #138808 */
+  /* India Green for all primary buttons and active states */
   button.bg-primary, .btn-forest, [data-state=active] {
     background-color: #138808 !important;
     color: white !important;
@@ -62,12 +59,12 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-black uppercase tracking-tighter;
-    color: #138808; /* Indian Green for Headings */
+    color: #138808; /* Indian Green for all Headings */
   }
 
-  /* Deep Forest Green for all other text strings */
+  /* Deep Forest Green for all other text strings (no pure black) */
   p, span, label, div, td, th {
-    color: #082F11;
+    color: #138808; 
   }
 
   .interactive-hover {

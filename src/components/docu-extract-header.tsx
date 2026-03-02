@@ -94,7 +94,7 @@ export function DocuExtractHeader() {
                     <DropdownMenuContent className="w-64 mt-2" align="end" forceMount>
                       <DropdownMenuLabel className="font-normal p-4">
                         <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-black uppercase tracking-tight leading-none">
+                          <p className="text-sm font-black uppercase tracking-tight leading-none text-[#138808]">
                             {userProfile?.name || 'User'}
                           </p>
                           <p className="text-xs font-medium text-muted-foreground pt-1">
@@ -141,7 +141,7 @@ export function DocuExtractHeader() {
                     <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex font-bold uppercase tracking-widest text-xs hover:bg-primary/10 text-primary">
                         <Link href="/public-initiatives">Initiatives</Link>
                     </Button>
-                    <Button asChild size="sm" className="font-black uppercase tracking-widest text-xs interactive-hover px-6 animate-slide-in-from-top bg-[#0B6623] hover:bg-[#0B6623]/90 text-white" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
+                    <Button asChild size="sm" className="font-black uppercase tracking-widest text-xs interactive-hover px-6 animate-slide-in-from-top bg-primary text-white" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
                         <Link href="/login">
                             <LogIn className="mr-2 h-4 w-4" />
                             Sign In
