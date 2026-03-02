@@ -4,43 +4,43 @@
 
 @layer base {
   :root {
-    /* India Green Mosaic Theme */
-    --background: 120 30% 97%; /* #F2FAF0 - Soft Tea Green Background */
-    --foreground: 115 94% 9%; /* #082F11 - High-contrast Deep Forest Green */
+    /* Brand Green Theme (#1b9d4a) */
+    --background: 0 0% 100%;
+    --foreground: 142 71% 10%; /* Very dark green for readability */
     
     --card: 0 0% 100%;
-    --card-foreground: 115 94% 9%;
+    --card-foreground: 142 71% 10%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 115 94% 9%;
+    --popover-foreground: 142 71% 10%;
     
-    /* India Green Identity (#138808) */
-    --primary: 115 94% 28%; 
+    /* Primary Brand Color: #1b9d4a (HSL: 142 71% 36%) */
+    --primary: 142 71% 36%; 
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 120 30% 92%; /* #E8F5E9 */
-    --secondary-foreground: 115 94% 9%;
+    --secondary: 142 71% 96%;
+    --secondary-foreground: 142 71% 36%;
     
-    --muted: 120 30% 92%;
-    --muted-foreground: 115 94% 20%;
+    --muted: 142 10% 96%;
+    --muted-foreground: 142 71% 25%;
     
-    --accent: 115 94% 95%;
-    --accent-foreground: 115 94% 28%;
+    --accent: 142 71% 96%;
+    --accent-foreground: 142 71% 36%;
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     
-    --success: 115 94% 28%;
+    --success: 142 71% 36%;
     --success-foreground: 0 0% 100%;
     
-    --border: 115 94% 90%;
-    --input: 115 94% 85%;
-    --ring: 115 94% 28%;
+    --border: 142 20% 90%;
+    --input: 142 20% 85%;
+    --ring: 142 71% 36%;
     
     --radius: 0.75rem;
     
-    --chart-1: 115 94% 28%;
-    --chart-2: 115 94% 45%;
+    --chart-1: 142 71% 36%;
+    --chart-2: 142 71% 45%;
     --chart-3: 158 49% 38%;
     --chart-4: 122 39% 49%;
     --chart-5: 202 97% 37%;
@@ -56,7 +56,23 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-black uppercase tracking-tighter;
-    color: hsl(var(--primary)); /* Standardized to India Green #138808 */
+    color: #1b9d4a; /* Specific Brand Green */
+  }
+
+  /* Custom Scrollbars */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1b9d4a;
+    border-radius: 5px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #1b9d4aee;
   }
 
   .interactive-hover {

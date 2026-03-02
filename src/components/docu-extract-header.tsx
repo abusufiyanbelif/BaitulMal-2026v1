@@ -67,7 +67,7 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tighter animate-fade-in-zoom" style={{ color: '#1B5E20', animationDelay: '0.2s', animationFillMode: 'backwards' }}>
+          <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tighter animate-fade-in-zoom" style={{ color: '#1b9d4a', animationDelay: '0.2s', animationFillMode: 'backwards' }}>
             {isBrandingLoading ? <Skeleton className="h-8 w-64 md:w-80" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
           </h1>
         </Link>
@@ -138,10 +138,10 @@ export function DocuExtractHeader() {
             ) : (
               pathname !== '/login' && (
                 <div className="flex gap-2 items-center">
-                    <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex font-bold uppercase tracking-widest text-xs hover:bg-primary/10 text-primary">
+                    <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex font-bold uppercase tracking-widest text-xs hover:bg-[#1b9d4a1a] text-[#1b9d4a]">
                         <Link href="/public-initiatives">Initiatives</Link>
                     </Button>
-                    <Button asChild size="sm" className="font-black uppercase tracking-widest text-xs interactive-hover px-6 animate-slide-in-from-top bg-primary text-white" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
+                    <Button asChild size="sm" className="font-black uppercase tracking-widest text-xs interactive-hover px-6 animate-slide-in-from-top bg-[#1b9d4a] text-white hover:bg-[#1b9d4aee]" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
                         <Link href="/login">
                             <LogIn className="mr-2 h-4 w-4" />
                             Members Sign In

@@ -48,16 +48,16 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                                   className="object-cover"
                                 />
                             ) : (
-                                <FallbackIcon className="h-16 w-16 text-[#138808]/10" />
+                                <FallbackIcon className="h-16 w-16 text-[#1b9d4a]/10" />
                             )}
                         </div>
                         <CardHeader className="p-4">
-                            <CardTitle className="w-full break-words text-sm sm:text-base font-black line-clamp-2 text-[#138808] uppercase tracking-tight">{lead.name}</CardTitle>
+                            <CardTitle className="w-full break-words text-sm sm:text-base font-black line-clamp-2 text-[#1b9d4a] uppercase tracking-tight">{lead.name}</CardTitle>
                             <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">{lead.startDate} to {lead.endDate}</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-grow space-y-3 p-4 pt-0">
                             <div className="flex justify-between items-center text-xs">
-                                <Badge variant="outline" className="text-[10px] border-primary/20 text-[#138808] font-black uppercase">{lead.purpose}</Badge>
+                                <Badge variant="outline" className="text-[10px] border-primary/20 text-[#1b9d4a] font-black uppercase">{lead.purpose}</Badge>
                                 <Badge 
                                   variant={lead.status === 'Active' ? 'success' : 'outline'}
                                   className={cn("text-[10px] font-black uppercase", lead.status === 'Active' && "animate-status-pulse")}
@@ -76,7 +76,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                             )}
                         </CardContent>
                          <CardFooter className="p-2 border-t bg-primary/5">
-                            <Button asChild className="w-full transition-transform active:scale-95 text-xs font-black uppercase tracking-widest text-[#138808] hover:bg-[#138808] hover:text-white" size="sm" variant="ghost">
+                            <Button asChild className="w-full transition-transform active:scale-95 text-xs font-black uppercase tracking-widest text-[#1b9d4a] hover:bg-[#1b9d4a] hover:text-white" size="sm" variant="ghost">
                                 <Link href={`/leads-public/${lead.id}/summary`}>
                                     View Details
                                 </Link>
@@ -173,8 +173,8 @@ export function PublicLeadsView() {
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-          <h1 className="text-4xl font-black tracking-tighter uppercase text-[#138808]">PUBLIC LEADS</h1>
-          <p className="text-[#138808] text-lg font-bold opacity-80">Verified community appeals requiring your support.</p>
+          <h1 className="text-4xl font-black tracking-tighter uppercase text-[#1b9d4a]">PUBLIC LEADS</h1>
+          <p className="text-[#1b9d4a] text-lg font-bold opacity-80">Verified community appeals requiring your support.</p>
           
           <div className="space-y-2">
             <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
@@ -183,13 +183,13 @@ export function PublicLeadsView() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 pt-4 bg-primary/5 p-4 rounded-xl border border-primary/10">
-              <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-[#138808] text-[#138808] font-bold" disabled={isLoading}/>
-              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 text-[#138808] font-black uppercase"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
-              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs border-primary/20 text-[#138808] font-black uppercase"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
+              <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-primary text-[#1b9d4a] font-bold" disabled={isLoading}/>
+              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 text-[#1b9d4a] font-black uppercase"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
+              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs border-primary/20 text-[#1b9d4a] font-black uppercase"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
               <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
-                  <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs border-primary/20 text-[#138808] font-black uppercase"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                  <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-black uppercase border-primary/20", !dateRange ? "text-muted-foreground" : "text-[#138808]")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
-                  {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-[#138808]" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
+                  <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-[#1b9d4a] font-black uppercase"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+                  <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-black uppercase border-primary/20", !dateRange ? "text-muted-foreground" : "text-[#1b9d4a]")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                  {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1b9d4a]" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
               </div>
         </div>
       </div>
@@ -205,8 +205,8 @@ export function PublicLeadsView() {
               <AccordionTrigger className="hover:no-underline group">
                 <div className="flex items-center gap-4">
                   <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
-                  <span className="text-2xl font-black tracking-tight uppercase text-[#138808]">{section.title}</span>
-                  <span className="inline-flex items-center justify-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-[#138808]">{section.items.length}</span>
+                  <span className="text-2xl font-black tracking-tight uppercase text-[#1b9d4a]">{section.title}</span>
+                  <span className="inline-flex items-center justify-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-[#1b9d4a]">{section.items.length}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pt-6">
@@ -217,8 +217,8 @@ export function PublicLeadsView() {
         </Accordion>
       ) : (
         <div className="text-center py-20 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
-            <Lightbulb className="h-12 w-12 mx-auto text-[#138808]/20 mb-4" />
-            <p className="text-[#138808]/60 font-bold uppercase tracking-widest text-sm">No appeals found matching criteria.</p>
+            <Lightbulb className="h-12 w-12 mx-auto text-[#1b9d4a]/20 mb-4" />
+            <p className="text-[#1b9d4a]/60 font-bold uppercase tracking-widest text-sm">No appeals found matching criteria.</p>
         </div>
       )}
     </div>
