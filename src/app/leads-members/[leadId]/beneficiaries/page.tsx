@@ -181,7 +181,7 @@ export default function BeneficiariesPage() {
   if (!lead) return <p className="text-center mt-20 text-primary font-bold">Lead not found.</p>;
 
   return (
-    <main className="container mx-auto p-4 md:p-8 space-y-6">
+    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary">
         <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 text-primary"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to leads</Link></Button></div>
         <h1 className="text-3xl font-bold tracking-tight text-primary">{lead.name}</h1>
         

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -290,7 +289,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
   
   return (
     <Form {...form}>
-        <form onSubmit={handleSubmit(finalSubmitHandler)} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit(finalSubmitHandler)} className="space-y-4 pt-4 text-primary font-normal">
             <Tabs defaultValue="profile" className="w-full">
                 <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="profile">Profile</TabsTrigger>
@@ -304,7 +303,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                             name="name"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Full Name *</FormLabel>
+                                <FormLabel className="font-bold text-primary">Full Name *</FormLabel>
                                 <FormControl>
                                     <Input placeholder="e.g. Moosa Shaikh" {...field} disabled={isFormDisabled} />
                                 </FormControl>
@@ -317,7 +316,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                             name="email"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Contact Email *</FormLabel>
+                                <FormLabel className="font-bold text-primary">Contact Email *</FormLabel>
                                 <FormControl>
                                     <Input type="email" placeholder="user@example.com" {...field} disabled={isFormDisabled || (isEditing && !isCurrentUserAdmin)} />
                                 </FormControl>
@@ -333,7 +332,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                             name="phone"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Phone Number *</FormLabel>
+                                <FormLabel className="font-bold text-primary">Phone Number *</FormLabel>
                                 <FormControl>
                                     <Input placeholder="10-digit mobile number" {...field} disabled={isFormDisabled} />
                                 </FormControl>
@@ -348,7 +347,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                             name="loginId"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Login ID *</FormLabel>
+                                <FormLabel className="font-bold text-primary">Login ID *</FormLabel>
                                 <FormControl>
                                     <Input placeholder="auto-generated from name" {...field} disabled={isFormDisabled || (!isCurrentUserAdmin && isEditing)} />
                                 </FormControl>
@@ -362,7 +361,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                             name="userKey"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>User Key (System ID)</FormLabel>
+                                <FormLabel className="font-bold text-primary">User Key (System ID)</FormLabel>
                                 <FormControl>
                                     <Input placeholder="System-generated" {...field} readOnly disabled={true} />
                                 </FormControl>
@@ -374,7 +373,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                         </div>
                         {isEditing ? (
                             <div className="space-y-2">
-                                <FormLabel>Password</FormLabel>
+                                <FormLabel className="font-bold text-primary">Password</FormLabel>
                                 <div className="flex items-center gap-2">
                                     <Input type="password" value="••••••••••" readOnly disabled className="flex-1"/>
                                     <Button type="button" variant="secondary" onClick={handleSendPasswordReset} disabled={isSubmitting}>
@@ -391,7 +390,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Password *</FormLabel>
+                                        <FormLabel className="font-bold text-primary">Password *</FormLabel>
                                         <FormControl>
                                             <Input type="password" placeholder="Minimum 6 characters" {...field} value={field.value ?? ''} disabled={isFormDisabled} />
                                         </FormControl>
@@ -404,13 +403,13 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                         <Separator />
 
                         <div className="space-y-4 rounded-md border p-3">
-                            <h3 className="text-sm font-medium text-muted-foreground">ID Proof Details</h3>
+                            <h3 className="text-sm font-bold text-primary uppercase">ID proof details</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <FormField control={control} name="idProofType" render={({ field }) => (<FormItem><FormLabel>ID Proof Type</FormLabel><FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={isFormDisabled}/></FormControl><FormMessage /></FormItem>)}/>
-                                <FormField control={control} name="idNumber" render={({ field }) => (<FormItem><FormLabel>ID Number</FormLabel><FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={isFormDisabled}/></FormControl><FormMessage /></FormItem>)}/>
+                                <FormField control={control} name="idProofType" render={({ field }) => (<FormItem><FormLabel className="font-bold text-primary">ID proof type</FormLabel><FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={isFormDisabled}/></FormControl><FormMessage /></FormItem>)}/>
+                                <FormField control={control} name="idNumber" render={({ field }) => (<FormItem><FormLabel className="font-bold text-primary">ID number</FormLabel><FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={isFormDisabled}/></FormControl><FormMessage /></FormItem>)}/>
                             </div>
                             <FormItem>
-                                <FormLabel>ID Proof Document</FormLabel>
+                                <FormLabel className="font-bold text-primary">ID proof document</FormLabel>
                                 <FormControl>
                                     <Input id="user-id-proof-file-input" type="file" accept="image/png, image/jpeg, image/webp, application/pdf" {...register('idProofFile')} disabled={isFormDisabled}/>
                                 </FormControl>
@@ -419,13 +418,13 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                             </FormItem>
                             {preview && (
                                 <div className="relative group w-full h-48 mt-2 rounded-md overflow-hidden border">
-                                    {preview.startsWith('data:application/pdf') ? (
+                                    {preview.startsWith('data:application/pdf') || preview.endsWith('.pdf') ? (
                                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
                                             <FileIcon className="w-12 h-12 mb-2" />
                                             <p className="text-sm text-center">PDF Document Uploaded</p>
                                         </div>
                                     ) : (
-                                        <Image src={preview} alt="ID Proof Preview" fill sizes="(max-width: 896px) 100vw, 896px" className="object-contain" />
+                                        <Image src={preview} alt="ID Proof Preview" fill sizes="100vw" className="object-contain" />
                                     )}
                                     {!isReadOnly && 
                                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -436,9 +435,9 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 </div>
                             )}
                             {idProofFile?.length > 0 && !isReadOnly && (
-                                <Button type="button" className="w-full" onClick={handleScanIdProof} disabled={isScanning || isFormDisabled}>
+                                <Button type="button" className="w-full font-bold" onClick={handleScanIdProof} disabled={isScanning || isFormDisabled}>
                                     {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />}
-                                    Scan ID Proof & Autofill
+                                    Scan ID proof & autofill
                                 </Button>
                             )}
                         </div>
@@ -449,12 +448,12 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                             name="status"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Status *</FormLabel>
+                                <FormLabel className="font-bold text-primary">Status *</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isFormDisabled}>
-                                    <FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl>
+                                    <FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl>
                                     <SelectContent>
-                                    <SelectItem value="Active">Active</SelectItem>
-                                    <SelectItem value="Inactive">Inactive</SelectItem>
+                                    <SelectItem value="Active" className="font-bold">Active</SelectItem>
+                                    <SelectItem value="Inactive" className="font-bold">Inactive</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormDescription>
@@ -473,12 +472,12 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                             name="organizationGroup"
                             render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Organization Group</FormLabel>
+                                <FormLabel className="font-bold text-primary">Organization Group</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value || 'none'} disabled={isFormDisabled}>
-                                <FormControl><SelectTrigger><SelectValue placeholder="Not a member" /></SelectTrigger></FormControl>
+                                <FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Not a member" /></SelectTrigger></FormControl>
                                 <SelectContent>
                                     <SelectItem value="none">None</SelectItem>
-                                    {GROUPS.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
+                                    {GROUPS.map(g => <SelectItem key={g.id} value={g.id} className="font-bold">{g.name}</SelectItem>)}
                                 </SelectContent>
                                 </Select>
                                 <FormDescription>Assigning a group makes this user a public-facing organization member.</FormDescription>
@@ -491,8 +490,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                             name="organizationRole"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Organization Role/Position</FormLabel>
-                                <FormControl><Input placeholder="e.g. President, Treasurer" {...field} value={field.value || ''} disabled={isFormDisabled} /></FormControl>
+                                <FormLabel className="font-bold text-primary">Organization role/position</FormLabel>
+                                <FormControl><Input placeholder="e.g. President, Treasurer" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-bold" /></FormControl>
                                 <FormDescription>The title they hold in the organization.</FormDescription>
                                 <FormMessage />
                                 </FormItem>
@@ -508,7 +507,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                             render={({ field }) => (
                                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm h-full">
                                     <div className="space-y-0.5">
-                                        <FormLabel>Administrator Privileges *</FormLabel>
+                                        <FormLabel className="font-bold text-primary">Administrator privileges *</FormLabel>
                                         <FormDescription>
                                             Grants full access to all modules.
                                         </FormDescription>
@@ -524,7 +523,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                             )}
                         />
                         <div className="space-y-2">
-                            <FormLabel>Module Permissions</FormLabel>
+                            <FormLabel className="font-bold text-primary">Module permissions</FormLabel>
                             <FormDescription>Set granular permissions for the user. These are ignored if the user has Administrator Privileges.</FormDescription>
                             <PermissionsTable 
                                 permissions={permissions}
@@ -538,8 +537,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
             </Tabs>
             {!isReadOnly && (
               <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>Cancel</Button>
-                <Button type="submit" disabled={isSaveDisabled}>
+                <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="font-bold">Cancel</Button>
+                <Button type="submit" disabled={isSaveDisabled} className="font-bold">
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isSubmitting ? 'Saving...' : 'Save User'}
                 </Button>

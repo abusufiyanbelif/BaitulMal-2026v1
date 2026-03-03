@@ -284,7 +284,7 @@ export default function CampaignSummaryPage() {
     }, [fundingData]);
 
     const handleFieldChange = (field: keyof Campaign, value: any) => {
-        setEditableCampaign(prev => (prev ? { ...prev, [field]: value } : null));
+        setEditableLead(p => (p ? { ...p, [field]: value } : null));
     };
 
     const handleImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

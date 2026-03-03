@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
@@ -87,10 +86,10 @@ export function UserSearchDialog({ open, onOpenChange, onSelectUser }: UserSearc
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg text-primary">
         <DialogHeader>
-          <DialogTitle>Find & Add Organization Member</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="font-bold text-primary">Find & add organization member</DialogTitle>
+          <DialogDescription className="font-normal text-primary/70">
             Search for an existing user to assign them an organizational role.
           </DialogDescription>
         </DialogHeader>
@@ -100,35 +99,36 @@ export function UserSearchDialog({ open, onOpenChange, onSelectUser }: UserSearc
                     placeholder="Search by name, email, or phone..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    className="font-normal"
                 />
                  {isSearching && <Loader2 className="h-10 w-10 animate-spin" />}
             </div>
             <ScrollArea className="h-64 border rounded-md">
                 <div className="p-2 space-y-1">
                     {!isSearching && searchResults.length === 0 && (
-                        <p className="text-center text-muted-foreground pt-10">{searchTerm ? 'No matching users found.' : 'Enter a search term to begin.'}</p>
+                        <p className="text-center text-muted-foreground pt-10 font-normal italic">Enter a search term to begin.</p>
                     )}
                     {!isSearching && searchResults.map(user => (
-                        <div key={user.id} className="flex justify-between items-center p-2 rounded-md hover:bg-accent">
+                        <div key={user.id} className="flex justify-between items-center p-2 rounded-md hover:bg-accent transition-colors">
                             <div className="flex items-center gap-3">
                                 <Avatar className="h-9 w-9">
                                     <AvatarImage src={user.idProofUrl} alt={user.name} />
-                                    <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                                    <AvatarFallback className="font-bold">{getInitials(user.name)}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="font-medium">{user.name}</p>
-                                    <p className="text-sm text-muted-foreground">{user.email}</p>
-                                    {user.organizationGroup && <Badge variant="secondary" className="mt-1">{user.organizationGroup}</Badge>}
+                                    <p className="font-bold text-sm">{user.name}</p>
+                                    <p className="text-xs text-muted-foreground font-normal">{user.email}</p>
+                                    {user.organizationGroup && <Badge variant="secondary" className="mt-1 text-[10px] font-bold">{user.organizationGroup}</Badge>}
                                 </div>
                             </div>
-                            <Button size="sm" onClick={() => handleSelect(user)}>Assign Role</Button>
+                            <Button size="sm" onClick={() => handleSelect(user)} className="font-bold">Assign role</Button>
                         </div>
                     ))}
                 </div>
             </ScrollArea>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold">Cancel</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

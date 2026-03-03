@@ -16,7 +16,7 @@ export default function PublicInitiativesPage() {
         <Button variant="outline" asChild>
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Home
+            Back to home
           </Link>
         </Button>
       </div>
@@ -35,4 +35,3 @@ export default function PublicInitiativesPage() {
     </div>
   );
 }
-

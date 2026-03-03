@@ -23,6 +23,7 @@ export function BrandedLoader() {
               src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
               alt="Loading..."
               fill
+              sizes="120px"
               className="object-contain"
               priority
             />

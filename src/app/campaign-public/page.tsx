@@ -1,4 +1,3 @@
-
 'use client';
 import { Button } from '@/components/ui/button';
 import { PublicCampaignsView } from '@/components/public-campaigns-view';
@@ -16,7 +15,7 @@ export default function PublicCampaignPage() {
         <Button variant="outline" asChild>
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Home
+            Back to home
           </Link>
         </Button>
       </div>
