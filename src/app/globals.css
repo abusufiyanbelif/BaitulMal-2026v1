@@ -71,12 +71,14 @@
     @apply bg-primary text-white font-bold hover:bg-primary/90 transition-all;
   }
 
+  /* Branded Scrollbars */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: transparent;
+    background: #f1f9f3;
+    border-radius: 10px;
   }
   ::-webkit-scrollbar-thumb {
     background: #138808;
@@ -85,6 +87,12 @@
   }
   ::-webkit-scrollbar-thumb:hover {
     background: #0e6b06;
+  }
+
+  /* Firefox Scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #138808 #f1f9f3;
   }
 
   .interactive-hover {

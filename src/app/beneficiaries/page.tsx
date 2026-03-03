@@ -42,7 +42,7 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
-const gridClass = "grid grid-cols-[50px_1fr_120px_100px_100px_120px_140px_1fr_60px] items-center gap-2";
+const gridClass = "grid grid-cols-[50px_250px_120px_100px_100px_120px_140px_200px_60px] items-center gap-4 min-w-[1200px]";
 
 export default function BeneficiariesPage() {
   const firestore = useFirestore();
@@ -87,7 +87,7 @@ export default function BeneficiariesPage() {
   const handleStatusChange = async (beneficiary: Beneficiary, newStatus: string) => {
     if (!canUpdate || !userProfile) return;
     const res = await updateMasterBeneficiaryAction(beneficiary.id, { status: newStatus as any }, { id: userProfile.id, name: userProfile.name });
-    toast({ title: res.success ? 'Status Updated' : 'Error', variant: res.success ? 'success' : 'destructive' });
+    toast({ title: res.success ? 'Status updated' : 'Error', variant: res.success ? 'success' : 'destructive' });
   };
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
@@ -97,7 +97,7 @@ export default function BeneficiariesPage() {
     <main className="container mx-auto p-8">
         <Alert variant="destructive">
             <ShieldAlert className="h-4 w-4"/>
-            <AlertTitle className="font-bold">Access Denied</AlertTitle>
+            <AlertTitle className="font-bold">Access denied</AlertTitle>
             <AlertDescription>Missing permissions to view beneficiaries.</AlertDescription>
         </Alert>
     </main>
@@ -112,56 +112,61 @@ export default function BeneficiariesPage() {
       </div>
       
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">Master Beneficiary List ({beneficiaries?.length || 0})</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Master beneficiary list ({beneficiaries?.length || 0})</h1>
         <div className="flex items-center gap-2">
-          <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync Complete' : 'Sync Failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="outline" size="sm" className="font-bold border-primary/20">
-            <DatabaseZap className="mr-2 h-4 w-4"/> Sync Master List
+          <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync complete' : 'Sync failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="outline" size="sm" className="font-bold border-primary/20">
+            <DatabaseZap className="mr-2 h-4 w-4"/> Sync master list
           </Button>
           {canCreate && (
             <Button onClick={() => router.push('/beneficiaries/create')} size="sm" className="font-bold">
-              <PlusCircle className="mr-2 h-4 w-4" /> Create Beneficiary
+              <PlusCircle className="mr-2 h-4 w-4" /> Create beneficiary
             </Button>
           )}
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-4 rounded-xl border border-primary/10">
-        <div className="relative flex-1 min-w-[300px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
-          <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-primary/20 focus-visible:ring-primary font-bold text-primary" />
-        </div>
-        <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
-          <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All">All Statuses</SelectItem>
-            <SelectItem value="Verified">Verified</SelectItem>
-            <SelectItem value="Pending">Pending</SelectItem>
-            <SelectItem value="Given">Given</SelectItem>
-            <SelectItem value="Hold">Hold</SelectItem>
-            <SelectItem value="Need More Details">Need Details</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPage(1); }}>
-          <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Zakat status" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All">All Zakat status</SelectItem>
-            <SelectItem value="Eligible">Eligible</SelectItem>
-            <SelectItem value="Not Eligible">Not Eligible</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
+        <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex flex-nowrap items-center gap-3 pb-2">
+                <div className="relative w-[300px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
+                    <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-primary/20 focus-visible:ring-primary font-bold text-primary" />
+                </div>
+                <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
+                    <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">All statuses</SelectItem>
+                        <SelectItem value="Verified">Verified</SelectItem>
+                        <SelectItem value="Pending">Pending</SelectItem>
+                        <SelectItem value="Given">Given</SelectItem>
+                        <SelectItem value="Hold">Hold</SelectItem>
+                        <SelectItem value="Need More Details">Need details</SelectItem>
+                    </SelectContent>
+                </Select>
+                <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPage(1); }}>
+                    <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Zakat status" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">All Zakat status</SelectItem>
+                        <SelectItem value="Eligible">Eligible</SelectItem>
+                        <SelectItem value="Not Eligible">Not eligible</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+            <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </div>
 
       <div className="rounded-lg border border-primary/10 bg-white overflow-hidden shadow-sm">
         <ScrollArea className="w-full">
             <div className={cn("bg-primary/5 border-b border-primary/10 py-3 px-4 text-[11px] font-bold tracking-wider uppercase text-primary", gridClass)}>
-                <div>sr.no.</div>
+                <div>Sr.no.</div>
                 <div>Name</div>
                 <div>Phone</div>
                 <div className="text-center">Status</div>
                 <div className="text-center">Zakat</div>
-                <div className="text-right">Kit Amount (₹)</div>
-                <div className="text-right">Zakat Allocation (₹)</div>
-                <div className="pl-4">Referred By</div>
+                <div className="text-right">Kit amount (₹)</div>
+                <div className="text-right">Zakat allocation (₹)</div>
+                <div className="pl-4">Referred by</div>
                 <div className="text-right">Actions</div>
             </div>
 
@@ -170,13 +175,13 @@ export default function BeneficiariesPage() {
                 <AccordionItem key={b.id} value={b.id} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors">
                 <div className={cn("py-3 px-4", gridClass)}>
                     <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
-                    <div className="font-bold truncate pr-2">{b.name}</div>
+                    <div className="font-bold text-sm truncate pr-2">{b.name}</div>
                     <div className="font-mono text-xs opacity-60">{b.phone || 'N/A'}</div>
                     <div className="text-center"><Badge variant={b.status === 'Given' ? 'success' : 'outline'} className="text-[10px] font-bold uppercase">{b.status}</Badge></div>
                     <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
-                    <div className="text-right font-mono text-sm">₹{(b.kitAmount || 0).toFixed(2)}</div>
-                    <div className="text-right font-mono text-sm">₹{(b.zakatAllocation || 0).toFixed(2)}</div>
-                    <div className="pl-4 text-xs truncate opacity-70">{b.referralBy || 'N/A'}</div>
+                    <div className="text-right font-mono text-sm font-bold">₹{(b.kitAmount || 0).toFixed(2)}</div>
+                    <div className="text-right font-mono text-sm font-bold">₹{(b.zakatAllocation || 0).toFixed(2)}</div>
+                    <div className="pl-4 text-xs font-normal text-primary/70">{b.referralBy || 'N/A'}</div>
                     <div className="text-right">
                         <div className="flex items-center justify-end gap-1">
                             <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
@@ -195,9 +200,9 @@ export default function BeneficiariesPage() {
                                             <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
                                             <DropdownMenuRadioItem value="Pending" className="text-xs font-bold">Pending</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Verified" className="text-xs font-bold">Verified</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Given" className="text-xs font-bold">Given</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Hold" className="text-xs font-bold">Hold</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Need More Details" className="text-xs font-bold">Need Details</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Given" className="text-xs font-bold">Given</SelectItem>
+                                            <DropdownMenuRadioItem value="Hold" className="text-xs font-bold">Hold</SelectItem>
+                                            <DropdownMenuRadioItem value="Need More Details" className="text-xs font-bold">Need details</SelectItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent></DropdownMenuPortal>
                                         </DropdownMenuSub>
@@ -214,38 +219,38 @@ export default function BeneficiariesPage() {
                     </div>
                 </div>
                 <AccordionContent className="bg-primary/[0.01] px-4 pt-0 pb-4 border-t border-primary/5">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 px-12 text-primary">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 px-12 text-primary font-normal">
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Address</p>
-                        <p className="text-xs font-bold leading-relaxed">{b.address || 'N/A'}</p>
+                        <p className="text-xs leading-relaxed">{b.address || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Age</p>
-                        <p className="text-xs font-bold">{b.age || 'N/A'}</p>
+                        <p className="text-xs">{b.age || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Occupation</p>
-                        <p className="text-xs font-bold">{b.occupation || 'N/A'}</p>
+                        <p className="text-xs">{b.occupation || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Family Details</p>
-                        <p className="text-xs font-bold">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Family details</p>
+                        <p className="text-xs">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">ID Proof</p>
-                        <p className="text-xs font-bold">{b.idProofType || 'Aadhar'} - {b.idNumber || 'N/A'}</p>
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">ID proof</p>
+                        <p className="text-xs">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Date Added</p>
-                        <p className="text-xs font-bold">{b.addedDate || 'N/A'}</p>
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Date added</p>
+                        <p className="text-xs">{b.addedDate || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Zakat Allocation</p>
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Zakat allocation</p>
                         <p className="text-xs font-bold">₹{(b.zakatAllocation || 0).toFixed(2)}</p>
                     </div>
                     <div className="space-y-1 md:col-span-2">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Notes</p>
-                        <p className="text-xs font-bold italic opacity-80">{b.notes || (b.isEligibleForZakat ? `Eligible for zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
+                        <p className="text-xs italic opacity-80">{b.notes || (b.isEligibleForZakat ? `Eligible for zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
                     </div>
                     </div>
                 </AccordionContent>

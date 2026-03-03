@@ -1,4 +1,3 @@
-
 'use client';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -60,7 +59,14 @@ export default function SettingsLayout({
             </TabsList>
             <ScrollBar orientation="horizontal" />
         </ScrollArea>
-        <div className="mt-6">{children}</div>
+        <div className="mt-6">
+            <ScrollArea className="w-full">
+                <div className="min-w-0">
+                    {children}
+                </div>
+                <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+        </div>
       </Tabs>
     </div>
   );

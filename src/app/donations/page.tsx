@@ -52,6 +52,7 @@ import {
 import { cn, getNestedValue } from '@/lib/utils';
 import { syncDonationsAction, deleteDonationAction } from './actions';
 import { BrandedLoader } from '@/components/branded-loader';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 type SortKey = keyof Donation | 'srNo';
 
@@ -88,7 +89,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                     </div>
                 </TableCell>
                 <TableCell>
-                    <div className="font-normal text-foreground">{donation.donorName}</div>
+                    <div className="font-normal text-foreground whitespace-nowrap">{donation.donorName}</div>
                     <div className="text-xs text-muted-foreground font-mono">{donation.donorPhone}</div>
                 </TableCell>
                 <TableCell className="text-right font-normal font-mono text-primary">₹{donation.amount.toFixed(2)}</TableCell>
@@ -128,68 +129,77 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                 <div className="space-y-2">
                                     <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><DollarSign className="h-3 w-3"/> Category breakdown</h4>
                                     <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
-                                        <Table>
-                                            <TableHeader><TableRow className="bg-primary/5"><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Category</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead></TableRow></TableHeader>
-                                            <TableBody>
-                                                {(donation.typeSplit || []).map(split => (
-                                                    <TableRow key={split.category} className="h-8"><TableCell className="py-1 text-xs font-normal text-foreground">{split.category}</TableCell><TableCell className="text-right font-normal font-mono py-1 text-primary text-xs">₹{split.amount.toFixed(2)}</TableCell></TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
+                                        <ScrollArea className="w-full">
+                                            <Table>
+                                                <TableHeader><TableRow className="bg-primary/5"><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Category</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead></TableRow></TableHeader>
+                                                <TableBody>
+                                                    {(donation.typeSplit || []).map(split => (
+                                                        <TableRow key={split.category} className="h-8"><TableCell className="py-1 text-xs font-normal text-foreground whitespace-nowrap">{split.category}</TableCell><TableCell className="text-right font-normal font-mono py-1 text-primary text-xs">₹{split.amount.toFixed(2)}</TableCell></TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                            <ScrollBar orientation="horizontal" />
+                                        </ScrollArea>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><FolderKanban className="h-3 w-3"/> Initiative allocation</h4>
                                     <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
-                                        <Table>
-                                            <TableHeader><TableRow className="bg-primary/5"><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Initiative</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead></TableRow></TableHeader>
-                                            <TableBody>
-                                                {(donation.linkSplit || []).map(link => (
-                                                    <TableRow key={link.linkId} className="h-8">
-                                                        <TableCell className="flex items-center gap-2 py-1">
-                                                            {link.linkType === 'campaign' ? <FolderKanban className="h-3 w-3 text-primary/40" /> : <Lightbulb className="h-3 w-3 text-primary/40" />}
-                                                            <span className="text-[10px] font-normal text-foreground">{link.linkName}</span>
-                                                        </TableCell>
-                                                        <TableCell className="text-right font-normal font-mono py-1 text-primary text-xs">₹{link.amount.toFixed(2)}</TableCell>
-                                                    </TableRow>
-                                                ))}
-                                                {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
-                                                    <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-4 italic text-xs font-normal">Unallocated / General fund</TableCell></TableRow>
-                                                )}
-                                            </TableBody>
-                                        </Table>
+                                        <ScrollArea className="w-full">
+                                            <Table>
+                                                <TableHeader><TableRow className="bg-primary/5"><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Initiative</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead></TableRow></TableHeader>
+                                                <TableBody>
+                                                    {(donation.linkSplit || []).map(link => (
+                                                        <TableRow key={link.linkId} className="h-8">
+                                                            <TableCell className="flex items-center gap-2 py-1">
+                                                                {link.linkType === 'campaign' ? <FolderKanban className="h-3 w-3 text-primary/40" /> : <Lightbulb className="h-3 w-3 text-primary/40" />}
+                                                                <span className="text-[10px] font-normal text-foreground whitespace-nowrap">{link.linkName}</span>
+                                                            </TableCell>
+                                                            <TableCell className="text-right font-normal font-mono py-1 text-primary text-xs">₹{link.amount.toFixed(2)}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                    {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
+                                                        <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-4 italic text-xs font-normal">Unallocated / General fund</TableCell></TableRow>
+                                                    )}
+                                                </TableBody>
+                                            </Table>
+                                            <ScrollBar orientation="horizontal" />
+                                        </ScrollArea>
                                     </div>
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><ImageIcon className="h-3 w-3"/> Transaction records</h4>
                                 <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow className="bg-primary/5">
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead>
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Reference ID</TableHead>
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Date</TableHead>
-                                                <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Artifact</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {(donation.transactions || []).map((tx) => (
-                                                <TableRow key={tx.id}>
-                                                    <TableCell className="font-normal font-mono text-primary text-xs py-2">₹{tx.amount.toFixed(2)}</TableCell>
-                                                    <TableCell className="font-mono text-[10px] py-2 text-foreground">{tx.transactionId || 'N/A'}</TableCell>
-                                                    <TableCell className="text-[10px] font-normal text-muted-foreground py-2">{tx.date || donation.donationDate}</TableCell>
-                                                    <TableCell className="text-right py-2">
-                                                        {tx.screenshotUrl ? (
-                                                            <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/10" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
-                                                                <ImageIcon className="mr-1 h-3 w-3" /> View
-                                                            </Button>
-                                                        ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40">No artifact</span>}
-                                                    </TableCell>
+                                    <ScrollArea className="w-full">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow className="bg-primary/5">
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Reference ID</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Date</TableHead>
+                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Artifact</TableHead>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {(donation.transactions || []).map((tx) => (
+                                                    <TableRow key={tx.id}>
+                                                        <TableCell className="font-normal font-mono text-primary text-xs py-2">₹{tx.amount.toFixed(2)}</TableCell>
+                                                        <TableCell className="font-mono text-[10px] py-2 text-foreground whitespace-nowrap">{tx.transactionId || 'N/A'}</TableCell>
+                                                        <TableCell className="text-[10px] font-normal text-muted-foreground py-2 whitespace-nowrap">{tx.date || donation.donationDate}</TableCell>
+                                                        <TableCell className="text-right py-2">
+                                                            {tx.screenshotUrl ? (
+                                                                <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/10" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
+                                                                    <ImageIcon className="mr-1 h-3 w-3" /> View
+                                                                </Button>
+                                                            ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40">No artifact</span>}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                        <ScrollBar orientation="horizontal" />
+                                    </ScrollArea>
                                 </div>
                             </div>
                         </div>
@@ -349,21 +359,24 @@ export default function DonationsPage() {
 
         <Card className="shadow-md border-primary/10 bg-white">
             <CardHeader className="bg-primary/5 p-4 border-b">
-                <div className="flex flex-wrap gap-2">
-                    <Input placeholder="Search donor, phone, id..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-normal"/>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-[180px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="All statuses"/></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="All">All statuses</SelectItem>
-                            <SelectItem value="Verified">Verified</SelectItem>
-                            <SelectItem value="Pending">Pending</SelectItem>
-                            <SelectItem value="Canceled">Canceled</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+                <ScrollArea className="w-full whitespace-nowrap">
+                    <div className="flex flex-nowrap gap-2 pb-2">
+                        <Input placeholder="Search donor, phone, id..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-[300px] h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-normal"/>
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <SelectTrigger className="w-[180px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="All statuses"/></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="All">All statuses</SelectItem>
+                                <SelectItem value="Verified">Verified</SelectItem>
+                                <SelectItem value="Pending">Pending</SelectItem>
+                                <SelectItem value="Canceled">Canceled</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <ScrollBar orientation="horizontal" />
+                </ScrollArea>
             </CardHeader>
             <CardContent className="p-0">
-                <div className="w-full overflow-auto">
+                <ScrollArea className="w-full">
                     <Table>
                         <TableHeader>
                             <TableRow className="bg-primary/5">
@@ -393,7 +406,8 @@ export default function DonationsPage() {
                             )}
                         </TableBody>
                     </Table>
-                </div>
+                    <ScrollBar orientation="horizontal" />
+                </ScrollArea>
             </CardContent>
             {totalPages > 1 && (
                 <CardFooter className="flex justify-between items-center py-4 border-t bg-primary/5">
@@ -407,16 +421,20 @@ export default function DonationsPage() {
         </Card>
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle className="text-xl font-bold text-primary">{editingDonation ? 'Edit' : 'Add'} donation record</DialogTitle></DialogHeader>
-                <DonationForm 
-                    donation={editingDonation} 
-                    onSubmit={handleFormSubmit} 
-                    onCancel={() => setIsFormOpen(false)} 
-                    campaigns={allCampaigns || []} 
-                    leads={allLeads || []} 
-                />
-                <DialogFooter>
+            <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+                <DialogHeader className="px-6 py-4 border-b">
+                    <DialogTitle className="text-xl font-bold text-primary">{editingDonation ? 'Edit' : 'Add'} donation record</DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="flex-1 px-6 py-4">
+                    <DonationForm 
+                        donation={editingDonation} 
+                        onSubmit={handleFormSubmit} 
+                        onCancel={() => setIsFormOpen(false)} 
+                        campaigns={allCampaigns || []} 
+                        leads={allLeads || []} 
+                    />
+                </ScrollArea>
+                <DialogFooter className="px-6 py-4 border-t">
                     <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold">Close</Button>
                 </DialogFooter>
             </DialogContent>
@@ -433,13 +451,16 @@ export default function DonationsPage() {
         </AlertDialog>
 
         <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-            <DialogContent className="max-w-4xl">
+            <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col">
                 <DialogHeader><DialogTitle className="text-xl font-bold text-primary">Artifact viewer</DialogTitle></DialogHeader>
-                {imageToView && (
-                    <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border border-primary/10 rounded-md">
-                        <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Screenshot" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                <ScrollArea className="flex-1 mt-4 rounded-md border border-primary/10 bg-secondary/20">
+                    <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
+                        {imageToView && (
+                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Screenshot" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                        )}
                     </div>
-                )}
+                    <ScrollBar orientation="both" />
+                </ScrollArea>
                 <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2">
                     <Button variant="outline" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-[10px] border-primary/20 text-primary"><ZoomIn className="mr-2 h-4 w-4"/> Zoom in</Button>
                     <Button variant="outline" size="sm" onClick={() => setZoom(z => z / 1.2) } className="font-bold text-[10px] border-primary/20 text-primary"><ZoomOut className="mr-2 h-4 w-4"/> Zoom out</Button>
