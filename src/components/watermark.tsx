@@ -14,7 +14,7 @@ export function Watermark() {
     }
 
     return (
-        <div className="fixed inset-0 -z-10 flex items-center justify-center pointer-events-none opacity-[0.10] mix-blend-multiply">
+        <div className="fixed inset-0 -z-10 flex items-center justify-center pointer-events-none opacity-[0.15] mix-blend-multiply">
             {validLogoUrl && (
                 <img
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
