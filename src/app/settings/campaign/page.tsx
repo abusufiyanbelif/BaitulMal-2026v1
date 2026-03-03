@@ -3,11 +3,10 @@ import { useState, useEffect } from 'react';
 import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Settings, Save, Loader2 } from 'lucide-react';
+import { Settings, Save, Loader2, CheckSquare } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useSession } from '@/hooks/use-session';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Button } from '@/components/ui/button';
 
@@ -22,32 +21,54 @@ const VISIBILITY_OPTIONS = [
     { id: 'documents', name: 'Artifacts & Documents' },
 ];
 
+const MANDATORY_FIELDS = [
+    { id: 'name', name: 'Campaign Name' },
+    { id: 'description', name: 'Description' },
+    { id: 'category', name: 'Category' },
+    { id: 'status', name: 'Status' },
+    { id: 'authenticityStatus', name: 'Authenticity Status' },
+    { id: 'publicVisibility', name: 'Public Visibility' },
+    { id: 'startDate', name: 'Start Date' },
+    { id: 'endDate', name: 'End Date' },
+    { id: 'targetAmount', name: 'Target Amount' },
+];
+
 export default function CampaignSettingsPage() {
   const firestore = useFirestore();
-  const { userProfile } = useSession();
   const { toast } = useToast();
   const [isSaving, setIsSubmitting] = useState(false);
 
-  const docRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'campaign_visibility') : null, [firestore]);
-  const { data: visibilitySettings, isLoading } = useDoc<any>(docRef);
-  const [localSettings, setLocalSettings] = useState<Record<string, boolean>>({});
+  const visRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'campaign_visibility') : null, [firestore]);
+  const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'campaign_config') : null, [firestore]);
+  
+  const { data: visibilitySettings, isLoading: isVisLoading } = useDoc<any>(visRef);
+  const { data: configSettings, isLoading: isConfigLoading } = useDoc<any>(configRef);
+
+  const [localVis, setLocalVis] = useState<Record<string, boolean>>({});
+  const [localMandatory, setLocalMandatory] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    if (visibilitySettings) {
-        setLocalSettings(visibilitySettings);
-    }
-  }, [visibilitySettings]);
+    if (visibilitySettings) setLocalVis(visibilitySettings);
+    if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
+  }, [visibilitySettings, configSettings]);
 
-  const handleToggle = (id: string, group: 'public' | 'member') => {
+  const handleVisToggle = (id: string, group: 'public' | 'member') => {
     const key = `${group}_${id}`;
-    setLocalSettings(prev => ({ ...prev, [key]: !prev[key] }));
+    setLocalVis(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleMandatoryToggle = (id: string) => {
+    setLocalMandatory(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const handleSave = async () => {
-    if (!docRef) return;
+    if (!visRef || !configRef) return;
     setIsSubmitting(true);
     try {
-        await setDoc(docRef, localSettings);
+        await Promise.all([
+            setDoc(visRef, localVis),
+            setDoc(configRef, { mandatoryFields: localMandatory }, { merge: true })
+        ]);
         toast({ title: "Settings Saved", variant: "success" });
     } catch (e) {
         toast({ title: "Failed to Save", variant: "destructive" });
@@ -56,59 +77,84 @@ export default function CampaignSettingsPage() {
     }
   };
 
-  if (isLoading) return <BrandedLoader />;
+  if (isVisLoading || isConfigLoading) return <BrandedLoader />;
 
   return (
     <div className="space-y-6">
-        <Card className="animate-fade-in-zoom">
-        <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-bold text-primary">
-            <Settings className="h-5 w-5" /> Campaign Visibility Settings
-            </CardTitle>
-            <CardDescription className="font-normal">
-            Control which summary components are visible to the public and staff members.
-            </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-8 font-normal">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                    <h3 className="font-bold text-[#1b9d4a] uppercase text-xs tracking-widest">Public Summary Visibility</h3>
-                    <div className="space-y-3">
-                        {VISIBILITY_OPTIONS.map(opt => (
-                            <div key={`public_${opt.id}`} className="flex items-center space-x-2">
-                                <Checkbox 
-                                    id={`public_${opt.id}`} 
-                                    checked={localSettings[`public_${opt.id}`] !== false} 
-                                    onCheckedChange={() => handleToggle(opt.id, 'public')} 
-                                />
-                                <Label htmlFor={`public_${opt.id}`} className="cursor-pointer font-normal">{opt.name}</Label>
-                            </div>
-                        ))}
+        <Card className="animate-fade-in-zoom border-[#8fbca0]">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 font-bold text-[#136c34]">
+                    <Settings className="h-5 w-5" /> Campaign Visibility Settings
+                </CardTitle>
+                <CardDescription className="text-[#4D805F]">
+                    Control which summary components are visible to the public and staff members.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                        <h3 className="font-bold text-[#136c34] uppercase text-xs tracking-widest">Public Summary Visibility</h3>
+                        <div className="space-y-3">
+                            {VISIBILITY_OPTIONS.map(opt => (
+                                <div key={`public_${opt.id}`} className="flex items-center space-x-2">
+                                    <Checkbox 
+                                        id={`public_${opt.id}`} 
+                                        checked={localVis[`public_${opt.id}`] !== false} 
+                                        onCheckedChange={() => handleVisToggle(opt.id, 'public')} 
+                                    />
+                                    <Label htmlFor={`public_${opt.id}`} className="cursor-pointer font-normal text-[#4D805F]">{opt.name}</Label>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="space-y-4">
+                        <h3 className="font-bold text-[#136c34] uppercase text-xs tracking-widest">Member Summary Visibility</h3>
+                        <div className="space-y-3">
+                            {VISIBILITY_OPTIONS.map(opt => (
+                                <div key={`member_${opt.id}`} className="flex items-center space-x-2">
+                                    <Checkbox 
+                                        id={`member_${opt.id}`} 
+                                        checked={localVis[`member_${opt.id}`] !== false} 
+                                        onCheckedChange={() => handleVisToggle(opt.id, 'member')} 
+                                    />
+                                    <Label htmlFor={`member_${opt.id}`} className="cursor-pointer font-normal text-[#4D805F]">{opt.name}</Label>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
-                <div className="space-y-4">
-                    <h3 className="font-bold text-[#1b9d4a] uppercase text-xs tracking-widest">Member Summary Visibility</h3>
-                    <div className="space-y-3">
-                        {VISIBILITY_OPTIONS.map(opt => (
-                            <div key={`member_${opt.id}`} className="flex items-center space-x-2">
-                                <Checkbox 
-                                    id={`member_${opt.id}`} 
-                                    checked={localSettings[`member_${opt.id}`] !== false} 
-                                    onCheckedChange={() => handleToggle(opt.id, 'member')} 
-                                />
-                                <Label htmlFor={`member_${opt.id}`} className="cursor-pointer font-normal">{opt.name}</Label>
-                            </div>
-                        ))}
-                    </div>
+            </CardContent>
+        </Card>
+
+        <Card className="animate-fade-in-up border-[#8fbca0]">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 font-bold text-[#136c34]">
+                    <CheckSquare className="h-5 w-5" /> Mandatory Fields Setup
+                </CardTitle>
+                <CardDescription className="text-[#4D805F]">
+                    Define which fields must be filled when creating or editing a campaign.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {MANDATORY_FIELDS.map(field => (
+                        <div key={field.id} className="flex items-center space-x-2">
+                            <Checkbox 
+                                id={`mandatory_campaign_${field.id}`} 
+                                checked={localMandatory[field.id] === true} 
+                                onCheckedChange={() => handleMandatoryToggle(field.id)} 
+                            />
+                            <Label htmlFor={`mandatory_campaign_${field.id}`} className="cursor-pointer font-normal text-[#4D805F]">{field.name}</Label>
+                        </div>
+                    ))}
                 </div>
-            </div>
-        </CardContent>
-        <CardFooter className="justify-end border-t p-4 gap-2">
-            <Button onClick={handleSave} disabled={isSaving} className="font-bold">
-                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                Save Visibility Settings
-            </Button>
-        </CardFooter>
+            </CardContent>
+            <CardFooter className="justify-end border-t border-[#8fbca0] p-4">
+                <Button onClick={handleSave} disabled={isSaving} className="font-bold bg-[#136c34] hover:bg-[#136c34]/90">
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+                    Save Settings
+                </Button>
+            </CardFooter>
         </Card>
     </div>
   );

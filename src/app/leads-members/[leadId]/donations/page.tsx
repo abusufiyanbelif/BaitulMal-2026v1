@@ -41,6 +41,8 @@ import {
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
@@ -105,11 +107,11 @@ export default function DonationsPage() {
       });
   }, [allDonations, leadId]);
 
-  const allCampaignsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
-  const { data: allCampaigns } = useCollection<Campaign>(allCampaignsCollectionRef);
+  const campaignsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'campaigns') : null, [firestore]);
+  const { data: allCampaigns } = useCollection<Campaign>(campaignsCollectionRef);
 
-  const allLeadsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
-  const { data: allLeads } = useCollection<Lead>(allLeadsCollectionRef);
+  const leadsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
+  const { data: allLeads } = useCollection<Lead>(leadsCollectionRef);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
@@ -344,6 +346,9 @@ export default function DonationsPage() {
                     campaigns={allCampaigns || []} 
                     defaultLinkId={`lead_${leadId}`} 
                 />
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsFormOpen(false)}>Close</Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
 

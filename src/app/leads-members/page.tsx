@@ -293,7 +293,7 @@ export default function LeadPage() {
       <main className="container mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <Button variant="outline" asChild size="sm" className="interactive-hover font-bold border-primary/20 hover:bg-primary/10 text-primary"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
-          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold tracking-tight interactive-hover shadow-lg"><Link href="/leads-members/create"><Plus className="mr-2 h-4 w-4" /> New Appeal</Link></Button>}
+          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold tracking-tight interactive-hover shadow-lg bg-[#1b9d4a] hover:bg-[#1b9d4a]/90 text-white"><Link href="/leads-members/create"><Plus className="mr-2 h-4 w-4" /> New Appeal</Link></Button>}
         </div>
 
         <div className="space-y-2">
