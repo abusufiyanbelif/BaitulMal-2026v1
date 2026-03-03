@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useToast } from "@/hooks/use-toast"
@@ -32,7 +31,7 @@ export function Toaster() {
       });
     } else {
       showToast({
-        title: "Nothing to Copy",
+        title: "Nothing to copy",
         description: "The toast content could not be copied as text.",
         variant: "destructive",
         duration: 3000,
@@ -59,10 +58,8 @@ export function Toaster() {
                     <ToastAction
                         altText="Copy"
                         className={cn(
-                            "border",
-                            props.variant === 'success' && "border-success-foreground text-success-foreground hover:bg-success-foreground hover:text-success",
-                            props.variant === 'destructive' && "border-destructive-foreground text-destructive-foreground hover:bg-destructive-foreground hover:text-destructive",
-                            props.variant === 'default' && "border-primary text-primary hover:bg-primary hover:text-primary-foreground",
+                            "border-primary text-primary hover:bg-primary hover:text-white transition-all",
+                            props.variant === 'destructive' && "border-destructive text-destructive hover:bg-destructive hover:text-white"
                         )}
                         onClick={(e) => {
                           e.preventDefault();
@@ -74,10 +71,8 @@ export function Toaster() {
                       <ToastAction
                         altText="OK"
                         className={cn(
-                            "border-transparent",
-                            props.variant === 'success' && "bg-success-foreground text-primary-foreground hover:bg-success-foreground/90",
-                            props.variant === 'destructive' && "bg-destructive-foreground text-destructive hover:bg-destructive-foreground/90 hover:text-destructive",
-                            props.variant === 'default' && "bg-primary text-primary-foreground hover:bg-primary/90"
+                            "bg-primary text-white hover:bg-primary/90 transition-all border-transparent",
+                            props.variant === 'destructive' && "bg-destructive text-white hover:bg-destructive/90"
                         )}
                       >
                         OK

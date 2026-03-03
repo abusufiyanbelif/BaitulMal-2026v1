@@ -29,11 +29,11 @@ const toastVariants = cva(
   {
     variants: {
       variant: {
-        default: "border bg-card text-card-foreground",
+        default: "border-primary/20 bg-background text-primary",
         destructive:
-          "destructive group border-transparent bg-destructive text-destructive-foreground [&>svg]:text-destructive-foreground",
+          "border-destructive/20 bg-destructive/10 text-destructive",
         success:
-          "success group border-transparent bg-success text-success-foreground [&>svg]:text-success-foreground",
+          "border-primary/20 bg-primary/5 text-primary",
       },
     },
     defaultVariants: {
@@ -64,7 +64,7 @@ const ToastAction = React.forwardRef<
   <ToastPrimitives.Action
     ref={ref}
     className={cn(
-      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:hover:bg-destructive/20 group-[.destructive]:focus:ring-destructive group-[.success]:hover:bg-success/20 group-[.success]:focus:ring-success",
+      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-bold ring-offset-background transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
       className
     )}
     {...props}
@@ -79,7 +79,7 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      "absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-white group-[.destructive]:focus:ring-destructive group-[.success]:text-success/70 group-[.success]:hover:text-success group-[.success]:focus:ring-success",
+      "absolute right-2 top-2 rounded-md p-1 text-primary/50 opacity-0 transition-opacity hover:text-primary focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100",
       className
     )}
     toast-close=""
@@ -96,7 +96,7 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Title
     ref={ref}
-    className={cn("text-sm font-semibold", className)}
+    className={cn("text-sm font-bold", className)}
     {...props}
   />
 ))
@@ -108,7 +108,7 @@ const ToastDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Description
     ref={ref}
-    className={cn("text-sm opacity-90", className)}
+    className={cn("text-sm font-normal opacity-90", className)}
     {...props}
   />
 ))
