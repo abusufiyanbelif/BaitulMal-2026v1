@@ -67,18 +67,19 @@
 
   /* Custom Scrollbars using brand color */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: transparent;
+    background: #f1f9f3;
   }
   ::-webkit-scrollbar-thumb {
     background: #1B5E20;
     border-radius: 10px;
+    border: 2px solid #f1f9f3;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #1B5E20/0.8;
+    background: #144d16;
   }
 
   .interactive-hover {

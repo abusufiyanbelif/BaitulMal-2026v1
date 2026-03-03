@@ -69,7 +69,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 type BeneficiaryStatus = Beneficiary['status'];
 
-const gridClass = "grid grid-cols-[40px_40px_1fr_120px_1.5fr_100px_100px_60px] items-center";
+// Updated grid class to accommodate requested columns
+const gridClass = "grid grid-cols-[40px_40px_1.5fr_100px_100px_120px_140px_1fr_60px] items-center gap-2";
 
 export default function BeneficiariesPage() {
   const params = useParams();
@@ -93,7 +94,6 @@ export default function BeneficiariesPage() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [zakatFilter, setZakatFilter] = useState('All');
   
-  // Tab and Pagination state
   const [activeCategoryTab, setActiveCategoryTab] = useState<string>('all');
   const [currentPages, setCurrentPages] = useState<Record<string, number>>({});
   const itemsPerPage = 15;
@@ -183,28 +183,28 @@ export default function BeneficiariesPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6">
-        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 text-[#1b9d4a]"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to hub</Link></Button></div>
-        <h1 className="text-3xl font-black tracking-tight text-[#1b9d4a]">{campaign.name}</h1>
+        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 text-primary"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to hub</Link></Button></div>
+        <h1 className="text-3xl font-bold tracking-tight text-primary">{campaign.name}</h1>
         
         <div className="border-b border-primary/10 mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-2 pb-2">
-                    {canReadSummary && ( <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.endsWith('/summary') ? "bg-[#1b9d4a] text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-[#1b9d4a]")}>Summary</Link> )}
-                    {canReadRation && ( <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/campaign-members/${campaignId}` ? "bg-[#1b9d4a] text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-[#1b9d4a]")}>Item lists</Link> )}
-                    {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-[#1b9d4a] text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-[#1b9d4a]")}>Beneficiary list</Link> )}
-                    {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-[#1b9d4a] text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-[#1b9d4a]")}>Donations</Link> )}
+                    {canReadSummary && ( <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link> )}
+                    {canReadRation && ( <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item lists</Link> )}
+                    {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary list</Link> )}
+                    {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link> )}
                 </div>
                 <ScrollBar orientation="horizontal" />
             </ScrollArea>
         </div>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <h2 className="text-2xl font-black text-[#1b9d4a] tracking-tight">Campaign beneficiaries ({beneficiaries?.length || 0})</h2>
+          <h2 className="text-2xl font-bold text-primary tracking-tight">Campaign beneficiaries ({beneficiaries?.length || 0})</h2>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-[#1b9d4a]">
+            <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-primary">
               <CopyPlus className="mr-2 h-4 w-4"/> Select from master
             </Button>
-            <Button size="sm" onClick={() => setIsFormOpen(true)} className="bg-[#1b9d4a] hover:bg-[#1b9d4a]/90 text-white font-bold">
+            <Button size="sm" onClick={() => setIsFormOpen(true)} className="bg-primary hover:bg-primary/90 text-white font-bold">
               <PlusCircle className="mr-2 h-4 w-4"/> Add new
             </Button>
           </div>
@@ -212,11 +212,11 @@ export default function BeneficiariesPage() {
 
         <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-4 rounded-xl border border-primary/10">
           <div className="relative flex-1 min-w-[300px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#1b9d4a]/50" />
-            <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-10 text-sm border-primary/20 focus-visible:ring-[#1b9d4a] font-bold text-[#1b9d4a]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
+            <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-10 text-sm border-primary/20 focus-visible:ring-primary font-bold text-primary" />
           </div>
           <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-[#1b9d4a]"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="All">All statuses</SelectItem>
               <SelectItem value="Pending">Pending</SelectItem>
@@ -227,7 +227,7 @@ export default function BeneficiariesPage() {
             </SelectContent>
           </Select>
           <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-[#1b9d4a]"><SelectValue placeholder="Zakat status" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Zakat status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="All">All Zakat status</SelectItem>
               <SelectItem value="Eligible">Eligible</SelectItem>
@@ -236,129 +236,143 @@ export default function BeneficiariesPage() {
           </Select>
         </div>
 
-        <Tabs value={activeCategoryTab} onValueChange={setActiveCategoryTab} className="w-full">
-            <ScrollArea className="w-full whitespace-nowrap bg-white border border-primary/10 rounded-t-xl">
-                <TabsList className="h-auto bg-transparent p-0 rounded-none w-max">
-                    <TabsTrigger value="all" className="rounded-none border-b-2 border-transparent px-6 py-3 font-black tracking-tight text-muted-foreground data-[state=active]:border-[#1b9d4a] data-[state=active]:text-[#1b9d4a] data-[state=active]:bg-primary/5">All ({filteredBeneficiaries.length})</TabsTrigger>
-                    {availableCategories.map(cat => (
-                        <TabsTrigger key={cat.id} value={cat.id} className="rounded-none border-b-2 border-transparent px-6 py-3 font-black tracking-tight text-muted-foreground data-[state=active]:border-[#1b9d4a] data-[state=active]:text-[#1b9d4a] data-[state=active]:bg-primary/5">
-                            {cat.name} ({beneficiariesByCategory[cat.id]?.length || 0})
-                        </TabsTrigger>
-                    ))}
-                    {beneficiariesByCategory['uncategorized'] && (
-                        <TabsTrigger value="uncategorized" className="rounded-none border-b-2 border-transparent px-6 py-3 font-black tracking-tight text-muted-foreground data-[state=active]:border-[#1b9d4a] data-[state=active]:text-[#1b9d4a] data-[state=active]:bg-primary/5">Uncategorized ({beneficiariesByCategory['uncategorized'].length})</TabsTrigger>
-                    )}
-                </TabsList>
+        <div className="rounded-lg border border-primary/10 bg-white overflow-hidden shadow-sm">
+            <ScrollArea className="w-full overflow-x-auto">
+                <div className={cn("bg-primary/5 border-b border-primary/10 py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-primary/70", gridClass)}>
+                    <div></div>
+                    <div>sr.no.</div>
+                    <div>Name & Phone</div>
+                    <div className="text-center">Status</div>
+                    <div className="text-center">Zakat</div>
+                    <div className="text-right">Kit Amount (₹)</div>
+                    <div className="text-right">Zakat Allocation (₹)</div>
+                    <div className="pl-4">Referred By</div>
+                    <div className="text-right">Actions</div>
+                </div>
+
+                <Tabs value={activeCategoryTab} onValueChange={setActiveCategoryTab} className="w-full">
+                    {Object.entries(beneficiariesByCategory).map(([catId, list]) => {
+                        const categoryName = availableCategories.find(c => c.id === catId)?.name || (catId === 'all' ? 'All Beneficiaries' : 'Uncategorized');
+                        const currentPage = currentPages[catId] || 1;
+                        const paginatedList = list.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+                        return (
+                            <div key={catId} className="w-full">
+                                <div className="bg-primary/5 px-4 py-2 text-sm font-bold text-primary flex items-center gap-2 border-b border-primary/10">
+                                    <ChevronDown className="h-4 w-4" />
+                                    {categoryName} ({list.length} beneficiaries)
+                                </div>
+                                <Accordion type="single" collapsible className="w-full">
+                                    {paginatedList.map((b, idx) => (
+                                        <AccordionItem key={b.id} value={b.id} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors">
+                                            <div className={cn("py-3 px-4", gridClass)}>
+                                                <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
+                                                    <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-primary/10 transition-colors">
+                                                        <ChevronDown className="h-4 w-4 text-primary shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                                    </div>
+                                                </AccordionTrigger>
+                                                <div className="font-mono text-xs text-muted-foreground">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="font-bold text-primary truncate">{b.name}</span>
+                                                    <span className="text-[10px] font-mono text-muted-foreground">{b.phone || 'N/A'}</span>
+                                                </div>
+                                                <div className="text-center">
+                                                    <Badge variant={b.status === 'Given' ? 'success' : 'outline'} className="text-[10px] font-bold">
+                                                        {b.status}
+                                                    </Badge>
+                                                </div>
+                                                <div className="text-center">
+                                                    <Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[10px] font-bold">
+                                                        {b.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}
+                                                    </Badge>
+                                                </div>
+                                                <div className="text-right font-mono text-sm font-medium">₹{(b.kitAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+                                                <div className="text-right font-mono text-sm font-medium">₹{(b.zakatAllocation || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+                                                <div className="pl-4 text-xs font-medium truncate opacity-70">{b.referralBy || 'N/A'}</div>
+                                                <div className="text-right">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="font-bold text-primary"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
+                                                            {canUpdate && (
+                                                                <DropdownMenuSub>
+                                                                    <DropdownMenuSubTrigger className="font-bold text-primary">Status</DropdownMenuSubTrigger>
+                                                                    <DropdownMenuPortal><DropdownMenuSubContent>
+                                                                        <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s as any)}>
+                                                                            <DropdownMenuRadioItem value="Pending" className="text-xs font-bold">Pending</DropdownMenuRadioItem>
+                                                                            <DropdownMenuRadioItem value="Verified" className="text-xs font-bold">Verified</DropdownMenuRadioItem>
+                                                                            <DropdownMenuRadioItem value="Given" className="text-xs font-bold">Given</DropdownMenuRadioItem>
+                                                                            <DropdownMenuRadioItem value="Hold" className="text-xs font-bold">Hold</DropdownMenuRadioItem>
+                                                                            <DropdownMenuRadioItem value="Need More Details" className="text-xs font-bold">Need details</DropdownMenuRadioItem>
+                                                                        </DropdownMenuRadioGroup>
+                                                                    </DropdownMenuSubContent></DropdownMenuPortal>
+                                                                </DropdownMenuSub>
+                                                            )}
+                                                            {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold text-primary">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat eligible'}</DropdownMenuItem>}
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </div>
+                                            </div>
+                                            <AccordionContent className="bg-primary/[0.01] px-4 pt-0 pb-4 border-t border-primary/5">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 pt-4 px-12">
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <p className="text-[10px] font-bold uppercase text-primary/60">Address</p>
+                                                            <p className="text-sm font-medium leading-relaxed">{b.address || 'N/A'}</p>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <p className="text-[10px] font-bold uppercase text-primary/60">Occupation</p>
+                                                                <p className="text-sm font-medium">{b.occupation || 'N/A'}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-[10px] font-bold uppercase text-primary/60">ID Proof</p>
+                                                                <p className="text-sm font-medium">{b.idProofType || 'Aadhar'} - {b.idNumber || 'N/A'}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-4">
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <p className="text-[10px] font-bold uppercase text-primary/60">Age</p>
+                                                                <p className="text-sm font-medium">{b.age || 'N/A'}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-[10px] font-bold uppercase text-primary/60">Family</p>
+                                                                <p className="text-sm font-medium">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <p className="text-[10px] font-bold uppercase text-primary/60">Date Added</p>
+                                                                <p className="text-sm font-medium">{b.addedDate || 'N/A'}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-[10px] font-bold uppercase text-primary/60">Zakat Allocation</p>
+                                                                <p className="text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[10px] font-bold uppercase text-primary/60">Notes</p>
+                                                            <p className="text-sm font-medium italic opacity-80">{b.notes || (b.isEligibleForZakat ? `Eligible for zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    ))}
+                                </Accordion>
+                            </div>
+                        );
+                    })}
+                </Tabs>
                 <ScrollBar orientation="horizontal" />
             </ScrollArea>
-
-            {Object.entries(beneficiariesByCategory).map(([catId, list]) => {
-                const currentPage = currentPages[catId] || 1;
-                const totalPages = Math.ceil(list.length / itemsPerPage);
-                const paginatedList = list.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-                return (
-                    <TabsContent key={catId} value={catId} className="mt-0">
-                        <div className="rounded-b-lg border border-t-0 border-primary/10 bg-white overflow-hidden shadow-sm">
-                            <div className={cn("bg-primary/5 border-b border-primary/10 py-3 px-4 text-[11px] font-black tracking-tight text-[#1b9d4a]/70", gridClass)}>
-                                <div></div>
-                                <div>#</div>
-                                <div>Name</div>
-                                <div>Phone</div>
-                                <div>Address</div>
-                                <div className="text-center">Zakat</div>
-                                <div className="text-center">Status</div>
-                                <div className="text-right">Actions</div>
-                            </div>
-
-                            <Accordion type="single" collapsible className="w-full">
-                                {paginatedList.map((b, idx) => (
-                                    <AccordionItem key={b.id} value={b.id} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors">
-                                        <div className={cn("py-3 px-4", gridClass)}>
-                                            <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
-                                                <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-primary/10 transition-colors">
-                                                    <ChevronDown className="h-4 w-4 text-[#1b9d4a] shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                                                </div>
-                                            </AccordionTrigger>
-                                            <div className="font-mono text-xs text-muted-foreground">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
-                                            <div className="font-black text-[#1b9d4a] truncate pr-2">{b.name}</div>
-                                            <div className="font-mono text-xs text-muted-foreground">{b.phone || 'N/A'}</div>
-                                            <div className="text-xs font-bold text-[#1b9d4a]/70 truncate pr-2">{b.address || 'N/A'}</div>
-                                            <div className="text-center">
-                                                <Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[10px] font-black">
-                                                    {b.isEligibleForZakat ? 'Yes' : 'No'}
-                                                </Badge>
-                                            </div>
-                                            <div className="text-center">
-                                                <Badge variant={b.status === 'Given' ? 'success' : 'outline'} className="text-[10px] font-black tracking-tight">
-                                                    {b.status}
-                                                </Badge>
-                                            </div>
-                                            <div className="text-right">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-[#1b9d4a]"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="font-bold text-[#1b9d4a]"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
-                                                        {canUpdate && (
-                                                            <DropdownMenuSub>
-                                                                <DropdownMenuSubTrigger className="font-bold text-[#1b9d4a]">Status</DropdownMenuSubTrigger>
-                                                                <DropdownMenuPortal><DropdownMenuSubContent>
-                                                                    <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s as any)}>
-                                                                        <DropdownMenuRadioItem value="Pending" className="text-xs font-bold">Pending</DropdownMenuRadioItem>
-                                                                        <DropdownMenuRadioItem value="Verified" className="text-xs font-bold">Verified</DropdownMenuRadioItem>
-                                                                        <DropdownMenuRadioItem value="Given" className="text-xs font-bold">Given</DropdownMenuRadioItem>
-                                                                        <DropdownMenuRadioItem value="Hold" className="text-xs font-bold">Hold</DropdownMenuRadioItem>
-                                                                        <DropdownMenuRadioItem value="Need More Details" className="text-xs font-bold">Need details</DropdownMenuRadioItem>
-                                                                    </DropdownMenuRadioGroup>
-                                                                </DropdownMenuSubContent></DropdownMenuPortal>
-                                                            </DropdownMenuSub>
-                                                        )}
-                                                        {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold text-[#1b9d4a]">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat eligible'}</DropdownMenuItem>}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </div>
-                                        </div>
-                                        <AccordionContent className="bg-primary/[0.01] px-4 pt-0 pb-4 border-t border-primary/5">
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 px-12">
-                                                <div className="space-y-1">
-                                                    <p className="text-[10px] font-black text-[#1b9d4a]/60">Address</p>
-                                                    <p className="text-sm font-bold text-[#1b9d4a]">{b.address || 'N/A'}</p>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-[10px] font-black text-[#1b9d4a]/60">Family stats</p>
-                                                    <p className="text-sm font-bold text-[#1b9d4a]">Members: {b.members || 0} | Earning: {b.earningMembers || 0}</p>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-[10px] font-black text-[#1b9d4a]/60">Category assigned</p>
-                                                    <Badge variant="secondary" className="text-[10px] font-black">{b.itemCategoryName || 'Uncategorized'}</Badge>
-                                                </div>
-                                            </div>
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                ))}
-                            </Accordion>
-                            {list.length === 0 && (
-                                <div className="text-center py-20 bg-primary/[0.02] text-[#1b9d4a]/40 font-black italic">No records found.</div>
-                            )}
-                        </div>
-
-                        {totalPages > 1 && (
-                            <div className="flex items-center justify-between py-4 bg-white">
-                                <p className="text-[10px] font-black text-[#1b9d4a]/60">Page {currentPage} of {totalPages}</p>
-                                <div className="flex items-center gap-2">
-                                    <Button variant="outline" size="sm" onClick={() => setCurrentPages(prev => ({...prev, [catId]: Math.max(1, currentPage - 1)}))} disabled={currentPage === 1} className="font-black text-[10px] border-primary/20 text-[#1b9d4a]">Previous</Button>
-                                    <Button variant="outline" size="sm" onClick={() => setCurrentPages(prev => ({...prev, [catId]: Math.min(totalPages, currentPage + 1)}))} disabled={currentPage === totalPages} className="font-black text-[10px] border-primary/20 text-[#1b9d4a]">Next</Button>
-                                </div>
-                            </div>
-                        )}
-                    </TabsContent>
-                );
-            })}
-        </Tabs>
+        </div>
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle className="text-xl font-black text-[#1b9d4a] tracking-tight">Add new beneficiary</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle className="text-xl font-bold text-primary tracking-tight">Add new beneficiary</DialogTitle></DialogHeader>
                 <BeneficiaryForm onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} itemCategories={campaign.itemCategories || []} />
             </DialogContent>
         </Dialog>
