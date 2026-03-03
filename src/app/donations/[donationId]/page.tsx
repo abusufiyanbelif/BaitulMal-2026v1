@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState, useRef } from 'react';
@@ -20,43 +21,370 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Edit, Download, Loader2, Image as ImageIcon, FileText, Share2 } from 'lucide-react';
+import { ArrowLeft, Edit, Download, Loader2, Image as ImageIcon, FileText, Share2, ZoomIn, ZoomOut, RotateCw, RefreshCw, FolderKanban, Lightbulb } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+
+const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
+    <div className="space-y-1">
+        <p className="text-xs font-normal text-muted-foreground uppercase tracking-tight">{label}</p>
+        <div className={`text-sm font-bold text-primary ${isMono ? 'font-mono' : ''}`}>{value || 'N/A'}</div>
+    </div>
+);
 
 export default function UnlinkedDonationDetailsPage() {
     const params = useParams();
     const donationId = params.donationId as string;
     const firestore = useFirestore();
+    const storage = useStorage();
+    const { toast } = useToast();
+    const summaryRef = useRef<HTMLDivElement>(null);
+    const { download } = useDownloadAs();
+    const auth = useAuth();
+
     const { userProfile, isLoading: isProfileLoading } = useSession();
+    const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
+    const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
+
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+    const [imageToView, setImageToView] = useState<string | null>(null);
+    const [zoom, setZoom] = useState(1);
+    const [rotation, setRotation] = useState(0);
+
     const donationDocRef = useMemoFirebase(() => (firestore && donationId) ? doc(firestore, 'donations', donationId) as DocumentReference<Donation> : null, [firestore, donationId]);
     const { data: donation, isLoading: isDonationLoading } = useDoc<Donation>(donationDocRef);
-    const [isFormOpen, setIsFormOpen] = useState(false);
-    const { toast } = useToast();
 
-    const handleFormSubmit = (data: DonationFormData) => {
-        if (!firestore || !donation) return;
-        const ref = doc(firestore, 'donations', donation.id);
-        setDoc(ref, data, { merge: true })
-          .catch(async (err) => {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: data }));
-          });
+    const allCampaignsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
+    const { data: allCampaigns, isLoading: areAllCampaignsLoading } = useCollection<Campaign>(allCampaignsCollectionRef);
+
+    const allLeadsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
+    const { data: allLeads, isLoading: areAllLeadsLoading } = useCollection<Lead>(allLeadsCollectionRef);
+
+    const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.update;
+
+    const handleFormSubmit = async (data: DonationFormData) => {
+        if (!firestore || !storage || !userProfile || !canUpdate || !donation || !allCampaigns || !allLeads) return;
+
         setIsFormOpen(false);
-        toast({ title: "Updated." });
+        const docRef = doc(firestore, 'donations', donation.id);
+        let finalData: any;
+
+        try {
+            const transactionPromises = data.transactions.map(async (transaction) => {
+                let screenshotUrl = transaction.screenshotUrl || '';
+                if (transaction.screenshotFile && (transaction.screenshotFile as FileList).length > 0) {
+                    const file = (transaction.screenshotFile as FileList)[0];
+                    const resizedBlob = await new Promise<Blob>((resolve) => {
+                        (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                    });
+                    const filePath = `donations/${docRef.id}/${transaction.id}.png`;
+                    const fileRef = storageRef(storage, filePath);
+                    const uploadResult = await uploadBytes(fileRef, resizedBlob);
+                    screenshotUrl = await getDownloadURL(uploadResult.ref);
+                }
+                return {
+                    id: transaction.id,
+                    amount: transaction.amount,
+                    transactionId: transaction.transactionId || '',
+                    date: transaction.date || '',
+                    upiId: transaction.upiId || '',
+                    screenshotUrl: screenshotUrl,
+                    screenshotIsPublic: transaction.screenshotIsPublic || false,
+                };
+            });
+
+            const finalTransactions = await Promise.all(transactionPromises);
+            const { transactions, ...donationData } = data;
+
+            const finalLinkSplit = data.linkSplit?.map(split => {
+                if (!split.linkId || split.linkId === 'unlinked') {
+                    return split.amount > 0 ? { linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general' as const, amount: split.amount } : null;
+                }
+                const [type, id] = split.linkId.split('_');
+                const linkType = type as 'campaign' | 'lead';
+                const source = linkType === 'campaign' ? allCampaigns : allLeads;
+                const linkedItem = source?.find((item: Campaign | Lead) => item.id === id);
+                return { linkId: id, linkName: linkedItem?.name || 'Unknown Initiative', linkType: linkType, amount: split.amount };
+            }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
+
+            finalData = {
+                ...donationData,
+                transactions: finalTransactions,
+                amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0),
+                linkSplit: finalLinkSplit,
+                uploadedBy: userProfile.name,
+                uploadedById: userProfile.id,
+                campaignId: deleteField(),
+                campaignName: deleteField(),
+            };
+
+            await setDoc(docRef, finalData, { merge: true });
+            toast({ title: 'Success', description: `Donation updated.`, variant: 'success' });
+        } catch (error: any) {
+            if (error.code === 'permission-denied') {
+                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: finalData }));
+            } else {
+                toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
+            }
+        }
     };
 
-    if (isDonationLoading || isProfileLoading) return <Loader2 className="animate-spin mx-auto mt-20" />;
-    if (!donation) return <p className="text-center mt-20">Not found.</p>;
+    const handleViewImage = (url: string) => {
+        setImageToView(url);
+        setZoom(1);
+        setRotation(0);
+        setIsImageViewerOpen(true);
+    };
+
+    const handleDownload = (format: 'png' | 'pdf') => {
+        download(format, {
+            contentRef: summaryRef,
+            documentTitle: 'Donation Receipt',
+            documentName: `donation-receipt-${donationId}`,
+            brandingSettings,
+            paymentSettings,
+        });
+    };
+
+    const isLoading = isProfileLoading || isBrandingLoading || isPaymentLoading || isDonationLoading || areAllCampaignsLoading || areAllLeadsLoading;
+
+    if (isLoading) return <BrandedLoader />;
+    
+    if (!donation) {
+        return (
+            <main className="container mx-auto p-4 md:p-8 text-center">
+                <p className="text-lg text-muted-foreground font-normal">Donation not found.</p>
+                <Button asChild className="mt-4 font-bold"><Link href="/donations"><ArrowLeft className="mr-2 h-4 w-4" /> Back to donations</Link></Button>
+            </main>
+        );
+    }
+
+    const typeSplit = donation.typeSplit && donation.typeSplit.length > 0
+      ? donation.typeSplit
+      : (donation.type ? [{ category: donation.type, amount: donation.amount }] : []);
 
     return (
-        <main className="container mx-auto p-4 md:p-8">
-            <div className="flex justify-between items-center mb-6"><Button variant="outline" asChild><Link href="/donations"><ArrowLeft className="mr-2 h-4 w-4" /> Back</Link></Button><Button onClick={() => setIsFormOpen(true)}><Edit className="mr-2 h-4 w-4" /> Edit</Button></div>
-            <Card><CardHeader><CardTitle>Donation Details</CardTitle></CardHeader><CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4"><div><p className="text-sm text-muted-foreground">Donor</p><p className="font-bold">{donation.donorName}</p></div><div><p className="text-sm text-muted-foreground">Amount</p><p className="font-bold">₹{donation.amount.toFixed(2)}</p></div></div>
-                <Separator /><p><strong>Date:</strong> {donation.donationDate}</p><p><strong>Status:</strong> <Badge>{donation.status}</Badge></p>
-            </CardContent></Card>
-            <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}><DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Edit</DialogTitle></DialogHeader><DonationForm donation={donation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} /></DialogContent></Dialog>
+        <main className="container mx-auto p-4 md:p-8 space-y-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
+                    <Link href="/donations">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to donations
+                    </Link>
+                </Button>
+                <div className="flex gap-2">
+                    {canUpdate && (
+                        <Button onClick={() => setIsFormOpen(true)} className="font-bold">
+                            <Edit className="mr-2 h-4 w-4" /> Edit
+                        </Button>
+                    )}
+                     <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="font-bold border-primary/20 text-primary">
+                                <Download className="mr-2 h-4 w-4" />
+                                Receipt
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleDownload('png')} className="font-bold text-primary">
+                                <ImageIcon className="mr-2 h-4 w-4" />
+                                As image (PNG)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDownload('pdf')} className="font-bold text-primary">
+                                <FileText className="mr-2 h-4 w-4" />
+                                As PDF
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
+
+            <div ref={summaryRef} className="space-y-6 bg-white rounded-xl border border-primary/10 overflow-hidden shadow-sm p-4 sm:p-8">
+                <div className="grid gap-8 lg:grid-cols-2">
+                    <div className="space-y-6">
+                        <h2 className="text-xl font-bold text-primary border-b border-primary/10 pb-2">Donation summary</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <DetailItem label="Total amount" value={`₹${donation.amount.toFixed(2)}`} isMono />
+                            <DetailItem label="Donation date" value={donation.donationDate} />
+                            {donation.contributionFromDate && donation.contributionToDate && (
+                                <div className="sm:col-span-2">
+                                    <DetailItem label="Contribution period" value={`${donation.contributionFromDate} to ${donation.contributionToDate}`} />
+                                </div>
+                            )}
+                            <DetailItem label="Status" value={<Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'secondary'} className="font-bold">{donation.status}</Badge>} />
+                            <DetailItem label="Payment method" value={<Badge variant="outline" className="font-bold border-primary/20 text-primary">{donation.donationType}</Badge>} />
+                        </div>
+                    </div>
+                    <div className="space-y-6">
+                        <h2 className="text-xl font-bold text-primary border-b border-primary/10 pb-2">Donor & receiver</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <DetailItem label="Donor name" value={donation.donorName} />
+                            <DetailItem label="Donor phone" value={donation.donorPhone} isMono />
+                            <DetailItem label="Receiver name" value={donation.receiverName} />
+                            <DetailItem label="Referred by" value={donation.referral} />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid gap-8 lg:grid-cols-2 pt-4">
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Category breakdown</h3>
+                        <div className="border border-primary/10 rounded-lg overflow-hidden">
+                            <ScrollArea className="w-full">
+                                <Table>
+                                    <TableHeader className="bg-primary/5">
+                                        <TableRow>
+                                            <TableHead className="font-bold text-primary">Category</TableHead>
+                                            <TableHead className="text-right font-bold text-primary">Amount</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {typeSplit.map((s: { category: string, amount: number }) => (
+                                            <TableRow key={s.category}>
+                                                <TableCell className="font-normal">{s.category}</TableCell>
+                                                <TableCell className="text-right font-bold font-mono text-primary">₹{s.amount.toFixed(2)}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                                <ScrollBar orientation="horizontal" />
+                            </ScrollArea>
+                        </div>
+                    </div>
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Initiative allocation</h3>
+                        <div className="border border-primary/10 rounded-lg overflow-hidden">
+                            <ScrollArea className="w-full">
+                                <Table>
+                                    <TableHeader className="bg-primary/5">
+                                        <TableRow>
+                                            <TableHead className="font-bold text-primary">Initiative</TableHead>
+                                            <TableHead className="text-right font-bold text-primary">Amount</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {donation.linkSplit && donation.linkSplit.length > 0 ? donation.linkSplit.map((link: DonationLink) => (
+                                            <TableRow key={link.linkId}>
+                                                <TableCell className="flex items-center gap-2 font-normal">
+                                                    {link.linkType === 'campaign' ? <FolderKanban className="h-4 w-4 text-primary/40" /> : <Lightbulb className="h-4 w-4 text-primary/40" />}
+                                                    {link.linkName}
+                                                </TableCell>
+                                                <TableCell className="text-right font-bold font-mono text-primary">₹{link.amount.toFixed(2)}</TableCell>
+                                            </TableRow>
+                                        )) : (
+                                            <TableRow>
+                                                <TableCell colSpan={2} className="text-center py-4 text-muted-foreground italic font-normal">No specific allocations / General fund</TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                                <ScrollBar orientation="horizontal" />
+                            </ScrollArea>
+                        </div>
+                    </div>
+                </div>
+
+                {donation.transactions && donation.transactions.length > 0 && (
+                     <div className="space-y-4 pt-4">
+                        <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Transaction records</h3>
+                        <div className="border border-primary/10 rounded-lg overflow-hidden">
+                            <ScrollArea className="w-full">
+                                <Table>
+                                    <TableHeader className="bg-primary/5">
+                                        <TableRow>
+                                            <TableHead className="font-bold text-primary">Amount</TableHead>
+                                            <TableHead className="font-bold text-primary">Date</TableHead>
+                                            <TableHead className="font-bold text-primary">Reference ID</TableHead>
+                                            <TableHead className="font-bold text-primary">Sender UPI</TableHead>
+                                            <TableHead className="text-right font-bold text-primary">Artifact</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {donation.transactions.map((tx: TransactionDetail) => (
+                                            <TableRow key={tx.id}>
+                                                <TableCell className="font-bold font-mono text-primary">₹{tx.amount.toFixed(2)}</TableCell>
+                                                <TableCell className="font-normal">{tx.date || donation.donationDate}</TableCell>
+                                                <TableCell className="font-mono text-xs">{tx.transactionId || 'N/A'}</TableCell>
+                                                <TableCell className="font-mono text-xs">{tx.upiId || 'N/A'}</TableCell>
+                                                <TableCell className="text-right">
+                                                    {tx.screenshotUrl ? (
+                                                         <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)} className="font-bold border-primary/20 text-primary hover:bg-primary/10">
+                                                            <ImageIcon className="mr-2 h-4 w-4"/> View
+                                                        </Button>
+                                                    ) : <span className="text-muted-foreground text-xs italic">No screenshot</span>}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                                <ScrollBar orientation="horizontal" />
+                            </ScrollArea>
+                        </div>
+                    </div>
+                )}
+
+                 {(donation.comments || donation.suggestions) && (
+                    <div className="grid gap-8 lg:grid-cols-2 pt-4">
+                        {donation.comments && (
+                            <div className="space-y-2">
+                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Donor comments</h3>
+                                <p className="text-sm font-normal bg-primary/5 p-4 rounded-lg border border-primary/5 italic">"{donation.comments}"</p>
+                            </div>
+                        )}
+                        {donation.suggestions && (
+                            <div className="space-y-2">
+                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Internal suggestions</h3>
+                                <p className="text-sm font-normal bg-primary/5 p-4 rounded-lg border border-primary/5 italic">"{donation.suggestions}"</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-bold text-primary">Edit donation record</DialogTitle>
+                    </DialogHeader>
+                    <DonationForm
+                        donation={donation}
+                        onSubmit={handleFormSubmit}
+                        onCancel={() => setIsFormOpen(false)}
+                        campaigns={allCampaigns || []}
+                        leads={allLeads || []}
+                    />
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
+                <DialogContent className="max-w-4xl">
+                    <DialogHeader>
+                        <DialogTitle className="font-bold text-primary">Artifact viewer</DialogTitle>
+                    </DialogHeader>
+                    {imageToView && (
+                        <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border border-primary/10 rounded-md">
+                            <Image
+                                src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
+                                alt="Artifact"
+                                fill
+                                sizes="100vw"
+                                className="object-contain transition-transform duration-200 ease-out origin-center"
+                                style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
+                                unoptimized
+                            />
+                        </div>
+                    )}
+                    <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-primary border-primary/20"><ZoomIn className="mr-2 h-4 w-4"/> Zoom in</Button>
+                        <Button variant="outline" size="sm" onClick={() => setZoom(z => z / 1.2)} className="font-bold text-primary border-primary/20"><ZoomOut className="mr-2 h-4 w-4"/> Zoom out</Button>
+                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-primary border-primary/20"><RotateCw className="mr-2 h-4 w-4"/> Rotate</Button>
+                        <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-primary border-primary/20"><RefreshCw className="mr-2 h-4 w-4"/> Reset</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </main>
     );
 }
