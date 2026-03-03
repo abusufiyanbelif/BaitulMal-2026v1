@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { parseISO, startOfDay, endOfDay } from 'date-fns';
+import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from './news-ticker';
 
 const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: number; })[] }) => {
@@ -34,7 +34,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                 return (
                     <Card 
                         key={lead.id} 
-                        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/10 bg-white/50 shadow-sm" 
+                        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white/50 shadow-sm" 
                         style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
                         onClick={() => router.push(`/leads-public/${lead.id}/summary`)}
                     >
@@ -53,21 +53,21 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                         </div>
                         <CardHeader className="p-4">
                             <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight text-primary">{lead.name}</CardTitle>
-                            <CardDescription className="text-[10px] font-normal opacity-60">{lead.startDate} to {lead.endDate}</CardDescription>
+                            <CardDescription className="text-[10px] font-bold text-muted-foreground">{lead.startDate} to {lead.endDate}</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-grow space-y-3 p-4 pt-0">
                             <div className="flex justify-between items-center text-xs">
-                                <Badge variant="outline" className="text-[10px] border-primary/20 font-normal text-primary">{lead.purpose}</Badge>
+                                <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary">{lead.purpose}</Badge>
                                 <Badge 
                                   variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
-                                  className={cn("text-[10px] font-normal", lead.status === 'Active' && "animate-status-pulse")}
+                                  className={cn("text-[10px] font-bold", lead.status === 'Active' && "animate-status-pulse")}
                                 >
                                   {lead.status}
                                 </Badge>
                             </div>
                             {(lead.targetAmount || 0) > 0 && (
                                 <div className="space-y-1.5">
-                                    <div className="flex justify-between text-[10px] font-normal opacity-60 tracking-tight">
+                                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
                                         <span>Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
                                         <span>{Math.round(lead.progress)}%</span>
                                     </div>
@@ -173,8 +173,8 @@ export function PublicLeadsView() {
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight text-primary uppercase">Public leads</h1>
-          <p className="text-lg font-normal opacity-80">Verified community appeals requiring your support.</p>
+          <h1 className="text-4xl font-bold tracking-tight text-primary">Public leads</h1>
+          <p className="text-lg font-bold text-primary">Verified community appeals requiring your support.</p>
           
           <div className="space-y-2">
             <NewsTicker items={activeTickerItems} label="Live updates" variant="active" />
@@ -182,13 +182,13 @@ export function PublicLeadsView() {
             <NewsTicker items={completedTickerItems} label="Recently completed" variant="completed" />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 pt-4 bg-primary/5 p-4 rounded-xl border border-primary/10">
-              <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-primary font-normal" disabled={isLoading}/>
-              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 font-bold text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
-              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs border-primary/20 font-bold text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
+          <div className="flex flex-wrap items-center gap-2 pt-4 bg-primary/5 p-4 rounded-xl border border-primary/20">
+              <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-primary font-bold" disabled={isLoading}/>
+              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
+              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
               <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
                   <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                  <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20", !dateRange ? "opacity-60" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                  <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                   {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
               </div>
         </div>
@@ -205,7 +205,7 @@ export function PublicLeadsView() {
               <AccordionTrigger className="hover:no-underline group font-bold">
                 <div className="flex items-center gap-4">
                   <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
-                  <span className="text-2xl font-bold tracking-tight text-primary uppercase">{section.title}</span>
+                  <span className="text-2xl font-bold tracking-tight text-primary">{section.title}</span>
                   <span className="inline-flex items-center justify-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">{section.items.length}</span>
                 </div>
               </AccordionTrigger>
@@ -218,7 +218,7 @@ export function PublicLeadsView() {
       ) : (
         <div className="text-center py-20 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
             <Lightbulb className="h-12 w-12 mx-auto text-primary/20 mb-4" />
-            <p className="font-bold text-sm opacity-60 text-primary uppercase">No appeals found matching criteria.</p>
+            <p className="font-bold text-sm opacity-60 text-primary">No appeals found matching criteria.</p>
         </div>
       )}
     </div>

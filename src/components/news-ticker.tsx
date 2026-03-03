@@ -57,10 +57,10 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
       "group border rounded-lg overflow-hidden relative flex items-center mb-2 shadow-sm h-12 transition-all hover:shadow-md bg-background",
       isCompleted ? "border-muted" : 
       isDonation ? "border-primary/20" : 
-      "border-primary/10"
+      "border-primary/20"
     )}>
       <div className={cn(
-        "z-30 h-full px-4 flex items-center border-r shadow-md shrink-0",
+        "z-30 h-full px-4 flex items-center border-r shadow-md shrink-0 font-bold",
         isCompleted ? "bg-muted text-muted-foreground" : 
         "bg-primary text-white"
       )}>
@@ -71,7 +71,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         ) : (
           <Megaphone className="h-4 w-4 mr-2" />
         )}
-        <span className="text-[10px] sm:text-xs font-black uppercase tracking-tighter whitespace-nowrap">
+        <span className="text-[10px] sm:text-xs font-bold tracking-tight whitespace-nowrap">
           {label} ({items.length})
         </span>
       </div>

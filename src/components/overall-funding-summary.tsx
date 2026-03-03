@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { usePublicData } from '@/hooks/use-public-data';
@@ -27,7 +25,7 @@ export function OverallFundingSummary() {
 
   if (isLoading) {
     return (
-        <Card>
+        <Card className="border-primary/20">
             <CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader>
             <CardContent><Skeleton className="h-48 w-full" /></CardContent>
         </Card>
@@ -35,17 +33,17 @@ export function OverallFundingSummary() {
   }
 
   if (!overallSummary) {
-    return <p>Could not load funding summary.</p>
+    return <p className="font-bold text-primary">Could not load funding summary.</p>
   }
 
   return (
-    <Card className="animate-fade-in-up" style={{ animationDelay: '700ms', animationFillMode: 'backwards' }}>
+    <Card className="animate-fade-in-up border-primary/20" style={{ animationDelay: '700ms', animationFillMode: 'backwards' }}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 font-bold text-primary">
             <Target className="h-6 w-6 text-primary" />
-            Overall Fundraising Progress
+            Overall fundraising progress
         </CardTitle>
-        <CardDescription>A real-time look at our total collected donations against our published and verified goals.</CardDescription>
+        <CardDescription className="font-bold text-primary/70">A real-time look at our total collected donations against our published and verified goals.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -83,25 +81,25 @@ export function OverallFundingSummary() {
                     <span className="text-4xl font-bold text-primary">
                         {overallSummary.progress.toFixed(0)}%
                     </span>
-                    <span className="text-xs text-muted-foreground">Funded</span>
+                    <span className="text-xs font-bold text-muted-foreground">Funded</span>
                 </div>
             </div>
              <div className="space-y-4 text-center md:text-left">
                 <div>
-                    <p className="text-sm text-muted-foreground">Total Raised for Goals</p>
-                    <p className="text-3xl font-bold">
+                    <p className="text-sm font-bold text-muted-foreground">Total raised for goals</p>
+                    <p className="text-3xl font-bold text-primary">
                     ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
-                    <p className="text-sm text-muted-foreground">Combined Target</p>
-                    <p className="text-3xl font-bold">
+                    <p className="text-sm font-bold text-muted-foreground">Combined target</p>
+                    <p className="text-3xl font-bold text-primary opacity-70">
                     ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
-                    <p className="text-sm text-muted-foreground">Grand Total Received (All Types)</p>
-                    <p className="text-3xl font-bold">
+                    <p className="text-sm font-bold text-muted-foreground">Grand total received (All types)</p>
+                    <p className="text-3xl font-bold text-primary">
                     ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
                     </p>
                 </div>

@@ -94,7 +94,7 @@ export function DocuExtractHeader() {
                     <DropdownMenuContent className="w-64 mt-2" align="end" forceMount>
                       <DropdownMenuLabel className="font-normal p-4">
                         <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-normal tracking-tight leading-none text-primary">
+                          <p className="text-sm font-bold tracking-tight leading-none text-primary">
                             {userProfile?.name || 'User'}
                           </p>
                           <p className="text-xs font-normal text-muted-foreground pt-1">
@@ -113,14 +113,14 @@ export function DocuExtractHeader() {
                       <DropdownMenuItem asChild className="cursor-pointer font-normal h-11">
                         <Link href="/profile">
                           <User className="mr-2 h-4 w-4 text-primary" />
-                          <span>Account Settings</span>
+                          <span>Account settings</span>
                         </Link>
                       </DropdownMenuItem>
                       {userProfile.role === 'Admin' && (
                         <DropdownMenuItem asChild className="cursor-pointer font-normal h-11">
                           <Link href="/settings">
                             <Settings className="mr-2 h-4 w-4 text-primary" />
-                            <span>System Admin</span>
+                            <span>System admin</span>
                           </Link>
                         </DropdownMenuItem>
                       )}
@@ -130,7 +130,7 @@ export function DocuExtractHeader() {
                         className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer font-normal h-11"
                       >
                         <LogOut className="mr-2 h-4 w-4" />
-                        <span>Log Out</span>
+                        <span>Log out</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -138,7 +138,7 @@ export function DocuExtractHeader() {
             ) : (
               pathname !== '/login' && (
                 <div className="flex gap-2 items-center">
-                    <Button asChild size="sm" className="font-bold tracking-tight text-xs interactive-hover px-6 animate-slide-in-from-top bg-primary text-white hover:bg-primary/90" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
+                    <Button asChild size="sm" className="font-bold tracking-tight text-xs interactive-hover px-6 animate-slide-in-from-top bg-primary text-white hover:bg-primary/90 shadow-md" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
                         <Link href="/login">
                             <LogIn className="mr-2 h-4 w-4" />
                             Organization members login

@@ -7,7 +7,7 @@
     /* Background: #f1f9f3 (Pale Mint) */
     --background: 135 25% 96%;
     
-    /* India Green: #138808 (HSL: 115 89% 28%) */
+    /* India Green: #138808 */
     --foreground: 115 89% 28%; 
     
     --card: 0 0% 100%;
@@ -37,7 +37,7 @@
     
     /* Border using the brand color */
     --border: 115 89% 28%;
-    --input: 115 25% 85%;
+    --input: 115 89% 28%;
     --ring: 115 89% 28%;
     
     --radius: 0.75rem;
@@ -64,13 +64,19 @@
 
   /* Force India Green on all common text containers */
   p, span, label, div, td, th, input, textarea, select, button {
-    color: inherit; /* Allow parent or class to set, but default to body foreground */
+    color: inherit;
   }
 
   /* Headings use the brand India Green and are bold */
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold;
     color: #138808 !important;
+    text-transform: none !important;
+  }
+
+  /* Primary buttons: Green background, White text */
+  .btn-primary {
+    @apply bg-primary text-white font-bold hover:bg-primary/90 transition-all;
   }
 
   /* Custom Scrollbars using brand color */

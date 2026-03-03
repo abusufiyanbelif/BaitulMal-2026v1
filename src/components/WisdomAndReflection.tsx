@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -37,11 +36,11 @@ export function WisdomAndReflection() {
 
   if (!selectedWisdom) {
     return (
-        <Card>
+        <Card className="border-primary/20">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 font-bold text-primary">
                     <Quote className="h-6 w-6 text-primary" />
-                    Hikmat aur Fikr
+                    Hikmat aur fikr
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 pl-10">
@@ -53,26 +52,26 @@ export function WisdomAndReflection() {
   }
 
   return (
-    <Card className="animate-fade-in-up" style={{ animationDelay: '600ms', animationFillMode: 'backwards' }}>
+    <Card className="animate-fade-in-up border-primary/20" style={{ animationDelay: '600ms', animationFillMode: 'backwards' }}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 font-bold text-primary">
           <Quote className="h-6 w-6 text-primary" />
-          Hikmat aur Fikr
+          Hikmat aur fikr
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 pl-10">
         {selectedWisdom.quran && (
-            <blockquote className="border-l-2 pl-4 italic text-muted-foreground relative">
+            <blockquote className="border-l-2 border-primary/30 pl-4 italic text-muted-foreground relative">
                 "{selectedWisdom.quran.text}"
-                <cite className="block text-right not-italic text-sm font-semibold text-foreground/80 mt-2">
+                <cite className="block text-right not-italic text-sm font-bold text-primary mt-2">
                     — {selectedWisdom.quran.source}
                 </cite>
             </blockquote>
         )}
         {selectedWisdom.reflection && (
-            <blockquote className="border-l-2 pl-4 italic text-muted-foreground relative">
+            <blockquote className="border-l-2 border-primary/30 pl-4 italic text-muted-foreground relative">
                 "{selectedWisdom.reflection.text}"
-                <cite className="block text-right not-italic text-sm font-semibold text-foreground/80 mt-2">
+                <cite className="block text-right not-italic text-sm font-bold text-primary mt-2">
                     — {selectedWisdom.reflection.source}
                 </cite>
             </blockquote>

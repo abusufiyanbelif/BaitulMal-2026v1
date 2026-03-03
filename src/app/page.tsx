@@ -21,7 +21,7 @@ export default function Home() {
             .filter(c => c.status === 'Active')
             .map(c => {
                 const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
-                const prefix = (c as any).isUpdated ? '✨ UPDATED: ' : '';
+                const prefix = (c as any).isUpdated ? 'Updated: ' : '';
                 return {
                     id: c.id,
                     text: `${prefix}Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
@@ -33,7 +33,7 @@ export default function Home() {
             .filter(l => l.status === 'Active')
             .map(l => {
                 const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
-                const prefix = (l as any).isUpdated ? '✨ UPDATED: ' : '';
+                const prefix = (l as any).isUpdated ? 'Updated: ' : '';
                 return {
                     id: l.id,
                     text: `${prefix}Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
@@ -63,20 +63,20 @@ export default function Home() {
                   <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary">
                       Baitulmal Samajik Sanstha Solapur
                   </h1>
-                  <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground font-normal">
+                  <p className="mt-4 max-w-3xl mx-auto text-lg text-primary font-bold">
                       An overview of our organization's impact and activities. Join us in making a difference.
                   </p>
                   <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-                      <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold">
+                      <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md bg-primary text-white">
                           <Link href="/campaign-public">
                               <FolderKanban className="mr-2 h-5 w-5" />
-                              View Campaigns
+                              View campaigns
                           </Link>
                       </Button>
-                      <Button asChild size="lg" variant="secondary" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold">
+                      <Button asChild size="lg" variant="secondary" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md bg-white border-primary border text-primary">
                           <Link href="/leads-public">
                               <Lightbulb className="mr-2 h-5 w-5" />
-                              View Leads
+                              View leads
                           </Link>
                       </Button>
                   </div>
@@ -85,9 +85,9 @@ export default function Home() {
               <WisdomAndReflection />
 
               <div className="space-y-2">
-                <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
-                <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
-                <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
+                <NewsTicker items={activeTickerItems} label="Live updates" variant="active" />
+                <NewsTicker items={recentDonationsFormatted} label="Donation updates" variant="donation" />
+                <NewsTicker items={completedTickerItems} label="Recently completed" variant="completed" />
               </div>
 
               <div className="space-y-6">

@@ -36,7 +36,7 @@ const donationCategoryChartConfig = {
   Interest: { label: "Interest", color: "hsl(var(--chart-5))" },
   Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
   Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
-  MonthlyContribution: { label: "Monthly Contribution", color: "hsl(var(--chart-8))" },
+  MonthlyContribution: { label: "Monthly contribution", color: "hsl(var(--chart-8))" },
 } satisfies ChartConfig;
 
 export function DonationSummary() {
@@ -45,51 +45,51 @@ export function DonationSummary() {
   if (isLoading) {
     return (
       <div className="grid gap-6 md:grid-cols-2">
-        <Card><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
-        <Card><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
+        <Card className="border-primary/20"><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
+        <Card className="border-primary/20"><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
       </div>
     );
   }
   
   if (!yearlySummary || !categorySummary) {
-    return <p className="font-normal">No donation data available.</p>;
+    return <p className="font-bold text-primary">No donation data available.</p>;
   }
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      <Card className="animate-fade-in-up" style={{ animationDelay: '800ms', animationFillMode: 'backwards' }}>
+      <Card className="animate-fade-in-up border-primary/20" style={{ animationDelay: '800ms', animationFillMode: 'backwards' }}>
         <CardHeader>
           <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 font-normal">
+              <CardTitle className="flex items-center gap-2 font-bold text-primary">
                 <Calendar className="h-6 w-6 text-primary" />
-                Yearly Financial Summary
+                Yearly financial summary
               </CardTitle>
-              <span className="text-2xl font-normal">{yearlySummary[0]?.year || new Date().getFullYear()}</span>
+              <span className="text-2xl font-bold text-primary">{yearlySummary[0]?.year || new Date().getFullYear()}</span>
           </div>
-          <CardDescription className="font-normal">A year-by-year breakdown of funds received against fundraising goals.</CardDescription>
+          <CardDescription className="font-bold text-primary/70">A year-by-year breakdown of funds received against fundraising goals.</CardDescription>
         </CardHeader>
         <CardContent>
             <Table>
-                <TableHeader>
+                <TableHeader className="bg-primary/5">
                     <TableRow>
-                        <TableHead className="w-[100px] font-normal">Year</TableHead>
-                        <TableHead className="font-normal">Goal</TableHead>
-                        <TableHead className="font-normal">Raised for Goal</TableHead>
-                        <TableHead className="font-normal">Total Received</TableHead>
-                        <TableHead className="text-right font-normal">Progress</TableHead>
+                        <TableHead className="font-bold text-primary">Year</TableHead>
+                        <TableHead className="font-bold text-primary">Goal</TableHead>
+                        <TableHead className="font-bold text-primary">Raised for goal</TableHead>
+                        <TableHead className="font-bold text-primary">Total received</TableHead>
+                        <TableHead className="text-right font-bold text-primary">Progress</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {yearlySummary.map(({ year, totalTarget, totalGoalReceived, overallTotalReceived, progress }) => (
-                        <TableRow key={year}>
-                            <TableCell className="font-normal">{year}</TableCell>
-                            <TableCell className="font-normal">₹{totalTarget.toLocaleString('en-IN')}</TableCell>
-                            <TableCell className="font-normal">₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
-                            <TableCell className="font-normal">₹{overallTotalReceived.toLocaleString('en-IN')}</TableCell>
+                        <TableRow key={year} className="hover:bg-primary/5">
+                            <TableCell className="font-bold text-primary">{year}</TableCell>
+                            <TableCell className="font-bold text-primary/80">₹{totalTarget.toLocaleString('en-IN')}</TableCell>
+                            <TableCell className="font-bold text-primary">₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
+                            <TableCell className="font-bold text-primary/60">₹{overallTotalReceived.toLocaleString('en-IN')}</TableCell>
                             <TableCell className="text-right w-[150px]">
                                 <div className="flex items-center gap-2">
                                     <Progress value={progress} className="h-2 flex-1" />
-                                    <span className="text-xs font-normal">{Math.round(progress)}%</span>
+                                    <span className="text-xs font-bold text-primary">{Math.round(progress)}%</span>
                                 </div>
                             </TableCell>
                         </TableRow>
@@ -99,13 +99,13 @@ export function DonationSummary() {
         </CardContent>
       </Card>
       
-      <Card className="animate-fade-in-up" style={{ animationDelay: '900ms', animationFillMode: 'backwards' }}>
+      <Card className="animate-fade-in-up border-primary/20" style={{ animationDelay: '900ms', animationFillMode: 'backwards' }}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-normal">
+          <CardTitle className="flex items-center gap-2 font-bold text-primary">
             <PieChartIcon className="h-6 w-6 text-primary" />
-            Donations by Category
+            Donations by category
           </CardTitle>
-           <CardDescription className="font-normal">A lifetime breakdown of all donations by their category.</CardDescription>
+           <CardDescription className="font-bold text-primary/70">A lifetime breakdown of all donations by their category.</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
