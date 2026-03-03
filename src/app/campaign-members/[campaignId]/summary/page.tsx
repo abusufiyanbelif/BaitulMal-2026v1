@@ -185,6 +185,10 @@ export default function CampaignSummaryPage() {
         }
     }, [campaign, editMode]);
 
+    const isRationInitiative = useMemo(() => {
+        return campaign?.category === 'Ration';
+    }, [campaign]);
+
     const beneficiaryGroups = useMemo(() => {
         if (!campaign || !beneficiaries) return [];
         const categories = (campaign.itemCategories || []).filter(c => c.name !== 'Item Price List');
@@ -298,13 +302,13 @@ export default function CampaignSummaryPage() {
     };
     
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
-        if (!campaignDocRef || !campaign?.documents || !canUpdate) return;
-        const newDocuments = campaign.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
+        if (!leadDocRef || !lead?.documents || !canUpdate) return;
+        const newDocuments = lead.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
         try {
-            await updateDoc(campaignDocRef, { documents: newDocuments, updatedAt: serverTimestamp() });
+            await updateDoc(leadDocRef, { documents: newDocuments, updatedAt: serverTimestamp() });
             toast({ title: "Visibility Updated", description: `'${docToToggle.name}' visibility toggled.` });
         } catch (serverError: any) {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: { documents: newDocuments } }));
+            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: { documents: newDocuments } }));
         }
     };
 
@@ -394,7 +398,7 @@ export default function CampaignSummaryPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8">
-             <div className="mb-4"><Button variant="outline" asChild className="font-bold"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
+             <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Campaigns</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                  <div className="space-y-1">
                     {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => setEditableCampaign(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary">{campaign.name}</h1> )}
@@ -417,11 +421,12 @@ export default function CampaignSummaryPage() {
              <div className="border-b mb-4">
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex w-max space-x-2">
-                        {canReadSummary && ( <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Summary</Link> )}
-                        {canReadRation && ( <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Item Lists</Link> )}
-                        {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Beneficiary List</Link> )}
-                         {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Donations</Link> )}
+                        {canReadSummary && ( <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold")}>Summary</Link> )}
+                        {canReadRation && ( <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold")}>Item Lists</Link> )}
+                        {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold")}>Beneficiary List</Link> )}
+                         {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold")}>Donations</Link> )}
                     </div>
+                    <ScrollBar orientation="horizontal" />
                 </ScrollArea>
             </div>
 
@@ -429,7 +434,7 @@ export default function CampaignSummaryPage() {
                 {/* 1. Initiative Details Section */}
                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
                     <CardHeader className="bg-primary/5">
-                        <CardTitle className="font-bold">Campaign Details</CardTitle>
+                        <CardTitle className="font-bold text-primary">Campaign Details</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6">
                         {editMode ? (
@@ -489,7 +494,7 @@ export default function CampaignSummaryPage() {
                                         <FallbackIcon className="h-20 w-20 text-muted-foreground/30" />
                                     )}
                                 </div>
-                                <div className="space-y-2 text-primary font-normal">
+                                <div className="space-y-2 font-normal">
                                     <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
                                     <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed text-foreground">{campaign.description || 'No description provided.'}</p>
                                 </div>
@@ -518,7 +523,7 @@ export default function CampaignSummaryPage() {
                                                     </RadialBarChart>
                                                 </ChartContainer>
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold">Funded</span></div>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold uppercase">Funded</span></div>
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary">
                                             <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight font-normal">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
@@ -541,39 +546,76 @@ export default function CampaignSummaryPage() {
                         {isVisible('beneficiary_groups') && (
                             <Card className="shadow-sm border-primary/5 bg-white">
                                 <CardHeader>
-                                    <CardTitle className="font-bold text-primary">Beneficiary Groups</CardTitle>
-                                    <CardDescription className="font-normal">Breakdown of requirements by family size category.</CardDescription>
+                                    <CardTitle className="font-bold text-primary">
+                                        {isRationInitiative ? 'Beneficiary Groups' : 'Breakdown of Requirements'}
+                                    </CardTitle>
+                                    <CardDescription className="font-normal">
+                                        {isRationInitiative 
+                                            ? 'Breakdown of requirements by family size category.' 
+                                            : 'Detailed itemized costing for this initiative.'}
+                                    </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="border rounded-lg overflow-hidden font-normal text-foreground">
-                                        <Table>
-                                            <TableHeader className="bg-primary/5">
-                                                <TableRow>
-                                                    <TableHead className="font-bold text-primary">Category Name</TableHead>
-                                                    <TableHead className="text-right font-bold text-primary">Total Beneficiaries</TableHead>
-                                                    <TableHead className="text-right font-bold text-primary">Kit Amount (per kit)</TableHead>
-                                                    <TableHead className="text-right font-bold text-primary">Total Kit Amount (per category)</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {beneficiaryGroups.map((group) => (
-                                                    <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
-                                                        <TableCell className="font-bold text-primary">{group.name}</TableCell>
-                                                        <TableCell className="text-right">{group.count}</TableCell>
-                                                        <TableCell className="text-right font-mono">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
-                                                        <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                    <div className="border rounded-lg overflow-x-auto font-normal text-foreground">
+                                        {isRationInitiative ? (
+                                            <Table>
+                                                <TableHeader className="bg-primary/5">
+                                                    <TableRow>
+                                                        <TableHead className="font-bold text-primary">Category Name</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Total Beneficiaries</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Kit Amount (per kit)</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Total Amount</TableHead>
                                                     </TableRow>
-                                                ))}
-                                            </TableBody>
-                                            {beneficiaryGroups.length > 0 && (
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {beneficiaryGroups.map((group) => (
+                                                        <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
+                                                            <TableCell className="font-bold text-primary">{group.name}</TableCell>
+                                                            <TableCell className="text-right">{group.count}</TableCell>
+                                                            <TableCell className="text-right font-mono">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
+                                                            <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                                {beneficiaryGroups.length > 0 && (
+                                                    <tfoot className="bg-primary/5 border-t">
+                                                        <TableRow>
+                                                            <TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Total</TableCell>
+                                                            <TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
+                                                        </TableRow>
+                                                    </tfoot>
+                                                )}
+                                            </Table>
+                                        ) : (
+                                            <Table>
+                                                <TableHeader className="bg-primary/5">
+                                                    <TableRow>
+                                                        <TableHead className="font-bold text-primary">Requirement Description</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Quantity</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Unit Price</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Total Price</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {campaign.itemCategories?.flatMap(cat => cat.items || []).map((item, idx) => (
+                                                        <TableRow key={idx} className="hover:bg-primary/5 transition-colors">
+                                                            <TableCell className="font-medium">{item.name}</TableCell>
+                                                            <TableCell className="text-right">{item.quantity} {item.quantityType}</TableCell>
+                                                            <TableCell className="text-right font-mono">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
+                                                            <TableCell className="text-right font-mono">₹{(item.price * item.quantity).toLocaleString('en-IN')}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
                                                 <tfoot className="bg-primary/5 border-t">
                                                     <TableRow>
-                                                        <TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Total</TableCell>
-                                                        <TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
+                                                        <TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Calculated Budget</TableCell>
+                                                        <TableCell className="text-right font-mono font-bold text-primary text-lg">
+                                                            ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}
+                                                        </TableCell>
                                                     </TableRow>
                                                 </tfoot>
-                                            )}
-                                        </Table>
+                                            </Table>
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -611,7 +653,7 @@ export default function CampaignSummaryPage() {
                                             <div className="flex justify-between items-center text-xs font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Remaining to Pay</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                         </div>
                                         <Separator />
-                                        <div className="flex justify-between items-center text-base font-bold text-primary"><span>Zakat Balance for Goal</span><span className="font-bold text-primary font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-base font-bold text-[#1B5E20]"><span>Zakat Balance for Goal</span><span className="font-bold text-[#1B5E20] font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
                                     </CardContent>
                                 </Card>
                             )}
@@ -679,7 +721,7 @@ export default function CampaignSummaryPage() {
                                                 </div>
                                             ))}
                                         </div>
-                                    ) : <p className="text-sm text-muted-foreground font-bold">None.</p>}
+                                    ) : <p className="text-sm text-muted-foreground font-bold uppercase">None.</p>}
                                 </div>
                             ) : (
                                 campaign.documents && campaign.documents.length > 0 ? (
@@ -692,16 +734,16 @@ export default function CampaignSummaryPage() {
                                                         <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
                                                             {isImg ? <Image src={doc.url} alt={doc.name} fill sizes="100vw" className="object-cover" /> : <File className="w-10 h-10 text-muted-foreground" />}
                                                         </div>
-                                                        <div className="p-2 text-center text-[10px] font-bold truncate text-foreground">{doc.name}</div>
+                                                        <div className="p-2 text-center text-[10px] font-bold uppercase truncate text-foreground">{doc.name}</div>
                                                     </div>
                                                     <CardFooter className="p-2 border-t mt-auto flex justify-center w-full gap-2" onClick={e => e.stopPropagation()}>
-                                                        {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-xs text-foreground font-bold">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"} className="font-bold">{doc.isPublic ? "Public" : "Private"}</Badge> )}
+                                                        {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-xs text-foreground font-bold">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"} className="font-bold uppercase text-[10px]">{doc.isPublic ? "Public" : "Private"}</Badge> )}
                                                     </CardFooter>
                                                 </Card>
                                             );
                                         })}
                                     </div>
-                                ) : <p className="text-sm text-muted-foreground font-bold">None.</p>
+                                ) : <p className="text-sm text-muted-foreground font-bold uppercase">None.</p>
                             )}
                         </CardContent>
                     </Card>
@@ -712,7 +754,7 @@ export default function CampaignSummaryPage() {
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
                 <DialogContent className="max-w-4xl">
-                    <DialogHeader><DialogTitle className="font-bold">{imageToView?.name}</DialogTitle></DialogHeader>
+                    <DialogHeader><DialogTitle className="font-bold text-[#1B5E20]">{imageToView?.name}</DialogTitle></DialogHeader>
                     {imageToView && (
                         <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
                             <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />

@@ -197,6 +197,10 @@ export default function LeadSummaryPage() {
         }
     }, [lead, editMode]);
 
+    const isRationInitiative = useMemo(() => {
+        return lead?.purpose === 'Relief' && lead?.category === 'Ration Kit';
+    }, [lead]);
+
     const availableCategories = useMemo(() => {
         const selectedPurpose = leadPurposesConfig.find(p => p.id === editableLead.purpose);
         return selectedPurpose?.categories || [];
@@ -403,7 +407,7 @@ export default function LeadSummaryPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8">
-             <div className="mb-4"><Button variant="outline" asChild className="font-bold"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
+             <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                  <div className="space-y-1">
                     {editMode ? ( <Input id="name" value={editableLead.name || ''} onChange={(e) => setEditableLead(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary">{lead.name}</h1> )}
@@ -422,18 +426,19 @@ export default function LeadSummaryPage() {
             <div className="border-b mb-4">
               <ScrollArea className="w-full whitespace-nowrap">
                   <div className="flex w-max space-x-2">
-                      {canReadSummary && ( <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/leads-members/${leadId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Summary</Link> )}
-                      <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/leads-members/${leadId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Item List</Link>
-                      {canReadBeneficiaries && ( <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Beneficiary List</Link> )}
-                      {canReadDonations && ( <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground")}>Donations</Link> )}
+                      {canReadSummary && ( <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/leads-members/${leadId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold")}>Summary</Link> )}
+                      <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/leads-members/${leadId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold")}>Item List</Link>
+                      {canReadBeneficiaries && ( <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold")}>Beneficiary List</Link> )}
+                      {canReadDonations && ( <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold")}>Donations</Link> )}
                   </div>
+                  <ScrollBar orientation="horizontal" />
               </ScrollArea>
             </div>
 
             <div className="space-y-6" ref={summaryRef}>
                 {/* 1. Lead Details Section */}
                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
-                        <CardHeader className="bg-primary/5"><CardTitle className="font-bold">Lead Details</CardTitle></CardHeader>
+                        <CardHeader className="bg-primary/5"><CardTitle className="font-bold text-primary">Lead Details</CardTitle></CardHeader>
                         <CardContent className="space-y-4 pt-6 text-primary">
                             {editMode ? (
                                 <div className="space-y-6">
@@ -566,12 +571,12 @@ export default function LeadSummaryPage() {
                                                     </RadialBarChart>
                                                 </ChartContainer>
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold">Funded</span></div>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold uppercase">Funded</span></div>
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary font-bold">
-                                            <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                            <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                            <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Grand Total Received</p><p className="text-2xl font-bold text-primary">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight font-normal">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight font-normal">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight font-normal">Grand Total Received</p><p className="text-2xl font-bold text-primary">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -588,34 +593,77 @@ export default function LeadSummaryPage() {
 
                         {isVisible('beneficiary_groups') && (
                             <Card className="shadow-sm border-primary/5 bg-white">
-                                <CardHeader><CardTitle className="font-bold text-primary">Beneficiary Groups</CardTitle><CardDescription className="font-normal">Breakdown of requirements by family size or category.</CardDescription></CardHeader>
+                                <CardHeader>
+                                    <CardTitle className="font-bold text-primary">
+                                        {isRationInitiative ? 'Beneficiary Groups' : 'Breakdown of Requirements'}
+                                    </CardTitle>
+                                    <CardDescription className="font-normal">
+                                        {isRationInitiative 
+                                            ? 'Breakdown of requirements by family size category.' 
+                                            : 'Detailed itemized costing for this initiative.'}
+                                    </CardDescription>
+                                </CardHeader>
                                 <CardContent>
-                                    <div className="border rounded-lg overflow-hidden font-normal text-foreground">
-                                        <Table>
-                                            <TableHeader className="bg-primary/5">
-                                                <TableRow>
-                                                    <TableHead className="font-bold text-primary">Category Name</TableHead>
-                                                    <TableHead className="text-right font-bold text-primary">Total Beneficiaries</TableHead>
-                                                    <TableHead className="text-right font-bold text-primary">Kit Amount (per kit)</TableHead>
-                                                    <TableHead className="text-right font-bold text-primary">Total Kit Amount (per category)</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {beneficiaryGroups.map((group) => (
-                                                    <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
-                                                        <TableCell className="font-bold text-primary">{group.name}</TableCell>
-                                                        <TableCell className="text-right">{group.count}</TableCell>
-                                                        <TableCell className="text-right font-mono">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
-                                                        <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                    <div className="border rounded-lg overflow-x-auto font-normal text-foreground">
+                                        {isRationInitiative ? (
+                                            <Table>
+                                                <TableHeader className="bg-primary/5">
+                                                    <TableRow>
+                                                        <TableHead className="font-bold text-primary">Category Name</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Total Beneficiaries</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Kit Amount (per kit)</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Total Amount</TableHead>
                                                     </TableRow>
-                                                ))}
-                                            </TableBody>
-                                            {beneficiaryGroups.length > 0 && (
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {beneficiaryGroups.map((group) => (
+                                                        <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
+                                                            <TableCell className="font-bold text-primary">{group.name}</TableCell>
+                                                            <TableCell className="text-right">{group.count}</TableCell>
+                                                            <TableCell className="text-right font-mono">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
+                                                            <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                                {beneficiaryGroups.length > 0 && (
+                                                    <tfoot className="bg-primary/5 border-t">
+                                                        <TableRow>
+                                                            <TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Total</TableCell>
+                                                            <TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
+                                                        </TableRow>
+                                                    </tfoot>
+                                                )}
+                                            </Table>
+                                        ) : (
+                                            <Table>
+                                                <TableHeader className="bg-primary/5">
+                                                    <TableRow>
+                                                        <TableHead className="font-bold text-primary">Requirement Description</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Quantity</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Unit Price</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Total Price</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {lead.itemCategories?.flatMap(cat => cat.items || []).map((item, idx) => (
+                                                        <TableRow key={idx} className="hover:bg-primary/5 transition-colors">
+                                                            <TableCell className="font-medium">{item.name}</TableCell>
+                                                            <TableCell className="text-right">{item.quantity} {item.quantityType}</TableCell>
+                                                            <TableCell className="text-right font-mono">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
+                                                            <TableCell className="text-right font-mono">₹{(item.price * item.quantity).toLocaleString('en-IN')}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
                                                 <tfoot className="bg-primary/5 border-t">
-                                                    <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Total</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell></TableRow>
+                                                    <TableRow>
+                                                        <TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Calculated Budget</TableCell>
+                                                        <TableCell className="text-right font-mono font-bold text-primary text-lg">
+                                                            ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}
+                                                        </TableCell>
+                                                    </TableRow>
                                                 </tfoot>
-                                            )}
-                                        </Table>
+                                            </Table>
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -650,7 +698,7 @@ export default function LeadSummaryPage() {
                                              <div className="flex justify-between items-center text-xs font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Remaining to Pay</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                         </div>
                                         <Separator />
-                                        <div className="flex justify-between items-center text-base font-bold text-primary"><span>Zakat Balance for Goal</span><span className="text-primary font-mono font-bold">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-base font-bold text-[#1B5E20]"><span>Zakat Balance for Goal</span><span className="font-bold text-[#1B5E20] font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
                                     </CardContent>
                                 </Card>
                             )}
@@ -706,7 +754,7 @@ export default function LeadSummaryPage() {
                                     <Separator />
                                     <Label className="font-bold text-xs uppercase text-muted-foreground">Manage Existing Artifacts</Label>
                                     {existingDocuments.length > 0 ? (
-                                        <div className="space-y-3 font-normal">
+                                        <div className="space-y-3 font-normal text-foreground">
                                             {existingDocuments.map((doc) => (
                                                 <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md gap-4">
                                                     <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -719,7 +767,7 @@ export default function LeadSummaryPage() {
                                                 </div>
                                             ))}
                                         </div>
-                                    ) : <p className="text-sm text-muted-foreground font-bold">No artifacts.</p>}
+                                    ) : <p className="text-sm text-muted-foreground font-bold uppercase">None.</p>}
                                 </div>
                             ) : (
                                 lead.documents && lead.documents.length > 0 ? (
@@ -741,7 +789,7 @@ export default function LeadSummaryPage() {
                                             );
                                         })}
                                     </div>
-                                ) : <p className="text-sm text-muted-foreground font-bold">No artifacts.</p>
+                                ) : <p className="text-sm text-muted-foreground font-bold uppercase">None.</p>
                             )}
                         </CardContent>
                     </Card>
@@ -752,15 +800,15 @@ export default function LeadSummaryPage() {
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
                 <DialogContent className="max-w-4xl">
-                    <DialogHeader><DialogTitle className="font-bold">{imageToView?.name}</DialogTitle></DialogHeader>
+                    <DialogHeader><DialogTitle className="font-bold text-[#1B5E20]">{imageToView?.name}</DialogTitle></DialogHeader>
                     {imageToView && (
                         <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
                             <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                         </div>
                     )}
                     <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold"><ZoomIn className="mr-2 h-4 w-4"/> Zoom In</Button>
-                        <Button variant="outline" size="sm" onClick={() => setZoom(z => z / 1.2)} className="font-bold"><ZoomOut className="mr-2 h-4 w-4"/> Zoom Out</Button>
+                        <Button variant="outline" size="sm" onClick={() => setZoom(zoom => zoom * 1.2)} className="font-bold"><ZoomIn className="mr-2 h-4 w-4"/> Zoom In</Button>
+                        <Button variant="outline" size="sm" onClick={() => setZoom(zoom => zoom / 1.2)} className="font-bold"><ZoomOut className="mr-2 h-4 w-4"/> Zoom Out</Button>
                         <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold"><RotateCw className="mr-2 h-4 w-4"/> Rotate</Button>
                         <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold"><RefreshCw className="mr-2 h-4 w-4"/> Reset</Button>
                     </DialogFooter>

@@ -15,8 +15,8 @@
     --popover: 135 25% 96%;
     --popover-foreground: 141 25% 30%;
     
-    /* Primary: #1B5E20 (Deep Forest Green - HSL: 124 55% 24%) */
-    --primary: 124 55% 24%; 
+    /* Primary: #1B5E20 (Deep Forest Green) */
+    --primary: 124 55% 12%; 
     --primary-foreground: 0 0% 100%;
     
     --secondary: 135 25% 92%;
@@ -36,19 +36,19 @@
     
     --border: 141 25% 85%;
     --input: 141 25% 85%;
-    --ring: 124 55% 24%;
+    --ring: 124 55% 12%;
     
     --radius: 0.75rem;
     
-    /* Vibrant Chart Colors for Categories */
-    --chart-1: 124 55% 30%;  /* Zakat - Dark Green */
-    --chart-2: 142 76% 36%;  /* Sadaqah */
-    --chart-3: 221 83% 53%;  /* Fitra */
-    --chart-4: 25 95% 53%;   /* Lillah */
-    --chart-5: 262 83% 58%;  /* Interest */
-    --chart-6: 191 91% 42%;  /* Loan */
-    --chart-7: 0 0% 0%;      /* Fidiya */
-    --chart-8: 45 93% 47%;   /* Monthly */
+    /* Vibrant Chart Colors */
+    --chart-1: 124 55% 20%;
+    --chart-2: 142 76% 36%;
+    --chart-3: 221 83% 53%;
+    --chart-4: 25 95% 53%;
+    --chart-5: 262 83% 58%;
+    --chart-6: 191 91% 42%;
+    --chart-7: 0 0% 0%;
+    --chart-8: 45 93% 47%;
   }
 
   * {

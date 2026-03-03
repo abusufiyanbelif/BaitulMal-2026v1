@@ -17,19 +17,42 @@ import {
   RadialBarChart,
   RadialBar,
   PolarAngleAxis,
+  PieChart,
+  Pie
 } from 'recharts';
 
 import type { Lead, Beneficiary, Donation, DonationCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Share2, Hourglass, Users, Gift, Target, HandHelping, File } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { 
+    ArrowLeft, 
+    Loader2, 
+    Share2, 
+    Hourglass, 
+    Users, 
+    Gift, 
+    Target, 
+    HandHelping, 
+    File, 
+    Utensils, 
+    LifeBuoy,
+    TrendingUp,
+    PieChart as PieChartIcon,
+    ZoomIn,
+    ZoomOut,
+    RotateCw,
+    RefreshCw,
+    ImageIcon
+} from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories } from '@/lib/modules';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import Image from 'next/image';
@@ -51,50 +74,58 @@ const donationCategoryChartConfig = {
     'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-8))" },
 } satisfies ChartConfig;
 
+const donationPaymentTypeChartConfig = {
+    Cash: { label: "Cash", color: "hsl(var(--chart-1))" },
+    'Online Payment': { label: "Online Payment", color: "hsl(var(--chart-2))" },
+    Check: { label: "Check", color: "hsl(var(--chart-5))" },
+    Other: { label: "Other", color: "hsl(var(--chart-4))" },
+} satisfies ChartConfig;
+
 export default function PublicLeadSummaryPage() {
     const params = useParams();
     const router = useRouter();
     const leadId = params.leadId as string;
     const firestore = useFirestore();
-    const { toast } = useToast();
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
     
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
 
+    const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+    const [imageToView, setImageToView] = useState<{url: string, name: string} | null>(null);
+    const [zoom, setZoom] = useState(1);
+    const [rotation, setRotation] = useState(0);
+
     const summaryRef = useRef<HTMLDivElement>(null);
     const [isClient, setIsClient] = useState(false);
 
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
+    useEffect(() => { setIsClient(true); }, []);
 
     const leadDocRef = useMemoFirebase(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
     const allDonationsCollectionRef = useMemoFirebase(() => (firestore) ? collection(firestore, 'donations') : null, [firestore]);
 
-    const { data: lead, isLoading: isLeadLoading, error: leadError } = useDoc<Lead>(leadDocRef);
+    const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
     const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
     const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
     
+    const visibilityRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_visibility') : null, [firestore]);
+    const { data: visibilitySettings } = useDoc<any>(visibilityRef);
+
     const isLoading = isLeadLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
+
+    const isRationInitiative = useMemo(() => {
+        return lead?.purpose === 'Relief' && lead?.category === 'Ration Kit';
+    }, [lead]);
 
     const beneficiaryGroups = useMemo(() => {
         if (!lead || !beneficiaries) return [];
-        
         const categories = (lead.itemCategories || []).filter(c => c.name !== 'Item Price List');
-        
         return categories.map(cat => {
             const count = beneficiaries.filter(b => b.itemCategoryId === cat.id).length;
             const kitAmount = cat.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
-            return {
-                id: cat.id,
-                name: cat.name,
-                count,
-                kitAmount,
-                totalAmount: count * kitAmount
-            };
+            return { id: cat.id, name: cat.name, count, kitAmount, totalAmount: count * kitAmount };
         });
     }, [lead, beneficiaries]);
 
@@ -105,11 +136,16 @@ export default function PublicLeadSummaryPage() {
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
+        const amountsByPaymentType: Record<string, number> = {};
         let zakatForGoalAmount = 0;
 
         verifiedDonationsList.forEach(d => {
             const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id);
             if (!leadAllocation) return;
+
+            const paymentType = d.donationType || 'Other';
+            amountsByPaymentType[paymentType] = (amountsByPaymentType[paymentType] || 0) + 1;
+
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
             const allocationProportion = leadAllocation.amount / totalDonationAmount;
             const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
@@ -118,23 +154,14 @@ export default function PublicLeadSummaryPage() {
                 if (amountsByCategory.hasOwnProperty(category)) {
                     const allocatedAmount = split.amount * allocationProportion;
                     amountsByCategory[category as DonationCategory] += allocatedAmount;
-
                     const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
-                    if (category === 'Zakat' && isForFundraising) {
-                        zakatForGoalAmount += allocatedAmount;
-                    }
+                    if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
                 }
             });
         });
         
-        const zakatAllocated = beneficiaries
-            .filter(b => b.isEligibleForZakat && b.zakatAllocation)
-            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
-        
-        const zakatGiven = beneficiaries
-            .filter(b => b.isEligibleForZakat && b.zakatAllocation && b.status === 'Given')
-            .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
-        
+        const zakatAllocated = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation).reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
+        const zakatGiven = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation && b.status === 'Given').reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
         const zakatPending = zakatAllocated - zakatGiven;
         const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
         
@@ -145,75 +172,70 @@ export default function PublicLeadSummaryPage() {
                 return sum + amount;
             }, 0);
 
-        const fundingGoal = lead.targetAmount || 0;
-        const fundingProgress = fundingGoal > 0 ? (totalCollectedForGoal / fundingGoal) * 100 : 0;
-        
-        const beneficiariesGiven = beneficiaries.filter(b => b.status === 'Given').length;
-        const beneficiariesPending = beneficiaries.length - beneficiariesGiven;
-
-        const fundTotals = {
-            fitra: amountsByCategory['Fitra'] || 0,
-            zakat: amountsByCategory['Zakat'] || 0,
-            sadaqah: amountsByCategory['Sadaqah'] || 0,
-            fidiya: amountsByCategory['Fidiya'] || 0,
-            interest: amountsByCategory['Interest'] || 0,
-            lillah: amountsByCategory['Lillah'] || 0,
-            loan: amountsByCategory['Loan'] || 0,
-            monthlyContribution: amountsByCategory['Monthly Contribution'] || 0,
-            grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
-        };
-
         return {
             totalCollectedForGoal,
-            fundingProgress,
-            targetAmount: fundingGoal,
-            remainingToCollect: Math.max(0, fundingGoal - totalCollectedForGoal),
+            fundingProgress: (lead.targetAmount || 0) > 0 ? (totalCollectedForGoal / lead.targetAmount!) * 100 : 0,
+            targetAmount: lead.targetAmount || 0,
             amountsByCategory,
-            fundTotals,
-            zakatAllocated,
-            zakatGiven,
-            zakatPending,
-            zakatAvailableForGoal,
+            amountsByPaymentType,
+            zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal,
             totalBeneficiaries: beneficiaries.length,
-            beneficiariesGiven,
-            beneficiariesPending,
-            grandTotal: fundTotals.grandTotal
+            beneficiariesGiven: beneficiaries.filter(b => b.status === 'Given').length,
+            beneficiariesPending: beneficiaries.length - beneficiaries.filter(b => b.status === 'Given').length,
+            grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
     }, [allDonations, lead, beneficiaries]);
 
+    const paymentTypeChartData = useMemo(() => {
+        if (!fundingData?.amountsByPaymentType) return [];
+        return Object.entries(fundingData.amountsByPaymentType).map(([name, value]) => ({
+            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})`
+        }));
+    }, [fundingData]);
+
     const handleShare = async () => {
         if (!lead || !fundingData) return;
-        const shareText = `Join us for the *${lead.name}* initiative. Goal: ₹${fundingData.targetAmount.toLocaleString('en-IN')}. Collected: ₹${fundingData.totalCollectedForGoal.toLocaleString('en-IN')}.`;
+        const shareText = `Lead: ${lead.name}\n${lead.description}`;
         setShareDialogData({ title: `Lead Summary: ${lead.name}`, text: shareText, url: window.location.href });
         setIsShareDialogOpen(true);
+    };
+
+    const handleViewImage = (url: string, name: string) => {
+        setImageToView({ url, name });
+        setZoom(1);
+        setRotation(0);
+        setIsImageViewerOpen(true);
+    };
+
+    const isVisible = (key: string) => {
+        return visibilitySettings?.[`public_${key}`] !== false;
     };
 
     if (isLoading) return <BrandedLoader />;
 
     if (!lead || lead.publicVisibility !== 'Published') {
         return (
-            <main className="container mx-auto p-4 md:p-8 text-center text-primary">
-                <p className="text-lg text-muted-foreground font-bold">This lead is not available for public view.</p>
-                <Button asChild className="mt-4 active:scale-95 transition-transform font-bold">
-                    <Link href="/leads-public">
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Leads
-                    </Link>
-                </Button>
+            <main className="container mx-auto p-4 md:p-8 text-center text-primary font-bold">
+                <p className="text-lg text-muted-foreground">This lead is not available for public view.</p>
+                <Button asChild className="mt-4 active:scale-95 transition-transform"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Leads</Link></Button>
             </main>
         );
     }
     
     const publicDocuments = lead.documents?.filter(d => d.isPublic) || [];
+    const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : lead.purpose === 'Medical' ? HeartPulse : lead.purpose === 'Relief' ? LifeBuoy : lead.purpose === 'Other' ? Info : HandHelping;
     const chartData = fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
 
     return (
-        <main className="container mx-auto p-4 md:p-8 text-primary">
-             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform font-bold"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
+        <main className="container mx-auto p-4 md:p-8 text-primary font-normal">
+             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform font-bold border-primary/20"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
             
-            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center">
-                {lead.imageUrl && ( <Image src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`} alt={lead.name} fill sizes="100vw" className="object-cover" priority /> )}
+            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center cursor-pointer" onClick={() => lead.imageUrl && handleViewImage(lead.imageUrl, lead.name)}>
+                {lead.imageUrl ? (
+                    <Image src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`} alt={lead.name} fill sizes="100vw" className="object-cover" priority />
+                ) : ( <FallbackIcon className="w-24 h-24 text-muted-foreground/30" /> )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-6"><h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{lead.name}</h1><p className="text-sm text-white/90 shadow-md font-bold">{lead.status}</p></div>
+                <div className="absolute bottom-0 left-0 p-6"><h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{lead.name}</h1><p className="text-sm text-white/90 shadow-md font-bold uppercase">{lead.status}</p></div>
             </div>
 
             <div className="flex justify-end items-center mb-4 flex-wrap gap-2">
@@ -221,43 +243,228 @@ export default function PublicLeadSummaryPage() {
             </div>
 
             <div className="space-y-6" ref={summaryRef}>
+                {/* 1. Initiative Details Section - Top prioritized */}
                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
-                    <CardHeader className="bg-primary/5"><CardTitle className="font-bold">Lead Details</CardTitle></CardHeader>
-                    <CardContent className="space-y-4 pt-6">
+                    <CardHeader className="bg-primary/5"><CardTitle className="font-bold text-primary">Lead Details</CardTitle></CardHeader>
+                    <CardContent className="space-y-4 pt-6 text-foreground">
                         <div className="space-y-2">
                             <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
-                            <p className="mt-1 text-sm font-bold whitespace-pre-wrap leading-relaxed">{lead.description || 'No description provided.'}</p>
+                            <p className="mt-1 text-sm font-bold whitespace-pre-wrap leading-relaxed text-primary">{lead.description || 'No description provided.'}</p>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 text-primary">
-                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase">Required Amount</p><p className="mt-1 text-lg font-bold text-primary">₹{(lead.requiredAmount ?? 0).toLocaleString('en-IN')}</p></div>
-                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary">₹{(lead.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
-                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase">Category</p><p className="mt-1 text-lg font-bold text-primary">{lead.category}</p></div>
-                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase">Start Date</p><p className="mt-1 text-lg font-bold text-primary">{lead.startDate}</p></div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 text-primary font-bold">
+                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase font-normal">Required Amount</p><p className="mt-1 text-lg font-bold text-primary">₹{(lead.requiredAmount ?? 0).toLocaleString('en-IN')}</p></div>
+                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase font-normal">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary">₹{(lead.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
+                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase font-normal">Purpose</p><p className="mt-1 text-lg font-bold text-primary uppercase">{lead.purpose}</p></div>
+                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase font-normal">Start Date</p><p className="mt-1 text-lg font-bold text-primary">{lead.startDate}</p></div>
                         </div>
                     </CardContent>
                 </Card>
 
-                {publicDocuments.length > 0 && (
+                {/* 2. Fundraising Progress & Financial Visuals */}
+                {fundingData && (
+                    <div className="grid gap-6 animate-fade-in-up">
+                        {isVisible('funding_progress') && (
+                            <Card className="shadow-sm border-primary/5 bg-white">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2 font-bold text-primary"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
+                                    <CardDescription className="font-bold">Verified donations against the goal for this initiative.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                                        <div className="relative h-48 w-full">
+                                            {isClient ? (
+                                                <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
+                                                    <RadialBarChart data={[{ name: 'Progress', value: fundingData.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
+                                                        <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                                        <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} />
+                                                    </RadialBarChart>
+                                                </ChartContainer>
+                                            ) : <Skeleton className="w-full h-full rounded-full" />}
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold uppercase">Funded</span></div>
+                                        </div>
+                                        <div className="space-y-4 text-center md:text-left text-primary font-bold">
+                                            <div><p className="text-sm text-muted-foreground uppercase font-bold tracking-tighter font-normal">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-sm text-muted-foreground uppercase font-bold tracking-tighter font-normal">Fundraising Target</p><p className="text-3xl font-bold text-primary">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-sm text-muted-foreground uppercase font-bold tracking-tighter font-normal">Grand Total Received</p><p className="text-3xl font-bold text-primary">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {isVisible('quick_stats') && (
+                            <div className="grid gap-6 sm:grid-cols-3">
+                                <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
+                                <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Assistance Provided</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
+                                <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
+                            </div>
+                        )}
+
+                        {isVisible('beneficiary_groups') && (
+                            <Card className="shadow-sm border-primary/5 bg-white">
+                                <CardHeader>
+                                    <CardTitle className="font-bold text-primary">
+                                        {isRationInitiative ? 'Beneficiary Groups' : 'Breakdown of Requirements'}
+                                    </CardTitle>
+                                    <CardDescription className="font-normal">
+                                        {isRationInitiative 
+                                            ? 'Breakdown of requirements by family size category.' 
+                                            : 'Detailed itemized costing for this initiative.'}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="border rounded-lg overflow-x-auto font-normal text-foreground">
+                                        {isRationInitiative ? (
+                                            <Table>
+                                                <TableHeader className="bg-primary/5">
+                                                    <TableRow>
+                                                        <TableHead className="font-bold text-primary">Category Name</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Total Beneficiaries</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Kit Amount (per kit)</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Total Amount</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {beneficiaryGroups.map((group) => (
+                                                        <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
+                                                            <TableCell className="font-bold text-primary">{group.name}</TableCell>
+                                                            <TableCell className="text-right font-bold">{group.count}</TableCell>
+                                                            <TableCell className="text-right font-mono font-bold">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
+                                                            <TableCell className="text-right font-mono font-bold">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                                {beneficiaryGroups.length > 0 && (
+                                                    <tfoot className="bg-primary/5 border-t">
+                                                        <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Total</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell></TableRow>
+                                                    </tfoot>
+                                                )}
+                                            </Table>
+                                        ) : (
+                                            <Table>
+                                                <TableHeader className="bg-primary/5">
+                                                    <TableRow>
+                                                        <TableHead className="font-bold text-primary">Requirement Description</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Quantity</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Unit Price</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Total Price</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {lead.itemCategories?.flatMap(cat => cat.items || []).map((item, idx) => (
+                                                        <TableRow key={idx} className="hover:bg-primary/5 transition-colors">
+                                                            <TableCell className="font-medium">{item.name}</TableCell>
+                                                            <TableCell className="text-right">{item.quantity} {item.quantityType}</TableCell>
+                                                            <TableCell className="text-right font-mono">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
+                                                            <TableCell className="text-right font-mono">₹{(item.price * item.quantity).toLocaleString('en-IN')}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                                <tfoot className="bg-primary/5 border-t">
+                                                    <TableRow>
+                                                        <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-lg">Initiative Goal</TableCell>
+                                                        <TableCell className="text-right font-mono font-bold text-primary text-xl">
+                                                            ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </tfoot>
+                                            </Table>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        <div className="grid gap-6 lg:grid-cols-2">
+                            {isVisible('fund_totals') && (
+                                <Card className="shadow-sm border-primary/5 bg-white">
+                                    <CardHeader><CardTitle className="font-bold text-primary">Fund Totals by Type</CardTitle></CardHeader>
+                                    <CardContent className="space-y-2">
+                                        {donationCategories.map(cat => (
+                                            <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary">
+                                                <span className="text-muted-foreground font-normal">{cat === 'Interest' ? 'Interest (for disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
+                                                <span className="font-mono">₹{(fundingData.amountsByCategory[cat] || 0).toLocaleString('en-IN')}</span>
+                                            </div>
+                                        ))}
+                                        <Separator className="my-2" />
+                                        <div className="flex justify-between items-center text-lg font-bold text-primary"><span>Grand Total Received</span><span className="font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</span></div>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {isVisible('zakat_utilization') && (
+                                <Card className="shadow-sm border-primary/5 bg-white">
+                                    <CardHeader><CardTitle className="font-bold text-primary">Zakat Utilization</CardTitle><CardDescription className="font-normal">Tracking of Zakat funds collected and allocated.</CardDescription></CardHeader>
+                                    <CardContent className="space-y-3">
+                                    <div className="flex justify-between items-center text-sm text-primary font-bold"><span className="text-muted-foreground font-normal uppercase tracking-tight">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.amountsByCategory.Zakat || 0).toLocaleString('en-IN')}</span></div>
+                                        <Separator />
+                                        <div className="pl-4 border-l-2 border-dashed space-y-2 py-2 text-primary font-bold">
+                                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground font-normal uppercase tracking-tight">Allocated as Cash-in-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
+                                            <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground font-normal uppercase tracking-tight">Given</span><span className="font-mono text-green-600 font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
+                                            <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground font-normal uppercase tracking-tight">Pending</span><span className="font-mono text-amber-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                                        </div>
+                                        <Separator />
+                                        <div className="flex justify-between items-center text-base text-primary font-bold"><span>Zakat Balance for Goal</span><span className="text-primary font-mono font-bold">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
+
+                        <div className="grid gap-6 lg:grid-cols-2">
+                            {isVisible('donations_by_category') && (
+                                <Card className="shadow-sm border-primary/5 bg-white">
+                                    <CardHeader><CardTitle className="font-bold text-primary">Donations by Category</CardTitle></CardHeader>
+                                    <CardContent>
+                                        {isClient ? (
+                                        <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
+                                            <BarChart data={chartData} layout="vertical" margin={{ right: 20 }}>
+                                                <CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4}>{chartData.map((entry) => (<Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />))}</Bar>
+                                            </BarChart>
+                                        </ChartContainer>
+                                        ) : <Skeleton className="h-[250px] w-full" />}
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {isVisible('donations_by_payment_type') && (
+                                <Card className="shadow-sm border-primary/5 bg-white">
+                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary"><PieChartIcon className="h-5 w-5"/> Donations by Payment Type</CardTitle></CardHeader>
+                                    <CardContent>
+                                        {isClient ? (
+                                            <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
+                                                <PieChart>
+                                                    <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                                    <Pie data={paymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80}>
+                                                        {paymentTypeChartData.map((entry) => (<Cell key={`cell-${entry.name}`} fill={entry.fill} />))}
+                                                    </Pie>
+                                                    <ChartLegend content={<ChartLegendContent />} />
+                                                </PieChart>
+                                            </ChartContainer>
+                                        ) : <Skeleton className="h-[250px] w-full" />}
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {isVisible('documents') && publicDocuments.length > 0 && (
                     <Card className="animate-fade-in-up bg-white border-primary/10" style={{ animationDelay: '100ms' }}>
-                        <CardHeader><CardTitle className="font-bold">Public Artifacts</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="font-bold text-primary">Public Artifacts</CardTitle></CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                 {publicDocuments.map((doc) => {
-                                    const isImage = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+                                    const isImg = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
                                     return (
-                                        <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col hover:-translate-y-1 bg-white border-primary/10">
-                                            <a href={doc.url} target="_blank" rel="noopener noreferrer" className="group block h-full">
+                                        <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col hover:-translate-y-1 bg-white border-primary/10 cursor-pointer shadow-sm" onClick={() => isImg ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}>
+                                            <div className="group block h-full">
                                                 <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
-                                                    {isImage ? (
-                                                        <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="100vw" className="object-cover" />
-                                                    ) : (
-                                                        <File className="w-10 h-10 text-muted-foreground" />
-                                                    )}
+                                                    {isImg ? <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="100vw" className="object-cover" /> : <File className="w-10 h-10 text-muted-foreground" />}
                                                 </div>
                                                 <div className="p-2 text-center text-primary">
-                                                    <p className="text-[10px] font-bold truncate group-hover:underline">{doc.name}</p>
+                                                    <p className="text-[10px] font-bold uppercase truncate group-hover:underline">{doc.name}</p>
                                                 </div>
-                                            </a>
+                                            </div>
                                         </Card>
                                     )
                                 })}
@@ -265,125 +472,26 @@ export default function PublicLeadSummaryPage() {
                         </CardContent>
                     </Card>
                 )}
-
-                {fundingData && (
-                    <Card className="animate-fade-in-up shadow-sm border-primary/5 bg-white" style={{ animationDelay: '200ms' }}>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 font-bold"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
-                            <CardDescription className="font-bold">Verified donations against the goal for this initiative.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                                <div className="relative h-48 w-full">
-                                    {isClient ? (
-                                        <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
-                                            <RadialBarChart data={[{ name: 'Progress', value: fundingData.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
-                                                <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                                <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} />
-                                            </RadialBarChart>
-                                        </ChartContainer>
-                                    ) : <Skeleton className="w-full h-full rounded-full" />}
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold">Funded</span></div>
-                                </div>
-                                <div className="space-y-4 text-center md:text-left text-primary">
-                                    <div><p className="text-sm text-muted-foreground uppercase font-bold tracking-tighter">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                    <div><p className="text-sm text-muted-foreground uppercase font-bold tracking-tighter">Fundraising Target</p><p className="text-3xl font-bold text-primary">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                    <div><p className="text-sm text-muted-foreground uppercase font-bold tracking-tighter">Grand Total Received</p><p className="text-3xl font-bold text-primary">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-
-                <div className="grid gap-6 sm:grid-cols-3">
-                    <Card className="animate-fade-in-up bg-white border-primary/10" style={{ animationDelay: '300ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
-                    <Card className="animate-fade-in-up bg-white border-primary/10" style={{ animationDelay: '400ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Assistance Provided</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
-                    <Card className="animate-fade-in-up bg-white border-primary/10" style={{ animationDelay: '500ms' }}><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
-                </div>
-
-                <Card className="shadow-sm border-primary/5 bg-white">
-                    <CardHeader>
-                        <CardTitle className="font-bold">Beneficiary Groups</CardTitle>
-                        <CardDescription>Breakdown of requirements by category.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="border rounded-lg overflow-hidden">
-                            <Table>
-                                <TableHeader className="bg-primary/5">
-                                    <TableRow>
-                                        <TableHead className="font-bold text-primary">Category Name</TableHead>
-                                        <TableHead className="text-right font-bold text-primary">Total Beneficiaries</TableHead>
-                                        <TableHead className="text-right font-bold text-primary">Kit Amount (per kit)</TableHead>
-                                        <TableHead className="text-right font-bold text-primary">Total Kit Amount (per category)</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {beneficiaryGroups.map((group) => (
-                                        <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
-                                            <TableCell className="font-bold text-primary">{group.name}</TableCell>
-                                            <TableCell className="text-right font-bold">{group.count}</TableCell>
-                                            <TableCell className="text-right font-mono font-bold">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
-                                            <TableCell className="text-right font-mono font-bold">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                    {beneficiaryGroups.length === 0 && (
-                                        <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">No categories defined yet.</TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                                {beneficiaryGroups.length > 0 && (
-                                    <tfoot className="bg-primary/5 border-t">
-                                        <TableRow>
-                                            <TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Total</TableCell>
-                                            <TableCell className="text-right font-mono font-bold text-primary text-lg">
-                                                ₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}
-                                            </TableCell>
-                                        </TableRow>
-                                    </tfoot>
-                                )}
-                            </Table>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {fundingData && (
-                    <div className="grid gap-6 lg:grid-cols-2">
-                        <Card className="animate-fade-in-up shadow-sm border-primary/5 bg-white" style={{ animationDelay: '600ms' }}>
-                            <CardHeader>
-                                <CardTitle className="font-bold">Zakat Utilization</CardTitle>
-                                <CardDescription className="font-bold">Tracking of Zakat funds collected and allocated within this initiative.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                               <div className="flex justify-between items-center text-sm text-primary font-bold"><span className="text-muted-foreground uppercase tracking-tight">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.fundTotals?.zakat || 0).toLocaleString('en-IN')}</span></div>
-                                <Separator />
-                                <div className="pl-4 border-l-2 border-dashed space-y-2 py-2 text-primary">
-                                    <div className="flex justify-between items-center text-sm font-bold"><span className="text-muted-foreground uppercase tracking-tight">Allocated as Cash-in-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
-                                    <div className="flex justify-between items-center text-xs pl-4 font-bold"><span className="text-muted-foreground uppercase tracking-tight">Given</span><span className="font-mono text-green-600 font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                     <div className="flex justify-between items-center text-xs pl-4 font-bold"><span className="text-muted-foreground uppercase tracking-tight">Pending</span><span className="font-mono text-amber-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
-                                </div>
-                                <Separator />
-                                <div className="flex justify-between items-center text-base font-bold text-primary"><span>Zakat Balance for Goal</span><span className="font-bold text-primary font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="animate-fade-in-up shadow-sm border-primary/5 bg-white" style={{ animationDelay: '700ms' }}>
-                            <CardHeader><CardTitle className="font-bold">Donations by Category</CardTitle></CardHeader>
-                            <CardContent>
-                                {isClient ? (
-                                  <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                      <BarChart data={chartData} layout="vertical" margin={{ right: 20 }}>
-                                          <CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4}>{chartData.map((entry) => (<Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />))}</Bar>
-                                      </BarChart>
-                                  </ChartContainer>
-                                ) : <Skeleton className="h-[250px] w-full" />}
-                            </CardContent>
-                        </Card>
-                    </div>
-                )}
             </div>
 
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
+
+            <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
+                <DialogContent className="max-w-4xl">
+                    <DialogHeader><DialogTitle className="font-bold text-[#1B5E20]">{imageToView?.name}</DialogTitle></DialogHeader>
+                    {imageToView && (
+                        <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
+                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                        </div>
+                    )}
+                    <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setZoom(zoom => zoom * 1.2)} className="font-bold"><ZoomIn className="mr-2 h-4 w-4"/> Zoom In</Button>
+                        <Button variant="outline" size="sm" onClick={() => setZoom(zoom => zoom / 1.2)} className="font-bold"><ZoomOut className="mr-2 h-4 w-4"/> Zoom Out</Button>
+                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold"><RotateCw className="mr-2 h-4 w-4"/> Rotate</Button>
+                        <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold"><RefreshCw className="mr-2 h-4 w-4"/> Reset</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </main>
     );
 }
