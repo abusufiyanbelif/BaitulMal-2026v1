@@ -84,7 +84,6 @@ const donationPaymentTypeChartConfig = {
 
 export default function PublicLeadSummaryPage() {
     const params = useParams();
-    const router = useRouter();
     const leadId = params.leadId as string;
     const firestore = useFirestore();
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
@@ -126,9 +125,16 @@ export default function PublicLeadSummaryPage() {
         return categories.map(cat => {
             const count = beneficiaries.filter(b => b.itemCategoryId === cat.id).length;
             const kitAmount = cat.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
-            return { id: cat.id, name: cat.name, count, kitAmount, totalAmount: count * kitAmount };
+            
+            let displayName = cat.name;
+            if (isRationInitiative) {
+                if (cat.minMembers === 1 && cat.maxMembers === 1) displayName = `Member (1)`;
+                else if (cat.minMembers !== undefined && cat.maxMembers !== undefined) displayName = `Members (${cat.minMembers}-${cat.maxMembers})`;
+            }
+
+            return { id: cat.id, name: displayName, count, kitAmount, totalAmount: count * kitAmount };
         });
-    }, [lead, beneficiaries]);
+    }, [lead, beneficiaries, isRationInitiative]);
 
     const fundingData = useMemo(() => {
         if (!allDonations || !lead || !beneficiaries) return null;
@@ -329,8 +335,8 @@ export default function PublicLeadSummaryPage() {
                                                             <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
                                                                 <TableCell className="font-bold text-primary">{group.name}</TableCell>
                                                                 <TableCell className="text-right font-normal">{group.count}</TableCell>
-                                                                <TableCell className="text-right font-mono font-normal">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
-                                                                <TableCell className="text-right font-mono font-normal">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>
@@ -355,8 +361,8 @@ export default function PublicLeadSummaryPage() {
                                                             <TableRow key={idx} className="hover:bg-primary/5 transition-colors">
                                                                 <TableCell className="font-medium">{item.name}</TableCell>
                                                                 <TableCell className="text-right">{item.quantity} {item.quantityType}</TableCell>
-                                                                <TableCell className="text-right font-mono">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
-                                                                <TableCell className="text-right font-mono">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>
@@ -396,7 +402,7 @@ export default function PublicLeadSummaryPage() {
 
                             {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-wider">Zakat Utilization</CardTitle><CardDescription className="font-normal">Tracking of Zakat funds collected and allocated.</CardDescription></CardHeader>
+                                    <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-wider">Zakat Utilization</CardTitle><CardDescription className="font-normal">Tracking of Zakat funds collected across all initiatives.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 font-bold text-primary">
                                     <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground font-normal uppercase tracking-tight">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.amountsByCategory.Zakat || 0).toLocaleString('en-IN')}</span></div>
                                         <Separator />

@@ -127,9 +127,16 @@ export default function PublicCampaignSummaryPage() {
         return categories.map(cat => {
             const count = beneficiaries.filter(b => b.itemCategoryId === cat.id).length;
             const kitAmount = cat.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
-            return { id: cat.id, name: cat.name, count, kitAmount, totalAmount: count * kitAmount };
+            
+            let displayName = cat.name;
+            if (isRationInitiative) {
+                if (cat.minMembers === 1 && cat.maxMembers === 1) displayName = `Member (1)`;
+                else if (cat.minMembers !== undefined && cat.maxMembers !== undefined) displayName = `Members (${cat.minMembers}-${cat.maxMembers})`;
+            }
+
+            return { id: cat.id, name: displayName, count, kitAmount, totalAmount: count * kitAmount };
         });
-    }, [campaign, beneficiaries]);
+    }, [campaign, beneficiaries, isRationInitiative]);
 
     const fundingData = useMemo(() => {
         if (!allDonations || !campaign || !beneficiaries) return null;
@@ -343,8 +350,8 @@ export default function PublicCampaignSummaryPage() {
                                                             <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
                                                                 <TableCell className="font-bold text-primary">{group.name}</TableCell>
                                                                 <TableCell className="text-right font-normal">{group.count}</TableCell>
-                                                                <TableCell className="text-right font-mono font-normal">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
-                                                                <TableCell className="text-right font-mono font-normal">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>
@@ -369,8 +376,8 @@ export default function PublicCampaignSummaryPage() {
                                                             <TableRow key={idx} className="hover:bg-primary/5 transition-colors">
                                                                 <TableCell className="font-medium">{item.name}</TableCell>
                                                                 <TableCell className="text-right">{item.quantity} {item.quantityType}</TableCell>
-                                                                <TableCell className="text-right font-mono">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
-                                                                <TableCell className="text-right font-mono">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>

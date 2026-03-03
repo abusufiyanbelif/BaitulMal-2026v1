@@ -195,9 +195,16 @@ export default function CampaignSummaryPage() {
         return categories.map(cat => {
             const count = beneficiaries.filter(b => b.itemCategoryId === cat.id).length;
             const kitAmount = cat.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
-            return { id: cat.id, name: cat.name, count, kitAmount, totalAmount: count * kitAmount };
+            
+            let displayName = cat.name;
+            if (isRationInitiative) {
+                if (cat.minMembers === 1 && cat.maxMembers === 1) displayName = `Member (1)`;
+                else if (cat.minMembers !== undefined && cat.maxMembers !== undefined) displayName = `Members (${cat.minMembers}-${cat.maxMembers})`;
+            }
+
+            return { id: cat.id, name: displayName, count, kitAmount, totalAmount: count * kitAmount };
         });
-    }, [campaign, beneficiaries]);
+    }, [campaign, beneficiaries, isRationInitiative]);
 
     const fundingData = useMemo(() => {
         if (!allDonations || !campaign || !beneficiaries) return null;

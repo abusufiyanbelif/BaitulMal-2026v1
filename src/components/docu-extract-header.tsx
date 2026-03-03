@@ -31,6 +31,7 @@ export function DocuExtractHeader() {
 
   const handleLogout = async () => {
     if (auth) {
+      await session.forceRefetch();
       await signOut(auth);
       router.push('/login');
     }
@@ -45,21 +46,21 @@ export function DocuExtractHeader() {
   
   return (
     <header className="bg-white border-b p-2 shadow-sm sticky top-0 z-50">
-      <div className="container mx-auto flex flex-wrap justify-between items-center gap-4">
-        <Link href={homeHref} className="flex items-center gap-3 w-fit group transition-transform duration-300 ease-in-out hover:scale-[1.02] animate-slide-in-from-top" style={{ animationDelay: '0.1s', animationFillMode: 'backwards' }}>
-          <div className="relative flex items-center justify-center h-14 w-auto min-w-[60px]">
+      <div className="container mx-auto flex flex-nowrap justify-between items-center gap-2">
+        <Link href={homeHref} className="flex items-center gap-2 min-w-0 flex-1 group transition-transform duration-300 ease-in-out hover:scale-[1.01]">
+          <div className="relative flex-shrink-0 flex items-center justify-center h-12 w-auto min-w-[40px]">
             {isLoading ? (
-                <Skeleton className="h-12 w-24 rounded-lg" />
+                <Skeleton className="h-10 w-10 rounded-lg" />
             ) : (
                 validLogoUrl && (
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                     alt="Logo"
-                    width={120}
-                    height={60}
+                    width={80}
+                    height={40}
                     className="object-contain drop-shadow-sm"
                     style={{
-                      maxHeight: '3.5rem',
+                      maxHeight: '2.5rem',
                       width: 'auto',
                     }}
                     priority
@@ -67,19 +68,19 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight animate-fade-in-zoom animate-slide-in-from-top" style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}>
-            {isBrandingLoading ? <Skeleton className="h-8 w-64 md:w-80" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
+          <h1 className="text-sm sm:text-lg md:text-xl font-bold tracking-tight text-primary truncate">
+            {isBrandingLoading ? <Skeleton className="h-6 w-32 sm:w-64" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
           </h1>
         </Link>
 
-        <nav className="flex items-center gap-2">
+        <nav className="flex items-center gap-2 flex-shrink-0">
             {isLoading ? (
                 <Skeleton className="h-10 w-10 rounded-full" />
             ) : user && userProfile ? (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-10 w-10 rounded-full border-2 border-primary/10 p-0 transition-all hover:border-primary active:scale-95 animate-slide-in-from-top" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
+                      <Button variant="ghost" className="relative h-10 w-10 rounded-full border-2 border-primary/10 p-0 transition-all hover:border-primary active:scale-95">
                         <Avatar className="h-full w-full">
                           <AvatarImage
                             src={userProfile?.idProofUrl || ''}
@@ -94,10 +95,10 @@ export function DocuExtractHeader() {
                     <DropdownMenuContent className="w-64 mt-2" align="end" forceMount>
                       <DropdownMenuLabel className="font-normal p-4">
                         <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-bold tracking-tight leading-none text-primary">
+                          <p className="text-sm font-bold tracking-tight text-primary">
                             {userProfile?.name || 'User'}
                           </p>
-                          <p className="text-xs font-normal text-muted-foreground pt-1">
+                          <p className="text-xs font-normal text-muted-foreground pt-1 truncate">
                             {user.email}
                           </p>
                           <Badge variant="outline" className="w-fit mt-2 text-[10px] font-normal border-primary/20 text-primary">{userProfile.role}</Badge>
@@ -137,14 +138,13 @@ export function DocuExtractHeader() {
               </div>
             ) : (
               pathname !== '/login' && (
-                <div className="flex gap-2 items-center">
-                    <Button asChild size="sm" className="font-bold tracking-tight text-xs interactive-hover px-6 animate-slide-in-from-top bg-primary text-white hover:bg-primary/90 shadow-md" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
-                        <Link href="/login">
-                            <LogIn className="mr-2 h-4 w-4" />
-                            Organization members login
-                        </Link>
-                    </Button>
-                </div>
+                <Button asChild size="sm" className="font-bold tracking-tight text-[10px] sm:text-xs bg-primary text-white hover:bg-primary/90 shadow-sm px-2 sm:px-4">
+                    <Link href="/login">
+                        <LogIn className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="hidden xs:inline">Member login</span>
+                        <span className="xs:hidden">Login</span>
+                    </Link>
+                </Button>
               )
             )}
         </nav>
