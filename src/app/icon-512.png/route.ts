@@ -10,7 +10,7 @@ export function GET() {
     React.createElement('div', {
         style: {
           fontSize: 256,
-          background: '#16a34a',
+          background: '#138808',
           width: '100%',
           height: '100%',
           display: 'flex',

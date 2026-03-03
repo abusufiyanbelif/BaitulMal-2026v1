@@ -67,7 +67,7 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight animate-fade-in-zoom" style={{ color: '#1b9d4a', animationDelay: '0.2s', animationFillMode: 'backwards' }}>
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight animate-fade-in-zoom animate-slide-in-from-top" style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}>
             {isBrandingLoading ? <Skeleton className="h-8 w-64 md:w-80" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
           </h1>
         </Link>
@@ -138,7 +138,7 @@ export function DocuExtractHeader() {
             ) : (
               pathname !== '/login' && (
                 <div className="flex gap-2 items-center">
-                    <Button asChild size="sm" className="font-bold tracking-tight text-xs interactive-hover px-6 animate-slide-in-from-top bg-[#1b9d4a] text-white hover:bg-[#1b9d4aee]" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
+                    <Button asChild size="sm" className="font-bold tracking-tight text-xs interactive-hover px-6 animate-slide-in-from-top bg-primary text-white hover:bg-primary/90" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
                         <Link href="/login">
                             <LogIn className="mr-2 h-4 w-4" />
                             Organization members login

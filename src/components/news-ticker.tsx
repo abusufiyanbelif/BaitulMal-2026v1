@@ -63,7 +63,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         "z-30 h-full px-4 flex items-center border-r shadow-md shrink-0",
         isCompleted ? "bg-muted text-muted-foreground" : 
         isDonation ? "bg-blue-600 text-white" : 
-        "bg-[#1b9d4a] text-white"
+        "bg-primary text-white"
       )}>
         {isCompleted ? (
           <CheckCircle2 className="h-4 w-4 mr-2" />
@@ -111,7 +111,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
                 "h-1.5 w-1.5 rounded-full mr-3 shrink-0",
                 isCompleted ? "bg-muted-foreground" : 
                 isDonation ? "bg-blue-400" : 
-                "bg-[#1b9d4a]"
+                "bg-primary"
               )} />
               <Link 
                 href={item.href} 
@@ -119,7 +119,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
                   "text-sm font-bold transition-colors whitespace-nowrap hover:underline underline-offset-4",
                   isCompleted ? "text-muted-foreground hover:text-foreground" : 
                   isDonation ? "text-blue-700/80 hover:text-blue-900" : 
-                  "text-foreground hover:text-[#1b9d4a]"
+                  "text-foreground hover:text-primary"
                 )}
               >
                 {item.text}
