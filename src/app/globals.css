@@ -4,9 +4,9 @@
 
 @layer base {
   :root {
-    /* Background: #f1f9f3 */
+    /* Background: #f1f9f3 (Pale Mint) */
     --background: 135 25% 96%;
-    /* Normal Text: #4d805f */
+    /* Normal Text: #4d805f (Muted Forest Green) */
     --foreground: 141 25% 40%; 
     
     --card: 0 0% 100%;
@@ -15,8 +15,8 @@
     --popover: 135 25% 96%;
     --popover-foreground: 141 25% 30%;
     
-    /* Primary: #1b9d4a (HSL: 142 71% 36%) */
-    --primary: 142 71% 36%; 
+    /* Primary: #1B5E20 (Deep Forest Green - HSL: 124 55% 24%) */
+    --primary: 124 55% 24%; 
     --primary-foreground: 0 0% 100%;
     
     --secondary: 135 25% 92%;
@@ -36,19 +36,19 @@
     
     --border: 141 25% 85%;
     --input: 141 25% 85%;
-    --ring: 142 71% 36%;
+    --ring: 124 55% 24%;
     
     --radius: 0.75rem;
     
     /* Vibrant Chart Colors for Categories */
-    --chart-1: 142 71% 45%;  /* Zakat - Green */
-    --chart-2: 142 76% 36%;  /* Sadaqah - Darker Green */
-    --chart-3: 221 83% 53%;  /* Fitra - Blue */
-    --chart-4: 25 95% 53%;   /* Lillah - Orange */
-    --chart-5: 262 83% 58%;  /* Interest - Purple */
-    --chart-6: 191 91% 42%;  /* Loan - Cyan */
-    --chart-7: 0 0% 0%;      /* Fidiya - Black */
-    --chart-8: 45 93% 47%;   /* Monthly - Gold */
+    --chart-1: 124 55% 30%;  /* Zakat - Dark Green */
+    --chart-2: 142 76% 36%;  /* Sadaqah */
+    --chart-3: 221 83% 53%;  /* Fitra */
+    --chart-4: 25 95% 53%;   /* Lillah */
+    --chart-5: 262 83% 58%;  /* Interest */
+    --chart-6: 191 91% 42%;  /* Loan */
+    --chart-7: 0 0% 0%;      /* Fidiya */
+    --chart-8: 45 93% 47%;   /* Monthly */
   }
 
   * {
@@ -59,13 +59,13 @@
     @apply min-h-screen bg-background text-foreground antialiased font-sans font-normal;
   }
 
-  /* Headings use the brand green and are bold */
+  /* Headings use the brand Deep Forest Green and are bold */
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold;
-    color: #1b9d4a;
+    color: #1B5E20;
   }
 
-  /* Custom Scrollbars */
+  /* Custom Scrollbars using brand color */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -74,11 +74,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #1b9d4a;
+    background: #1B5E20;
     border-radius: 10px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #1b9d4a/0.8;
+    background: #1B5E20/0.8;
   }
 
   .interactive-hover {
