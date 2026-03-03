@@ -52,7 +52,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
 
     return (
         <Card 
-            className="flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white/50 shadow-sm" 
+            className="flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white shadow-sm" 
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
             onClick={() => router.push(`/leads-members/${lead.id}/summary`)}
         >
@@ -324,10 +324,10 @@ export default function LeadPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-xl" />)}
               </div>
-            ) : sections.length > 0 ? (
+            ) : (sections && sections.length > 0) ? (
               <Accordion type="multiple" defaultValue={['active']} className="space-y-6">
                 {sections.map(section => (
-                  <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white/50 shadow-sm overflow-hidden">
+                  <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-sm overflow-hidden">
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">
                       <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />

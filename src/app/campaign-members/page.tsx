@@ -70,7 +70,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
 
     return (
         <Card 
-            className="flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white/50 shadow-sm" 
+            className="flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white shadow-sm" 
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
             onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}
         >
@@ -89,7 +89,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
           </div>
           <CardHeader className="p-4">
             <div className="flex justify-between items-start gap-2">
-                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight">
+                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight text-primary">
                     {campaign.campaignNumber && <span className="text-primary">#{campaign.campaignNumber} </span>}{campaign.name}
                 </CardTitle>
                   <DropdownMenu>
@@ -355,7 +355,7 @@ export default function CampaignPage() {
             ) : sections.length > 0 ? (
               <Accordion type="multiple" defaultValue={['active']} className="space-y-6">
                 {sections.map(section => (
-                  <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white/50 shadow-sm overflow-hidden">
+                  <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-sm overflow-hidden">
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">
                       <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
