@@ -411,6 +411,46 @@ export default function LeadSummaryPage() {
             </div>
 
             <div className="space-y-6" ref={summaryRef}>
+                {/* 1. Lead Details Section - Prioritized at the top */}
+                <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
+                        <CardHeader className="bg-primary/5"><CardTitle className="font-bold">Lead Details</CardTitle></CardHeader>
+                        <CardContent className="space-y-4 pt-6 text-primary">
+                            {editMode ? (
+                                <div className="space-y-6">
+                                    <div className="space-y-2">
+                                        <Label className="font-bold">Header Image</Label>
+                                        <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
+                                        <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary">
+                                            {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click to upload</span></p></div> )}
+                                        </label>
+                                    </div>
+                                    <div><Label htmlFor="description" className="font-bold">Description</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} className="text-primary" /></div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1"><Label htmlFor="requiredAmount" className="font-bold">Req. Amount (₹)</Label><Input id="requiredAmount" type="number" value={editableLead.requiredAmount || 0} onChange={(e) => handleFieldChange('requiredAmount', e.target.value)} className="text-primary" /></div>
+                                        <div className="space-y-1"><Label htmlFor="targetAmount" className="font-bold">Goal (₹)</Label><Input id="targetAmount" type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary" /></div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer" onClick={() => lead.imageUrl && handleViewImage(lead.imageUrl, lead.name)}>
+                                        {lead.imageUrl ? ( <Image src={lead.imageUrl} alt={lead.name} fill sizes="100vw" className="object-cover" /> ) : ( <FallbackIcon className="h-20 w-20 text-primary/10" /> )}
+                                    </div>
+                                    <div className="space-y-2 font-normal">
+                                        <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
+                                        <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed">{lead.description || 'No description provided.'}</p>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                                        <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Purpose</p><p className="font-bold uppercase text-primary">{lead.purpose} {lead.category && `(${lead.category})`}</p></div>
+                                        <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Target Goal</p><p className="font-bold font-mono text-primary">₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                        <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Start Date</p><p className="font-bold text-primary">{lead.startDate || 'N/A'}</p></div>
+                                        <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">End Date</p><p className="font-bold text-primary">{lead.endDate || 'N/A'}</p></div>
+                                    </div>
+                                </>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                {/* 2. Fundraising Progress & Financial Visuals */}
                 {fundingData && (
                     <div className="grid gap-6 animate-fade-in-up">
                         {isVisible('funding_progress') && (
@@ -511,7 +551,7 @@ export default function LeadSummaryPage() {
                                         <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
                                             <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Allocated as Cash-in-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
                                             <div className="flex justify-between items-center text-xs pl-4 font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Paid out</span><span className="font-mono text-success font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                            <div className="flex justify-between items-center text-xs pl-4 font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Remaining to Pay</span><span className="font-mono text-orange-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                                             <div className="flex justify-between items-center text-xs pl-4 font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Remaining to Pay</span><span className="font-mono text-orange-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                         </div>
                                         <Separator />
                                         <div className="flex justify-between items-center text-base font-bold text-primary"><span>Zakat Balance for Goal</span><span className="text-primary font-mono font-bold">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
@@ -558,95 +598,58 @@ export default function LeadSummaryPage() {
                     </div>
                 )}
 
-                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
-                        <CardHeader className="bg-primary/5"><CardTitle className="font-bold">Lead Details</CardTitle></CardHeader>
-                        <CardContent className="space-y-4 pt-6 text-primary">
-                            {editMode ? (
-                                <div className="space-y-6">
-                                    <div className="space-y-2">
-                                        <Label className="font-bold">Header Image</Label>
-                                        <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
-                                        <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary">
-                                            {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click to upload</span></p></div> )}
-                                        </label>
-                                    </div>
-                                    <div><Label htmlFor="description" className="font-bold">Description</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} className="text-primary" /></div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1"><Label htmlFor="requiredAmount" className="font-bold">Req. Amount (₹)</Label><Input id="requiredAmount" type="number" value={editableLead.requiredAmount || 0} onChange={(e) => handleFieldChange('requiredAmount', e.target.value)} className="text-primary" /></div>
-                                        <div className="space-y-1"><Label htmlFor="targetAmount" className="font-bold">Goal (₹)</Label><Input id="targetAmount" type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary" /></div>
-                                    </div>
+                {/* 3. Artifacts & Documents */}
+                {isVisible('documents') && (
+                    <Card className="animate-fade-in-up bg-white" style={{ animationDelay: '100ms' }}>
+                        <CardHeader><CardTitle className="font-bold">Lead Artifacts</CardTitle></CardHeader>
+                        <CardContent>
+                        {editMode ? (
+                                <div className="space-y-4">
+                                    <Label className="font-bold">Upload New Artifacts</Label>
+                                    <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
+                                    <Separator />
+                                    <Label className="font-bold">Manage Existing Artifacts</Label>
+                                    {existingDocuments.length > 0 ? (
+                                        <div className="space-y-3 font-normal">
+                                            {existingDocuments.map((doc) => (
+                                                <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md gap-4">
+                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                        <Button variant="link" className="p-0 h-auto font-bold truncate text-primary" onClick={() => doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i) ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}><p className="truncate">{doc.name}</p></Button>
+                                                    </div>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="flex items-center gap-2"><Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} /><Label className="text-xs text-foreground font-bold">Public</Label></div>
+                                                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleRemoveExistingDocument(doc.url)}><Trash2 className="h-4 w-4" /></Button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : <p className="text-sm text-muted-foreground font-bold">No artifacts.</p>}
                                 </div>
                             ) : (
-                                <>
-                                    <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer" onClick={() => lead.imageUrl && handleViewImage(lead.imageUrl, lead.name)}>
-                                        {lead.imageUrl ? ( <Image src={lead.imageUrl} alt={lead.name} fill sizes="100vw" className="object-cover" /> ) : ( <FallbackIcon className="h-20 w-20 text-primary/10" /> )}
+                                lead.documents && lead.documents.length > 0 ? (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                        {lead.documents.map((doc) => {
+                                            const isImg = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+                                            return (
+                                                <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all flex flex-col active:scale-95 bg-white border-primary/10 cursor-pointer" onClick={() => isImg ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}>
+                                                    <div className="group block flex-grow">
+                                                        <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
+                                                            {isImg ? <Image src={doc.url} alt={doc.name} fill sizes="100vw" className="object-cover" /> : <File className="w-10 h-10 text-muted-foreground" />}
+                                                        </div>
+                                                        <div className="p-2 text-center text-[10px] font-bold text-primary uppercase truncate">{doc.name}</div>
+                                                    </div>
+                                                    <CardFooter className="p-2 border-t mt-auto flex justify-center w-full gap-2" onClick={e => e.stopPropagation()}>
+                                                        {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-xs text-foreground font-bold">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"} className="font-bold uppercase text-[10px]">{doc.isPublic ? "Public" : "Private"}</Badge> )}
+                                                    </CardFooter>
+                                                </Card>
+                                            );
+                                        })}
                                     </div>
-                                    <div className="space-y-2 font-normal">
-                                        <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
-                                        <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed">{lead.description || 'No description provided.'}</p>
-                                    </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                                        <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Purpose</p><p className="font-bold uppercase text-primary">{lead.purpose} {lead.category && `(${lead.category})`}</p></div>
-                                        <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Target Goal</p><p className="font-bold font-mono text-primary">₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                        <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Start Date</p><p className="font-bold text-primary">{lead.startDate || 'N/A'}</p></div>
-                                        <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">End Date</p><p className="font-bold text-primary">{lead.endDate || 'N/A'}</p></div>
-                                    </div>
-                                </>
+                                ) : <p className="text-sm text-muted-foreground font-bold">No artifacts.</p>
                             )}
                         </CardContent>
                     </Card>
-
-                    {isVisible('documents') && (
-                        <Card className="animate-fade-in-up bg-white" style={{ animationDelay: '100ms' }}>
-                            <CardHeader><CardTitle className="font-bold">Lead Artifacts</CardTitle></CardHeader>
-                            <CardContent>
-                            {editMode ? (
-                                    <div className="space-y-4">
-                                        <Label className="font-bold">Upload New Artifacts</Label>
-                                        <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
-                                        <Separator />
-                                        <Label className="font-bold">Manage Existing Artifacts</Label>
-                                        {existingDocuments.length > 0 ? (
-                                            <div className="space-y-3 font-normal">
-                                                {existingDocuments.map((doc) => (
-                                                    <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md gap-4">
-                                                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                            <Button variant="link" className="p-0 h-auto font-bold truncate text-primary" onClick={() => doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i) ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}><p className="truncate">{doc.name}</p></Button>
-                                                        </div>
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="flex items-center gap-2"><Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} /><Label className="text-xs text-foreground font-bold">Public</Label></div>
-                                                            <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleRemoveExistingDocument(doc.url)}><Trash2 className="h-4 w-4" /></Button>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : <p className="text-sm text-muted-foreground font-bold">No artifacts.</p>}
-                                    </div>
-                                ) : (
-                                    lead.documents && lead.documents.length > 0 ? (
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                            {lead.documents.map((doc) => {
-                                                const isImg = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
-                                                return (
-                                                    <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all flex flex-col active:scale-95 bg-white border-primary/10 cursor-pointer" onClick={() => isImg ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}>
-                                                        <div className="group block flex-grow">
-                                                            <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
-                                                                {isImg ? <Image src={doc.url} alt={doc.name} fill sizes="100vw" className="object-cover" /> : <File className="w-10 h-10 text-muted-foreground" />}
-                                                            </div>
-                                                            <div className="p-2 text-center text-[10px] font-bold text-primary uppercase truncate">{doc.name}</div>
-                                                        </div>
-                                                        <CardFooter className="p-2 border-t mt-auto flex justify-center w-full gap-2" onClick={e => e.stopPropagation()}>
-                                                            {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-xs text-foreground font-bold">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"} className="font-bold uppercase text-[10px]">{doc.isPublic ? "Public" : "Private"}</Badge> )}
-                                                        </CardFooter>
-                                                    </Card>
-                                                );
-                                            })}
-                                        </div>
-                                    ) : <p className="text-sm text-muted-foreground font-bold">No artifacts.</p>
-                                )}
-                            </CardContent>
-                        </Card>
-                    )}
+                )}
             </div>
 
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />

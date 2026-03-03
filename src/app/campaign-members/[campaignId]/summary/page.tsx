@@ -425,6 +425,46 @@ export default function CampaignSummaryPage() {
             </div>
 
             <div className="space-y-6" ref={summaryRef}>
+                {/* 1. Initiative Details Section - Now at the Top */}
+                <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
+                    <CardHeader className="bg-primary/5">
+                        <CardTitle className="font-bold">Campaign Details</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 pt-6">
+                        {editMode ? (
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <Label className="font-bold">Header Image</Label>
+                                    <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
+                                    <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary">
+                                        {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click to upload</span></p></div> )}
+                                    </label>
+                                </div>
+                                <div><Label htmlFor="description" className="font-bold">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground" rows={4} /></div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1"><Label htmlFor="startDate" className="font-bold">Start Date</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="text-foreground" /></div>
+                                    <div className="space-y-1"><Label htmlFor="endDate" className="font-bold">End Date</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="text-foreground" /></div>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer" onClick={() => campaign.imageUrl && handleViewImage(campaign.imageUrl, campaign.name)}>
+                                    {campaign.imageUrl ? (
+                                        <Image src={campaign.imageUrl} alt={campaign.name} fill sizes="100vw" className="object-cover" />
+                                    ) : (
+                                        <FallbackIcon className="h-20 w-20 text-muted-foreground/30" />
+                                    )}
+                                </div>
+                                <div className="space-y-2 text-primary font-normal">
+                                    <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
+                                    <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed">{campaign.description || 'No description provided.'}</p>
+                                </div>
+                            </>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* 2. Fundraising Progress & Financial Section */}
                 {fundingData && (
                     <div className="grid gap-6 animate-fade-in-up">
                         {isVisible('funding_progress') && (
@@ -580,44 +620,6 @@ export default function CampaignSummaryPage() {
                         </div>
                     </div>
                 )}
-
-                <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
-                    <CardHeader className="bg-primary/5">
-                        <CardTitle className="font-bold">Campaign Details</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 pt-6">
-                        {editMode ? (
-                            <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <Label className="font-bold">Header Image</Label>
-                                    <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
-                                    <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary">
-                                        {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click to upload</span></p></div> )}
-                                    </label>
-                                </div>
-                                <div><Label htmlFor="description" className="font-bold">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground" rows={4} /></div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1"><Label htmlFor="startDate" className="font-bold">Start Date</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="text-foreground" /></div>
-                                    <div className="space-y-1"><Label htmlFor="endDate" className="font-bold">End Date</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="text-foreground" /></div>
-                                </div>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer" onClick={() => campaign.imageUrl && handleViewImage(campaign.imageUrl, campaign.name)}>
-                                    {campaign.imageUrl ? (
-                                        <Image src={campaign.imageUrl} alt={campaign.name} fill sizes="100vw" className="object-cover" />
-                                    ) : (
-                                        <FallbackIcon className="h-20 w-20 text-muted-foreground/30" />
-                                    )}
-                                </div>
-                                <div className="space-y-2 text-primary font-normal">
-                                    <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
-                                    <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed">{campaign.description || 'No description provided.'}</p>
-                                </div>
-                            </>
-                        )}
-                    </CardContent>
-                </Card>
 
                 {isVisible('documents') && (
                     <Card className="animate-fade-in-up bg-white" style={{ animationDelay: '100ms' }}>

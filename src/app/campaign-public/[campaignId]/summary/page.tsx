@@ -253,6 +253,7 @@ export default function PublicCampaignSummaryPage() {
             </div>
 
             <div className="space-y-6" ref={summaryRef}>
+                {/* 1. Initiative Details Section - Top prioritized */}
                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
                     <CardHeader className="bg-primary/5"><CardTitle className="font-bold">Campaign Details</CardTitle></CardHeader>
                     <CardContent className="space-y-4 pt-6 text-foreground">
@@ -269,31 +270,7 @@ export default function PublicCampaignSummaryPage() {
                     </CardContent>
                 </Card>
 
-                {isVisible('documents') && publicDocuments.length > 0 && (
-                    <Card className="animate-fade-in-up bg-white border-primary/10" style={{ animationDelay: '100ms' }}>
-                        <CardHeader><CardTitle className="font-bold">Public Artifacts</CardTitle></CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                {publicDocuments.map((doc) => {
-                                    const isImg = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
-                                    return (
-                                        <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col hover:-translate-y-1 bg-white border-primary/10 cursor-pointer" onClick={() => isImg ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}>
-                                            <div className="group block h-full">
-                                                <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
-                                                    {isImg ? <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="100vw" className="object-cover" /> : <File className="w-10 h-10 text-muted-foreground" />}
-                                                </div>
-                                                <div className="p-2 text-center text-primary">
-                                                    <p className="text-[10px] font-bold truncate group-hover:underline">{doc.name}</p>
-                                                </div>
-                                            </div>
-                                        </Card>
-                                    )
-                                })}
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-
+                {/* 2. Fundraising Progress & Financial Visuals */}
                 {fundingData && (
                     <div className="grid gap-6 animate-fade-in-up">
                         {isVisible('funding_progress') && (
@@ -315,7 +292,7 @@ export default function PublicCampaignSummaryPage() {
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
                                             <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold">Funded</span></div>
                                         </div>
-                                        <div className="space-y-4 text-center md:text-left text-primary">
+                                        <div className="space-y-4 text-center md:text-left text-primary font-bold">
                                             <div><p className="text-sm text-muted-foreground uppercase font-bold tracking-tighter">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
                                             <div><p className="text-sm text-muted-foreground uppercase font-bold tracking-tighter">Fundraising Target</p><p className="text-3xl font-bold text-primary">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
                                             <div><p className="text-sm text-muted-foreground uppercase font-bold tracking-tighter">Grand Total Received</p><p className="text-3xl font-bold text-primary">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
@@ -439,6 +416,31 @@ export default function PublicCampaignSummaryPage() {
                             )}
                         </div>
                     </div>
+                )}
+
+                {isVisible('documents') && publicDocuments.length > 0 && (
+                    <Card className="animate-fade-in-up bg-white border-primary/10" style={{ animationDelay: '100ms' }}>
+                        <CardHeader><CardTitle className="font-bold">Public Artifacts</CardTitle></CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                {publicDocuments.map((doc) => {
+                                    const isImg = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+                                    return (
+                                        <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col hover:-translate-y-1 bg-white border-primary/10 cursor-pointer" onClick={() => isImg ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}>
+                                            <div className="group block h-full">
+                                                <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
+                                                    {isImg ? <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="100vw" className="object-cover" /> : <File className="w-10 h-10 text-muted-foreground" />}
+                                                </div>
+                                                <div className="p-2 text-center text-primary">
+                                                    <p className="text-[10px] font-bold truncate group-hover:underline">{doc.name}</p>
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    )
+                                })}
+                            </div>
+                        </CardContent>
+                    </Card>
                 )}
             </div>
 
