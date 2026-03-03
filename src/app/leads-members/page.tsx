@@ -71,11 +71,11 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
           </div>
           <CardHeader className="p-4">
             <div className="flex justify-between items-start gap-2">
-                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight">{lead.name}</CardTitle>
+                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight text-primary">{lead.name}</CardTitle>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                            <MoreHorizontal className="h-4 w-4" />
+                            <MoreHorizontal className="h-4 w-4 text-primary" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
@@ -137,7 +137,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
         </CardHeader>
         <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal">
               <div className="flex justify-between items-center text-xs">
-                <Badge variant="outline" className="text-[10px] border-primary/20 font-normal">{lead.purpose}</Badge>
+                <Badge variant="outline" className="text-[10px] border-primary/20 font-normal text-primary">{lead.purpose}</Badge>
                 <Badge 
                   variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
                   className={cn("text-[10px] font-normal", lead.status === 'Active' && "animate-status-pulse")}
@@ -157,7 +157,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
             )}
         </CardContent>
          <CardFooter className="p-2 border-t bg-primary/5">
-            <Button asChild className="w-full text-xs font-bold tracking-tight hover:bg-primary hover:text-white" size="sm" variant="ghost">
+            <Button asChild className="w-full text-xs font-bold tracking-tight hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
                 <Link href={`/leads-members/${lead.id}/summary`}>
                     View Details
                 </Link>
@@ -293,7 +293,7 @@ export default function LeadPage() {
       <main className="container mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <Button variant="outline" asChild size="sm" className="interactive-hover font-bold border-primary/20 hover:bg-primary/10 text-primary"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
-          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold tracking-tight interactive-hover shadow-lg bg-[#1b9d4a] hover:bg-[#1b9d4a]/90 text-white"><Link href="/leads-members/create"><Plus className="mr-2 h-4 w-4" /> New Appeal</Link></Button>}
+          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold tracking-tight interactive-hover shadow-lg bg-primary hover:bg-primary/90 text-white"><Link href="/leads-members/create"><Plus className="mr-2 h-4 w-4" /> New Appeal</Link></Button>}
         </div>
 
         <div className="space-y-2">

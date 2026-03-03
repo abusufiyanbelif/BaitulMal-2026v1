@@ -60,26 +60,26 @@ export default function UserSettingsPage() {
 
   return (
     <div className="space-y-6">
-        <Card className="animate-fade-in-zoom border-[#8fbca0]">
+        <Card className="animate-fade-in-zoom border-primary/20">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-bold text-[#136c34]">
+                <CardTitle className="flex items-center gap-2 font-bold text-primary">
                     <Settings className="h-5 w-5" /> User Module Settings
                 </CardTitle>
-                <CardDescription className="text-[#4D805F]">
+                <CardDescription className="font-normal">
                     General configuration for staff and administrator accounts.
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <p className="text-sm text-[#4D805F]">System-wide user behavior and login policy configurations can be managed here.</p>
+                <p className="text-sm text-foreground">System-wide user behavior and login policy configurations can be managed here.</p>
             </CardContent>
         </Card>
 
-        <Card className="animate-fade-in-up border-[#8fbca0]">
+        <Card className="animate-fade-in-up border-primary/20">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-bold text-[#136c34]">
+                <CardTitle className="flex items-center gap-2 font-bold text-primary">
                     <CheckSquare className="h-5 w-5" /> Mandatory Fields Setup
                 </CardTitle>
-                <CardDescription className="text-[#4D805F]">
+                <CardDescription className="font-normal">
                     Define which information must be collected for every organization user account.
                 </CardDescription>
             </CardHeader>
@@ -92,13 +92,13 @@ export default function UserSettingsPage() {
                                 checked={localMandatory[field.id] === true} 
                                 onCheckedChange={() => handleMandatoryToggle(field.id)} 
                             />
-                            <Label htmlFor={`mandatory_user_${field.id}`} className="cursor-pointer font-normal text-[#4D805F]">{field.name}</Label>
+                            <Label htmlFor={`mandatory_user_${field.id}`} className="cursor-pointer font-normal">{field.name}</Label>
                         </div>
                     ))}
                 </div>
             </CardContent>
-            <CardFooter className="justify-end border-t border-[#8fbca0] p-4">
-                <Button onClick={handleSave} disabled={isSaving} className="font-bold bg-[#136c34] hover:bg-[#136c34]/90">
+            <CardFooter className="justify-end border-t border-primary/10 p-4">
+                <Button onClick={handleSave} disabled={isSaving} className="font-bold text-white bg-primary hover:bg-primary/90">
                     {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                     Save Settings
                 </Button>

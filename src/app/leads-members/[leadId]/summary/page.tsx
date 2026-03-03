@@ -66,7 +66,7 @@ import { Label } from '@/components/ui/label';
 import { cn, getNestedValue } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ShareDialog } from '@/components/share-dialog';
-import { donationCategories } from '@/lib/modules';
+import { donationCategories, leadPurposesConfig, educationDegrees, educationYears, educationSemesters, leadSeriousnessLevels } from '@/lib/modules';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { FileUploader } from '@/components/file-uploader';
@@ -75,6 +75,7 @@ import { BrandedLoader } from '@/components/branded-loader';
 import Resizer from 'react-image-file-resizer';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   BarChart,
   Bar,
@@ -181,6 +182,12 @@ export default function LeadSummaryPage() {
                 allowedDonationTypes: lead.allowedDonationTypes || [...donationCategories],
                 imageUrl: lead.imageUrl || '',
                 documents: lead.documents || [],
+                degree: lead.degree || '',
+                year: lead.year || '',
+                semester: lead.semester || '',
+                diseaseIdentified: lead.diseaseIdentified || '',
+                diseaseStage: lead.diseaseStage || '',
+                seriousness: lead.seriousness || null,
             });
             setExistingDocuments(lead.documents || []);
             setImagePreview(lead.imageUrl || null);
@@ -189,6 +196,11 @@ export default function LeadSummaryPage() {
             setNewDocuments([]);
         }
     }, [lead, editMode]);
+
+    const availableCategories = useMemo(() => {
+        const selectedPurpose = leadPurposesConfig.find(p => p.id === editableLead.purpose);
+        return selectedPurpose?.categories || [];
+    }, [editableLead.purpose]);
 
     const beneficiaryGroups = useMemo(() => {
         if (!lead || !beneficiaries) return [];
@@ -345,6 +357,8 @@ export default function LeadSummaryPage() {
             description: editableLead.description || '',
             purpose: editableLead.purpose || 'General',
             category: editableLead.category || '',
+            purposeDetails: editableLead.purposeDetails || '',
+            categoryDetails: editableLead.categoryDetails || '',
             startDate: editableLead.startDate || '',
             endDate: editableLead.endDate || '',
             status: editableLead.status || 'Upcoming',
@@ -356,6 +370,12 @@ export default function LeadSummaryPage() {
             imageUrl: imageUrl,
             documents: finalDocuments,
             updatedAt: serverTimestamp(),
+            degree: editableLead.degree || '',
+            year: editableLead.year || '',
+            semester: editableLead.semester || '',
+            diseaseIdentified: editableLead.diseaseIdentified || '',
+            diseaseStage: editableLead.diseaseStage || '',
+            seriousness: editableLead.seriousness || null,
         };
         updateDoc(leadDocRef, saveData)
             .catch(async (serverError: any) => { errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: saveData })); })
@@ -411,23 +431,82 @@ export default function LeadSummaryPage() {
             </div>
 
             <div className="space-y-6" ref={summaryRef}>
-                {/* 1. Lead Details Section - Prioritized at the top */}
+                {/* 1. Lead Details Section */}
                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
                         <CardHeader className="bg-primary/5"><CardTitle className="font-bold">Lead Details</CardTitle></CardHeader>
                         <CardContent className="space-y-4 pt-6 text-primary">
                             {editMode ? (
                                 <div className="space-y-6">
                                     <div className="space-y-2">
-                                        <Label className="font-bold">Header Image</Label>
+                                        <Label className="font-bold text-xs uppercase text-muted-foreground">Header Image</Label>
                                         <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
                                         <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary">
                                             {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click to upload</span></p></div> )}
                                         </label>
                                     </div>
-                                    <div><Label htmlFor="description" className="font-bold">Description</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} className="text-primary" /></div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1"><Label htmlFor="requiredAmount" className="font-bold">Req. Amount (₹)</Label><Input id="requiredAmount" type="number" value={editableLead.requiredAmount || 0} onChange={(e) => handleFieldChange('requiredAmount', e.target.value)} className="text-primary" /></div>
-                                        <div className="space-y-1"><Label htmlFor="targetAmount" className="font-bold">Goal (₹)</Label><Input id="targetAmount" type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary" /></div>
+                                        <div className="space-y-1">
+                                            <Label className="font-bold text-xs uppercase text-muted-foreground">Purpose</Label>
+                                            <Select value={editableLead.purpose} onValueChange={(val) => handleFieldChange('purpose', val)}>
+                                                <SelectTrigger><SelectValue/></SelectTrigger>
+                                                <SelectContent>{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                        </div>
+                                        {availableCategories.length > 0 && (
+                                            <div className="space-y-1">
+                                                <Label className="font-bold text-xs uppercase text-muted-foreground">Category</Label>
+                                                <Select value={editableLead.category} onValueChange={(val) => handleFieldChange('category', val)}>
+                                                    <SelectTrigger><SelectValue/></SelectTrigger>
+                                                    <SelectContent>{availableCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
+                                                </Select>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    {editableLead.purpose === 'Education' && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5">
+                                            <div className="space-y-1"><Label className="font-bold text-xs">Degree</Label><Select value={editableLead.degree} onValueChange={(val) => handleFieldChange('degree', val)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{educationDegrees.map(d=><SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select></div>
+                                            <div className="space-y-1"><Label className="font-bold text-xs">Year</Label><Select value={editableLead.year} onValueChange={(val) => handleFieldChange('year', val)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{educationYears.map(y=><SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select></div>
+                                            <div className="space-y-1"><Label className="font-bold text-xs">Semester</Label><Select value={editableLead.semester} onValueChange={(val) => handleFieldChange('semester', val)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{educationSemesters.map(s=><SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></div>
+                                        </div>
+                                    )}
+
+                                    {editableLead.purpose === 'Medical' && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5">
+                                            <div className="space-y-1"><Label className="font-bold text-xs">Disease</Label><Input value={editableLead.diseaseIdentified || ''} onChange={(e) => handleFieldChange('diseaseIdentified', e.target.value)}/></div>
+                                            <div className="space-y-1"><Label className="font-bold text-xs">Stage</Label><Input value={editableLead.diseaseStage || ''} onChange={(e) => handleFieldChange('diseaseStage', e.target.value)}/></div>
+                                            <div className="space-y-1"><Label className="font-bold text-xs">Seriousness</Label><Select value={editableLead.seriousness || ''} onValueChange={(val) => handleFieldChange('seriousness', val)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{leadSeriousnessLevels.map(l=><SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent></Select></div>
+                                        </div>
+                                    )}
+
+                                    <div><Label className="font-bold text-xs uppercase text-muted-foreground">Description</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} className="text-primary" /></div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">Required Amount (₹)</Label><Input type="number" value={editableLead.requiredAmount || 0} onChange={(e) => handleFieldChange('requiredAmount', e.target.value)} className="text-primary" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">Fundraising Goal (₹)</Label><Input type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary" /></div>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">Start Date</Label><Input type="date" value={editableLead.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">End Date</Label><Input type="date" value={editableLead.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} /></div>
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <Label className="font-bold text-xs uppercase text-muted-foreground">Allowed Donation Types for Goal</Label>
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border rounded-md p-3">
+                                            {donationCategories.map(type => (
+                                                <div key={type} className="flex items-center space-x-2">
+                                                    <Checkbox 
+                                                        id={`edit-type-${type}`}
+                                                        checked={editableLead.allowedDonationTypes?.includes(type)}
+                                                        onCheckedChange={(checked) => {
+                                                            const current = editableLead.allowedDonationTypes || [];
+                                                            const updated = checked ? [...current, type] : current.filter(t => t !== type);
+                                                            handleFieldChange('allowedDonationTypes', updated);
+                                                        }}
+                                                    />
+                                                    <Label htmlFor={`edit-type-${type}`} className="text-xs">{type}</Label>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
@@ -435,7 +514,7 @@ export default function LeadSummaryPage() {
                                     <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer" onClick={() => lead.imageUrl && handleViewImage(lead.imageUrl, lead.name)}>
                                         {lead.imageUrl ? ( <Image src={lead.imageUrl} alt={lead.name} fill sizes="100vw" className="object-cover" /> ) : ( <FallbackIcon className="h-20 w-20 text-primary/10" /> )}
                                     </div>
-                                    <div className="space-y-2 font-normal">
+                                    <div className="space-y-2 font-normal text-foreground">
                                         <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
                                         <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed">{lead.description || 'No description provided.'}</p>
                                     </div>
@@ -445,6 +524,23 @@ export default function LeadSummaryPage() {
                                         <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Start Date</p><p className="font-bold text-primary">{lead.startDate || 'N/A'}</p></div>
                                         <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">End Date</p><p className="font-bold text-primary">{lead.endDate || 'N/A'}</p></div>
                                     </div>
+                                    {(lead.purpose === 'Education' || lead.purpose === 'Medical') && (
+                                        <div className="mt-4 p-4 rounded-md border border-primary/10 bg-primary/5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                            {lead.purpose === 'Education' ? (
+                                                <>
+                                                    <div className="space-y-1"><p className="text-[10px] font-bold uppercase text-muted-foreground">Degree/Class</p><p className="text-sm font-bold">{lead.degree || 'N/A'}</p></div>
+                                                    <div className="space-y-1"><p className="text-[10px] font-bold uppercase text-muted-foreground">Year</p><p className="text-sm font-bold">{lead.year || 'N/A'}</p></div>
+                                                    <div className="space-y-1"><p className="text-[10px] font-bold uppercase text-muted-foreground">Semester</p><p className="text-sm font-bold">{lead.semester || 'N/A'}</p></div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="space-y-1"><p className="text-[10px] font-bold uppercase text-muted-foreground">Disease Identified</p><p className="text-sm font-bold">{lead.diseaseIdentified || 'N/A'}</p></div>
+                                                    <div className="space-y-1"><p className="text-[10px] font-bold uppercase text-muted-foreground">Disease Stage</p><p className="text-sm font-bold">{lead.diseaseStage || 'N/A'}</p></div>
+                                                    <div className="space-y-1"><p className="text-[10px] font-bold uppercase text-muted-foreground">Seriousness</p><p className="text-sm font-bold">{lead.seriousness || 'N/A'}</p></div>
+                                                </>
+                                            )}
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </CardContent>
@@ -456,8 +552,8 @@ export default function LeadSummaryPage() {
                         {isVisible('funding_progress') && (
                             <Card className="shadow-sm border-primary/5 bg-white">
                                 <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 font-bold"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
-                                    <CardDescription className="font-bold">Verified donations for this lead.</CardDescription>
+                                    <CardTitle className="flex items-center gap-2 font-bold text-primary"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
+                                    <CardDescription className="font-normal">Verified donations for this lead.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -492,9 +588,9 @@ export default function LeadSummaryPage() {
 
                         {isVisible('beneficiary_groups') && (
                             <Card className="shadow-sm border-primary/5 bg-white">
-                                <CardHeader><CardTitle className="font-bold">Beneficiary Groups</CardTitle><CardDescription className="font-bold">Breakdown of requirements by family size or category.</CardDescription></CardHeader>
+                                <CardHeader><CardTitle className="font-bold text-primary">Beneficiary Groups</CardTitle><CardDescription className="font-normal">Breakdown of requirements by family size or category.</CardDescription></CardHeader>
                                 <CardContent>
-                                    <div className="border rounded-lg overflow-hidden font-normal">
+                                    <div className="border rounded-lg overflow-hidden font-normal text-foreground">
                                         <Table>
                                             <TableHeader className="bg-primary/5">
                                                 <TableRow>
@@ -529,7 +625,7 @@ export default function LeadSummaryPage() {
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
                                     <CardHeader><CardTitle className="font-bold text-primary">Fund Totals by Type</CardTitle></CardHeader>
-                                    <CardContent className="space-y-2 font-normal">
+                                    <CardContent className="space-y-2 font-normal text-foreground">
                                         {donationCategories.map(cat => (
                                             <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary">
                                                 <span className="text-muted-foreground font-normal">{cat === 'Interest' ? 'Interest (for disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
@@ -544,14 +640,14 @@ export default function LeadSummaryPage() {
 
                             {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="font-bold">Zakat Utilization</CardTitle><CardDescription className="font-bold">Tracking of Zakat funds collected and allocated.</CardDescription></CardHeader>
-                                    <CardContent className="space-y-3 font-normal">
-                                        <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Total Zakat Collected</span><span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
+                                    <CardHeader><CardTitle className="font-bold text-primary">Zakat Utilization</CardTitle><CardDescription className="font-normal">Tracking of Zakat funds collected and allocated.</CardDescription></CardHeader>
+                                    <CardContent className="space-y-3 font-normal text-foreground">
+                                        <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Total Zakat Collected</span><span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
                                         <Separator />
                                         <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
-                                            <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Allocated as Cash-in-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
-                                            <div className="flex justify-between items-center text-xs pl-4 font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Paid out</span><span className="font-mono text-success font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                             <div className="flex justify-between items-center text-xs pl-4 font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Remaining to Pay</span><span className="font-mono text-orange-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                                            <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Allocated as Cash-in-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
+                                            <div className="flex justify-between items-center text-xs font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Paid out</span><span className="font-mono text-success font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
+                                             <div className="flex justify-between items-center text-xs font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Remaining to Pay</span><span className="font-mono text-orange-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                         </div>
                                         <Separator />
                                         <div className="flex justify-between items-center text-base font-bold text-primary"><span>Zakat Balance for Goal</span><span className="text-primary font-mono font-bold">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
@@ -563,7 +659,7 @@ export default function LeadSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2">
                             {isVisible('donations_by_category') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold"><TrendingUp className="h-5 w-5"/> Donations by Category</CardTitle></CardHeader>
+                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary"><TrendingUp className="h-5 w-5"/> Donations by Category</CardTitle></CardHeader>
                                     <CardContent>
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
@@ -578,7 +674,7 @@ export default function LeadSummaryPage() {
 
                             {isVisible('donations_by_payment_type') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold"><PieChartIcon className="h-5 w-5"/> Donations by Payment Type</CardTitle></CardHeader>
+                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary"><PieChartIcon className="h-5 w-5"/> Donations by Payment Type</CardTitle></CardHeader>
                                     <CardContent>
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
@@ -600,15 +696,15 @@ export default function LeadSummaryPage() {
 
                 {/* 3. Artifacts & Documents */}
                 {isVisible('documents') && (
-                    <Card className="animate-fade-in-up bg-white" style={{ animationDelay: '100ms' }}>
-                        <CardHeader><CardTitle className="font-bold">Lead Artifacts</CardTitle></CardHeader>
+                    < Card className="animate-fade-in-up bg-white shadow-sm" style={{ animationDelay: '100ms' }}>
+                        <CardHeader><CardTitle className="font-bold text-primary">Lead Artifacts</CardTitle></CardHeader>
                         <CardContent>
                         {editMode ? (
                                 <div className="space-y-4">
-                                    <Label className="font-bold">Upload New Artifacts</Label>
+                                    <Label className="font-bold text-xs uppercase text-muted-foreground">Upload New Artifacts</Label>
                                     <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
                                     <Separator />
-                                    <Label className="font-bold">Manage Existing Artifacts</Label>
+                                    <Label className="font-bold text-xs uppercase text-muted-foreground">Manage Existing Artifacts</Label>
                                     {existingDocuments.length > 0 ? (
                                         <div className="space-y-3 font-normal">
                                             {existingDocuments.map((doc) => (
@@ -631,7 +727,7 @@ export default function LeadSummaryPage() {
                                         {lead.documents.map((doc) => {
                                             const isImg = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
                                             return (
-                                                <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all flex flex-col active:scale-95 bg-white border-primary/10 cursor-pointer" onClick={() => isImg ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}>
+                                                <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all flex flex-col active:scale-95 bg-white border-primary/10 cursor-pointer shadow-sm" onClick={() => isImg ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}>
                                                     <div className="group block flex-grow">
                                                         <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
                                                             {isImg ? <Image src={doc.url} alt={doc.name} fill sizes="100vw" className="object-cover" /> : <File className="w-10 h-10 text-muted-foreground" />}

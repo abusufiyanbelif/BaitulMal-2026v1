@@ -84,19 +84,19 @@ export default function BeneficiarySettingsPage() {
 
   return (
     <div className="space-y-6">
-        <Card className="animate-fade-in-zoom border-[#8fbca0]">
+        <Card className="animate-fade-in-zoom border-primary/20">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-bold text-[#136c34]">
+                <CardTitle className="flex items-center gap-2 font-bold text-primary">
                     <Settings className="h-5 w-5" /> Beneficiary Summary Visibility Settings
                 </CardTitle>
-                <CardDescription className="text-[#4D805F]">
+                <CardDescription className="font-normal">
                     Control which analytical components are visible in the Beneficiary Summary.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">
-                        <h3 className="font-bold text-[#136c34] uppercase text-xs tracking-widest">Public Summary Visibility</h3>
+                        <h3 className="font-bold text-primary uppercase text-xs tracking-widest">Public Summary Visibility</h3>
                         <div className="space-y-3">
                             {VISIBILITY_OPTIONS.map(opt => (
                                 <div key={`public_ben_${opt.id}`} className="flex items-center space-x-2">
@@ -105,13 +105,13 @@ export default function BeneficiarySettingsPage() {
                                         checked={localVis[`public_${opt.id}`] !== false} 
                                         onCheckedChange={() => handleVisToggle(opt.id, 'public')} 
                                     />
-                                    <Label htmlFor={`public_ben_${opt.id}`} className="cursor-pointer font-normal text-[#4D805F]">{opt.name}</Label>
+                                    <Label htmlFor={`public_ben_${opt.id}`} className="cursor-pointer font-normal">{opt.name}</Label>
                                 </div>
                             ))}
                         </div>
                     </div>
                     <div className="space-y-4">
-                        <h3 className="font-bold text-[#136c34] uppercase text-xs tracking-widest">Member Summary Visibility</h3>
+                        <h3 className="font-bold text-primary uppercase text-xs tracking-widest">Member Summary Visibility</h3>
                         <div className="space-y-3">
                             {VISIBILITY_OPTIONS.map(opt => (
                                 <div key={`member_ben_${opt.id}`} className="flex items-center space-x-2">
@@ -120,7 +120,7 @@ export default function BeneficiarySettingsPage() {
                                         checked={localVis[`member_${opt.id}`] !== false} 
                                         onCheckedChange={() => handleVisToggle(opt.id, 'member')} 
                                     />
-                                    <Label htmlFor={`member_ben_${opt.id}`} className="cursor-pointer font-normal text-[#4D805F]">{opt.name}</Label>
+                                    <Label htmlFor={`member_ben_${opt.id}`} className="cursor-pointer font-normal">{opt.name}</Label>
                                 </div>
                             ))}
                         </div>
@@ -129,12 +129,12 @@ export default function BeneficiarySettingsPage() {
             </CardContent>
         </Card>
 
-        <Card className="animate-fade-in-up border-[#8fbca0]">
+        <Card className="animate-fade-in-up border-primary/20">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-bold text-[#136c34]">
+                <CardTitle className="flex items-center gap-2 font-bold text-primary">
                     <CheckSquare className="h-5 w-5" /> Mandatory Fields Setup
                 </CardTitle>
-                <CardDescription className="text-[#4D805F]">
+                <CardDescription className="font-normal">
                     Define required information for beneficiaries across the master list and initiatives.
                 </CardDescription>
             </CardHeader>
@@ -147,13 +147,13 @@ export default function BeneficiarySettingsPage() {
                                 checked={localMandatory[field.id] === true} 
                                 onCheckedChange={() => handleMandatoryToggle(field.id)} 
                             />
-                            <Label htmlFor={`mandatory_ben_${field.id}`} className="cursor-pointer font-normal text-[#4D805F]">{field.name}</Label>
+                            <Label htmlFor={`mandatory_ben_${field.id}`} className="cursor-pointer font-normal">{field.name}</Label>
                         </div>
                     ))}
                 </div>
             </CardContent>
-            <CardFooter className="justify-end border-t border-[#8fbca0] p-4">
-                <Button onClick={handleSave} disabled={isSaving} className="font-bold bg-[#136c34] hover:bg-[#136c34]/90">
+            <CardFooter className="justify-end border-t border-primary/10 p-4">
+                <Button onClick={handleSave} disabled={isSaving} className="font-bold text-white bg-primary hover:bg-primary/90">
                     {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                     Save Settings
                 </Button>

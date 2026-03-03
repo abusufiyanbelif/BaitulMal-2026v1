@@ -73,6 +73,7 @@ import { BrandedLoader } from '@/components/branded-loader';
 import Resizer from 'react-image-file-resizer';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   BarChart,
   Bar,
@@ -409,7 +410,7 @@ export default function CampaignSummaryPage() {
                             <Button onClick={() => { setShareDialogData({ title: `Campaign: ${campaign.name}`, text: campaign.description || '', url: window.location.origin + `/campaign-public/${campaignId}/summary` }); setIsShareDialogOpen(true); }} variant="outline" className="font-bold"><Share2 className="mr-2 h-4 w-4" /> Share</Button>
                         </>
                     )}
-                    {canUpdate && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} className="font-bold"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold">Cancel</Button><Button onClick={handleSave} className="font-bold"><Save className="mr-2 h-4 w-4" /> Save</Button></div> ) )}
+                    {canUpdate && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} className="font-bold text-white bg-primary hover:bg-primary/90"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold">Cancel</Button><Button onClick={handleSave} className="font-bold text-white bg-primary hover:bg-primary/90"><Save className="mr-2 h-4 w-4" /> Save</Button></div> ) )}
                 </div>
             </div>
 
@@ -425,7 +426,7 @@ export default function CampaignSummaryPage() {
             </div>
 
             <div className="space-y-6" ref={summaryRef}>
-                {/* 1. Initiative Details Section - Now at the Top */}
+                {/* 1. Initiative Details Section */}
                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
                     <CardHeader className="bg-primary/5">
                         <CardTitle className="font-bold">Campaign Details</CardTitle>
@@ -434,16 +435,49 @@ export default function CampaignSummaryPage() {
                         {editMode ? (
                             <div className="space-y-6">
                                 <div className="space-y-2">
-                                    <Label className="font-bold">Header Image</Label>
+                                    <Label className="font-bold text-xs uppercase text-muted-foreground">Header Image</Label>
                                     <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
                                     <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary">
                                         {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click to upload</span></p></div> )}
                                     </label>
                                 </div>
-                                <div><Label htmlFor="description" className="font-bold">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground" rows={4} /></div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1"><Label htmlFor="startDate" className="font-bold">Start Date</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="text-foreground" /></div>
-                                    <div className="space-y-1"><Label htmlFor="endDate" className="font-bold">End Date</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="text-foreground" /></div>
+                                    <div className="space-y-1">
+                                        <Label className="font-bold text-xs uppercase text-muted-foreground">Category</Label>
+                                        <Select value={editableCampaign.category} onValueChange={(val) => handleFieldChange('category', val)}>
+                                            <SelectTrigger><SelectValue/></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Ration">Ration</SelectItem>
+                                                <SelectItem value="Relief">Relief</SelectItem>
+                                                <SelectItem value="General">General</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">Fundraising Goal (₹)</Label><Input type="number" value={editableCampaign.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary" /></div>
+                                </div>
+                                <div><Label className="font-bold text-xs uppercase text-muted-foreground">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground" rows={4} /></div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">Start Date</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="text-foreground" /></div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">End Date</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="text-foreground" /></div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="font-bold text-xs uppercase text-muted-foreground">Allowed Donation Types for Goal</Label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border rounded-md p-3">
+                                        {donationCategories.map(type => (
+                                            <div key={type} className="flex items-center space-x-2">
+                                                <Checkbox 
+                                                    id={`edit-type-camp-${type}`}
+                                                    checked={editableCampaign.allowedDonationTypes?.includes(type)}
+                                                    onCheckedChange={(checked) => {
+                                                        const current = editableCampaign.allowedDonationTypes || [];
+                                                        const updated = checked ? [...current, type] : current.filter(t => t !== type);
+                                                        handleFieldChange('allowedDonationTypes', updated);
+                                                    }}
+                                                />
+                                                <Label htmlFor={`edit-type-camp-${type}`} className="text-xs">{type}</Label>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         ) : (
@@ -457,7 +491,7 @@ export default function CampaignSummaryPage() {
                                 </div>
                                 <div className="space-y-2 text-primary font-normal">
                                     <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
-                                    <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed">{campaign.description || 'No description provided.'}</p>
+                                    <p className="mt-1 text-sm whitespace-pre-wrap leading-relaxed text-foreground">{campaign.description || 'No description provided.'}</p>
                                 </div>
                             </>
                         )}
@@ -470,8 +504,8 @@ export default function CampaignSummaryPage() {
                         {isVisible('funding_progress') && (
                             <Card className="shadow-sm border-primary/5 bg-white">
                                 <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 font-bold"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
-                                    <CardDescription className="font-bold">Verified donations for this campaign.</CardDescription>
+                                    <CardTitle className="flex items-center gap-2 font-bold text-primary"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
+                                    <CardDescription className="font-normal">Verified donations for this campaign.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -487,9 +521,9 @@ export default function CampaignSummaryPage() {
                                             <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold">Funded</span></div>
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary">
-                                            <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                            <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                            <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Grand Total Received</p><p className="text-2xl font-bold text-primary">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight font-normal">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight font-normal">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight font-normal">Grand Total Received</p><p className="text-2xl font-bold text-primary">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -507,11 +541,11 @@ export default function CampaignSummaryPage() {
                         {isVisible('beneficiary_groups') && (
                             <Card className="shadow-sm border-primary/5 bg-white">
                                 <CardHeader>
-                                    <CardTitle className="font-bold">Beneficiary Groups</CardTitle>
-                                    <CardDescription className="font-bold">Breakdown of requirements by family size category.</CardDescription>
+                                    <CardTitle className="font-bold text-primary">Beneficiary Groups</CardTitle>
+                                    <CardDescription className="font-normal">Breakdown of requirements by family size category.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="border rounded-lg overflow-hidden font-normal">
+                                    <div className="border rounded-lg overflow-hidden font-normal text-foreground">
                                         <Table>
                                             <TableHeader className="bg-primary/5">
                                                 <TableRow>
@@ -549,10 +583,10 @@ export default function CampaignSummaryPage() {
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
                                     <CardHeader><CardTitle className="font-bold text-primary">Fund Totals by Type</CardTitle></CardHeader>
-                                    <CardContent className="space-y-2 font-normal">
+                                    <CardContent className="space-y-2 font-normal text-foreground">
                                         {donationCategories.map(cat => (
-                                            <div key={cat} className="flex justify-between items-center text-sm">
-                                                <span className="text-muted-foreground">{cat === 'Interest' ? 'Interest (for disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
+                                            <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary">
+                                                <span className="text-muted-foreground font-normal">{cat === 'Interest' ? 'Interest (for disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
                                                 <span className="font-mono">₹{(fundingData.amountsByCategory[cat] || 0).toLocaleString('en-IN')}</span>
                                             </div>
                                         ))}
@@ -567,14 +601,14 @@ export default function CampaignSummaryPage() {
 
                             {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="font-bold">Zakat Utilization</CardTitle><CardDescription className="font-bold">Tracking of Zakat funds collected and allocated.</CardDescription></CardHeader>
-                                    <CardContent className="space-y-3 font-normal">
-                                        <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Total Zakat Collected</span><span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
+                                    <CardHeader><CardTitle className="font-bold text-primary">Zakat Utilization</CardTitle><CardDescription className="font-normal">Tracking of Zakat funds collected and allocated.</CardDescription></CardHeader>
+                                    <CardContent className="space-y-3 font-normal text-foreground">
+                                        <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Total Zakat Collected</span><span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
                                         <Separator />
                                         <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
-                                            <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight">Allocated as Cash-in-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
-                                            <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground uppercase tracking-tight">Paid out</span><span className="font-mono text-green-600 font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                            <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground uppercase tracking-tight">Remaining to Pay</span><span className="font-mono text-amber-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                                            <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Allocated as Cash-in-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
+                                            <div className="flex justify-between items-center text-xs font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Paid out</span><span className="font-mono text-green-600 font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
+                                            <div className="flex justify-between items-center text-xs font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Remaining to Pay</span><span className="font-mono text-amber-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                         </div>
                                         <Separator />
                                         <div className="flex justify-between items-center text-base font-bold text-primary"><span>Zakat Balance for Goal</span><span className="font-bold text-primary font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
@@ -586,7 +620,7 @@ export default function CampaignSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2">
                             {isVisible('donations_by_category') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold"><TrendingUp className="h-5 w-5"/> Donations by Category</CardTitle></CardHeader>
+                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary"><TrendingUp className="h-5 w-5"/> Donations by Category</CardTitle></CardHeader>
                                     <CardContent>
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
@@ -601,7 +635,7 @@ export default function CampaignSummaryPage() {
 
                             {isVisible('donations_by_payment_type') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold"><PieChartIcon className="h-5 w-5"/> Donations by Payment Type</CardTitle></CardHeader>
+                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary"><PieChartIcon className="h-5 w-5"/> Donations by Payment Type</CardTitle></CardHeader>
                                     <CardContent>
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
@@ -623,16 +657,16 @@ export default function CampaignSummaryPage() {
 
                 {isVisible('documents') && (
                     <Card className="animate-fade-in-up bg-white" style={{ animationDelay: '100ms' }}>
-                        <CardHeader><CardTitle className="font-bold">Artifacts & Documents</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="font-bold text-primary">Artifacts & Documents</CardTitle></CardHeader>
                         <CardContent>
                         {editMode ? (
                                 <div className="space-y-4">
-                                    <Label className="font-bold">Upload New Artifacts</Label>
+                                    <Label className="font-bold text-xs uppercase text-muted-foreground">Upload New Artifacts</Label>
                                     <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
                                     <Separator />
-                                    <Label className="font-bold">Manage Existing</Label>
+                                    <Label className="font-bold text-xs uppercase text-muted-foreground">Manage Existing</Label>
                                     {existingDocuments.length > 0 ? (
-                                        <div className="space-y-3 font-normal">
+                                        <div className="space-y-3 font-normal text-foreground">
                                             {existingDocuments.map((doc) => (
                                                 <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md gap-4">
                                                     <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -653,7 +687,7 @@ export default function CampaignSummaryPage() {
                                         {campaign.documents.map((doc) => {
                                             const isImg = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
                                             return (
-                                                <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all flex flex-col active:scale-95 bg-white border-primary/10 cursor-pointer" onClick={() => isImg ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}>
+                                                <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all flex flex-col active:scale-95 bg-white border-primary/10 cursor-pointer shadow-sm" onClick={() => isImg ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}>
                                                     <div className="group block flex-grow">
                                                         <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
                                                             {isImg ? <Image src={doc.url} alt={doc.name} fill sizes="100vw" className="object-cover" /> : <File className="w-10 h-10 text-muted-foreground" />}
