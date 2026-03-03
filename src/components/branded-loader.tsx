@@ -4,7 +4,6 @@ import { Loader2 } from 'lucide-react';
 import { useBranding } from '@/hooks/use-branding';
 import Image from 'next/image';
 import { TempLogo } from './temp-logo';
-import { Watermark } from './watermark';
 
 export function BrandedLoader() {
   const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
@@ -13,9 +12,6 @@ export function BrandedLoader() {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      {/* Include the watermark inside the loader to ensure it shows during initial app boot */}
-      <Watermark />
-      
       <div className="relative z-10 flex flex-col items-center gap-4">
         {isBrandingLoading ? (
           <Loader2 className="h-12 w-12 animate-spin text-primary" />

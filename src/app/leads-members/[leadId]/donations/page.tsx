@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -68,7 +67,7 @@ type SortKey = keyof Donation | 'srNo' | 'amountForThisLead';
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <TableHead className={cn("cursor-pointer hover:bg-muted/50 transition-colors", className)} onClick={() => handleSort(sortKey)}>
+        <TableHead className={cn("cursor-pointer hover:bg-muted/50 transition-colors font-bold", className)} onClick={() => handleSort(sortKey)}>
             <div className="flex items-center gap-2 whitespace-nowrap">
                 {children}
                 {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
@@ -132,8 +131,6 @@ export default function DonationsPage() {
   const [typeFilter, setTypeFilter] = useState('All');
   const [donationTypeFilter, setDonationTypeFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
-  const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
-  const [isSyncing, setIsSyncing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
@@ -287,7 +284,7 @@ export default function DonationsPage() {
                     {canCreate && <Button onClick={() => setIsFormOpen(true)} className="interactive-hover font-bold"><PlusCircle className="mr-2 h-4 w-4"/>Add Donation</Button>}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-4">
-                    <Input placeholder="Search donor..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs" />
+                    <Input placeholder="Search donor..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs font-normal" />
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
                         <SelectTrigger className="w-[140px] h-9 text-xs font-bold"><SelectValue placeholder="Status"/></SelectTrigger>
                         <SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Canceled">Canceled</SelectItem></SelectContent>
@@ -303,8 +300,8 @@ export default function DonationsPage() {
                                 <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
                                 <SortableHeader sortKey="amountForThisLead" className="text-right" sortConfig={sortConfig} handleSort={handleSort}>Amount</SortableHeader>
                                 <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort}>Date</SortableHeader>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right pr-4">Actions</TableHead>
+                                <TableHead className="font-bold">Status</TableHead>
+                                <TableHead className="text-right pr-4 font-bold">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -319,9 +316,9 @@ export default function DonationsPage() {
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)}><Eye className="mr-2 h-4 w-4"/>View Details</DropdownMenuItem>
-                                                {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)}><Edit className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>}
-                                                {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive"><Link2Off className="mr-2 h-4 w-4"/>Unlink</DropdownMenuItem>}
+                                                <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)} className="font-bold"><Eye className="mr-2 h-4 w-4"/>View Details</DropdownMenuItem>
+                                                {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="font-bold"><Edit className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>}
+                                                {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive font-bold"><Link2Off className="mr-2 h-4 w-4"/>Unlink</DropdownMenuItem>}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
@@ -336,9 +333,9 @@ export default function DonationsPage() {
                 <CardFooter className="flex items-center justify-between border-t py-4">
                     <p className="text-xs text-muted-foreground">Showing {paginatedDonations.length} of {filteredAndSortedDonations.length}</p>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Prev</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold">Prev</Button>
                         <span className="text-xs font-bold">{currentPage} / {totalPages}</span>
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold">Next</Button>
                     </div>
                 </CardFooter>
             )}
@@ -346,13 +343,20 @@ export default function DonationsPage() {
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle>{editingDonation ? 'Edit' : 'Add'} Donation</DialogTitle></DialogHeader>
-                <DonationForm donation={editingDonation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} allLeads={allLeads || []} allCampaigns={allCampaigns || []} defaultLinkId={`lead_${leadId}`} />
+                <DialogHeader><DialogTitle className="text-xl font-bold">{editingDonation ? 'Edit' : 'Add'} Donation</DialogTitle></DialogHeader>
+                <DonationForm 
+                    donation={editingDonation} 
+                    onSubmit={handleFormSubmit} 
+                    onCancel={() => setIsFormOpen(false)} 
+                    leads={allLeads || []} 
+                    campaigns={allCampaigns || []} 
+                    defaultLinkId={`lead_${leadId}`} 
+                />
             </DialogContent>
         </Dialog>
 
         <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
-            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Unlink Donation?</AlertDialogTitle><AlertDialogDescription>This will remove the donation from this initiative but will not delete the record.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white">Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold">Unlink Donation?</AlertDialogTitle><AlertDialogDescription>This will remove the donation from this initiative but will not delete the record.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold">Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
         </AlertDialog>
     </main>
   );

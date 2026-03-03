@@ -87,7 +87,7 @@ function UseCaseEditor({ control, typeIndex, isReadOnly }: { control: any, typeI
             <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-primary"><HelpCircle className="h-4 w-4"/> Scenarios & Rules</h4>
                 {!isReadOnly && (
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `uc_${Date.now()}`, title: '', description: '', isAllowed: true, isHidden: false })}>
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `uc_${Date.now()}`, title: '', description: '', isAllowed: true, isHidden: false })} className="font-bold">
                         <Plus className="h-3 w-3 mr-1"/> Add Scenario
                     </Button>
                 )}
@@ -132,7 +132,7 @@ function UseCaseEditor({ control, typeIndex, isReadOnly }: { control: any, typeI
                         </div>
                     </div>
                 ))}
-                {fields.length === 0 && <p className="text-center text-xs text-muted-foreground py-4 border border-dashed rounded-md italic">No scenarios added.</p>}
+                {fields.length === 0 && <p className="text-center text-xs text-muted-foreground py-4 border border-dashed rounded-md italic font-normal">No scenarios added.</p>}
             </div>
         </div>
     );
@@ -145,7 +145,7 @@ function QAEditor({ control, typeIndex, isReadOnly }: { control: any, typeIndex:
             <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-blue-700"><BookOpen className="h-4 w-4"/> FAQ Items</h4>
                 {!isReadOnly && (
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `qa_${Date.now()}`, question: '', answer: '', reference: '', isHidden: false })}>
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `qa_${Date.now()}`, question: '', answer: '', reference: '', isHidden: false })} className="font-bold">
                         <Plus className="h-3 w-3 mr-1"/> Add Question
                     </Button>
                 )}
@@ -182,7 +182,7 @@ function QAEditor({ control, typeIndex, isReadOnly }: { control: any, typeIndex:
                         </div>
                     </div>
                 ))}
-                {fields.length === 0 && <p className="text-center text-xs text-muted-foreground py-4 border border-dashed rounded-md italic">No questions added.</p>}
+                {fields.length === 0 && <p className="text-center text-xs text-muted-foreground py-4 border border-dashed rounded-md italic font-normal">No questions added.</p>}
             </div>
         </div>
     );
@@ -286,11 +286,7 @@ export default function InfoSettingsPage() {
     };
 
     if (isSessionLoading || isInfoSettingsLoading || isDonationInfoLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
+        return <BrandedLoader />;
     }
 
     if (!canUpdateSettings) {
@@ -298,8 +294,8 @@ export default function InfoSettingsPage() {
             <main className="container mx-auto p-4 md:p-8">
                 <Alert variant="destructive">
                     <ShieldAlert className="h-4 w-4" />
-                    <AlertTitle>Access Denied</AlertTitle>
-                    <AlertDescription>You do not have permission to manage informational settings.</AlertDescription>
+                    <AlertTitle className="font-bold">Access Denied</AlertTitle>
+                    <AlertDescription className="font-normal">You do not have permission to manage informational settings.</AlertDescription>
                 </Alert>
             </main>
         );
@@ -308,24 +304,24 @@ export default function InfoSettingsPage() {
     return (
         <div className="space-y-6">
             <Card className="animate-fade-in-zoom shadow-sm">
-                <CardHeader><CardTitle>Page Visibility</CardTitle><CardDescription>Control public informational pages.</CardDescription></CardHeader>
+                <CardHeader><CardTitle className="font-bold text-primary">Page Visibility</CardTitle><CardDescription className="font-normal">Control public informational pages.</CardDescription></CardHeader>
                 <CardContent className="space-y-6">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-1.5 flex-1"><h3 className="font-semibold">Donation Types Explained</h3><p className="text-sm text-muted-foreground">Detailed information guide for donors.</p><Button variant="outline" size="sm" asChild className="mt-2"><Link href="/info/donation-info" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview Public Page</Link></Button></div>
-                        <div className="flex items-center space-x-2 pt-4 sm:pt-0"><Label htmlFor="donation-info-public">Publicly Available</Label><Switch id="donation-info-public" checked={isDonationInfoPublic} onCheckedChange={setIsDonationInfoPublic} disabled={isSubmitting} /></div>
+                        <div className="space-y-1.5 flex-1"><h3 className="font-bold">Donation Types Explained</h3><p className="text-sm text-muted-foreground font-normal">Detailed information guide for donors.</p><Button variant="outline" size="sm" asChild className="mt-2 font-bold text-primary"><Link href="/info/donation-info" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview Public Page</Link></Button></div>
+                        <div className="flex items-center space-x-2 pt-4 sm:pt-0"><Label htmlFor="donation-info-public" className="font-bold">Publicly Available</Label><Switch id="donation-info-public" checked={isDonationInfoPublic} onCheckedChange={setIsDonationInfoPublic} disabled={isSubmitting} /></div>
                     </div>
                 </CardContent>
-                <CardFooter className="justify-end border-t bg-muted/5 p-4"><Button onClick={handleSaveVisibility} disabled={isSubmitting || isDonationInfoPublic === (infoSettings?.isDonationInfoPublic || false)}>{isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4"/>} Save Visibility</Button></CardFooter>
+                <CardFooter className="justify-end border-t bg-muted/5 p-4"><Button onClick={handleSaveVisibility} disabled={isSubmitting || isDonationInfoPublic === (infoSettings?.isDonationInfoPublic || false)} className="font-bold">{isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4"/>} Save Visibility</Button></CardFooter>
             </Card>
 
             <Card className="animate-fade-in-up border-primary/10 overflow-hidden">
                 <CardHeader className="bg-primary/5">
                     <div className="flex items-center justify-between gap-4">
-                        <div><CardTitle>Content Manager</CardTitle><CardDescription>Manage each donation category independently.</CardDescription></div>
-                        <Button onClick={() => { const id = `type_${Date.now()}`; append({ id, title: 'New Category', useCases: [], qaItems: [] }); setActiveTab(id); setEditModes(p => ({ ...p, [id]: true })); }} variant="outline" size="sm"><Plus className="mr-2 h-4 w-4" /> Add Category</Button>
+                        <div><CardTitle className="font-bold text-primary">Content Manager</CardTitle><CardDescription className="font-normal">Manage each donation category independently.</CardDescription></div>
+                        <Button onClick={() => { const id = `type_${Date.now()}`; append({ id, title: 'New Category', useCases: [], qaItems: [], hideKeyHighlights: false, hideUseCases: false, hideQA: false, hideUsage: false, hideRestrictions: false }); setActiveTab(id); setEditModes(p => ({ ...p, [id]: true })); }} variant="outline" size="sm" className="font-bold text-primary"><Plus className="mr-2 h-4 w-4" /> Add Category</Button>
                     </div>
                 </CardHeader>
-                <CardContent className="p-0">
+                <CardContent className="p-0 font-normal">
                     <Form {...form}><form onSubmit={(e) => e.preventDefault()}>
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                             <div className="bg-muted/10 border-b"><ScrollArea className="w-full whitespace-nowrap"><TabsList className="h-auto w-max bg-transparent p-0 rounded-none">{fields.map((field, index) => { const typeId = form.getValues(`types.${index}.id`); const title = form.watch(`types.${index}.title`) || 'New Type'; return (<TabsTrigger key={field.id} value={typeId} className={cn("rounded-none border-b-2 border-transparent px-6 py-4 font-black uppercase tracking-widest text-muted-foreground transition-all duration-300 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground")}>{title}</TabsTrigger>);})}</TabsList><ScrollBar orientation="horizontal" /></ScrollArea></div>
@@ -334,7 +330,7 @@ export default function InfoSettingsPage() {
                                 const isEditingTab = editModes[typeId] || false;
                                 return (
                                     <TabsContent key={field.id} value={typeId} className="p-4 sm:p-8 space-y-8 animate-fade-in-up mt-0">
-                                        <div className="flex justify-between items-center bg-muted/20 p-4 rounded-lg"><div className="flex items-center gap-3"><h3 className="text-xl font-black text-primary uppercase tracking-tight">{form.watch(`types.${index}.title`) || 'Category'}</h3><Badge variant={isEditingTab ? "default" : "secondary"}>{isEditingTab ? "Edit Mode" : "Read Mode"}</Badge></div><div className="flex gap-2">{isEditingTab ? (<Button type="button" variant="outline" size="sm" onClick={() => setEditModes(p => ({...p, [typeId]: false}))} disabled={isSubmitting}><X className="mr-2 h-4 w-4"/> Cancel</Button>) : (<Button type="button" variant="outline" size="sm" onClick={() => setEditModes(p => ({...p, [typeId]: true}))}><Edit className="mr-2 h-4 w-4"/> Edit Category</Button>)}<Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(form.getValues('types.0.id')); }}><Trash2 className="h-5 w-5"/></Button></div></div>
+                                        <div className="flex justify-between items-center bg-muted/20 p-4 rounded-lg"><div className="flex items-center gap-3"><h3 className="text-xl font-black text-primary uppercase tracking-tight">{form.watch(`types.${index}.title`) || 'Category'}</h3><Badge variant={isEditingTab ? "default" : "secondary"} className="font-bold">{isEditingTab ? "Edit Mode" : "Read Mode"}</Badge></div><div className="flex gap-2">{isEditingTab ? (<Button type="button" variant="outline" size="sm" onClick={() => setEditModes(p => ({...p, [typeId]: false}))} disabled={isSubmitting} className="font-bold"><X className="mr-2 h-4 w-4"/> Cancel</Button>) : (<Button type="button" variant="outline" size="sm" onClick={() => setEditModes(p => ({...p, [typeId]: true}))} className="font-bold text-primary"><Edit className="mr-2 h-4 w-4"/> Edit Category</Button>)}<Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(form.getValues('types.0.id')); }}><Trash2 className="h-5 w-5"/></Button></div></div>
                                         <div className={cn("grid gap-8 transition-opacity", !isEditingTab && "opacity-70 pointer-events-none")}>
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                                                 <div className="md:col-span-2 space-y-4">
@@ -393,7 +389,7 @@ export default function InfoSettingsPage() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="border-t pt-6 flex justify-end"><Button type="button" size="lg" onClick={() => handleSaveSingleCategory(index)} disabled={isSubmitting || !isEditingTab}>{isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />} Save {form.watch(`types.${index}.title`) || 'Category'}</Button></div>
+                                        <div className="border-t pt-6 flex justify-end"><Button type="button" size="lg" onClick={() => handleSaveSingleCategory(index)} disabled={isSubmitting || !isEditingTab} className="font-bold">{isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />} Save {form.watch(`types.${index}.title`) || 'Category'}</Button></div>
                                     </TabsContent>
                                 );
                             })}

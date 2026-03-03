@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase/provider';
+import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Settings, Save, Loader2 } from 'lucide-react';
@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { BrandedLoader } from '@/components/branded-loader';
+import { Button } from '@/components/ui/button';
 
 const VISIBILITY_OPTIONS = [
     { id: 'yearly_summary', name: 'Yearly Financial Summary' },
@@ -57,10 +58,10 @@ export default function DonationSettingsPage() {
     <div className="space-y-6">
         <Card className="animate-fade-in-zoom">
         <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-            <Settings /> Donation Hub Visibility Settings
+            <CardTitle className="flex items-center gap-2 font-bold text-primary">
+            <Settings className="h-5 w-5" /> Donation Hub Visibility Settings
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="font-normal">
             Control the visibility of financial components in the primary Donation Summary pages.
             </CardDescription>
         </CardHeader>
@@ -76,7 +77,7 @@ export default function DonationSettingsPage() {
                                     checked={localSettings[`public_${opt.id}`] !== false} 
                                     onCheckedChange={() => handleToggle(opt.id, 'public')} 
                                 />
-                                <Label htmlFor={`public_don_${opt.id}`} className="cursor-pointer">{opt.name}</Label>
+                                <Label htmlFor={`public_don_${opt.id}`} className="cursor-pointer font-normal">{opt.name}</Label>
                             </div>
                         ))}
                     </div>
@@ -91,15 +92,15 @@ export default function DonationSettingsPage() {
                                     checked={localSettings[`member_${opt.id}`] !== false} 
                                     onCheckedChange={() => handleToggle(opt.id, 'member')} 
                                 />
-                                <Label htmlFor={`member_don_${opt.id}`} className="cursor-pointer">{opt.name}</Label>
+                                <Label htmlFor={`member_don_${opt.id}`} className="cursor-pointer font-normal">{opt.name}</Label>
                             </div>
                         ))}
                     </div>
                 </div>
             </div>
         </CardContent>
-        <CardFooter className="justify-end border-t p-4">
-            <Button onClick={handleSave} disabled={isSaving}>
+        <CardFooter className="justify-end border-t p-4 gap-2">
+            <Button onClick={handleSave} disabled={isSaving} className="font-bold">
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                 Save Visibility Settings
             </Button>
