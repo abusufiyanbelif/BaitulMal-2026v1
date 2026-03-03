@@ -1,22 +1,110 @@
-
 'use client';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Settings } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase/provider';
+import { doc, setDoc } from 'firebase/firestore';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Settings, Save, Loader2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { BrandedLoader } from '@/components/branded-loader';
+
+const VISIBILITY_OPTIONS = [
+    { id: 'yearly_summary', name: 'Yearly Financial Summary' },
+    { id: 'category_breakdown', name: 'Donations by Category Donut Chart' },
+    { id: 'initiative_breakdown', name: 'Donations by Initiative Table' },
+    { id: 'fund_totals_global', name: 'Global Fund Totals by Type' },
+    { id: 'payment_type_chart', name: 'Global Payment Type Distribution' },
+    { id: 'monthly_contribution_chart', name: 'Monthly Contribution Trends' },
+];
 
 export default function DonationSettingsPage() {
+  const firestore = useFirestore();
+  const { toast } = useToast();
+  const [isSaving, setIsSubmitting] = useState(false);
+
+  const docRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_visibility') : null, [firestore]);
+  const { data: visibilitySettings, isLoading } = useDoc<any>(docRef);
+  const [localSettings, setLocalSettings] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (visibilitySettings) {
+        setLocalSettings(visibilitySettings);
+    }
+  }, [visibilitySettings]);
+
+  const handleToggle = (id: string, group: 'public' | 'member') => {
+    const key = `${group}_${id}`;
+    setLocalSettings(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleSave = async () => {
+    if (!docRef) return;
+    setIsSubmitting(true);
+    try {
+        await setDoc(docRef, localSettings);
+        toast({ title: "Settings Saved", variant: "success" });
+    } catch (e) {
+        toast({ title: "Failed to Save", variant: "destructive" });
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading) return <BrandedLoader />;
+
   return (
-    <Card className="animate-fade-in-zoom">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Settings /> Donation Settings
-        </CardTitle>
-        <CardDescription>
-          Configuration options for the Donation module.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-muted-foreground">This section is under development.</p>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+        <Card className="animate-fade-in-zoom">
+        <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+            <Settings /> Donation Hub Visibility Settings
+            </CardTitle>
+            <CardDescription>
+            Control the visibility of financial components in the primary Donation Summary pages.
+            </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-8 font-normal">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                    <h3 className="font-bold text-[#1b9d4a] uppercase text-xs tracking-widest">Public Summary Visibility</h3>
+                    <div className="space-y-3">
+                        {VISIBILITY_OPTIONS.map(opt => (
+                            <div key={`public_don_${opt.id}`} className="flex items-center space-x-2">
+                                <Checkbox 
+                                    id={`public_don_${opt.id}`} 
+                                    checked={localSettings[`public_${opt.id}`] !== false} 
+                                    onCheckedChange={() => handleToggle(opt.id, 'public')} 
+                                />
+                                <Label htmlFor={`public_don_${opt.id}`} className="cursor-pointer">{opt.name}</Label>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div className="space-y-4">
+                    <h3 className="font-bold text-[#1b9d4a] uppercase text-xs tracking-widest">Member Summary Visibility</h3>
+                    <div className="space-y-3">
+                        {VISIBILITY_OPTIONS.map(opt => (
+                            <div key={`member_don_${opt.id}`} className="flex items-center space-x-2">
+                                <Checkbox 
+                                    id={`member_don_${opt.id}`} 
+                                    checked={localSettings[`member_${opt.id}`] !== false} 
+                                    onCheckedChange={() => handleToggle(opt.id, 'member')} 
+                                />
+                                <Label htmlFor={`member_don_${opt.id}`} className="cursor-pointer">{opt.name}</Label>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </CardContent>
+        <CardFooter className="justify-end border-t p-4">
+            <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+                Save Visibility Settings
+            </Button>
+        </CardFooter>
+        </Card>
+    </div>
   );
 }

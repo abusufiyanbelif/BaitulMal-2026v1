@@ -155,7 +155,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
             </div>
             <CardDescription className="text-[10px] font-normal tracking-normal">{campaign.startDate} to {campaign.endDate}</CardDescription>
           </CardHeader>
-          <CardContent className="flex-grow space-y-3 p-4 pt-0">
+          <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal">
               <div className="flex justify-between items-center text-xs">
                 <Badge variant="secondary" className="text-[10px] font-normal">{campaign.category}</Badge>
                 <Badge 

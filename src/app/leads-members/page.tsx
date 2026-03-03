@@ -135,7 +135,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
             </div>
             <CardDescription className="text-[10px] font-normal tracking-normal">{lead.startDate} to {lead.endDate}</CardDescription>
         </CardHeader>
-        <CardContent className="flex-grow space-y-3 p-4 pt-0">
+        <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal">
               <div className="flex justify-between items-center text-xs">
                 <Badge variant="outline" className="text-[10px] border-primary/20 font-normal">{lead.purpose}</Badge>
                 <Badge 
