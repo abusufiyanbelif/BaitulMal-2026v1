@@ -56,13 +56,12 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
     <div className={cn(
       "group border rounded-lg overflow-hidden relative flex items-center mb-2 shadow-sm h-12 transition-all hover:shadow-md bg-background",
       isCompleted ? "border-muted" : 
-      isDonation ? "border-blue-500/10" : 
+      isDonation ? "border-primary/20" : 
       "border-primary/10"
     )}>
       <div className={cn(
         "z-30 h-full px-4 flex items-center border-r shadow-md shrink-0",
         isCompleted ? "bg-muted text-muted-foreground" : 
-        isDonation ? "bg-blue-600 text-white" : 
         "bg-primary text-white"
       )}>
         {isCompleted ? (
@@ -106,11 +105,10 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
           style={{ '--duration': `${Math.max(40, items.length * 15)}s` } as React.CSSProperties}
         >
           {displayItems.map((item, idx) => (
-            <div key={`${item.id}-${idx}`} className="flex items-center shrink-0 pr-8 border-r border-dashed border-muted-foreground/20 last:border-0 h-full py-3">
+            <div key={`${item.id}-${idx}`} className="flex items-center shrink-0 pr-8 border-r border-dashed border-primary/20 last:border-0 h-full py-3">
               <span className={cn(
                 "h-1.5 w-1.5 rounded-full mr-3 shrink-0",
                 isCompleted ? "bg-muted-foreground" : 
-                isDonation ? "bg-blue-400" : 
                 "bg-primary"
               )} />
               <Link 
@@ -118,8 +116,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
                 className={cn(
                   "text-sm font-bold transition-colors whitespace-nowrap hover:underline underline-offset-4",
                   isCompleted ? "text-muted-foreground hover:text-foreground" : 
-                  isDonation ? "text-blue-700/80 hover:text-blue-900" : 
-                  "text-foreground hover:text-primary"
+                  "text-primary hover:text-primary/80"
                 )}
               >
                 {item.text}

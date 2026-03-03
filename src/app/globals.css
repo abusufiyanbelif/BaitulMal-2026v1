@@ -7,42 +7,43 @@
     /* Background: #f1f9f3 (Pale Mint) */
     --background: 135 25% 96%;
     
-    /* India Green: #138808 (HSL: 115 84% 28%) */
-    --foreground: 115 84% 28%; 
+    /* India Green: #138808 (HSL: 115 89% 28%) */
+    --foreground: 115 89% 28%; 
     
     --card: 0 0% 100%;
-    --card-foreground: 115 84% 28%;
+    --card-foreground: 115 89% 28%;
     
     --popover: 135 25% 96%;
-    --popover-foreground: 115 84% 28%;
+    --popover-foreground: 115 89% 28%;
     
     /* Primary Brand Color: #138808 */
-    --primary: 115 84% 28%; 
+    --primary: 115 89% 28%; 
     --primary-foreground: 0 0% 100%;
     
     --secondary: 135 25% 92%;
-    --secondary-foreground: 115 84% 20%;
+    --secondary-foreground: 115 89% 20%;
     
     --muted: 135 15% 85%;
     --muted-foreground: 115 20% 40%;
     
     --accent: 135 25% 90%;
-    --accent-foreground: 115 84% 20%;
+    --accent-foreground: 115 89% 20%;
     
     --destructive: 0 84% 40%;
     --destructive-foreground: 0 0% 100%;
     
-    --success: 115 84% 28%;
+    --success: 115 89% 28%;
     --success-foreground: 0 0% 100%;
     
-    --border: 115 25% 85%;
+    /* Border using the brand color */
+    --border: 115 89% 28%;
     --input: 115 25% 85%;
-    --ring: 115 84% 28%;
+    --ring: 115 89% 28%;
     
     --radius: 0.75rem;
     
     /* Vibrant Chart Colors */
-    --chart-1: 115 84% 28%;
+    --chart-1: 115 89% 28%;
     --chart-2: 142 76% 36%;
     --chart-3: 221 83% 53%;
     --chart-4: 25 95% 53%;
@@ -58,18 +59,18 @@
 
   body {
     @apply min-h-screen bg-background text-foreground antialiased font-sans font-normal;
-    color: #138808; /* Force India Green */
+    color: #138808; /* Force India Green globally */
+  }
+
+  /* Force India Green on all common text containers */
+  p, span, label, div, td, th, input, textarea, select, button {
+    color: inherit; /* Allow parent or class to set, but default to body foreground */
   }
 
   /* Headings use the brand India Green and are bold */
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold;
-    color: #138808;
-  }
-
-  /* Ensure all interactive and static text follows the color standard */
-  p, span, label, div, td, th, input, textarea, select {
-    color: #138808;
+    color: #138808 !important;
   }
 
   /* Custom Scrollbars using brand color */
