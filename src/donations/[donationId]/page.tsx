@@ -1,10 +1,9 @@
-
 'use client';
 
 import { useMemo, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useAuth, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useStorage, useAuth, useCollection, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
@@ -14,28 +13,23 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import Resizer from 'react-image-file-resizer';
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
-
 import type { Donation, Campaign, BrandingSettings, PaymentSettings, Lead, DonationLink, TransactionDetail } from '@/lib/types';
-
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Edit, Download, Loader2, Image as ImageIcon, FileText, MessageSquare, StickyNote, Share2, FolderKanban, Lightbulb } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ShieldAlert } from 'lucide-react';
-import { ShareDialog } from '@/components/share-dialog';
+import { ArrowLeft, Edit, Download, Loader2, Image as ImageIcon, FileText, Share2, ZoomIn, ZoomOut, RotateCw, RefreshCw, FolderKanban, Lightbulb } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { errorEmitter, FirestorePermissionError } from '@/firebase';
+import { BrandedLoader } from '@/components/branded-loader';
+import { ShareDialog } from '@/components/share-dialog';
 
 const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
     <div className="space-y-1">
-        <p className="text-sm font-medium text-muted-foreground">{label}</p>
-        <div className={`text-base font-semibold ${isMono ? 'font-mono' : ''}`}>{value || 'N/A'}</div>
+        <p className="text-xs font-normal text-muted-foreground">{label}</p>
+        <div className={`text-sm font-bold text-primary ${isMono ? 'font-mono' : ''}`}>{value || 'N/A'}</div>
     </div>
 );
 
@@ -57,6 +51,10 @@ export default function UnlinkedDonationDetailsPage() {
 
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+    const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+    const [imageToView, setImageToView] = useState<string | null>(null);
+    const [zoom, setZoom] = useState(1);
+    const [rotation, setRotation] = useState(0);
 
     const donationDocRef = useMemoFirebase(() => (firestore && donationId) ? doc(firestore, 'donations', donationId) as DocumentReference<Donation> : null, [firestore, donationId]);
     const { data: donation, isLoading: isDonationLoading } = useDoc<Donation>(donationDocRef);
@@ -73,7 +71,7 @@ export default function UnlinkedDonationDetailsPage() {
         const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
         if (hasFilesToUpload && !auth?.currentUser) {
             toast({
-                title: "Authentication Error",
+                title: "Authentication error",
                 description: "User is not authenticated. Please wait for the session to load or log in again.",
                 variant: "destructive",
             });
@@ -137,7 +135,7 @@ export default function UnlinkedDonationDetailsPage() {
 
                 return {
                     linkId: id,
-                    linkName: linkedItem?.name || 'Unknown Initiative',
+                    linkName: linkedItem?.name || 'Unknown initiative',
                     linkType: linkType,
                     amount: split.amount
                 };
@@ -166,21 +164,20 @@ export default function UnlinkedDonationDetailsPage() {
                 });
                 errorEmitter.emit('permission-error', permissionError);
             } else {
-                toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
+                toast({ title: 'Save failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
             }
         }
     };
     
     const handleShare = () => {
         if (!donation) return;
-        const shareText = `JazakAllah Khair for your generous donation of ₹${donation.amount.toFixed(2)}. May Allah accept it and bless you abundantly.`;
         setIsShareDialogOpen(true);
     };
 
     const handleDownload = (format: 'png' | 'pdf') => {
         download(format, {
             contentRef: summaryRef,
-            documentTitle: 'Donation Receipt',
+            documentTitle: 'Donation receipt',
             documentName: `donation-receipt-${donationId}`,
             brandingSettings,
             paymentSettings,
@@ -189,24 +186,13 @@ export default function UnlinkedDonationDetailsPage() {
 
     const isLoading = isProfileLoading || isBrandingLoading || isPaymentLoading || isDonationLoading || areAllCampaignsLoading || areAllLeadsLoading;
 
-    if (isLoading) {
-        return (
-            <main className="container mx-auto p-4 md:p-8">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </main>
-        );
-    }
+    if (isLoading) return <BrandedLoader />;
     
     if (!donation) {
         return (
-            <main className="container mx-auto p-4 md:p-8 text-center">
+            <main className="container mx-auto p-4 md:p-8 text-center font-normal">
                 <p className="text-lg text-muted-foreground">Donation not found.</p>
-                <Button asChild className="mt-4">
-                    <Link href="/donations">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Donations
-                    </Link>
-                </Button>
+                <Button asChild className="mt-4 font-bold"><Link href="/donations"><ArrowLeft className="mr-2 h-4 w-4" /> Back to donations</Link></Button>
             </main>
         );
     }
@@ -222,7 +208,7 @@ export default function UnlinkedDonationDetailsPage() {
                 <Button variant="outline" asChild>
                     <Link href="/donations">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Donations
+                        Back to donations
                     </Link>
                 </Button>
                 <div className="flex gap-2">
@@ -238,13 +224,13 @@ export default function UnlinkedDonationDetailsPage() {
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline">
                                 <Download className="mr-2 h-4 w-4" />
-                                Download Receipt
+                                Download receipt
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
                             <DropdownMenuItem onClick={() => handleDownload('png')}>
                                 <ImageIcon className="mr-2 h-4 w-4" />
-                                As Image (PNG)
+                                As image (PNG)
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleDownload('pdf')}>
                                 <FileText className="mr-2 h-4 w-4" />
@@ -255,46 +241,36 @@ export default function UnlinkedDonationDetailsPage() {
                 </div>
             </div>
 
-            {!userProfile && (
-                 <Alert variant="destructive" className="mb-4">
-                    <ShieldAlert className="h-4 w-4" />
-                    <AlertTitle>You are not logged in</AlertTitle>
-                    <AlertDescription>
-                        You are viewing this as a public user. Some actions may be unavailable.
-                    </AlertDescription>
-                </Alert>
-            )}
-            
-            <div ref={summaryRef} className="space-y-6 p-4 bg-background">
+            <div ref={summaryRef} className="space-y-6 p-4 bg-background font-normal">
                 <div className="grid gap-6 lg:grid-cols-2">
                     <Card>
-                        <CardHeader><CardTitle>Donation Summary</CardTitle></CardHeader>
+                        <CardHeader><CardTitle>Donation summary</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
-                            <DetailItem label="Total Amount" value={`₹${donation.amount.toFixed(2)}`} isMono />
-                            <DetailItem label="Donation Date" value={donation.donationDate} />
+                            <DetailItem label="Total amount" value={`₹${donation.amount.toFixed(2)}`} isMono />
+                            <DetailItem label="Donation date" value={donation.donationDate} />
                              {donation.contributionFromDate && donation.contributionToDate && (
-                                <DetailItem label="Contribution Period" value={`${donation.contributionFromDate} to ${donation.contributionToDate}`} />
+                                <DetailItem label="Contribution period" value={`${donation.contributionFromDate} to ${donation.contributionToDate}`} />
                             )}
                             <DetailItem label="Status" value={<Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'secondary'}>{donation.status}</Badge>} />
-                            <DetailItem label="Payment Type" value={<Badge variant="outline">{donation.donationType}</Badge>} />
+                            <DetailItem label="Payment type" value={<Badge variant="outline">{donation.donationType}</Badge>} />
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle>Donor &amp; Receiver</CardTitle></CardHeader>
+                        <CardHeader><CardTitle>Donor & receiver</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
-                            <DetailItem label="Donor Name" value={donation.donorName} />
-                            <DetailItem label="Donor Phone" value={donation.donorPhone} isMono />
-                            <DetailItem label="Receiver Name" value={donation.receiverName} />
-                            <DetailItem label="Referred By" value={donation.referral} />
+                            <DetailItem label="Donor name" value={donation.donorName} />
+                            <DetailItem label="Donor phone" value={donation.donorPhone} isMono />
+                            <DetailItem label="Receiver name" value={donation.receiverName} />
+                            <DetailItem label="Referred by" value={donation.referral} />
                         </CardContent>
                     </Card>
                 </div>
 
                 <Card>
-                    <CardHeader><CardTitle>Financial Breakdown</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>Financial breakdown</CardTitle></CardHeader>
                     <CardContent className="grid gap-6 md:grid-cols-2">
                         <div className="space-y-2">
-                            <h3 className="font-semibold">Category Breakdown</h3>
+                            <h3 className="font-semibold">Category breakdown</h3>
                             <div className="border rounded-lg overflow-hidden">
                                 <Table>
                                     <TableHeader>
@@ -310,7 +286,7 @@ export default function UnlinkedDonationDetailsPage() {
                         </div>
                          {donation.linkSplit && donation.linkSplit.length > 0 && (
                             <div className="space-y-2">
-                                <h3 className="font-semibold">Initiative Allocation</h3>
+                                <h3 className="font-semibold">Initiative allocation</h3>
                                 <div className="border rounded-lg overflow-hidden">
                                     <Table>
                                         <TableHeader>
@@ -336,7 +312,7 @@ export default function UnlinkedDonationDetailsPage() {
 
                 {donation.transactions && donation.transactions.length > 0 && (
                      <Card>
-                        <CardHeader><CardTitle>Transaction Details</CardTitle></CardHeader>
+                        <CardHeader><CardTitle>Transaction details</CardTitle></CardHeader>
                         <CardContent>
                             <Table>
                                 <TableHeader>
@@ -345,7 +321,7 @@ export default function UnlinkedDonationDetailsPage() {
                                         <TableHead>Date</TableHead>
                                         <TableHead>Transaction ID</TableHead>
                                         <TableHead>UPI ID</TableHead>
-                                        <TableHead>Screenshot</TableHead>
+                                        <TableHead>Artifact</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -375,7 +351,7 @@ export default function UnlinkedDonationDetailsPage() {
                  {(donation.comments || donation.suggestions) && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Additional Information</CardTitle>
+                            <CardTitle>Additional information</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {donation.comments && (
@@ -402,7 +378,7 @@ export default function UnlinkedDonationDetailsPage() {
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>Edit Donation</DialogTitle>
+                        <DialogTitle>Edit donation</DialogTitle>
                     </DialogHeader>
                     <DonationForm
                         donation={donation}

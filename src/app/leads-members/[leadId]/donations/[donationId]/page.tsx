@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef } from 'react';
@@ -14,27 +13,23 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import Resizer from 'react-image-file-resizer';
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
-
 import type { Donation, Lead, BrandingSettings, PaymentSettings, Campaign, DonationLink, TransactionDetail } from '@/lib/types';
-
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Edit, Download, Loader2, Image as ImageIcon, FileText, Share2, FolderKanban, Lightbulb, ZoomIn, ZoomOut, RotateCw, RefreshCw } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ShieldAlert } from 'lucide-react';
 import { ShareDialog } from '@/components/share-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { BrandedLoader } from '@/components/branded-loader';
 
 const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
     <div className="space-y-1">
-        <p className="text-xs font-normal text-muted-foreground uppercase tracking-tight">{label}</p>
+        <p className="text-xs font-normal text-muted-foreground">{label}</p>
         <div className={`text-sm font-bold text-primary ${isMono ? 'font-mono' : ''}`}>{value || 'N/A'}</div>
     </div>
 );
@@ -120,7 +115,7 @@ export default function DonationDetailsPage() {
                 const linkType = type as 'campaign' | 'lead';
                 const source = linkType === 'campaign' ? allCampaigns : allLeads;
                 const linkedItem = source?.find((item: Campaign | Lead) => item.id === id);
-                return { linkId: id, linkName: linkedItem?.name || 'Unknown Initiative', linkType: linkType, amount: split.amount };
+                return { linkId: id, linkName: linkedItem?.name || 'Unknown initiative', linkType: linkType, amount: split.amount };
             }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
 
             finalData = {
@@ -140,7 +135,7 @@ export default function DonationDetailsPage() {
             if (error.code === 'permission-denied') {
                 errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: finalData }));
             } else {
-                toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
+                toast({ title: 'Save failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
             }
         }
     };
@@ -153,7 +148,7 @@ export default function DonationDetailsPage() {
     const handleDownload = (format: 'png' | 'pdf') => {
         download(format, {
             contentRef: summaryRef,
-            documentTitle: 'Donation Receipt',
+            documentTitle: 'Donation receipt',
             documentName: `donation-receipt-${donationId}`,
             brandingSettings,
             paymentSettings,
@@ -173,8 +168,8 @@ export default function DonationDetailsPage() {
     
     if (!donation || !lead) {
         return (
-            <main className="container mx-auto p-4 md:p-8 text-center">
-                <p className="text-lg text-muted-foreground font-normal">Donation or lead record not found.</p>
+            <main className="container mx-auto p-4 md:p-8 text-center font-normal">
+                <p className="text-lg text-muted-foreground">Donation or lead record not found.</p>
                 <Button asChild className="mt-4 font-bold"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to leads</Link></Button>
             </main>
         );
@@ -252,7 +247,7 @@ export default function DonationDetailsPage() {
 
                 <div className="grid gap-8 lg:grid-cols-2 pt-4">
                     <div className="space-y-4">
-                        <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Category breakdown</h3>
+                        <h3 className="text-sm font-bold text-primary tracking-tight">Category breakdown</h3>
                         <div className="border border-primary/10 rounded-lg overflow-hidden">
                             <ScrollArea className="w-full">
                                 <Table>
@@ -276,7 +271,7 @@ export default function DonationDetailsPage() {
                         </div>
                     </div>
                     <div className="space-y-4">
-                        <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Initiative allocation</h3>
+                        <h3 className="text-sm font-bold text-primary tracking-tight">Initiative allocation</h3>
                         <div className="border border-primary/10 rounded-lg overflow-hidden">
                             <ScrollArea className="w-full">
                                 <Table>
@@ -290,7 +285,7 @@ export default function DonationDetailsPage() {
                                         {donation.linkSplit && donation.linkSplit.length > 0 ? donation.linkSplit.map((link: DonationLink) => (
                                             <TableRow key={link.linkId}>
                                                 <TableCell className="flex items-center gap-2 font-normal">
-                                                    {link.linkType === 'campaign' ? <FolderKanban className="h-4 w-4 text-primary/40" /> : <Lightbulb className="h-4 w-4 text-primary/40" />}
+                                                    {link.linkType === 'campaign' ? <FolderKanban className="h-4 w-4 text-muted-foreground" /> : <Lightbulb className="h-4 w-4 text-muted-foreground" />}
                                                     {link.linkName}
                                                 </TableCell>
                                                 <TableCell className="text-right font-bold font-mono text-primary">₹{link.amount.toFixed(2)}</TableCell>
@@ -310,7 +305,7 @@ export default function DonationDetailsPage() {
 
                 {donation.transactions && donation.transactions.length > 0 && (
                      <div className="space-y-4 pt-4">
-                        <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Transaction records</h3>
+                        <h3 className="text-sm font-bold text-primary tracking-tight">Transaction records</h3>
                         <div className="border border-primary/10 rounded-lg overflow-hidden">
                             <ScrollArea className="w-full">
                                 <Table>
