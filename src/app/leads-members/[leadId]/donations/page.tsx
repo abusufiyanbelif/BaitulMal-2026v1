@@ -254,14 +254,14 @@ export default function DonationsPage() {
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-2 pb-2">
                     {canReadSummary && (
-                        <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold uppercase tracking-wide transition-all duration-200", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
+                        <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
                     )}
-                    <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold uppercase tracking-wide transition-all duration-200", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item List</Link>
+                    <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item list</Link>
                     {canReadBeneficiaries && (
-                        <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold uppercase tracking-wide transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>
+                        <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary list</Link>
                     )}
                     {canReadDonations && (
-                        <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold uppercase tracking-wide transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>
+                        <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>
                     )}
                 </div>
                 <ScrollBar orientation="horizontal" />
@@ -272,16 +272,16 @@ export default function DonationsPage() {
             <CardHeader className="pb-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div className="space-y-1.5">
-                        <CardTitle>Donation List ({filteredAndSortedDonations.length})</CardTitle>
+                        <CardTitle>Donation list ({filteredAndSortedDonations.length})</CardTitle>
                         <CardDescription>Total verified collection for this lead: <span className="font-bold text-primary font-mono">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisLead, 0).toFixed(2)}</span></CardDescription>
                     </div>
-                    {canCreate && <Button onClick={() => setIsFormOpen(true)} className="interactive-hover font-bold"><PlusCircle className="mr-2 h-4 w-4"/>Add Donation</Button>}
+                    {canCreate && <Button onClick={() => setIsFormOpen(true)} className="interactive-hover font-bold"><PlusCircle className="mr-2 h-4 w-4"/>Add donation</Button>}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-4">
                     <Input placeholder="Search donor..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs font-normal" />
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
                         <SelectTrigger className="w-[140px] h-9 text-xs font-bold"><SelectValue placeholder="Status"/></SelectTrigger>
-                        <SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Canceled">Canceled</SelectItem></SelectContent>
+                        <SelectContent><SelectItem value="All">All statuses</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Canceled">Canceled</SelectItem></SelectContent>
                     </Select>
                 </div>
             </CardHeader>
@@ -305,12 +305,12 @@ export default function DonationsPage() {
                                     <TableCell><div className="font-bold text-sm">{donation.donorName}</div><div className="text-[10px] text-muted-foreground">{donation.donorPhone}</div></TableCell>
                                     <TableCell className="text-right font-black font-mono">₹{donation.amountForThisLead.toFixed(2)}</TableCell>
                                     <TableCell className="text-xs">{donation.donationDate}</TableCell>
-                                    <TableCell><Badge variant={donation.status === 'Verified' ? 'success' : 'outline'} className="text-[10px] uppercase font-black">{donation.status}</Badge></TableCell>
+                                    <TableCell><Badge variant={donation.status === 'Verified' ? 'success' : 'outline'} className="text-[10px] font-black">{donation.status}</Badge></TableCell>
                                     <TableCell className="text-right pr-4" onClick={e => e.stopPropagation()}>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)} className="font-bold text-primary"><Eye className="mr-2 h-4 w-4"/>View Details</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)} className="font-bold text-primary"><Eye className="mr-2 h-4 w-4"/>View details</DropdownMenuItem>
                                                 {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="font-bold text-primary"><Edit className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>}
                                                 {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive font-bold"><Link2Off className="mr-2 h-4 w-4"/>Unlink</DropdownMenuItem>}
                                             </DropdownMenuContent>
@@ -318,7 +318,7 @@ export default function DonationsPage() {
                                     </TableCell>
                                 </TableRow>
                             ))}
-                            {paginatedDonations.length === 0 && <TableRow><TableCell colSpan={6} className="h-32 text-center text-muted-foreground font-bold uppercase tracking-widest bg-muted/10">No donations found.</TableCell></TableRow>}
+                            {paginatedDonations.length === 0 && <TableRow><TableCell colSpan={6} className="h-32 text-center text-muted-foreground font-bold bg-muted/10">No donations found.</TableCell></TableRow>}
                         </TableBody>
                     </Table>
                 </div>
@@ -337,7 +337,7 @@ export default function DonationsPage() {
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle className="text-xl font-bold">{editingDonation ? 'Edit' : 'Add'} Donation</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle className="text-xl font-bold">{editingDonation ? 'Edit' : 'Add'} donation</DialogTitle></DialogHeader>
                 <DonationForm 
                     donation={editingDonation} 
                     onSubmit={handleFormSubmit} 
@@ -353,7 +353,7 @@ export default function DonationsPage() {
         </Dialog>
 
         <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
-            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold">Unlink Donation?</AlertDialogTitle><AlertDialogDescription>This will remove the donation from this initiative but will not delete the record.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold">Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold">Unlink donation?</AlertDialogTitle><AlertDialogDescription>This will remove the donation from this initiative but will not delete the record.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold">Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
         </AlertDialog>
     </main>
   );

@@ -11,29 +11,29 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { Button } from '@/components/ui/button';
 
 const VISIBILITY_OPTIONS = [
-    { id: 'stat_cards', name: 'Top Metrics (Total/Verified/Pending)' },
-    { id: 'status_chart', name: 'Status Distribution Donut' },
-    { id: 'zakat_chart', name: 'Zakat Eligibility Donut' },
-    { id: 'referral_chart', name: 'Top Referral Sources Bar' },
+    { id: 'stat_cards', name: 'Top metrics (total/verified/pending)' },
+    { id: 'status_chart', name: 'Status distribution donut' },
+    { id: 'zakat_chart', name: 'Zakat eligibility donut' },
+    { id: 'referral_chart', name: 'Top referral sources bar' },
 ];
 
 const MANDATORY_FIELDS = [
     { id: 'name', name: 'Name' },
     { id: 'address', name: 'Address' },
-    { id: 'phone', name: 'Phone Number' },
+    { id: 'phone', name: 'Phone number' },
     { id: 'age', name: 'Age' },
     { id: 'occupation', name: 'Occupation' },
-    { id: 'members', name: 'Total Members' },
-    { id: 'earningMembers', name: 'Earning Members' },
-    { id: 'male', name: 'Male Members' },
-    { id: 'female', name: 'Female Members' },
-    { id: 'idProofType', name: 'ID Proof Type' },
-    { id: 'idNumber', name: 'ID Number' },
-    { id: 'referralBy', name: 'Referral By' },
-    { id: 'kitAmount', name: 'Requirement Amount' },
+    { id: 'members', name: 'Total members' },
+    { id: 'earningMembers', name: 'Earning members' },
+    { id: 'male', name: 'Male members' },
+    { id: 'female', name: 'Female members' },
+    { id: 'idProofType', name: 'ID proof type' },
+    { id: 'idNumber', name: 'ID number' },
+    { id: 'referralBy', name: 'Referral by' },
+    { id: 'kitAmount', name: 'Requirement amount' },
     { id: 'status', name: 'Status' },
-    { id: 'notes', name: 'Internal Notes' },
-    { id: 'zakatAllocation', name: 'Zakat Allocation' },
+    { id: 'notes', name: 'Internal notes' },
+    { id: 'zakatAllocation', name: 'Zakat allocation' },
 ];
 
 export default function BeneficiarySettingsPage() {
@@ -72,9 +72,9 @@ export default function BeneficiarySettingsPage() {
             setDoc(visRef, localVis),
             setDoc(configRef, { mandatoryFields: localMandatory }, { merge: true })
         ]);
-        toast({ title: "Settings Saved", variant: "success" });
+        toast({ title: "Settings saved", variant: "success" });
     } catch (e) {
-        toast({ title: "Failed to Save", variant: "destructive" });
+        toast({ title: "Failed to save", variant: "destructive" });
     } finally {
         setIsSubmitting(false);
     }
@@ -87,16 +87,16 @@ export default function BeneficiarySettingsPage() {
         <Card className="animate-fade-in-zoom border-primary/20">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-bold text-primary">
-                    <Settings className="h-5 w-5" /> Beneficiary Summary Visibility Settings
+                    <Settings className="h-5 w-5" /> Beneficiary visibility settings
                 </CardTitle>
                 <CardDescription className="font-normal">
-                    Control which analytical components are visible in the Beneficiary Summary.
+                    Control which analytical components are visible in the beneficiary summary.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">
-                        <h3 className="font-bold text-primary uppercase text-xs tracking-widest">Public Summary Visibility</h3>
+                        <h3 className="font-bold text-primary text-xs tracking-widest">Public summary visibility</h3>
                         <div className="space-y-3">
                             {VISIBILITY_OPTIONS.map(opt => (
                                 <div key={`public_ben_${opt.id}`} className="flex items-center space-x-2">
@@ -111,7 +111,7 @@ export default function BeneficiarySettingsPage() {
                         </div>
                     </div>
                     <div className="space-y-4">
-                        <h3 className="font-bold text-primary uppercase text-xs tracking-widest">Member Summary Visibility</h3>
+                        <h3 className="font-bold text-primary text-xs tracking-widest">Member summary visibility</h3>
                         <div className="space-y-3">
                             {VISIBILITY_OPTIONS.map(opt => (
                                 <div key={`member_ben_${opt.id}`} className="flex items-center space-x-2">
@@ -132,7 +132,7 @@ export default function BeneficiarySettingsPage() {
         <Card className="animate-fade-in-up border-primary/20">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-bold text-primary">
-                    <CheckSquare className="h-5 w-5" /> Mandatory Fields Setup
+                    <CheckSquare className="h-5 w-5" /> Mandatory fields setup
                 </CardTitle>
                 <CardDescription className="font-normal">
                     Define required information for beneficiaries across the master list and initiatives.
@@ -155,7 +155,7 @@ export default function BeneficiarySettingsPage() {
             <CardFooter className="justify-end border-t border-primary/10 p-4">
                 <Button onClick={handleSave} disabled={isSaving} className="font-bold text-white bg-primary hover:bg-primary/90">
                     {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                    Save Settings
+                    Save settings
                 </Button>
             </CardFooter>
         </Card>

@@ -11,16 +11,16 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { Button } from '@/components/ui/button';
 
 const MANDATORY_FIELDS = [
-    { id: 'name', name: 'Full Name' },
-    { id: 'email', name: 'Email Address' },
-    { id: 'phone', name: 'Phone Number' },
+    { id: 'name', name: 'Full name' },
+    { id: 'email', name: 'Email address' },
+    { id: 'phone', name: 'Phone number' },
     { id: 'loginId', name: 'Login ID' },
-    { id: 'role', name: 'Role (Admin/User)' },
-    { id: 'status', name: 'Status (Active/Inactive)' },
-    { id: 'idProofType', name: 'ID Type' },
-    { id: 'idNumber', name: 'ID Number' },
-    { id: 'organizationGroup', name: 'Org Group' },
-    { id: 'organizationRole', name: 'Org Role' },
+    { id: 'role', name: 'Role (admin/user)' },
+    { id: 'status', name: 'Status (active/inactive)' },
+    { id: 'idProofType', name: 'ID type' },
+    { id: 'idNumber', name: 'ID number' },
+    { id: 'organizationGroup', name: 'Org group' },
+    { id: 'organizationRole', name: 'Org role' },
 ];
 
 export default function UserSettingsPage() {
@@ -48,9 +48,9 @@ export default function UserSettingsPage() {
     setIsSubmitting(true);
     try {
         await setDoc(configRef, { mandatoryFields: localMandatory }, { merge: true });
-        toast({ title: "Settings Saved", variant: "success" });
+        toast({ title: "Settings saved", variant: "success" });
     } catch (e) {
-        toast({ title: "Failed to Save", variant: "destructive" });
+        toast({ title: "Failed to save", variant: "destructive" });
     } finally {
         setIsSubmitting(false);
     }
@@ -63,7 +63,7 @@ export default function UserSettingsPage() {
         <Card className="animate-fade-in-zoom border-primary/20">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-bold text-primary">
-                    <Settings className="h-5 w-5" /> User Module Settings
+                    <Settings className="h-5 w-5" /> User module settings
                 </CardTitle>
                 <CardDescription className="font-normal">
                     General configuration for staff and administrator accounts.
@@ -77,7 +77,7 @@ export default function UserSettingsPage() {
         <Card className="animate-fade-in-up border-primary/20">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-bold text-primary">
-                    <CheckSquare className="h-5 w-5" /> Mandatory Fields Setup
+                    <CheckSquare className="h-5 w-5" /> Mandatory fields setup
                 </CardTitle>
                 <CardDescription className="font-normal">
                     Define which information must be collected for every organization user account.
@@ -100,7 +100,7 @@ export default function UserSettingsPage() {
             <CardFooter className="justify-end border-t border-primary/10 p-4">
                 <Button onClick={handleSave} disabled={isSaving} className="font-bold text-white bg-primary hover:bg-primary/90">
                     {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                    Save Settings
+                    Save settings
                 </Button>
             </CardFooter>
         </Card>

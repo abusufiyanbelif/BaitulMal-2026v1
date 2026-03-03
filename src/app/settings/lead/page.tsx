@@ -11,34 +11,34 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { Button } from '@/components/ui/button';
 
 const VISIBILITY_OPTIONS = [
-    { id: 'funding_progress', name: 'Fundraising Progress' },
-    { id: 'quick_stats', name: 'Quick Stats (Beneficiaries)' },
-    { id: 'beneficiary_groups', name: 'Beneficiary Groups Table' },
-    { id: 'fund_totals', name: 'Fund Totals by Type' },
-    { id: 'zakat_utilization', name: 'Zakat Utilization' },
-    { id: 'donations_by_category', name: 'Donations by Category Chart' },
-    { id: 'donations_by_payment_type', name: 'Donations by Payment Type Chart' },
-    { id: 'documents', name: 'Artifacts & Documents' },
+    { id: 'funding_progress', name: 'Fundraising progress' },
+    { id: 'quick_stats', name: 'Quick stats (beneficiaries)' },
+    { id: 'beneficiary_groups', name: 'Beneficiary groups table' },
+    { id: 'fund_totals', name: 'Fund totals by type' },
+    { id: 'zakat_utilization', name: 'Zakat utilization' },
+    { id: 'donations_by_category', name: 'Donations by category chart' },
+    { id: 'donations_by_payment_type', name: 'Donations by payment type chart' },
+    { id: 'documents', name: 'Artifacts & documents' },
 ];
 
 const MANDATORY_FIELDS = [
-    { id: 'name', name: 'Lead Name' },
+    { id: 'name', name: 'Lead name' },
     { id: 'description', name: 'Description' },
     { id: 'purpose', name: 'Purpose' },
     { id: 'category', name: 'Category' },
     { id: 'status', name: 'Status' },
-    { id: 'authenticityStatus', name: 'Authenticity Status' },
-    { id: 'publicVisibility', name: 'Public Visibility' },
-    { id: 'startDate', name: 'Start Date' },
-    { id: 'endDate', name: 'End Date' },
-    { id: 'requiredAmount', name: 'Required Amount' },
-    { id: 'targetAmount', name: 'Target Goal' },
-    { id: 'degree', name: 'Education: Degree' },
-    { id: 'year', name: 'Education: Year' },
-    { id: 'semester', name: 'Education: Semester' },
-    { id: 'diseaseIdentified', name: 'Medical: Disease' },
-    { id: 'diseaseStage', name: 'Medical: Stage' },
-    { id: 'seriousness', name: 'Medical: Seriousness' },
+    { id: 'authenticityStatus', name: 'Authenticity status' },
+    { id: 'publicVisibility', name: 'Public visibility' },
+    { id: 'startDate', name: 'Start date' },
+    { id: 'endDate', name: 'End date' },
+    { id: 'requiredAmount', name: 'Required amount' },
+    { id: 'targetAmount', name: 'Target goal' },
+    { id: 'degree', name: 'Education: degree' },
+    { id: 'year', name: 'Education: year' },
+    { id: 'semester', name: 'Education: semester' },
+    { id: 'diseaseIdentified', name: 'Medical: disease' },
+    { id: 'diseaseStage', name: 'Medical: stage' },
+    { id: 'seriousness', name: 'Medical: seriousness' },
 ];
 
 export default function LeadSettingsPage() {
@@ -77,9 +77,9 @@ export default function LeadSettingsPage() {
             setDoc(visRef, localVis),
             setDoc(configRef, { mandatoryFields: localMandatory }, { merge: true })
         ]);
-        toast({ title: "Settings Saved", variant: "success" });
+        toast({ title: "Settings saved", variant: "success" });
     } catch (e) {
-        toast({ title: "Failed to Save", variant: "destructive" });
+        toast({ title: "Failed to save", variant: "destructive" });
     } finally {
         setIsSubmitting(false);
     }
@@ -92,16 +92,16 @@ export default function LeadSettingsPage() {
         <Card className="animate-fade-in-zoom border-primary/20">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-bold text-primary">
-                    <Settings className="h-5 w-5" /> Lead Visibility Settings
+                    <Settings className="h-5 w-5" /> Lead visibility settings
                 </CardTitle>
                 <CardDescription className="font-normal">
-                    Control which summary components are visible to the public and staff members for Lead appeals.
+                    Control which summary components are visible to the public and staff members for lead appeals.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">
-                        <h3 className="font-bold text-primary uppercase text-xs tracking-widest">Public Summary Visibility</h3>
+                        <h3 className="font-bold text-primary text-xs tracking-widest">Public summary visibility</h3>
                         <div className="space-y-3">
                             {VISIBILITY_OPTIONS.map(opt => (
                                 <div key={`public_lead_${opt.id}`} className="flex items-center space-x-2">
@@ -116,7 +116,7 @@ export default function LeadSettingsPage() {
                         </div>
                     </div>
                     <div className="space-y-4">
-                        <h3 className="font-bold text-primary uppercase text-xs tracking-widest">Member Summary Visibility</h3>
+                        <h3 className="font-bold text-primary text-xs tracking-widest">Member summary visibility</h3>
                         <div className="space-y-3">
                             {VISIBILITY_OPTIONS.map(opt => (
                                 <div key={`member_lead_${opt.id}`} className="flex items-center space-x-2">
@@ -137,7 +137,7 @@ export default function LeadSettingsPage() {
         <Card className="animate-fade-in-up border-primary/20">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-bold text-primary">
-                    <CheckSquare className="h-5 w-5" /> Mandatory Fields Setup
+                    <CheckSquare className="h-5 w-5" /> Mandatory fields setup
                 </CardTitle>
                 <CardDescription className="font-normal">
                     Define required fields for individual support leads.
@@ -160,7 +160,7 @@ export default function LeadSettingsPage() {
             <CardFooter className="justify-end border-t border-primary/10 p-4">
                 <Button onClick={handleSave} disabled={isSaving} className="font-bold text-white bg-primary hover:bg-primary/90">
                     {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                    Save Settings
+                    Save settings
                 </Button>
             </CardFooter>
         </Card>
