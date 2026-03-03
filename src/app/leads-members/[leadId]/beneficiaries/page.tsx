@@ -68,7 +68,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 type BeneficiaryStatus = Beneficiary['status'];
 
-// Updated grid class to accommodate requested columns
 const gridClass = "grid grid-cols-[40px_40px_1.5fr_100px_100px_120px_140px_1fr_60px] items-center gap-2";
 
 export default function BeneficiariesPage() {
@@ -172,7 +171,7 @@ export default function BeneficiariesPage() {
     batch.set(leadSubRef, fullData, { merge: true });
     batch.update(doc(firestore, 'leads', leadId), { targetAmount: (lead.targetAmount || 0) + (data.kitAmount || 0) });
     
-    await batch.commit().then(() => { toast({ title: 'Success', description: 'Beneficiary added.', variant: 'success' }); setIsFormOpen(false); }).catch(e => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadSubRef.path, operation: 'create' })));
+    await batch.commit().then(() => { toast({ title: 'Success', variant: 'success' }); setIsFormOpen(false); }).catch(e => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadSubRef.path, operation: 'create' })));
     setIsSubmitting(false);
   };
 
@@ -235,7 +234,7 @@ export default function BeneficiariesPage() {
         </div>
 
         <div className="rounded-lg border border-primary/10 bg-white overflow-hidden shadow-sm">
-            <ScrollArea className="w-full overflow-x-auto">
+            <ScrollArea className="w-full">
                 <div className={cn("bg-primary/5 border-b border-primary/10 py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-primary/70", gridClass)}>
                     <div></div>
                     <div>sr.no.</div>
@@ -248,15 +247,17 @@ export default function BeneficiariesPage() {
                     <div className="text-right">Actions</div>
                 </div>
 
-                <Tabs value={activeCategoryTab} onValueChange={setActiveCategoryTab} className="w-full">
+                <div className="w-full">
                     {Object.entries(beneficiariesByCategory).map(([catId, list]) => {
                         const categoryName = availableCategories.find(c => c.id === catId)?.name || (catId === 'all' ? 'All Beneficiaries' : 'Uncategorized');
                         const currentPage = currentPages[catId] || 1;
                         const paginatedList = list.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
+                        if (paginatedList.length === 0 && catId !== 'all') return null;
+
                         return (
                             <div key={catId} className="w-full">
-                                <div className="bg-primary/5 px-4 py-2 text-sm font-bold text-primary flex items-center gap-2 border-b border-primary/10">
+                                <div className="bg-primary/5 px-4 py-2 text-sm font-bold text-primary flex items-center gap-2 border-b border-primary/10 uppercase tracking-tighter">
                                     <ChevronDown className="h-4 w-4" />
                                     {categoryName} ({list.length} beneficiaries)
                                 </div>
@@ -311,48 +312,48 @@ export default function BeneficiariesPage() {
                                                     </DropdownMenu>
                                                 </div>
                                             </div>
-                                            <AccordionContent className="bg-primary/[0.01] px-4 pt-0 pb-4 border-t border-primary/5">
+                                            <AccordionContent className="bg-primary/[0.01] px-4 pt-0 pb-4 border-t border-primary/5 font-normal">
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 pt-4 px-12">
                                                     <div className="space-y-4">
                                                         <div>
-                                                            <p className="text-[10px] font-bold uppercase text-primary/60">Address</p>
-                                                            <p className="text-sm font-medium leading-relaxed">{b.address || 'N/A'}</p>
+                                                            <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">Address</p>
+                                                            <p className="text-xs font-medium leading-relaxed">{b.address || 'N/A'}</p>
                                                         </div>
                                                         <div className="grid grid-cols-2 gap-4">
                                                             <div>
-                                                                <p className="text-[10px] font-bold uppercase text-primary/60">Occupation</p>
-                                                                <p className="text-sm font-medium">{b.occupation || 'N/A'}</p>
+                                                                <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">Occupation</p>
+                                                                <p className="text-xs font-medium">{b.occupation || 'N/A'}</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-[10px] font-bold uppercase text-primary/60">ID Proof</p>
-                                                                <p className="text-sm font-medium">{b.idProofType || 'Aadhar'} - {b.idNumber || 'N/A'}</p>
+                                                                <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">ID Proof</p>
+                                                                <p className="text-xs font-medium">{b.idProofType || 'Aadhar'} - {b.idNumber || 'N/A'}</p>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div className="space-y-4">
                                                         <div className="grid grid-cols-2 gap-4">
                                                             <div>
-                                                                <p className="text-[10px] font-bold uppercase text-primary/60">Age</p>
-                                                                <p className="text-sm font-medium">{b.age || 'N/A'}</p>
+                                                                <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">Age</p>
+                                                                <p className="text-xs font-medium">{b.age || 'N/A'}</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-[10px] font-bold uppercase text-primary/60">Family</p>
-                                                                <p className="text-sm font-medium">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
+                                                                <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">Family</p>
+                                                                <p className="text-xs font-medium">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                                                             </div>
                                                         </div>
                                                         <div className="grid grid-cols-2 gap-4">
                                                             <div>
-                                                                <p className="text-[10px] font-bold uppercase text-primary/60">Date Added</p>
-                                                                <p className="text-sm font-medium">{b.addedDate || 'N/A'}</p>
+                                                                <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">Date Added</p>
+                                                                <p className="text-xs font-medium">{b.addedDate || 'N/A'}</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-[10px] font-bold uppercase text-primary/60">Zakat Allocation</p>
-                                                                <p className="text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                                                                <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">Zakat Allocation</p>
+                                                                <p className="text-xs font-bold text-primary">₹{(b.zakatAllocation || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
                                                             </div>
                                                         </div>
                                                         <div>
-                                                            <p className="text-[10px] font-bold uppercase text-primary/60">Notes</p>
-                                                            <p className="text-sm font-medium italic opacity-80">{b.notes || (b.isEligibleForZakat ? `Eligible for zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
+                                                            <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">Notes</p>
+                                                            <p className="text-xs font-medium italic opacity-80">{b.notes || (b.isEligibleForZakat ? `Eligible for zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -363,14 +364,14 @@ export default function BeneficiariesPage() {
                             </div>
                         );
                     })}
-                </Tabs>
+                </div>
                 <ScrollBar orientation="horizontal" />
             </ScrollArea>
         </div>
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle className="text-xl font-bold text-primary tracking-tight">Add new beneficiary</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase">Add new beneficiary</DialogTitle></DialogHeader>
                 <BeneficiaryForm onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} itemCategories={lead?.itemCategories || []} />
             </DialogContent>
         </Dialog>

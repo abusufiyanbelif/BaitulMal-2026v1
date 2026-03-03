@@ -62,6 +62,7 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
@@ -217,7 +218,7 @@ export default function PublicLeadSummaryPage() {
         return (
             <main className="container mx-auto p-4 md:p-8 text-center text-primary font-bold">
                 <p className="text-lg text-muted-foreground">This lead is not available for public view.</p>
-                <Button asChild className="mt-4 active:scale-95 transition-transform"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Leads</Link></Button>
+                <Button asChild className="mt-4 active:scale-95 transition-transform font-bold"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Leads</Link></Button>
             </main>
         );
     }
@@ -243,19 +244,19 @@ export default function PublicLeadSummaryPage() {
             </div>
 
             <div className="space-y-6" ref={summaryRef}>
-                {/* 1. Initiative Details Section - Top prioritized */}
+                {/* 1. Initiative Details Section */}
                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
                     <CardHeader className="bg-primary/5"><CardTitle className="font-bold text-primary">Lead Details</CardTitle></CardHeader>
-                    <CardContent className="space-y-4 pt-6 text-foreground">
+                    <CardContent className="space-y-4 pt-6 text-foreground font-bold">
                         <div className="space-y-2">
                             <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
                             <p className="mt-1 text-sm font-bold whitespace-pre-wrap leading-relaxed text-primary">{lead.description || 'No description provided.'}</p>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 text-primary font-bold">
-                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase font-normal">Required Amount</p><p className="mt-1 text-lg font-bold text-primary">₹{(lead.requiredAmount ?? 0).toLocaleString('en-IN')}</p></div>
-                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase font-normal">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary">₹{(lead.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
-                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase font-normal">Purpose</p><p className="mt-1 text-lg font-bold text-primary uppercase">{lead.purpose}</p></div>
-                            <div className="space-y-1"><p className="text-sm font-bold text-muted-foreground uppercase font-normal">Start Date</p><p className="mt-1 text-lg font-bold text-primary">{lead.startDate}</p></div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 text-primary">
+                            <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Required Amount</p><p className="mt-1 text-lg font-bold text-primary">₹{(lead.requiredAmount ?? 0).toLocaleString('en-IN')}</p></div>
+                            <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary">₹{(lead.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
+                            <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Purpose</p><p className="mt-1 text-lg font-bold text-primary uppercase">{lead.purpose}</p></div>
+                            <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Start Date</p><p className="mt-1 text-lg font-bold text-primary">{lead.startDate}</p></div>
                         </div>
                     </CardContent>
                 </Card>
@@ -267,7 +268,7 @@ export default function PublicLeadSummaryPage() {
                             <Card className="shadow-sm border-primary/5 bg-white">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2 font-bold text-primary"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
-                                    <CardDescription className="font-bold">Verified donations against the goal for this initiative.</CardDescription>
+                                    <CardDescription className="font-normal">Verified donations for this initiative.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -280,12 +281,12 @@ export default function PublicLeadSummaryPage() {
                                                     </RadialBarChart>
                                                 </ChartContainer>
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold uppercase">Funded</span></div>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold uppercase">Funded</span></div>
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary font-bold">
-                                            <div><p className="text-sm text-muted-foreground uppercase font-bold tracking-tighter font-normal">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                            <div><p className="text-sm text-muted-foreground uppercase font-bold tracking-tighter font-normal">Fundraising Target</p><p className="text-3xl font-bold text-primary">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                            <div><p className="text-sm text-muted-foreground uppercase font-bold tracking-tighter font-normal">Grand Total Received</p><p className="text-3xl font-bold text-primary">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Grand Total Received</p><p className="text-3xl font-bold text-primary">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -294,9 +295,9 @@ export default function PublicLeadSummaryPage() {
 
                         {isVisible('quick_stats') && (
                             <div className="grid gap-6 sm:grid-cols-3">
-                                <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
-                                <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Assistance Provided</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
-                                <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
+                                <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
+                                <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Assistance Provided</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
+                                <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
                             </div>
                         )}
 
@@ -309,68 +310,71 @@ export default function PublicLeadSummaryPage() {
                                     <CardDescription className="font-normal">
                                         {isRationInitiative 
                                             ? 'Breakdown of requirements by family size category.' 
-                                            : 'Detailed itemized costing for this initiative.'}
+                                            : 'Itemized requirement breakdown for this initiative.'}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="border rounded-lg overflow-x-auto font-normal text-foreground">
-                                        {isRationInitiative ? (
-                                            <Table>
-                                                <TableHeader className="bg-primary/5">
-                                                    <TableRow>
-                                                        <TableHead className="font-bold text-primary">Category Name</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary">Total Beneficiaries</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary">Kit Amount (per kit)</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary">Total Amount</TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {beneficiaryGroups.map((group) => (
-                                                        <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
-                                                            <TableCell className="font-bold text-primary">{group.name}</TableCell>
-                                                            <TableCell className="text-right font-bold">{group.count}</TableCell>
-                                                            <TableCell className="text-right font-mono font-bold">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
-                                                            <TableCell className="text-right font-mono font-bold">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                    <ScrollArea className="w-full">
+                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground">
+                                            {isRationInitiative ? (
+                                                <Table>
+                                                    <TableHeader className="bg-primary/5">
+                                                        <TableRow>
+                                                            <TableHead className="font-bold text-primary text-[10px] uppercase">Category Name</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Beneficiaries</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Kit Amount</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Total Amount</TableHead>
                                                         </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                                {beneficiaryGroups.length > 0 && (
+                                                    </TableHeader>
+                                                    <TableBody>
+                                                        {beneficiaryGroups.map((group) => (
+                                                            <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
+                                                                <TableCell className="font-bold text-primary">{group.name}</TableCell>
+                                                                <TableCell className="text-right font-bold">{group.count}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
+                                                    {beneficiaryGroups.length > 0 && (
+                                                        <tfoot className="bg-primary/5 border-t">
+                                                            <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-xs">Total Requirement</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell></TableRow>
+                                                        </tfoot>
+                                                    )}
+                                                </Table>
+                                            ) : (
+                                                <Table>
+                                                    <TableHeader className="bg-primary/5">
+                                                        <TableRow>
+                                                            <TableHead className="font-bold text-primary text-[10px] uppercase">Requirement Description</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Quantity</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Unit Price</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Total Cost</TableHead>
+                                                        </TableRow>
+                                                    </TableHeader>
+                                                    <TableBody>
+                                                        {lead.itemCategories?.[0]?.items.map((item, idx) => (
+                                                            <TableRow key={idx} className="hover:bg-primary/5 transition-colors">
+                                                                <TableCell className="font-medium">{item.name}</TableCell>
+                                                                <TableCell className="text-right">{item.quantity} {item.quantityType}</TableCell>
+                                                                <TableCell className="text-right font-mono">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
                                                     <tfoot className="bg-primary/5 border-t">
-                                                        <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Total</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell></TableRow>
-                                                    </tfoot>
-                                                )}
-                                            </Table>
-                                        ) : (
-                                            <Table>
-                                                <TableHeader className="bg-primary/5">
-                                                    <TableRow>
-                                                        <TableHead className="font-bold text-primary">Requirement Description</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary">Quantity</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary">Unit Price</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary">Total Price</TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {lead.itemCategories?.flatMap(cat => cat.items || []).map((item, idx) => (
-                                                        <TableRow key={idx} className="hover:bg-primary/5 transition-colors">
-                                                            <TableCell className="font-medium">{item.name}</TableCell>
-                                                            <TableCell className="text-right">{item.quantity} {item.quantityType}</TableCell>
-                                                            <TableCell className="text-right font-mono">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
-                                                            <TableCell className="text-right font-mono">₹{(item.price * item.quantity).toLocaleString('en-IN')}</TableCell>
+                                                        <TableRow>
+                                                            <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-xs">Single Beneficiary Total</TableCell>
+                                                            <TableCell className="text-right font-mono font-bold text-primary text-lg">
+                                                                ₹{(lead.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
+                                                            </TableCell>
                                                         </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                                <tfoot className="bg-primary/5 border-t">
-                                                    <TableRow>
-                                                        <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-lg">Initiative Goal</TableCell>
-                                                        <TableCell className="text-right font-mono font-bold text-primary text-xl">
-                                                            ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                </tfoot>
-                                            </Table>
-                                        )}
-                                    </div>
+                                                    </tfoot>
+                                                </Table>
+                                            )}
+                                        </div>
+                                        <ScrollBar orientation="horizontal" />
+                                    </ScrollArea>
                                 </CardContent>
                             </Card>
                         )}
@@ -378,7 +382,7 @@ export default function PublicLeadSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2">
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="font-bold text-primary">Fund Totals by Type</CardTitle></CardHeader>
+                                    <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-wider">Fund Totals by Type</CardTitle></CardHeader>
                                     <CardContent className="space-y-2">
                                         {donationCategories.map(cat => (
                                             <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary">
@@ -394,11 +398,11 @@ export default function PublicLeadSummaryPage() {
 
                             {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="font-bold text-primary">Zakat Utilization</CardTitle><CardDescription className="font-normal">Tracking of Zakat funds collected and allocated.</CardDescription></CardHeader>
-                                    <CardContent className="space-y-3">
-                                    <div className="flex justify-between items-center text-sm text-primary font-bold"><span className="text-muted-foreground font-normal uppercase tracking-tight">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.amountsByCategory.Zakat || 0).toLocaleString('en-IN')}</span></div>
+                                    <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-wider">Zakat Utilization</CardTitle><CardDescription className="font-normal">Tracking of Zakat funds collected and allocated.</CardDescription></CardHeader>
+                                    <CardContent className="space-y-3 font-bold text-primary">
+                                    <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground font-normal uppercase tracking-tight">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.amountsByCategory.Zakat || 0).toLocaleString('en-IN')}</span></div>
                                         <Separator />
-                                        <div className="pl-4 border-l-2 border-dashed space-y-2 py-2 text-primary font-bold">
+                                        <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
                                             <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground font-normal uppercase tracking-tight">Allocated as Cash-in-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
                                             <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground font-normal uppercase tracking-tight">Given</span><span className="font-mono text-green-600 font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
                                             <div className="flex justify-between items-center text-xs pl-4"><span className="text-muted-foreground font-normal uppercase tracking-tight">Pending</span><span className="font-mono text-amber-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
@@ -413,12 +417,12 @@ export default function PublicLeadSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2">
                             {isVisible('donations_by_category') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="font-bold text-primary">Donations by Category</CardTitle></CardHeader>
+                                    <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-wider">Donations by Category</CardTitle></CardHeader>
                                     <CardContent>
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
                                             <BarChart data={chartData} layout="vertical" margin={{ right: 20 }}>
-                                                <CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4}>{chartData.map((entry) => (<Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />))}</Bar>
+                                                <CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4}>{chartData.map((entry) => (<Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />))}</Bar>
                                             </BarChart>
                                         </ChartContainer>
                                         ) : <Skeleton className="h-[250px] w-full" />}
@@ -428,7 +432,7 @@ export default function PublicLeadSummaryPage() {
 
                             {isVisible('donations_by_payment_type') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary"><PieChartIcon className="h-5 w-5"/> Donations by Payment Type</CardTitle></CardHeader>
+                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary text-sm uppercase tracking-wider"><PieChartIcon className="h-5 w-5"/> Donations by Payment Type</CardTitle></CardHeader>
                                     <CardContent>
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
@@ -450,7 +454,7 @@ export default function PublicLeadSummaryPage() {
 
                 {isVisible('documents') && publicDocuments.length > 0 && (
                     <Card className="animate-fade-in-up bg-white border-primary/10" style={{ animationDelay: '100ms' }}>
-                        <CardHeader><CardTitle className="font-bold text-primary">Public Artifacts</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-wider">Public Artifacts</CardTitle></CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                 {publicDocuments.map((doc) => {
@@ -478,7 +482,7 @@ export default function PublicLeadSummaryPage() {
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
                 <DialogContent className="max-w-4xl">
-                    <DialogHeader><DialogTitle className="font-bold text-[#1B5E20]">{imageToView?.name}</DialogTitle></DialogHeader>
+                    <DialogHeader><DialogTitle className="font-bold text-primary">{imageToView?.name}</DialogTitle></DialogHeader>
                     {imageToView && (
                         <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
                             <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />

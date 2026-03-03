@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -160,7 +159,6 @@ export function BeneficiaryForm({
     const isEligibleForZakat = watch('isEligibleForZakat');
 
     useEffect(() => {
-        // When a user un-checks "Eligible for Zakat", automatically reset the allocation amount to 0.
         if (!isEligibleForZakat && getValues('zakatAllocation') !== 0) {
             setValue('zakatAllocation', 0, { shouldDirty: true });
         }
@@ -173,6 +171,7 @@ export function BeneficiaryForm({
             return items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
         };
         
+        // Detect if it's a ration-style campaign based on categories having member ranges
         const isRationStyle = itemCategories.some(cat => cat.minMembers !== undefined && cat.maxMembers !== undefined);
 
         if (isRationStyle && itemCategories.length > 0) {
@@ -186,7 +185,7 @@ export function BeneficiaryForm({
                 matchingCategories.sort((a, b) => {
                     const rangeA = (a.maxMembers ?? 999) - (a.minMembers ?? 0);
                     const rangeB = (b.maxMembers ?? 999) - (b.minMembers ?? 0);
-                    if (rangeA !== rangeB) return rangeA - rangeB;
+                    if(rangeA !== rangeB) return rangeA - rangeB;
                     return (b.minMembers ?? 0) - (a.minMembers ?? 0);
                 });
                 appliedCategory = matchingCategories[0];
@@ -195,15 +194,15 @@ export function BeneficiaryForm({
             }
 
             if (appliedCategory) {
-                const kitAmount = calculateTotal(appliedCategory.items);
-                setValue('kitAmount', kitAmount, { shouldValidate: true, shouldDirty: true });
+                const total = calculateTotal(appliedCategory.items);
+                setValue('kitAmount', total, { shouldValidate: true, shouldDirty: true });
             }
-        } else if (!isRationStyle && itemCategories.length > 0) {
-            // For non-ration campaigns (General, Relief), there's usually one list.
-            const generalList = itemCategories.find(cat => cat.name !== 'Item Price List');
-            if (generalList) {
-                const kitAmount = calculateTotal(generalList.items);
-                setValue('kitAmount', kitAmount, { shouldValidate: true, shouldDirty: true });
+        } else if (itemCategories.length > 0) {
+            // For other purposes (Education, Medical), find the primary requirement list (usually named General or the first one)
+            const requirementList = itemCategories.find(cat => cat.name !== 'Item Price List') || itemCategories[0];
+            if (requirementList) {
+                const total = calculateTotal(requirementList.items);
+                setValue('kitAmount', total, { shouldValidate: true, shouldDirty: true });
             }
         }
     }, [membersValue, itemCategories, setValue, isReadOnly]);
@@ -229,7 +228,7 @@ export function BeneficiaryForm({
         setValue('idProofFile', null);
         setValue('idProofDeleted', true);
         setPreview(null);
-        toast({ title: 'Image Marked for Deletion', description: 'The ID proof will be permanently deleted when you save.', variant: 'default' });
+        toast({ title: 'Image Marked for Deletion', variant: 'default' });
     };
 
     const handleScanIdProof = async () => {
@@ -240,14 +239,13 @@ export function BeneficiaryForm({
         }
         
         setIsScanning(true);
-        toast({ title: "Scanning document...", description: "Please wait while the AI extracts the details." });
+        toast({ title: "Scanning document..." });
 
         const file = fileList[0];
         const reader = new FileReader();
         reader.onload = async (e) => {
             const dataUri = e.target?.result as string;
             if (!dataUri) {
-                toast({ title: "Read Error", description: "Could not read the uploaded file.", variant: "destructive" });
                 setIsScanning(false);
                 return;
             }
@@ -266,10 +264,10 @@ export function BeneficiaryForm({
                     if (response.aadhaarNumber) setValue('idNumber', response.aadhaarNumber, { shouldValidate:true });
                     if (response.address) setValue('address', response.address, { shouldValidate:true });
                     setValue('idProofType', 'Aadhaar', { shouldValidate: true });
-                    toast({ title: "Autofill Successful", description: "Beneficiary details populated.", variant: "success" });
+                    toast({ title: "Autofill Successful", variant: "success" });
                 }
             } catch (error: any) {
-                toast({ title: "Scan Failed", description: "Could not automatically read the document.", variant: "destructive" });
+                toast({ title: "Scan Failed", variant: "destructive" });
             } finally {
                 setIsScanning(false);
             }
@@ -285,14 +283,14 @@ export function BeneficiaryForm({
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pt-4">
                 
                 <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Personal Information</h3>
+                    <h3 className="text-lg font-bold text-primary">Personal Information</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField control={control} name="name" render={({ field }) => (
-                            <FormItem><FormLabel>Full Name *</FormLabel><FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel className="font-bold">Full Name *</FormLabel><FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
                         )}/>
                         <FormField control={control} name="age" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Age</FormLabel>
+                                <FormLabel className="font-bold">Age</FormLabel>
                                 <FormControl><Input type="number" placeholder="e.g. 35" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -300,39 +298,39 @@ export function BeneficiaryForm({
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField control={control} name="phone" render={({ field }) => (
-                            <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="10-digit mobile number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel className="font-bold">Phone Number</FormLabel><FormControl><Input placeholder="10-digit mobile number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
                         )}/>
                         <FormField control={control} name="occupation" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Occupation</FormLabel>
+                                <FormLabel className="font-bold">Occupation</FormLabel>
                                 <FormControl><Input placeholder="e.g. Daily Wage Laborer" {...field} disabled={formIsDisabled} /></FormControl>
                             </FormItem>
                         )}/>
                     </div>
                     <FormField control={control} name="address" render={({ field }) => (
-                        <FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Full residential address" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold">Address</FormLabel><FormControl><Input placeholder="Full residential address" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>
                     )}/>
                 </div>
 
                 <Separator />
                 
                 <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Family Details</h3>
+                    <h3 className="text-lg font-bold text-primary">Family Details</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <FormField control={control} name="members" render={({ field }) => (<FormItem><FormLabel>Members</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
-                        <FormField control={control} name="earningMembers" render={({ field }) => (<FormItem><FormLabel>Earning</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
-                        <FormField control={control} name="male" render={({ field }) => (<FormItem><FormLabel>Male</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
-                        <FormField control={control} name="female" render={({ field }) => (<FormItem><FormLabel>Female</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                        <FormField control={control} name="members" render={({ field }) => (<FormItem><FormLabel className="font-bold">Members</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                        <FormField control={control} name="earningMembers" render={({ field }) => (<FormItem><FormLabel className="font-bold">Earning</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                        <FormField control={control} name="male" render={({ field }) => (<FormItem><FormLabel className="font-bold">Male</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                        <FormField control={control} name="female" render={({ field }) => (<FormItem><FormLabel className="font-bold">Female</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
                     </div>
                 </div>
 
                 <Separator />
                 
                 <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Identification & Financials</h3>
+                    <h3 className="text-lg font-bold text-primary">Identification & Financials</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField control={control} name="idProofType" render={({ field }) => (<FormItem><FormLabel>ID Proof Type</FormLabel><FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled}/></FormControl></FormItem>)}/>
-                        <FormField control={control} name="idNumber" render={({ field }) => (<FormItem><FormLabel>ID Number</FormLabel><FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled}/></FormControl></FormItem>)}/>
+                        <FormField control={control} name="idProofType" render={({ field }) => (<FormItem><FormLabel className="font-bold">ID Proof Type</FormLabel><FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled}/></FormControl></FormItem>)}/>
+                        <FormField control={control} name="idNumber" render={({ field }) => (<FormItem><FormLabel className="font-bold">ID Number</FormLabel><FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled}/></FormControl></FormItem>)}/>
                     </div>
                     
                     <div className="space-y-2">
@@ -341,11 +339,10 @@ export function BeneficiaryForm({
                             name="idProofFile"
                             render={() => (
                                 <FormItem>
-                                    <FormLabel>ID Proof Document</FormLabel>
+                                    <FormLabel className="font-bold">ID Proof Document</FormLabel>
                                     <FormControl>
                                         <Input id="beneficiary-id-proof" type="file" accept="image/png, image/jpeg, image/webp, application/pdf" {...register('idProofFile')} disabled={formIsDisabled}/>
                                     </FormControl>
-                                    <FormDescription>Supported formats: PNG, JPG, WEBP, PDF.</FormDescription>
                                 </FormItem>
                             )}
                         />
@@ -372,7 +369,7 @@ export function BeneficiaryForm({
                             </div>
                         )}
                         {idProofFile?.length > 0 && !isReadOnly && (
-                            <Button type="button" className="w-full mt-2" onClick={handleScanIdProof} disabled={isScanning || formIsDisabled}>
+                            <Button type="button" className="w-full mt-2 font-bold" onClick={handleScanIdProof} disabled={isScanning || formIsDisabled}>
                                 {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />}
                                 Scan & Autofill Details
                             </Button>
@@ -380,23 +377,23 @@ export function BeneficiaryForm({
                     </div>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <FormField control={control} name="referralBy" render={({ field }) => (<FormItem><FormLabel>Referred By *</FormLabel><FormControl><Input placeholder="e.g. Local NGO" {...field} disabled={formIsDisabled} /></FormControl><FormMessage/></FormItem>)}/>
+                        <FormField control={control} name="referralBy" render={({ field }) => (<FormItem><FormLabel className="font-bold">Referred By *</FormLabel><FormControl><Input placeholder="e.g. Local NGO" {...field} disabled={formIsDisabled} /></FormControl><FormMessage/></FormItem>)}/>
                         {!hideKitAmount && (
                             <FormField
                                 control={control}
                                 name="kitAmount"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>{kitAmountLabel} *</FormLabel>
+                                    <FormLabel className="font-bold">{kitAmountLabel} *</FormLabel>
                                     <FormControl>
-                                        <Input type="number" placeholder="0.00" {...field} disabled={formIsDisabled} />
+                                        <Input type="number" placeholder="0.00" {...field} disabled={formIsDisabled} className="bg-muted/30 font-bold" />
                                     </FormControl>
                                     <FormMessage />
                                     </FormItem>
                                 )}
                             />
                         )}
-                        <FormField control={control} name="status" render={({ field }) => (<FormItem><FormLabel>Status *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled={formIsDisabled}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Hold">Hold</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent></Select><FormMessage/></FormItem>)}/>
+                        <FormField control={control} name="status" render={({ field }) => (<FormItem><FormLabel className="font-bold">Status *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled={formIsDisabled}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Given">Given</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Hold">Hold</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent></Select><FormMessage/></FormItem>)}/>
                     </div>
                 </div>
                 
@@ -404,10 +401,10 @@ export function BeneficiaryForm({
                     <>
                         <Separator />
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Zakat Information</h3>
+                            <h3 className="text-lg font-bold text-primary">Zakat Information</h3>
                             <div className="flex flex-row items-center justify-between rounded-lg border p-3">
                                 <div className="space-y-0.5">
-                                    <Label htmlFor="isEligibleForZakat" className="text-base">Eligible for Zakat</Label>
+                                    <Label htmlFor="isEligibleForZakat" className="text-base font-bold">Eligible for Zakat</Label>
                                     <p className="text-xs text-muted-foreground">Can this beneficiary receive funds from Zakat?</p>
                                 </div>
                                 <FormField
@@ -424,7 +421,7 @@ export function BeneficiaryForm({
                             </div>
                             {watch('isEligibleForZakat') && !hideZakatAllocation && (
                                 <div className="animate-fade-in-zoom">
-                                    <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem><FormLabel>Zakat Allocation (Cash in hand) (₹)</FormLabel><FormControl><Input type="number" placeholder="Amount from Zakat" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl><FormDescription>This amount will be reserved from Zakat funds and given as cash.</FormDescription></FormItem>)}/>
+                                    <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem><FormLabel className="font-bold">Zakat Allocation (Cash in hand) (₹)</FormLabel><FormControl><Input type="number" placeholder="Amount from Zakat" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl><FormDescription>This amount will be reserved from Zakat funds and given as cash.</FormDescription></FormItem>)}/>
                                 </div>
                             )}
                         </div>
@@ -434,12 +431,12 @@ export function BeneficiaryForm({
                 <Separator />
                 
                 <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Notes</h3>
+                    <h3 className="text-lg font-bold text-primary">Notes</h3>
                     <FormField control={control} name="notes" render={({ field }) => (<FormItem><FormControl><Textarea placeholder="Any internal notes..." {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
                 </div>
                 
                 {isEditing && beneficiary?.createdAt && beneficiary.createdAt instanceof Timestamp && (
-                    <div className="pt-4 text-xs text-muted-foreground space-y-1">
+                    <div className="pt-4 text-[10px] uppercase font-bold text-muted-foreground space-y-1">
                         <p>Created by {beneficiary.createdByName || 'N/A'} on {new Date(beneficiary.createdAt.seconds * 1000).toLocaleString()}</p>
                         {beneficiary.updatedAt && beneficiary.updatedAt instanceof Timestamp && <p>Last updated by {beneficiary.updatedByName || 'N/A'} on {new Date(beneficiary.updatedAt.seconds * 1000).toLocaleString()}</p>}
                     </div>
@@ -447,8 +444,8 @@ export function BeneficiaryForm({
                 
                 {!isReadOnly && (
                     <div className="flex justify-end gap-2 pt-4">
-                        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>Cancel</Button>
-                        <Button type="submit" disabled={isSubmitting || (hasFileSelected && isSessionLoading) || (isEditing && !isDirty)}>
+                        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="font-bold">Cancel</Button>
+                        <Button type="submit" disabled={isSubmitting || (hasFileSelected && isSessionLoading) || (isEditing && !isDirty)} className="font-bold">
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {isSubmitting ? 'Saving...' : 'Save Beneficiary'}
                         </Button>

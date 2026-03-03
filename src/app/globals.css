@@ -67,11 +67,11 @@
 
   /* Custom Scrollbars using brand color */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
   ::-webkit-scrollbar-track {
-    background: #f1f9f3;
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
     background: #1B5E20;

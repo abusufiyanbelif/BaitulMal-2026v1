@@ -302,13 +302,13 @@ export default function CampaignSummaryPage() {
     };
     
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
-        if (!leadDocRef || !lead?.documents || !canUpdate) return;
-        const newDocuments = lead.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
+        if (!campaignDocRef || !campaign?.documents || !canUpdate) return;
+        const newDocuments = campaign.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
         try {
-            await updateDoc(leadDocRef, { documents: newDocuments, updatedAt: serverTimestamp() });
-            toast({ title: "Visibility Updated", description: `'${docToToggle.name}' visibility toggled.` });
+            await updateDoc(campaignDocRef, { documents: newDocuments, updatedAt: serverTimestamp() });
+            toast({ title: "Visibility Updated" });
         } catch (serverError: any) {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: { documents: newDocuments } }));
+            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: { documents: newDocuments } }));
         }
     };
 
@@ -339,7 +339,7 @@ export default function CampaignSummaryPage() {
                 imageUrl = await getDownloadURL(fileRef);
                 imageUrlFilename = `campaign_${editableCampaign.name?.replace(/\s+/g, '_')}.png`;
             } catch (uploadError) {
-                toast({ title: 'Image Upload Failed', description: 'Changes were not saved.', variant: 'destructive'});
+                toast({ title: 'Image Upload Failed', variant: 'destructive'});
                 return;
             }
         }
@@ -353,16 +353,8 @@ export default function CampaignSummaryPage() {
         const uploadedDocuments = await Promise.all(documentUploadPromises);
         const finalDocuments = [...existingDocuments, ...uploadedDocuments];
         const saveData: Partial<Campaign> = {
-            name: editableCampaign.name || '',
-            description: editableCampaign.description || '',
-            startDate: editableCampaign.startDate || '',
-            endDate: editableCampaign.endDate || '',
-            category: editableCampaign.category || 'General',
-            status: editableCampaign.status || 'Upcoming',
+            ...editableCampaign,
             targetAmount: Number(editableCampaign.targetAmount) || 0,
-            authenticityStatus: editableCampaign.authenticityStatus || 'Pending Verification',
-            publicVisibility: editableCampaign.publicVisibility || 'Hold',
-            allowedDonationTypes: editableCampaign.allowedDonationTypes,
             imageUrl: imageUrl,
             imageUrlFilename: imageUrlFilename,
             documents: finalDocuments,
@@ -370,11 +362,11 @@ export default function CampaignSummaryPage() {
         };
         updateDoc(campaignDocRef, saveData)
             .catch(async (serverError: any) => { errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: saveData })); })
-            .finally(() => { toast({ title: 'Success', description: 'Campaign summary updated.', variant: 'success' }); setEditMode(false); });
+            .finally(() => { toast({ title: 'Success', description: 'Campaign updated.', variant: 'success' }); setEditMode(false); });
     };
     
     const handleDownload = (format: 'png' | 'pdf') => {
-        download(format, { contentRef: summaryRef, documentTitle: `Campaign Summary: ${campaign?.name || 'Summary'}`, documentName: `campaign-summary-${campaignId}`, brandingSettings, paymentSettings });
+        download(format, { contentRef: summaryRef, documentTitle: `Campaign Summary: ${campaign?.name}`, documentName: `campaign-summary-${campaignId}`, brandingSettings, paymentSettings });
     };
 
     const handleViewImage = (url: string, name: string) => {
@@ -391,7 +383,7 @@ export default function CampaignSummaryPage() {
     const isLoading = isCampaignLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
 
     if (isLoading) return <BrandedLoader />;
-    if (!campaign) return <main className="container mx-auto p-4 md:p-8 text-center"><p>Campaign not found.</p></main>;
+    if (!campaign) return <main className="container mx-auto p-4 md:p-8 text-center font-bold"><p>Campaign not found.</p></main>;
 
     const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
     const chartData = fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
@@ -402,7 +394,7 @@ export default function CampaignSummaryPage() {
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                  <div className="space-y-1">
                     {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => setEditableCampaign(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary">{campaign.name}</h1> )}
-                    {editMode ? ( <Select value={editableCampaign.status} onValueChange={(value) => setEditableCampaign(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1"><SelectValue placeholder="Select a status" /></SelectTrigger><SelectContent><SelectItem value="Upcoming">Upcoming</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem></SelectContent></Select> ): ( <p className="text-muted-foreground font-bold">{campaign.status}</p> )}
+                    {editMode ? ( <Select value={editableCampaign.status} onValueChange={(value) => setEditableCampaign(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1 font-bold"><SelectValue placeholder="Select a status" /></SelectTrigger><SelectContent><SelectItem value="Upcoming">Upcoming</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem></SelectContent></Select> ): ( <p className="text-muted-foreground font-bold">{campaign.status}</p> )}
                 </div>
                 <div className="flex gap-2">
                     {!editMode && (
@@ -450,7 +442,7 @@ export default function CampaignSummaryPage() {
                                     <div className="space-y-1">
                                         <Label className="font-bold text-xs uppercase text-muted-foreground">Category</Label>
                                         <Select value={editableCampaign.category} onValueChange={(val) => handleFieldChange('category', val)}>
-                                            <SelectTrigger><SelectValue/></SelectTrigger>
+                                            <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="Ration">Ration</SelectItem>
                                                 <SelectItem value="Relief">Relief</SelectItem>
@@ -458,7 +450,7 @@ export default function CampaignSummaryPage() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">Fundraising Goal (₹)</Label><Input type="number" value={editableCampaign.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary" /></div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">Fundraising Goal (₹)</Label><Input type="number" value={editableCampaign.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold" /></div>
                                 </div>
                                 <div><Label className="font-bold text-xs uppercase text-muted-foreground">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground" rows={4} /></div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -479,7 +471,7 @@ export default function CampaignSummaryPage() {
                                                         handleFieldChange('allowedDonationTypes', updated);
                                                     }}
                                                 />
-                                                <Label htmlFor={`edit-type-camp-${type}`} className="text-xs">{type}</Label>
+                                                <Label htmlFor={`edit-type-camp-${type}`} className="text-xs font-bold">{type}</Label>
                                             </div>
                                         ))}
                                     </div>
@@ -523,12 +515,12 @@ export default function CampaignSummaryPage() {
                                                     </RadialBarChart>
                                                 </ChartContainer>
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-xs text-muted-foreground font-bold uppercase">Funded</span></div>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold uppercase">Funded</span></div>
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary">
-                                            <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight font-normal">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                            <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight font-normal">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                            <div><p className="text-sm font-bold text-muted-foreground uppercase tracking-tight font-normal">Grand Total Received</p><p className="text-2xl font-bold text-primary">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Raised for Goal</p><p className="text-3xl font-bold text-primary">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Grand Total Received</p><p className="text-2xl font-bold text-primary">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -537,9 +529,9 @@ export default function CampaignSummaryPage() {
 
                         {isVisible('quick_stats') && (
                             <div className="grid gap-6 sm:grid-cols-3">
-                                <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.totalBeneficiaries}</div></CardContent></Card>
-                                <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Kits Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesGiven}</div></CardContent></Card>
-                                <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-bold uppercase text-primary">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesPending}</div></CardContent></Card>
+                                <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.totalBeneficiaries}</div></CardContent></Card>
+                                <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Kits Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesGiven}</div></CardContent></Card>
+                                <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesPending}</div></CardContent></Card>
                             </div>
                         )}
 
@@ -552,71 +544,74 @@ export default function CampaignSummaryPage() {
                                     <CardDescription className="font-normal">
                                         {isRationInitiative 
                                             ? 'Breakdown of requirements by family size category.' 
-                                            : 'Detailed itemized costing for this initiative.'}
+                                            : 'Itemized requirement breakdown for this initiative.'}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="border rounded-lg overflow-x-auto font-normal text-foreground">
-                                        {isRationInitiative ? (
-                                            <Table>
-                                                <TableHeader className="bg-primary/5">
-                                                    <TableRow>
-                                                        <TableHead className="font-bold text-primary">Category Name</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary">Total Beneficiaries</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary">Kit Amount (per kit)</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary">Total Amount</TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {beneficiaryGroups.map((group) => (
-                                                        <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
-                                                            <TableCell className="font-bold text-primary">{group.name}</TableCell>
-                                                            <TableCell className="text-right">{group.count}</TableCell>
-                                                            <TableCell className="text-right font-mono">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
-                                                            <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                    <ScrollArea className="w-full">
+                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground">
+                                            {isRationInitiative ? (
+                                                <Table>
+                                                    <TableHeader className="bg-primary/5">
+                                                        <TableRow>
+                                                            <TableHead className="font-bold text-primary text-[10px] uppercase">Category Name</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Beneficiaries</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Kit Amount</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Total Amount</TableHead>
                                                         </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                                {beneficiaryGroups.length > 0 && (
+                                                    </TableHeader>
+                                                    <TableBody>
+                                                        {beneficiaryGroups.map((group) => (
+                                                            <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
+                                                                <TableCell className="font-bold text-primary">{group.name}</TableCell>
+                                                                <TableCell className="text-right">{group.count}</TableCell>
+                                                                <TableCell className="text-right font-mono">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
+                                                    {beneficiaryGroups.length > 0 && (
+                                                        <tfoot className="bg-primary/5 border-t">
+                                                            <TableRow>
+                                                                <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-xs">Total Requirement</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
+                                                            </TableRow>
+                                                        </tfoot>
+                                                    )}
+                                                </Table>
+                                            ) : (
+                                                <Table>
+                                                    <TableHeader className="bg-primary/5">
+                                                        <TableRow>
+                                                            <TableHead className="font-bold text-primary text-[10px] uppercase">Requirement Description</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Quantity</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Unit Price</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Total Cost</TableHead>
+                                                        </TableRow>
+                                                    </TableHeader>
+                                                    <TableBody>
+                                                        {campaign.itemCategories?.[0]?.items.map((item, idx) => (
+                                                            <TableRow key={idx} className="hover:bg-primary/5 transition-colors">
+                                                                <TableCell className="font-medium">{item.name}</TableCell>
+                                                                <TableCell className="text-right">{item.quantity} {item.quantityType}</TableCell>
+                                                                <TableCell className="text-right font-mono">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
                                                     <tfoot className="bg-primary/5 border-t">
                                                         <TableRow>
-                                                            <TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Total</TableCell>
-                                                            <TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
+                                                            <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-xs">Single Beneficiary Total</TableCell>
+                                                            <TableCell className="text-right font-mono font-bold text-primary text-lg">
+                                                                ₹{(campaign.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
+                                                            </TableCell>
                                                         </TableRow>
                                                     </tfoot>
-                                                )}
-                                            </Table>
-                                        ) : (
-                                            <Table>
-                                                <TableHeader className="bg-primary/5">
-                                                    <TableRow>
-                                                        <TableHead className="font-bold text-primary">Requirement Description</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary">Quantity</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary">Unit Price</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary">Total Price</TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {campaign.itemCategories?.flatMap(cat => cat.items || []).map((item, idx) => (
-                                                        <TableRow key={idx} className="hover:bg-primary/5 transition-colors">
-                                                            <TableCell className="font-medium">{item.name}</TableCell>
-                                                            <TableCell className="text-right">{item.quantity} {item.quantityType}</TableCell>
-                                                            <TableCell className="text-right font-mono">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
-                                                            <TableCell className="text-right font-mono">₹{(item.price * item.quantity).toLocaleString('en-IN')}</TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                                <tfoot className="bg-primary/5 border-t">
-                                                    <TableRow>
-                                                        <TableCell colSpan={3} className="text-right font-bold text-primary uppercase">Calculated Budget</TableCell>
-                                                        <TableCell className="text-right font-mono font-bold text-primary text-lg">
-                                                            ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                </tfoot>
-                                            </Table>
-                                        )}
-                                    </div>
+                                                </Table>
+                                            )}
+                                        </div>
+                                        <ScrollBar orientation="horizontal" />
+                                    </ScrollArea>
                                 </CardContent>
                             </Card>
                         )}
@@ -624,7 +619,7 @@ export default function CampaignSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2">
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="font-bold text-primary">Fund Totals by Type</CardTitle></CardHeader>
+                                    <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-wider">Fund Totals by Type</CardTitle></CardHeader>
                                     <CardContent className="space-y-2 font-normal text-foreground">
                                         {donationCategories.map(cat => (
                                             <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary">
@@ -643,7 +638,7 @@ export default function CampaignSummaryPage() {
 
                             {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="font-bold text-primary">Zakat Utilization</CardTitle><CardDescription className="font-normal">Tracking of Zakat funds collected and allocated.</CardDescription></CardHeader>
+                                    <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-wider">Zakat Utilization</CardTitle><CardDescription className="font-normal">Tracking of Zakat funds collected and allocated.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 font-normal text-foreground">
                                         <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Total Zakat Collected</span><span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
                                         <Separator />
@@ -653,7 +648,7 @@ export default function CampaignSummaryPage() {
                                             <div className="flex justify-between items-center text-xs font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Remaining to Pay</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                         </div>
                                         <Separator />
-                                        <div className="flex justify-between items-center text-base font-bold text-[#1B5E20]"><span>Zakat Balance for Goal</span><span className="font-bold text-[#1B5E20] font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-base font-bold text-primary"><span>Zakat Balance for Goal</span><span className="font-bold text-primary font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
                                     </CardContent>
                                 </Card>
                             )}
@@ -662,12 +657,12 @@ export default function CampaignSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2">
                             {isVisible('donations_by_category') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary"><TrendingUp className="h-5 w-5"/> Donations by Category</CardTitle></CardHeader>
+                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary text-sm uppercase tracking-wider"><TrendingUp className="h-5 w-5"/> Donations by Category</CardTitle></CardHeader>
                                     <CardContent>
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
                                             <BarChart data={chartData} layout="vertical" margin={{ right: 20 }}>
-                                                <CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4}>{chartData.map((entry) => (<Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />))}</Bar>
+                                                <CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4}>{chartData.map((entry) => (<Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />))}</Bar>
                                             </BarChart>
                                         </ChartContainer>
                                         ) : <Skeleton className="h-[250px] w-full" />}
@@ -677,7 +672,7 @@ export default function CampaignSummaryPage() {
 
                             {isVisible('donations_by_payment_type') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary"><PieChartIcon className="h-5 w-5"/> Donations by Payment Type</CardTitle></CardHeader>
+                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary text-sm uppercase tracking-wider"><PieChartIcon className="h-5 w-5"/> Donations by Payment Type</CardTitle></CardHeader>
                                     <CardContent>
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
@@ -699,14 +694,14 @@ export default function CampaignSummaryPage() {
 
                 {isVisible('documents') && (
                     <Card className="animate-fade-in-up bg-white" style={{ animationDelay: '100ms' }}>
-                        <CardHeader><CardTitle className="font-bold text-primary">Artifacts & Documents</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-wider">Artifacts & Documents</CardTitle></CardHeader>
                         <CardContent>
                         {editMode ? (
                                 <div className="space-y-4">
-                                    <Label className="font-bold text-xs uppercase text-muted-foreground">Upload New Artifacts</Label>
+                                    <Label className="font-bold text-[10px] uppercase text-muted-foreground">Upload New Artifacts</Label>
                                     <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
                                     <Separator />
-                                    <Label className="font-bold text-xs uppercase text-muted-foreground">Manage Existing</Label>
+                                    <Label className="font-bold text-[10px] uppercase text-muted-foreground">Manage Existing</Label>
                                     {existingDocuments.length > 0 ? (
                                         <div className="space-y-3 font-normal text-foreground">
                                             {existingDocuments.map((doc) => (
@@ -721,7 +716,7 @@ export default function CampaignSummaryPage() {
                                                 </div>
                                             ))}
                                         </div>
-                                    ) : <p className="text-sm text-muted-foreground font-bold uppercase">None.</p>}
+                                    ) : <p className="text-xs text-muted-foreground font-bold uppercase">None.</p>}
                                 </div>
                             ) : (
                                 campaign.documents && campaign.documents.length > 0 ? (
@@ -743,7 +738,7 @@ export default function CampaignSummaryPage() {
                                             );
                                         })}
                                     </div>
-                                ) : <p className="text-sm text-muted-foreground font-bold uppercase">None.</p>
+                                ) : <p className="text-xs text-muted-foreground font-bold uppercase">None.</p>
                             )}
                         </CardContent>
                     </Card>
@@ -754,7 +749,7 @@ export default function CampaignSummaryPage() {
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
                 <DialogContent className="max-w-4xl">
-                    <DialogHeader><DialogTitle className="font-bold text-[#1B5E20]">{imageToView?.name}</DialogTitle></DialogHeader>
+                    <DialogHeader><DialogTitle className="font-bold text-primary">{imageToView?.name}</DialogTitle></DialogHeader>
                     {imageToView && (
                         <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
                             <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
