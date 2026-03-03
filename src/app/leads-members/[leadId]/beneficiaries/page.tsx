@@ -182,7 +182,7 @@ export default function BeneficiariesPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6">
-        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to hub</Link></Button></div>
+        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 text-primary"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to leads</Link></Button></div>
         <h1 className="text-3xl font-bold tracking-tight text-primary">{lead.name}</h1>
         
         <div className="border-b border-primary/10 mb-4">
@@ -198,7 +198,7 @@ export default function BeneficiariesPage() {
         </div>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <h2 className="text-2xl font-bold text-primary tracking-tight">Beneficiary List ({beneficiaries?.length || 0})</h2>
+          <h2 className="text-2xl font-bold text-primary tracking-tight">Beneficiary list ({beneficiaries?.length || 0})</h2>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-primary">
               <CopyPlus className="mr-2 h-4 w-4"/> Select from master
@@ -252,7 +252,7 @@ export default function BeneficiariesPage() {
                 <div className="w-full">
                     {Object.entries(beneficiariesByCategory).map(([catId, list]) => {
                         const cat = availableCategories.find(c => c.id === catId);
-                        let categoryName = cat?.name || (catId === 'general' ? 'General Support' : 'Uncategorized');
+                        let categoryName = cat?.name || (catId === 'general' ? 'General support' : 'Uncategorized');
                         
                         if (lead.purpose === 'Relief' && lead.category === 'Ration Kit' && cat) {
                             if (cat.minMembers === 1 && cat.maxMembers === 1) categoryName = `Member (1)`;
@@ -309,7 +309,7 @@ export default function BeneficiariesPage() {
                                                                             </DropdownMenuSubContent></DropdownMenuPortal>
                                                                         </DropdownMenuSub>
                                                                     )}
-                                                                    {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold text-primary">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat eligible'}</DropdownMenuItem>}
+                                                                    {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold text-primary">{b.isEligibleForZakat ? 'Mark ineligible' : 'Mark zakat eligible'}</DropdownMenuItem>}
                                                                 </DropdownMenuContent>
                                                             </DropdownMenu>
                                                         </div>
@@ -332,19 +332,19 @@ export default function BeneficiariesPage() {
                                                             </div>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Family Details</p>
+                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Family details</p>
                                                             <p className="text-sm font-normal text-primary">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">ID Proof</p>
-                                                            <p className="text-sm font-normal text-primary">{b.idProofType || 'Aadhar'} - {b.idNumber || 'N/A'}</p>
+                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">ID proof</p>
+                                                            <p className="text-sm font-normal text-primary">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Date Added</p>
+                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Date added</p>
                                                             <p className="text-sm font-normal text-primary">{b.addedDate || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Zakat Allocation</p>
+                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Zakat allocation</p>
                                                             <p className="text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toFixed(2)}</p>
                                                         </div>
                                                         <div className="space-y-2 md:col-span-2">

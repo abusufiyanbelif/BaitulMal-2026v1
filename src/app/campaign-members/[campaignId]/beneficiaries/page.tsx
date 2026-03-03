@@ -182,7 +182,7 @@ export default function BeneficiariesPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6">
-        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to hub</Link></Button></div>
+        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to campaigns</Link></Button></div>
         <h1 className="text-3xl font-bold tracking-tight text-primary">{campaign.name}</h1>
         
         <div className="border-b border-primary/10 mb-4">

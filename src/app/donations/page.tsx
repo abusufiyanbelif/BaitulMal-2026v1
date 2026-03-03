@@ -336,10 +336,10 @@ export default function DonationsPage() {
   return (
     <main className="container mx-auto p-4 md:p-8">
         <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold tracking-tighter text-primary">Donations hub</h1>
+            <h1 className="text-3xl font-bold tracking-tighter text-primary">Donations</h1>
             <div className="flex gap-2">
                 <Button variant="outline" onClick={handleSync} disabled={isSyncing} className="font-bold text-[10px] border-primary/20 text-primary">
-                  <DatabaseZap className="mr-2 h-4 w-4"/> Sync hub
+                  <DatabaseZap className="mr-2 h-4 w-4"/> Sync donations
                 </Button>
                 <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="bg-primary hover:bg-primary/90 text-white font-bold text-xs">
                   <PlusCircle className="mr-2 h-4 w-4" /> Add record

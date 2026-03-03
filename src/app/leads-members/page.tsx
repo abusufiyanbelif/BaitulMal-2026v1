@@ -278,7 +278,7 @@ export default function LeadPage() {
   if (!isLoading && userProfile && !canViewLeads) {
     return (
       <main className="container mx-auto p-4 md:p-8">
-        <div className="mb-4"><Button variant="outline" asChild className="border-primary/20 font-bold text-primary"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link></Button></div>
+        <div className="mb-4"><Button variant="outline" asChild className="border-primary/20 font-bold text-primary"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to home</Link></Button></div>
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle className="font-bold">Access denied</AlertTitle>
@@ -297,7 +297,7 @@ export default function LeadPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Leads hub</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Leads</h1>
           <p className="text-sm max-w-2xl font-normal leading-relaxed opacity-70">Vetting and managing individual cases requiring organizational support.</p>
         </div>
 
