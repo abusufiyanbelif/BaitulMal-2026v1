@@ -6,7 +6,7 @@ import { useFirestore, useMemoFirebase, useCollection, collection } from '@/fire
 import { useSession } from '@/hooks/use-session';
 import type { Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { 
@@ -14,7 +14,6 @@ import {
     PlusCircle, 
     DatabaseZap, 
     Eye, 
-    Users, 
     Search,
     MoreHorizontal,
     ShieldAlert,
@@ -41,8 +40,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn, getNestedValue } from '@/lib/utils';
 import { BrandedLoader } from '@/components/branded-loader';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
-const gridClass = "grid grid-cols-[40px_40px_1fr_120px_1.5fr_100px_100px_60px] items-center";
+const gridClass = "grid grid-cols-[50px_1fr_120px_100px_100px_120px_140px_1fr_60px] items-center gap-2";
 
 export default function BeneficiariesPage() {
   const firestore = useFirestore();
@@ -127,11 +127,11 @@ export default function BeneficiariesPage() {
 
       <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-4 rounded-xl border border-primary/10">
         <div className="relative flex-1 min-w-[300px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
-          <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-primary/20 focus-visible:ring-primary font-bold" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
+          <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-primary/20 focus-visible:ring-primary font-bold text-primary" />
         </div>
         <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
-          <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="All">All Statuses</SelectItem>
             <SelectItem value="Verified">Verified</SelectItem>
@@ -142,7 +142,7 @@ export default function BeneficiariesPage() {
           </SelectContent>
         </Select>
         <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPage(1); }}>
-          <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20"><SelectValue placeholder="Zakat status" /></SelectTrigger>
+          <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Zakat status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="All">All Zakat status</SelectItem>
             <SelectItem value="Eligible">Eligible</SelectItem>
@@ -151,104 +151,112 @@ export default function BeneficiariesPage() {
         </Select>
       </div>
 
-      <div className="rounded-lg border border-primary/10 bg-white/50 overflow-hidden shadow-sm">
-        <div className={cn("bg-primary/5 border-b border-primary/10 py-3 px-4 text-[11px] font-bold tracking-wider opacity-70", gridClass)}>
-          <div></div>
-          <div>#</div>
-          <div>Name</div>
-          <div>Phone</div>
-          <div>Address</div>
-          <div className="text-center">Zakat</div>
-          <div className="text-center">Status</div>
-          <div className="text-right">Actions</div>
-        </div>
+      <div className="rounded-lg border border-primary/10 bg-white overflow-hidden shadow-sm">
+        <ScrollArea className="w-full">
+            <div className={cn("bg-primary/5 border-b border-primary/10 py-3 px-4 text-[11px] font-bold tracking-wider uppercase text-primary", gridClass)}>
+                <div>sr.no.</div>
+                <div>Name</div>
+                <div>Phone</div>
+                <div className="text-center">Status</div>
+                <div className="text-center">Zakat</div>
+                <div className="text-right">Kit Amount (₹)</div>
+                <div className="text-right">Zakat Allocation (₹)</div>
+                <div className="pl-4">Referred By</div>
+                <div className="text-right">Actions</div>
+            </div>
 
-        <Accordion type="single" collapsible className="w-full">
-          {paginatedBeneficiaries.map((b, idx) => (
-            <AccordionItem key={b.id} value={b.id} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors">
-              <div className={cn("py-3 px-4", gridClass)}>
-                <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-primary/10 transition-colors">
-                    <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                  </div>
-                </AccordionTrigger>
-                <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
-                <div className="font-bold truncate pr-2">{b.name}</div>
-                <div className="font-mono text-xs opacity-60">{b.phone || 'N/A'}</div>
-                <div className="text-xs opacity-60 truncate pr-2">{b.address || 'N/A'}</div>
-                <div className="text-center">
-                  <Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[10px] h-5 px-2 font-bold">
-                    {b.isEligibleForZakat ? 'Eligible' : 'No'}
-                  </Badge>
+            <Accordion type="single" collapsible className="w-full">
+            {paginatedBeneficiaries.map((b, idx) => (
+                <AccordionItem key={b.id} value={b.id} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors">
+                <div className={cn("py-3 px-4", gridClass)}>
+                    <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
+                    <div className="font-bold truncate pr-2">{b.name}</div>
+                    <div className="font-mono text-xs opacity-60">{b.phone || 'N/A'}</div>
+                    <div className="text-center"><Badge variant={b.status === 'Given' ? 'success' : 'outline'} className="text-[10px] font-bold uppercase">{b.status}</Badge></div>
+                    <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
+                    <div className="text-right font-mono text-sm">₹{(b.kitAmount || 0).toFixed(2)}</div>
+                    <div className="text-right font-mono text-sm">₹{(b.zakatAllocation || 0).toFixed(2)}</div>
+                    <div className="pl-4 text-xs truncate opacity-70">{b.referralBy || 'N/A'}</div>
+                    <div className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                            <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
+                                <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-primary/10 transition-colors">
+                                    <ChevronDown className="h-4 w-4 text-primary shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                </div>
+                            </AccordionTrigger>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="font-bold text-primary"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
+                                    {canUpdate && (
+                                        <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger className="font-bold text-primary">Status</DropdownMenuSubTrigger>
+                                        <DropdownMenuPortal><DropdownMenuSubContent>
+                                            <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
+                                            <DropdownMenuRadioItem value="Pending" className="text-xs font-bold">Pending</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Verified" className="text-xs font-bold">Verified</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Given" className="text-xs font-bold">Given</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Hold" className="text-xs font-bold">Hold</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Need More Details" className="text-xs font-bold">Need Details</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuSubContent></DropdownMenuPortal>
+                                        </DropdownMenuSub>
+                                    )}
+                                    {canDelete && (
+                                        <>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem onClick={async () => { if(confirm('Are you sure?')) { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); } }} className="text-destructive font-bold"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                                        </>
+                                    )}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </div>
                 </div>
-                <div className="text-center">
-                  <Badge variant={b.status === 'Verified' ? 'success' : 'outline'} className="text-[10px] h-5 px-2 font-bold">
-                    {b.status}
-                  </Badge>
-                </div>
-                <div className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="font-bold"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
-                      {canUpdate && (
-                        <DropdownMenuSub>
-                          <DropdownMenuSubTrigger className="font-bold">Status</DropdownMenuSubTrigger>
-                          <DropdownMenuPortal><DropdownMenuSubContent>
-                            <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
-                              <DropdownMenuRadioItem value="Pending" className="text-xs font-bold">Pending</DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="Verified" className="text-xs font-bold">Verified</DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="Given" className="text-xs font-bold">Given</DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="Hold" className="text-xs font-bold">Hold</DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="Need More Details" className="text-xs font-bold">Need Details</DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                          </DropdownMenuSubContent></DropdownMenuPortal>
-                        </DropdownMenuSub>
-                      )}
-                      {canDelete && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={async () => { if(confirm('Are you sure?')) { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); } }} className="text-destructive font-bold"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-              <AccordionContent className="bg-primary/[0.01] px-4 pt-0 pb-4 border-t border-primary/5">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 px-12">
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold opacity-60 uppercase">Address</p>
-                    <p className="text-sm font-bold">{b.address || 'N/A'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold opacity-60 uppercase">Age</p>
-                    <p className="text-sm font-bold">{b.age || 'N/A'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold opacity-60 uppercase">Occupation</p>
-                    <p className="text-sm font-bold">{b.occupation || 'N/A'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold opacity-60 uppercase">Family</p>
-                    <p className="text-sm font-bold">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold opacity-60 uppercase">ID Proof</p>
-                    <p className="text-sm font-bold">{b.idProofType || 'N/A'} - {b.idNumber || 'N/A'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold opacity-60 uppercase">Date Added</p>
-                    <p className="text-sm font-bold">{b.addedDate || 'N/A'}</p>
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-        {paginatedBeneficiaries.length === 0 && (
-          <div className="text-center py-20 bg-primary/[0.02] opacity-40 italic font-bold">No beneficiaries found matching criteria.</div>
-        )}
+                <AccordionContent className="bg-primary/[0.01] px-4 pt-0 pb-4 border-t border-primary/5">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 px-12 text-primary">
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Address</p>
+                        <p className="text-xs font-bold leading-relaxed">{b.address || 'N/A'}</p>
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Age</p>
+                        <p className="text-xs font-bold">{b.age || 'N/A'}</p>
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Occupation</p>
+                        <p className="text-xs font-bold">{b.occupation || 'N/A'}</p>
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Family Details</p>
+                        <p className="text-xs font-bold">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">ID Proof</p>
+                        <p className="text-xs font-bold">{b.idProofType || 'Aadhar'} - {b.idNumber || 'N/A'}</p>
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Date Added</p>
+                        <p className="text-xs font-bold">{b.addedDate || 'N/A'}</p>
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Zakat Allocation</p>
+                        <p className="text-xs font-bold">₹{(b.zakatAllocation || 0).toFixed(2)}</p>
+                    </div>
+                    <div className="space-y-1 md:col-span-2">
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Notes</p>
+                        <p className="text-xs font-bold italic opacity-80">{b.notes || (b.isEligibleForZakat ? `Eligible for zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
+                    </div>
+                    </div>
+                </AccordionContent>
+                </AccordionItem>
+            ))}
+            </Accordion>
+            {paginatedBeneficiaries.length === 0 && (
+            <div className="text-center py-20 bg-primary/[0.02] opacity-40 italic font-bold">No beneficiaries found matching criteria.</div>
+            )}
+            <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </div>
 
       {totalPages > 1 && (

@@ -6,42 +6,44 @@
   :root {
     /* Background: #f1f9f3 (Pale Mint) */
     --background: 135 25% 96%;
-    /* Normal Text: #4d805f (Muted Forest Green) */
-    --foreground: 141 25% 40%; 
+    
+    /* Deep Forest Green: #1B5E20 (HSL: 124 55% 24%) */
+    /* We apply this to foreground, card-foreground, and headings */
+    --foreground: 124 55% 24%; 
     
     --card: 0 0% 100%;
-    --card-foreground: 141 25% 35%;
+    --card-foreground: 124 55% 24%;
     
     --popover: 135 25% 96%;
-    --popover-foreground: 141 25% 30%;
+    --popover-foreground: 124 55% 24%;
     
-    /* Primary: #1B5E20 (Deep Forest Green) */
-    --primary: 124 55% 12%; 
+    /* Primary Brand Color: #1B5E20 */
+    --primary: 124 55% 24%; 
     --primary-foreground: 0 0% 100%;
     
     --secondary: 135 25% 92%;
-    --secondary-foreground: 141 25% 30%;
+    --secondary-foreground: 124 55% 20%;
     
     --muted: 135 15% 85%;
-    --muted-foreground: 141 20% 45%;
+    --muted-foreground: 124 20% 40%;
     
     --accent: 135 25% 90%;
-    --accent-foreground: 141 25% 30%;
+    --accent-foreground: 124 55% 20%;
     
     --destructive: 0 84% 40%;
     --destructive-foreground: 0 0% 100%;
     
-    --success: 141 25% 35%;
+    --success: 124 55% 24%;
     --success-foreground: 0 0% 100%;
     
     --border: 141 25% 85%;
     --input: 141 25% 85%;
-    --ring: 124 55% 12%;
+    --ring: 124 55% 24%;
     
     --radius: 0.75rem;
     
     /* Vibrant Chart Colors */
-    --chart-1: 124 55% 20%;
+    --chart-1: 124 55% 24%;
     --chart-2: 142 76% 36%;
     --chart-3: 221 83% 53%;
     --chart-4: 25 95% 53%;
@@ -57,11 +59,17 @@
 
   body {
     @apply min-h-screen bg-background text-foreground antialiased font-sans font-normal;
+    color: #1B5E20; /* Force exact HEX */
   }
 
   /* Headings use the brand Deep Forest Green and are bold */
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold;
+    color: #1B5E20;
+  }
+
+  /* Ensure all interactive and static text follows the color standard */
+  p, span, label, div, td, th, input, textarea, select {
     color: #1B5E20;
   }
 

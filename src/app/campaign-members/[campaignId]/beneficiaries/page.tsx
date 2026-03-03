@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { 
     useFirestore, 
@@ -18,12 +18,12 @@ import {
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Beneficiary, Campaign, ItemCategory } from '@/lib/types';
+import type { Beneficiary, Campaign } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import Resizer from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -34,7 +34,6 @@ import {
     CopyPlus,
     MoreHorizontal,
     ChevronDown,
-    Trash2,
     Loader2
 } from 'lucide-react';
 import {
@@ -42,10 +41,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
+  DropdownMenuPortal,
   DropdownMenuSub,
   DropdownMenuSubTrigger,
-  DropdownMenuPortal,
   DropdownMenuSubContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -57,7 +55,6 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog';
 import { Input } from '@/components/ui/input';
@@ -67,9 +64,7 @@ import { updateMasterBeneficiaryAction } from '@/app/beneficiaries/actions';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type BeneficiaryStatus = Beneficiary['status'];
-
-const gridClass = "grid grid-cols-[40px_40px_1.5fr_100px_100px_120px_140px_1fr_60px] items-center gap-2";
+const gridClass = "grid grid-cols-[50px_1fr_120px_100px_100px_120px_140px_1fr_60px] items-center gap-2";
 
 export default function BeneficiariesPage() {
   const params = useParams();
@@ -93,7 +88,6 @@ export default function BeneficiariesPage() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [zakatFilter, setZakatFilter] = useState('All');
   
-  const [activeCategoryTab, setActiveCategoryTab] = useState<string>('all');
   const [currentPages, setCurrentPages] = useState<Record<string, number>>({});
   const itemsPerPage = 15;
 
@@ -119,7 +113,7 @@ export default function BeneficiariesPage() {
   }, [beneficiaries, searchTerm, statusFilter, zakatFilter]);
 
   const beneficiariesByCategory = useMemo(() => {
-    const groups: Record<string, Beneficiary[]> = { all: filteredBeneficiaries };
+    const groups: Record<string, Beneficiary[]> = {};
     
     availableCategories.forEach(cat => {
         groups[cat.id] = filteredBeneficiaries.filter(b => b.itemCategoryId === cat.id);
@@ -133,7 +127,7 @@ export default function BeneficiariesPage() {
     return groups;
   }, [filteredBeneficiaries, availableCategories]);
 
-  const handleStatusChange = (beneficiary: Beneficiary, newStatus: BeneficiaryStatus) => {
+  const handleStatusChange = (beneficiary: Beneficiary, newStatus: any) => {
     if (!firestore || !campaignId || !canUpdate) return;
     const ref = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiary.id);
     updateDoc(ref, { status: newStatus }).catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { status: newStatus } })));
@@ -182,7 +176,7 @@ export default function BeneficiariesPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6">
-        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 text-primary"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to hub</Link></Button></div>
+        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to hub</Link></Button></div>
         <h1 className="text-3xl font-bold tracking-tight text-primary">{campaign.name}</h1>
         
         <div className="border-b border-primary/10 mb-4">
@@ -198,7 +192,7 @@ export default function BeneficiariesPage() {
         </div>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <h2 className="text-2xl font-bold text-primary tracking-tight">Campaign beneficiaries ({beneficiaries?.length || 0})</h2>
+          <h2 className="text-2xl font-bold text-primary tracking-tight">Beneficiary List ({beneficiaries?.length || 0})</h2>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-primary">
               <CopyPlus className="mr-2 h-4 w-4"/> Select from master
@@ -237,10 +231,10 @@ export default function BeneficiariesPage() {
 
         <div className="rounded-lg border border-primary/10 bg-white overflow-hidden shadow-sm">
             <ScrollArea className="w-full">
-                <div className={cn("bg-primary/5 border-b border-primary/10 py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-primary/70", gridClass)}>
-                    <div></div>
+                <div className={cn("bg-primary/5 border-b border-primary/10 py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-primary", gridClass)}>
                     <div>sr.no.</div>
-                    <div>Name & Phone</div>
+                    <div>Name</div>
+                    <div>Phone</div>
                     <div className="text-center">Status</div>
                     <div className="text-center">Zakat</div>
                     <div className="text-right">Kit Amount (₹)</div>
@@ -251,15 +245,15 @@ export default function BeneficiariesPage() {
 
                 <div className="w-full">
                     {Object.entries(beneficiariesByCategory).map(([catId, list]) => {
-                        const categoryName = availableCategories.find(c => c.id === catId)?.name || (catId === 'all' ? 'All Beneficiaries' : 'Uncategorized');
+                        const categoryName = availableCategories.find(c => c.id === catId)?.name || 'Uncategorized';
                         const currentPage = currentPages[catId] || 1;
                         const paginatedList = list.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-                        if (paginatedList.length === 0 && catId !== 'all') return null;
+                        if (paginatedList.length === 0) return null;
 
                         return (
                             <div key={catId} className="w-full">
-                                <div className="bg-primary/5 px-4 py-2 text-sm font-bold text-primary flex items-center gap-2 border-b border-primary/10 uppercase tracking-tighter">
+                                <div className="bg-primary/10 px-4 py-2 text-sm font-bold text-primary flex items-center gap-2 border-b border-primary/10 uppercase">
                                     <ChevronDown className="h-4 w-4" />
                                     {categoryName} ({list.length} beneficiaries)
                                 </div>
@@ -267,96 +261,78 @@ export default function BeneficiariesPage() {
                                     {paginatedList.map((b, idx) => (
                                         <AccordionItem key={b.id} value={b.id} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors">
                                             <div className={cn("py-3 px-4", gridClass)}>
-                                                <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
-                                                    <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-primary/10 transition-colors">
-                                                        <ChevronDown className="h-4 w-4 text-primary shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                                                    </div>
-                                                </AccordionTrigger>
-                                                <div className="font-mono text-xs text-muted-foreground">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className="font-bold text-primary truncate">{b.name}</span>
-                                                    <span className="text-[10px] font-mono text-muted-foreground">{b.phone || 'N/A'}</span>
-                                                </div>
-                                                <div className="text-center">
-                                                    <Badge variant={b.status === 'Given' ? 'success' : 'outline'} className="text-[10px] font-bold">
-                                                        {b.status}
-                                                    </Badge>
-                                                </div>
-                                                <div className="text-center">
-                                                    <Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[10px] font-bold">
-                                                        {b.isEligibleForZakat ? 'Eligible' : 'Not Eligible'}
-                                                    </Badge>
-                                                </div>
-                                                <div className="text-right font-mono text-sm font-medium">₹{(b.kitAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
-                                                <div className="text-right font-mono text-sm font-medium">₹{(b.zakatAllocation || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
-                                                <div className="pl-4 text-xs font-medium truncate opacity-70">{b.referralBy || 'N/A'}</div>
+                                                <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
+                                                <div className="font-bold truncate pr-2">{b.name}</div>
+                                                <div className="font-mono text-xs opacity-60">{b.phone || 'N/A'}</div>
+                                                <div className="text-center"><Badge variant={b.status === 'Given' ? 'success' : 'outline'} className="text-[10px] font-bold uppercase">{b.status}</Badge></div>
+                                                <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
+                                                <div className="text-right font-mono text-sm">₹{(b.kitAmount || 0).toFixed(2)}</div>
+                                                <div className="text-right font-mono text-sm">₹{(b.zakatAllocation || 0).toFixed(2)}</div>
+                                                <div className="pl-4 text-xs truncate opacity-70">{b.referralBy || 'N/A'}</div>
                                                 <div className="text-right">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="font-bold text-primary"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
-                                                            {canUpdate && (
-                                                                <DropdownMenuSub>
-                                                                    <DropdownMenuSubTrigger className="font-bold text-primary">Status</DropdownMenuSubTrigger>
-                                                                    <DropdownMenuPortal><DropdownMenuSubContent>
-                                                                        <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s as any)}>
-                                                                            <DropdownMenuRadioItem value="Pending" className="text-xs font-bold">Pending</DropdownMenuRadioItem>
-                                                                            <DropdownMenuRadioItem value="Verified" className="text-xs font-bold">Verified</DropdownMenuRadioItem>
-                                                                            <DropdownMenuRadioItem value="Given" className="text-xs font-bold">Given</DropdownMenuRadioItem>
-                                                                            <DropdownMenuRadioItem value="Hold" className="text-xs font-bold">Hold</DropdownMenuRadioItem>
-                                                                            <DropdownMenuRadioItem value="Need More Details" className="text-xs font-bold">Need details</DropdownMenuRadioItem>
-                                                                        </DropdownMenuRadioGroup>
-                                                                    </DropdownMenuSubContent></DropdownMenuPortal>
-                                                                </DropdownMenuSub>
-                                                            )}
-                                                            {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold text-primary">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat eligible'}</DropdownMenuItem>}
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
+                                                    <div className="flex items-center justify-end gap-1">
+                                                        <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
+                                                            <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-primary/10 transition-colors">
+                                                                <ChevronDown className="h-4 w-4 text-primary shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                                            </div>
+                                                        </AccordionTrigger>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="font-bold text-primary"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
+                                                                {canUpdate && (
+                                                                    <DropdownMenuSub>
+                                                                        <DropdownMenuSubTrigger className="font-bold text-primary">Status</DropdownMenuSubTrigger>
+                                                                        <DropdownMenuPortal><DropdownMenuSubContent>
+                                                                            <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
+                                                                                <DropdownMenuRadioItem value="Pending" className="text-xs font-bold">Pending</DropdownMenuRadioItem>
+                                                                                <DropdownMenuRadioItem value="Verified" className="text-xs font-bold">Verified</DropdownMenuRadioItem>
+                                                                                <DropdownMenuRadioItem value="Given" className="text-xs font-bold">Given</DropdownMenuRadioItem>
+                                                                                <DropdownMenuRadioItem value="Hold" className="text-xs font-bold">Hold</DropdownMenuRadioItem>
+                                                                                <DropdownMenuRadioItem value="Need More Details" className="text-xs font-bold">Need details</DropdownMenuRadioItem>
+                                                                            </DropdownMenuRadioGroup>
+                                                                        </DropdownMenuSubContent></DropdownMenuPortal>
+                                                                    </DropdownMenuSub>
+                                                                )}
+                                                                {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold text-primary">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat eligible'}</DropdownMenuItem>}
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <AccordionContent className="bg-primary/[0.01] px-4 pt-0 pb-4 border-t border-primary/5 font-normal">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 pt-4 px-12">
-                                                    <div className="space-y-4">
-                                                        <div>
-                                                            <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">Address</p>
-                                                            <p className="text-xs font-medium leading-relaxed">{b.address || 'N/A'}</p>
-                                                        </div>
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            <div>
-                                                                <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">Occupation</p>
-                                                                <p className="text-xs font-medium">{b.occupation || 'N/A'}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">ID Proof</p>
-                                                                <p className="text-xs font-medium">{b.idProofType || 'Aadhar'} - {b.idNumber || 'N/A'}</p>
-                                                            </div>
-                                                        </div>
+                                            <AccordionContent className="bg-primary/[0.01] px-4 pt-0 pb-4 border-t border-primary/5">
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 px-12">
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Address</p>
+                                                        <p className="text-xs font-bold leading-relaxed">{b.address || 'N/A'}</p>
                                                     </div>
-                                                    <div className="space-y-4">
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            <div>
-                                                                <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">Age</p>
-                                                                <p className="text-xs font-medium">{b.age || 'N/A'}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">Family</p>
-                                                                <p className="text-xs font-medium">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            <div>
-                                                                <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">Date Added</p>
-                                                                <p className="text-xs font-medium">{b.addedDate || 'N/A'}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">Zakat Allocation</p>
-                                                                <p className="text-xs font-bold text-primary">₹{(b.zakatAllocation || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-[10px] font-bold uppercase text-primary/60 tracking-widest">Notes</p>
-                                                            <p className="text-xs font-medium italic opacity-80">{b.notes || (b.isEligibleForZakat ? `Eligible for zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
-                                                        </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Age</p>
+                                                        <p className="text-xs font-bold">{b.age || 'N/A'}</p>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Occupation</p>
+                                                        <p className="text-xs font-bold">{b.occupation || 'N/A'}</p>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Family Details</p>
+                                                        <p className="text-xs font-bold">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">ID Proof</p>
+                                                        <p className="text-xs font-bold">{b.idProofType || 'Aadhar'} - {b.idNumber || 'N/A'}</p>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Date Added</p>
+                                                        <p className="text-xs font-bold">{b.addedDate || 'N/A'}</p>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Zakat Allocation</p>
+                                                        <p className="text-xs font-bold text-primary">₹{(b.zakatAllocation || 0).toFixed(2)}</p>
+                                                    </div>
+                                                    <div className="space-y-1 md:col-span-2">
+                                                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Notes</p>
+                                                        <p className="text-xs font-bold italic opacity-80">{b.notes || (b.isEligibleForZakat ? `Eligible for zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
                                                     </div>
                                                 </div>
                                             </AccordionContent>
