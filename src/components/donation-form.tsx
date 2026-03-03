@@ -1,4 +1,3 @@
-
 'use client';
 
 import { z } from 'zod';
@@ -27,9 +26,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import type { Donation, DonationCategory, Campaign, Lead, TransactionDetail as TransactionDetailType } from '@/lib/types';
+import type { Donation, DonationCategory, Campaign, Lead, TransactionDetail as TransactionDetailType, DonationLink } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
-import { Loader2, ScanLine, Replace, Trash2, Plus, DollarSign, ZoomIn, ZoomOut, RotateCw, RefreshCw, ImageIcon } from 'lucide-react';
+import { Loader2, ScanLine, Replace, Trash2, Plus, DollarSign, ZoomIn, ZoomOut, RotateCw, RefreshCw, ImageIcon, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -39,6 +38,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useSession } from '@/hooks/use-session';
 import { useAuth } from '@/firebase';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const linkSplitSchema = z.array(z.object({
     linkId: z.string(),
