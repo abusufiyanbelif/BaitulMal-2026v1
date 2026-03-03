@@ -32,6 +32,7 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { BrandedLoader } from '@/components/branded-loader';
 
 const useCaseSchema = z.object({
   id: z.string(),

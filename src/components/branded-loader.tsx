@@ -1,10 +1,13 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
 import { useBranding } from '@/hooks/use-branding';
 import Image from 'next/image';
 import { TempLogo } from './temp-logo';
 
+/**
+ * A branded loading screen that displays the organizational logo with a smooth zoom animation.
+ * The secondary spinner has been removed to create a cleaner, more focused UI.
+ */
 export function BrandedLoader() {
   const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
 
@@ -13,23 +16,22 @@ export function BrandedLoader() {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/80 backdrop-blur-sm">
       <div className="relative z-10 flex flex-col items-center gap-4">
-        {isBrandingLoading ? (
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        ) : validLogoUrl ? (
-          <Image
-            src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
-            alt="Loading..."
-            width={120}
-            height={120}
-            className="animate-zoom-in-out"
-            priority
-          />
+        {/* Only the logo with zoom animation is shown for a premium buffering feel */}
+        {!isBrandingLoading && validLogoUrl ? (
+          <div className="relative w-[120px] h-[120px] animate-zoom-in-out">
+            <Image
+              src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
+              alt="Loading..."
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
         ) : (
           <div className="w-[120px] h-[120px] animate-zoom-in-out">
               <TempLogo />
           </div>
         )}
-        <Loader2 className="h-6 w-6 animate-spin text-primary/60" />
       </div>
     </div>
   );
