@@ -180,29 +180,47 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                     )}/>
                 )}
                 {preview && (
-                    <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
-                        <DialogTrigger asChild>
-                            <div className="relative group w-full h-32 rounded-md border border-primary/10 bg-secondary/30 cursor-pointer overflow-hidden">
-                                <Image src={preview.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(preview)}` : preview} alt="Screenshot" fill sizes="(max-width: 768px) 100vw, 300px" className="object-contain" />
-                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all flex items-center justify-center"><ImageIcon className="text-white h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
-                            </div>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl">
-                            <DialogHeader><DialogTitle className="font-bold text-primary">Transaction artifact</DialogTitle></DialogHeader>
-                            <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border border-primary/10 rounded-md">
-                                <Image src={preview.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(preview)}` : preview} alt="Screenshot" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
-                            </div>
-                            <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2">
-                                <Button variant="outline" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-primary border-primary/20"><ZoomIn className="mr-2 h-4 w-4"/> Zoom in</Button>
-                                <Button variant="outline" size="sm" onClick={() => setZoom(z => z / 1.2)} className="font-bold text-primary border-primary/20"><ZoomOut className="mr-2 h-4 w-4"/> Zoom out</Button>
-                                <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-primary border-primary/20"><RotateCw className="mr-2 h-4 w-4"/> Rotate</Button>
-                                <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-primary border-primary/20"><RefreshCw className="mr-2 h-4 w-4"/> Reset</Button>
-                                {!isReadOnly && (
-                                    <><Separator orientation="vertical" className="h-8 hidden sm:block"/><Button variant="destructive" size="sm" onClick={handleRemoveImage} className="font-bold"><Trash2 className="mr-2 h-4 w-4"/> Remove</Button></>
-                                )}
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
+                    <div className="relative group w-full h-32 rounded-md border border-primary/10 bg-secondary/30 overflow-hidden">
+                        <Image src={preview.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(preview)}` : preview} alt="Screenshot" fill sizes="(max-width: 768px) 100vw, 300px" className="object-contain" />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
+                                <DialogTrigger asChild>
+                                    <Button type="button" size="icon" variant="outline" className="h-8 w-8 text-white border-white hover:bg-white/20">
+                                        <ZoomIn className="h-4 w-4" />
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-4xl">
+                                    <DialogHeader><DialogTitle className="font-bold text-primary">Transaction artifact</DialogTitle></DialogHeader>
+                                    <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border border-primary/10 rounded-md">
+                                        <Image src={preview.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(preview)}` : preview} alt="Screenshot" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                                    </div>
+                                    <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2">
+                                        <Button variant="outline" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-primary border-primary/20"><ZoomIn className="mr-2 h-4 w-4"/> Zoom in</Button>
+                                        <Button variant="outline" size="sm" onClick={() => setZoom(z => z / 1.2)} className="font-bold text-primary border-primary/20"><ZoomOut className="mr-2 h-4 w-4"/> Zoom out</Button>
+                                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-primary border-primary/20"><RotateCw className="mr-2 h-4 w-4"/> Rotate</Button>
+                                        <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-primary border-primary/20"><RefreshCw className="mr-2 h-4 w-4"/> Reset</Button>
+                                        {!isReadOnly && (
+                                            <>
+                                                <Separator orientation="vertical" className="h-8 hidden sm:block"/>
+                                                <Button variant="outline" size="sm" onClick={() => document.getElementById(`tx-screenshot-upload-${index}`)?.click()} className="font-bold text-primary border-primary/20"><Replace className="mr-2 h-4 w-4"/> Replace</Button>
+                                                <Button variant="destructive" size="sm" onClick={handleRemoveImage} className="font-bold"><Trash2 className="mr-2 h-4 w-4"/> Remove</Button>
+                                            </>
+                                        )}
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                            {!isReadOnly && (
+                                <>
+                                    <Button type="button" size="icon" variant="outline" onClick={() => document.getElementById(`tx-screenshot-upload-${index}`)?.click()} className="h-8 w-8 text-white border-white hover:bg-white/20">
+                                        <Replace className="h-4 w-4" />
+                                    </Button>
+                                    <Button type="button" size="icon" variant="destructive" onClick={handleRemoveImage} className="h-8 w-8">
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </>
+                            )}
+                        </div>
+                    </div>
                 )}
                  {!isReadOnly && fileList && fileList.length > 0 && (
                     <Button type="button" onClick={handleScanScreenshot} disabled={isScanning} className="w-full mt-2 font-bold bg-primary/10 text-primary hover:bg-primary/20">

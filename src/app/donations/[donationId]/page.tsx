@@ -23,9 +23,9 @@ import { ArrowLeft, Edit, Download, Loader2, Image as ImageIcon, FileText, Share
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ShareDialog } from '@/components/share-dialog';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
     <div className="space-y-1">
@@ -67,24 +67,39 @@ export default function UnlinkedDonationDetailsPage() {
     const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.update;
 
     const handleFormSubmit = async (data: DonationFormData) => {
+        const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
+        if (hasFilesToUpload && !auth?.currentUser) {
+            toast({
+                title: "Authentication error",
+                description: "User is not authenticated. Please wait for the session to load or log in again.",
+                variant: "destructive",
+            });
+            return;
+        }
+
         if (!firestore || !storage || !userProfile || !canUpdate || !donation || !allCampaigns || !allLeads) return;
 
         setIsFormOpen(false);
+
         const docRef = doc(firestore, 'donations', donation.id);
+        
         let finalData: any;
 
         try {
             const transactionPromises = data.transactions.map(async (transaction) => {
                 let screenshotUrl = transaction.screenshotUrl || '';
-                if (transaction.screenshotFile && (transaction.screenshotFile as FileList).length > 0) {
+                // @ts-ignore
+                if (transaction.screenshotFile) {
                     const file = (transaction.screenshotFile as FileList)[0];
-                    const resizedBlob = await new Promise<Blob>((resolve) => {
-                        (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
-                    });
-                    const filePath = `donations/${docRef.id}/${transaction.id}.png`;
-                    const fileRef = storageRef(storage, filePath);
-                    const uploadResult = await uploadBytes(fileRef, resizedBlob);
-                    screenshotUrl = await getDownloadURL(uploadResult.ref);
+                    if(file) {
+                        const resizedBlob = await new Promise<Blob>((resolve) => {
+                            (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                        });
+                        const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
+                        const fileRef = storageRef(storage, filePath);
+                        const uploadResult = await uploadBytes(fileRef, resizedBlob);
+                        screenshotUrl = await getDownloadURL(uploadResult.ref);
+                    }
                 }
                 return {
                     id: transaction.id,
@@ -102,13 +117,27 @@ export default function UnlinkedDonationDetailsPage() {
 
             const finalLinkSplit = data.linkSplit?.map(split => {
                 if (!split.linkId || split.linkId === 'unlinked') {
-                    return split.amount > 0 ? { linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general' as const, amount: split.amount } : null;
+                    if (split.amount > 0) {
+                        return {
+                            linkId: 'unallocated',
+                            linkName: 'Unallocated',
+                            linkType: 'general' as const,
+                            amount: split.amount
+                        };
+                    }
+                    return null;
                 }
                 const [type, id] = split.linkId.split('_');
                 const linkType = type as 'campaign' | 'lead';
                 const source = linkType === 'campaign' ? allCampaigns : allLeads;
                 const linkedItem = source?.find((item: Campaign | Lead) => item.id === id);
-                return { linkId: id, linkName: linkedItem?.name || 'Unknown initiative', linkType: linkType, amount: split.amount };
+
+                return {
+                    linkId: id,
+                    linkName: linkedItem?.name || 'Unknown initiative',
+                    linkType: linkType,
+                    amount: split.amount
+                };
             }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
 
             finalData = {
@@ -125,19 +154,23 @@ export default function UnlinkedDonationDetailsPage() {
             await setDoc(docRef, finalData, { merge: true });
             toast({ title: 'Success', description: `Donation updated.`, variant: 'success' });
         } catch (error: any) {
+            console.error("Error during form submission:", error);
             if (error.code === 'permission-denied') {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: finalData }));
+                const permissionError = new FirestorePermissionError({
+                    path: docRef.path,
+                    operation: 'update',
+                    requestResourceData: finalData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
             } else {
                 toast({ title: 'Save failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
             }
         }
     };
-
-    const handleViewImage = (url: string) => {
-        setImageToView(url);
-        setZoom(1);
-        setRotation(0);
-        setIsImageViewerOpen(true);
+    
+    const handleShare = () => {
+        if (!donation) return;
+        setIsShareDialogOpen(true);
     };
 
     const handleDownload = (format: 'png' | 'pdf') => {
@@ -148,6 +181,13 @@ export default function UnlinkedDonationDetailsPage() {
             brandingSettings,
             paymentSettings,
         });
+    };
+
+    const handleViewImage = (url: string) => {
+        setImageToView(url);
+        setZoom(1);
+        setRotation(0);
+        setIsImageViewerOpen(true);
     };
 
     const isLoading = isProfileLoading || isBrandingLoading || isPaymentLoading || isDonationLoading || areAllCampaignsLoading || areAllLeadsLoading;
@@ -167,6 +207,7 @@ export default function UnlinkedDonationDetailsPage() {
       ? donation.typeSplit
       : (donation.type ? [{ category: donation.type, amount: donation.amount }] : []);
 
+
     return (
         <main className="container mx-auto p-4 md:p-8 space-y-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
@@ -182,6 +223,9 @@ export default function UnlinkedDonationDetailsPage() {
                             <Edit className="mr-2 h-4 w-4" /> Edit
                         </Button>
                     )}
+                    <Button variant="outline" onClick={handleShare} className="font-bold border-primary/20 text-primary">
+                        <Share2 className="mr-2 h-4 w-4" /> Share
+                    </Button>
                      <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" className="font-bold border-primary/20 text-primary">
@@ -226,6 +270,9 @@ export default function UnlinkedDonationDetailsPage() {
                             <DetailItem label="Donor phone" value={donation.donorPhone} isMono />
                             <DetailItem label="Receiver name" value={donation.receiverName} />
                             <DetailItem label="Referred by" value={donation.referral} />
+                            <div className="sm:col-span-2">
+                                <DetailItem label="Uploaded by" value={donation.uploadedBy} />
+                            </div>
                         </div>
                     </div>
                 </div>

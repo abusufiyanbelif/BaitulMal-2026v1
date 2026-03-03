@@ -74,6 +74,16 @@ export default function DonationDetailsPage() {
     const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.['leads-members']?.donations?.update;
 
     const handleFormSubmit = async (data: DonationFormData) => {
+        const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
+        if (hasFilesToUpload && !auth?.currentUser) {
+            toast({
+                title: "Authentication error",
+                description: "User is not authenticated. Please wait for the session to load or log in again.",
+                variant: "destructive",
+            });
+            return;
+        }
+
         if (!firestore || !storage || !userProfile || !canUpdate || !donation || !allCampaigns || !allLeads) return;
 
         setIsFormOpen(false);
@@ -83,15 +93,18 @@ export default function DonationDetailsPage() {
         try {
             const transactionPromises = data.transactions.map(async (transaction) => {
                 let screenshotUrl = transaction.screenshotUrl || '';
-                if (transaction.screenshotFile && (transaction.screenshotFile as FileList).length > 0) {
+                // @ts-ignore
+                if (transaction.screenshotFile) {
                     const file = (transaction.screenshotFile as FileList)[0];
-                    const resizedBlob = await new Promise<Blob>((resolve) => {
-                        (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
-                    });
-                    const filePath = `donations/${docRef.id}/${transaction.id}.png`;
-                    const fileRef = storageRef(storage, filePath);
-                    const uploadResult = await uploadBytes(fileRef, resizedBlob);
-                    screenshotUrl = await getDownloadURL(uploadResult.ref);
+                    if(file) {
+                        const resizedBlob = await new Promise<Blob>((resolve) => {
+                            (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                        });
+                        const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
+                        const fileRef = storageRef(storage, filePath);
+                        const uploadResult = await uploadBytes(fileRef, resizedBlob);
+                        screenshotUrl = await getDownloadURL(uploadResult.ref);
+                    }
                 }
                 return {
                     id: transaction.id,
@@ -109,13 +122,27 @@ export default function DonationDetailsPage() {
 
             const finalLinkSplit = data.linkSplit?.map(split => {
                 if (!split.linkId || split.linkId === 'unlinked') {
-                    return split.amount > 0 ? { linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general' as const, amount: split.amount } : null;
+                    if (split.amount > 0) {
+                        return {
+                            linkId: 'unallocated',
+                            linkName: 'Unallocated',
+                            linkType: 'general' as const,
+                            amount: split.amount
+                        };
+                    }
+                    return null;
                 }
                 const [type, id] = split.linkId.split('_');
                 const linkType = type as 'campaign' | 'lead';
                 const source = linkType === 'campaign' ? allCampaigns : allLeads;
                 const linkedItem = source?.find((item: Campaign | Lead) => item.id === id);
-                return { linkId: id, linkName: linkedItem?.name || 'Unknown initiative', linkType: linkType, amount: split.amount };
+
+                return {
+                    linkId: id,
+                    linkName: linkedItem?.name || 'Unknown initiative',
+                    linkType: linkType,
+                    amount: split.amount
+                };
             }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
 
             finalData = {
@@ -132,6 +159,7 @@ export default function DonationDetailsPage() {
             await setDoc(docRef, finalData, { merge: true });
             toast({ title: 'Success', description: `Donation updated.`, variant: 'success' });
         } catch (error: any) {
+            console.error("Error during form submission:", error);
             if (error.code === 'permission-denied') {
                 errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: finalData }));
             } else {
@@ -241,6 +269,9 @@ export default function DonationDetailsPage() {
                             <DetailItem label="Donor phone" value={donation.donorPhone} isMono />
                             <DetailItem label="Receiver name" value={donation.receiverName} />
                             <DetailItem label="Referred by" value={donation.referral} />
+                            <div className="sm:col-span-2">
+                                <DetailItem label="Uploaded by" value={donation.uploadedBy} />
+                            </div>
                         </div>
                     </div>
                 </div>
