@@ -49,7 +49,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { cn } from '@/lib/utils';
+import { cn, getNestedValue } from '@/lib/utils';
 import { syncDonationsAction, deleteDonationAction } from './actions';
 import { BrandedLoader } from '@/components/branded-loader';
 
@@ -71,8 +71,8 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
     const { userProfile } = useSession();
-    const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.update;
-    const canDelete = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.delete;
+    const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.update', false);
+    const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.delete', false);
 
     const primaryInitiative = donation.linkSplit?.[0]?.linkName || (donation as any).campaignName || 'Unlinked';
 
@@ -93,13 +93,13 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                 </TableCell>
                 <TableCell className="text-right font-normal font-mono text-primary">₹{donation.amount.toFixed(2)}</TableCell>
                 <TableCell className="whitespace-nowrap text-xs font-normal text-foreground">{donation.donationDate}</TableCell>
-                <TableCell><Badge variant="secondary" className="text-[10px] uppercase font-normal">{donation.donationType}</Badge></TableCell>
+                <TableCell><Badge variant="secondary" className="text-[10px] font-normal">{donation.donationType}</Badge></TableCell>
                 <TableCell>
-                    <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'} className="text-[10px] uppercase font-normal">
+                    <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'} className="text-[10px] font-normal">
                         {donation.status}
                     </Badge>
                 </TableCell>
-                <TableCell className="max-w-[150px] truncate text-[10px] font-normal uppercase text-muted-foreground">{primaryInitiative}</TableCell>
+                <TableCell className="max-w-[150px] truncate text-[10px] font-normal text-muted-foreground">{primaryInitiative}</TableCell>
                 <TableCell className="text-right pr-4" onClick={e => e.stopPropagation()}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -126,10 +126,10 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><DollarSign className="h-3 w-3"/> Category Breakdown</h4>
+                                    <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><DollarSign className="h-3 w-3"/> Category breakdown</h4>
                                     <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
                                         <Table>
-                                            <TableHeader><TableRow className="bg-primary/5"><TableHead className="h-8 py-0 text-[9px] uppercase font-bold text-primary">Category</TableHead><TableHead className="text-right h-8 py-0 text-[9px] uppercase font-bold text-primary">Amount</TableHead></TableRow></TableHeader>
+                                            <TableHeader><TableRow className="bg-primary/5"><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Category</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead></TableRow></TableHeader>
                                             <TableBody>
                                                 {(donation.typeSplit || []).map(split => (
                                                     <TableRow key={split.category} className="h-8"><TableCell className="py-1 text-xs font-normal text-foreground">{split.category}</TableCell><TableCell className="text-right font-normal font-mono py-1 text-primary text-xs">₹{split.amount.toFixed(2)}</TableCell></TableRow>
@@ -139,22 +139,22 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
+                                    <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><FolderKanban className="h-3 w-3"/> Initiative allocation</h4>
                                     <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
                                         <Table>
-                                            <TableHeader><TableRow className="bg-primary/5"><TableHead className="h-8 py-0 text-[9px] uppercase font-bold text-primary">Initiative</TableHead><TableHead className="text-right h-8 py-0 text-[9px] uppercase font-bold text-primary">Amount</TableHead></TableRow></TableHeader>
+                                            <TableHeader><TableRow className="bg-primary/5"><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Initiative</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead></TableRow></TableHeader>
                                             <TableBody>
                                                 {(donation.linkSplit || []).map(link => (
                                                     <TableRow key={link.linkId} className="h-8">
                                                         <TableCell className="flex items-center gap-2 py-1">
                                                             {link.linkType === 'campaign' ? <FolderKanban className="h-3 w-3 text-primary/40" /> : <Lightbulb className="h-3 w-3 text-primary/40" />}
-                                                            <span className="text-[10px] font-normal uppercase text-foreground">{link.linkName}</span>
+                                                            <span className="text-[10px] font-normal text-foreground">{link.linkName}</span>
                                                         </TableCell>
                                                         <TableCell className="text-right font-normal font-mono py-1 text-primary text-xs">₹{link.amount.toFixed(2)}</TableCell>
                                                     </TableRow>
                                                 ))}
                                                 {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
-                                                    <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-4 italic text-xs font-normal uppercase">Unallocated / General Fund</TableCell></TableRow>
+                                                    <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-4 italic text-xs font-normal">Unallocated / General fund</TableCell></TableRow>
                                                 )}
                                             </TableBody>
                                         </Table>
@@ -162,15 +162,15 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><ImageIcon className="h-3 w-3"/> Transaction Records</h4>
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><ImageIcon className="h-3 w-3"/> Transaction records</h4>
                                 <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
                                     <Table>
                                         <TableHeader>
                                             <TableRow className="bg-primary/5">
-                                                <TableHead className="h-8 py-0 text-[9px] uppercase font-bold text-primary">Amount</TableHead>
-                                                <TableHead className="h-8 py-0 text-[9px] uppercase font-bold text-primary">Reference ID</TableHead>
-                                                <TableHead className="h-8 py-0 text-[9px] uppercase font-bold text-primary">Date</TableHead>
-                                                <TableHead className="text-right h-8 py-0 text-[9px] uppercase font-bold text-primary">Artifact</TableHead>
+                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead>
+                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Reference ID</TableHead>
+                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Date</TableHead>
+                                                <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Artifact</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -181,10 +181,10 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                                     <TableCell className="text-[10px] font-normal text-muted-foreground py-2">{tx.date || donation.donationDate}</TableCell>
                                                     <TableCell className="text-right py-2">
                                                         {tx.screenshotUrl ? (
-                                                            <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold uppercase border-primary/20 text-primary hover:bg-primary/10" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
+                                                            <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/10" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
                                                                 <ImageIcon className="mr-1 h-3 w-3" /> View
                                                             </Button>
-                                                        ) : <span className="text-muted-foreground text-[9px] font-normal uppercase opacity-40">No Artifact</span>}
+                                                        ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40">No artifact</span>}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -311,13 +311,13 @@ export default function DonationsPage() {
         });
         errorEmitter.emit('permission-error', permissionError);
     });
-    toast({ title: "Donation Saved", description: "The record is being synchronized in the background.", variant: 'success' });
+    toast({ title: "Donation saved", description: "The record is being synchronized in the background.", variant: 'success' });
   };
 
   const handleDeleteConfirm = async () => {
-    if (!userToDelete) return;
+    if (!donationToDelete) return;
     setIsDeleteDialogOpen(false);
-    const res = await deleteDonationAction(userToDelete);
+    const res = await deleteDonationAction(donationToDelete);
     toast({ title: res.success ? 'Deleted' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' });
     setDonationToDelete(null);
   };
@@ -341,7 +341,7 @@ export default function DonationsPage() {
                 <Button variant="outline" onClick={handleSync} disabled={isSyncing} className="font-bold text-[10px] border-primary/20 text-primary">
                   <DatabaseZap className="mr-2 h-4 w-4"/> Sync hub
                 </Button>
-                <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="bg-success hover:bg-success/90 text-white font-bold text-xs">
+                <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="bg-primary hover:bg-primary/90 text-white font-bold text-xs">
                   <PlusCircle className="mr-2 h-4 w-4" /> Add record
                 </Button>
             </div>
@@ -424,7 +424,7 @@ export default function DonationsPage() {
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent>
-                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete donation record?</AlertDialogTitle><AlertDialogDescription className="font-normal text-muted-foreground">This will permanently erase the record and all transaction screenshots. This action cannot be reversed.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete donation record?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">This will permanently erase the record and all transaction screenshots. This action cannot be reversed.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90">Confirm deletion</AlertDialogAction>

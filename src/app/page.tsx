@@ -63,7 +63,7 @@ export default function Home() {
                   <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary">
                       Baitulmal Samajik Sanstha Solapur
                   </h1>
-                  <p className="mt-4 max-w-3xl mx-auto text-lg text-primary font-bold">
+                  <p className="mt-4 max-w-3xl mx-auto text-lg text-primary font-normal">
                       An overview of our organization's impact and activities. Join us in making a difference.
                   </p>
                   <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">

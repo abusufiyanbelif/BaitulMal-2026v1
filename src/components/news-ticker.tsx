@@ -49,7 +49,6 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
   const isCompleted = variant === 'completed';
   const isDonation = variant === 'donation';
 
-  // Triple items for a truly seamless loop
   const displayItems = [...items, ...items, ...items];
 
   return (
@@ -114,7 +113,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
               <Link 
                 href={item.href} 
                 className={cn(
-                  "text-sm font-bold transition-colors whitespace-nowrap hover:underline underline-offset-4",
+                  "text-sm font-normal transition-colors whitespace-nowrap hover:underline underline-offset-4",
                   isCompleted ? "text-muted-foreground hover:text-foreground" : 
                   "text-primary hover:text-primary/80"
                 )}

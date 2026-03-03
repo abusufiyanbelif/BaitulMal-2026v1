@@ -66,7 +66,7 @@ export function DonationSummary() {
               </CardTitle>
               <span className="text-2xl font-bold text-primary">{yearlySummary[0]?.year || new Date().getFullYear()}</span>
           </div>
-          <CardDescription className="font-bold text-primary/70">A year-by-year breakdown of funds received against fundraising goals.</CardDescription>
+          <CardDescription className="font-normal text-primary/70">A year-by-year breakdown of funds received against fundraising goals.</CardDescription>
         </CardHeader>
         <CardContent>
             <Table>
@@ -83,13 +83,13 @@ export function DonationSummary() {
                     {yearlySummary.map(({ year, totalTarget, totalGoalReceived, overallTotalReceived, progress }) => (
                         <TableRow key={year} className="hover:bg-primary/5">
                             <TableCell className="font-bold text-primary">{year}</TableCell>
-                            <TableCell className="font-bold text-primary/80">₹{totalTarget.toLocaleString('en-IN')}</TableCell>
-                            <TableCell className="font-bold text-primary">₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
-                            <TableCell className="font-bold text-primary/60">₹{overallTotalReceived.toLocaleString('en-IN')}</TableCell>
+                            <TableCell className="font-normal text-primary/80">₹{totalTarget.toLocaleString('en-IN')}</TableCell>
+                            <TableCell className="font-normal text-primary">₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
+                            <TableCell className="font-normal text-primary/60">₹{overallTotalReceived.toLocaleString('en-IN')}</TableCell>
                             <TableCell className="text-right w-[150px]">
                                 <div className="flex items-center gap-2">
                                     <Progress value={progress} className="h-2 flex-1" />
-                                    <span className="text-xs font-bold text-primary">{Math.round(progress)}%</span>
+                                    <span className="text-xs font-normal text-primary">{Math.round(progress)}%</span>
                                 </div>
                             </TableCell>
                         </TableRow>
@@ -105,7 +105,7 @@ export function DonationSummary() {
             <PieChartIcon className="h-6 w-6 text-primary" />
             Donations by category
           </CardTitle>
-           <CardDescription className="font-bold text-primary/70">A lifetime breakdown of all donations by their category.</CardDescription>
+           <CardDescription className="font-normal text-primary/70">A lifetime breakdown of all donations by their category.</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">

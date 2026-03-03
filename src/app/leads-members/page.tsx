@@ -348,7 +348,7 @@ export default function LeadPage() {
             ) : (
               <div className="text-center py-24 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
                   <Lightbulb className="h-16 w-16 mx-auto text-primary/20 mb-4" />
-                  <p className="font-bold text-sm opacity-60 text-primary">No appeals found matching criteria.</p>
+                  <p className="font-normal text-sm opacity-60 text-primary">No appeals found matching criteria.</p>
               </div>
             )}
           </CardContent>

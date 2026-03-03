@@ -43,7 +43,7 @@ export function OverallFundingSummary() {
             <Target className="h-6 w-6 text-primary" />
             Overall fundraising progress
         </CardTitle>
-        <CardDescription className="font-bold text-primary/70">A real-time look at our total collected donations against our published and verified goals.</CardDescription>
+        <CardDescription className="font-normal text-primary/70">A real-time look at our total collected donations against our published and verified goals.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -81,7 +81,7 @@ export function OverallFundingSummary() {
                     <span className="text-4xl font-bold text-primary">
                         {overallSummary.progress.toFixed(0)}%
                     </span>
-                    <span className="text-xs font-bold text-muted-foreground">Funded</span>
+                    <span className="text-xs font-normal text-muted-foreground">Funded</span>
                 </div>
             </div>
              <div className="space-y-4 text-center md:text-left">

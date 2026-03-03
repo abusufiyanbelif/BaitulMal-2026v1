@@ -70,7 +70,7 @@ export default function UserSettingsPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <p className="text-sm text-foreground">System-wide user behavior and login policy configurations can be managed here.</p>
+                <p className="text-sm text-foreground font-normal">System-wide user behavior and login policy configurations can be managed here.</p>
             </CardContent>
         </Card>
 

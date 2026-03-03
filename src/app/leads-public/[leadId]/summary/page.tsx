@@ -217,7 +217,7 @@ export default function PublicLeadSummaryPage() {
     if (!lead || lead.publicVisibility !== 'Published') {
         return (
             <main className="container mx-auto p-4 md:p-8 text-center text-primary font-bold">
-                <p className="text-lg text-muted-foreground">This lead is not available for public view.</p>
+                <p className="text-lg text-primary/70 font-normal">This lead is not available for public view.</p>
                 <Button asChild className="mt-4 active:scale-95 transition-transform font-bold"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Public Leads</Link></Button>
             </main>
         );
@@ -244,13 +244,12 @@ export default function PublicLeadSummaryPage() {
             </div>
 
             <div className="space-y-6" ref={summaryRef}>
-                {/* 1. Initiative Details Section */}
                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
                     <CardHeader className="bg-primary/5"><CardTitle className="font-bold text-primary">Lead Details</CardTitle></CardHeader>
-                    <CardContent className="space-y-4 pt-6 text-foreground font-bold">
+                    <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                         <div className="space-y-2">
                             <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
-                            <p className="mt-1 text-sm font-bold whitespace-pre-wrap leading-relaxed text-primary">{lead.description || 'No description provided.'}</p>
+                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-primary">{lead.description || 'No description provided.'}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 text-primary">
                             <div className="space-y-1"><p className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Required Amount</p><p className="mt-1 text-lg font-bold text-primary">₹{(lead.requiredAmount ?? 0).toLocaleString('en-IN')}</p></div>
@@ -261,7 +260,6 @@ export default function PublicLeadSummaryPage() {
                     </CardContent>
                 </Card>
 
-                {/* 2. Fundraising Progress & Financial Visuals */}
                 {fundingData && (
                     <div className="grid gap-6 animate-fade-in-up">
                         {isVisible('funding_progress') && (
@@ -330,9 +328,9 @@ export default function PublicLeadSummaryPage() {
                                                         {beneficiaryGroups.map((group) => (
                                                             <TableRow key={group.id} className="hover:bg-primary/5 transition-colors">
                                                                 <TableCell className="font-bold text-primary">{group.name}</TableCell>
-                                                                <TableCell className="text-right font-bold">{group.count}</TableCell>
-                                                                <TableCell className="text-right font-mono font-bold">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
-                                                                <TableCell className="text-right font-mono font-bold">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-normal">{group.count}</TableCell>
+                                                                <TableCell className="text-right font-mono font-normal">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono font-normal">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>
@@ -349,7 +347,7 @@ export default function PublicLeadSummaryPage() {
                                                             <TableHead className="font-bold text-primary text-[10px] uppercase">Requirement Description</TableHead>
                                                             <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Quantity</TableHead>
                                                             <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Unit Price</TableHead>
-                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Total Cost</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Total Price</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
