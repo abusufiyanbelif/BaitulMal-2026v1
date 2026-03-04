@@ -105,7 +105,7 @@ export function AppFooter() {
                 )}
                 </div>
                 
-                <div className="space-y-1 text-xs text-muted-foreground font-normal">
+                <div className="space-y-1 text-[11px] text-muted-foreground font-normal">
                     {isLoading ? <Skeleton className="h-4 w-full" /> : paymentSettings?.address && (
                         <div className="flex items-start justify-center md:justify-start gap-2">
                             <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
@@ -120,19 +120,19 @@ export function AppFooter() {
 
                 <div className="space-y-2 w-full">
                     {isLoading ? <Skeleton className="h-4 w-4/5" /> : paymentSettings?.contactEmail && (
-                        <div className="flex items-center justify-center md:justify-start gap-2 text-sm font-normal text-primary hover:text-primary/80 transition-colors">
+                        <div className="flex items-center justify-center md:justify-start gap-2 text-[11px] font-normal text-primary hover:text-primary/80 transition-colors">
                             <Mail className="h-4 w-4" />
                             <span className="break-all">{paymentSettings.contactEmail}</span>
                         </div>
                     )}
                     {isLoading ? <Skeleton className="h-4 w-3/5" /> : paymentSettings?.contactPhone && (
-                        <div className="flex items-center justify-center md:justify-start gap-2 text-sm font-normal text-primary hover:text-primary/80 transition-colors">
+                        <div className="flex items-center justify-center md:justify-start gap-2 text-[11px] font-normal text-primary hover:text-primary/80 transition-colors">
                             <Phone className="h-4 w-4" />
                             <span>{paymentSettings.contactPhone}</span>
                         </div>
                     )}
                     {isLoading ? <Skeleton className="h-4 w-4/5" /> : paymentSettings?.website && (
-                        <div className="flex items-center justify-center md:justify-start gap-2 text-sm font-normal text-primary hover:text-primary/80 transition-colors">
+                        <div className="flex items-center justify-center md:justify-start gap-2 text-[11px] font-normal text-primary hover:text-primary/80 transition-colors">
                             <Globe className="h-4 w-4" />
                             <a href={paymentSettings.website} target="_blank" rel="noopener noreferrer" className="hover:underline break-all">{paymentSettings.website}</a>
                         </div>
@@ -143,19 +143,19 @@ export function AppFooter() {
                     {isLoading ? <Skeleton className="h-4 w-3/4" /> : (
                         <div className="flex items-center gap-2 text-xs font-bold text-primary hover:opacity-80 transition-opacity">
                             <Users className="h-3 w-3" />
-                            <Link href="/info/members" className="hover:underline uppercase tracking-tighter">About Organization</Link>
+                            <Link href="/info/organization" className="hover:underline tracking-tight">About organization</Link>
                         </div>
                     )}
                     {!isLoading && infoSettings?.isDonationInfoPublic && (
                         <div className="flex items-center gap-2 text-xs font-bold text-primary hover:opacity-80 transition-opacity">
                             <Info className="h-3 w-3" />
-                            <Link href="/info/donation-info" className="hover:underline uppercase tracking-tighter">Donation Types</Link>
+                            <Link href="/info/donation-info" className="hover:underline tracking-tight">Donation types</Link>
                         </div>
                     )}
                     {!isLoading && infoSettings?.isGuidingPrinciplesPublic && (
                         <div className="flex items-center gap-2 text-xs font-bold text-primary hover:opacity-80 transition-opacity">
                             <ShieldCheck className="h-3 w-3" />
-                            <Link href="/info/guiding-principles" className="hover:underline uppercase tracking-tighter">Guiding Principles</Link>
+                            <Link href="/info/guiding-principles" className="hover:underline tracking-tight">Guiding principles</Link>
                         </div>
                     )}
                 </div>
@@ -163,7 +163,7 @@ export function AppFooter() {
 
             {/* Payment Info */}
             <div className="flex flex-col items-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                {isLoading ? <Skeleton className="h-6 w-32" /> : <h3 className="font-headline font-bold text-primary uppercase tracking-wider text-sm">For Donations</h3>}
+                {isLoading ? <Skeleton className="h-6 w-32" /> : <h3 className="font-headline font-bold text-primary uppercase tracking-wider text-sm">For donations</h3>}
                 
                 <div className="space-y-3 w-full max-w-[280px]">
                     {isLoading ? <Skeleton className="h-10 w-full" /> : paymentSettings?.upiId && (
@@ -187,7 +187,7 @@ export function AppFooter() {
                                     {paymentSettings.paymentMobileNumber}
                                 </a>
                             </div>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/20 shrink-0" onClick={() => copyToClipboard(paymentSettings!.paymentMobileNumber!, 'Phone Number')}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/20 shrink-0" onClick={() => copyToClipboard(paymentSettings!.paymentMobileNumber!, 'Phone number')}>
                                 <Copy className="h-4 w-4" />
                             </Button>
                         </div>
@@ -216,7 +216,7 @@ export function AppFooter() {
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-md font-body">
                             <DialogHeader>
-                                <DialogTitle className="font-headline font-bold text-primary">Scan to Donate</DialogTitle>
+                                <DialogTitle className="font-headline font-bold text-primary">Scan to donate</DialogTitle>
                                 <DialogDescription className="font-normal">
                                     Use any UPI application to scan this code and contribute to our active initiatives.
                                 </DialogDescription>
@@ -235,7 +235,7 @@ export function AppFooter() {
                             <DialogFooter>
                                 <Button onClick={handleDownloadQr} className="w-full font-bold transition-all active:scale-95">
                                     <Download className="mr-2 h-4 w-4" />
-                                    Download QR Code
+                                    Download QR code
                                 </Button>
                             </DialogFooter>
                         </DialogContent>
@@ -251,7 +251,7 @@ export function AppFooter() {
             {isLoading ? (
                 <Skeleton className="h-4 w-1/2 mx-auto" />
             ) : (
-                <p className="text-xs font-normal text-primary opacity-80">
+                <p className="text-[11px] font-normal text-primary opacity-80">
                     {paymentSettings?.copyright || "© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved."}
                 </p>
             )}

@@ -75,8 +75,8 @@ export default function OrganizationMembersPage() {
         return (
             <Alert variant="destructive">
                 <ShieldAlert className="h-4 w-4" />
-                <AlertTitle>Access Denied</AlertTitle>
-                <AlertDescription>
+                <AlertTitle>Access denied</AlertTitle>
+                <AlertDescription className="font-normal">
                     You do not have permission to modify these settings.
                 </AlertDescription>
             </Alert>
@@ -85,57 +85,57 @@ export default function OrganizationMembersPage() {
     
     return (
         <>
-            <Card className="animate-fade-in-zoom">
+            <Card className="animate-fade-in-zoom border-primary/10">
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div className="flex-1">
-                            <CardTitle className="flex items-center gap-2"><Users /> Organization Members</CardTitle>
-                            <CardDescription>Manage your organization's public-facing team members. Add, edit, or remove them via the main User Management page.</CardDescription>
+                        <div className="flex-1 space-y-1">
+                            <CardTitle className="flex items-center gap-2 text-primary font-bold"><Users className="h-5 w-5"/> Organization members</CardTitle>
+                            <CardDescription className="font-normal text-primary/60">Manage your organization's public-facing team members. Assign them via the User Management module.</CardDescription>
                         </div>
                          <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button>
+                                <Button className="font-bold shadow-md">
                                     <UserPlus className="mr-2 h-4 w-4" />
-                                    Add Member
+                                    Assign member
                                     <ChevronDown className="ml-2 h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuItem onClick={() => router.push('/users/create')}>
-                                Create New User
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => router.push('/users/create')} className="font-bold text-primary">
+                                Create new user
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setIsSearchOpen(true)}>
-                                Assign Existing User
+                                <DropdownMenuItem onClick={() => setIsSearchOpen(true)} className="font-bold text-primary">
+                                Assign existing user
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <Accordion type="multiple" defaultValue={['founder', 'co-founder', 'finance', 'member']} className="w-full">
+                    <Accordion type="multiple" defaultValue={['founder', 'co-founder', 'finance', 'member']} className="w-full space-y-2">
                         {GROUPS.map((group) => (
-                            <AccordionItem value={group.id} key={group.id}>
-                                <AccordionTrigger className="text-lg font-semibold">{group.name} ({(membersByGroup[group.id] || []).length})</AccordionTrigger>
+                            <AccordionItem value={group.id} key={group.id} className="border rounded-lg bg-primary/[0.02] px-4">
+                                <AccordionTrigger className="text-base font-bold hover:no-underline tracking-tight text-primary">{group.name} ({(membersByGroup[group.id] || []).length})</AccordionTrigger>
                                 <AccordionContent>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 pt-2">
                                         {(membersByGroup[group.id] || []).map(member => (
-                                            <Card key={member.id} className="group relative">
-                                                <CardContent className="p-4 flex items-center gap-4">
-                                                    <Avatar className="h-16 w-16">
+                                            <Card key={member.id} className="group relative bg-white border-primary/10 overflow-hidden">
+                                                <CardContent className="p-3 flex items-center gap-3">
+                                                    <Avatar className="h-10 w-10 border border-primary/5">
                                                         <AvatarImage src={member.idProofUrl || undefined} />
-                                                        <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
+                                                        <AvatarFallback className="bg-primary/10 text-primary font-bold text-[10px]">{getInitials(member.name)}</AvatarFallback>
                                                     </Avatar>
-                                                    <div className="flex-1">
-                                                        <p className="font-bold">{member.name}</p>
-                                                        <p className="text-sm text-muted-foreground">{member.organizationRole}</p>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-bold text-xs truncate text-primary">{member.name}</p>
+                                                        <p className="text-[10px] font-normal text-muted-foreground leading-tight">{member.organizationRole || 'Member'}</p>
                                                     </div>
-                                                    <div className="absolute top-2 right-2 flex opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(member)}><Edit className="h-4 w-4"/></Button>
+                                                    <div className="absolute top-1 right-1 flex opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-primary hover:bg-primary/10" onClick={() => handleEdit(member)}><Edit className="h-3.5 w-3.5"/></Button>
                                                     </div>
                                                 </CardContent>
                                             </Card>
                                         ))}
-                                        {(membersByGroup[group.id] || []).length === 0 && <p className="text-sm text-muted-foreground">No members in this group yet.</p>}
+                                        {(membersByGroup[group.id] || []).length === 0 && <p className="text-[10px] text-muted-foreground p-4 font-normal italic opacity-60">No members in this group yet.</p>}
                                     </div>
                                 </AccordionContent>
                             </AccordionItem>
