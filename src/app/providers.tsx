@@ -26,10 +26,10 @@ export function Providers({ children }: { children: ReactNode }) {
         enableSystem={true}
         themes={allThemes}
       >
-        <div className="relative min-h-screen">
+        <div className="relative min-h-screen w-full overflow-x-hidden">
           <Watermark />
           <AuthProvider>
-              <div className="relative z-10 flex min-h-screen flex-col">
+              <div className="relative z-10 flex min-h-screen flex-col w-full overflow-x-hidden">
                 <DocuExtractHeader />
                 <main className={cn("flex-1 w-full", isLoginPage && "flex items-center justify-center p-4")}>
                   {children}

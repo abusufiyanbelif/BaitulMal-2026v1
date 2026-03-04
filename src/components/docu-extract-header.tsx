@@ -45,22 +45,22 @@ export function DocuExtractHeader() {
   const homeHref = user ? '/dashboard' : '/';
   
   return (
-    <header className="bg-white border-b p-2 shadow-sm sticky top-0 z-50">
-      <div className="container mx-auto flex flex-nowrap justify-between items-center gap-2">
+    <header className="bg-white border-b p-2 shadow-sm sticky top-0 z-50 w-full overflow-hidden">
+      <div className="container mx-auto flex flex-nowrap justify-between items-center gap-2 px-2 sm:px-4">
         <Link href={homeHref} className="flex items-center gap-2 min-w-0 flex-1 group transition-transform duration-300 ease-in-out hover:scale-[1.01]">
-          <div className="relative flex-shrink-0 flex items-center justify-center h-12 w-auto min-w-[40px]">
+          <div className="relative flex-shrink-0 flex items-center justify-center h-10 w-auto min-w-[32px]">
             {isLoading ? (
-                <Skeleton className="h-10 w-10 rounded-lg" />
+                <Skeleton className="h-8 w-8 rounded-lg" />
             ) : (
                 validLogoUrl && (
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                     alt="Logo"
-                    width={80}
-                    height={40}
+                    width={60}
+                    height={32}
                     className="object-contain drop-shadow-sm"
                     style={{
-                      maxHeight: '2.5rem',
+                      maxHeight: '2rem',
                       width: 'auto',
                     }}
                     priority
@@ -68,25 +68,25 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-sm sm:text-lg md:text-xl font-bold tracking-tight text-primary truncate">
-            {isBrandingLoading ? <Skeleton className="h-6 w-32 sm:w-64" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
+          <h1 className="text-[10px] xs:text-xs sm:text-sm md:text-base lg:text-xl font-bold tracking-tight text-primary truncate max-w-[150px] xs:max-w-none">
+            {isBrandingLoading ? <Skeleton className="h-4 w-32 sm:w-64" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
           </h1>
         </Link>
 
         <nav className="flex items-center gap-2 flex-shrink-0">
             {isLoading ? (
-                <Skeleton className="h-10 w-10 rounded-full" />
+                <Skeleton className="h-8 w-8 rounded-full" />
             ) : user && userProfile ? (
               <div className="flex items-center">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-10 w-10 rounded-full border-2 border-primary/10 p-0 transition-all hover:border-primary active:scale-95">
+                      <Button variant="ghost" className="relative h-9 w-9 rounded-full border-2 border-primary/10 p-0 transition-all hover:border-primary active:scale-95">
                         <Avatar className="h-full w-full">
                           <AvatarImage
                             src={userProfile?.idProofUrl || ''}
                             alt={userProfile?.name || 'User'}
                           />
-                          <AvatarFallback className="bg-primary text-white font-normal">
+                          <AvatarFallback className="bg-primary text-white font-bold text-xs">
                             {getInitials(userProfile?.name)}
                           </AvatarFallback>
                         </Avatar>
@@ -101,47 +101,47 @@ export function DocuExtractHeader() {
                           <p className="text-xs font-normal text-muted-foreground pt-1 truncate">
                             {user.email}
                           </p>
-                          <Badge variant="outline" className="w-fit mt-2 text-[10px] font-normal border-primary/20 text-primary">{userProfile.role}</Badge>
+                          <Badge variant="outline" className="w-fit mt-2 text-[10px] font-bold border-primary/20 text-primary">{userProfile.role}</Badge>
                         </div>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                       <DropdownMenuItem asChild className="cursor-pointer font-normal h-11">
+                       <DropdownMenuItem asChild className="cursor-pointer font-bold h-11">
                         <Link href="/dashboard">
                           <LayoutDashboard className="mr-2 h-4 w-4 text-primary" />
                           <span>Dashboard</span>
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="cursor-pointer font-normal h-11">
+                      <DropdownMenuItem asChild className="cursor-pointer font-bold h-11">
                         <Link href="/profile">
                           <User className="mr-2 h-4 w-4 text-primary" />
-                          <span>Account settings</span>
+                          <span>Account Settings</span>
                         </Link>
                       </DropdownMenuItem>
                       {userProfile.role === 'Admin' && (
-                        <DropdownMenuItem asChild className="cursor-pointer font-normal h-11">
+                        <DropdownMenuItem asChild className="cursor-pointer font-bold h-11">
                           <Link href="/settings">
                             <Settings className="mr-2 h-4 w-4 text-primary" />
-                            <span>System admin</span>
+                            <span>System Admin</span>
                           </Link>
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={handleLogout}
-                        className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer font-normal h-11"
+                        className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer font-bold h-11"
                       >
                         <LogOut className="mr-2 h-4 w-4" />
-                        <span>Log out</span>
+                        <span>Log Out</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
               </div>
             ) : (
               pathname !== '/login' && (
-                <Button asChild size="sm" className="font-bold tracking-tight text-[10px] sm:text-xs bg-primary text-white hover:bg-primary/90 shadow-sm px-2 sm:px-4">
+                <Button asChild size="sm" className="font-bold tracking-tight text-[10px] sm:text-xs bg-primary text-white hover:bg-primary/90 shadow-sm px-2 sm:px-4 h-8">
                     <Link href="/login">
                         <LogIn className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-                        <span className="hidden xs:inline">Member login</span>
+                        <span className="hidden xs:inline">Member Login</span>
                         <span className="xs:hidden">Login</span>
                     </Link>
                 </Button>

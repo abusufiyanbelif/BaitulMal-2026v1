@@ -77,8 +77,8 @@ export function AppFooter() {
   }
 
   return (
-    <footer className="bg-card border-t mt-auto p-6 text-card-foreground font-body">
-      <div className="container mx-auto">
+    <footer className="bg-card border-t mt-auto p-6 text-card-foreground font-body w-full overflow-hidden">
+      <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
             {/* Org & Contact Info */}
             <div className="flex flex-col items-center text-center md:items-start md:text-left gap-3 animate-fade-in-up">
@@ -112,11 +112,11 @@ export function AppFooter() {
                             <p>{paymentSettings.address}</p>
                         </div>
                     )}
-                    {isLoading ? <Skeleton className="h-4 w-3/4" /> : paymentSettings?.regNo && <p>Reg. no.: {paymentSettings.regNo}</p>}
+                    {isLoading ? <Skeleton className="h-4 w-3/4" /> : paymentSettings?.regNo && <p>Reg. No.: {paymentSettings.regNo}</p>}
                     {isLoading ? <Skeleton className="h-4 w-1/2" /> : paymentSettings?.pan && <p>PAN: {paymentSettings.pan}</p>}
                 </div>
 
-                <Separator className="bg-primary/10"/>
+                <Separator className="bg-primary/10 w-full"/>
 
                 <div className="space-y-2 w-full">
                     {isLoading ? <Skeleton className="h-4 w-4/5" /> : paymentSettings?.contactEmail && (
@@ -143,19 +143,19 @@ export function AppFooter() {
                     {isLoading ? <Skeleton className="h-4 w-3/4" /> : (
                         <div className="flex items-center gap-2 text-xs font-bold text-primary hover:opacity-80 transition-opacity">
                             <Users className="h-3 w-3" />
-                            <Link href="/info/members" className="hover:underline uppercase tracking-tighter">Organization members</Link>
+                            <Link href="/info/members" className="hover:underline uppercase tracking-tighter">Organization Members</Link>
                         </div>
                     )}
                     {!isLoading && infoSettings?.isDonationInfoPublic && (
                         <div className="flex items-center gap-2 text-xs font-bold text-primary hover:opacity-80 transition-opacity">
                             <Info className="h-3 w-3" />
-                            <Link href="/info/donation-info" className="hover:underline uppercase tracking-tighter">Donation types</Link>
+                            <Link href="/info/donation-info" className="hover:underline uppercase tracking-tighter">Donation Types</Link>
                         </div>
                     )}
                     {!isLoading && infoSettings?.isGuidingPrinciplesPublic && (
                         <div className="flex items-center gap-2 text-xs font-bold text-primary hover:opacity-80 transition-opacity">
                             <ShieldCheck className="h-3 w-3" />
-                            <Link href="/info/guiding-principles" className="hover:underline uppercase tracking-tighter">Guiding principles</Link>
+                            <Link href="/info/guiding-principles" className="hover:underline uppercase tracking-tighter">Guiding Principles</Link>
                         </div>
                     )}
                 </div>
@@ -163,7 +163,7 @@ export function AppFooter() {
 
             {/* Payment Info */}
             <div className="flex flex-col items-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                {isLoading ? <Skeleton className="h-6 w-32" /> : <h3 className="font-headline font-bold text-primary uppercase tracking-wider text-sm">For donations</h3>}
+                {isLoading ? <Skeleton className="h-6 w-32" /> : <h3 className="font-headline font-bold text-primary uppercase tracking-wider text-sm">For Donations</h3>}
                 
                 <div className="space-y-3 w-full max-w-[280px]">
                     {isLoading ? <Skeleton className="h-10 w-full" /> : paymentSettings?.upiId && (
@@ -216,7 +216,7 @@ export function AppFooter() {
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-md font-body">
                             <DialogHeader>
-                                <DialogTitle className="font-headline font-bold text-primary">Scan to donate</DialogTitle>
+                                <DialogTitle className="font-headline font-bold text-primary">Scan to Donate</DialogTitle>
                                 <DialogDescription className="font-normal">
                                     Use any UPI application to scan this code and contribute to our active initiatives.
                                 </DialogDescription>
