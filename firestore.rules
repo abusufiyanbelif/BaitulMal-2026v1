@@ -28,24 +28,49 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // ----------------------------------------------------------------------
-    // Helper Functions
-    // ----------------------------------------------------------------------
-
+    
+    // --- Helper Functions ---
+    
     function isSignedIn() {
       return request.auth != null;
     }
     
+<<<<<<< Updated upstream
     function isUserAdmin() {
       // Note: This incurs a document read on every check.
       return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
 
+=======
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && getUserData().role == 'Admin';
+    }
+    
+    function hasPermission(module, permission) {
+      if (!isSignedIn()) return false;
+      let user = getUserData();
+      if (user.role == 'Admin') return true;
+      
+      // Handle nested permission paths (e.g., 'settings.info.update')
+      let parts = module.split('\\.');
+      if (parts.size() == 1) {
+        return user.permissions[module][permission] == true;
+      } else if (parts.size() == 2) {
+        return user.permissions[parts[0]][parts[1]][permission] == true;
+      }
+      return false;
+    }
+    
+>>>>>>> Stashed changes
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+<<<<<<< Updated upstream
     function isExistingOwner(userId) {
       return isOwner(userId) && resource != null;
     }
@@ -133,6 +158,68 @@ service cloud.firestore {
       allow create: if (isOwner(userId) && request.resource.data.id == userId) || isUserAdmin();
       allow update: if (isOwner(userId) && request.resource.data.id == resource.data.id) || isUserAdmin();
       allow delete: if false; // Deleting users should be a privileged server-side operation.
+=======
+    // --- Collection Rules ---
+
+    match /user_lookups/{lookupId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin() || hasPermission('users', 'create');
+      allow update: if isAdmin() || isOwner(userId) || hasPermission('users', 'update');
+      allow delete: if isAdmin() || hasPermission('users', 'delete');
+    }
+
+    match /campaigns/{campaignId} {
+      allow read: if true;
+      allow create: if isAdmin() || hasPermission('campaigns', 'create');
+      allow update: if isAdmin() || hasPermission('campaigns', 'update');
+      allow delete: if isAdmin() || hasPermission('campaigns', 'delete');
+      
+      match /beneficiaries/{beneficiaryId} {
+        allow read: if isSignedIn();
+        allow write: if isAdmin() || hasPermission('campaigns', 'beneficiaries', 'update');
+      }
+    }
+
+    match /leads/{leadId} {
+      allow read: if true;
+      allow create: if isAdmin() || hasPermission('leads-members', 'create');
+      allow update: if isAdmin() || hasPermission('leads-members', 'update');
+      allow delete: if isAdmin() || hasPermission('leads-members', 'delete');
+      
+      match /beneficiaries/{beneficiaryId} {
+        allow read: if isSignedIn();
+        allow write: if isAdmin() || hasPermission('leads-members', 'beneficiaries', 'update');
+      }
+    }
+
+    match /beneficiaries/{beneficiaryId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isAdmin() || hasPermission('beneficiaries', 'update');
+      allow delete: if isAdmin() || hasPermission('beneficiaries', 'delete');
+    }
+
+    match /donations/{donationId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isAdmin() || hasPermission('donations', 'update');
+      allow delete: if isAdmin() || hasPermission('donations', 'delete');
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin() || hasPermission('settings', 'update');
+    }
+    
+    match /page_hits/{pageId} {
+      allow read: if isAdmin();
+      allow write: if true; // Public can increment page hits
+>>>>>>> Stashed changes
     }
   }
 }

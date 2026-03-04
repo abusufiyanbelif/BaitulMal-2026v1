@@ -4,6 +4,7 @@
 @tailwind utilities;
 
 @layer base {
+<<<<<<< Updated upstream
   :root {
     --background: 140 40% 96%;
     --foreground: 142 70% 25%;
@@ -38,11 +39,331 @@
 
   * {
     @apply border-border;
+=======
+  :root, .light {
+    --background: 0 0% 100%;
+    --foreground: 160 25% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 160 25% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 25% 10%;
+    --primary: 160 70% 40%; 
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 70% 95%;
+    --secondary-foreground: 160 70% 20%;
+    --muted: 160 10% 95%;
+    --muted-foreground: 160 15% 45%;
+    --accent: 47.9 95.8% 53.1%; 
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 160 20% 90%;
+    --input: 160 20% 90%;
+    --ring: 160 70% 40%;
+    --radius: 0.75rem;
+    --chart-1: 160 70% 40%;
+    --chart-2: 47.9 95.8% 53.1%;
+    --chart-3: 217.2 91.2% 59.8%;
+    --chart-4: 38.8 92.3% 50.2%;
+    --chart-5: 262 83% 58%;
+    --success: 160 70% 40%;
+    --success-foreground: 0 0% 100%;
   }
 
+  .dark {
+    --background: 160 25% 5%;
+    --foreground: 45 10% 95%;
+    --card: 160 25% 7%;
+    --card-foreground: 45 10% 95%;
+    --popover: 160 25% 7%;
+    --popover-foreground: 45 10% 95%;
+    --primary: 160 70% 45%;
+    --primary-foreground: 160 25% 5%;
+    --secondary: 160 30% 15%;
+    --secondary-foreground: 45 10% 95%;
+    --muted: 160 20% 12%;
+    --muted-foreground: 160 10% 60%;
+    --accent: 47.9 95.8% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 45 10% 95%;
+    --border: 160 20% 20%;
+    --input: 160 20% 20%;
+    --ring: 160 70% 45%;
+    --chart-1: 160 70% 45%;
+    --chart-2: 47.9 95.8% 55%;
+    --chart-3: 217.2 91.2% 65%;
+    --chart-4: 38.8 92.3% 60%;
+    --chart-5: 262 83% 68%;
+    --success: 160 70% 45%;
+    --success-foreground: 160 25% 5%;
+>>>>>>> Stashed changes
+  }
+
+<<<<<<< Updated upstream
   html {
     @apply scroll-smooth;
   }
+=======
+/* ----------------------------------------------------------------------
+   Theme Registry - Total Variable Scoping to Prevent Leakage
+   ---------------------------------------------------------------------- */
+
+.bmss-brand-warm {
+  --background: 45 60% 98%;
+  --foreground: 142.1 25% 15%;
+  --card: 45 60% 99%;
+  --card-foreground: 142.1 25% 10%;
+  --popover: 45 60% 99%;
+  --popover-foreground: 142.1 25% 10%;
+  --primary: 142.1 76.2% 36.3%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 142.1 76.2% 95%;
+  --secondary-foreground: 142.1 25% 15%;
+  --muted: 142.1 20% 92%;
+  --muted-foreground: 142.1 15% 45%;
+  --accent: 47.9 95.8% 53.1%;
+  --accent-foreground: 0 0% 100%;
+  --border: 142.1 20% 85%;
+  --input: 142.1 20% 85%;
+  --ring: 142.1 76.2% 36.3%;
+  --chart-1: 142.1 76.2% 36.3%;
+  --chart-2: 47.9 95.8% 53.1%;
+  --chart-3: 217.2 91.2% 59.8%;
+  --chart-4: 38.8 92.3% 50.2%;
+  --chart-5: 262 83% 58%;
+  --success: 142.1 76.2% 36.3%;
+  --success-foreground: 0 0% 100%;
+}
+
+.ocean-blue {
+  --background: 221 83% 98%;
+  --foreground: 221 83% 15%;
+  --card: 221 83% 100%;
+  --card-foreground: 221 83% 10%;
+  --popover: 221 83% 100%;
+  --popover-foreground: 221 83% 10%;
+  --primary: 221 83% 53%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 221 83% 92%;
+  --secondary-foreground: 221 83% 20%;
+  --muted: 221 83% 95%;
+  --muted-foreground: 221 83% 45%;
+  --accent: 191 91% 42%;
+  --accent-foreground: 0 0% 100%;
+  --border: 221 83% 90%;
+  --input: 221 83% 90%;
+  --ring: 221 83% 53%;
+  --chart-1: 221 83% 53%;
+  --chart-2: 191 91% 42%;
+  --chart-3: 47.9 95.8% 53.1%;
+  --success: 221 83% 53%;
+  --success-foreground: 0 0% 100%;
+}
+
+.sunset-orange {
+  --background: 25 95% 98%;
+  --foreground: 25 95% 15%;
+  --card: 25 95% 100%;
+  --card-foreground: 25 95% 10%;
+  --popover: 25 95% 100%;
+  --popover-foreground: 25 95% 10%;
+  --primary: 25 95% 53%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 25 95% 92%;
+  --secondary-foreground: 25 95% 20%;
+  --muted: 25 95% 95%;
+  --muted-foreground: 25 95% 45%;
+  --accent: 45 93% 47%;
+  --accent-foreground: 0 0% 100%;
+  --border: 25 95% 90%;
+  --input: 25 95% 90%;
+  --ring: 25 95% 53%;
+  --chart-1: 25 95% 53%;
+  --chart-2: 45 93% 47%;
+  --chart-3: 160 70% 40%;
+  --success: 25 95% 53%;
+  --success-foreground: 0 0% 100%;
+}
+
+.sunrise-peach {
+  --background: 12 100% 98%;
+  --foreground: 12 100% 15%;
+  --card: 12 100% 100%;
+  --card-foreground: 12 100% 10%;
+  --popover: 12 100% 100%;
+  --popover-foreground: 12 100% 10%;
+  --primary: 12 100% 63%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 12 100% 92%;
+  --secondary-foreground: 12 100% 20%;
+  --muted: 12 100% 95%;
+  --muted-foreground: 12 100% 45%;
+  --accent: 45 93% 47%;
+  --accent-foreground: 0 0% 100%;
+  --border: 12 100% 90%;
+  --input: 12 100% 90%;
+  --ring: 12 100% 63%;
+  --chart-1: 12 100% 63%;
+  --chart-2: 45 93% 47%;
+  --chart-3: 221 83% 53%;
+  --success: 12 100% 63%;
+  --success-foreground: 0 0% 100%;
+}
+
+.lavender-mint {
+  --background: 262 70% 98%;
+  --foreground: 262 70% 15%;
+  --card: 262 70% 100%;
+  --card-foreground: 262 70% 10%;
+  --popover: 262 70% 100%;
+  --popover-foreground: 262 70% 10%;
+  --primary: 262 70% 60%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 262 70% 95%;
+  --secondary-foreground: 262 70% 20%;
+  --muted: 262 70% 92%;
+  --muted-foreground: 262 70% 45%;
+  --accent: 160 70% 40%;
+  --accent-foreground: 0 0% 100%;
+  --border: 262 70% 90%;
+  --input: 262 70% 90%;
+  --ring: 262 70% 60%;
+  --chart-1: 262 70% 60%;
+  --chart-2: 160 70% 40%;
+  --chart-3: 45 93% 47%;
+  --success: 262 70% 60%;
+  --success-foreground: 0 0% 100%;
+}
+
+.midnight-ramadan {
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+  --card: 222 47% 13%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222 47% 13%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 45 93% 47%;
+  --primary-foreground: 222 47% 11%;
+  --secondary: 222 47% 20%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 222 47% 15%;
+  --muted-foreground: 210 20% 60%;
+  --accent: 142 70% 45%;
+  --accent-foreground: 210 40% 98%;
+  --border: 222 47% 20%;
+  --input: 222 47% 20%;
+  --ring: 45 93% 47%;
+  --chart-1: 45 93% 47%;
+  --chart-2: 142 70% 45%;
+  --chart-3: 262 70% 60%;
+  --success: 45 93% 47%;
+  --success-foreground: 222 47% 11%;
+}
+
+.midnight-emerald {
+  --background: 160 50% 5%;
+  --foreground: 160 10% 95%;
+  --card: 160 50% 7%;
+  --card-foreground: 160 10% 95%;
+  --popover: 160 50% 7%;
+  --popover-foreground: 160 10% 95%;
+  --primary: 160 70% 45%;
+  --primary-foreground: 160 50% 5%;
+  --secondary: 160 30% 15%;
+  --secondary-foreground: 160 10% 95%;
+  --muted: 160 20% 12%;
+  --muted-foreground: 160 10% 60%;
+  --accent: 38 92% 50%;
+  --accent-foreground: 0 0% 100%;
+  --border: 160 20% 20%;
+  --input: 160 20% 20%;
+  --ring: 160 70% 45%;
+  --chart-1: 160 70% 45%;
+  --chart-2: 38 92% 50%;
+  --chart-3: 210 40% 98%;
+  --success: 160 70% 45%;
+  --success-foreground: 160 50% 5%;
+}
+
+.cyberpunk-neon {
+  --background: 280 50% 5%;
+  --foreground: 180 100% 50%;
+  --card: 280 50% 7%;
+  --card-foreground: 180 100% 50%;
+  --popover: 280 50% 7%;
+  --popover-foreground: 180 100% 50%;
+  --primary: 320 100% 50%;
+  --primary-foreground: 280 50% 5%;
+  --secondary: 280 30% 15%;
+  --secondary-foreground: 180 100% 50%;
+  --muted: 280 20% 12%;
+  --muted-foreground: 180 100% 30%;
+  --accent: 180 100% 50%;
+  --accent-foreground: 280 50% 5%;
+  --border: 280 20% 20%;
+  --input: 280 20% 20%;
+  --ring: 320 100% 50%;
+  --chart-1: 320 100% 50%;
+  --chart-2: 180 100% 50%;
+  --chart-3: 45 93% 47%;
+  --success: 320 100% 50%;
+  --success-foreground: 280 50% 5%;
+}
+
+.dracula-orchid {
+  --background: 231 15% 18%;
+  --foreground: 60 30% 96%;
+  --card: 231 15% 20%;
+  --card-foreground: 60 30% 96%;
+  --popover: 231 15% 20%;
+  --popover-foreground: 60 30% 96%;
+  --primary: 265 89% 78%;
+  --primary-foreground: 231 15% 18%;
+  --secondary: 231 15% 25%;
+  --secondary-foreground: 60 30% 96%;
+  --muted: 231 15% 22%;
+  --muted-foreground: 60 10% 60%;
+  --accent: 320 100% 50%;
+  --accent-foreground: 0 0% 100%;
+  --border: 231 15% 30%;
+  --input: 231 15% 30%;
+  --ring: 265 89% 78%;
+  --chart-1: 265 89% 78%;
+  --chart-2: 320 100% 50%;
+  --chart-3: 180 100% 50%;
+  --success: 265 89% 78%;
+  --success-foreground: 231 15% 18%;
+}
+
+.github-dark {
+  --background: 220 40% 8%;
+  --foreground: 210 20% 98%;
+  --card: 220 40% 10%;
+  --card-foreground: 210 20% 98%;
+  --popover: 220 40% 10%;
+  --popover-foreground: 210 20% 98%;
+  --primary: 210 20% 98%;
+  --primary-foreground: 220 40% 8%;
+  --secondary: 220 40% 15%;
+  --secondary-foreground: 210 20% 98%;
+  --muted: 220 40% 12%;
+  --muted-foreground: 210 10% 60%;
+  --accent: 38 92% 50%;
+  --accent-foreground: 0 0% 100%;
+  --border: 220 40% 20%;
+  --input: 220 40% 20%;
+  --ring: 210 20% 98%;
+  --chart-1: 210 20% 98%;
+  --chart-2: 38 92% 50%;
+  --chart-3: 160 70% 45%;
+  --success: 210 20% 98%;
+  --success-foreground: 220 40% 8%;
+}
+
+@layer base {
+  * { @apply border-border; }
+>>>>>>> Stashed changes
   
   body {
     @apply min-h-screen bg-background font-sans text-foreground antialiased;

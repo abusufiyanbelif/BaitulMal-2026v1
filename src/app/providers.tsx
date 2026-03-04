@@ -60,6 +60,52 @@ function MainLayout({ children }: { children: ReactNode }) {
 
 
 export function Providers({ children }: { children: ReactNode }) {
+<<<<<<< Updated upstream
+=======
+  const pathname = usePathname();
+  const isLoginPage = pathname === '/login';
+
+  // Explicit registry of all institutional palettes to ensure next-themes
+  // identifies and persists the correct CSS class instantly.
+  const allThemes = Array.from(new Set([
+    'light',
+    'dark',
+    'system',
+    'bmss-brand-warm',
+    'ocean-blue',
+    'sunset-orange',
+    'sunrise-peach',
+    'lavender-mint',
+    'midnight-ramadan',
+    'midnight-emerald',
+    'cyberpunk-neon',
+    'dracula-orchid',
+    'github-dark'
+  ]));
+
+  useEffect(() => {
+    const applyMotionSettings = () => {
+      const animations = localStorage.getItem('app_animations');
+      const smoothScroll = localStorage.getItem('app_smooth_scroll');
+      const reducedMotion = localStorage.getItem('app_reduced_motion');
+
+      if (animations === 'disabled') {
+        document.documentElement.setAttribute('data-animations', 'disabled');
+      }
+      if (smoothScroll === 'disabled') {
+        document.documentElement.setAttribute('data-smooth-scroll', 'disabled');
+      } else {
+        document.documentElement.setAttribute('data-smooth-scroll', 'enabled');
+      }
+      if (reducedMotion === 'enabled') {
+        document.documentElement.setAttribute('data-motion-reduced', 'enabled');
+      }
+    };
+
+    applyMotionSettings();
+  }, []);
+
+>>>>>>> Stashed changes
   return (
     <FirebaseClientProvider>
       <AuthProvider>
