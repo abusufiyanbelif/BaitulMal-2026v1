@@ -95,6 +95,7 @@
   }
 
   /* --- Custom Theme Presets --- */
+  
   .bmss-brand-warm {
     --background: 45 60% 98%;
     --foreground: 142 76% 15%;
@@ -108,29 +109,188 @@
     --ring: 142 76% 30%;
   }
 
+  .bmss-brand-1 {
+    --primary: 160 84% 33%;
+    --accent: 45 100% 50%;
+    --ring: 160 84% 33%;
+  }
+
+  .bmss-brand-2 {
+    --primary: 174 100% 29%;
+    --accent: 15 100% 50%;
+    --ring: 174 100% 29%;
+  }
+
   .ocean-blue {
     --primary: 221 83% 53%;
+    --secondary: 221 83% 95%;
     --ring: 221 83% 53%;
   }
 
   .sunset-orange {
     --primary: 25 95% 53%;
+    --accent: 45 93% 47%;
     --ring: 25 95% 53%;
   }
 
   .royal-purple {
     --primary: 262 83% 58%;
+    --secondary: 262 83% 95%;
     --ring: 262 83% 58%;
+  }
+
+  .forest-amber {
+    --primary: 142 76% 36%;
+    --accent: 38 92% 50%;
+    --ring: 142 76% 36%;
+  }
+
+  .ocean-breeze {
+    --primary: 191 91% 42%;
+    --secondary: 191 91% 95%;
+    --ring: 191 91% 42%;
+  }
+
+  .lavender-mint {
+    --primary: 262 70% 60%;
+    --accent: 160 70% 40%;
+    --ring: 262 70% 60%;
+  }
+
+  .sunrise-peach {
+    --primary: 12 100% 63%;
+    --accent: 45 93% 47%;
+    --ring: 12 100% 63%;
+  }
+
+  .classic-crimson {
+    --primary: 0 72% 51%;
+    --accent: 210 20% 20%;
+    --ring: 0 72% 51%;
+  }
+
+  .professional-slate {
+    --primary: 215 25% 27%;
+    --accent: 160 70% 40%;
+    --ring: 215 25% 27%;
+  }
+
+  .earthy-tones {
+    --primary: 25 30% 40%;
+    --accent: 142 70% 45%;
+    --ring: 25 30% 40%;
   }
 
   .midnight-ramadan {
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
     --card: 222 47% 13%;
+    --card-foreground: 210 40% 98%;
     --primary: 45 93% 47%; /* Gold */
     --primary-foreground: 222 47% 11%;
     --accent: 142 70% 45%; /* Crescent Green */
     --border: 217 32% 17%;
+    --ring: 45 93% 47%;
+  }
+
+  .slate-lime {
+    --background: 215 25% 10%;
+    --foreground: 210 40% 98%;
+    --primary: 84 81% 44%;
+    --primary-foreground: 215 25% 10%;
+    --card: 215 25% 12%;
+    --ring: 84 81% 44%;
+  }
+
+  .midnight-emerald {
+    --background: 160 50% 5%;
+    --foreground: 160 10% 95%;
+    --primary: 160 70% 45%;
+    --primary-foreground: 0 0% 100%;
+    --card: 160 50% 7%;
+    --ring: 160 70% 45%;
+  }
+
+  .cyberpunk-neon {
+    --background: 280 50% 5%;
+    --foreground: 180 100% 50%;
+    --primary: 320 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 180 100% 50%;
+    --card: 280 50% 8%;
+    --ring: 320 100% 50%;
+  }
+
+  .dracula-orchid {
+    --background: 231 15% 18%;
+    --foreground: 60 30% 96%;
+    --primary: 265 89% 78%;
+    --primary-foreground: 231 15% 18%;
+    --card: 231 15% 20%;
+    --ring: 265 89% 78%;
+  }
+
+  .github-dark {
+    --background: 220 40% 8%;
+    --foreground: 210 20% 98%;
+    --primary: 210 20% 98%;
+    --primary-foreground: 220 40% 8%;
+    --card: 220 40% 10%;
+    --ring: 210 20% 98%;
+  }
+
+  .solarized-dark {
+    --background: 192 100% 11%;
+    --foreground: 44 20% 90%;
+    --primary: 175 59% 40%;
+    --primary-foreground: 192 100% 11%;
+    --card: 192 100% 13%;
+    --ring: 175 59% 40%;
+  }
+
+  .forest-night {
+    --background: 140 20% 8%;
+    --foreground: 140 10% 90%;
+    --primary: 140 50% 45%;
+    --primary-foreground: 140 20% 8%;
+    --card: 140 20% 10%;
+    --ring: 140 50% 45%;
+  }
+
+  .rose-pine {
+    --background: 249 22% 12%;
+    --foreground: 245 50% 91%;
+    --primary: 2 55% 83%;
+    --primary-foreground: 249 22% 12%;
+    --card: 249 22% 14%;
+    --ring: 2 55% 83%;
+  }
+
+  .tokyo-night {
+    --background: 234 44% 11%;
+    --foreground: 228 24% 72%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 234 44% 11%;
+    --card: 234 44% 13%;
+    --ring: 217 91% 60%;
+  }
+
+  .nord {
+    --background: 220 16% 22%;
+    --foreground: 218 27% 92%;
+    --primary: 193 43% 67%;
+    --primary-foreground: 220 16% 22%;
+    --card: 220 16% 24%;
+    --ring: 193 43% 67%;
+  }
+
+  .monokai {
+    --background: 233 12% 13%;
+    --foreground: 60 30% 96%;
+    --primary: 50 100% 50%;
+    --primary-foreground: 233 12% 13%;
+    --card: 233 12% 15%;
+    --ring: 50 100% 50%;
   }
 
   * {
