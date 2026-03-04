@@ -98,9 +98,7 @@ export function AppFooter() {
                     {isLoading ? <Skeleton className="h-4 w-1/2" /> : paymentSettings?.pan && <p>PAN: {paymentSettings.pan}</p>}
                 </div>
 
-                <Separator className="bg-primary/10 w-full"/>
-
-                <div className="space-y-2 w-full">
+                <div className="space-y-2 w-full pt-2">
                     {isLoading ? <Skeleton className="h-4 w-4/5" /> : paymentSettings?.contactEmail && (
                         <div className="flex items-center justify-center md:justify-start gap-2 text-[11px] font-normal text-primary hover:text-primary/80 transition-colors">
                             <Mail className="h-4 w-4" />

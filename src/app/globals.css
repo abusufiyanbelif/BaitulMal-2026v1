@@ -33,52 +33,145 @@
     --chart-5: 262 83% 58%;
   }
 
-  /* BMSS Brand Warm - Indian Green Combination */
-  .bmss-brand-warm {
-    --background: 50 60% 97%; /* Creamy Background */
-    --foreground: 142 76% 15%;
-    --primary: 142 76% 25%; /* Indian Emerald Green */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 142 76% 92%;
-    --accent: 38 92% 50%; /* Amber/Gold Accent */
-    --accent-foreground: 0 0% 100%;
-    --muted: 50 20% 90%;
-    --border: 142 20% 80%;
-    --ring: 142 76% 25%;
-  }
-
-  /* Light Variations */
-  .ocean-blue { --primary: 221 83% 53%; --secondary: 221 83% 95%; --accent: 191 91% 42%; }
-  .sunset-orange { --primary: 25 95% 53%; --secondary: 25 95% 95%; --accent: 45 93% 47%; }
-  .sunrise-peach { --primary: 12 100% 63%; --secondary: 12 100% 95%; --accent: 45 93% 47%; }
-  .lavender-mint { --primary: 262 70% 60%; --secondary: 262 70% 95%; --accent: 160 70% 40%; }
-
-  /* Dark Variations */
   .dark {
     --background: 150 40% 5%;
     --foreground: 160 10% 95%;
     --card: 150 40% 7%;
     --card-foreground: 160 10% 95%;
+    --popover: 150 40% 7%;
+    --popover-foreground: 160 10% 95%;
     --primary: 160 70% 45%;
     --primary-foreground: 0 0% 100%;
     --secondary: 160 30% 15%;
+    --secondary-foreground: 160 10% 95%;
+    --muted: 160 20% 12%;
+    --muted-foreground: 160 10% 60%;
     --accent: 38.8 92.3% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 160 10% 95%;
     --border: 160 20% 20%;
+    --input: 160 20% 20%;
     --ring: 160 70% 45%;
   }
+}
 
-  .midnight-ramadan { 
-    --background: 222 47% 11%; 
-    --foreground: 210 40% 98%; 
-    --primary: 45 93% 47%; /* Gold Primary */
-    --accent: 142 70% 45%; /* Green Accent */
-    --card: 222 47% 13%;
-  }
-  .midnight-emerald { --background: 160 50% 5%; --primary: 160 70% 45%; --accent: 38 92% 50%; }
-  .cyberpunk-neon { --background: 280 50% 5%; --foreground: 180 100% 50%; --primary: 320 100% 50%; --accent: 180 100% 50%; }
-  .dracula-orchid { --background: 231 15% 18%; --foreground: 60 30% 96%; --primary: 265 89% 78%; --accent: 320 100% 50%; }
-  .github-dark { --background: 220 40% 8%; --foreground: 210 20% 98%; --primary: 210 20% 98%; --accent: 38 92% 50%; }
+/* Theme Definitions - Scoped for High Priority */
+.bmss-brand-warm {
+  --background: 45 60% 98%;
+  --foreground: 142 76% 15%;
+  --card: 45 60% 99%;
+  --card-foreground: 142 76% 15%;
+  --popover: 45 60% 99%;
+  --popover-foreground: 142 76% 15%;
+  --primary: 142 76% 25%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 142 76% 92%;
+  --secondary-foreground: 142 76% 15%;
+  --muted: 45 20% 90%;
+  --muted-foreground: 142 10% 40%;
+  --accent: 38 92% 50%;
+  --accent-foreground: 0 0% 100%;
+  --border: 142 20% 80%;
+  --input: 142 20% 80%;
+  --ring: 142 76% 25%;
+}
 
+.ocean-blue {
+  --background: 221 83% 98%;
+  --foreground: 221 83% 15%;
+  --primary: 221 83% 53%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 221 83% 92%;
+  --accent: 191 91% 42%;
+  --ring: 221 83% 53%;
+}
+
+.sunset-orange {
+  --background: 25 95% 98%;
+  --foreground: 25 95% 15%;
+  --primary: 25 95% 53%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 25 95% 92%;
+  --accent: 45 93% 47%;
+  --ring: 25 95% 53%;
+}
+
+.sunrise-peach {
+  --background: 12 100% 98%;
+  --foreground: 12 100% 15%;
+  --primary: 12 100% 63%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 12 100% 92%;
+  --accent: 45 93% 47%;
+  --ring: 12 100% 63%;
+}
+
+.lavender-mint {
+  --background: 262 70% 98%;
+  --foreground: 262 70% 15%;
+  --primary: 262 70% 60%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 262 70% 95%;
+  --accent: 160 70% 40%;
+  --ring: 262 70% 60%;
+}
+
+/* Dark Themes */
+.midnight-ramadan {
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+  --card: 222 47% 13%;
+  --card-foreground: 210 40% 98%;
+  --primary: 45 93% 47%;
+  --primary-foreground: 222 47% 11%;
+  --secondary: 222 47% 20%;
+  --accent: 142 70% 45%;
+  --border: 222 47% 25%;
+  --ring: 45 93% 47%;
+}
+
+.midnight-emerald {
+  --background: 160 50% 5%;
+  --foreground: 160 10% 95%;
+  --card: 160 50% 7%;
+  --primary: 160 70% 45%;
+  --accent: 38 92% 50%;
+  --border: 160 20% 15%;
+  --ring: 160 70% 45%;
+}
+
+.cyberpunk-neon {
+  --background: 280 50% 5%;
+  --foreground: 180 100% 50%;
+  --card: 280 50% 7%;
+  --primary: 320 100% 50%;
+  --accent: 180 100% 50%;
+  --border: 280 50% 20%;
+  --ring: 320 100% 50%;
+}
+
+.dracula-orchid {
+  --background: 231 15% 18%;
+  --foreground: 60 30% 96%;
+  --card: 231 15% 20%;
+  --primary: 265 89% 78%;
+  --accent: 320 100% 50%;
+  --border: 231 15% 25%;
+  --ring: 265 89% 78%;
+}
+
+.github-dark {
+  --background: 220 40% 8%;
+  --foreground: 210 20% 98%;
+  --card: 220 40% 10%;
+  --primary: 210 20% 98%;
+  --accent: 38 92% 50%;
+  --border: 220 40% 20%;
+  --ring: 210 20% 98%;
+}
+
+@layer base {
   * { @apply border-border; }
   
   html[data-smooth-scroll="enabled"] {
@@ -97,7 +190,6 @@
     color: hsl(var(--primary)); 
   }
 
-  /* Motion Control */
   html[data-animations="disabled"] *,
   html[data-animations="disabled"] *:before,
   html[data-animations="disabled"] *:after {
