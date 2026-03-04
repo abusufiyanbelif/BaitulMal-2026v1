@@ -244,7 +244,7 @@ export default function InfoSettingsPage() {
         }
     }, [infoSettings]);
 
-    const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.update', false);
+    const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.info.update', false) || !!getNestedValue(userProfile, 'permissions.settings.update', false);
 
     const handleSaveVisibility = async () => {
         if (!firestore || !canUpdateSettings) return;
@@ -302,9 +302,9 @@ export default function InfoSettingsPage() {
     }
 
     return (
-        <div className="space-y-6 text-primary font-normal">
+        <div className="space-y-6 text-primary font-normal pb-20">
             
-            <Card className="animate-fade-in-zoom border-primary/10 overflow-hidden shadow-sm">
+            <Card className="animate-fade-in-zoom border-primary/10 overflow-hidden shadow-sm bg-white">
                 <CardHeader className="bg-primary/5 border-b">
                     <CardTitle className="font-bold tracking-tight">Page visibility</CardTitle>
                     <CardDescription className="font-normal text-primary/70">Manage the public availability of informational pages.</CardDescription>
@@ -325,10 +325,10 @@ export default function InfoSettingsPage() {
                                     id="donation-info-public" 
                                     checked={localDonationVisible} 
                                     onCheckedChange={setLocalDonationVisible} 
-                                    disabled={isSubmitting} 
+                                    disabled={isSubmitting || !canUpdateSettings} 
                                 />
                             </div>
-                            <Button size="sm" variant="outline" onClick={handleSaveVisibility} disabled={isSubmitting || localDonationVisible === !!infoSettings?.isDonationInfoPublic} className="font-bold border-primary/20">
+                            <Button size="sm" variant="outline" onClick={handleSaveVisibility} disabled={isSubmitting || !canUpdateSettings || localDonationVisible === !!infoSettings?.isDonationInfoPublic} className="font-bold border-primary/20">
                                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                                 Save visibility
                             </Button>
@@ -339,11 +339,13 @@ export default function InfoSettingsPage() {
 
             <Form {...form}>
                 <div className="space-y-6">
-                    <Card className="animate-fade-in-up border-primary/10 overflow-hidden shadow-sm">
+                    <Card className="animate-fade-in-up border-primary/10 overflow-hidden shadow-sm bg-white">
                         <CardHeader className="bg-primary/5 border-b">
                             <div className="flex items-center justify-between gap-4">
-                                <div><CardTitle className="font-bold tracking-tight">Donation content manager</CardTitle><CardDescription className="font-normal text-primary/70">Manage educational content for each donation category.</CardDescription></div>
-                                <Button onClick={() => { const id = `type_${Date.now()}`; appendDonationType({ id, title: 'New category', useCases: [], qaItems: [], hideKeyHighlights: false, hideUseCases: false, hideQA: false, hideUsage: false, hideRestrictions: false }); setActiveTab(id); setEditModes(p => ({ ...p, [id]: true })); }} variant="outline" size="sm" className="font-bold text-primary border-primary/20 active:scale-95 transition-transform"><Plus className="mr-2 h-4 w-4" /> Add category</Button>
+                                <div><CardTitle className="font-bold tracking-tight text-primary">Donation content manager</CardTitle><CardDescription className="font-normal text-primary/70">Manage educational content for each donation category.</CardDescription></div>
+                                {canUpdateSettings && (
+                                    <Button onClick={() => { const id = `type_${Date.now()}`; appendDonationType({ id, title: 'New category', useCases: [], qaItems: [], hideKeyHighlights: false, hideUseCases: false, hideQA: false, hideUsage: false, hideRestrictions: false }); setActiveTab(id); setEditModes(p => ({ ...p, [id]: true })); }} variant="outline" size="sm" className="font-bold text-primary border-primary/20 active:scale-95 transition-transform"><Plus className="mr-2 h-4 w-4" /> Add category</Button>
+                                )}
                             </div>
                         </CardHeader>
                         <CardContent className="p-0 font-normal">
@@ -373,7 +375,7 @@ export default function InfoSettingsPage() {
                                     const isEditingTab = editModes[typeId] || false;
                                     return (
                                         <TabsContent key={field.id} value={typeId} className="p-4 sm:p-8 space-y-8 animate-fade-in-up mt-0">
-                                            <div className="flex justify-between items-center bg-muted/20 p-4 rounded-lg"><div className="flex items-center gap-3"><h3 className="text-xl font-bold text-primary tracking-tight">{form.watch(`types.${index}.title`) || 'Category'}</h3><Badge variant={isEditingTab ? "default" : "secondary"} className="font-bold text-[10px]">{isEditingTab ? "Editing" : "Locked"}</Badge></div><div className="flex gap-2">{isEditingTab ? (<Button type="button" variant="outline" size="sm" onClick={() => setEditModes(p => ({...p, [typeId]: false}))} disabled={isSubmitting} className="font-bold"><X className="mr-2 h-4 w-4"/> Cancel</Button>) : (<Button type="button" variant="outline" size="sm" onClick={() => setEditModes(p => ({...p, [typeId]: true}))} className="font-bold text-primary border-primary/20"><Edit className="mr-2 h-4 w-4"/> Edit</Button>)}<Button type="button" variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => { if(confirm('Delete this entire category?')) { removeDonationType(index); if (donationTypeFields.length > 1) setActiveTab(form.getValues('types.0.id')); } }}><Trash2 className="h-5 w-5"/></Button></div></div>
+                                            <div className="flex justify-between items-center bg-muted/20 p-4 rounded-lg"><div className="flex items-center gap-3"><h3 className="text-xl font-bold text-primary tracking-tight">{form.watch(`types.${index}.title`) || 'Category'}</h3><Badge variant={isEditingTab ? "default" : "secondary"} className="font-bold text-[10px]">{isEditingTab ? "Editing" : "Locked"}</Badge></div><div className="flex gap-2">{isEditingTab ? (<Button type="button" variant="outline" size="sm" onClick={() => setEditModes(p => ({...p, [typeId]: false}))} disabled={isSubmitting} className="font-bold"><X className="mr-2 h-4 w-4"/> Cancel</Button>) : canUpdateSettings ? (<Button type="button" variant="outline" size="sm" onClick={() => setEditModes(p => ({...p, [typeId]: true}))} className="font-bold text-primary border-primary/20"><Edit className="mr-2 h-4 w-4"/> Edit</Button>) : null}{canUpdateSettings && <Button type="button" variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => { if(confirm('Delete this entire category?')) { removeDonationType(index); if (donationTypeFields.length > 1) setActiveTab(form.getValues('types.0.id')); } }}><Trash2 className="h-5 w-5"/></Button>}</div></div>
                                             <div className={cn("grid gap-8 transition-all", !isEditingTab && "opacity-70 pointer-events-none")}>
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                                                     <div className="md:col-span-2 space-y-4">
@@ -432,7 +434,7 @@ export default function InfoSettingsPage() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="border-t pt-6 flex justify-end gap-3"><Button type="button" variant="outline" size="lg" onClick={() => setEditModes(p => ({...p, [typeId]: false}))} disabled={isSubmitting || !isEditingTab} className="font-bold border-primary/20">Discard changes</Button><Button type="button" size="lg" onClick={() => handleSaveDonationCategory(index)} disabled={isSubmitting || !isEditingTab} className="font-bold shadow-md">{isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />} Save {form.watch(`types.${index}.title`) || 'category'}</Button></div>
+                                            <div className="border-t pt-6 flex justify-end gap-3"><Button type="button" variant="outline" size="lg" onClick={() => setEditModes(p => ({...p, [typeId]: false}))} disabled={isSubmitting || !isEditingTab} className="font-bold border-primary/20">Discard changes</Button><Button type="button" size="lg" onClick={() => handleSaveDonationCategory(index)} disabled={isSubmitting || !isEditingTab} className="font-bold shadow-md bg-primary text-white hover:bg-primary/90">{isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />} Save {form.watch(`types.${index}.title`) || 'category'}</Button></div>
                                         </TabsContent>
                                     );
                                 })}

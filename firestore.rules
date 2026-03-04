@@ -33,18 +33,22 @@ service cloud.firestore {
         if (p.get(module, {}).get(permission, false) == true) return true;
         
         // Check one level deeper for sub-modules: p.settings.info.update
-        // This is a common pattern in our UI configuration
         let modObj = p.get(module, {});
-        let subModules = modObj.keys();
         
-        // We can't easily iterate keys in rules, so we check common sub-module patterns
+        // We check common sub-module patterns used in our settings and initiative hubs
         return modObj.get('app', {}).get(permission, false) == true ||
                modObj.get('info', {}).get(permission, false) == true ||
                modObj.get('members', {}).get(permission, false) == true ||
                modObj.get('summary', {}).get(permission, false) == true ||
                modObj.get('ration', {}).get(permission, false) == true ||
                modObj.get('beneficiaries', {}).get(permission, false) == true ||
-               modObj.get('donations', {}).get(permission, false) == true;
+               modObj.get('donations', {}).get(permission, false) == true ||
+               modObj.get('viewport', {}).get(permission, false) == true ||
+               modObj.get('campaign', {}).get(permission, false) == true ||
+               modObj.get('lead', {}).get(permission, false) == true ||
+               modObj.get('donation', {}).get(permission, false) == true ||
+               modObj.get('beneficiary', {}).get(permission, false) == true ||
+               modObj.get('user', {}).get(permission, false) == true;
     }
 
     // ----------------------------------------------------------------------
