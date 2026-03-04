@@ -19,6 +19,7 @@ import {
     ShieldAlert,
     Trash2,
     ChevronDown,
+    Loader2
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -42,7 +43,7 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { SectionLoader } from '@/components/section-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
-const gridClass = "grid grid-cols-[50px_250px_120px_100px_100px_120px_140px_200px_60px] items-center gap-4 min-w-[1200px]";
+const gridClass = "grid grid-cols-[50px_250px_120px_100px_100px_120px_140px_200px_60px] items-center gap-4 px-4 py-3 min-w-[1200px]";
 
 export default function BeneficiariesPage() {
   const firestore = useFirestore();
@@ -99,7 +100,7 @@ export default function BeneficiariesPage() {
         <Alert variant="destructive">
             <ShieldAlert className="h-4 w-4"/>
             <AlertTitle className="font-bold">Access denied</AlertTitle>
-            <AlertDescription className="font-normal">Missing permissions to view beneficiaries.</AlertDescription>
+            <AlertDescription className="font-normal text-primary/70">Missing permissions to view beneficiaries.</AlertDescription>
         </Alert>
     </main>
   );
@@ -113,7 +114,7 @@ export default function BeneficiariesPage() {
       </div>
       
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight text-primary">Master beneficiary list ({beneficiaries?.length || 0})</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-primary uppercase">Master beneficiary list ({beneficiaries?.length || 0})</h1>
         <div className="flex items-center gap-2">
           <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync complete' : 'Sync failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="outline" size="sm" className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
             {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
@@ -132,7 +133,7 @@ export default function BeneficiariesPage() {
             <div className="flex flex-nowrap items-center gap-3 pb-2">
                 <div className="relative w-[300px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
-                    <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-primary/20 focus-visible:ring-primary font-bold text-primary" />
+                    <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-primary/20 focus-visible:ring-primary font-normal text-primary" />
                 </div>
                 <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
                     <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
@@ -160,7 +161,7 @@ export default function BeneficiariesPage() {
 
       <div className="rounded-lg border border-primary/10 bg-white overflow-hidden shadow-sm">
         <ScrollArea className="w-full">
-            <div className={cn("bg-primary/5 border-b border-primary/10 py-3 px-4 text-[11px] font-bold tracking-wider uppercase text-primary", gridClass)}>
+            <div className={cn("bg-primary/5 border-b border-primary/10 text-[11px] font-bold tracking-wider uppercase text-primary", gridClass)}>
                 <div>Sr.no.</div>
                 <div>Name</div>
                 <div>Phone</div>
@@ -224,27 +225,27 @@ export default function BeneficiariesPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 px-12 text-primary font-normal">
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Address</p>
-                        <p className="text-xs leading-relaxed">{b.address || 'N/A'}</p>
+                        <p className="text-xs leading-relaxed font-normal">{b.address || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Age</p>
-                        <p className="text-xs">{b.age || 'N/A'}</p>
+                        <p className="text-xs font-normal">{b.age || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Occupation</p>
-                        <p className="text-xs">{b.occupation || 'N/A'}</p>
+                        <p className="text-xs font-normal">{b.occupation || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Family details</p>
-                        <p className="text-xs">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
+                        <p className="text-xs font-normal">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">ID proof</p>
-                        <p className="text-xs">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
+                        <p className="text-xs font-normal">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Date added</p>
-                        <p className="text-xs">{b.addedDate || 'N/A'}</p>
+                        <p className="text-xs font-normal">{b.addedDate || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Zakat allocation</p>
@@ -252,7 +253,7 @@ export default function BeneficiariesPage() {
                     </div>
                     <div className="space-y-1 md:col-span-2">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Notes</p>
-                        <p className="text-xs italic opacity-80">{b.notes || (b.isEligibleForZakat ? `Eligible for zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
+                        <p className="text-xs italic opacity-80 font-normal">{b.notes || (b.isEligibleForZakat ? `Eligible for zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
                     </div>
                     </div>
                 </AccordionContent>
@@ -268,10 +269,10 @@ export default function BeneficiariesPage() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between border-t pt-4">
-          <p className="text-xs font-bold opacity-60">Page {currentPage} of {totalPages}</p>
+          <p className="text-xs font-bold opacity-60 uppercase">Page {currentPage} of {totalPages}</p>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 hover:bg-primary/10 text-primary">Previous</Button>
-            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 hover:bg-primary/10 text-primary">Next</Button>
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 hover:bg-primary/10 text-primary h-8">Previous</Button>
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 hover:bg-primary/10 text-primary h-8">Next</Button>
           </div>
         </div>
       )}

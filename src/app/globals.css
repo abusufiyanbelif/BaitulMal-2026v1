@@ -94,7 +94,44 @@
     --ring: 160 70% 45%;
   }
 
-  /* --- Theme Presets OMITTED for brevity but remained in actual file --- */
+  /* --- Custom Theme Presets --- */
+  .bmss-brand-warm {
+    --background: 45 60% 98%;
+    --foreground: 142 76% 15%;
+    --primary: 142 76% 30%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+    --secondary: 142 76% 95%;
+    --muted: 142 10% 90%;
+    --border: 142 20% 85%;
+    --ring: 142 76% 30%;
+  }
+
+  .ocean-blue {
+    --primary: 221 83% 53%;
+    --ring: 221 83% 53%;
+  }
+
+  .sunset-orange {
+    --primary: 25 95% 53%;
+    --ring: 25 95% 53%;
+  }
+
+  .royal-purple {
+    --primary: 262 83% 58%;
+    --ring: 262 83% 58%;
+  }
+
+  .midnight-ramadan {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 13%;
+    --primary: 45 93% 47%; /* Gold */
+    --primary-foreground: 222 47% 11%;
+    --accent: 142 70% 45%; /* Crescent Green */
+    --border: 217 32% 17%;
+  }
 
   * {
     @apply border-border;
@@ -103,6 +140,7 @@
   html, body {
     max-width: 100vw;
     overflow-x: hidden;
+    position: relative;
   }
 
   body {

@@ -73,7 +73,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
           </div>
           <CardHeader className="p-4">
             <div className="flex justify-between items-start gap-2">
-                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight text-primary">{lead.name}</CardTitle>
+                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight text-primary uppercase">{lead.name}</CardTitle>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -139,17 +139,17 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
         </CardHeader>
         <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal">
               <div className="flex justify-between items-center text-xs">
-                <Badge variant="outline" className="text-[10px] border-primary/20 font-normal text-primary">{lead.purpose}</Badge>
+                <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary uppercase">{lead.purpose}</Badge>
                 <Badge 
                   variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
-                  className={cn("text-[10px] font-bold", lead.status === 'Active' && "animate-status-pulse")}
+                  className={cn("text-[10px] font-bold uppercase", lead.status === 'Active' && "animate-status-pulse")}
                 >
                   {lead.status}
                 </Badge>
             </div>
               {(lead.targetAmount || 0) > 0 && (
                 <div className="space-y-1.5">
-                    <div className="flex justify-between text-[10px] font-normal opacity-60 tracking-tight">
+                    <div className="flex justify-between text-[10px] font-normal opacity-60 tracking-tight uppercase">
                         <span>Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
                         <span>{Math.round(lead.progress)}%</span>
                     </div>
@@ -159,7 +159,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
             )}
         </CardContent>
          <CardFooter className="p-2 border-t bg-primary/5">
-            <Button asChild className="w-full text-xs font-bold tracking-tight hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
+            <Button asChild className="w-full text-xs font-bold tracking-tight hover:bg-primary hover:text-white text-primary uppercase" size="sm" variant="ghost">
                 <Link href={`/leads-members/${lead.id}/summary`}>
                     View details
                 </Link>
@@ -196,7 +196,7 @@ export default function LeadPage() {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
           return {
               id: c.id,
-              text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
+              text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
               href: `/campaign-members/${c.id}/summary`
           };
       });
@@ -207,7 +207,7 @@ export default function LeadPage() {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
           return {
               id: l.id,
-              text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
+              text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
               href: `/leads-members/${l.id}/summary`
           };
       });
@@ -240,7 +240,7 @@ export default function LeadPage() {
     if (!firestore || !canUpdate) return;
     const docRef = doc(firestore, 'leads', leadToUpdate.id);
     const updateData = { [field]: value };
-    updateDoc(docRef, updateData)
+    updateDoc(docRef, updatedData)
         .then(() => toast({ title: 'Success', description: `Lead updated.`, variant: 'success' }))
         .catch(err => {
             const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData });
@@ -285,7 +285,7 @@ export default function LeadPage() {
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle className="font-bold">Access denied</AlertTitle>
-          <AlertDescription className="font-normal">Missing permissions to manage leads.</AlertDescription>
+          <AlertDescription className="font-normal text-primary/70">Missing permissions to manage leads.</AlertDescription>
         </Alert>
       </main>
     );
@@ -300,7 +300,7 @@ export default function LeadPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Leads</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-primary uppercase">Individual Leads</h1>
           <p className="text-sm max-w-2xl font-normal leading-relaxed opacity-70">Vetting and managing individual cases requiring organizational support.</p>
         </div>
 
@@ -309,7 +309,7 @@ export default function LeadPage() {
           <NewsTicker items={recentDonationsFormatted} label="Donation updates" variant="donation" />
         </div>
 
-        <Card className="animate-fade-in-zoom shadow-md border-primary/5 bg-white/30">
+        <Card className="animate-fade-in-zoom shadow-md border-primary/5 bg-white/30 overflow-hidden">
           <CardHeader className="p-4 border-b bg-primary/5">
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex flex-nowrap items-center gap-3 pb-2">
@@ -333,7 +333,7 @@ export default function LeadPage() {
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">
                       <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
-                        <span className="text-lg font-bold tracking-tight text-primary">{section.title}</span>
+                        <span className="text-lg font-bold tracking-tight text-primary uppercase">{section.title}</span>
                         <span className="inline-flex items-center justify-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">{section.items.length}</span>
                       </div>
                     </AccordionTrigger>
@@ -358,7 +358,7 @@ export default function LeadPage() {
       </main>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete appeal?</AlertDialogTitle><AlertDialogDescription className="font-normal opacity-80">Permanently erase all data for '{leadToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90">Confirm deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Delete appeal?</AlertDialogTitle><AlertDialogDescription className="font-normal opacity-80">Permanently erase all data for '{leadToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90">Confirm deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
         
       <CopyLeadDialog open={!!leadToCopy} onOpenChange={() => setLeadToCopy(null)} lead={leadToCopy} onCopyConfirm={async (opt) => { const res = await copyLeadAction({ sourceLeadId: leadToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setLeadToCopy(null); }}/>

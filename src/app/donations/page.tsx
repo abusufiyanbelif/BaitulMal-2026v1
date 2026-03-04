@@ -80,24 +80,24 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
 
     return (
         <>
-            <TableRow onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? "open" : "closed"} className="cursor-pointer bg-background hover:bg-accent/50 group">
+            <TableRow onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? "open" : "closed"} className="cursor-pointer bg-background hover:bg-accent/50 group transition-colors">
                 <TableCell className="pl-4">
                     <div className="flex items-center gap-2">
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
                             {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                         </Button>
-                        <span className="font-mono text-xs">{index}</span>
+                        <span className="font-mono text-xs">{(index)}</span>
                     </div>
                 </TableCell>
                 <TableCell>
-                    <div className="font-normal text-foreground whitespace-nowrap">{donation.donorName}</div>
-                    <div className="text-xs text-muted-foreground font-mono">{donation.donorPhone}</div>
+                    <div className="font-bold text-sm text-foreground whitespace-nowrap">{donation.donorName}</div>
+                    <div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone || 'N/A'}</div>
                 </TableCell>
-                <TableCell className="text-right font-normal font-mono text-primary">₹{donation.amount.toFixed(2)}</TableCell>
+                <TableCell className="text-right font-bold font-mono text-primary text-sm">₹{donation.amount.toFixed(2)}</TableCell>
                 <TableCell className="whitespace-nowrap text-xs font-normal text-foreground">{donation.donationDate}</TableCell>
-                <TableCell><Badge variant="secondary" className="text-[10px] font-normal">{donation.donationType}</Badge></TableCell>
+                <TableCell><Badge variant="secondary" className="text-[9px] font-bold uppercase">{donation.donationType}</Badge></TableCell>
                 <TableCell>
-                    <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'} className="text-[10px] font-normal">
+                    <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'} className="text-[9px] font-bold uppercase">
                         {donation.status}
                     </Badge>
                 </TableCell>
@@ -123,7 +123,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                 </TableCell>
             </TableRow>
             {isOpen && (
-                <TableRow className="bg-primary/5 hover:bg-primary/5 border-b border-primary/10">
+                <TableRow className="bg-primary/[0.02] hover:bg-primary/[0.02] border-b border-primary/10">
                     <TableCell colSpan={8} className="p-4">
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -132,10 +132,10 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                     <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
                                         <ScrollArea className="w-full">
                                             <Table>
-                                                <TableHeader><TableRow className="bg-primary/5"><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Category</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead></TableRow></TableHeader>
+                                                <TableHeader className="bg-primary/5"><TableRow><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Category</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Value</TableHead></TableRow></TableHeader>
                                                 <TableBody>
                                                     {(donation.typeSplit || []).map(split => (
-                                                        <TableRow key={split.category} className="h-8"><TableCell className="py-1 text-xs font-normal text-foreground whitespace-nowrap">{split.category}</TableCell><TableCell className="text-right font-normal font-mono py-1 text-primary text-xs">₹{split.amount.toFixed(2)}</TableCell></TableRow>
+                                                        <TableRow key={split.category} className="h-8 hover:bg-muted/30"><TableCell className="py-1 text-[11px] font-normal text-foreground whitespace-nowrap">{split.category}</TableCell><TableCell className="text-right font-bold font-mono py-1 text-primary text-[11px]">₹{split.amount.toFixed(2)}</TableCell></TableRow>
                                                     ))}
                                                 </TableBody>
                                             </Table>
@@ -148,15 +148,15 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                     <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
                                         <ScrollArea className="w-full">
                                             <Table>
-                                                <TableHeader><TableRow className="bg-primary/5"><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Initiative</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead></TableRow></TableHeader>
+                                                <TableHeader><TableRow className="bg-primary/5"><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Target</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Allocated</TableHead></TableRow></TableHeader>
                                                 <TableBody>
                                                     {(donation.linkSplit || []).map(link => (
-                                                        <TableRow key={link.linkId} className="h-8">
+                                                        <TableRow key={link.linkId} className="h-8 hover:bg-muted/30">
                                                             <TableCell className="flex items-center gap-2 py-1">
                                                                 {link.linkType === 'campaign' ? <FolderKanban className="h-3 w-3 text-primary/40" /> : <Lightbulb className="h-3 w-3 text-primary/40" />}
                                                                 <span className="text-[10px] font-normal text-foreground whitespace-nowrap">{link.linkName}</span>
                                                             </TableCell>
-                                                            <TableCell className="text-right font-normal font-mono py-1 text-primary text-xs">₹{link.amount.toFixed(2)}</TableCell>
+                                                            <TableCell className="text-right font-bold font-mono py-1 text-primary text-[11px]">₹{link.amount.toFixed(2)}</TableCell>
                                                         </TableRow>
                                                     ))}
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
@@ -170,22 +170,22 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><ImageIcon className="h-3 w-3"/> Transaction records</h4>
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><ImageIcon className="h-3 w-3"/> Verified transaction logs</h4>
                                 <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
                                     <ScrollArea className="w-full">
                                         <Table>
                                             <TableHeader>
                                                 <TableRow className="bg-primary/5">
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Reference ID</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Sum</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Ref ID</TableHead>
                                                     <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Date</TableHead>
                                                     <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Artifact</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
                                                 {(donation.transactions || []).map((tx) => (
-                                                    <TableRow key={tx.id}>
-                                                        <TableCell className="font-normal font-mono text-primary text-xs py-2">₹{tx.amount.toFixed(2)}</TableCell>
+                                                    <TableRow key={tx.id} className="hover:bg-muted/30">
+                                                        <TableCell className="font-bold font-mono text-primary text-[11px] py-2">₹{tx.amount.toFixed(2)}</TableCell>
                                                         <TableCell className="font-mono text-[10px] py-2 text-foreground whitespace-nowrap">{tx.transactionId || 'N/A'}</TableCell>
                                                         <TableCell className="text-[10px] font-normal text-muted-foreground py-2 whitespace-nowrap">{tx.date || donation.donationDate}</TableCell>
                                                         <TableCell className="text-right py-2">
@@ -193,7 +193,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                                                 <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/10" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
                                                                     <ImageIcon className="mr-1 h-3 w-3" /> View
                                                                 </Button>
-                                                            ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40">No artifact</span>}
+                                                            ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40">None</span>}
                                                         </TableCell>
                                                     </TableRow>
                                                 ))}
@@ -322,7 +322,7 @@ export default function DonationsPage() {
         });
         errorEmitter.emit('permission-error', permissionError);
     });
-    toast({ title: "Donation saved", description: "The record is being synchronized in the background.", variant: 'success' });
+    toast({ title: "Donation synchronized", description: "The financial record is now secured.", variant: 'success' });
   };
 
   const handleDeleteConfirm = async () => {
@@ -342,24 +342,24 @@ export default function DonationsPage() {
 
   const isLoading = areDonationsLoading || isProfileLoading;
 
-  if (isLoading) return <SectionLoader label="Loading donation records..." description="Retrieving verified financial logs." />;
+  if (isLoading) return <SectionLoader label="Loading donation records..." description="Retrieving organizational financial logs." />;
 
   return (
     <main className="container mx-auto p-4 md:p-8">
-        <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold tracking-tighter text-primary">Donations</h1>
-            <div className="flex gap-2">
-                <Button variant="outline" onClick={handleSync} disabled={isSyncing} className="font-bold text-[10px] border-primary/20 text-primary active:scale-95 transition-transform">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <h1 className="text-3xl font-bold tracking-tighter text-primary uppercase">Financial Donations</h1>
+            <div className="flex gap-2 w-full sm:w-auto">
+                <Button variant="outline" onClick={handleSync} disabled={isSyncing} className="flex-1 sm:flex-none font-bold text-[10px] border-primary/20 text-primary active:scale-95 transition-transform">
                   {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
-                  Sync donations
+                  Sync logs
                 </Button>
-                <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md">
+                <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md">
                   <PlusCircle className="mr-2 h-4 w-4" /> Add record
                 </Button>
             </div>
         </div>
 
-        <Card className="shadow-md border-primary/10 bg-white">
+        <Card className="shadow-sm border-primary/10 bg-white overflow-hidden">
             <CardHeader className="bg-primary/5 p-4 border-b">
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex flex-nowrap gap-2 pb-2">
@@ -380,16 +380,16 @@ export default function DonationsPage() {
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
                     <Table>
-                        <TableHeader>
-                            <TableRow className="bg-primary/5">
+                        <TableHeader className="bg-primary/5">
+                            <TableRow>
                                 <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">#</SortableHeader>
-                                <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor info</SortableHeader>
-                                <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right">Value</SortableHeader>
-                                <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort}>Entry date</SortableHeader>
-                                <TableHead className="text-primary font-bold text-xs">Method</TableHead>
+                                <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
+                                <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right">Sum (₹)</SortableHeader>
+                                <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort}>Date</SortableHeader>
+                                <TableHead className="text-primary font-bold text-[10px] uppercase tracking-wider">Method</TableHead>
                                 <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
-                                <TableHead className="text-primary font-bold text-xs">Initiative</TableHead>
-                                <TableHead className="text-right pr-4 text-primary font-bold text-xs">Opt</TableHead>
+                                <TableHead className="text-primary font-bold text-[10px] uppercase tracking-wider">Target</TableHead>
+                                <TableHead className="text-right pr-4 text-primary font-bold text-[10px] uppercase tracking-wider">Opt</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -412,8 +412,8 @@ export default function DonationsPage() {
                 </ScrollArea>
             </CardContent>
             {totalPages > 1 && (
-                <CardFooter className="flex justify-between items-center py-4 border-t bg-primary/5">
-                    <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} of {totalPages}</p>
+                <CardFooter className="flex justify-between items-center py-4 border-t bg-primary/5 p-4">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Page {currentPage} of {totalPages}</p>
                     <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold h-8 border-primary/20 text-primary">Previous</Button>
                         <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold h-8 border-primary/20 text-primary">Next</Button>
@@ -423,9 +423,9 @@ export default function DonationsPage() {
         </Card>
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
-                <DialogHeader className="px-6 py-4 border-b">
-                    <DialogTitle className="text-xl font-bold text-primary">{editingDonation ? 'Edit' : 'Add'} donation record</DialogTitle>
+            <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden p-0">
+                <DialogHeader className="px-6 py-4 border-b bg-primary/5">
+                    <DialogTitle className="text-xl font-bold text-primary uppercase tracking-tight">{editingDonation ? 'Edit' : 'Add'} donation record</DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="flex-1 px-6 py-4">
                     <DonationForm 
@@ -436,15 +436,15 @@ export default function DonationsPage() {
                         leads={allLeads || []} 
                     />
                 </ScrollArea>
-                <DialogFooter className="px-6 py-4 border-t">
-                    <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold">Close</Button>
+                <DialogFooter className="px-6 py-4 border-t bg-muted/5">
+                    <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold">Close Form</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent>
-                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete donation record?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">This will permanently erase the record and all transaction screenshots. This action cannot be reversed.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Delete record?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently erase this donation record and all attached artifacts. This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90">Confirm deletion</AlertDialogAction>
@@ -453,21 +453,21 @@ export default function DonationsPage() {
         </AlertDialog>
 
         <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-            <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col">
-                <DialogHeader><DialogTitle className="text-xl font-bold text-primary">Artifact viewer</DialogTitle></DialogHeader>
-                <ScrollArea className="flex-1 mt-4 rounded-md border border-primary/10 bg-secondary/20">
+            <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0">
+                <DialogHeader className="px-6 py-4 border-b"><DialogTitle className="text-xl font-bold text-primary">Artifact viewer</DialogTitle></DialogHeader>
+                <ScrollArea className="flex-1 bg-secondary/20">
                     <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
                         {imageToView && (
-                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Screenshot" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Verification" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                         )}
                     </div>
                     <ScrollBar orientation="both" />
                 </ScrollArea>
-                <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-[10px] border-primary/20 text-primary"><ZoomIn className="mr-2 h-4 w-4"/> Zoom in</Button>
-                    <Button variant="outline" size="sm" onClick={() => setZoom(z => z / 1.2) } className="font-bold text-[10px] border-primary/20 text-primary"><ZoomOut className="mr-2 h-4 w-4"/> Zoom out</Button>
-                    <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/20 text-primary"><RotateCw className="mr-2 h-4 w-4"/> Rotate</Button>
-                    <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/20 text-primary"><RefreshCw className="mr-2 h-4 w-4"/> Reset</Button>
+                <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
+                    <Button variant="outline" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-[10px] border-primary/20 text-primary"><ZoomIn className="mr-1 h-4 w-4"/> In</Button>
+                    <Button variant="outline" size="sm" onClick={() => setZoom(z => z / 1.2) } className="font-bold text-[10px] border-primary/20 text-primary"><ZoomOut className="mr-1 h-4 w-4"/> Out</Button>
+                    <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/20 text-primary"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
+                    <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/20 text-primary"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

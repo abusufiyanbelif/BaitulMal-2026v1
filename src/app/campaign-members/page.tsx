@@ -91,7 +91,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
           </div>
           <CardHeader className="p-4">
             <div className="flex justify-between items-start gap-2">
-                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight text-primary">
+                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight text-primary uppercase">
                     {campaign.campaignNumber && <span className="text-primary font-bold">#{campaign.campaignNumber} </span>}{campaign.name}
                 </CardTitle>
                   <DropdownMenu>
@@ -159,17 +159,17 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
           </CardHeader>
           <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal">
               <div className="flex justify-between items-center text-xs">
-                <Badge variant="secondary" className="text-[10px] font-normal">{campaign.category}</Badge>
+                <Badge variant="secondary" className="text-[10px] font-bold uppercase">{campaign.category}</Badge>
                 <Badge 
                   variant={campaign.status === 'Active' ? 'success' : 'outline'}
-                  className={cn("text-[10px] font-normal", campaign.status === 'Active' && "animate-status-pulse")}
+                  className={cn("text-[10px] font-bold uppercase", campaign.status === 'Active' && "animate-status-pulse")}
                 >
                   {campaign.status}
                 </Badge>
             </div>
             {(campaign.targetAmount || 0) > 0 && (
                 <div className="space-y-1.5">
-                    <div className="flex justify-between text-[10px] font-normal text-muted-foreground">
+                    <div className="flex justify-between text-[10px] font-normal text-muted-foreground uppercase">
                         <span>Raised: ₹{campaign.collected.toLocaleString('en-IN')}</span>
                         <span>{Math.round(campaign.progress)}%</span>
                     </div>
@@ -179,7 +179,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
             )}
           </CardContent>
           <CardFooter className="p-2 border-t bg-primary/5">
-            <Button asChild className="w-full text-xs font-bold tracking-tight" size="sm" variant="ghost">
+            <Button asChild className="w-full text-xs font-bold tracking-tight uppercase" size="sm" variant="ghost">
                 <Link href={`/campaign-members/${campaign.id}/summary`}>
                     View details
                 </Link>
@@ -216,7 +216,7 @@ export default function CampaignPage() {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
           return {
               id: c.id,
-              text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
+              text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
               href: `/campaign-members/${c.id}/summary`
           };
       });
@@ -227,7 +227,7 @@ export default function CampaignPage() {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
           return {
               id: l.id,
-              text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
+              text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
               href: `/leads-members/${l.id}/summary`
           };
       });
@@ -307,7 +307,7 @@ export default function CampaignPage() {
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle className="font-bold">Access denied</AlertTitle>
-          <AlertDescription className="font-normal">Missing permissions to manage campaigns.</AlertDescription>
+          <AlertDescription className="font-normal text-primary/70">Missing permissions to manage campaigns.</AlertDescription>
         </Alert>
       </main>
     );
@@ -328,7 +328,7 @@ export default function CampaignPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Campaigns</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-primary uppercase">Campaign Hub</h1>
           <p className="text-sm max-w-2xl font-normal leading-relaxed opacity-70">Organization-wide initiatives, budget vetting, and strategic tracking.</p>
         </div>
 
@@ -337,7 +337,7 @@ export default function CampaignPage() {
           <NewsTicker items={recentDonationsFormatted} label="Donation updates" variant="donation" />
         </div>
 
-        <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white/30">
+        <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white/30 overflow-hidden">
           <CardHeader className="p-4 sm:p-6 border-b bg-primary/5">
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex flex-nowrap items-center gap-3 pb-2">
@@ -361,7 +361,7 @@ export default function CampaignPage() {
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">
                       <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
-                        <span className="text-lg font-bold tracking-tight">{section.title}</span>
+                        <span className="text-lg font-bold tracking-tight uppercase">{section.title}</span>
                         <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-bold bg-primary/10">{section.items.length}</Badge>
                       </div>
                     </AccordionTrigger>
