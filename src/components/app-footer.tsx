@@ -94,7 +94,7 @@ export function AppFooter() {
                             <p>{paymentSettings.address}</p>
                         </div>
                     )}
-                    {isLoading ? <Skeleton className="h-4 w-3/4" /> : paymentSettings?.regNo && <p>Reg. No.: {paymentSettings.regNo}</p>}
+                    {isLoading ? <Skeleton className="h-4 w-3/4" /> : paymentSettings?.regNo && <p>Reg. no.: {paymentSettings.regNo}</p>}
                     {isLoading ? <Skeleton className="h-4 w-1/2" /> : paymentSettings?.pan && <p>PAN: {paymentSettings.pan}</p>}
                 </div>
 
@@ -199,7 +199,7 @@ export function AppFooter() {
                             </DialogHeader>
                             <div className="flex items-center justify-center p-6 bg-secondary/30 rounded-xl border border-primary/10">
                                 <div className="relative bg-white p-4 rounded-lg shadow-sm border-4 border-primary">
-                                    <Image src={`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`} alt="UPI QR code" className="w-full max-w-[240px] h-auto" width={300} height={300} />
+                                    <Image src={`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`} alt="UPI QR code" className="w-full max-w-[240px] h-auto" width={300} height={300} unoptimized />
                                 </div>
                             </div>
                             <DialogFooter>

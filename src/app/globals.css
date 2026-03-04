@@ -40,6 +40,50 @@
     --chart-8: 45 93% 47%;
   }
 
+  /* Theme: BMSS Brand (Warm) */
+  .bmss-brand-warm {
+    --background: 45 60% 98%;
+    --foreground: 142 76% 15%;
+    --card: 45 60% 96%;
+    --card-foreground: 142 76% 15%;
+    --primary: 142 76% 30%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+    --secondary: 142 76% 95%;
+    --muted: 45 10% 90%;
+    --border: 142 20% 85%;
+    --ring: 142 76% 30%;
+  }
+
+  /* Theme: Sunset Orange */
+  .sunset-orange {
+    --background: 25 100% 99%;
+    --foreground: 25 95% 10%;
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 45 93% 47%;
+    --accent-foreground: 0 0% 100%;
+    --secondary: 25 95% 95%;
+    --muted: 25 10% 95%;
+    --border: 25 20% 90%;
+    --ring: 25 95% 53%;
+  }
+
+  /* Other Palettes */
+  .bmss-brand-1 { --primary: 160 84% 33%; --secondary: 160 84% 95%; --accent: 45 100% 50%; }
+  .bmss-brand-2 { --primary: 174 100% 29%; --secondary: 174 100% 95%; --accent: 15 100% 50%; }
+  .ocean-blue { --background: 221 83% 99%; --primary: 221 83% 53%; --secondary: 221 83% 95%; --accent: 191 91% 42%; }
+  .royal-purple { --primary: 262 83% 58%; --secondary: 262 83% 95%; --accent: 320 100% 50%; }
+  .forest-amber { --primary: 142 76% 36%; --secondary: 142 76% 95%; --accent: 38 92% 50%; }
+  .ocean-breeze { --primary: 191 91% 42%; --secondary: 191 91% 95%; --accent: 221 83% 53%; }
+  .lavender-mint { --primary: 262 70% 60%; --accent: 160 70% 40%; --secondary: 262 70% 95%; }
+  .sunrise-peach { --primary: 12 100% 63%; --accent: 45 93% 47%; --secondary: 12 100% 95%; }
+  .classic-crimson { --primary: 0 72% 51%; --accent: 215 25% 27%; --secondary: 0 72% 95%; }
+  .professional-slate { --primary: 215 25% 27%; --accent: 160 70% 40%; --secondary: 215 25% 95%; }
+  .earthy-tones { --primary: 25 30% 40%; --accent: 142 70% 45%; --secondary: 25 30% 95%; }
+
+  /* Dark Modes */
   .dark {
     --background: 150 40% 5%;
     --foreground: 160 10% 95%;
@@ -64,46 +108,6 @@
     --ring: 160 70% 45%;
   }
 
-  .bmss-brand-warm {
-    --background: 45 60% 98%;
-    --foreground: 142 76% 15%;
-    --card: 45 60% 96%;
-    --card-foreground: 142 76% 15%;
-    --primary: 142 76% 30%;
-    --primary-foreground: 0 0% 100%;
-    --accent: 38 92% 50%;
-    --accent-foreground: 0 0% 100%;
-    --secondary: 142 76% 95%;
-    --muted: 45 10% 90%;
-    --border: 142 20% 85%;
-    --ring: 142 76% 30%;
-  }
-
-  .sunset-orange {
-    --background: 25 100% 99%;
-    --foreground: 25 95% 10%;
-    --primary: 25 95% 53%;
-    --primary-foreground: 0 0% 100%;
-    --accent: 45 93% 47%;
-    --accent-foreground: 0 0% 100%;
-    --secondary: 25 95% 95%;
-    --muted: 25 10% 95%;
-    --border: 25 20% 90%;
-    --ring: 25 95% 53%;
-  }
-
-  /* Standard theme overrides based on ID selection */
-  .bmss-brand-1 { --primary: 160 84% 33%; --secondary: 160 84% 95%; --accent: 45 100% 50%; }
-  .bmss-brand-2 { --primary: 174 100% 29%; --secondary: 174 100% 95%; --accent: 15 100% 50%; }
-  .ocean-blue { --background: 221 83% 99%; --primary: 221 83% 53%; --secondary: 221 83% 95%; --accent: 191 91% 42%; }
-  .royal-purple { --primary: 262 83% 58%; --secondary: 262 83% 95%; --accent: 320 100% 50%; }
-  .forest-amber { --primary: 142 76% 36%; --secondary: 142 76% 95%; --accent: 38 92% 50%; }
-  .ocean-breeze { --primary: 191 91% 42%; --secondary: 191 91% 95%; --accent: 221 83% 53%; }
-  .lavender-mint { --primary: 262 70% 60%; --accent: 160 70% 40%; --secondary: 262 70% 95%; }
-  .sunrise-peach { --primary: 12 100% 63%; --accent: 45 93% 47%; --secondary: 12 100% 95%; }
-  .classic-crimson { --primary: 0 72% 51%; --accent: 215 25% 27%; --secondary: 0 72% 95%; }
-  .professional-slate { --primary: 215 25% 27%; --accent: 160 70% 40%; --secondary: 215 25% 95%; }
-  .earthy-tones { --primary: 25 30% 40%; --accent: 142 70% 45%; --secondary: 25 30% 95%; }
   .midnight-ramadan { --background: 222 47% 11%; --foreground: 210 40% 98%; --card: 222 47% 13%; --primary: 45 93% 47%; --accent: 142 70% 45%; }
   .slate-lime { --background: 215 25% 10%; --foreground: 210 40% 98%; --primary: 84 81% 44%; --card: 215 25% 12%; }
   .midnight-emerald { --background: 160 50% 5%; --foreground: 160 10% 95%; --primary: 160 70% 45%; --card: 160 50% 7%; }

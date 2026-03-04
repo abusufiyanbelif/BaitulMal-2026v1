@@ -12,8 +12,6 @@ import {
     Sun, 
     Monitor, 
     Zap, 
-    ZapOff, 
-    Type, 
     Palette, 
     MousePointer2, 
     Info, 
@@ -69,7 +67,7 @@ export default function ViewportSettingsPage() {
             toast({ title: "Settings saved", description: "Display preferences updated.", variant: "success" });
             setIsEditMode(false);
         } catch (error) {
-            toast({ title: "Save failed", variant: "destructive" });
+            toast({ title: "Save failed", description: "An error occurred while saving display settings.", variant: "destructive" });
         } finally { setIsSubmitting(false); }
     };
 
@@ -148,8 +146,8 @@ export default function ViewportSettingsPage() {
                             <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold"><Info className="h-5 w-5" /> Technical audit</CardTitle></CardHeader>
                             <CardContent className="pt-6 space-y-4">
                                 <div className="flex justify-between items-center py-2 border-b border-dashed"><div className="flex items-center gap-2"><Palette className="h-4 w-4 text-muted-foreground"/><span className="text-xs font-bold uppercase tracking-tight">Active theme</span></div><Badge variant="outline" className="font-bold text-primary">{currentThemeName}</Badge></div>
-                                <div className="flex justify-between items-center py-2 border-b border-dashed"><div className="flex items-center gap-2"><Type className="h-4 w-4 text-muted-foreground"/><span className="text-xs font-bold uppercase tracking-tight">Typography</span></div><div className="flex gap-1"><Badge variant="secondary" className="font-bold text-[10px]">SPACE GROTESK</Badge><Badge variant="secondary" className="font-bold text-[10px]">INTER</Badge></div></div>
-                                <div className="flex justify-between items-center py-2 border-b border-dashed"><div className="flex items-center gap-2"><MousePointer2 className="h-4 w-4 text-muted-foreground"/><span className="text-xs font-bold uppercase tracking-tight">Transitions</span></div><span className="text-xs font-mono font-bold text-primary">{animationsEnabled ? '200ms' : '0.01ms'}</span></div>
+                                <div className="flex justify-between items-center py-2 border-b border-dashed"><div className="flex items-center gap-2"><Monitor className="h-4 w-4 text-muted-foreground"/><span className="text-xs font-bold uppercase tracking-tight">Typography</span></div><div className="flex gap-1"><Badge variant="secondary" className="font-bold text-[10px]">SPACE GROTESK</Badge><Badge variant="secondary" className="font-bold text-[10px]">INTER</Badge></div></div>
+                                <div className="flex justify-between items-center py-2 border-b border-dashed"><div className="flex items-center gap-2"><MousePointer2 className="h-4 w-4 text-muted-foreground"/><span className="text-xs font-bold uppercase tracking-tight">Transitions</span></div><span className="text-xs font-mono font-bold text-primary">{animationsEnabled ? '200ms' : '0ms'}</span></div>
                                 <div className="flex justify-between items-center py-2"><div className="flex items-center gap-2"><Eye className="h-4 w-4 text-muted-foreground"/><span className="text-xs font-bold uppercase tracking-tight">Accessibility</span></div><Badge variant="success" className="text-[9px] font-bold">OPTIMIZED</Badge></div>
                             </CardContent>
                         </Card>
