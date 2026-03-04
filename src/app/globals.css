@@ -22,10 +22,6 @@
     --destructive-foreground: 0 0% 100%;
     --success: 142.1 70.6% 45.3%;
     --success-foreground: 0 0% 100%;
-    --warning: 38.8 92.3% 50.2%;
-    --warning-foreground: 0 0% 100%;
-    --info: 217.2 91.2% 59.8%;
-    --info-foreground: 0 0% 100%;
     --border: 160 10% 85%;
     --input: 160 10% 85%;
     --ring: 160 70% 40%;
@@ -35,96 +31,90 @@
     --chart-3: 221 83% 53%;
     --chart-4: 25 95% 53%;
     --chart-5: 262 83% 58%;
-    --chart-6: 191 91% 42%;
-    --chart-7: 0 0% 0%;
-    --chart-8: 45 93% 47%;
   }
 
-  /* Theme: BMSS Brand (Warm) */
+  /* BMSS Brand Warm - Indian Green Combination */
   .bmss-brand-warm {
-    --background: 45 60% 98%;
+    --background: 50 60% 97%; /* Creamy Background */
     --foreground: 142 76% 15%;
-    --card: 45 60% 96%;
-    --card-foreground: 142 76% 15%;
-    --primary: 142 76% 30%;
+    --primary: 142 76% 25%; /* Indian Emerald Green */
     --primary-foreground: 0 0% 100%;
-    --accent: 38 92% 50%;
+    --secondary: 142 76% 92%;
+    --accent: 38 92% 50%; /* Amber/Gold Accent */
     --accent-foreground: 0 0% 100%;
-    --secondary: 142 76% 95%;
-    --muted: 45 10% 90%;
-    --border: 142 20% 85%;
-    --ring: 142 76% 30%;
+    --muted: 50 20% 90%;
+    --border: 142 20% 80%;
+    --ring: 142 76% 25%;
   }
 
-  /* Theme: Sunset Orange */
-  .sunset-orange {
-    --background: 25 100% 99%;
-    --foreground: 25 95% 10%;
-    --primary: 25 95% 53%;
-    --primary-foreground: 0 0% 100%;
-    --accent: 45 93% 47%;
-    --accent-foreground: 0 0% 100%;
-    --secondary: 25 95% 95%;
-    --muted: 25 10% 95%;
-    --border: 25 20% 90%;
-    --ring: 25 95% 53%;
-  }
+  /* Light Variations */
+  .ocean-blue { --primary: 221 83% 53%; --secondary: 221 83% 95%; --accent: 191 91% 42%; }
+  .sunset-orange { --primary: 25 95% 53%; --secondary: 25 95% 95%; --accent: 45 93% 47%; }
+  .sunrise-peach { --primary: 12 100% 63%; --secondary: 12 100% 95%; --accent: 45 93% 47%; }
+  .lavender-mint { --primary: 262 70% 60%; --secondary: 262 70% 95%; --accent: 160 70% 40%; }
 
-  /* Other Palettes */
-  .bmss-brand-1 { --primary: 160 84% 33%; --secondary: 160 84% 95%; --accent: 45 100% 50%; }
-  .bmss-brand-2 { --primary: 174 100% 29%; --secondary: 174 100% 95%; --accent: 15 100% 50%; }
-  .ocean-blue { --background: 221 83% 99%; --primary: 221 83% 53%; --secondary: 221 83% 95%; --accent: 191 91% 42%; }
-  .royal-purple { --primary: 262 83% 58%; --secondary: 262 83% 95%; --accent: 320 100% 50%; }
-  .forest-amber { --primary: 142 76% 36%; --secondary: 142 76% 95%; --accent: 38 92% 50%; }
-  .ocean-breeze { --primary: 191 91% 42%; --secondary: 191 91% 95%; --accent: 221 83% 53%; }
-  .lavender-mint { --primary: 262 70% 60%; --accent: 160 70% 40%; --secondary: 262 70% 95%; }
-  .sunrise-peach { --primary: 12 100% 63%; --accent: 45 93% 47%; --secondary: 12 100% 95%; }
-  .classic-crimson { --primary: 0 72% 51%; --accent: 215 25% 27%; --secondary: 0 72% 95%; }
-  .professional-slate { --primary: 215 25% 27%; --accent: 160 70% 40%; --secondary: 215 25% 95%; }
-  .earthy-tones { --primary: 25 30% 40%; --accent: 142 70% 45%; --secondary: 25 30% 95%; }
-
-  /* Dark Modes */
+  /* Dark Variations */
   .dark {
     --background: 150 40% 5%;
     --foreground: 160 10% 95%;
     --card: 150 40% 7%;
     --card-foreground: 160 10% 95%;
-    --popover: 150 40% 7%;
-    --popover-foreground: 160 10% 95%;
     --primary: 160 70% 45%;
     --primary-foreground: 0 0% 100%;
     --secondary: 160 30% 15%;
-    --secondary-foreground: 160 10% 95%;
-    --muted: 160 20% 15%;
-    --muted-foreground: 160 10% 60%;
     --accent: 38.8 92.3% 55%;
-    --accent-foreground: 0 0% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-    --success: 142.1 70.6% 45.3%;
-    --success-foreground: 0 0% 100%;
     --border: 160 20% 20%;
-    --input: 160 20% 20%;
     --ring: 160 70% 45%;
   }
 
-  .midnight-ramadan { --background: 222 47% 11%; --foreground: 210 40% 98%; --card: 222 47% 13%; --primary: 45 93% 47%; --accent: 142 70% 45%; }
-  .slate-lime { --background: 215 25% 10%; --foreground: 210 40% 98%; --primary: 84 81% 44%; --card: 215 25% 12%; }
-  .midnight-emerald { --background: 160 50% 5%; --foreground: 160 10% 95%; --primary: 160 70% 45%; --card: 160 50% 7%; }
+  .midnight-ramadan { 
+    --background: 222 47% 11%; 
+    --foreground: 210 40% 98%; 
+    --primary: 45 93% 47%; /* Gold Primary */
+    --accent: 142 70% 45%; /* Green Accent */
+    --card: 222 47% 13%;
+  }
+  .midnight-emerald { --background: 160 50% 5%; --primary: 160 70% 45%; --accent: 38 92% 50%; }
   .cyberpunk-neon { --background: 280 50% 5%; --foreground: 180 100% 50%; --primary: 320 100% 50%; --accent: 180 100% 50%; }
-  .dracula-orchid { --background: 231 15% 18%; --foreground: 60 30% 96%; --primary: 265 89% 78%; }
-  .github-dark { --background: 220 40% 8%; --foreground: 210 20% 98%; --primary: 210 20% 98%; }
-  .solarized-dark { --background: 192 100% 11%; --foreground: 44 20% 90%; --primary: 175 59% 40%; }
-  .forest-night { --background: 140 20% 8%; --foreground: 140 10% 90%; --primary: 140 50% 45%; }
-  .rose-pine { --background: 249 22% 12%; --foreground: 245 50% 91%; --primary: 2 55% 83%; }
-  .tokyo-night { --background: 234 44% 11%; --foreground: 228 24% 72%; --primary: 217 91% 60%; }
-  .nord { --background: 220 16% 22%; --foreground: 218 27% 92%; --primary: 193 43% 67%; }
-  .monokai { --background: 233 12% 13%; --foreground: 60 30% 96%; --primary: 50 100% 50%; }
+  .dracula-orchid { --background: 231 15% 18%; --foreground: 60 30% 96%; --primary: 265 89% 78%; --accent: 320 100% 50%; }
+  .github-dark { --background: 220 40% 8%; --foreground: 210 20% 98%; --primary: 210 20% 98%; --accent: 38 92% 50%; }
 
   * { @apply border-border; }
-  body { @apply min-h-screen bg-background antialiased font-normal leading-normal text-[14px]; font-family: var(--font-inter), sans-serif; color: hsl(var(--foreground)); }
-  h1, h2, h3, h4, h5, h6 { @apply font-bold tracking-tight; font-family: var(--font-space-grotesk), sans-serif; color: hsl(var(--primary)); }
-  .text-muted-foreground, .text-sm, .text-xs { @apply font-normal; text-transform: none !important; letter-spacing: normal !important; }
+  
+  html[data-smooth-scroll="enabled"] {
+    scroll-behavior: smooth;
+  }
+
+  body { 
+    @apply min-h-screen bg-background antialiased font-normal leading-normal text-[14px]; 
+    font-family: var(--font-inter), sans-serif; 
+    color: hsl(var(--foreground)); 
+  }
+
+  h1, h2, h3, h4, h5, h6 { 
+    @apply font-bold tracking-tight; 
+    font-family: var(--font-space-grotesk), sans-serif; 
+    color: hsl(var(--primary)); 
+  }
+
+  /* Motion Control */
+  html[data-animations="disabled"] *,
+  html[data-animations="disabled"] *:before,
+  html[data-animations="disabled"] *:after {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html[data-motion-reduced="auto"] *,
+    html[data-motion-reduced="enabled"] * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
   .animate-marquee { animation: marquee var(--duration, 60s) linear infinite; }
   @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-33.33%); } }
 }

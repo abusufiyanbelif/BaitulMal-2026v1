@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@/app/auth-provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
@@ -17,6 +17,29 @@ export function Providers({ children }: { children: ReactNode }) {
   const isLoginPage = pathname === '/login';
 
   const allThemes = THEME_SUGGESTIONS.map(t => t.id).concat(['dark', 'system', 'light']);
+
+  useEffect(() => {
+    // Apply Motion Preferences on Mount
+    const applyMotionSettings = () => {
+      const animations = localStorage.getItem('app_animations');
+      const smoothScroll = localStorage.getItem('app_smooth_scroll');
+      const reducedMotion = localStorage.getItem('app_reduced_motion');
+
+      if (animations === 'disabled') {
+        document.documentElement.setAttribute('data-animations', 'disabled');
+      }
+      if (smoothScroll === 'disabled') {
+        document.documentElement.setAttribute('data-smooth-scroll', 'disabled');
+      } else {
+        document.documentElement.setAttribute('data-smooth-scroll', 'enabled');
+      }
+      if (reducedMotion === 'enabled') {
+        document.documentElement.setAttribute('data-motion-reduced', 'enabled');
+      }
+    };
+
+    applyMotionSettings();
+  }, []);
 
   return (
     <FirebaseClientProvider>
