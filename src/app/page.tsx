@@ -10,11 +10,13 @@ import { LeadAndCampaignSummary } from '@/components/lead-campaign-summary';
 import { WisdomAndReflection } from '@/components/WisdomAndReflection';
 import { NewsTicker } from '@/components/news-ticker';
 import { usePublicData } from '@/hooks/use-public-data';
+import { useBranding } from '@/hooks/use-branding';
 import { cn } from '@/lib/utils';
 import { FolderKanban, Lightbulb } from 'lucide-react';
 
 export default function Home() {
     const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted } = usePublicData();
+    const { brandingSettings } = useBranding();
 
     const activeTickerItems = useMemo(() => {
         const activeCampaigns = campaignsWithProgress
@@ -56,15 +58,18 @@ export default function Home() {
         return [...completedCampaigns, ...completedLeads];
     }, [campaignsWithProgress, leadsWithProgress]);
 
+    const heroTitle = brandingSettings?.heroTitle || 'Empowering Our Community, One Act of Kindness at a Time.';
+    const heroDescription = brandingSettings?.heroDescription || `Join ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'} to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.`;
+
     return (
         <div className="container mx-auto p-4 md:p-8">
             <div className="space-y-8">
               <section className="text-center py-12 md:py-20 animate-fade-in-up">
-                  <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary">
-                      Baitulmal Samajik Sanstha Solapur
+                  <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary max-w-4xl mx-auto">
+                      {heroTitle}
                   </h1>
-                  <p className="mt-4 max-w-3xl mx-auto text-lg text-primary font-normal">
-                      An overview of our organization's impact and activities. Join us in making a difference.
+                  <p className="mt-4 max-w-3xl mx-auto text-lg text-primary font-normal leading-relaxed opacity-80">
+                      {heroDescription}
                   </p>
                   <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                       <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md bg-primary text-white">

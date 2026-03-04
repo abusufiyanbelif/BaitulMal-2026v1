@@ -15,7 +15,7 @@ import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, Eye } from 'lucide-react';
+import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, Eye, ChevronDown, Monitor, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,6 +25,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import type { GuidingPrinciple } from '@/lib/types';
 
 interface FormDataType {
@@ -32,6 +33,8 @@ interface FormDataType {
     logoUrl: string;
     logoWidth: number | string;
     logoHeight: number | string;
+    heroTitle: string;
+    heroDescription: string;
     qrCodeUrl: string;
     qrWidth: number | string;
     qrHeight: number | string;
@@ -90,6 +93,46 @@ function VerifiableItem({ icon: Icon, label, value, isEditing, id, onChange, pla
     );
 }
 
+interface SettingsSectionProps {
+    title: string;
+    description: string;
+    icon: any;
+    children: React.ReactNode;
+    defaultOpen?: boolean;
+}
+
+function SettingsSection({ title, description, icon: Icon, children, defaultOpen = false }: SettingsSectionProps) {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+
+    return (
+        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
+            <Card className="border-primary/10 shadow-sm overflow-hidden bg-white">
+                <CollapsibleTrigger asChild>
+                    <CardHeader className="bg-primary/5 cursor-pointer hover:bg-primary/[0.08] transition-colors border-b">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                                    <Icon className="h-5 w-5" />
+                                </div>
+                                <div className="space-y-0.5">
+                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">{title}</CardTitle>
+                                    <CardDescription className="text-xs font-normal text-primary/60">{description}</CardDescription>
+                                </div>
+                            </div>
+                            <ChevronDown className={cn("h-5 w-5 text-primary transition-transform duration-300", isOpen && "rotate-180")} />
+                        </div>
+                    </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                    <CardContent className="pt-6">
+                        {children}
+                    </CardContent>
+                </CollapsibleContent>
+            </Card>
+        </Collapsible>
+    );
+}
+
 export default function AppSettingsPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
@@ -123,6 +166,8 @@ export default function AppSettingsPage() {
                 logoUrl: brandingSettings?.logoUrl || '',
                 logoWidth: brandingSettings?.logoWidth || '',
                 logoHeight: brandingSettings?.logoHeight || '',
+                heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act of Kindness at a Time.',
+                heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.',
                 qrCodeUrl: paymentSettings?.qrCodeUrl || '',
                 qrWidth: paymentSettings?.qrWidth || '',
                 qrHeight: paymentSettings?.qrHeight || '',
@@ -230,7 +275,9 @@ export default function AppSettingsPage() {
                 name: editableData.name,
                 logoUrl: newLogoUrl,
                 logoWidth: Number(editableData.logoWidth) || null,
-                logoHeight: Number(editableData.logoHeight) || null
+                logoHeight: Number(editableData.logoHeight) || null,
+                heroTitle: editableData.heroTitle,
+                heroDescription: editableData.heroDescription,
             };
             batch.set(doc(firestore, 'settings', 'branding'), brandingData, { merge: true });
 
@@ -302,6 +349,8 @@ export default function AppSettingsPage() {
         logoUrl: brandingSettings?.logoUrl || '',
         logoWidth: brandingSettings?.logoWidth || '',
         logoHeight: brandingSettings?.logoHeight || '',
+        heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act of Kindness at a Time.',
+        heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.',
         qrCodeUrl: paymentSettings?.qrCodeUrl || '',
         qrWidth: paymentSettings?.qrWidth || '',
         qrHeight: paymentSettings?.qrHeight || '',
@@ -331,6 +380,8 @@ export default function AppSettingsPage() {
             logoUrl: brandingSettings?.logoUrl || '',
             logoWidth: brandingSettings?.logoWidth || '',
             logoHeight: brandingSettings?.logoHeight || '',
+            heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act of Kindness at a Time.',
+            heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.',
             qrCodeUrl: paymentSettings?.qrCodeUrl || '',
             qrWidth: paymentSettings?.qrWidth || '',
             qrHeight: paymentSettings?.qrHeight || '',
@@ -358,8 +409,9 @@ export default function AppSettingsPage() {
     if (isLoading) {
         return (
             <div className="space-y-6">
-                <Card><CardHeader><Skeleton className="h-8 w-48" /></CardHeader><CardContent><Skeleton className="h-64 w-full" /></CardContent></Card>
-                <Card><CardHeader><Skeleton className="h-8 w-64" /></CardHeader><CardContent><Skeleton className="h-64 w-full" /></CardContent></Card>
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
             </div>
         )
     }
@@ -375,22 +427,22 @@ export default function AppSettingsPage() {
     }
 
     return (
-        <div className="space-y-6 text-primary font-normal">
+        <div className="space-y-6 text-primary font-normal pb-20">
             <div className="flex items-center justify-between">
                 <div className="space-y-1">
                     <h2 className="text-2xl font-bold tracking-tight">App Settings</h2>
                     <p className="text-sm text-muted-foreground">Manage organization profile, branding, and core standards.</p>
                 </div>
                 {!isEditMode ? (
-                    <Button onClick={() => setIsEditMode(true)} className="font-bold">
+                    <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md">
                         <Edit className="mr-2 h-4 w-4"/>Edit Settings
                     </Button>
                 ) : (
                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="font-bold border-primary/20">
+                        <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary">
                             <X className="mr-2 h-4 w-4" /> Cancel
                         </Button>
-                        <Button onClick={handleSave} disabled={isSubmitting || !isDirty} className="font-bold">
+                        <Button onClick={handleSave} disabled={isSubmitting || !isDirty} className="font-bold shadow-md">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                             Save All Changes
                         </Button>
@@ -398,226 +450,238 @@ export default function AppSettingsPage() {
                 )}
             </div>
 
-            {/* Page Visibility Section */}
-            <Card className="animate-fade-in-zoom border-primary/10 shadow-sm overflow-hidden">
-                <CardHeader className="bg-primary/5 border-b">
-                    <CardTitle className="font-bold text-lg uppercase tracking-tight">Page Visibility</CardTitle>
-                    <CardDescription className="font-normal">Control public availability of information pages.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6 pt-6">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-white shadow-sm gap-4 transition-all hover:border-primary/20">
-                        <div className="space-y-1 flex-1">
-                            <h3 className="font-bold text-primary text-sm tracking-tight">Donation Types Explained</h3>
-                            <p className="text-xs text-muted-foreground font-normal">Religious guidance and context for charitable contributions.</p>
-                            <Button variant="link" size="sm" asChild className="p-0 h-auto font-bold text-primary mt-2">
-                                <Link href="/info/donation-info" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview Public Page</Link>
-                            </Button>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <Label htmlFor="donation-info-public" className="font-bold text-xs uppercase opacity-60">Visible</Label>
-                            <Switch 
-                                id="donation-info-public" 
-                                checked={displayData.isDonationInfoPublic} 
-                                onCheckedChange={(val) => handleFieldChange('isDonationInfoPublic', val)} 
-                                disabled={isFormDisabled} 
-                            />
-                        </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-white shadow-sm gap-4 transition-all hover:border-primary/20">
-                        <div className="space-y-1 flex-1">
-                            <h3 className="font-bold text-primary text-sm tracking-tight">Our Guiding Principles</h3>
-                            <p className="text-xs text-muted-foreground font-normal">Organizational standards and ethics guide.</p>
-                            <Button variant="link" size="sm" asChild className="p-0 h-auto font-bold text-primary mt-2">
-                                <Link href="/info/members" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview on About Page</Link>
-                            </Button>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <Label htmlFor="guiding-principles-public" className="font-bold text-xs uppercase opacity-60">Visible</Label>
-                            <Switch 
-                                id="guiding-principles-public" 
-                                checked={displayData.isGuidingPrinciplesPublic} 
-                                onCheckedChange={(val) => handleFieldChange('isGuidingPrinciplesPublic', val)} 
-                                disabled={isFormDisabled} 
-                            />
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <div className="grid gap-6 lg:grid-cols-2">
-                <div className="space-y-6">
-                    {/* Verifiable Details Section */}
-                    <Card className="animate-fade-in-up border-primary/10 shadow-sm">
-                        <CardHeader className="bg-primary/5 pb-4 border-b border-primary/5">
-                            <CardTitle className="text-lg font-bold uppercase tracking-tight">Verifiable Details</CardTitle>
-                            <CardDescription className="font-normal">Official public profile of the organization.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="pt-6 space-y-2">
-                            <VerifiableItem 
-                                icon={Building2} 
-                                label="Organization Name" 
-                                value={displayData.name} 
-                                isEditing={isEditMode}
-                                id="org-name"
-                                onChange={(v) => handleFieldChange('name', v)}
-                                placeholder="Full Legal Name"
-                            />
-                            <VerifiableItem 
-                                icon={MapPin} 
-                                label="Address" 
-                                value={displayData.address} 
-                                isEditing={isEditMode}
-                                id="org-address"
-                                onChange={(v) => handleFieldChange('address', v)}
-                                placeholder="Official Registered Address"
-                            />
-                            <VerifiableItem 
-                                icon={Hash} 
-                                label="Registration No." 
-                                value={displayData.regNo} 
-                                isEditing={isEditMode}
-                                id="org-reg"
-                                onChange={(v) => handleFieldChange('regNo', v)}
-                                placeholder="e.g. Solapur/0000373/2025"
-                            />
-                            <VerifiableItem 
-                                icon={ShieldCheck} 
-                                label="PAN Number" 
-                                value={displayData.pan} 
-                                isEditing={isEditMode}
-                                id="org-pan"
-                                onChange={(v) => handleFieldChange('pan', v)}
-                                placeholder="Permanent Account Number"
-                            />
-                            <VerifiableItem 
-                                icon={Globe} 
-                                label="Website" 
-                                value={displayData.website} 
-                                isEditing={isEditMode}
-                                id="org-web"
-                                onChange={(v) => handleFieldChange('website', v)}
-                                placeholder="https://www.example.org"
-                            />
-                        </CardContent>
-                    </Card>
-
-                    {/* Bank Transfer Details Section */}
-                    <Card className="animate-fade-in-up border-primary/10 shadow-sm">
-                        <CardHeader className="bg-primary/5 pb-4 border-b border-primary/5">
-                            <CardTitle className="text-lg font-bold uppercase tracking-tight">Bank Transfer Details</CardTitle>
-                            <CardDescription className="font-normal">Traditional bank account information for high-value donations.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="pt-6 space-y-2">
-                            <VerifiableItem 
-                                icon={User} 
-                                label="Account Holder Name" 
-                                value={displayData.bankAccountName} 
-                                isEditing={isEditMode}
-                                id="bank-name"
-                                onChange={(v) => handleFieldChange('bankAccountName', v)}
-                                placeholder="Full Name as per Bank"
-                            />
-                            <VerifiableItem 
-                                icon={CreditCard} 
-                                label="Account Number" 
-                                value={displayData.bankAccountNumber} 
-                                isEditing={isEditMode}
-                                id="bank-acc"
-                                onChange={(v) => handleFieldChange('bankAccountNumber', v)}
-                                placeholder="Bank Account Number"
-                            />
-                            <VerifiableItem 
-                                icon={Landmark} 
-                                label="IFSC Code" 
-                                value={displayData.bankIfsc} 
-                                isEditing={isEditMode}
-                                id="bank-ifsc"
-                                onChange={(v) => handleFieldChange('bankIfsc', v)}
-                                placeholder="11-digit IFSC Code"
-                            />
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <div className="space-y-6">
-                    {/* Visual Identity Section */}
-                    <Card className="animate-fade-in-up border-primary/10 shadow-sm">
-                        <CardHeader className="bg-primary/5 pb-4 border-b border-primary/5">
-                            <CardTitle className="text-lg font-bold uppercase tracking-tight">Visual Identity</CardTitle>
-                            <CardDescription className="font-normal">Logo and branding assets.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="pt-6 space-y-6">
-                            <div className="flex flex-col items-center gap-4">
-                                <div className="relative w-full max-w-[200px] aspect-[2/1] border-2 border-dashed rounded-lg flex items-center justify-center bg-secondary/30 overflow-hidden">
-                                    {(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl) ? (
-                                        <img src={(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent((isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!)}` : (isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)} alt="Logo" className="object-contain p-2 h-full w-full" />
-                                    ) : (
-                                        <div className="text-muted-foreground text-center p-2 font-normal">
-                                            <ImageIcon className="mx-auto h-8 w-8 opacity-20" />
-                                            <p className="text-[10px] mt-1 uppercase font-bold tracking-tighter">No logo uploaded</p>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="w-full grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <Label htmlFor="logoWidth" className="font-bold text-[10px] uppercase text-muted-foreground">Width (px)</Label>
-                                        <Input id="logoWidth" type="number" value={displayData.logoWidth || ''} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold"/>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <Label htmlFor="logoHeight" className="font-bold text-[10px] uppercase text-muted-foreground">Height (px)</Label>
-                                        <Input id="logoHeight" type="number" value={displayData.logoHeight || ''} onChange={(e) => handleFieldChange('logoHeight', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold"/>
-                                    </div>
-                                </div>
-                            </div>
-                            {isEditMode && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <label htmlFor="logo-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent h-9 px-4 cursor-pointer">
-                                        <UploadCloud className="mr-2 h-4 w-4" /> Change Logo
-                                    </label>
-                                    <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
-                                    {editableData?.logoUrl && (
-                                        <Button type="button" variant="destructive" size="sm" className="font-bold h-9" onClick={handleRemoveLogo} disabled={isSubmitting}>
-                                            <Trash2 className="mr-2 h-4 w-4" /> Remove
-                                        </Button>
-                                    )}
-                                </div>
+            <div className="space-y-6 animate-fade-in-up">
+                
+                {/* Homepage Hero Section */}
+                <SettingsSection 
+                    title="Homepage Hero Section" 
+                    description="Configure the primary welcome message on the landing page."
+                    icon={Monitor}
+                    defaultOpen={true}
+                >
+                    <div className="space-y-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="heroTitle" className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Hero Title</Label>
+                            {isEditMode ? (
+                                <Input 
+                                    id="heroTitle"
+                                    value={displayData.heroTitle}
+                                    onChange={(e) => handleFieldChange('heroTitle', e.target.value)}
+                                    placeholder="Enter primary heading..."
+                                    className="font-bold"
+                                />
+                            ) : (
+                                <p className="text-lg font-bold text-primary">{displayData.heroTitle}</p>
                             )}
-                        </CardContent>
-                    </Card>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="heroDescription" className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Hero Description</Label>
+                            {isEditMode ? (
+                                <Textarea 
+                                    id="heroDescription"
+                                    rows={3}
+                                    value={displayData.heroDescription}
+                                    onChange={(e) => handleFieldChange('heroDescription', e.target.value)}
+                                    placeholder="Enter subtext description..."
+                                    className="font-normal"
+                                />
+                            ) : (
+                                <p className="text-sm font-normal text-muted-foreground leading-relaxed">{displayData.heroDescription}</p>
+                            )}
+                        </div>
+                    </div>
+                </SettingsSection>
 
-                    {/* Support Contact Section */}
-                    <Card className="animate-fade-in-up border-primary/10 shadow-sm">
-                        <CardHeader className="bg-primary/5 pb-4 border-b border-primary/5">
-                            <CardTitle className="text-lg font-bold uppercase tracking-tight">Communications</CardTitle>
-                            <CardDescription className="font-normal">Public contact information.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="pt-6 space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="contactEmail" className="font-bold text-[10px] uppercase text-muted-foreground">Contact Email</Label>
-                                    <Input id="contactEmail" value={displayData.contactEmail || ''} onChange={(e) => handleFieldChange('contactEmail', e.target.value)} disabled={isFormDisabled} className="h-9 font-bold" />
+                {/* Page Visibility Section */}
+                <SettingsSection 
+                    title="Page Visibility" 
+                    description="Control public availability of information pages."
+                    icon={Eye}
+                >
+                    <div className="grid gap-4">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-muted/5 gap-4 transition-all hover:border-primary/20">
+                            <div className="space-y-1 flex-1">
+                                <h3 className="font-bold text-primary text-sm tracking-tight">Donation Types Explained</h3>
+                                <p className="text-xs text-muted-foreground font-normal">Religious guidance and context for charitable contributions.</p>
+                                <Button variant="link" size="sm" asChild className="p-0 h-auto font-bold text-primary mt-2">
+                                    <Link href="/info/donation-info" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview Public Page</Link>
+                                </Button>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <Label htmlFor="donation-info-public" className="font-bold text-xs uppercase opacity-60">Visible</Label>
+                                <Switch 
+                                    id="donation-info-public" 
+                                    checked={displayData.isDonationInfoPublic} 
+                                    onCheckedChange={(val) => handleFieldChange('isDonationInfoPublic', val)} 
+                                    disabled={isFormDisabled} 
+                                />
+                            </div>
+                        </div>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-muted/5 gap-4 transition-all hover:border-primary/20">
+                            <div className="space-y-1 flex-1">
+                                <h3 className="font-bold text-primary text-sm tracking-tight">Our Guiding Principles</h3>
+                                <p className="text-xs text-muted-foreground font-normal">Organizational standards and ethics guide.</p>
+                                <Button variant="link" size="sm" asChild className="p-0 h-auto font-bold text-primary mt-2">
+                                    <Link href="/info/members" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview on About Page</Link>
+                                </Button>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <Label htmlFor="guiding-principles-public" className="font-bold text-xs uppercase opacity-60">Visible</Label>
+                                <Switch 
+                                    id="guiding-principles-public" 
+                                    checked={displayData.isGuidingPrinciplesPublic} 
+                                    onCheckedChange={(val) => handleFieldChange('isGuidingPrinciplesPublic', val)} 
+                                    disabled={isFormDisabled} 
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </SettingsSection>
+
+                {/* Verifiable Details Section */}
+                <SettingsSection 
+                    title="Verifiable Details" 
+                    description="Official public profile of the organization."
+                    icon={Building2}
+                >
+                    <div className="space-y-2">
+                        <VerifiableItem 
+                            icon={Building2} 
+                            label="Organization Name" 
+                            value={displayData.name} 
+                            isEditing={isEditMode}
+                            id="org-name"
+                            onChange={(v) => handleFieldChange('name', v)}
+                            placeholder="Full Legal Name"
+                        />
+                        <VerifiableItem 
+                            icon={MapPin} 
+                            label="Address" 
+                            value={displayData.address} 
+                            isEditing={isEditMode}
+                            id="org-address"
+                            onChange={(v) => handleFieldChange('address', v)}
+                            placeholder="Official Registered Address"
+                        />
+                        <VerifiableItem 
+                            icon={Hash} 
+                            label="Registration No." 
+                            value={displayData.regNo} 
+                            isEditing={isEditMode}
+                            id="org-reg"
+                            onChange={(v) => handleFieldChange('regNo', v)}
+                            placeholder="e.g. Solapur/0000373/2025"
+                        />
+                        <VerifiableItem 
+                            icon={ShieldCheck} 
+                            label="PAN Number" 
+                            value={displayData.pan} 
+                            isEditing={isEditMode}
+                            id="org-pan"
+                            onChange={(v) => handleFieldChange('pan', v)}
+                            placeholder="Permanent Account Number"
+                        />
+                        <VerifiableItem 
+                            icon={Globe} 
+                            label="Website" 
+                            value={displayData.website} 
+                            isEditing={isEditMode}
+                            id="org-web"
+                            onChange={(v) => handleFieldChange('website', v)}
+                            placeholder="https://www.example.org"
+                        />
+                    </div>
+                </SettingsSection>
+
+                {/* Bank Transfer Details Section */}
+                <SettingsSection 
+                    title="Bank Transfer Details" 
+                    description="Traditional bank account information for direct donations."
+                    icon={Landmark}
+                >
+                    <div className="space-y-2">
+                        <VerifiableItem 
+                            icon={User} 
+                            label="Account Holder Name" 
+                            value={displayData.bankAccountName} 
+                            isEditing={isEditMode}
+                            id="bank-name"
+                            onChange={(v) => handleFieldChange('bankAccountName', v)}
+                            placeholder="Full Name as per Bank"
+                        />
+                        <VerifiableItem 
+                            icon={CreditCard} 
+                            label="Account Number" 
+                            value={displayData.bankAccountNumber} 
+                            isEditing={isEditMode}
+                            id="bank-acc"
+                            onChange={(v) => handleFieldChange('bankAccountNumber', v)}
+                            placeholder="Bank Account Number"
+                        />
+                        <VerifiableItem 
+                            icon={Landmark} 
+                            label="IFSC Code" 
+                            value={displayData.bankIfsc} 
+                            isEditing={isEditMode}
+                            id="bank-ifsc"
+                            onChange={(v) => handleFieldChange('bankIfsc', v)}
+                            placeholder="11-digit IFSC Code"
+                        />
+                    </div>
+                </SettingsSection>
+
+                {/* Visual Identity Section */}
+                <SettingsSection 
+                    title="Visual Identity" 
+                    description="Logo and branding assets."
+                    icon={ImageIcon}
+                    defaultOpen={true}
+                >
+                    <div className="space-y-6">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="relative w-full max-w-[200px] aspect-[2/1] border-2 border-dashed rounded-lg flex items-center justify-center bg-secondary/30 overflow-hidden">
+                                {(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl) ? (
+                                    <img src={(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent((isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!)}` : (isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)} alt="Logo" className="object-contain p-2 h-full w-full" />
+                                ) : (
+                                    <div className="text-muted-foreground text-center p-2 font-normal">
+                                        <ImageIcon className="mx-auto h-8 w-8 opacity-20" />
+                                        <p className="text-[10px] mt-1 uppercase font-bold tracking-tighter">No logo uploaded</p>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="w-full grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <Label htmlFor="logoWidth" className="font-bold text-[10px] uppercase text-muted-foreground">Width (px)</Label>
+                                    <Input id="logoWidth" type="number" value={displayData.logoWidth || ''} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold"/>
                                 </div>
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="contactPhone" className="font-bold text-[10px] uppercase text-muted-foreground">Contact Phone</Label>
-                                    <Input id="contactPhone" value={displayData.contactPhone || ''} onChange={(e) => handleFieldChange('contactPhone', e.target.value)} disabled={isFormDisabled} className="h-9 font-bold" />
+                                <div className="space-y-1">
+                                    <Label htmlFor="logoHeight" className="font-bold text-[10px] uppercase text-muted-foreground">Height (px)</Label>
+                                    <Input id="logoHeight" type="number" value={displayData.logoHeight || ''} onChange={(e) => handleFieldChange('logoHeight', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold"/>
                                 </div>
                             </div>
-                            <div className="space-y-1.5">
-                                <Label htmlFor="copyright" className="font-bold text-[10px] uppercase text-muted-foreground">Footer Copyright</Label>
-                                <Input id="copyright" value={displayData.copyright || ''} onChange={(e) => handleFieldChange('copyright', e.target.value)} disabled={isFormDisabled} className="h-9 font-normal text-xs" />
+                        </div>
+                        {isEditMode && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <label htmlFor="logo-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent h-9 px-4 cursor-pointer">
+                                    <UploadCloud className="mr-2 h-4 w-4" /> Change Logo
+                                </label>
+                                <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
+                                {editableData?.logoUrl && (
+                                    <Button type="button" variant="destructive" size="sm" className="font-bold h-9" onClick={handleRemoveLogo} disabled={isSubmitting}>
+                                        <Trash2 className="mr-2 h-4 w-4" /> Remove
+                                    </Button>
+                                )}
                             </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
+                        )}
+                    </div>
+                </SettingsSection>
 
-            {/* Donation Infrastructure Section */}
-            <Card className="animate-fade-in-up border-primary/10 shadow-sm overflow-hidden">
-                <CardHeader className="bg-primary/5 pb-4 border-b">
-                    <CardTitle className="text-lg font-bold uppercase tracking-tight">Donation Infrastructure</CardTitle>
-                    <CardDescription className="font-normal">Configure UPI and QR code for simplified giving.</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-6">
+                {/* Donation Infrastructure Section */}
+                <SettingsSection 
+                    title="Donation Infrastructure" 
+                    description="Configure UPI and QR code for simplified giving."
+                    icon={QrCode}
+                >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                         <div className="flex flex-col items-center gap-4">
                             <div className="relative w-48 h-48 border-2 border-dashed rounded-lg flex items-center justify-center bg-secondary/30 overflow-hidden">
@@ -665,20 +729,14 @@ export default function AppSettingsPage() {
                             </div>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </SettingsSection>
 
-            {/* Guiding Principles Manager Section */}
-            <Card className="animate-fade-in-up border-primary/10 overflow-hidden shadow-sm">
-                <CardHeader className="bg-primary/5 border-b">
-                    <div className="flex items-center justify-between gap-4">
-                        <div>
-                            <CardTitle className="text-xl font-bold uppercase tracking-tight">Guiding Principles Manager</CardTitle>
-                            <CardDescription className="font-normal text-primary/70">Define the core values and operational standards displayed on the 'About' page.</CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6 font-normal">
+                {/* Guiding Principles Manager Section */}
+                <SettingsSection 
+                    title="Guiding Principles Manager" 
+                    description="Define the core values and operational standards for the organization."
+                    icon={Shield}
+                >
                     <div className="space-y-6">
                         <div className="space-y-4">
                             <div className="space-y-1.5">
@@ -743,8 +801,33 @@ export default function AppSettingsPage() {
                             </div>
                         )}
                     </div>
-                </CardContent>
-            </Card>
+                </SettingsSection>
+
+                {/* Support Contact Section */}
+                <SettingsSection 
+                    title="Communications" 
+                    description="Public contact information and footer configuration."
+                    icon={FileText}
+                >
+                    <div className="pt-2 space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="contactEmail" className="font-bold text-[10px] uppercase text-muted-foreground">Contact Email</Label>
+                                <Input id="contactEmail" value={displayData.contactEmail || ''} onChange={(e) => handleFieldChange('contactEmail', e.target.value)} disabled={isFormDisabled} className="h-9 font-bold" />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="contactPhone" className="font-bold text-[10px] uppercase text-muted-foreground">Contact Phone</Label>
+                                <Input id="contactPhone" value={displayData.contactPhone || ''} onChange={(e) => handleFieldChange('contactPhone', e.target.value)} disabled={isFormDisabled} className="h-9 font-bold" />
+                            </div>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="copyright" className="font-bold text-[10px] uppercase text-muted-foreground">Footer Copyright</Label>
+                            <Input id="copyright" value={displayData.copyright || ''} onChange={(e) => handleFieldChange('copyright', e.target.value)} disabled={isFormDisabled} className="h-9 font-normal text-xs" />
+                        </div>
+                    </div>
+                </SettingsSection>
+
+            </div>
         </div>
     );
 }

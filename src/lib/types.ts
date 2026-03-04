@@ -10,6 +10,8 @@ export interface BrandingSettings extends DocumentData {
   loadingAnimationUrl?: string;
   logoWidth?: number;
   logoHeight?: number;
+  heroTitle?: string;
+  heroDescription?: string;
 }
 
 export interface PaymentSettings extends DocumentData {
