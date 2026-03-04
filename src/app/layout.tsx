@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#1FB278', // Matching HSL 160 70% 40%
+  themeColor: '#13a663', // HSL 160 70% 40% (Rich Calm Green)
 };
 
 

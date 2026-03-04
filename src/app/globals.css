@@ -4,34 +4,34 @@
 
 @layer base {
   :root, .light {
-    /* Precise BMSS Brand Spec */
-    --background: 45 60% 98%;
-    --foreground: 142.1 25% 15%;
-    --card: 45 60% 99%;
-    --card-foreground: 142.1 25% 15%;
-    --popover: 45 60% 99%;
-    --popover-foreground: 142.1 25% 15%;
-    --primary: 142.1 76.2% 36.3%; 
-    --primary-foreground: 45 60% 98%;
-    --secondary: 142.1 76.2% 95%;
-    --secondary-foreground: 142.1 76.2% 20%;
-    --muted: 142.1 10% 90%;
-    --muted-foreground: 142.1 15% 40%;
+    /* BMSS Brand (Default) - Rich Calm Green Standard */
+    --background: 0 0% 100%;
+    --foreground: 160 25% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 160 25% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 25% 10%;
+    --primary: 160 70% 40%; 
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 70% 95%;
+    --secondary-foreground: 160 70% 20%;
+    --muted: 160 10% 95%;
+    --muted-foreground: 160 15% 45%;
     --accent: 47.9 95.8% 53.1%; 
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    --success: 142.1 76.2% 36.3%;
+    --success: 160 70% 40%;
     --success-foreground: 0 0% 100%;
     --warning: 38.8 92.3% 50.2%;
     --warning-foreground: 0 0% 100%;
     --info: 217.2 91.2% 59.8%;
     --info-foreground: 0 0% 100%;
-    --border: 142.1 20% 85%;
-    --input: 142.1 20% 85%;
-    --ring: 142.1 76.2% 36.3%;
+    --border: 160 20% 90%;
+    --input: 160 20% 90%;
+    --ring: 160 70% 40%;
     --radius: 0.75rem;
-    --chart-1: 142.1 76.2% 36.3%;
+    --chart-1: 160 70% 40%;
     --chart-2: 47.9 95.8% 53.1%;
     --chart-3: 217.2 91.2% 59.8%;
     --chart-4: 38.8 92.3% 50.2%;
@@ -39,29 +39,29 @@
   }
 
   .dark {
-    --background: 142.1 25% 5%;
+    --background: 160 25% 5%;
     --foreground: 45 10% 95%;
-    --card: 142.1 25% 7%;
+    --card: 160 25% 7%;
     --card-foreground: 45 10% 95%;
-    --popover: 142.1 25% 7%;
+    --popover: 160 25% 7%;
     --popover-foreground: 45 10% 95%;
-    --primary: 142.1 76.2% 45%;
-    --primary-foreground: 142.1 25% 5%;
-    --secondary: 142.1 30% 15%;
+    --primary: 160 70% 45%;
+    --primary-foreground: 160 25% 5%;
+    --secondary: 160 30% 15%;
     --secondary-foreground: 45 10% 95%;
-    --muted: 142.1 20% 12%;
-    --muted-foreground: 142.1 10% 60%;
+    --muted: 160 20% 12%;
+    --muted-foreground: 160 10% 60%;
     --accent: 47.9 95.8% 55%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 45 10% 95%;
-    --border: 142.1 20% 20%;
-    --input: 142.1 20% 20%;
-    --ring: 142.1 76.2% 45%;
+    --border: 160 20% 20%;
+    --input: 160 20% 20%;
+    --ring: 160 70% 45%;
   }
 }
 
-/* Specific Theme Class Registry - High Specificity Block */
+/* Specific Theme Class Registry */
 .bmss-brand-warm {
   --background: 45 60% 98% !important;
   --foreground: 142.1 25% 15% !important;
@@ -69,6 +69,8 @@
   --accent: 47.9 95.8% 53.1% !important;
   --secondary: 142.1 76.2% 95% !important;
   --border: 142.1 20% 85% !important;
+  --card: 45 60% 99% !important;
+  --popover: 45 60% 99% !important;
 }
 
 .ocean-blue {

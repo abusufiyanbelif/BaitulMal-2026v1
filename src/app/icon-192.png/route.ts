@@ -1,4 +1,3 @@
-
 import { ImageResponse } from 'next/og'
 import * as React from 'react';
 
@@ -11,7 +10,7 @@ export function GET() {
     React.createElement('div', {
         style: {
           fontSize: 84,
-          background: '#1FB278', // Matching HSL 160 70% 40%
+          background: '#13a663', // HSL 160 70% 40% (Rich Calm Green)
           width: '100%',
           height: '100%',
           display: 'flex',
@@ -20,7 +19,7 @@ export function GET() {
           justifyContent: 'center',
           color: 'white',
           borderRadius: '20%',
-          fontWeight: '900',
+          fontWeight: '700',
         }
       },
       React.createElement('div', {

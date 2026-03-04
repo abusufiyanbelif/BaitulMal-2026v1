@@ -1,4 +1,3 @@
-
 import { ImageResponse } from 'next/og'
 
 // Route segment config
@@ -11,7 +10,7 @@ export default function Icon() {
       <div
         style={{
           fontSize: 72,
-          background: '#1FB278', // Matching HSL 160 70% 40%
+          background: '#13a663', // HSL 160 70% 40% (Rich Calm Green)
           width: '100%',
           height: '100%',
           display: 'flex',
@@ -19,7 +18,7 @@ export default function Icon() {
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
-          fontWeight: '900',
+          fontWeight: '700',
           borderRadius: '22%',
         }}
       >
