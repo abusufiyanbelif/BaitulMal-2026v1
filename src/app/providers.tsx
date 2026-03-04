@@ -16,16 +16,25 @@ export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
 
-  // Extract unique theme IDs, ensuring the registry is strictly followed.
+  // Explicit registry of all 11 institutional palettes to ensure next-themes
+  // identifies and persists the correct CSS class instantly.
   const allThemes = Array.from(new Set([
-    ...THEME_SUGGESTIONS.map(t => t.id),
+    'light',
     'dark',
     'system',
-    'light'
+    'bmss-brand-warm',
+    'ocean-blue',
+    'sunset-orange',
+    'sunrise-peach',
+    'lavender-mint',
+    'midnight-ramadan',
+    'midnight-emerald',
+    'cyberpunk-neon',
+    'dracula-orchid',
+    'github-dark'
   ]));
 
   useEffect(() => {
-    // Apply Motion Preferences on Mount
     const applyMotionSettings = () => {
       const animations = localStorage.getItem('app_animations');
       const smoothScroll = localStorage.getItem('app_smooth_scroll');

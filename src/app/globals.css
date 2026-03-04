@@ -4,7 +4,6 @@
 
 @layer base {
   :root, .light {
-    /* BMSS Brand (Default) - Rich Calm Green Standard */
     --background: 0 0% 100%;
     --foreground: 160 25% 10%;
     --card: 0 0% 100%;
@@ -21,12 +20,6 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    --success: 160 70% 40%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38.8 92.3% 50.2%;
-    --warning-foreground: 0 0% 100%;
-    --info: 217.2 91.2% 59.8%;
-    --info-foreground: 0 0% 100%;
     --border: 160 20% 90%;
     --input: 160 20% 90%;
     --ring: 160 70% 40%;
@@ -36,9 +29,6 @@
     --chart-3: 217.2 91.2% 59.8%;
     --chart-4: 38.8 92.3% 50.2%;
     --chart-5: 262 83% 58%;
-    --chart-6: 160 70% 60%;
-    --chart-7: 160 70% 20%;
-    --chart-8: 47.9 95.8% 30%;
   }
 
   .dark {
@@ -66,14 +56,11 @@
     --chart-3: 217.2 91.2% 65%;
     --chart-4: 38.8 92.3% 60%;
     --chart-5: 262 83% 68%;
-    --chart-6: 160 70% 30%;
-    --chart-7: 160 70% 80%;
-    --chart-8: 47.9 95.8% 80%;
   }
 }
 
 /* ----------------------------------------------------------------------
-   Theme Registry - Total Variable Isolation Overrides
+   Theme Registry - Total Variable Isolation
    ---------------------------------------------------------------------- */
 
 .bmss-brand-warm {

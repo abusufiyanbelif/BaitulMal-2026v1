@@ -55,14 +55,10 @@ export function DocuExtractHeader() {
                 validLogoUrl && (
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
-                    alt="Logo"
+                    alt="Institutional logo"
                     width={60}
                     height={32}
-                    className="object-contain drop-shadow-sm"
-                    style={{
-                      maxHeight: '2rem',
-                      width: 'auto',
-                    }}
+                    className="object-contain drop-shadow-sm h-8 w-auto"
                     priority
                   />
                 )
