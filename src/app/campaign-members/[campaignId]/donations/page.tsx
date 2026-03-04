@@ -57,12 +57,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { cn } from '@/lib/utils';
-import { getNestedValue } from '@/lib/utils';
+import { cn, getNestedValue } from '@/lib/utils';
 import { syncDonationsAction } from '@/app/donations/actions';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Separator } from '@/components/ui/separator';
+import { donationCategories } from '@/lib/modules';
+import { BrandedLoader } from '@/components/branded-loader';
 
 type SortKey = keyof Donation | 'srNo' | 'amountForThisCampaign';
 
@@ -154,21 +152,21 @@ export default function DonationsPage() {
 
   const handleSync = async () => {
     if (!canUpdate) {
-        toast({ title: "Permission Denied", description: "You don't have permission to sync data.", variant: "destructive"});
+        toast({ title: "Permission denied", description: "You don't have permission to sync data.", variant: "destructive"});
         return;
     }
     setIsSyncing(true);
-    toast({ title: 'Syncing Donations...', description: 'Please wait while old donation records are updated to the new format.' });
+    toast({ title: 'Syncing donations...', description: 'Updating donation records to the modern format.' });
 
     try {
         const result = await syncDonationsAction();
         if (result.success) {
-            toast({ title: 'Sync Complete', description: result.message, variant: 'success' });
+            toast({ title: 'Sync complete', description: result.message, variant: 'success' });
         } else {
-            toast({ title: 'Sync Failed', description: result.message, variant: 'destructive' });
+            toast({ title: 'Sync failed', description: result.message, variant: 'destructive' });
         }
     } catch (error: any) {
-         toast({ title: 'Sync Error', description: 'An unexpected client-side error occurred.', variant: 'destructive' });
+         toast({ title: 'Sync error', description: 'An unexpected client-side error occurred.', variant: 'destructive' });
     }
 
     setIsSyncing(false);
@@ -233,7 +231,7 @@ export default function DonationsPage() {
     const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
     if (hasFilesToUpload && !auth?.currentUser) {
         toast({
-            title: "Authentication Error",
+            title: "Authentication error",
             description: "User not authenticated yet. Please wait for the session to load or log in again.",
             variant: "destructive",
         });
@@ -300,7 +298,7 @@ export default function DonationsPage() {
 
             return {
                 linkId: id,
-                linkName: linkedItem?.name || 'Unknown Initiative',
+                linkName: linkedItem?.name || 'Unknown initiative',
                 linkType: linkType,
                 amount: split.amount
             };
@@ -335,7 +333,7 @@ export default function DonationsPage() {
             } satisfies SecurityRuleContext);
             errorEmitter.emit('permission-error', permissionError);
         } else {
-            toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
+            toast({ title: 'Save failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
         }
     }
   };
@@ -419,11 +417,7 @@ export default function DonationsPage() {
   const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading || areAllCampaignsLoading || areAllLeadsLoading;
   
   if (isLoading && !campaign) {
-    return (
-        <main className="container mx-auto p-4 md:p-8">
-            <Loader2 className="w-8 h-8 animate-spin" />
-        </main>
-    );
+    return <BrandedLoader />;
   }
   
   if (!campaign) {
@@ -433,7 +427,7 @@ export default function DonationsPage() {
             <Button asChild className="mt-4 font-bold">
                 <Link href="/campaign-members">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Campaigns
+                    Back to campaigns
                 </Link>
             </Button>
         </main>
@@ -447,37 +441,39 @@ export default function DonationsPage() {
             <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
                 <Link href="/campaign-members">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Campaigns
+                    Back to campaigns
                 </Link>
             </Button>
         </div>
         <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold">{campaign.name}</h1>
+            <h1 className="text-3xl font-bold text-primary">{campaign.name}</h1>
         </div>
-        <div className="border-b mb-4">
-            <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex w-max space-x-2 pb-2">
+        
+        <div className="mb-6">
+            <ScrollArea className="w-full">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full bg-transparent p-0 border-b border-primary/10 pb-4">
                     {canReadSummary && (
-                        <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-all duration-200", pathname.endsWith('/summary') ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold hover:bg-primary/10")}>Summary</Link>
+                        <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
                     )}
                     {canReadRation && (
-                        <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-all duration-200", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold hover:bg-primary/10")}>Item Lists</Link>
+                        <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item lists</Link>
                     )}
                     {canReadBeneficiaries && (
-                        <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold hover:bg-primary/10")}>Beneficiary List</Link>
+                        <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary list</Link>
                     )}
                     {canReadDonations && (
-                        <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold hover:bg-primary/10")}>Donations</Link>
+                        <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>
                     )}
                 </div>
-                <ScrollBar orientation="horizontal" />
+                <ScrollBar orientation="horizontal" className="hidden" />
             </ScrollArea>
         </div>
+
         <Card className="animate-fade-in-zoom border-primary/10 shadow-sm overflow-hidden bg-white">
             <CardHeader className="bg-primary/5 p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
                 <div className="flex-1 space-y-1.5">
-                    <CardTitle className="text-xl font-bold text-primary uppercase tracking-tight">Donation list ({filteredAndSortedDonations.length})</CardTitle>
+                    <CardTitle className="text-xl font-bold text-primary tracking-tight">Donation list ({filteredAndSortedDonations.length})</CardTitle>
                     <CardDescription className="font-normal text-primary/70">
                     Total for filtered donations: <span className="font-bold text-foreground">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisCampaign, 0).toFixed(2)}</span>
                     </CardDescription>
@@ -486,7 +482,7 @@ export default function DonationsPage() {
                     <div className="flex flex-wrap gap-2">
                         <Button onClick={handleAdd} className="font-bold shadow-md">
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            Add Donation
+                            Add donation
                         </Button>
                     </div>
                 )}
@@ -503,11 +499,11 @@ export default function DonationsPage() {
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All">All statuses</SelectItem>
-                            <SelectItem value="Verified">Verified</SelectItem>
-                            <SelectItem value="Pending">Pending</SelectItem>
-                            <SelectItem value="Canceled">Canceled</SelectItem>
-                            <SelectItem value="No Transactions">No Transactions</SelectItem>
+                            <SelectItem value="All" className="font-bold">All statuses</SelectItem>
+                            <SelectItem value="Verified" className="font-bold text-success-foreground">Verified</SelectItem>
+                            <SelectItem value="Pending" className="font-bold">Pending</SelectItem>
+                            <SelectItem value="Canceled" className="font-bold text-destructive">Canceled</SelectItem>
+                            <SelectItem value="No Transactions" className="font-bold">No transactions</SelectItem>
                         </SelectContent>
                     </Select>
                     <Select value={typeFilter} onValueChange={(value) => { setTypeFilter(value); setCurrentPage(1); }}>
@@ -515,8 +511,8 @@ export default function DonationsPage() {
                             <SelectValue placeholder="Category" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All">All categories</SelectItem>
-                            {donationCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                            <SelectItem value="All" className="font-bold">All categories</SelectItem>
+                            {donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-bold">{cat}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
@@ -529,10 +525,10 @@ export default function DonationsPage() {
                         <SortableHeader sortKey="srNo" className="w-[50px] pl-4" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
                         <SortableHeader sortKey="donorName" className="w-[200px]" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
                         <SortableHeader sortKey="amountForThisCampaign" className="w-[150px] text-right" sortConfig={sortConfig} handleSort={handleSort}>Value (₹)</SortableHeader>
-                        <SortableHeader sortKey="donationDate" className="w-[150px]" sortConfig={sortConfig} handleSort={handleSort}>Entry Date</SortableHeader>
-                        <TableHead className="w-[200px] font-bold text-primary">Details</TableHead>
+                        <SortableHeader sortKey="donationDate" className="w-[150px]" sortConfig={sortConfig} handleSort={handleSort}>Entry date</SortableHeader>
+                        <TableHead className="w-[200px] font-bold text-primary tracking-tight">Details</TableHead>
                         <SortableHeader sortKey="status" className="w-[120px]" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
-                        <TableHead className="w-[100px] text-right pr-4 font-bold text-primary">Actions</TableHead>
+                        <TableHead className="w-[100px] text-right pr-4 font-bold text-primary tracking-tight">Actions</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody className="font-normal text-primary">
@@ -550,19 +546,19 @@ export default function DonationsPage() {
                             <TableRow className="bg-background hover:bg-accent/50 cursor-pointer group transition-colors" data-state={isOpen ? 'open' : 'closed'} onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
                                 <TableCell className="pl-4 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                                 <TableCell>
-                                    <div className="font-bold text-sm">{donation.donorName}</div>
+                                    <div className="font-bold text-sm text-foreground">{donation.donorName}</div>
                                     <div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone || 'N/A'}</div>
                                 </TableCell>
-                                <TableCell className="text-right font-bold font-mono text-sm">₹{donation.amountForThisCampaign.toFixed(2)}</TableCell>
-                                <TableCell className="text-xs font-normal">{donation.donationDate}</TableCell>
+                                <TableCell className="text-right font-bold font-mono text-sm text-primary">₹{donation.amountForThisCampaign.toFixed(2)}</TableCell>
+                                <TableCell className="text-xs font-normal text-foreground">{donation.donationDate}</TableCell>
                                 <TableCell>
                                     <div className="flex flex-wrap items-center gap-1">
-                                        {donation.typeSplit?.map(split => (<Badge key={split.category} variant="secondary" className="text-[9px] font-bold uppercase">{split.category}</Badge>))}
-                                        <Badge variant="outline" className="text-[9px] font-bold uppercase border-primary/20">{donation.donationType}</Badge>
+                                        {donation.typeSplit?.map(split => (<Badge key={split.category} variant="secondary" className="text-[9px] font-bold tracking-tight">{split.category}</Badge>))}
+                                        <Badge variant="outline" className="text-[9px] font-bold border-primary/20 text-primary">{donation.donationType}</Badge>
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'} className="text-[9px] font-bold uppercase">{donation.status}</Badge>
+                                    <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'} className="text-[9px] font-bold">{donation.status}</Badge>
                                 </TableCell>
                                 <TableCell className="text-right pr-4">
                                         <div className="flex items-center justify-end gap-1">
@@ -602,9 +598,9 @@ export default function DonationsPage() {
                                     <Table>
                                         <TableHeader className="bg-primary/5">
                                         <TableRow>
-                                            <TableHead className="text-[10px] font-bold text-primary uppercase">Amount</TableHead>
-                                            <TableHead className="text-[10px] font-bold text-primary uppercase">Transaction ID</TableHead>
-                                            <TableHead className="text-right text-[10px] font-bold text-primary uppercase">Artifact</TableHead>
+                                            <TableHead className="text-[10px] font-bold text-primary tracking-tight uppercase">Amount</TableHead>
+                                            <TableHead className="text-[10px] font-bold text-primary tracking-tight uppercase">Transaction ID</TableHead>
+                                            <TableHead className="text-right text-[10px] font-bold text-primary tracking-tight uppercase">Artifact</TableHead>
                                         </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -644,7 +640,7 @@ export default function DonationsPage() {
             </CardContent>
             {totalPages > 1 && (
                 <CardFooter className="flex items-center justify-between py-4 border-t bg-primary/5">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
                     Page {currentPage} of {totalPages}
                 </p>
                 <div className="flex items-center gap-2">
@@ -656,9 +652,9 @@ export default function DonationsPage() {
         </Card>
       
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0 text-primary">
             <DialogHeader className="px-6 py-4 border-b bg-primary/5">
-                <DialogTitle className="text-xl font-bold text-primary uppercase tracking-tight">{editingDonation ? 'Edit' : 'Add'} donation record</DialogTitle>
+                <DialogTitle className="text-xl font-bold text-primary tracking-tight">{editingDonation ? 'Edit' : 'Add'} donation record</DialogTitle>
             </DialogHeader>
             <ScrollArea className="flex-1 px-6 py-4">
                 <DonationForm
@@ -696,9 +692,9 @@ export default function DonationsPage() {
       </AlertDialog>
 
       <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-        <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden">
-            <DialogHeader className="px-6 py-4 border-b">
-                <DialogTitle className="text-xl font-bold text-primary">Artifact viewer</DialogTitle>
+        <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden text-primary">
+            <DialogHeader className="px-6 py-4 border-b bg-primary/5">
+                <DialogTitle className="text-xl font-bold text-primary tracking-tight">Artifact viewer</DialogTitle>
             </DialogHeader>
             <ScrollArea className="flex-1 bg-secondary/20 p-4">
                 <div className="relative min-h-[70vh] w-full flex items-center justify-center">

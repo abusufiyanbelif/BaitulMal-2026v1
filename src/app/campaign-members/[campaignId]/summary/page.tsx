@@ -38,10 +38,6 @@ import {
     UploadCloud, 
     Trash2, 
     File, 
-    ShieldAlert, 
-    Utensils, 
-    LifeBuoy, 
-    HandHelping,
     Target,
     Users,
     Gift,
@@ -52,9 +48,11 @@ import {
     ZoomOut,
     RotateCw,
     RefreshCw,
-    ImageIcon
+    ImageIcon,
+    Utensils,
+    LifeBuoy,
+    HandHelping
 } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -75,17 +73,17 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
+  RadialBarChart,
+  RadialBar,
+  PolarAngleAxis,
+  PieChart,
+  Pie,
   BarChart,
   Bar,
   Cell,
   XAxis,
   YAxis,
-  CartesianGrid,
-  RadialBarChart,
-  RadialBar,
-  PolarAngleAxis,
-  PieChart,
-  Pie
+  CartesianGrid
 } from 'recharts';
 import {
   ChartContainer,
@@ -94,26 +92,7 @@ import {
   ChartLegend,
   ChartLegendContent
 } from '@/components/ui/chart';
-import type { ChartConfig } from '@/components/ui/chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
-const donationCategoryChartConfig = {
-    Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
-    Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
-    Sadaqah: { label: "Sadaqah", color: "hsl(var(--chart-2))" },
-    Fidiya: { label: "Fidiya", color: "hsl(var(--chart-7))" },
-    Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
-    Interest: { label: "Interest", color: "hsl(var(--chart-5))" },
-    Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
-    'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-8))" },
-} satisfies ChartConfig;
-
-const donationPaymentTypeChartConfig = {
-    Cash: { label: "Cash", color: "hsl(var(--chart-1))" },
-    'Online Payment': { label: "Online Payment", color: "hsl(var(--chart-2))" },
-    Check: { label: "Check", color: "hsl(var(--chart-5))" },
-    Other: { label: "Other", color: "hsl(var(--chart-4))" },
-} satisfies ChartConfig;
 
 export default function CampaignSummaryPage() {
     const params = useParams();
@@ -171,7 +150,7 @@ export default function CampaignSummaryPage() {
                 category: campaign.category || 'General',
                 status: campaign.status || 'Upcoming',
                 targetAmount: campaign.targetAmount || 0,
-                authenticityStatus: campaign.authenticityStatus || 'Pending Verification',
+                authenticityStatus: campaign.authenticityStatus || 'Pending verification',
                 publicVisibility: campaign.publicVisibility || 'Hold',
                 allowedDonationTypes: campaign.allowedDonationTypes || [...donationCategories],
                 imageUrl: campaign.imageUrl || '',
@@ -326,7 +305,7 @@ export default function CampaignSummaryPage() {
     const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false) || !!getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
 
     const handleSave = async () => {
-        if (!campaignDocRef || !userProfile || !canUpdate || !storage) return;
+        if (!leadDocRef || !userProfile || !canUpdate || !storage) return;
         const hasFileToUpload = !!imageFile || newDocuments.length > 0;
         if (hasFileToUpload && !auth?.currentUser) {
             toast({ title: "Authentication error", description: "User not authenticated yet.", variant: "destructive" });
@@ -386,7 +365,7 @@ export default function CampaignSummaryPage() {
     const isLoading = isCampaignLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
 
     if (isLoading) return <BrandedLoader />;
-    if (!campaign) return <main className="container mx-auto p-4 md:p-8 text-center font-bold text-primary uppercase"><p>Campaign not found.</p></main>;
+    if (!campaign) return <main className="container mx-auto p-4 md:p-8 text-center font-bold text-primary"><p>Campaign not found.</p></main>;
 
     const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
     const chartData = fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
@@ -396,8 +375,8 @@ export default function CampaignSummaryPage() {
              <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to campaigns</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                  <div className="space-y-1">
-                    {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => setEditableCampaign(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary uppercase">{campaign.name}</h1> )}
-                    {editMode ? ( <Select value={editableCampaign.status} onValueChange={(value) => setEditableCampaign(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1 font-bold"><SelectValue placeholder="Select a status" /></SelectTrigger><SelectContent><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></SelectContent></Select> ): ( <p className="text-muted-foreground font-bold uppercase">{campaign.status}</p> )}
+                    {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => setEditableCampaign(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary">{campaign.name}</h1> )}
+                    {editMode ? ( <Select value={editableCampaign.status} onValueChange={(value) => setEditableCampaign(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1 font-bold"><SelectValue placeholder="Select a status" /></SelectTrigger><SelectContent><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></SelectContent></Select> ): ( <p className="text-muted-foreground font-bold uppercase tracking-tight">{campaign.status}</p> )}
                 </div>
                 <div className="flex gap-2">
                     {!editMode && (
@@ -413,28 +392,28 @@ export default function CampaignSummaryPage() {
                 </div>
             </div>
 
-             <div className="border-b mb-4">
-                <ScrollArea className="w-full whitespace-nowrap">
-                    <div className="flex w-max space-x-2 pb-2">
-                        {canReadSummary && ( <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-all duration-200", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:bg-primary/10")}>Summary</Link> )}
-                        {canReadRation && ( <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-all duration-200", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:bg-primary/10")}>Item lists</Link> )}
-                        {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:bg-primary/10")}>Beneficiary list</Link> )}
-                         {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:bg-primary/10")}>Donations</Link> )}
+             <div className="mb-6">
+                <ScrollArea className="w-full">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full bg-transparent p-0 border-b border-primary/10 pb-4">
+                        {canReadSummary && ( <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link> )}
+                        {canReadRation && ( <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item lists</Link> )}
+                        {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary list</Link> )}
+                         {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link> )}
                     </div>
-                    <ScrollBar orientation="horizontal" />
+                    <ScrollBar orientation="horizontal" className="hidden" />
                 </ScrollArea>
             </div>
 
             <div className="space-y-6" ref={summaryRef}>
                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
                     <CardHeader className="bg-primary/5">
-                        <CardTitle className="font-bold text-primary uppercase tracking-tight">Campaign overview</CardTitle>
+                        <CardTitle className="font-bold text-primary tracking-tight">Campaign overview</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6">
                         {editMode ? (
                             <div className="space-y-6 font-normal">
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-xs uppercase text-muted-foreground">Header image</Label>
+                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Header image</Label>
                                     <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
                                     <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary">
                                         {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click to upload</span></p></div> )}
@@ -442,7 +421,7 @@ export default function CampaignSummaryPage() {
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <Label className="font-bold text-xs uppercase text-muted-foreground">Category</Label>
+                                        <Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Category</Label>
                                         <Select value={editableCampaign.category} onValueChange={(val) => handleFieldChange('category', val)}>
                                             <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
                                             <SelectContent>
@@ -452,15 +431,15 @@ export default function CampaignSummaryPage() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">Fundraising goal (₹)</Label><Input type="number" value={editableCampaign.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold" /></div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Fundraising goal (₹)</Label><Input type="number" value={editableCampaign.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold" /></div>
                                 </div>
-                                <div><Label className="font-bold text-xs uppercase text-muted-foreground">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground font-normal" rows={4} /></div>
+                                <div><Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground font-normal" rows={4} /></div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">Start date</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="text-foreground" /></div>
-                                    <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">End date</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="text-foreground" /></div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Start date</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="text-foreground font-bold" /></div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">End date</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="text-foreground font-bold" /></div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-xs uppercase text-muted-foreground">Allowed donation types for goal</Label>
+                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Allowed donation types for goal</Label>
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border rounded-md p-3">
                                         {donationCategories.map(type => (
                                             <div key={type} className="flex items-center space-x-2">
@@ -489,7 +468,7 @@ export default function CampaignSummaryPage() {
                                     )}
                                 </div>
                                 <div className="space-y-2 font-normal text-primary">
-                                    <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
+                                    <Label className="text-muted-foreground uppercase text-xs font-bold tracking-widest">Description</Label>
                                     <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-foreground">{campaign.description || 'No description provided.'}</p>
                                 </div>
                             </>
@@ -502,7 +481,7 @@ export default function CampaignSummaryPage() {
                         {isVisible('funding_progress') && (
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                 <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 font-bold text-primary uppercase tracking-tight"><Target className="h-6 w-6 text-primary" /> Fundraising progress</CardTitle>
+                                    <CardTitle className="flex items-center gap-2 font-bold text-primary"><Target className="h-6 w-6 text-primary" /> Fundraising progress</CardTitle>
                                     <CardDescription className="font-normal text-primary/70">Verified donations for this campaign.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
@@ -516,7 +495,7 @@ export default function CampaignSummaryPage() {
                                                     </RadialBarChart>
                                                 </ChartContainer>
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold uppercase">Funded</span></div>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">Funded</span></div>
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary font-bold">
                                             <div><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Raised for goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
@@ -555,10 +534,10 @@ export default function CampaignSummaryPage() {
                                                 <Table>
                                                     <TableHeader className="bg-primary/5">
                                                         <TableRow>
-                                                            <TableHead className="font-bold text-primary text-[10px] uppercase">Category</TableHead>
-                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Beneficiaries</TableHead>
-                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Kit amount</TableHead>
-                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Total amount</TableHead>
+                                                            <TableHead className="font-bold text-primary text-[10px] uppercase tracking-wider">Category</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-wider">Beneficiaries</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-wider">Kit amount</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-wider">Total amount</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
@@ -574,7 +553,7 @@ export default function CampaignSummaryPage() {
                                                     {beneficiaryGroups.length > 0 && (
                                                         <tfoot className="bg-primary/5 border-t">
                                                             <TableRow>
-                                                                <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-[10px]">Total requirement</TableCell>
+                                                                <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-[10px] tracking-widest">Total requirement</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-primary text-base">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
                                                         </tfoot>
@@ -584,10 +563,10 @@ export default function CampaignSummaryPage() {
                                                 <Table>
                                                     <TableHeader className="bg-primary/5">
                                                         <TableRow>
-                                                            <TableHead className="font-bold text-primary text-[10px] uppercase">Requirement</TableHead>
-                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Qty</TableHead>
-                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Unit price</TableHead>
-                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Total cost</TableHead>
+                                                            <TableHead className="font-bold text-primary text-[10px] uppercase tracking-wider">Requirement</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-wider">Qty</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-wider">Unit price</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-wider">Total cost</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
@@ -602,7 +581,7 @@ export default function CampaignSummaryPage() {
                                                     </TableBody>
                                                     <tfoot className="bg-primary/5 border-t">
                                                         <TableRow>
-                                                            <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-[10px]">Single unit total</TableCell>
+                                                            <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-[10px] tracking-widest">Single unit total</TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-base">
                                                                 ₹{(campaign.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
                                                             </TableCell>
@@ -658,7 +637,7 @@ export default function CampaignSummaryPage() {
                         <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 font-normal text-primary">
                             {isVisible('donations_by_category') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary text-sm uppercase tracking-widest"><TrendingUp className="h-5 w-5"/> Donations by category</CardTitle></CardHeader>
+                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary text-sm uppercase tracking-widest">Donations by category</CardTitle></CardHeader>
                                     <CardContent className="p-0 sm:p-6">
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
@@ -717,7 +696,7 @@ export default function CampaignSummaryPage() {
                                                 </div>
                                             ))}
                                         </div>
-                                    ) : <p className="text-[10px] text-muted-foreground font-bold uppercase">No documents attached.</p>}
+                                    ) : <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">No documents attached.</p>}
                                 </div>
                             ) : (
                                 campaign.documents && campaign.documents.length > 0 ? (
@@ -730,16 +709,16 @@ export default function CampaignSummaryPage() {
                                                         <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
                                                             {isImg ? <Image src={doc.url} alt={doc.name} fill sizes="100vw" className="object-cover" /> : <File className="w-10 h-10 text-muted-foreground" />}
                                                         </div>
-                                                        <div className="p-2 text-center text-[10px] font-bold uppercase truncate text-foreground">{doc.name}</div>
+                                                        <div className="p-2 text-center text-[10px] font-bold uppercase tracking-tight truncate text-foreground">{doc.name}</div>
                                                     </div>
                                                     <CardFooter className="p-2 border-t mt-auto flex justify-center w-full gap-2" onClick={e => e.stopPropagation()}>
-                                                        {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-[9px] text-foreground font-bold uppercase">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"} className="font-bold uppercase text-[9px]">{doc.isPublic ? "Public" : "Private"}</Badge> )}
+                                                        {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-[9px] text-foreground font-bold uppercase tracking-tighter">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"} className="font-bold uppercase text-[9px] tracking-tighter">{doc.isPublic ? "Public" : "Private"}</Badge> )}
                                                     </CardFooter>
                                                 </Card>
                                             );
                                         })}
                                     </div>
-                                ) : <p className="text-[10px] text-muted-foreground font-bold uppercase">No public artifacts available.</p>
+                                ) : <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">No public artifacts available.</p>
                             )}
                         </CardContent>
                     </Card>

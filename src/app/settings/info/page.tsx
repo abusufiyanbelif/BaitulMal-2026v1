@@ -17,7 +17,7 @@ import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, Image as ImageIcon, BookOpen, Edit, X, Eye } from 'lucide-react';
+import { Loader2, Plus, Trash2, Quote, ListChecks, HelpCircle, Image as ImageIcon, BookOpen, Edit, X, Eye, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -29,7 +29,6 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { FileUploader } from '@/components/file-uploader';
 import { Switch } from '@/components/ui/switch';
 import { BrandedLoader } from '@/components/branded-loader';
 import { donationCategories } from '@/lib/modules';
@@ -87,7 +86,7 @@ function UseCaseEditor({ control, typeIndex, isReadOnly }: { control: any, typeI
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold flex items-center gap-2 tracking-wider text-primary"><HelpCircle className="h-4 w-4"/> Scenarios & rules</h4>
+                <h4 className="text-sm font-bold flex items-center gap-2 tracking-tight text-primary"><HelpCircle className="h-4 w-4"/> Scenarios & rules</h4>
                 {!isReadOnly && (
                     <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `uc_${Date.now()}`, title: '', description: '', isAllowed: true, isHidden: false })} className="font-bold">
                         <Plus className="h-3 w-3 mr-1"/> Add scenario
@@ -102,7 +101,7 @@ function UseCaseEditor({ control, typeIndex, isReadOnly }: { control: any, typeI
                                 <FormField control={control} name={`types.${typeIndex}.useCases.${index}.isHidden`} render={({ field: hiddenField }) => (
                                     <FormItem className="flex items-center space-x-2 space-y-0">
                                         <FormControl><Checkbox checked={hiddenField.value} onCheckedChange={hiddenField.onChange} /></FormControl>
-                                        <FormLabel className="text-[10px] font-bold text-muted-foreground cursor-pointer">Hide</FormLabel>
+                                        <FormLabel className="text-[10px] font-bold text-muted-foreground cursor-pointer tracking-tight">Hide</FormLabel>
                                     </FormItem>
                                 )}/>
                                 <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => remove(index)}>
@@ -118,18 +117,18 @@ function UseCaseEditor({ control, typeIndex, isReadOnly }: { control: any, typeI
                                 </FormItem>
                             )}/>
                             <FormField control={control} name={`types.${typeIndex}.useCases.${index}.title`} render={({ field: titleField }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-[10px] font-bold text-muted-foreground">Scenario name</FormLabel><FormControl><Input placeholder="e.g. Case 1: Ration kit" {...titleField} disabled={isReadOnly} /></FormControl></FormItem>
+                                <FormItem className="flex-1"><FormLabel className="text-[10px] font-bold text-muted-foreground tracking-tight">Scenario name</FormLabel><FormControl><Input placeholder="e.g. Case 1: Ration kit" {...titleField} disabled={isReadOnly} /></FormControl></FormItem>
                             )}/>
                         </div>
                         <FormField control={control} name={`types.${typeIndex}.useCases.${index}.description`} render={({ field: descField }) => (
-                            <FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground">Guideline / rule</FormLabel><FormControl><Textarea rows={2} {...descField} disabled={isReadOnly} /></FormControl></FormItem>
+                            <FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground tracking-tight">Guideline / rule</FormLabel><FormControl><Textarea rows={2} {...descField} disabled={isReadOnly} /></FormControl></FormItem>
                         )}/>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-dashed">
                             <FormField control={control} name={`types.${typeIndex}.useCases.${index}.quranVerse`} render={({ field: verseField }) => (
-                                <FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground">Religious proof</FormLabel><FormControl><Textarea rows={2} className="text-xs" placeholder="Verse or Hadith text..." {...verseField} disabled={isReadOnly} /></FormControl></FormItem>
+                                <FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground tracking-tight">Religious proof</FormLabel><FormControl><Textarea rows={2} className="text-xs" placeholder="Verse or Hadith text..." {...verseField} disabled={isReadOnly} /></FormControl></FormItem>
                             )}/>
                             <FormField control={control} name={`types.${typeIndex}.useCases.${index}.quranSource`} render={({ field: sourceField }) => (
-                                <FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground">Citation</FormLabel><FormControl><Input className="text-xs" placeholder="Source citation..." {...sourceField} disabled={isReadOnly} /></FormControl></FormItem>
+                                <FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground tracking-tight">Citation</FormLabel><FormControl><Input className="text-xs" placeholder="Source citation..." {...sourceField} disabled={isReadOnly} /></FormControl></FormItem>
                             )}/>
                         </div>
                     </div>
@@ -145,7 +144,7 @@ function QAEditor({ control, typeIndex, isReadOnly }: { control: any, typeIndex:
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold flex items-center gap-2 tracking-wider text-blue-700"><BookOpen className="h-4 w-4"/> FAQ items</h4>
+                <h4 className="text-sm font-bold flex items-center gap-2 tracking-tight text-blue-700"><BookOpen className="h-4 w-4"/> FAQ items</h4>
                 {!isReadOnly && (
                     <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `qa_${Date.now()}`, question: '', answer: '', reference: '', isHidden: false })} className="font-bold">
                         <Plus className="h-3 w-3 mr-1"/> Add question
@@ -160,7 +159,7 @@ function QAEditor({ control, typeIndex, isReadOnly }: { control: any, typeIndex:
                                 <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.isHidden`} render={({ field: hiddenField }) => (
                                     <FormItem className="flex items-center space-x-2 space-y-0">
                                         <FormControl><Checkbox checked={hiddenField.value} onCheckedChange={hiddenField.onChange} /></FormControl>
-                                        <FormLabel className="text-[10px] font-bold text-muted-foreground cursor-pointer">Hide</FormLabel>
+                                        <FormLabel className="text-[10px] font-bold text-muted-foreground cursor-pointer tracking-tight">Hide</FormLabel>
                                     </FormItem>
                                 )}/>
                                 <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => remove(index)}>
@@ -169,17 +168,17 @@ function QAEditor({ control, typeIndex, isReadOnly }: { control: any, typeIndex:
                             </div>
                         )}
                         <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.question`} render={({ field: qField }) => (
-                            <FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground">Question</FormLabel><FormControl><Input {...qField} disabled={isReadOnly} /></FormControl></FormItem>
+                            <FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground tracking-tight">Question</FormLabel><FormControl><Input {...qField} disabled={isReadOnly} /></FormControl></FormItem>
                         )}/>
                         <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.answer`} render={({ field: aField }) => (
-                            <FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground">Answer</FormLabel><FormControl><Textarea rows={2} {...aField} disabled={isReadOnly} /></FormControl></FormItem>
+                            <FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground tracking-tight">Answer</FormLabel><FormControl><Textarea rows={2} {...aField} disabled={isReadOnly} /></FormControl></FormItem>
                         )}/>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-dashed border-blue-200">
                             <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.quranVerse`} render={({ field: vField }) => (
-                                <FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground">Religious proof</FormLabel><FormControl><Textarea rows={2} className="text-xs" placeholder="Verse or Hadith text..." {...vField} disabled={isReadOnly} /></FormControl></FormItem>
+                                <FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground tracking-tight">Religious proof</FormLabel><FormControl><Textarea rows={2} className="text-xs" placeholder="Verse or Hadith text..." {...vField} disabled={isReadOnly} /></FormControl></FormItem>
                             )}/>
                             <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.quranSource`} render={({ field: sField }) => (
-                                <FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground">Citation</FormLabel><FormControl><Input className="text-xs" placeholder="Source citation..." {...sField} disabled={isReadOnly} /></FormControl></FormItem>
+                                <FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground tracking-tight">Citation</FormLabel><FormControl><Input className="text-xs" placeholder="Source citation..." {...sField} disabled={isReadOnly} /></FormControl></FormItem>
                             )}/>
                         </div>
                     </div>
@@ -305,7 +304,6 @@ export default function InfoSettingsPage() {
     return (
         <div className="space-y-6 text-primary font-normal">
             
-            {/* Page Visibility Card */}
             <Card className="animate-fade-in-zoom border-primary/10 overflow-hidden shadow-sm">
                 <CardHeader className="bg-primary/5 border-b">
                     <CardTitle className="font-bold tracking-tight">Page visibility</CardTitle>
@@ -322,7 +320,7 @@ export default function InfoSettingsPage() {
                         </div>
                         <div className="flex items-center gap-4">
                             <div className="flex items-center space-x-2">
-                                <Label htmlFor="donation-info-public" className="font-bold text-xs opacity-60">Visible</Label>
+                                <Label htmlFor="donation-info-public" className="font-bold text-xs opacity-60 tracking-tight">Visible</Label>
                                 <Switch 
                                     id="donation-info-public" 
                                     checked={localDonationVisible} 
@@ -350,7 +348,26 @@ export default function InfoSettingsPage() {
                         </CardHeader>
                         <CardContent className="p-0 font-normal">
                             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                                <div className="bg-muted/10 border-b"><ScrollArea className="w-full whitespace-nowrap"><TabsList className="h-auto w-max bg-transparent p-0 rounded-none">{donationTypeFields.map((field, index) => { const typeId = form.getValues(`types.${index}.id`); const title = form.watch(`types.${index}.title`) || 'New type'; return (<TabsTrigger key={field.id} value={typeId} className={cn("rounded-none border-b-2 border-transparent px-6 py-4 font-bold tracking-widest text-muted-foreground transition-all duration-300 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground")}>{title}</TabsTrigger>);})}</TabsList><ScrollBar orientation="horizontal" /></ScrollArea></div>
+                                <div className="bg-muted/10 border-b">
+                                    <ScrollArea className="w-full">
+                                        <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2 h-auto w-full bg-transparent p-4">
+                                            {donationTypeFields.map((field, index) => { 
+                                                const typeId = form.getValues(`types.${index}.id`); 
+                                                const title = form.watch(`types.${index}.title`) || 'New type'; 
+                                                return (
+                                                    <TabsTrigger 
+                                                        key={field.id} 
+                                                        value={typeId} 
+                                                        className={cn("h-12 data-[state=active]:bg-primary data-[state=active]:text-white border border-primary/10 shadow-sm font-bold tracking-tight")}
+                                                    >
+                                                        {title}
+                                                    </TabsTrigger>
+                                                );
+                                            })}
+                                        </TabsList>
+                                        <ScrollBar orientation="horizontal" className="hidden" />
+                                    </ScrollArea>
+                                </div>
                                 {donationTypeFields.map((field, index) => {
                                     const typeId = form.getValues(`types.${index}.id`);
                                     const isEditingTab = editModes[typeId] || false;
@@ -360,11 +377,11 @@ export default function InfoSettingsPage() {
                                             <div className={cn("grid gap-8 transition-all", !isEditingTab && "opacity-70 pointer-events-none")}>
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                                                     <div className="md:col-span-2 space-y-4">
-                                                        <FormField control={form.control} name={`types.${index}.title`} render={({ field: tField }) => (<FormItem><FormLabel className="font-bold tracking-tighter text-xs text-muted-foreground">Heading</FormLabel><FormControl><Input {...tField} disabled={!isEditingTab} /></FormControl></FormItem>)}/>
-                                                        <FormField control={form.control} name={`types.${index}.description`} render={({ field: dField }) => (<FormItem><FormLabel className="font-bold tracking-tighter text-xs text-muted-foreground">Introduction</FormLabel><FormControl><Textarea rows={4} {...dField} disabled={!isEditingTab} /></FormControl></FormItem>)} />
+                                                        <FormField control={form.control} name={`types.${index}.title`} render={({ field: tField }) => (<FormItem><FormLabel className="font-bold tracking-tight text-xs text-muted-foreground">Heading</FormLabel><FormControl><Input {...tField} disabled={!isEditingTab} /></FormControl></FormItem>)}/>
+                                                        <FormField control={form.control} name={`types.${index}.description`} render={({ field: dField }) => (<FormItem><FormLabel className="font-bold tracking-tight text-xs text-muted-foreground">Introduction</FormLabel><FormControl><Textarea rows={4} {...dField} disabled={!isEditingTab} /></FormControl></FormItem>)} />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <FormLabel className="font-bold tracking-tighter text-xs text-muted-foreground">Category image</FormLabel>
+                                                        <FormLabel className="font-bold tracking-tight text-xs text-muted-foreground">Category image</FormLabel>
                                                         <div className="relative aspect-[4/3] w-full rounded-md border-2 border-dashed overflow-hidden flex items-center justify-center bg-muted/30">
                                                             {form.watch(`types.${index}.imageUrl`) ? (<Image src={form.watch(`types.${index}.imageUrl`)!.startsWith('data:') ? form.watch(`types.${index}.imageUrl`)! : `/api/image-proxy?url=${encodeURIComponent(form.watch(`types.${index}.imageUrl`)!)}`} alt="Header" fill className="object-cover" unoptimized />) : (<div className="text-center p-4"><ImageIcon className="h-10 w-10 mx-auto text-muted-foreground/40" /></div>)}
                                                         </div>
@@ -374,42 +391,42 @@ export default function InfoSettingsPage() {
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-lg border p-4 bg-muted/5 shadow-sm">
                                                     <div className="space-y-4">
                                                         <div className="flex items-center justify-between">
-                                                            <h4 className="text-sm font-bold flex items-center gap-2 tracking-wider text-primary"><Quote className="h-4 w-4"/> Divine proof</h4>
-                                                            <FormField control={form.control} name={`types.${index}.hideKeyHighlights`} render={({ field: hideField }) => (<FormItem className="flex items-center space-x-2 space-y-0"><FormControl><Checkbox checked={hideField.value} onCheckedChange={hideField.onChange} disabled={!isEditingTab}/></FormControl><FormLabel className="text-[10px] font-bold cursor-pointer opacity-60">Hide</FormLabel></FormItem>)}/>
+                                                            <h4 className="text-sm font-bold flex items-center gap-2 tracking-tight text-primary"><Quote className="h-4 w-4"/> Divine proof</h4>
+                                                            <FormField control={form.control} name={`types.${index}.hideKeyHighlights`} render={({ field: hideField }) => (<FormItem className="flex items-center space-x-2 space-y-0"><FormControl><Checkbox checked={hideField.value} onCheckedChange={hideField.onChange} disabled={!isEditingTab}/></FormControl><FormLabel className="text-[10px] font-bold cursor-pointer opacity-60 tracking-tight">Hide</FormLabel></FormItem>)}/>
                                                         </div>
-                                                        <FormField control={form.control} name={`types.${index}.quranVerse`} render={({ field: qvField }) => (<FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground">Verse text</FormLabel><FormControl><Textarea rows={3} {...qvField} disabled={!isEditingTab} className="text-xs italic" /></FormControl></FormItem>)}/>
-                                                        <FormField control={form.control} name={`types.${index}.quranSource`} render={({ field: qsField }) => (<FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground">Citation</FormLabel><FormControl><Input {...qsField} disabled={!isEditingTab} className="text-xs" /></FormControl></FormItem>)}/>
+                                                        <FormField control={form.control} name={`types.${index}.quranVerse`} render={({ field: qvField }) => (<FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground tracking-tight">Verse text</FormLabel><FormControl><Textarea rows={3} {...qvField} disabled={!isEditingTab} className="text-xs italic" /></FormControl></FormItem>)}/>
+                                                        <FormField control={form.control} name={`types.${index}.quranSource`} render={({ field: qsField }) => (<FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground tracking-tight">Citation</FormLabel><FormControl><Input {...qsField} disabled={!isEditingTab} className="text-xs" /></FormControl></FormItem>)}/>
                                                     </div>
                                                     <div className="space-y-4">
-                                                        <h4 className="text-sm font-bold flex items-center gap-2 tracking-wider text-primary"><ListChecks className="h-4 w-4"/> Key highlights</h4>
-                                                        <FormField control={form.control} name={`types.${index}.purposePointsRaw`} render={({ field: ppField }) => (<FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground">List points (one per line)</FormLabel><FormControl><Textarea rows={6} {...ppField} disabled={!isEditingTab} className="text-xs" /></FormControl></FormItem>)}/>
+                                                        <h4 className="text-sm font-bold flex items-center gap-2 tracking-tight text-primary"><ListChecks className="h-4 w-4"/> Key highlights</h4>
+                                                        <FormField control={form.control} name={`types.${index}.purposePointsRaw`} render={({ field: ppField }) => (<FormItem><FormLabel className="text-[10px] font-bold text-muted-foreground tracking-tight">List points (one per line)</FormLabel><FormControl><Textarea rows={6} {...ppField} disabled={!isEditingTab} className="text-xs" /></FormControl></FormItem>)}/>
                                                     </div>
                                                 </div>
                                                 <div className="space-y-4 rounded-lg border-2 border-primary/10 p-4 bg-primary/5 shadow-sm">
                                                     <div className="flex items-center justify-between gap-4">
-                                                        <FormField control={form.control} name={`types.${index}.useCasesHeading`} render={({ field: uhField }) => (<FormItem className="flex-1"><FormLabel className="font-bold text-xs text-muted-foreground">Scenarios heading</FormLabel><FormControl><Input {...uhField} disabled={!isEditingTab} placeholder="e.g. Practical scenarios" /></FormControl></FormItem>)}/>
-                                                        <FormField control={form.control} name={`types.${index}.hideUseCases`} render={({ field: hideField }) => (<FormItem className="flex items-center space-x-2 space-y-0 mt-6"><FormControl><Checkbox checked={hideField.value} onCheckedChange={hideField.onChange} disabled={!isEditingTab}/></FormControl><FormLabel className="text-[10px] font-bold cursor-pointer opacity-60">Hide section</FormLabel></FormItem>)}/>
+                                                        <FormField control={form.control} name={`types.${index}.useCasesHeading`} render={({ field: uhField }) => (<FormItem className="flex-1"><FormLabel className="font-bold text-xs text-muted-foreground tracking-tight">Scenarios heading</FormLabel><FormControl><Input {...uhField} disabled={!isEditingTab} placeholder="e.g. Practical scenarios" /></FormControl></FormItem>)}/>
+                                                        <FormField control={form.control} name={`types.${index}.hideUseCases`} render={({ field: hideField }) => (<FormItem className="flex items-center space-x-2 space-y-0 mt-6"><FormControl><Checkbox checked={hideField.value} onCheckedChange={hideField.onChange} disabled={!isEditingTab}/></FormControl><FormLabel className="text-[10px] font-bold cursor-pointer opacity-60 tracking-tight">Hide section</FormLabel></FormItem>)}/>
                                                     </div>
                                                     <UseCaseEditor control={form.control} typeIndex={index} isReadOnly={!isEditingTab} />
                                                 </div>
                                                 <div className="space-y-4 rounded-lg border-2 border-blue-100 p-4 bg-blue-50/30 shadow-sm">
                                                     <div className="flex items-center justify-end">
-                                                        <FormField control={form.control} name={`types.${index}.hideQA`} render={({ field: hideField }) => (<FormItem className="flex items-center space-x-2 space-y-0"><FormControl><Checkbox checked={hideField.value} onCheckedChange={hideField.onChange} disabled={!isEditingTab}/></FormControl><FormLabel className="text-[10px] font-bold cursor-pointer opacity-60">Hide section</FormLabel></FormItem>)}/>
+                                                        <FormField control={form.control} name={`types.${index}.hideQA`} render={({ field: hideField }) => (<FormItem className="flex items-center space-x-2 space-y-0"><FormControl><Checkbox checked={hideField.value} onCheckedChange={hideField.onChange} disabled={!isEditingTab}/></FormControl><FormLabel className="text-[10px] font-bold cursor-pointer opacity-60 tracking-tight">Hide section</FormLabel></FormItem>)}/>
                                                     </div>
                                                     <QAEditor control={form.control} typeIndex={index} isReadOnly={!isEditingTab} />
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-lg border bg-muted/5">
                                                     <div className="space-y-3">
                                                         <div className="flex items-center justify-between">
-                                                            <FormLabel className="font-bold text-primary text-xs">Usage guidelines</FormLabel>
-                                                            <FormField control={form.control} name={`types.${index}.hideUsage`} render={({ field: hideField }) => (<FormItem className="flex items-center space-x-2 space-y-0"><FormControl><Checkbox checked={hideField.value} onCheckedChange={hideField.onChange} disabled={!isEditingTab}/></FormControl><FormLabel className="text-[10px] font-bold cursor-pointer opacity-60">Hide</FormLabel></FormItem>)}/>
+                                                            <FormLabel className="font-bold text-primary text-xs tracking-tight">Usage guidelines</FormLabel>
+                                                            <FormField control={form.control} name={`types.${index}.hideUsage`} render={({ field: hideField }) => (<FormItem className="flex items-center space-x-2 space-y-0"><FormControl><Checkbox checked={hideField.value} onCheckedChange={hideField.onChange} disabled={!isEditingTab}/></FormControl><FormLabel className="text-[10px] font-bold cursor-pointer opacity-60 tracking-tight">Hide</FormLabel></FormItem>)}/>
                                                         </div>
                                                         <FormField control={form.control} name={`types.${index}.usage`} render={({ field: uField }) => (<FormControl><Textarea rows={4} {...uField} disabled={!isEditingTab} className="text-xs" /></FormControl>)} />
                                                     </div>
                                                     <div className="space-y-3">
                                                         <div className="flex items-center justify-between">
-                                                            <FormLabel className="font-bold text-destructive text-xs">Strict restrictions</FormLabel>
-                                                            <FormField control={form.control} name={`types.${index}.hideRestrictions`} render={({ field: hideField }) => (<FormItem className="flex items-center space-x-2 space-y-0"><FormControl><Checkbox checked={hideField.value} onCheckedChange={hideField.onChange} disabled={!isEditingTab}/></FormControl><FormLabel className="text-[10px] font-bold cursor-pointer opacity-60">Hide</FormLabel></FormItem>)}/>
+                                                            <FormLabel className="font-bold text-destructive text-xs tracking-tight">Strict restrictions</FormLabel>
+                                                            <FormField control={form.control} name={`types.${index}.hideRestrictions`} render={({ field: hideField }) => (<FormItem className="flex items-center space-x-2 space-y-0"><FormControl><Checkbox checked={hideField.value} onCheckedChange={hideField.onChange} disabled={!isEditingTab}/></FormControl><FormLabel className="text-[10px] font-bold cursor-pointer opacity-60 tracking-tight">Hide</FormLabel></FormItem>)}/>
                                                         </div>
                                                         <FormField control={form.control} name={`types.${index}.restrictions`} render={({ field: rField }) => (<FormControl><Textarea rows={4} {...rField} disabled={!isEditingTab} className="text-xs" /></FormControl>)} />
                                                     </div>

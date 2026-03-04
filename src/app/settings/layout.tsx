@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/use-session';
 import { getNestedValue } from '@/lib/utils';
 import { settingsSubModules } from '@/lib/modules';
@@ -34,38 +33,40 @@ export default function SettingsLayout({
   return (
     <div className="container mx-auto p-4 md:p-8 animate-fade-in-zoom">
        <div className="mb-4">
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
               <Link href="/dashboard">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Dashboard
+                  Back to dashboard
               </Link>
           </Button>
       </div>
-      <h1 className="text-3xl font-bold mb-4">Settings</h1>
+      <h1 className="text-3xl font-bold mb-6 text-primary">Settings</h1>
       
       <Tabs value={getActiveTab()} onValueChange={handleTabChange} className="w-full">
-        <ScrollArea className="w-full whitespace-nowrap">
-            <TabsList className="h-auto bg-primary/10 p-1 w-max">
+        <ScrollArea className="w-full">
+            <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 h-auto w-full bg-transparent p-0">
                 {settingsSubModules.map(subModule => {
                     const canReadSubModule = userProfile?.role === 'Admin' || getNestedValue(userProfile, `permissions.settings.${subModule.id}.read`, false);
                     if (!canReadSubModule) return null;
                     
                     return (
-                        <TabsTrigger key={subModule.id} value={subModule.id} asChild>
+                        <TabsTrigger 
+                            key={subModule.id} 
+                            value={subModule.id} 
+                            asChild
+                            className="h-12 data-[state=active]:bg-primary data-[state=active]:text-white border border-primary/10 shadow-sm font-bold"
+                        >
                              <Link href={`/settings/${subModule.id}`}>{subModule.name}</Link>
                         </TabsTrigger>
                     )
                 })}
             </TabsList>
-            <ScrollBar orientation="horizontal" />
+            <ScrollBar orientation="horizontal" className="hidden" />
         </ScrollArea>
-        <div className="mt-6">
-            <ScrollArea className="w-full">
-                <div className="min-w-0">
-                    {children}
-                </div>
-                <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+        <div className="mt-8">
+            <div className="min-w-0">
+                {children}
+            </div>
         </div>
       </Tabs>
     </div>

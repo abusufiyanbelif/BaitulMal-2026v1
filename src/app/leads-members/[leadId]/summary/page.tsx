@@ -56,7 +56,6 @@ import {
     RefreshCw,
     ImageIcon
 } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -77,17 +76,17 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
+  RadialBarChart,
+  RadialBar,
+  PolarAngleAxis,
+  PieChart,
+  Pie,
   BarChart,
   Bar,
   Cell,
   XAxis,
   YAxis,
-  CartesianGrid,
-  RadialBarChart,
-  RadialBar,
-  PolarAngleAxis,
-  PieChart,
-  Pie
+  CartesianGrid
 } from 'recharts';
 import {
   ChartContainer,
@@ -96,26 +95,7 @@ import {
   ChartLegend,
   ChartLegendContent
 } from '@/components/ui/chart';
-import type { ChartConfig } from '@/components/ui/chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
-const donationCategoryChartConfig = {
-    Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
-    Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
-    Sadaqah: { label: "Sadaqah", color: "hsl(var(--chart-2))" },
-    Fidiya: { label: "Fidiya", color: "hsl(var(--chart-7))" },
-    Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
-    Interest: { label: "Interest", color: "hsl(var(--chart-5))" },
-    Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
-    'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-8))" },
-} satisfies ChartConfig;
-
-const donationPaymentTypeChartConfig = {
-    Cash: { label: "Cash", color: "hsl(var(--chart-1))" },
-    'Online Payment': { label: "Online Payment", color: "hsl(var(--chart-2))" },
-    Check: { label: "Check", color: "hsl(var(--chart-5))" },
-    Other: { label: "Other", color: "hsl(var(--chart-4))" },
-} satisfies ChartConfig;
 
 export default function LeadSummaryPage() {
     const params = useParams();
@@ -177,7 +157,7 @@ export default function LeadSummaryPage() {
                 status: lead.status || 'Upcoming',
                 requiredAmount: lead.requiredAmount || 0,
                 targetAmount: lead.targetAmount || 0,
-                authenticityStatus: lead.authenticityStatus || 'Pending Verification',
+                authenticityStatus: lead.authenticityStatus || 'Pending verification',
                 publicVisibility: lead.publicVisibility || 'Hold',
                 allowedDonationTypes: lead.allowedDonationTypes || [...donationCategories],
                 imageUrl: lead.imageUrl || '',
@@ -390,7 +370,7 @@ export default function LeadSummaryPage() {
     const isLoading = isLeadLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
 
     if (isLoading) return <BrandedLoader />;
-    if (!lead) return <main className="container mx-auto p-4 md:p-8 text-center font-bold text-primary uppercase"><p>Lead not found.</p></main>;
+    if (!lead) return <main className="container mx-auto p-4 md:p-8 text-center font-bold text-primary"><p>Lead not found.</p></main>;
     
     const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : lead.purpose === 'Medical' ? HeartPulse : lead.purpose === 'Relief' ? LifeBuoy : lead.purpose === 'Other' ? Info : HandHelping;
     const chartData = fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
@@ -400,10 +380,10 @@ export default function LeadSummaryPage() {
              <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to leads</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                  <div className="space-y-1">
-                    {editMode ? ( <Input id="name" value={editableLead.name || ''} onChange={(e) => setEditableLead(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary uppercase">{lead.name}</h1> )}
+                    {editMode ? ( <Input id="name" value={editableLead.name || ''} onChange={(e) => setEditableLead(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary">{lead.name}</h1> )}
                     {editMode ? (
                          <Select value={editableLead.status} onValueChange={(value) => setEditableLead(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1 font-bold"><SelectValue placeholder="Select a status" /></SelectTrigger><SelectContent><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></SelectContent></Select>
-                    ): ( <p className="text-muted-foreground font-bold uppercase">{lead.status}</p> )}
+                    ): ( <p className="text-muted-foreground font-bold uppercase tracking-tight">{lead.status}</p> )}
                 </div>
                 <div className="flex gap-2">
                     {!editMode && (
@@ -413,26 +393,26 @@ export default function LeadSummaryPage() {
                 </div>
             </div>
 
-            <div className="border-b mb-4">
-              <ScrollArea className="w-full whitespace-nowrap">
-                  <div className="flex w-max space-x-2 pb-2">
-                      {canReadSummary && ( <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/leads-members/${leadId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold")}>Summary</Link> )}
-                      <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold")}>Item list</Link>
-                      {canReadBeneficiaries && ( <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold")}>Beneficiary list</Link> )}
-                      {canReadDonations && ( <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold")}>Donations</Link> )}
+            <div className="mb-6">
+              <ScrollArea className="w-full">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full bg-transparent p-0 border-b border-primary/10 pb-4">
+                      {canReadSummary && ( <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname === `/leads-members/${leadId}/summary` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10")}>Summary</Link> )}
+                      <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10")}>Item list</Link>
+                      {canReadBeneficiaries && ( <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10")}>Beneficiary list</Link> )}
+                      {canReadDonations && ( <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10")}>Donations</Link> )}
                   </div>
-                  <ScrollBar orientation="horizontal" />
+                  <ScrollBar orientation="horizontal" className="hidden" />
               </ScrollArea>
             </div>
 
             <div className="space-y-6" ref={summaryRef}>
                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
-                        <CardHeader className="bg-primary/5"><CardTitle className="font-bold text-primary uppercase tracking-tight">Lead details</CardTitle></CardHeader>
+                        <CardHeader className="bg-primary/5"><CardTitle className="font-bold text-primary tracking-tight">Lead details</CardTitle></CardHeader>
                         <CardContent className="space-y-4 pt-6 text-primary">
                             {editMode ? (
                                 <div className="space-y-6 font-normal">
                                     <div className="space-y-2">
-                                        <Label className="font-bold text-xs uppercase text-muted-foreground">Header image</Label>
+                                        <Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Header image</Label>
                                         <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
                                         <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary">
                                             {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click to upload</span></p></div> )}
@@ -440,7 +420,7 @@ export default function LeadSummaryPage() {
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1">
-                                            <Label className="font-bold text-xs uppercase text-muted-foreground">Purpose</Label>
+                                            <Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Purpose</Label>
                                             <Select value={editableLead.purpose} onValueChange={(val) => handleFieldChange('purpose', val)}>
                                                 <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
                                                 <SelectContent>{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent>
@@ -448,7 +428,7 @@ export default function LeadSummaryPage() {
                                         </div>
                                         {availableCategories.length > 0 && (
                                             <div className="space-y-1">
-                                                <Label className="font-bold text-xs uppercase text-muted-foreground">Category</Label>
+                                                <Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Category</Label>
                                                 <Select value={editableLead.category} onValueChange={(val) => handleFieldChange('category', val)}>
                                                     <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
                                                     <SelectContent>{availableCategories.map(cat => <SelectItem key={cat} value={cat} className="font-bold">{cat}</SelectItem>)}</SelectContent>
@@ -458,7 +438,7 @@ export default function LeadSummaryPage() {
                                     </div>
                                     
                                     {editableLead.purpose === 'Education' && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5 border-primary/10">
                                             <div className="space-y-1"><Label className="font-bold text-xs">Degree</Label><Select value={editableLead.degree} onValueChange={(val) => handleFieldChange('degree', val)}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent>{educationDegrees.map(d=><SelectItem key={d} value={d} className="font-bold">{d}</SelectItem>)}</SelectContent></Select></div>
                                             <div className="space-y-1"><Label className="font-bold text-xs">Year</Label><Select value={editableLead.year} onValueChange={(val) => handleFieldChange('year', val)}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent>{educationYears.map(y=><SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select></div>
                                             <div className="space-y-1"><Label className="font-bold text-xs">Semester</Label><Select value={editableLead.semester} onValueChange={(val) => handleFieldChange('semester', val)}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent>{educationSemesters.map(s=><SelectItem key={s} value={s} className="font-bold">{s}</SelectItem>)}</SelectContent></Select></div>
@@ -466,25 +446,25 @@ export default function LeadSummaryPage() {
                                     )}
 
                                     {editableLead.purpose === 'Medical' && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5 border-primary/10">
                                             <div className="space-y-1"><Label className="font-bold text-xs">Disease</Label><Input value={editableLead.diseaseIdentified || ''} onChange={(e) => handleFieldChange('diseaseIdentified', e.target.value)} className="font-bold text-primary"/></div>
                                             <div className="space-y-1"><Label className="font-bold text-xs">Stage</Label><Input value={editableLead.diseaseStage || ''} onChange={(e) => handleFieldChange('diseaseStage', e.target.value)} className="font-bold text-primary"/></div>
                                             <div className="space-y-1"><Label className="font-bold text-xs">Seriousness</Label><Select value={editableLead.seriousness || ''} onValueChange={(val) => handleFieldChange('seriousness', val)}><SelectTrigger className="font-bold text-primary"><SelectValue/></SelectTrigger><SelectContent>{leadSeriousnessLevels.map(l=><SelectItem key={l} value={l} className="font-bold">{l}</SelectItem>)}</SelectContent></Select></div>
                                         </div>
                                     )}
 
-                                    <div><Label className="font-bold text-xs uppercase text-muted-foreground">Description</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} className="text-primary font-normal" /></div>
+                                    <div><Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Description</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} className="text-primary font-normal" /></div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">Required amount (₹)</Label><Input type="number" value={editableLead.requiredAmount || 0} onChange={(e) => handleFieldChange('requiredAmount', e.target.value)} className="text-primary font-bold" /></div>
-                                        <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">Fundraising goal (₹)</Label><Input type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Required amount (₹)</Label><Input type="number" value={editableLead.requiredAmount || 0} onChange={(e) => handleFieldChange('requiredAmount', e.target.value)} className="text-primary font-bold" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Fundraising goal (₹)</Label><Input type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold" /></div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">Start date</Label><Input id="startDate" type="date" value={editableLead.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="font-bold text-primary" /></div>
-                                        <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground">End date</Label><Input id="endDate" type="date" value={editableLead.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="font-bold text-primary" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Start date</Label><Input id="startDate" type="date" value={editableLead.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="font-bold text-primary" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">End date</Label><Input id="endDate" type="date" value={editableLead.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="font-bold text-primary" /></div>
                                     </div>
                                     
                                     <div className="space-y-2">
-                                        <Label className="font-bold text-xs uppercase text-muted-foreground">Allowed donation types for goal</Label>
+                                        <Label className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Allowed donation types for goal</Label>
                                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border rounded-md p-3">
                                             {donationCategories.map(type => (
                                                 <div key={type} className="flex items-center space-x-2">
@@ -509,11 +489,11 @@ export default function LeadSummaryPage() {
                                         {lead.imageUrl ? ( <Image src={lead.imageUrl} alt={lead.name} fill sizes="100vw" className="object-cover" /> ) : ( <FallbackIcon className="h-20 w-20 text-primary/10" /> )}
                                     </div>
                                     <div className="space-y-2 font-normal text-foreground">
-                                        <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
+                                        <Label className="text-muted-foreground uppercase text-xs font-bold tracking-widest">Description</Label>
                                         <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-primary">{lead.description || 'No description provided.'}</p>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                                        <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Purpose</p><p className="font-bold uppercase text-primary text-sm">{lead.purpose} {lead.category && `(${lead.category})`}</p></div>
+                                        <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Purpose</p><p className="font-bold uppercase tracking-tight text-primary text-sm">{lead.purpose} {lead.category && `(${lead.category})`}</p></div>
                                         <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Target goal</p><p className="font-bold font-mono text-primary text-sm">₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</p></div>
                                         <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Start date</p><p className="font-bold text-primary text-sm">{lead.startDate || 'N/A'}</p></div>
                                         <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">End date</p><p className="font-bold text-primary text-sm">{lead.endDate || 'N/A'}</p></div>
@@ -522,15 +502,15 @@ export default function LeadSummaryPage() {
                                         <div className="mt-4 p-4 rounded-md border border-primary/10 bg-primary/5 grid grid-cols-1 sm:grid-cols-3 gap-4 font-bold">
                                             {lead.purpose === 'Education' ? (
                                                 <>
-                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground">Degree/class</p><p className="text-sm">{lead.degree || 'N/A'}</p></div>
-                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground">Year</p><p className="text-sm">{lead.year || 'N/A'}</p></div>
-                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground">Semester</p><p className="text-sm">{lead.semester || 'N/A'}</p></div>
+                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground tracking-tight">Degree/class</p><p className="text-sm">{lead.degree || 'N/A'}</p></div>
+                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground tracking-tight">Year</p><p className="text-sm">{lead.year || 'N/A'}</p></div>
+                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground tracking-tight">Semester</p><p className="text-sm">{lead.semester || 'N/A'}</p></div>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground">Disease identified</p><p className="text-sm">{lead.diseaseIdentified || 'N/A'}</p></div>
-                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground">Disease stage</p><p className="text-sm">{lead.diseaseStage || 'N/A'}</p></div>
-                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground">Seriousness</p><p className="text-sm">{lead.seriousness || 'N/A'}</p></div>
+                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground tracking-tight">Disease identified</p><p className="text-sm">{lead.diseaseIdentified || 'N/A'}</p></div>
+                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground tracking-tight">Disease stage</p><p className="text-sm">{lead.diseaseStage || 'N/A'}</p></div>
+                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground tracking-tight">Seriousness</p><p className="text-sm">{lead.seriousness || 'N/A'}</p></div>
                                                 </>
                                             )}
                                         </div>
@@ -559,7 +539,7 @@ export default function LeadSummaryPage() {
                                                     </RadialBarChart>
                                                 </ChartContainer>
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold uppercase">Funded</span></div>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">Funded</span></div>
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary font-bold">
                                             <div><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Raised for goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
@@ -598,10 +578,10 @@ export default function LeadSummaryPage() {
                                                 <Table>
                                                     <TableHeader className="bg-primary/5">
                                                         <TableRow>
-                                                            <TableHead className="font-bold text-primary text-[10px] uppercase">Category name</TableHead>
-                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Beneficiaries</TableHead>
-                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Kit amount</TableHead>
-                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Total amount</TableHead>
+                                                            <TableHead className="font-bold text-primary text-[10px] uppercase tracking-wider">Category name</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-wider">Beneficiaries</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-wider">Kit amount</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-wider">Total amount</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
@@ -617,7 +597,7 @@ export default function LeadSummaryPage() {
                                                     {beneficiaryGroups.length > 0 && (
                                                         <tfoot className="bg-primary/5 border-t font-bold">
                                                             <TableRow>
-                                                                <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-xs">Total requirement</TableCell>
+                                                                <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-xs tracking-widest">Total requirement</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
                                                         </tfoot>
@@ -627,10 +607,10 @@ export default function LeadSummaryPage() {
                                                 <Table>
                                                     <TableHeader className="bg-primary/5">
                                                         <TableRow>
-                                                            <TableHead className="font-bold text-primary text-[10px] uppercase">Requirement description</TableHead>
-                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Quantity</TableHead>
-                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Unit price</TableHead>
-                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase">Total cost</TableHead>
+                                                            <TableHead className="font-bold text-primary text-[10px] uppercase tracking-wider">Requirement description</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-wider">Quantity</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-wider">Unit price</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-wider">Total cost</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
@@ -645,7 +625,7 @@ export default function LeadSummaryPage() {
                                                     </TableBody>
                                                     <tfoot className="bg-primary/5 border-t font-bold">
                                                         <TableRow>
-                                                            <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-xs">Single beneficiary total</TableCell>
+                                                            <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-xs tracking-widest">Single beneficiary total</TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-lg">
                                                                 ₹{(lead.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
                                                             </TableCell>
@@ -663,7 +643,7 @@ export default function LeadSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2 font-normal">
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-wider">Fund totals by type</CardTitle></CardHeader>
+                                    <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-widest">Fund totals by type</CardTitle></CardHeader>
                                     <CardContent className="space-y-2 font-normal text-foreground">
                                         {donationCategories.map(cat => (
                                             <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary">
@@ -679,7 +659,7 @@ export default function LeadSummaryPage() {
 
                             {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-wider">Zakat utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking of Zakat funds collected and allocated.</CardDescription></CardHeader>
+                                    <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-widest">Zakat utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking of Zakat funds collected and allocated.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 font-normal text-foreground">
                                         <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Total Zakat collected</span><span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
                                         <Separator />
@@ -697,8 +677,8 @@ export default function LeadSummaryPage() {
 
                         <div className="grid gap-6 lg:grid-cols-2 font-normal text-primary">
                             {isVisible('donations_by_category') && (
-                                <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-wider"><TrendingUp className="h-5 w-5"/> Donations by category</CardTitle></CardHeader>
+                                <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
+                                    <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-widest">Donations by category</CardTitle></CardHeader>
                                     <CardContent>
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
@@ -712,8 +692,8 @@ export default function LeadSummaryPage() {
                             )}
 
                             {isVisible('donations_by_payment_type') && (
-                                <Card className="shadow-sm border-primary/5 bg-white">
-                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary text-sm uppercase tracking-wider"><PieChartIcon className="h-5 w-5"/> Donations by payment type</CardTitle></CardHeader>
+                                <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
+                                    <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary text-sm uppercase tracking-widest"><PieChartIcon className="h-5 w-5"/> Donations by payment type</CardTitle></CardHeader>
                                     <CardContent>
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
@@ -735,14 +715,14 @@ export default function LeadSummaryPage() {
 
                 {isVisible('documents') && (
                     < Card className="animate-fade-in-up bg-white shadow-sm border-primary/10" style={{ animationDelay: '100ms' }}>
-                        <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-wider">Lead artifacts</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-widest">Lead artifacts</CardTitle></CardHeader>
                         <CardContent className="font-normal text-primary">
                         {editMode ? (
                                 <div className="space-y-4">
-                                    <Label className="font-bold text-[10px] uppercase text-muted-foreground">Upload new artifacts</Label>
+                                    <Label className="font-bold text-[10px] uppercase text-muted-foreground tracking-tight">Upload new artifacts</Label>
                                     <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
                                     <Separator />
-                                    <Label className="font-bold text-[10px] uppercase text-muted-foreground">Manage existing artifacts</Label>
+                                    <Label className="font-bold text-[10px] uppercase text-muted-foreground tracking-tight">Manage existing artifacts</Label>
                                     {existingDocuments.length > 0 ? (
                                         <div className="space-y-3 font-normal text-foreground">
                                             {existingDocuments.map((doc) => (
@@ -751,13 +731,13 @@ export default function LeadSummaryPage() {
                                                         <Button variant="link" className="p-0 h-auto font-bold truncate text-primary" onClick={() => doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i) ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}><p className="truncate text-xs">{doc.name}</p></Button>
                                                     </div>
                                                     <div className="flex items-center gap-4">
-                                                        <div className="flex items-center gap-2"><Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} /><Label className="text-[10px] text-foreground font-bold uppercase opacity-60">Public</Label></div>
+                                                        <div className="flex items-center gap-2"><Switch checked={doc.isPublic} onCheckedChange={() => handleToggleDocumentPublic(doc.url)} /><Label className="text-[10px] text-foreground font-bold uppercase tracking-tight opacity-60">Public</Label></div>
                                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemoveExistingDocument(doc.url)}><Trash2 className="h-4 w-4" /></Button>
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
-                                    ) : <p className="text-[10px] text-muted-foreground font-bold uppercase">None.</p>}
+                                    ) : <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">None.</p>}
                                 </div>
                             ) : (
                                 lead.documents && lead.documents.length > 0 ? (
@@ -770,16 +750,16 @@ export default function LeadSummaryPage() {
                                                         <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
                                                             {isImg ? <Image src={doc.url} alt={doc.name} fill sizes="100vw" className="object-cover" /> : <File className="w-10 h-10 text-muted-foreground" />}
                                                         </div>
-                                                        <div className="p-2 text-center text-[10px] font-bold text-primary uppercase truncate">{doc.name}</div>
+                                                        <div className="p-2 text-center text-[10px] font-bold text-primary uppercase tracking-tight truncate">{doc.name}</div>
                                                     </div>
                                                     <CardFooter className="p-2 border-t mt-auto flex justify-center w-full gap-2" onClick={e => e.stopPropagation()}>
-                                                        {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-[9px] text-foreground font-bold uppercase">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"} className="font-bold uppercase text-[10px]">{doc.isPublic ? "Public" : "Private"}</Badge> )}
+                                                        {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-[9px] text-foreground font-bold uppercase tracking-tight">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"} className="font-bold uppercase text-[10px] tracking-tight">{doc.isPublic ? "Public" : "Private"}</Badge> )}
                                                     </CardFooter>
                                                 </Card>
                                             );
                                         })}
                                     </div>
-                                ) : <p className="text-[10px] text-muted-foreground font-bold uppercase">None.</p>
+                                ) : <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">None.</p>
                             )}
                         </CardContent>
                     </Card>

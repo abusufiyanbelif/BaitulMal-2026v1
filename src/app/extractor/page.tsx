@@ -1,5 +1,5 @@
 'use client';
-import { CreditCard, FileText, HeartPulse, User, ScanSearch, ToyBrick, BookUser, ArrowLeft } from 'lucide-react';
+import { CreditCard, FileText, HeartPulse, User, ToyBrick, BookUser, ArrowLeft } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TextExtractor } from '@/components/text-extractor';
 import { IdentityExtractor } from '@/components/identity-extractor';
@@ -26,57 +26,57 @@ export default function ExtractorPage() {
         <Button variant="outline" asChild className="active:scale-95 transition-transform border-primary/20 text-primary font-bold">
           <Link href="/dashboard">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
+            Back to dashboard
           </Link>
         </Button>
       </div>
       <Tabs defaultValue="text" className="w-full">
-        <ScrollArea className="w-full whitespace-nowrap">
-            <TabsList className="h-auto bg-primary/10 p-1 w-max">
-            <TabsTrigger value="text" className="py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-bold">
-                <FileText className="mr-2 h-5 w-5" />
-                General Text
-            </TabsTrigger>
-            <TabsTrigger value="identity" className="py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-bold">
-                <User className="mr-2 h-5 w-5" />
-                Identity
-            </TabsTrigger>
-            <TabsTrigger value="billing" className="py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-bold">
-                <CreditCard className="mr-2 h-5 w-5" />
-                Billing
-            </TabsTrigger>
-            <TabsTrigger value="medical" className="py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-bold">
-                <HeartPulse className="mr-2 h-5 w-5" />
-                Medical
-            </TabsTrigger>
-            <TabsTrigger value="education" className="py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-bold">
-                <BookUser className="mr-2 h-5 w-5" />
-                Education
-            </TabsTrigger>
-            <TabsTrigger value="dynamic" className="py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-bold">
-                <ToyBrick className="mr-2 h-5 w-5" />
-                Dynamic
-            </TabsTrigger>
+        <ScrollArea className="w-full">
+            <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 h-auto w-full bg-transparent p-0">
+                <TabsTrigger value="text" className="h-12 data-[state=active]:bg-primary data-[state=active]:text-white border border-primary/10 shadow-sm font-bold">
+                    <FileText className="mr-2 h-4 w-4" />
+                    General text
+                </TabsTrigger>
+                <TabsTrigger value="identity" className="h-12 data-[state=active]:bg-primary data-[state=active]:text-white border border-primary/10 shadow-sm font-bold">
+                    <User className="mr-2 h-4 w-4" />
+                    Identity
+                </TabsTrigger>
+                <TabsTrigger value="billing" className="h-12 data-[state=active]:bg-primary data-[state=active]:text-white border border-primary/10 shadow-sm font-bold">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Billing
+                </TabsTrigger>
+                <TabsTrigger value="medical" className="h-12 data-[state=active]:bg-primary data-[state=active]:text-white border border-primary/10 shadow-sm font-bold">
+                    <HeartPulse className="mr-2 h-4 w-4" />
+                    Medical
+                </TabsTrigger>
+                <TabsTrigger value="education" className="h-12 data-[state=active]:bg-primary data-[state=active]:text-white border border-primary/10 shadow-sm font-bold">
+                    <BookUser className="mr-2 h-4 w-4" />
+                    Education
+                </TabsTrigger>
+                <TabsTrigger value="dynamic" className="h-12 data-[state=active]:bg-primary data-[state=active]:text-white border border-primary/10 shadow-sm font-bold">
+                    <ToyBrick className="mr-2 h-4 w-4" />
+                    Dynamic
+                </TabsTrigger>
             </TabsList>
-            <ScrollBar orientation="horizontal" />
+            <ScrollBar orientation="horizontal" className="hidden" />
         </ScrollArea>
         
-        <TabsContent value="text" className="mt-4">
+        <TabsContent value="text" className="mt-8">
           <TextExtractor />
         </TabsContent>
-        <TabsContent value="identity" className="mt-4">
+        <TabsContent value="identity" className="mt-8">
           <IdentityExtractor />
         </TabsContent>
-        <TabsContent value="billing" className="mt-4">
+        <TabsContent value="billing" className="mt-8">
           <BillingExtractor />
         </TabsContent>
-        <TabsContent value="medical" className="mt-4">
+        <TabsContent value="medical" className="mt-8">
           <MedicalExtractor />
         </TabsContent>
-        <TabsContent value="education" className="mt-4">
+        <TabsContent value="education" className="mt-8">
           <EducationExtractor />
         </TabsContent>
-        <TabsContent value="dynamic" className="mt-4">
+        <TabsContent value="dynamic" className="mt-8">
           <DynamicExtractor />
         </TabsContent>
       </Tabs>
