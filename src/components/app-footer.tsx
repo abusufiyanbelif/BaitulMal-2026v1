@@ -25,7 +25,7 @@ export function AppFooter() {
 
   const copyToClipboard = (text: string, type: string) => {
     navigator.clipboard.writeText(text).then(() => {
-      toast({ title: `${type} Copied!`, description: text, duration: 3000 });
+      toast({ title: `${type} copied!`, description: text, duration: 3000 });
     });
   };
   
@@ -34,15 +34,10 @@ export function AppFooter() {
   
   const handleDownloadQr = async () => {
     if (!validQrCodeUrl) return;
-    toast({
-        title: "Preparing download...",
-        description: "Your QR code image is being prepared.",
-    });
+    toast({ title: "Preparing download...", description: "Your QR code image is being prepared." });
     try {
         const response = await fetch(`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch QR code');
-        }
+        if (!response.ok) throw new Error('Failed to fetch QR code');
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -52,18 +47,9 @@ export function AppFooter() {
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-        toast({
-            title: "QR Code Downloading...",
-            description: "Your QR code image has started downloading.",
-            variant: "success"
-        });
+        toast({ title: "QR code downloading...", description: "Your QR code image has started downloading.", variant: "success" });
     } catch (error: any) {
-        console.error("QR Code download failed:", error);
-        toast({
-            title: "Download Failed",
-            description: "Could not download the QR code image.",
-            variant: "destructive"
-        });
+        toast({ title: "Download failed", description: "Could not download the QR code image.", variant: "destructive" });
     }
   };
   
@@ -80,21 +66,17 @@ export function AppFooter() {
     <footer className="bg-card border-t mt-auto p-6 text-card-foreground font-body w-full overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-            {/* Org & Contact Info */}
             <div className="flex flex-col items-center text-center md:items-start md:text-left gap-3 animate-fade-in-up">
                 <div className="flex items-center gap-3">
                 {isLoading ? <Skeleton className="h-10 w-10 rounded-full" /> : (
                     validLogoUrl && (
                         <Image
                             src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
-                            alt={`${brandingSettings?.name || 'Organization'} Logo`}
-                            width={brandingSettings?.logoWidth || 40}
-                            height={brandingSettings?.logoHeight || 40}
+                            alt={`${brandingSettings?.name || 'Organization'} logo`}
+                            width={60}
+                            height={32}
                             className="object-contain drop-shadow-sm"
-                            style={{
-                                maxHeight: '2.5rem',
-                                width: 'auto'
-                            }}
+                            style={{ maxHeight: '2.5rem', width: 'auto' }}
                         />
                     )
                 )}
@@ -140,12 +122,10 @@ export function AppFooter() {
                 </div>
 
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-2 pt-2">
-                    {isLoading ? <Skeleton className="h-4 w-3/4" /> : (
-                        <div className="flex items-center gap-2 text-xs font-bold text-primary hover:opacity-80 transition-opacity">
-                            <Users className="h-3 w-3" />
-                            <Link href="/info/organization" className="hover:underline tracking-tight">About organization</Link>
-                        </div>
-                    )}
+                    <div className="flex items-center gap-2 text-xs font-bold text-primary hover:opacity-80 transition-opacity">
+                        <Users className="h-3 w-3" />
+                        <Link href="/info/organization" className="hover:underline tracking-tight">About organization</Link>
+                    </div>
                     {!isLoading && infoSettings?.isDonationInfoPublic && (
                         <div className="flex items-center gap-2 text-xs font-bold text-primary hover:opacity-80 transition-opacity">
                             <Info className="h-3 w-3" />
@@ -161,10 +141,8 @@ export function AppFooter() {
                 </div>
             </div>
 
-            {/* Payment Info */}
             <div className="flex flex-col items-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                {isLoading ? <Skeleton className="h-6 w-32" /> : <h3 className="font-headline font-bold text-primary uppercase tracking-wider text-sm">For donations</h3>}
-                
+                <h3 className="font-headline font-bold text-primary uppercase tracking-wider text-sm">For donations</h3>
                 <div className="space-y-3 w-full max-w-[280px]">
                     {isLoading ? <Skeleton className="h-10 w-full" /> : paymentSettings?.upiId && (
                         <div className="flex items-center justify-between gap-2 p-2 rounded-lg border border-primary/10 bg-primary/5 hover:bg-primary/10 transition-colors group">
@@ -195,7 +173,6 @@ export function AppFooter() {
                 </div>
             </div>
 
-            {/* QR Code */}
             <div className="flex justify-center md:justify-end animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             {isLoading ? (
                 <Skeleton className="h-32 w-32 rounded-xl" />
@@ -204,7 +181,6 @@ export function AppFooter() {
                     <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
                         <DialogTrigger asChild>
                             <button className="relative group cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-xl p-1 bg-white border-2 border-primary/20">
-                                <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
                                 <Image
                                     src={`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`}
                                     alt="Payment QR"
@@ -217,19 +193,13 @@ export function AppFooter() {
                         <DialogContent className="sm:max-w-md font-body">
                             <DialogHeader>
                                 <DialogTitle className="font-headline font-bold text-primary">Scan to donate</DialogTitle>
-                                <DialogDescription className="font-normal">
+                                <DialogDescription className="font-normal text-primary/70">
                                     Use any UPI application to scan this code and contribute to our active initiatives.
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="flex items-center justify-center p-6 bg-secondary/30 rounded-xl border border-primary/10">
                                 <div className="relative bg-white p-4 rounded-lg shadow-sm border-4 border-primary">
-                                    <Image
-                                        src={`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`}
-                                        alt="UPI QR Code"
-                                        className="w-full max-w-[240px] h-auto"
-                                        width={300}
-                                        height={300}
-                                    />
+                                    <Image src={`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`} alt="UPI QR code" className="w-full max-w-[240px] h-auto" width={300} height={300} />
                                 </div>
                             </div>
                             <DialogFooter>
@@ -248,13 +218,9 @@ export function AppFooter() {
         <Separator className="my-6 bg-primary/10" />
         
         <div className="text-center font-body animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            {isLoading ? (
-                <Skeleton className="h-4 w-1/2 mx-auto" />
-            ) : (
-                <p className="text-[11px] font-normal text-primary opacity-80">
-                    {paymentSettings?.copyright || "© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved."}
-                </p>
-            )}
+            <p className="text-[11px] font-normal text-primary opacity-80">
+                {paymentSettings?.copyright || "© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved."}
+            </p>
         </div>
       </div>
     </footer>

@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, UserPlus, Edit, ShieldAlert, Users, ChevronDown } from 'lucide-react';
+import { UserPlus, Edit, ShieldAlert, Users, ChevronDown } from 'lucide-react';
 import type { UserProfile } from '@/lib/types';
 import { GROUPS, type GroupId } from '@/lib/modules';
 import { UserSearchDialog } from '@/components/user-search-dialog';
@@ -25,7 +25,6 @@ export default function OrganizationMembersPage() {
     usePageHit('org_members_settings');
     
     const [isSearchOpen, setIsSearchOpen] = useState(false);
-    
     const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.members?.update;
 
     const [members, setMembers] = useState<Partial<UserProfile>[] | null>(null);
@@ -38,16 +37,11 @@ export default function OrganizationMembersPage() {
             setMembers(result);
             setIsMembersLoading(false);
         }
-        if (canUpdateSettings) {
-            fetchMembers();
-        }
+        if (canUpdateSettings) fetchMembers();
     }, [canUpdateSettings]);
 
-
     const membersByGroup = useMemo(() => {
-        if (!members) {
-            return {} as Record<GroupId, UserProfile[]>;
-        }
+        if (!members) return {} as Record<GroupId, UserProfile[]>;
         return members.reduce((acc, member) => {
             const group = member.organizationGroup || 'member';
             (acc[group as GroupId] = acc[group as GroupId] || []).push(member as UserProfile);
@@ -55,58 +49,30 @@ export default function OrganizationMembersPage() {
         }, {} as Record<GroupId, UserProfile[]>);
     }, [members]);
 
-    const handleSelectUser = (user: UserProfile) => {
-        router.push(`/users/${user.id}`);
-    };
-    
-    const handleEdit = (member: UserProfile) => {
-        router.push(`/users/${member.id}`);
-    };
-    
-    const isLoading = isSessionLoading || isMembersLoading;
-
-     if (isLoading) {
-        return (
-            <Card><CardHeader><Skeleton className="h-8 w-48" /></CardHeader><CardContent><Skeleton className="h-64 w-full" /></CardContent></Card>
-        );
+    if (isSessionLoading || isMembersLoading) {
+        return <Card><CardHeader><Skeleton className="h-8 w-48" /></CardHeader><CardContent><Skeleton className="h-64 w-full" /></CardContent></Card>;
     }
     
     if (!canUpdateSettings) {
-        return (
-            <Alert variant="destructive">
-                <ShieldAlert className="h-4 w-4" />
-                <AlertTitle>Access denied</AlertTitle>
-                <AlertDescription className="font-normal">
-                    You do not have permission to modify these settings.
-                </AlertDescription>
-            </Alert>
-        );
+        return <Alert variant="destructive"><ShieldAlert className="h-4 w-4" /><AlertTitle>Access denied</AlertTitle><AlertDescription className="font-normal">Missing permissions to modify team members.</AlertDescription></Alert>;
     }
     
     return (
-        <>
+        <div className="space-y-6 text-primary font-normal">
             <Card className="animate-fade-in-zoom border-primary/10">
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div className="flex-1 space-y-1">
-                            <CardTitle className="flex items-center gap-2 text-primary font-bold"><Users className="h-5 w-5"/> Organization members</CardTitle>
-                            <CardDescription className="font-normal text-primary/60">Manage your organization's public-facing team members. Assign them via the User Management module.</CardDescription>
+                            <CardTitle className="flex items-center gap-2 font-bold"><Users className="h-5 w-5"/> Organization members</CardTitle>
+                            <CardDescription className="font-normal text-primary/60">Manage your organization's public-facing team members. Assign them via the User management module.</CardDescription>
                         </div>
                          <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button className="font-bold shadow-md">
-                                    <UserPlus className="mr-2 h-4 w-4" />
-                                    Assign member
-                                    <ChevronDown className="ml-2 h-4 w-4" />
-                                </Button>
+                                <Button className="font-bold shadow-md"><UserPlus className="mr-2 h-4 w-4" /> Assign member <ChevronDown className="ml-2 h-4 w-4" /></Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => router.push('/users/create')} className="font-bold text-primary">
-                                Create new user
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setIsSearchOpen(true)} className="font-bold text-primary">
-                                Assign existing user
-                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => router.push('/users/create')} className="font-bold text-primary">Create new user</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setIsSearchOpen(true)} className="font-bold text-primary">Assign existing user</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
@@ -115,22 +81,22 @@ export default function OrganizationMembersPage() {
                     <Accordion type="multiple" defaultValue={['founder', 'co-founder', 'finance', 'member']} className="w-full space-y-2">
                         {GROUPS.map((group) => (
                             <AccordionItem value={group.id} key={group.id} className="border rounded-lg bg-primary/[0.02] px-4">
-                                <AccordionTrigger className="text-base font-bold hover:no-underline tracking-tight text-primary">{group.name} ({(membersByGroup[group.id] || []).length})</AccordionTrigger>
+                                <AccordionTrigger className="text-base font-bold hover:no-underline tracking-tight">{group.name} ({(membersByGroup[group.id] || []).length})</AccordionTrigger>
                                 <AccordionContent>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 pt-2">
                                         {(membersByGroup[group.id] || []).map(member => (
-                                            <Card key={member.id} className="group relative bg-white border-primary/10 overflow-hidden">
+                                            <Card key={member.id} className="group relative bg-white border-primary/10 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                                                 <CardContent className="p-3 flex items-center gap-3">
-                                                    <Avatar className="h-10 w-10 border border-primary/5">
+                                                    <Avatar className="h-10 w-10 border border-primary/5 transition-transform group-hover:scale-105">
                                                         <AvatarImage src={member.idProofUrl || undefined} />
                                                         <AvatarFallback className="bg-primary/10 text-primary font-bold text-[10px]">{getInitials(member.name)}</AvatarFallback>
                                                     </Avatar>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="font-bold text-xs truncate text-primary">{member.name}</p>
+                                                        <p className="font-bold text-xs truncate">{member.name}</p>
                                                         <p className="text-[10px] font-normal text-muted-foreground leading-tight">{member.organizationRole || 'Member'}</p>
                                                     </div>
-                                                    <div className="absolute top-1 right-1 flex opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-primary hover:bg-primary/10" onClick={() => handleEdit(member)}><Edit className="h-3.5 w-3.5"/></Button>
+                                                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-primary hover:bg-primary/10" onClick={() => router.push(`/users/${member.id}`)}><Edit className="h-3.5 w-3.5"/></Button>
                                                     </div>
                                                 </CardContent>
                                             </Card>
@@ -143,12 +109,7 @@ export default function OrganizationMembersPage() {
                     </Accordion>
                 </CardContent>
             </Card>
-
-            <UserSearchDialog
-                open={isSearchOpen}
-                onOpenChange={setIsSearchOpen}
-                onSelectUser={handleSelectUser}
-            />
-        </>
+            <UserSearchDialog open={isSearchOpen} onOpenChange={setIsSearchOpen} onSelectUser={(u) => router.push(`/users/${u.id}`)} />
+        </div>
     );
 }

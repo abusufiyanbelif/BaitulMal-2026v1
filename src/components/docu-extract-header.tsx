@@ -68,7 +68,7 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-[11px] sm:text-sm md:text-base lg:text-xl font-bold tracking-tight text-primary leading-tight">
+          <h1 className="text-sm md:text-base lg:text-xl font-bold tracking-tight text-primary leading-tight">
             {isBrandingLoading ? <Skeleton className="h-4 w-32 sm:w-64" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
           </h1>
         </Link>
@@ -114,14 +114,14 @@ export function DocuExtractHeader() {
                       <DropdownMenuItem asChild className="cursor-pointer font-bold h-11">
                         <Link href="/profile">
                           <User className="mr-2 h-4 w-4 text-primary" />
-                          <span>Account Settings</span>
+                          <span>Account settings</span>
                         </Link>
                       </DropdownMenuItem>
                       {userProfile.role === 'Admin' && (
                         <DropdownMenuItem asChild className="cursor-pointer font-bold h-11">
                           <Link href="/settings">
                             <Settings className="mr-2 h-4 w-4 text-primary" />
-                            <span>System Admin</span>
+                            <span>System admin</span>
                           </Link>
                         </DropdownMenuItem>
                       )}
@@ -131,7 +131,7 @@ export function DocuExtractHeader() {
                         className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer font-bold h-11"
                       >
                         <LogOut className="mr-2 h-4 w-4" />
-                        <span>Log Out</span>
+                        <span>Log out</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -141,7 +141,7 @@ export function DocuExtractHeader() {
                 <Button asChild size="sm" className="font-bold tracking-tight text-[10px] sm:text-xs bg-primary text-white hover:bg-primary/90 shadow-sm px-2 sm:px-4 h-8">
                     <Link href="/login">
                         <LogIn className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-                        <span className="hidden xs:inline">Member Login</span>
+                        <span className="hidden xs:inline">Member login</span>
                         <span className="xs:hidden">Login</span>
                     </Link>
                 </Button>

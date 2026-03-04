@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, ArrowLeft, Users, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, QrCode, Award, Shield } from 'lucide-react';
+import { Loader2, ArrowLeft, Users, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, QrCode, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -18,7 +18,6 @@ import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
 import { useInfoSettings } from '@/hooks/use-info-settings';
 import { defaultGuidingPrinciples } from '@/lib/guiding-principles-default';
-import { Separator } from '@/components/ui/separator';
 import { cn, getInitials } from '@/lib/utils';
 
 function DetailItem({ icon: Icon, label, value, isMono = false }: { icon: any, label: string, value?: string, isMono?: boolean }) {
@@ -59,9 +58,7 @@ export default function AboutOrganizationPage() {
     }, []);
 
     const membersByGroup = useMemo(() => {
-        if (!members) {
-            return {} as Record<GroupId, UserProfile[]>;
-        }
+        if (!members) return {} as Record<GroupId, UserProfile[]>;
         return members.reduce((acc, member) => {
             const group = member.organizationGroup || 'member';
             (acc[group as GroupId] = acc[group as GroupId] || []).push(member as UserProfile);
@@ -70,7 +67,6 @@ export default function AboutOrganizationPage() {
     }, [members]);
 
     const isLoading = isMembersLoading || isBrandingLoading || isPaymentLoading || isGPDataLoading || isInfoLoading;
-
     const gpData = guidingPrinciplesData || defaultGuidingPrinciples;
     const isGPVisible = guidingPrinciplesData?.isGuidingPrinciplesPublic ?? true;
     const visiblePrinciples = gpData.principles?.filter(p => !p.isHidden && p.text?.trim()) || [];
@@ -79,10 +75,7 @@ export default function AboutOrganizationPage() {
         return (
             <div className="container mx-auto p-4 md:p-8 space-y-6">
                 <Skeleton className="h-10 w-48" />
-                <div className="grid gap-6 md:grid-cols-2">
-                    <Skeleton className="h-64 w-full" />
-                    <Skeleton className="h-64 w-full" />
-                </div>
+                <div className="grid gap-6 md:grid-cols-2"><Skeleton className="h-64 w-full" /><Skeleton className="h-64 w-full" /></div>
                 <Skeleton className="h-96 w-full" />
             </div>
         );
@@ -91,13 +84,10 @@ export default function AboutOrganizationPage() {
     const validQrUrl = paymentSettings?.qrCodeUrl?.trim() ? paymentSettings.qrCodeUrl : null;
 
     return (
-        <main className="container mx-auto p-4 md:p-8 space-y-10 text-primary">
+        <main className="container mx-auto p-4 md:p-8 space-y-10 text-primary font-normal">
              <div className="mb-4">
                 <Button variant="outline" asChild className="transition-transform active:scale-95 font-bold border-primary/20">
-                    <Link href="/">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to home
-                    </Link>
+                    <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to home</Link>
                 </Button>
             </div>
 
@@ -108,9 +98,8 @@ export default function AboutOrganizationPage() {
                 </p>
             </section>
 
-            <Accordion type="multiple" defaultValue={['verifiable', 'contribution', 'principles']} className="space-y-6">
+            <Accordion type="multiple" defaultValue={['verifiable', 'contribution', 'principles', 'team']} className="space-y-6">
                 
-                {/* Verifiable details */}
                 <AccordionItem value="verifiable" className="border rounded-xl bg-white shadow-lg overflow-hidden border-primary/10">
                     <AccordionTrigger className="px-6 py-4 hover:no-underline bg-primary/5 transition-colors hover:bg-primary/[0.08]">
                         <div className="flex items-center gap-3">
@@ -127,7 +116,6 @@ export default function AboutOrganizationPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* Contribution details */}
                 <AccordionItem value="contribution" className="border rounded-xl bg-white shadow-lg overflow-hidden border-primary/10">
                     <AccordionTrigger className="px-6 py-4 hover:no-underline bg-primary/5 transition-colors hover:bg-primary/[0.08]">
                         <div className="flex items-center gap-3">
@@ -163,7 +151,6 @@ export default function AboutOrganizationPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* Guiding principles Section */}
                 {isGPVisible && visiblePrinciples.length > 0 && (
                     <AccordionItem value="principles" className="border rounded-xl bg-white shadow-lg overflow-hidden border-primary/10">
                         <AccordionTrigger className="px-6 py-4 hover:no-underline bg-primary/5 transition-colors hover:bg-primary/[0.08]">
@@ -173,20 +160,12 @@ export default function AboutOrganizationPage() {
                             </div>
                         </AccordionTrigger>
                         <AccordionContent className="px-6 pt-8 pb-10">
-                            <p className="text-sm text-primary/70 mb-8 max-w-3xl font-normal leading-relaxed">
-                                {gpData.description}
-                            </p>
+                            <p className="text-sm text-primary/70 mb-8 max-w-3xl font-normal leading-relaxed">{gpData.description}</p>
                             <div className="grid gap-6">
                                 {visiblePrinciples.map((principle, idx) => (
                                     <div key={principle.id} className="flex gap-4 group">
-                                        <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20 transition-colors group-hover:bg-primary group-hover:text-white">
-                                            {idx + 1}
-                                        </div>
-                                        <div className="pt-1 flex-1">
-                                            <p className="text-base font-normal leading-relaxed text-foreground/90">
-                                                {principle.text}
-                                            </p>
-                                        </div>
+                                        <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20 transition-colors group-hover:bg-primary group-hover:text-white">{idx + 1}</div>
+                                        <div className="pt-1 flex-1"><p className="text-base font-normal leading-relaxed text-foreground/90">{principle.text}</p></div>
                                     </div>
                                 ))}
                             </div>
@@ -194,7 +173,6 @@ export default function AboutOrganizationPage() {
                     </AccordionItem>
                 )}
 
-                {/* Team directory */}
                 <AccordionItem value="team" className="border rounded-xl bg-white shadow-lg overflow-hidden border-primary/10">
                     <AccordionTrigger className="px-6 py-4 hover:no-underline bg-primary/5 transition-colors hover:bg-primary/[0.08]">
                         <div className="flex items-center gap-3">
