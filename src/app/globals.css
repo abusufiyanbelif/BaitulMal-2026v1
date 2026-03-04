@@ -4,9 +4,9 @@
 
 @layer base {
   :root {
-    /* Standardized HSL Palette */
+    /* Precise Branding Palette (HSL) */
     --background: 0 0% 100%;
-    --foreground: 150 40% 10%; /* High-contrast primary text */
+    --foreground: 150 40% 10%;
     
     --card: 0 0% 100%;
     --card-foreground: 150 40% 10%;
@@ -59,21 +59,33 @@
   }
 
   body {
-    @apply min-h-screen bg-background text-foreground antialiased font-sans font-normal;
-    color: hsl(var(--foreground)) !important;
+    @apply min-h-screen bg-background antialiased font-normal leading-normal text-[14px];
+    font-family: var(--font-inter), sans-serif;
+    color: hsl(var(--foreground));
   }
 
-  p, span, label, div, td, th, input, textarea, select, button {
-    color: inherit;
-    text-transform: none !important;
+  p {
+    @apply text-[16px] font-normal leading-normal;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold;
-    color: hsl(var(--primary)) !important;
-    text-transform: none !important;
+    @apply font-bold tracking-tight;
+    font-family: var(--font-space-grotesk), sans-serif;
+    color: hsl(var(--primary));
   }
 
+  /* Global Overrides for Hierarchy and Casing */
+  
+  .text-muted-foreground,
+  .text-sm,
+  .text-xs,
+  [class*="Description"] {
+    @apply font-normal;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+  }
+
+  /* Action Buttons standard */
   .btn-primary {
     @apply bg-primary text-white font-bold hover:bg-primary/90 transition-all;
   }
