@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -373,7 +374,7 @@ export default function CampaignSummaryPage() {
     };
     
     const handleDownload = (format: 'png' | 'pdf') => {
-        download(format, { contentRef: summaryRef, documentTitle: `Campaign Summary: ${campaign?.name}`, documentName: `campaign-summary-${campaignId}`, brandingSettings, paymentSettings });
+        download(format, { contentRef: summaryRef, documentTitle: `Campaign summary: ${campaign?.name}`, documentName: `campaign-summary-${campaignId}`, brandingSettings, paymentSettings });
     };
 
     const handleViewImage = (url: string, name: string) => {
@@ -637,7 +638,7 @@ export default function CampaignSummaryPage() {
                                 </Card>
                             )}
 
-                            {isVisible('zzakat_utilization') && (
+                            {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
                                     <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-widest">Zakat utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking of Zakat funds collected and allocated.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 font-normal text-foreground">

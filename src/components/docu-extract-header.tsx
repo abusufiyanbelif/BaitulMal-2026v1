@@ -1,3 +1,4 @@
+
 'use client';
 
 import { LogOut, User, LogIn, Settings, LayoutDashboard } from 'lucide-react';
@@ -68,7 +69,7 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-[10px] xs:text-xs sm:text-sm md:text-base lg:text-xl font-bold tracking-tight text-primary truncate max-w-[150px] xs:max-w-none">
+          <h1 className="text-[11px] sm:text-sm md:text-base lg:text-xl font-bold tracking-tight text-primary leading-tight">
             {isBrandingLoading ? <Skeleton className="h-4 w-32 sm:w-64" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
           </h1>
         </Link>
