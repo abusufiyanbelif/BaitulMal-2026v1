@@ -54,7 +54,7 @@ export function AppFooter() {
                     )
                 )}
                 {isLoading ? <Skeleton className="h-6 w-48" /> : (
-                    <h3 className="font-headline font-bold text-lg text-primary tracking-tight">
+                    <h3 className="font-headline font-bold text-lg text-primary tracking-tight text-left">
                         {brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}
                     </h3>
                 )}
@@ -64,13 +64,13 @@ export function AppFooter() {
                     {paymentSettings?.address && (
                         <div className="flex items-start justify-center md:justify-start gap-2">
                             <MapPin className="h-3 w-3 shrink-0 mt-0.5" />
-                            <span>{paymentSettings.address}</span>
+                            <span className="text-left">{paymentSettings.address}</span>
                         </div>
                     )}
                     {paymentSettings?.regNo && (
                         <div className="flex items-center justify-center md:justify-start gap-2">
                             <ShieldCheck className="h-3 w-3" />
-                            <span>Reg. no.: {paymentSettings.regNo}</span>
+                            <span>Registration No: {paymentSettings.regNo}</span>
                         </div>
                     )}
                     {paymentSettings?.pan && (
@@ -88,9 +88,9 @@ export function AppFooter() {
                     <Link href="/" className="hover:text-primary transition-colors">Home</Link>
                     <Link href="/campaign-public" className="hover:text-primary transition-colors">Campaigns</Link>
                     <Link href="/leads-public" className="hover:text-primary transition-colors">Leads</Link>
-                    <Link href="/info/organization" className="hover:text-primary transition-colors">About organization</Link>
+                    <Link href="/info/organization" className="hover:text-primary transition-colors">About Organization</Link>
                     {infoSettings?.isDonationInfoPublic && (
-                        <Link href="/info/donation-info" className="hover:text-primary transition-colors">Donation info</Link>
+                        <Link href="/info/donation-info" className="hover:text-primary transition-colors">Donation Info</Link>
                     )}
                 </div>
             </div>
@@ -117,7 +117,7 @@ export function AppFooter() {
                     {validQrCodeUrl && (
                         <Button variant="outline" size="sm" onClick={() => setIsQrDialogOpen(true)} className="h-8 text-[10px] font-bold border-primary/20 text-primary hover:bg-primary/5 transition-transform active:scale-95">
                             <QrCode className="mr-2 h-3.5 w-3.5" />
-                            View payment QR
+                            View Payment QR
                         </Button>
                     )}
                 </div>
@@ -135,7 +135,7 @@ export function AppFooter() {
       <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
-                <DialogTitle className="font-bold text-primary">Secure donation QR</DialogTitle>
+                <DialogTitle className="font-bold text-primary">Secure Donation QR</DialogTitle>
                 <DialogDescription className="font-normal text-primary/70">Scan with any UPI app to contribute.</DialogDescription>
             </DialogHeader>
             <div className="flex flex-col items-center justify-center p-6 bg-secondary/20 rounded-xl border border-primary/10">

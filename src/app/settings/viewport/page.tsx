@@ -38,7 +38,7 @@ function ComponentPreview({ themeId, isDark }: { themeId: string, isDark: boolea
             <div className="bg-card border-b p-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <div className="h-6 w-6 bg-primary rounded flex items-center justify-center text-[10px] text-primary-foreground font-bold shadow-sm">B</div>
-                    <span className="text-xs font-bold text-primary tracking-tight">Organization name</span>
+                    <span className="text-xs font-bold text-primary tracking-tight">Organization Name</span>
                 </div>
                 <div className="h-6 w-6 rounded-full bg-muted border border-primary/10" />
             </div>
@@ -46,7 +46,7 @@ function ComponentPreview({ themeId, isDark }: { themeId: string, isDark: boolea
             <ScrollArea className="h-[400px]">
                 <div className="p-4 space-y-6">
                     <div className="space-y-2">
-                        <h3 className="text-lg font-bold text-primary tracking-tight">Hero title preview</h3>
+                        <h3 className="text-lg font-bold text-primary tracking-tight">Hero Title Preview</h3>
                         <p className="text-xs text-muted-foreground leading-relaxed font-normal">This is a description of how your organization's primary message will look with the selected palette.</p>
                     </div>
 
@@ -63,7 +63,7 @@ function ComponentPreview({ themeId, isDark }: { themeId: string, isDark: boolea
 
                     <div className="space-y-1.5">
                         <div className="flex justify-between text-[10px] font-bold uppercase tracking-tight">
-                            <span className="text-primary">Campaign progress</span>
+                            <span className="text-primary">Campaign Progress</span>
                             <span className="text-foreground/60">45%</span>
                         </div>
                         <Progress value={45} className="h-1.5" />
@@ -71,7 +71,7 @@ function ComponentPreview({ themeId, isDark }: { themeId: string, isDark: boolea
 
                     <div className="space-y-2">
                         <p className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1 tracking-widest">
-                            <TableIcon className="h-3 w-3" /> Recent activity
+                            <TableIcon className="h-3 w-3" /> Recent Activity
                         </p>
                         <div className="border rounded-md overflow-hidden bg-card shadow-sm">
                             <Table>
@@ -102,7 +102,7 @@ function ComponentPreview({ themeId, isDark }: { themeId: string, isDark: boolea
                             <Badge variant="outline" className="text-[8px] font-bold uppercase border-primary/20 text-primary">Pending</Badge>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
-                            <Button size="sm" className="h-8 text-[10px] font-bold shadow-md">Primary action</Button>
+                            <Button size="sm" className="h-8 text-[10px] font-bold shadow-md">Primary Action</Button>
                             <Button size="sm" variant="outline" className="h-8 text-[10px] font-bold border-primary/20 text-primary hover:bg-primary/5">Secondary</Button>
                         </div>
                     </div>
@@ -111,7 +111,7 @@ function ComponentPreview({ themeId, isDark }: { themeId: string, isDark: boolea
             </ScrollArea>
             
             <div className="bg-muted/20 border-t p-3 text-center">
-                <p className="text-[8px] text-muted-foreground font-normal">© 2026 Your organization. All rights reserved.</p>
+                <p className="text-[8px] text-muted-foreground font-normal">© 2026 Your Organization. All rights reserved.</p>
             </div>
         </div>
     );
@@ -165,10 +165,10 @@ export default function ViewportSettingsPage() {
             document.documentElement.setAttribute('data-smooth-scroll', pendingSmoothScroll ? 'enabled' : 'disabled');
             document.documentElement.setAttribute('data-motion-reduced', pendingReducedMotion ? 'enabled' : 'disabled');
 
-            toast({ title: "Settings saved", description: "Display and motion preferences updated successfully.", variant: "success" });
+            toast({ title: "Settings Saved", description: "Display and motion preferences updated successfully.", variant: "success" });
             setIsEditMode(false);
         } catch (error) {
-            toast({ title: "Save failed", description: "An error occurred while saving display settings.", variant: "destructive" });
+            toast({ title: "Save Failed", description: "An error occurred while saving display settings.", variant: "destructive" });
         } finally { setIsSubmitting(false); }
     };
 
@@ -179,19 +179,19 @@ export default function ViewportSettingsPage() {
         <div className="space-y-6 text-primary font-normal pb-10">
             <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                    <h2 className="text-2xl font-bold tracking-tight">Display & UI preferences</h2>
+                    <h2 className="text-2xl font-bold tracking-tight">Display & UI Preferences</h2>
                     <p className="text-sm text-muted-foreground font-normal">Manage themes, motion, and visual accessibility.</p>
                 </div>
                 {!isEditMode ? (
                     <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md transition-transform active:scale-95">
-                        <Edit className="mr-2 h-4 w-4" /> Edit settings
+                        <Edit className="mr-2 h-4 w-4" /> Edit Settings
                     </Button>
                 ) : (
                     <div className="flex gap-2">
                         <Button variant="outline" onClick={() => setIsEditMode(false)} className="font-bold border-primary/20 text-primary transition-transform active:scale-95"><X className="mr-2 h-4 w-4" /> Cancel</Button>
                         <Button onClick={handleSave} disabled={isSubmitting} className="font-bold shadow-md active:scale-95 transition-transform bg-primary text-white">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />} 
-                            Save all changes
+                            Save All Changes
                         </Button>
                     </div>
                 )}
@@ -201,7 +201,7 @@ export default function ViewportSettingsPage() {
                 <div className="lg:col-span-8 space-y-6">
                     <Card className={cn("transition-all duration-300 border-primary/10", isEditMode && "border-primary/40 shadow-md bg-white")}>
                         <CardHeader className="bg-primary/5 border-b">
-                            <CardTitle className="flex items-center gap-2 font-bold text-base"><Palette className="h-5 w-5" /> Appearance palette</CardTitle>
+                            <CardTitle className="flex items-center gap-2 font-bold text-base"><Palette className="h-5 w-5" /> Appearance Palette</CardTitle>
                             <CardDescription className="font-normal text-xs text-primary/60">Choose a color scheme that reflects your organization's identity.</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-6">
@@ -212,7 +212,7 @@ export default function ViewportSettingsPage() {
                                             {resolvedTheme === 'dark' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
                                         </div>
                                         <div>
-                                            <span className="text-sm font-bold block capitalize tracking-tight">{resolvedTheme} mode active</span>
+                                            <span className="text-sm font-bold block capitalize tracking-tight">{resolvedTheme} Mode Active</span>
                                             <p className="text-[10px] text-muted-foreground font-normal uppercase tracking-tighter">System preferences prioritized</p>
                                         </div>
                                     </div>
@@ -229,7 +229,7 @@ export default function ViewportSettingsPage() {
                                     <Separator className="bg-primary/10" />
                                     
                                     <div className="space-y-3">
-                                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Select color theme</Label>
+                                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Select Color Theme</Label>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                             {THEME_SUGGESTIONS.map((s) => (
                                                 <Button 
@@ -252,14 +252,14 @@ export default function ViewportSettingsPage() {
 
                     <Card className={cn("transition-all duration-300 border-primary/10 bg-white", isEditMode && "border-primary/40 shadow-md")}>
                         <CardHeader className="bg-primary/5 border-b">
-                            <CardTitle className="flex items-center gap-2 font-bold text-base"><Zap className="h-5 w-5" /> Motion & effects</CardTitle>
+                            <CardTitle className="flex items-center gap-2 font-bold text-base"><Zap className="h-5 w-5" /> Motion & Effects</CardTitle>
                             <CardDescription className="font-normal text-xs text-primary/60">Customize the responsiveness and smoothness of the user interface.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4 pt-6">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="flex items-center justify-between space-x-2 rounded-lg border p-4 bg-muted/5 transition-all hover:border-primary/20">
                                     <div className="space-y-0.5">
-                                        <Label className="font-bold text-sm">UI animations</Label>
+                                        <Label className="font-bold text-sm">UI Animations</Label>
                                         <p className="text-[10px] font-normal text-muted-foreground">Fade-ins and scaling effects.</p>
                                     </div>
                                     <Switch 
@@ -270,7 +270,7 @@ export default function ViewportSettingsPage() {
                                 </div>
                                 <div className="flex items-center justify-between space-x-2 rounded-lg border p-4 bg-muted/5 transition-all hover:border-primary/20">
                                     <div className="space-y-0.5">
-                                        <Label className="font-bold text-sm">Smooth scrolling</Label>
+                                        <Label className="font-bold text-sm">Smooth Scrolling</Label>
                                         <p className="text-[10px] font-normal text-muted-foreground">Fluid navigation between sections.</p>
                                     </div>
                                     <Switch 
@@ -282,7 +282,7 @@ export default function ViewportSettingsPage() {
                                 <div className="flex items-center justify-between space-x-2 rounded-lg border p-4 bg-muted/5 transition-all hover:border-primary/20 sm:col-span-2">
                                     <div className="space-y-0.5">
                                         <div className="flex items-center gap-2">
-                                            <Label className="font-bold text-sm">Reduced motion</Label>
+                                            <Label className="font-bold text-sm">Reduced Motion</Label>
                                             <Badge variant="secondary" className="text-[8px] h-4 font-bold tracking-tighter">ACCESSIBILITY</Badge>
                                         </div>
                                         <p className="text-[10px] font-normal text-muted-foreground">Minimizes non-essential movement for comfort.</p>
@@ -303,7 +303,7 @@ export default function ViewportSettingsPage() {
                         <CardHeader className="bg-primary/5 border-b pb-3">
                             <div className="flex items-center justify-between">
                                 <CardTitle className="flex items-center gap-2 font-bold text-sm tracking-widest uppercase text-primary">
-                                    <Eye className="h-4 w-4" /> Live preview
+                                    <Eye className="h-4 w-4" /> Live Preview
                                 </CardTitle>
                                 {isEditMode && <Badge variant="success" className="animate-pulse text-[10px] font-bold">Interactive</Badge>}
                             </div>
@@ -327,12 +327,12 @@ export default function ViewportSettingsPage() {
                     {!isEditMode && (
                         <Card className="h-fit border-primary/10 bg-white shadow-sm overflow-hidden animate-fade-in-up">
                             <CardHeader className="bg-primary/5 border-b">
-                                <CardTitle className="flex items-center gap-2 font-bold text-base"><Info className="h-5 w-5" /> Technical profile</CardTitle>
+                                <CardTitle className="flex items-center gap-2 font-bold text-base"><Info className="h-5 w-5" /> Technical Profile</CardTitle>
                                 <CardDescription className="font-normal text-xs text-primary/60">Active system visual configuration.</CardDescription>
                             </CardHeader>
                             <CardContent className="pt-6 space-y-4">
                                 <div className="flex justify-between items-center py-2 border-b border-dashed border-primary/10">
-                                    <div className="flex items-center gap-2 text-primary/70"><Palette className="h-4 w-4"/><span className="text-xs font-bold uppercase tracking-tight">Active theme</span></div>
+                                    <div className="flex items-center gap-2 text-primary/70"><Palette className="h-4 w-4"/><span className="text-xs font-bold uppercase tracking-tight">Active Theme</span></div>
                                     <Badge variant="outline" className="font-bold text-primary border-primary/20 bg-white">{currentThemeName}</Badge>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-dashed border-primary/10">

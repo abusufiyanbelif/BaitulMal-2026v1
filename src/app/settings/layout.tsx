@@ -36,7 +36,7 @@ export default function SettingsLayout({
           <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
               <Link href="/dashboard">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to dashboard
+                  Back to Dashboard
               </Link>
           </Button>
       </div>
