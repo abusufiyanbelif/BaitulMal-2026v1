@@ -28,30 +28,13 @@ service cloud.firestore {
                p.get(module, {}).get(permission, false) == true;
     }
 
-    function hasSubmodulePermission(module, submodule, permission) {
-        if (!isSignedIn() || !exists(userDocRef())) return false;
-        let userData = get(userDocRef()).data;
-        let p = userData.get('permissions', {});
-        let mod = p.get(module, {});
-        return userData.get('role', 'User') == 'Admin' || 
-               mod.get(permission, false) == true ||
-               mod.get(submodule, {}).get(permission, false) == true;
-    }
-
     // ----------------------------------------------------------------------
     // Collection Rules
     // ----------------------------------------------------------------------
     
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isAdmin() || 
-                     hasPermission('settings', 'update') || 
-                     hasPermission('settings', 'create') ||
-                     hasPermission('settings', 'delete') ||
-                     (settingId == 'donationInfo' && hasSubmodulePermission('settings', 'info', 'update')) ||
-                     (settingId == 'branding' && hasSubmodulePermission('settings', 'app', 'update')) ||
-                     (settingId == 'payment' && hasSubmodulePermission('settings', 'app', 'update')) ||
-                     (settingId == 'info' && hasSubmodulePermission('settings', 'info', 'update'));
+      allow write: if isAdmin() || hasPermission('settings', 'update');
     }
     
     match /page_hits/{pageId} {
@@ -61,7 +44,7 @@ service cloud.firestore {
 
     match /user_lookups/{lookupId} {
         allow read: if true;
-        allow write: if isAdmin();
+        allow write: if isAdmin() || hasPermission('users', 'update');
     }
 
     match /campaigns/{campaignId} {
@@ -115,7 +98,7 @@ service cloud.firestore {
         return isSignedIn() && request.auth.uid == uId;
       }
       allow get: if isOwner(userId) || hasPermission('users', 'read') || isAdmin();
-      allow list: if hasPermission('users', 'read') || hasPermission('settings', 'update') || isAdmin();
+      allow list: if hasPermission('users', 'read') || isAdmin();
       allow create: if isOwner(userId) || hasPermission('users', 'create') || isAdmin();
       allow update: if isOwner(userId) || hasPermission('users', 'update') || isAdmin();
       allow delete: if (request.auth.uid != userId && hasPermission('users', 'delete')) || (isAdmin() && request.auth.uid != userId);

@@ -35,15 +35,6 @@ service firebase.storage {
         let p = data.get('permissions', {});
         return isAdmin() || p.get(module, {}).get(permission, false) == true;
     }
-
-    function hasSubmodulePermission(module, submodule, permission) {
-        if (!isSignedIn() || !firestore.exists(userDocRef())) return false;
-        let data = getUserData();
-        let p = data.get('permissions', {});
-        return isAdmin() || 
-               p.get(module, {}).get(permission, false) == true ||
-               p.get(module, {}).get(submodule, {}).get(permission, false) == true;
-    }
     
     // ----------------------------------------------------------------------
     // Path Rules
