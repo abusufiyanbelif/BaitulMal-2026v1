@@ -7,9 +7,9 @@ import { Progress } from './ui/progress';
 
 /**
  * A refined branded loading screen that displays the organizational logo with a smooth zoom animation.
- * Now supports descriptive messages to identify which part of the system is initializing.
+ * Supports deterministic progress tracking with percentage labels.
  */
-export function BrandedLoader({ message = "Initializing system..." }: { message?: string }) {
+export function BrandedLoader({ message = "Initializing system...", progress }: { message?: string, progress?: number }) {
   const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
 
   const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
@@ -38,9 +38,9 @@ export function BrandedLoader({ message = "Initializing system..." }: { message?
         {/* Status Message */}
         <div className="flex flex-col items-center gap-3 w-full text-center">
           <p className="text-sm font-bold text-primary animate-pulse tracking-tight">
-            {message}
+            {message} {progress !== undefined && <span className="ml-1 text-xs">({Math.round(progress)}%)</span>}
           </p>
-          <Progress value={undefined} className="h-1 w-full bg-primary/10" />
+          <Progress value={progress} className="h-1 w-full bg-primary/10" />
         </div>
       </div>
     </div>

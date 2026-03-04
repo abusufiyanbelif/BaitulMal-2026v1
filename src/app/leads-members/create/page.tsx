@@ -1,5 +1,3 @@
-
-
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -17,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Loader2, ShieldAlert, UploadCloud, Trash2, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Loader2, ShieldAlert, UploadCloud, Trash2, RotateCcw, Save } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,6 +27,7 @@ import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educatio
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { FileUploader } from '@/components/file-uploader';
+import { BrandedLoader } from '@/components/branded-loader';
 
 const leadSchema = z.object({
   name: z.string().min(3, 'Lead name must be at least 3 characters.'),
@@ -50,7 +49,7 @@ const leadSchema = z.object({
   semester: z.string().optional(),
   diseaseIdentified: z.string().optional(),
   diseaseStage: z.string().optional(),
-  seriousness: z.enum(leadSeriousnessLevels).optional(),
+  seriousness: z.enum(leadSeriousnessLevels).optional().or(z.literal('')),
   imageFile: z.any().optional(),
 }).refine(data => new Date(data.startDate) <= new Date(data.endDate), {
     message: "End date cannot be before the start date.",
@@ -81,6 +80,9 @@ export default function CreateLeadPage() {
   const auth = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  
   const { userProfile, isLoading: isProfileLoading } = useSession();
   
   const [isDuplicateAlertOpen, setIsDuplicateAlertOpen] = useState(false);
@@ -146,6 +148,8 @@ export default function CreateLeadPage() {
   const handleCreateLead = async (data: LeadFormValues) => {
     if (!firestore || !canCreate || !userProfile || !storage) return;
     setIsLoading(true);
+    setProgress(5);
+    setLoadingMessage('Initializing lead creation...');
 
     const { imageFile, ...leadCoreData } = data;
     
@@ -161,13 +165,18 @@ export default function CreateLeadPage() {
 
     let imageUrl = '';
     let imageUrlFilename = '';
-    if (hasImageToUpload && storage) {
+    
+    if (hasImageToUpload) {
+        setProgress(15);
+        setLoadingMessage('Optimizing header image...');
         try {
             const file = imageFile[0];
             const resizedBlob = await new Promise<Blob>((resolve) => {
                 Resizer.imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             
+            setProgress(30);
+            setLoadingMessage('Uploading background...');
             const filePath = `leads/${newLeadId}/background.png`;
             const fileRef = storageRef(storage, filePath);
             await uploadBytes(fileRef, resizedBlob);
@@ -182,16 +191,23 @@ export default function CreateLeadPage() {
         }
     }
     
-    // Handle document uploads
-    const documentUploadPromises = documentsToUpload.map(async (file) => {
+    setProgress(50);
+    setLoadingMessage('Syncing lead artifacts...');
+    const documentUploadPromises = documentsToUpload.map(async (file, idx) => {
         const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
         const fileRef = storageRef(storage, `leads/${newLeadId}/documents/${safeFileName}`);
         await uploadBytes(fileRef, file);
         const url = await getDownloadURL(fileRef);
+        
+        const perDocProgress = 30 / Math.max(1, documentsToUpload.length);
+        setProgress(prev => Math.min(prev + perDocProgress, 80));
+        
         return { name: file.name, url: url, uploadedAt: new Date().toISOString(), isPublic: false };
     });
     const documents = await Promise.all(documentUploadPromises);
 
+    setProgress(85);
+    setLoadingMessage('Syncing with database...');
     const newLeadData: Partial<Lead> = {
       ...leadCoreData,
       requiredAmount: data.requiredAmount || 0,
@@ -208,7 +224,7 @@ export default function CreateLeadPage() {
       shopContact: '',
       shopAddress: '',
       itemCategories: [{ id: 'general', name: 'General', items: [] }],
-      seriousness: data.seriousness || null,
+      seriousness: (data.seriousness as any) || null,
       degree: data.degree || '',
       year: data.year || '',
       semester: data.semester || '',
@@ -227,6 +243,7 @@ export default function CreateLeadPage() {
 
     setDoc(newLeadRef, newLeadData)
       .then(() => {
+        setProgress(100);
         toast({ title: 'Success', description: 'Lead created successfully.', variant: 'success' });
         router.push(`/leads-members`);
       })
@@ -257,16 +274,16 @@ export default function CreateLeadPage() {
   if (isProfileLoading || areLeadsLoading) {
     return (
       <main className="flex items-center justify-center min-h-screen">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <BrandedLoader message="Initializing creation hub..." />
       </main>
     );
   }
 
   if (!canCreate) {
     return (
-        <main className="container mx-auto p-4 md:p-8">
+        <main className="container mx-auto p-4 md:p-8 text-primary">
             <div className="mb-4">
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
                     <Link href="/leads-members">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Leads
@@ -275,9 +292,9 @@ export default function CreateLeadPage() {
             </div>
             <Alert variant="destructive">
                 <ShieldAlert className="h-4 w-4" />
-                <AlertTitle>Access Denied</AlertTitle>
-                <AlertDescription>
-                You do not have the required permissions to create a new lead.
+                <AlertTitle className="font-bold">Access denied</AlertTitle>
+                <AlertDescription className="font-normal text-primary/70">
+                You do not have the required permissions to create a new lead appeal.
                 </AlertDescription>
             </Alert>
         </main>
@@ -286,29 +303,31 @@ export default function CreateLeadPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8">
+      {isLoading && <BrandedLoader message={loadingMessage} progress={progress} />}
       <div className="mb-4">
-        <Button variant="outline" asChild>
+        <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
           <Link href="/leads-members">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Leads
           </Link>
         </Button>
       </div>
-      <Card className="max-w-2xl mx-auto animate-fade-in-zoom">
+      <Card className="max-w-2xl mx-auto animate-fade-in-zoom border-primary/10 bg-white">
         <CardHeader>
-          <CardTitle>Create New Lead</CardTitle>
+          <CardTitle className="font-bold text-primary">Create new lead appeal</CardTitle>
+          <CardDescription className="font-normal">Capture details for individual support vetting.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 font-normal text-primary">
               <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem><FormLabel>Lead Name *</FormLabel><FormControl><Input placeholder="e.g. Lead for new initiative" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel className="font-bold">Lead name *</FormLabel><FormControl><Input placeholder="e.g. Surgery assistance for Patient A" {...field} /></FormControl><FormMessage /></FormItem>
               )}/>
               <FormField control={form.control} name="description" render={({ field }) => (
-                <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="A brief description of the lead and its objectives." {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel className="font-bold">Detailed description</FormLabel><FormControl><Textarea placeholder="Background and specific needs..." {...field} rows={4} /></FormControl><FormMessage /></FormItem>
               )}/>
                 <FormItem>
-                    <FormLabel>Header Image</FormLabel>
+                    <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Header image</FormLabel>
                     <FormControl>
                         <Input id="imageFile" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} className="hidden" />
                     </FormControl>
@@ -323,17 +342,17 @@ export default function CreateLeadPage() {
                         ) : (
                              <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                 <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
-                                <p className="mb-2 text-sm text-center text-muted-foreground">
-                                    <span className="font-semibold text-primary">Click to upload</span> or drag and drop
+                                <p className="mb-2 text-sm text-center text-muted-foreground font-normal">
+                                    <span className="font-bold text-primary">Click to upload</span> or drag and drop
                                 </p>
-                                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP recommended</p>
+                                <p className="text-[10px] text-muted-foreground font-normal uppercase tracking-tight">PNG, JPG, WEBP recommended</p>
                             </div>
                         )}
                     </label>
                     <FormMessage />
                 </FormItem>
                  <FormItem>
-                    <FormLabel>Lead Artifacts</FormLabel>
+                    <FormLabel className="font-bold">Lead artifacts & proof</FormLabel>
                     <FormControl>
                         <FileUploader
                             onFilesChange={setDocumentsToUpload}
@@ -341,78 +360,78 @@ export default function CreateLeadPage() {
                             acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf"
                         />
                     </FormControl>
-                    <FormDescription>Upload any relevant documents for this lead (e.g., proposals, reports, photos).</FormDescription>
+                    <FormDescription className="text-xs font-normal">Upload medical reports, marksheets, or verification documents.</FormDescription>
                 </FormItem>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField control={form.control} name="purpose" render={({ field }) => (
-                    <FormItem><FormLabel>Purpose *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a purpose" /></SelectTrigger></FormControl><SelectContent>{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-bold">Purpose *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select a purpose" /></SelectTrigger></FormControl><SelectContent>{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                 )}/>
                 {availableCategories.length > 0 && (
                   <FormField control={form.control} name="category" render={({ field }) => (
-                      <FormItem><FormLabel>Category *</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent>{availableCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                      <FormItem><FormLabel className="font-bold">Category *</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent>{availableCategories.map(cat => <SelectItem key={cat} value={cat} className="font-bold">{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                   )}/>
                 )}
               </div>
               
               {purpose === 'Other' && (
                 <FormField control={form.control} name="purposeDetails" render={({ field }) => (
-                  <FormItem><FormLabel>Details for 'Other' Purpose</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel className="font-bold">Details for 'Other' purpose</FormLabel><FormControl><Input {...field} className="font-bold" /></FormControl><FormMessage /></FormItem>
                 )}/>
               )}
               {category === 'Other' && (
                 <FormField control={form.control} name="categoryDetails" render={({ field }) => (
-                  <FormItem><FormLabel>Details for 'Other' Category</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel className="font-bold">Details for 'Other' category</FormLabel><FormControl><Input {...field} className="font-bold" /></FormControl><FormMessage /></FormItem>
                 )}/>
               )}
 
               {purpose === 'Education' && (
-                <div className="space-y-4 rounded-md border p-4 animate-fade-in-zoom">
-                  <h3 className="text-lg font-semibold">Education Details</h3>
+                <div className="space-y-4 rounded-md border p-4 bg-primary/5 animate-fade-in-zoom border-primary/10">
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Academic details</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <FormField control={form.control} name="degree" render={({ field }) => (
-                        <FormItem><FormLabel>Degree/Class</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Degree..."/></SelectTrigger></FormControl><SelectContent>{educationDegrees.map(d=><SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs">Degree/Class</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Degree..."/></SelectTrigger></FormControl><SelectContent>{educationDegrees.map(d=><SelectItem key={d} value={d} className="font-bold">{d}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="year" render={({ field }) => (
-                        <FormItem><FormLabel>Year</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Year..."/></SelectTrigger></FormControl><SelectContent>{educationYears.map(y=><SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs">Academic year</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Year..."/></SelectTrigger></FormControl><SelectContent>{educationYears.map(y=><SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="semester" render={({ field }) => (
-                        <FormItem><FormLabel>Semester</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Semester..."/></SelectTrigger></FormControl><SelectContent>{educationSemesters.map(s=><SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs">Semester</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Semester..."/></SelectTrigger></FormControl><SelectContent>{educationSemesters.map(s=><SelectItem key={s} value={s} className="font-bold">{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                     )}/>
                   </div>
                 </div>
               )}
 
               {purpose === 'Medical' && (
-                <div className="space-y-4 rounded-md border p-4 animate-fade-in-zoom">
-                  <h3 className="text-lg font-semibold">Medical Details</h3>
+                <div className="space-y-4 rounded-md border p-4 bg-primary/5 animate-fade-in-zoom border-primary/10">
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Medical diagnosis</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <FormField control={form.control} name="diseaseIdentified" render={({ field }) => (
-                        <FormItem><FormLabel>Disease Identified</FormLabel><FormControl><Input placeholder="e.g. Cataract" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs">Disease identified</FormLabel><FormControl><Input placeholder="e.g. Cataract" {...field} className="h-8 font-bold" /></FormControl><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="diseaseStage" render={({ field }) => (
-                        <FormItem><FormLabel>Disease Stage</FormLabel><FormControl><Input placeholder="e.g. Initial" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs">Stage/Condition</FormLabel><FormControl><Input placeholder="e.g. Initial" {...field} className="h-8 font-bold" /></FormControl><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="seriousness" render={({ field }) => (
-                        <FormItem><FormLabel>Seriousness</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select level..."/></SelectTrigger></FormControl><SelectContent>{leadSeriousnessLevels.map(level => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs">Priority level</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Select level..."/></SelectTrigger></FormControl><SelectContent>{leadSeriousnessLevels.map(level => <SelectItem key={level} value={level} className="font-bold">{level}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                     )}/>
                   </div>
                 </div>
               )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="requiredAmount" render={({ field }) => (<FormItem><FormLabel>Required Amount (₹)</FormLabel><FormControl><Input type="number" placeholder="e.g. 125000" {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                    <FormField control={form.control} name="targetAmount" render={({ field }) => (<FormItem><FormLabel>Target Amount (₹)</FormLabel><FormControl><Input type="number" placeholder="e.g. 100000" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="requiredAmount" render={({ field }) => (<FormItem><FormLabel className="font-bold">Required amount (₹)</FormLabel><FormControl><Input type="number" placeholder="e.g. 125000" {...field} className="font-bold" /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="targetAmount" render={({ field }) => (<FormItem><FormLabel className="font-bold">Fundraising goal (₹)</FormLabel><FormControl><Input type="number" placeholder="e.g. 100000" {...field} className="font-bold" /></FormControl><FormMessage /></FormItem>)}/>
                 </div>
 
                 <FormField control={form.control} name="allowedDonationTypes" render={() => (
-                    <FormItem>
-                      <div className="mb-4"><FormLabel className="text-base">Donation Types for Fundraising</FormLabel><FormDescription>Select which donation types should be counted towards the fundraising goal.</FormDescription></div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-md">
-                        <div className="flex items-center space-x-2"><Checkbox id="select-all-types-lead" checked={form.watch('allowedDonationTypes')?.length === donationCategories.length} onCheckedChange={(checked) => { form.setValue('allowedDonationTypes', checked ? [...donationCategories] : []); }} /><Label htmlFor="select-all-types-lead" className="font-bold">Any</Label></div>
+                    <FormItem className="space-y-4">
+                      <div><FormLabel className="text-base font-bold">Donation types for goal</FormLabel><FormDescription className="text-xs font-normal">Select fund types that count toward the target amount.</FormDescription></div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5 border-primary/10">
+                        <div className="flex items-center space-x-2"><Checkbox id="select-all-types-lead" checked={form.watch('allowedDonationTypes')?.length === donationCategories.length} onCheckedChange={(checked) => { form.setValue('allowedDonationTypes', checked ? [...donationCategories] : []); }} /><Label htmlFor="select-all-types-lead" className="font-bold text-xs uppercase cursor-pointer">Any</Label></div>
                         {donationCategories.map((type) => (
                           <FormField key={type} control={form.control} name="allowedDonationTypes" render={({ field }) => (
-                            <FormItem key={type} className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormItem key={type} className="flex flex-row items-center space-x-3 space-y-0">
                                 <FormControl><Checkbox checked={field.value?.includes(type)} onCheckedChange={(checked) => { return checked ? field.onChange([...(field.value || []), type]) : field.onChange((field.value || []).filter((value) => value !== type))}} /></FormControl>
-                                <FormLabel className="font-normal">{type}</FormLabel>
+                                <FormLabel className="font-bold text-xs uppercase cursor-pointer">{type}</FormLabel>
                             </FormItem>
                           )} />
                         ))}
@@ -422,22 +441,25 @@ export default function CreateLeadPage() {
                 )}/>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField control={form.control} name="startDate" render={({ field }) => (<FormItem><FormLabel>Start Date *</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                  <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem><FormLabel>End Date *</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                  <FormField control={form.control} name="startDate" render={({ field }) => (<FormItem><FormLabel className="font-bold">Start date *</FormLabel><FormControl><Input type="date" {...field} className="font-bold"/></FormControl><FormMessage /></FormItem>)}/>
+                  <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem><FormLabel className="font-bold">End date *</FormLabel><FormControl><Input type="date" {...field} className="font-bold"/></FormControl><FormMessage /></FormItem>)}/>
               </div>
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField control={form.control} name="status" render={({ field }) => (<FormItem><FormLabel>Status *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Upcoming">Upcoming</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem></SelectContent></Select><FormMessage /></FormItem>)}/>
+                  <FormField control={form.control} name="status" render={({ field }) => (<FormItem><FormLabel className="font-bold">Status *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></SelectContent></Select><FormMessage /></FormItem>)}/>
                   <FormField control={form.control} name="authenticityStatus" render={({ field }) => (
-                      <FormItem><FormLabel>Authenticity *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select authenticity" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Pending Verification">Pending Verification</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="On Hold">On Hold</SelectItem><SelectItem value="Rejected">Rejected</SelectItem><SelectItem value="Need More Details">Need More Details</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                      <FormItem><FormLabel className="font-bold">Verification *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select authenticity" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Pending Verification" className="font-bold">Pending</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="On Hold" className="font-bold">On hold</SelectItem><SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem><SelectItem value="Need More Details" className="font-bold">Need details</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                   )}/>
               </div>
               <FormField control={form.control} name="publicVisibility" render={({ field }) => (
-                  <FormItem><FormLabel>Public Visibility *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select visibility" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Hold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish">Ready to Publish</SelectItem><SelectItem value="Published">Published</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                  <FormItem><FormLabel className="font-bold">Public visibility *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select visibility" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Hold" className="font-bold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-bold">Ready to publish</SelectItem><SelectItem value="Published" className="font-bold text-primary">Published</SelectItem></SelectContent></Select><FormMessage /></FormItem>
               )}/>
-              <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={() => router.push('/leads-members')} disabled={isLoading}>Cancel</Button>
-                  <Button type="button" variant="secondary" onClick={() => { form.reset(); setDocumentsToUpload([]); }} disabled={isLoading}><RotateCcw className="mr-2 h-4 w-4"/>Reset</Button>
-                  <Button type="submit" disabled={isLoading}>{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create Lead</Button>
+              <div className="flex justify-end gap-3 pt-6 border-t mt-6">
+                  <Button type="button" variant="outline" onClick={() => router.push('/leads-members')} disabled={isLoading} className="font-bold border-primary/20 text-primary">Cancel</Button>
+                  <Button type="button" variant="secondary" onClick={() => { form.reset(); setDocumentsToUpload([]); }} disabled={isLoading} className="font-bold"><RotateCcw className="mr-2 h-4 w-4"/> Reset</Button>
+                  <Button type="submit" disabled={isLoading} className="font-bold bg-primary text-white hover:bg-primary/90">
+                      {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                      Create lead
+                  </Button>
               </div>
             </form>
           </Form>
@@ -447,19 +469,19 @@ export default function CreateLeadPage() {
        <AlertDialog open={isDuplicateAlertOpen} onOpenChange={setIsDuplicateAlertOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
-                <AlertDialogTitle>Duplicate Lead Name</AlertDialogTitle>
-                <AlertDialogDescription>
+                <AlertDialogTitle className="font-bold">Duplicate lead name</AlertDialogTitle>
+                <AlertDialogDescription className="font-normal text-primary/70">
                     A lead with this name already exists. Are you sure you want to create another one?
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setLeadDataToCreate(null)}>Cancel</AlertDialogCancel>
+                <AlertDialogCancel onClick={() => setLeadDataToCreate(null)} className="font-bold">Cancel</AlertDialogCancel>
                 <AlertDialogAction onClick={() => {
                     if (leadDataToCreate) {
                         handleCreateLead(leadDataToCreate);
                     }
-                }}>
-                    Create Anyway
+                }} className="font-bold bg-primary text-white">
+                    Create anyway
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>

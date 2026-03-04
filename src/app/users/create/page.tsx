@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -21,6 +19,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UserForm } from '@/components/user-form';
 import { createUserAuthAction } from '../actions';
 import { useCollection } from '@/firebase';
+import { BrandedLoader } from '@/components/branded-loader';
 
 export default function CreateUserPage() {
   const router = useRouter();
@@ -29,6 +28,9 @@ export default function CreateUserPage() {
   const auth = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  
   const { userProfile, isLoading: isProfileLoading } = useSession();
 
   const canCreate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.users?.create;
@@ -52,6 +54,8 @@ export default function CreateUserPage() {
     }
 
     setIsSubmitting(true);
+    setProgress(10);
+    setLoadingMessage('Registering authentication account...');
     
     // Step 1: Create user in Firebase Auth
     const authResult = await createUserAuthAction(data);
@@ -62,6 +66,8 @@ export default function CreateUserPage() {
     }
 
     const newUserUid = authResult.uid;
+    setProgress(40);
+    setLoadingMessage('Optimizing ID proof artifacts...');
     
     // Step 2: Handle File Upload
     let idProofUrl = '';
@@ -76,10 +82,10 @@ export default function CreateUserPage() {
                      (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
                 fileExtension = 'png';
-            } else if (file.type !== 'application/pdf') {
-                toast({ title: 'Invalid File Type', description: 'ID Proof was not uploaded. Please edit the user to add it.', variant: 'destructive' });
             }
             
+            setProgress(60);
+            setLoadingMessage('Uploading proof to secure storage...');
             if (file.type.startsWith('image/') || file.type === 'application/pdf') {
                 const filePath = `users/${newUserUid}/id_proof.${fileExtension}`;
                 const fileRef = storageRef(storage, filePath);
@@ -90,9 +96,6 @@ export default function CreateUserPage() {
         } catch (uploadError: any) {
             console.error("Error during file upload on create:", uploadError);
             let description = `User account was created, but ID proof failed to upload: ${uploadError.message}. Please edit the user later to add it.`;
-            if (uploadError.code === 'storage/unauthorized') {
-                description += "\n\nThis is a permission error. The security rule for creating user files requires admin privileges: `allow write: if isAdmin();`.";
-            }
             toast({ 
                 title: 'File Upload Error', 
                 description: description,
@@ -102,6 +105,8 @@ export default function CreateUserPage() {
         }
     }
 
+    setProgress(85);
+    setLoadingMessage('Synchronizing permissions & lookups...');
 
     // Step 3: Create documents in Firestore
     const batch = writeBatch(firestore);
@@ -119,7 +124,7 @@ export default function CreateUserPage() {
         permissions: data.permissions,
         idProofType: data.idProofType,
         idNumber: data.idNumber,
-        idProofUrl, // Include the URL here
+        idProofUrl,
         organizationGroup: data.organizationGroup === 'none' ? null : data.organizationGroup,
         organizationRole: data.organizationRole,
         createdAt: serverTimestamp(),
@@ -136,11 +141,10 @@ export default function CreateUserPage() {
 
     try {
         await batch.commit();
+        setProgress(100);
         toast({ title: 'Success', description: 'User created successfully.', variant: 'success' });
         router.push(`/users`);
     } catch (dbError: any) {
-        // If Firestore write fails, we should ideally try to delete the Auth user to clean up.
-        // This is a complex operation and for this app, we'll notify the admin.
         console.error("Firestore batch failed after Auth user creation:", dbError);
         const serializableData = { ...newUserProfile, createdAt: 'FieldValue.serverTimestamp()' };
         errorEmitter.emit('permission-error', new FirestorePermissionError({
@@ -150,7 +154,7 @@ export default function CreateUserPage() {
         }));
         toast({
             title: "Database Error",
-            description: "Auth user was created, but database records failed. Please manually check user data.",
+            description: "Auth user was created, but database records failed.",
             variant: 'destructive',
             duration: 10000,
         });
@@ -162,16 +166,16 @@ export default function CreateUserPage() {
   if (isProfileLoading) {
     return (
       <main className="container mx-auto p-4 md:p-8">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <BrandedLoader message="Syncing with authorization server..." />
       </main>
     );
   }
 
   if (!canCreate) {
     return (
-        <main className="container mx-auto p-4 md:p-8">
+        <main className="container mx-auto p-4 md:p-8 text-primary">
             <div className="mb-4">
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
                     <Link href="/users">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Users
@@ -180,9 +184,9 @@ export default function CreateUserPage() {
             </div>
             <Alert variant="destructive">
                 <ShieldAlert className="h-4 w-4" />
-                <AlertTitle>Access Denied</AlertTitle>
-                <AlertDescription>
-                You do not have the required permissions to create a new user.
+                <AlertTitle className="font-bold">Access denied</AlertTitle>
+                <AlertDescription className="font-normal text-primary/70">
+                You do not have the required permissions to create a new organization user.
                 </AlertDescription>
             </Alert>
         </main>
@@ -191,19 +195,20 @@ export default function CreateUserPage() {
 
   return (
     <>
+      {isSubmitting && <BrandedLoader message={loadingMessage} progress={progress} />}
       <main className="container mx-auto p-4 md:p-8">
         <div className="mb-4">
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
             <Link href="/users">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Users
             </Link>
           </Button>
         </div>
-        <Card className="max-w-4xl mx-auto animate-fade-in-zoom">
+        <Card className="max-w-4xl mx-auto animate-fade-in-zoom border-primary/10 bg-white">
           <CardHeader>
-            <CardTitle>Create New User</CardTitle>
-            <CardDescription>Enter the details for the new user account.</CardDescription>
+            <CardTitle className="font-bold text-primary">Create new user</CardTitle>
+            <CardDescription className="font-normal">Assign organizational roles and module-level permissions.</CardDescription>
           </CardHeader>
           <CardContent>
             <UserForm 
