@@ -160,7 +160,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                                         </TableRow>
                                                     ))}
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
-                                                        <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-4 italic text-xs font-normal">Unallocated / General fund</TableCell></TableRow>
+                                                        <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-4 italic text-xs font-normal">Unallocated / general fund</TableCell></TableRow>
                                                     )}
                                                 </TableBody>
                                             </Table>
@@ -177,7 +177,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                             <TableHeader>
                                                 <TableRow className="bg-primary/5">
                                                     <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Sum</TableHead>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Ref ID</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Ref id</TableHead>
                                                     <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Date</TableHead>
                                                     <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Artifact</TableHead>
                                                 </TableRow>
@@ -345,9 +345,9 @@ export default function DonationsPage() {
   if (isLoading) return <SectionLoader label="Loading donation records..." description="Retrieving organizational financial logs." />;
 
   return (
-    <main className="container mx-auto p-4 md:p-8">
+    <main className="container mx-auto p-4 md:p-8 font-normal text-primary">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <h1 className="text-3xl font-bold tracking-tighter text-primary uppercase">Financial Donations</h1>
+            <h1 className="text-3xl font-bold tracking-tighter text-primary uppercase">Financial donations</h1>
             <div className="flex gap-2 w-full sm:w-auto">
                 <Button variant="outline" onClick={handleSync} disabled={isSyncing} className="flex-1 sm:flex-none font-bold text-[10px] border-primary/20 text-primary active:scale-95 transition-transform">
                   {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
@@ -389,7 +389,7 @@ export default function DonationsPage() {
                                 <TableHead className="text-primary font-bold text-[10px] uppercase tracking-wider">Method</TableHead>
                                 <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
                                 <TableHead className="text-primary font-bold text-[10px] uppercase tracking-wider">Target</TableHead>
-                                <TableHead className="text-right pr-4 text-primary font-bold text-[10px] uppercase tracking-wider">Opt</TableHead>
+                                <TableHead className="text-right pr-4 text-primary font-bold text-[10px] uppercase tracking-wider">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -437,7 +437,7 @@ export default function DonationsPage() {
                     />
                 </ScrollArea>
                 <DialogFooter className="px-6 py-4 border-t bg-muted/5">
-                    <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold">Close Form</Button>
+                    <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold">Close form</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

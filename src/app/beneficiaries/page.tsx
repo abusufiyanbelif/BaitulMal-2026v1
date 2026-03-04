@@ -106,7 +106,7 @@ export default function BeneficiariesPage() {
   );
 
   return (
-    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary">
+    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
       <div className="flex items-center justify-between">
         <Button variant="outline" asChild className="font-bold border-primary/20 hover:bg-primary/10 text-primary transition-transform active:scale-95">
           <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to dashboard</Link>
@@ -161,8 +161,8 @@ export default function BeneficiariesPage() {
 
       <div className="rounded-lg border border-primary/10 bg-white overflow-hidden shadow-sm">
         <ScrollArea className="w-full">
-            <div className={cn("bg-primary/5 border-b border-primary/10 text-[11px] font-bold tracking-wider uppercase text-primary", gridClass)}>
-                <div>Sr.no.</div>
+            <div className={cn("bg-primary/5 border-b border-primary/10 text-[11px] font-bold tracking-wider text-primary", gridClass)}>
+                <div>Sr. no.</div>
                 <div>Name</div>
                 <div>Phone</div>
                 <div className="text-center">Status</div>

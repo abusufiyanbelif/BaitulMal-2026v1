@@ -181,9 +181,9 @@ export default function BeneficiariesPage() {
   if (!campaign) return <p className="text-center mt-20 text-primary font-bold">Campaign not found.</p>;
 
   return (
-    <main className="container mx-auto p-4 md:p-8 space-y-6">
-        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to campaigns</Link></Button></div>
-        <h1 className="text-3xl font-bold tracking-tight text-primary">{campaign.name}</h1>
+    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
+        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to campaigns</Link></Button></div>
+        <h1 className="text-3xl font-bold tracking-tight text-primary uppercase">{campaign.name}</h1>
         
         <div className="border-b border-primary/10 mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
@@ -200,10 +200,10 @@ export default function BeneficiariesPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <h2 className="text-2xl font-bold text-primary tracking-tight">Beneficiary list ({beneficiaries?.length || 0})</h2>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-primary">
+            <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
               <CopyPlus className="mr-2 h-4 w-4"/> Select from master
             </Button>
-            <Button size="sm" onClick={() => setIsFormOpen(true)} className="bg-primary hover:bg-primary/90 text-white font-bold">
+            <Button size="sm" onClick={() => setIsFormOpen(true)} className="bg-primary hover:bg-primary/90 text-white font-bold active:scale-95 transition-transform shadow-md">
               <PlusCircle className="mr-2 h-4 w-4"/> Add new
             </Button>
           </div>
@@ -217,20 +217,20 @@ export default function BeneficiariesPage() {
           <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPages({}); }}>
             <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All statuses</SelectItem>
-              <SelectItem value="Pending">Pending</SelectItem>
-              <SelectItem value="Verified">Verified</SelectItem>
-              <SelectItem value="Given">Given</SelectItem>
-              <SelectItem value="Hold">Hold</SelectItem>
-              <SelectItem value="Need More Details">Need details</SelectItem>
+              <SelectItem value="All" className="font-bold">All statuses</SelectItem>
+              <SelectItem value="Pending" className="font-bold">Pending</SelectItem>
+              <SelectItem value="Verified" className="font-bold">Verified</SelectItem>
+              <SelectItem value="Given" className="font-bold">Given</SelectItem>
+              <SelectItem value="Hold" className="font-bold">Hold</SelectItem>
+              <SelectItem value="Need More Details" className="font-bold">Need details</SelectItem>
             </SelectContent>
           </Select>
           <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPages({}); }}>
             <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Zakat status" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All Zakat status</SelectItem>
-              <SelectItem value="Eligible">Eligible</SelectItem>
-              <SelectItem value="Not Eligible">Not eligible</SelectItem>
+              <SelectItem value="All" className="font-bold">All Zakat status</SelectItem>
+              <SelectItem value="Eligible" className="font-bold">Eligible</SelectItem>
+              <SelectItem value="Not Eligible" className="font-bold">Not eligible</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -238,7 +238,7 @@ export default function BeneficiariesPage() {
         <div className="rounded-lg border border-primary/10 bg-white overflow-hidden shadow-sm">
             <ScrollArea className="w-full">
                 <div className={cn("bg-primary/5 border-b border-primary/10 text-[12px] font-bold uppercase tracking-wider text-primary", gridClass)}>
-                    <div>sr.no.</div>
+                    <div>Sr. no.</div>
                     <div>Name</div>
                     <div>Phone</div>
                     <div className="text-center">Status</div>
@@ -309,7 +309,7 @@ export default function BeneficiariesPage() {
                                                                             </DropdownMenuSubContent></DropdownMenuPortal>
                                                                         </DropdownMenuSub>
                                                                     )}
-                                                                    {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold text-primary">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat eligible'}</DropdownMenuItem>}
+                                                                    {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold text-primary">{b.isEligibleForZakat ? 'Mark ineligible' : 'Mark zakat eligible'}</DropdownMenuItem>}
                                                                 </DropdownMenuContent>
                                                             </DropdownMenu>
                                                         </div>
@@ -332,19 +332,19 @@ export default function BeneficiariesPage() {
                                                             </div>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Family Details</p>
+                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Family details</p>
                                                             <p className="text-sm font-normal text-primary">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">ID Proof</p>
-                                                            <p className="text-sm font-normal text-primary">{b.idProofType || 'Aadhar'} - {b.idNumber || 'N/A'}</p>
+                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">ID proof</p>
+                                                            <p className="text-sm font-normal text-primary">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Date Added</p>
+                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Date added</p>
                                                             <p className="text-sm font-normal text-primary">{b.addedDate || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Zakat Allocation</p>
+                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Zakat allocation</p>
                                                             <p className="text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toFixed(2)}</p>
                                                         </div>
                                                         <div className="space-y-2 md:col-span-2">

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -387,40 +386,40 @@ export default function CampaignSummaryPage() {
     const isLoading = isCampaignLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
 
     if (isLoading) return <BrandedLoader />;
-    if (!campaign) return <main className="container mx-auto p-4 md:p-8 text-center font-bold"><p>Campaign not found.</p></main>;
+    if (!campaign) return <main className="container mx-auto p-4 md:p-8 text-center font-bold text-primary uppercase"><p>Campaign not found.</p></main>;
 
     const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
     const chartData = fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
 
     return (
-        <main className="container mx-auto p-4 md:p-8">
-             <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to campaigns</Link></Button></div>
+        <main className="container mx-auto p-4 md:p-8 text-primary font-normal">
+             <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to campaigns</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                  <div className="space-y-1">
-                    {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => setEditableCampaign(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary">{campaign.name}</h1> )}
-                    {editMode ? ( <Select value={editableCampaign.status} onValueChange={(value) => setEditableCampaign(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1 font-bold"><SelectValue placeholder="Select a status" /></SelectTrigger><SelectContent><SelectItem value="Upcoming">Upcoming</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem></SelectContent></Select> ): ( <p className="text-muted-foreground font-bold">{campaign.status}</p> )}
+                    {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => setEditableCampaign(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary uppercase">{campaign.name}</h1> )}
+                    {editMode ? ( <Select value={editableCampaign.status} onValueChange={(value) => setEditableCampaign(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1 font-bold"><SelectValue placeholder="Select a status" /></SelectTrigger><SelectContent><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></SelectContent></Select> ): ( <p className="text-muted-foreground font-bold uppercase">{campaign.status}</p> )}
                 </div>
                 <div className="flex gap-2">
                     {!editMode && (
                         <>
                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild><Button variant="outline" className="font-bold"><Download className="mr-2 h-4 w-4" /> Download</Button></DropdownMenuTrigger>
-                                <DropdownMenuContent><DropdownMenuItem onClick={() => handleDownload('png')}>Download as image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')}>Download as PDF</DropdownMenuItem></DropdownMenuContent>
+                                <DropdownMenuTrigger asChild><Button variant="outline" className="font-bold active:scale-95 transition-transform"><Download className="mr-2 h-4 w-4" /> Download</Button></DropdownMenuTrigger>
+                                <DropdownMenuContent><DropdownMenuItem onClick={() => handleDownload('png')} className="font-bold text-primary">Download as image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')} className="font-bold text-primary">Download as PDF</DropdownMenuItem></DropdownMenuContent>
                             </DropdownMenu>
-                            <Button onClick={() => { setShareDialogData({ title: `Campaign: ${campaign.name}`, text: campaign.description || '', url: window.location.origin + `/campaign-public/${campaignId}/summary` }); setIsShareDialogOpen(true); }} variant="outline" className="font-bold"><Share2 className="mr-2 h-4 w-4" /> Share</Button>
+                            <Button onClick={() => { setShareDialogData({ title: `Campaign: ${campaign.name}`, text: campaign.description || '', url: window.location.origin + `/campaign-public/${campaignId}/summary` }); setIsShareDialogOpen(true); }} variant="outline" className="font-bold active:scale-95 transition-transform"><Share2 className="mr-2 h-4 w-4" /> Share</Button>
                         </>
                     )}
-                    {canUpdate && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} className="font-bold text-white bg-primary hover:bg-primary/90"><Edit className="mr-2 h-4 w-4" /> Edit summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold">Cancel</Button><Button onClick={handleSave} className="font-bold text-white bg-primary hover:bg-primary/90"><Save className="mr-2 h-4 w-4" /> Save</Button></div> ) )}
+                    {canUpdate && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} className="font-bold text-white bg-primary hover:bg-primary/90 shadow-md active:scale-95 transition-transform"><Edit className="mr-2 h-4 w-4" /> Edit summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold border-primary/20 text-primary">Cancel</Button><Button onClick={handleSave} className="font-bold text-white bg-primary hover:bg-primary/90 shadow-md active:scale-95 transition-transform"><Save className="mr-2 h-4 w-4" /> Save</Button></div> ) )}
                 </div>
             </div>
 
              <div className="border-b mb-4">
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex w-max space-x-2 pb-2">
-                        {canReadSummary && ( <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold")}>Summary</Link> )}
-                        {canReadRation && ( <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold")}>Item lists</Link> )}
-                        {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold")}>Beneficiary list</Link> )}
-                         {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground font-bold")}>Donations</Link> )}
+                        {canReadSummary && ( <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-all duration-200", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:bg-primary/10")}>Summary</Link> )}
+                        {canReadRation && ( <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-all duration-200", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:bg-primary/10")}>Item lists</Link> )}
+                        {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:bg-primary/10")}>Beneficiary list</Link> )}
+                         {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:bg-primary/10")}>Donations</Link> )}
                     </div>
                     <ScrollBar orientation="horizontal" />
                 </ScrollArea>
@@ -447,9 +446,9 @@ export default function CampaignSummaryPage() {
                                         <Select value={editableCampaign.category} onValueChange={(val) => handleFieldChange('category', val)}>
                                             <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="Ration">Ration</SelectItem>
-                                                <SelectItem value="Relief">Relief</SelectItem>
-                                                <SelectItem value="General">General</SelectItem>
+                                                <SelectItem value="Ration" className="font-bold">Ration</SelectItem>
+                                                <SelectItem value="Relief" className="font-bold">Relief</SelectItem>
+                                                <SelectItem value="General" className="font-bold">General</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -474,7 +473,7 @@ export default function CampaignSummaryPage() {
                                                         handleFieldChange('allowedDonationTypes', updated);
                                                     }}
                                                 />
-                                                <Label htmlFor={`edit-type-camp-${type}`} className="text-xs font-bold">{type}</Label>
+                                                <Label htmlFor={`edit-type-camp-${type}`} className="text-xs font-bold cursor-pointer">{type}</Label>
                                             </div>
                                         ))}
                                     </div>
@@ -489,7 +488,7 @@ export default function CampaignSummaryPage() {
                                         <FallbackIcon className="h-20 w-20 text-muted-foreground/30" />
                                     )}
                                 </div>
-                                <div className="space-y-2 font-normal">
+                                <div className="space-y-2 font-normal text-primary">
                                     <Label className="text-muted-foreground uppercase text-xs font-bold">Description</Label>
                                     <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-foreground">{campaign.description || 'No description provided.'}</p>
                                 </div>
@@ -507,7 +506,7 @@ export default function CampaignSummaryPage() {
                                     <CardDescription className="font-normal text-primary/70">Verified donations for this campaign.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center font-normal">
                                         <div className="relative h-48 w-full">
                                             {isClient ? (
                                                 <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
@@ -519,7 +518,7 @@ export default function CampaignSummaryPage() {
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
                                             <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold uppercase">Funded</span></div>
                                         </div>
-                                        <div className="space-y-4 text-center md:text-left text-primary">
+                                        <div className="space-y-4 text-center md:text-left text-primary font-bold">
                                             <div><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Raised for goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
                                             <div><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Target goal</p><p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
                                             <div><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Grand total received</p><p className="text-2xl font-bold text-primary font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
@@ -530,7 +529,7 @@ export default function CampaignSummaryPage() {
                         )}
 
                         {isVisible('quick_stats') && (
-                            <div className="grid gap-6 grid-cols-1 sm:grid-cols-3">
+                            <div className="grid gap-6 grid-cols-1 sm:grid-cols-3 font-normal">
                                 <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.totalBeneficiaries}</div></CardContent></Card>
                                 <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Kits given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesGiven}</div></CardContent></Card>
                                 <Card className="bg-white"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesPending}</div></CardContent></Card>
@@ -549,7 +548,7 @@ export default function CampaignSummaryPage() {
                                             : 'Itemized requirement breakdown for this initiative.'}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="p-0 sm:p-6">
+                                <CardContent className="p-0 sm:p-6 font-normal">
                                     <ScrollArea className="w-full">
                                         <div className="border rounded-lg overflow-hidden font-normal text-foreground">
                                             {isRationInitiative ? (
@@ -618,7 +617,7 @@ export default function CampaignSummaryPage() {
                             </Card>
                         )}
 
-                        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+                        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 font-normal">
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white">
                                     <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-widest">Fund totals by type</CardTitle></CardHeader>
@@ -644,7 +643,7 @@ export default function CampaignSummaryPage() {
                                     <CardContent className="space-y-3 font-normal text-foreground">
                                         <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Total Zakat collected</span><span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
                                         <Separator />
-                                        <div className="pl-4 border-l-2 border-dashed space-y-2 py-2">
+                                        <div className="pl-4 border-l-2 border-dashed space-y-2 py-2 font-bold">
                                             <div className="flex justify-between items-center text-sm font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Allocated as Cash-in-hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
                                             <div className="flex justify-between items-center text-xs font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Paid out</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
                                             <div className="flex justify-between items-center text-xs font-bold text-primary"><span className="text-muted-foreground uppercase tracking-tight font-normal">Remaining to pay</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
@@ -656,7 +655,7 @@ export default function CampaignSummaryPage() {
                             )}
                         </div>
 
-                        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+                        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 font-normal text-primary">
                             {isVisible('donations_by_category') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                     <CardHeader><CardTitle className="flex items-center gap-2 font-bold text-primary text-sm uppercase tracking-widest"><TrendingUp className="h-5 w-5"/> Donations by category</CardTitle></CardHeader>
@@ -697,7 +696,7 @@ export default function CampaignSummaryPage() {
                 {isVisible('documents') && (
                     <Card className="animate-fade-in-up bg-white shadow-sm border-primary/5">
                         <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-widest">Artifacts & documents</CardTitle></CardHeader>
-                        <CardContent>
+                        <CardContent className="font-normal text-primary">
                         {editMode ? (
                                 <div className="space-y-4">
                                     <Label className="font-bold text-[10px] uppercase text-muted-foreground tracking-tighter">Upload new artifacts</Label>

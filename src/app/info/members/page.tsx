@@ -97,7 +97,7 @@ export default function AboutOrganizationPage() {
                 <Button variant="outline" asChild className="transition-transform active:scale-95 font-bold border-primary/20">
                     <Link href="/">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Home
+                        Back to home
                     </Link>
                 </Button>
             </div>
@@ -110,55 +110,54 @@ export default function AboutOrganizationPage() {
                         </div>
                     )}
                 </div>
-                <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase">{brandingSettings?.name || 'About Our Organization'}</h1>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase">{brandingSettings?.name || 'About our organization'}</h1>
                 <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-normal italic">
                     Committed to community support and transparent welfare initiatives.
                 </p>
             </section>
 
-            <div className="grid gap-8 lg:grid-cols-2 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+            <Accordion type="multiple" defaultValue={['verifiable', 'contribution', 'principles']} className="space-y-6">
+                
                 {/* Verifiable Details */}
-                <Card className="shadow-lg border-primary/10 bg-white">
-                    <CardHeader className="bg-primary/5 border-b border-primary/5">
-                        <CardTitle className="text-xl font-bold flex items-center gap-3 uppercase tracking-tight">
+                <AccordionItem value="verifiable" className="border rounded-xl bg-white shadow-lg overflow-hidden border-primary/10">
+                    <AccordionTrigger className="px-6 py-4 hover:no-underline bg-primary/5">
+                        <div className="flex items-center gap-3">
                             <ShieldCheck className="h-6 w-6 text-primary" />
-                            Verifiable Details
-                        </CardTitle>
-                        <CardDescription className="font-normal">Official public profile and registration information.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6 space-y-1">
-                        <DetailItem icon={Building2} label="Legal Name" value={brandingSettings?.name} />
-                        <DetailItem icon={MapPin} label="Registered Address" value={paymentSettings?.address} />
-                        <DetailItem icon={Hash} label="Registration No." value={paymentSettings?.regNo} />
-                        <DetailItem icon={ShieldCheck} label="PAN Number" value={paymentSettings?.pan} isMono />
-                        <DetailItem icon={Globe} label="Official Website" value={paymentSettings?.website} />
-                    </CardContent>
-                </Card>
+                            <span className="text-xl font-bold tracking-tight uppercase">Verifiable details</span>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pt-6 pb-8 space-y-1">
+                        <DetailItem icon={Building2} label="Legal name" value={brandingSettings?.name} />
+                        <DetailItem icon={MapPin} label="Registered address" value={paymentSettings?.address} />
+                        <DetailItem icon={Hash} label="Registration no." value={paymentSettings?.regNo} />
+                        <DetailItem icon={ShieldCheck} label="PAN number" value={paymentSettings?.pan} isMono />
+                        <DetailItem icon={Globe} label="Official website" value={paymentSettings?.website} />
+                    </AccordionContent>
+                </AccordionItem>
 
                 {/* Contribution Details */}
-                <Card className="shadow-lg border-primary/10 bg-white">
-                    <CardHeader className="bg-primary/5 border-b border-primary/5">
-                        <CardTitle className="text-xl font-bold flex items-center gap-3 uppercase tracking-tight">
+                <AccordionItem value="contribution" className="border rounded-xl bg-white shadow-lg overflow-hidden border-primary/10">
+                    <AccordionTrigger className="px-6 py-4 hover:no-underline bg-primary/5">
+                        <div className="flex items-center gap-3">
                             <Landmark className="h-6 w-6 text-primary" />
-                            Contribution Details
-                        </CardTitle>
-                        <CardDescription className="font-normal">Verified channels for community donations.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <span className="text-xl font-bold tracking-tight uppercase">Contribution details</span>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pt-6 pb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-1">
-                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Bank Transfer</h4>
-                                <DetailItem icon={User} label="Account Holder" value={paymentSettings?.bankAccountName} />
-                                <DetailItem icon={CreditCard} label="Account Number" value={paymentSettings?.bankAccountNumber} isMono />
-                                <DetailItem icon={Landmark} label="IFSC Code" value={paymentSettings?.bankIfsc} isMono />
+                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Bank transfer</h4>
+                                <DetailItem icon={User} label="Account holder" value={paymentSettings?.bankAccountName} />
+                                <DetailItem icon={CreditCard} label="Account number" value={paymentSettings?.bankAccountNumber} isMono />
+                                <DetailItem icon={Landmark} label="IFSC code" value={paymentSettings?.bankIfsc} isMono />
                             </div>
-                            <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-secondary/30 border border-primary/10">
+                            <div className="flex flex-col items-center justify-center p-6 rounded-xl bg-secondary/30 border border-primary/10">
                                 {validQrUrl ? (
                                     <div className="space-y-3 text-center">
-                                        <div className="relative w-32 h-32 bg-white p-2 rounded-lg shadow-sm border-2 border-primary">
+                                        <div className="relative w-40 h-40 bg-white p-3 rounded-lg shadow-sm border-2 border-primary">
                                             <Image src={`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`} alt="Payment QR" fill className="object-contain p-1" />
                                         </div>
-                                        <p className="font-mono text-xs font-bold text-primary">{paymentSettings?.upiId}</p>
+                                        <p className="font-mono text-sm font-bold text-primary">{paymentSettings?.upiId}</p>
                                         <p className="text-[10px] uppercase font-bold text-muted-foreground">Scan with any UPI app</p>
                                     </div>
                                 ) : (
@@ -169,77 +168,80 @@ export default function AboutOrganizationPage() {
                                 )}
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
-            </div>
+                    </AccordionContent>
+                </AccordionItem>
 
-            {/* Guiding Principles Section */}
-            {isGPVisible && visiblePrinciples.length > 0 && (
-                <Card className="animate-fade-in-up shadow-lg border-primary/10 bg-white" style={{ animationDelay: '300ms' }}>
-                    <CardHeader className="bg-primary/5 border-b border-primary/5">
-                        <CardTitle className="flex items-center gap-3 text-xl uppercase font-bold tracking-tight">
-                            <Shield className="h-6 w-6 text-primary" />
-                            Guiding Principles
-                        </CardTitle>
-                        <CardDescription className="font-normal text-primary/70">
-                            {gpData.description}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-8">
-                        <div className="grid gap-6">
-                            {visiblePrinciples.map((principle, idx) => (
-                                <div key={principle.id} className="flex gap-4 group">
-                                    <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
-                                        {idx + 1}
+                {/* Guiding Principles Section */}
+                {isGPVisible && visiblePrinciples.length > 0 && (
+                    <AccordionItem value="principles" className="border rounded-xl bg-white shadow-lg overflow-hidden border-primary/10">
+                        <AccordionTrigger className="px-6 py-4 hover:no-underline bg-primary/5">
+                            <div className="flex items-center gap-3">
+                                <Shield className="h-6 w-6 text-primary" />
+                                <span className="text-xl font-bold tracking-tight uppercase">Guiding principles</span>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-6 pt-8 pb-10">
+                            <p className="text-sm text-primary/70 mb-8 max-w-3xl font-normal leading-relaxed">
+                                {gpData.description}
+                            </p>
+                            <div className="grid gap-6">
+                                {visiblePrinciples.map((principle, idx) => (
+                                    <div key={principle.id} className="flex gap-4 group">
+                                        <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
+                                            {idx + 1}
+                                        </div>
+                                        <div className="pt-1">
+                                            <p className="text-base font-normal leading-relaxed text-foreground/90">
+                                                {principle.text}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="pt-1">
-                                        <p className="text-base font-normal leading-relaxed text-foreground/90">
-                                            {principle.text}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                )}
+
+                {/* Team Directory */}
+                <AccordionItem value="team" className="border rounded-xl bg-white shadow-lg overflow-hidden border-primary/10">
+                    <AccordionTrigger className="px-6 py-4 hover:no-underline bg-primary/5">
+                        <div className="flex items-center gap-3">
+                            <Users className="h-6 w-6 text-primary" />
+                            <span className="text-xl font-bold tracking-tight uppercase">Our dedicated team</span>
                         </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            <Card className="animate-fade-in-up shadow-lg border-primary/10 bg-white" style={{ animationDelay: '400ms' }}>
-                <CardHeader className="bg-primary/5 border-b border-primary/5">
-                    <CardTitle className="flex items-center gap-3 text-2xl uppercase font-bold tracking-tight"><Users className="h-7 w-7 text-primary" /> Our Dedicated Team</CardTitle>
-                    <CardDescription className="font-normal">The people driving our organizational vision and impact.</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-6">
-                    <Accordion type="multiple" defaultValue={['founder', 'co-founder', 'finance', 'member']} className="w-full">
-                        {GROUPS.map((group) => (
-                            <AccordionItem value={group.id} key={group.id} className="border-primary/5">
-                                <AccordionTrigger className="text-lg font-bold hover:text-primary transition-colors py-6 uppercase tracking-tight">
-                                    {group.name} ({(membersByGroup[group.id] || []).length})
-                                </AccordionTrigger>
-                                <AccordionContent>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
-                                        {(membersByGroup[group.id] || []).map((member, idx) => (
-                                            <Card key={member.id} className="group transition-all duration-300 hover:shadow-md hover:-translate-y-1 bg-primary/[0.02] border-primary/5">
-                                                <CardContent className="p-4 flex items-center gap-4">
-                                                    <Avatar className="h-16 w-16 border-2 border-primary/10 transition-transform group-hover:scale-105">
-                                                        <AvatarImage src={member.idProofUrl || ''} alt={member.name || 'Member'} />
-                                                        <AvatarFallback className="bg-primary text-white font-bold text-xs">{getInitials(member.name)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-bold text-base truncate">{member.name}</p>
-                                                        <p className="text-xs font-normal text-muted-foreground uppercase tracking-wider">{member.organizationRole || 'Member'}</p>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        ))}
-                                        {(membersByGroup[group.id] || []).length === 0 && <p className="text-sm text-muted-foreground p-4 font-normal italic">No public members in this group.</p>}
-                                    </div>
-                                </AccordionContent>
-                            </AccordionItem>
-                        ))}
-                    </Accordion>
-                </CardContent>
-            </Card>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pt-6 pb-8">
+                        <Accordion type="multiple" defaultValue={['founder', 'co-founder', 'finance', 'member']} className="w-full">
+                            {GROUPS.map((group) => (
+                                <AccordionItem value={group.id} key={group.id} className="border-primary/5">
+                                    <AccordionTrigger className="text-lg font-bold hover:text-primary transition-colors py-6 uppercase tracking-tight">
+                                        {group.name} ({(membersByGroup[group.id] || []).length})
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+                                            {(membersByGroup[group.id] || []).map((member) => (
+                                                <Card key={member.id} className="group transition-all duration-300 hover:shadow-md hover:-translate-y-1 bg-primary/[0.02] border-primary/5">
+                                                    <CardContent className="p-4 flex items-center gap-4">
+                                                        <Avatar className="h-16 w-16 border-2 border-primary/10 transition-transform group-hover:scale-105">
+                                                            <AvatarImage src={member.idProofUrl || ''} alt={member.name || 'Member'} />
+                                                            <AvatarFallback className="bg-primary text-white font-bold text-xs">{getInitials(member.name)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="font-bold text-base truncate">{member.name}</p>
+                                                            <p className="text-xs font-normal text-muted-foreground uppercase tracking-wider">{member.organizationRole || 'Member'}</p>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            ))}
+                                            {(membersByGroup[group.id] || []).length === 0 && <p className="text-sm text-muted-foreground p-4 font-normal italic">No public members in this group.</p>}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))}
+                        </Accordion>
+                    </AccordionContent>
+                </AccordionItem>
+            </Accordion>
         </main>
     );
 }

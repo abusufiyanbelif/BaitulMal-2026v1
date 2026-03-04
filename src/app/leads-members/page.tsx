@@ -137,7 +137,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
             </div>
             <CardDescription className="text-[10px] font-normal tracking-normal">{lead.startDate} to {lead.endDate}</CardDescription>
         </CardHeader>
-        <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal">
+        <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal text-primary">
               <div className="flex justify-between items-center text-xs">
                 <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary uppercase">{lead.purpose}</Badge>
                 <Badge 
@@ -280,8 +280,8 @@ export default function LeadPage() {
 
   if (!isLoading && userProfile && !canViewLeads) {
     return (
-      <main className="container mx-auto p-4 md:p-8 text-primary">
-        <div className="mb-4"><Button variant="outline" asChild className="border-primary/20 font-bold text-primary"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to home</Link></Button></div>
+      <main className="container mx-auto p-4 md:p-8 text-primary font-normal">
+        <div className="mb-4"><Button variant="outline" asChild className="border-primary/20 font-bold text-primary transition-transform active:scale-95"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to home</Link></Button></div>
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle className="font-bold">Access denied</AlertTitle>
@@ -293,14 +293,14 @@ export default function LeadPage() {
 
   return (
     <>
-      <main className="container mx-auto p-4 sm:p-6 space-y-6 text-primary">
+      <main className="container mx-auto p-4 sm:p-6 space-y-6 text-primary font-normal">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <Button variant="outline" asChild size="sm" className="interactive-hover font-bold border-primary/20 hover:bg-primary/10 text-primary"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
+          <Button variant="outline" asChild size="sm" className="interactive-hover font-bold border-primary/20 hover:bg-primary/10 text-primary transition-transform active:scale-95"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
           {canCreate && !isLoading && <Button asChild size="sm" className="font-bold tracking-tight interactive-hover shadow-lg bg-primary hover:bg-primary/90 text-white active:scale-95 transition-transform"><Link href="/leads-members/create"><Plus className="mr-2 h-4 w-4" /> New appeal</Link></Button>}
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-primary uppercase">Individual Leads</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-primary uppercase">Individual leads</h1>
           <p className="text-sm max-w-2xl font-normal leading-relaxed opacity-70">Vetting and managing individual cases requiring organizational support.</p>
         </div>
 
@@ -314,11 +314,11 @@ export default function LeadPage() {
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex flex-nowrap items-center gap-3 pb-2">
                     <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary font-normal text-primary" disabled={isLoading}/>
-                    <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 font-bold text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
-                    <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs border-primary/20 font-bold text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
+                    <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 font-bold text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All statuses</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem></SelectContent></Select>
+                    <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs border-primary/20 font-bold text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</SelectContent></Select>
                     <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
-                        <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                        <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20", !dateRange ? "opacity-60" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                        <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select>
+                        <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                         {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
                     </div>
                 </div>
@@ -349,8 +349,8 @@ export default function LeadPage() {
               </Accordion>
             ) : (
               <div className="text-center py-24 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
-                  <Lightbulb className="h-16 w-16 mx-auto text-primary/20 mb-4" />
-                  <p className="font-normal text-sm opacity-60 text-primary">No appeals found matching criteria.</p>
+                  <Lightbulb className="h-12 w-12 mx-auto text-primary/20 mb-4" />
+                  <p className="font-normal text-sm opacity-60 text-primary font-bold uppercase">No appeals found matching criteria.</p>
               </div>
             )}
           </CardContent>
@@ -358,7 +358,7 @@ export default function LeadPage() {
       </main>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Delete appeal?</AlertDialogTitle><AlertDialogDescription className="font-normal opacity-80">Permanently erase all data for '{leadToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90">Confirm deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Delete appeal?</AlertDialogTitle><AlertDialogDescription className="font-normal opacity-80 text-primary/70">Permanently erase all data for '{leadToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95">Confirm deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
         
       <CopyLeadDialog open={!!leadToCopy} onOpenChange={() => setLeadToCopy(null)} lead={leadToCopy} onCopyConfirm={async (opt) => { const res = await copyLeadAction({ sourceLeadId: leadToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setLeadToCopy(null); }}/>
