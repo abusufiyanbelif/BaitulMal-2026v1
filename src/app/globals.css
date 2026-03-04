@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 150 40% 10%;
     
-    --primary: 160 70% 40%; /* Rich, calm green */
+    --primary: 160 70% 40%; 
     --primary-foreground: 0 0% 100%;
     
     --secondary: 160 70% 95%;
@@ -23,7 +23,7 @@
     --muted: 160 10% 90%;
     --muted-foreground: 160 10% 40%;
     
-    --accent: 38.8 92.3% 50.2%; /* Vibrant amber/gold */
+    --accent: 38.8 92.3% 50.2%; 
     --accent-foreground: 0 0% 100%;
     
     --destructive: 0 84.2% 60.2%;
@@ -55,92 +55,91 @@
   }
 
   .dark {
-    /* BMSS Brand (Default) - Dark Mode */
     --background: 150 40% 5%;
     --foreground: 160 10% 95%;
-    
     --card: 150 40% 7%;
     --card-foreground: 160 10% 95%;
-    
     --popover: 150 40% 7%;
     --popover-foreground: 160 10% 95%;
-    
     --primary: 160 70% 45%;
     --primary-foreground: 0 0% 100%;
-    
     --secondary: 160 30% 15%;
     --secondary-foreground: 160 10% 95%;
-    
     --muted: 160 20% 15%;
     --muted-foreground: 160 10% 60%;
-    
     --accent: 38.8 92.3% 55%;
     --accent-foreground: 0 0% 10%;
-    
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    
     --success: 142.1 70.6% 45.3%;
     --success-foreground: 0 0% 100%;
-
-    --warning: 38.8 92.3% 50.2%;
-    --warning-foreground: 0 0% 100%;
-
-    --info: 217.2 91.2% 59.8%;
-    --info-foreground: 0 0% 100%;
-    
     --border: 160 20% 20%;
     --input: 160 20% 20%;
     --ring: 160 70% 45%;
   }
 
-  /* --- Custom Theme Presets --- */
+  /* --- Custom Themes --- */
   
   .bmss-brand-warm {
     --background: 45 60% 98%;
     --foreground: 142 76% 15%;
+    --card: 45 60% 96%;
+    --card-foreground: 142 76% 15%;
     --primary: 142 76% 30%;
     --primary-foreground: 0 0% 100%;
     --accent: 38 92% 50%;
     --accent-foreground: 0 0% 100%;
     --secondary: 142 76% 95%;
-    --muted: 142 10% 90%;
+    --muted: 45 10% 90%;
     --border: 142 20% 85%;
     --ring: 142 76% 30%;
   }
 
   .bmss-brand-1 {
     --primary: 160 84% 33%;
+    --secondary: 160 84% 95%;
     --accent: 45 100% 50%;
     --ring: 160 84% 33%;
   }
 
   .bmss-brand-2 {
     --primary: 174 100% 29%;
+    --secondary: 174 100% 95%;
     --accent: 15 100% 50%;
     --ring: 174 100% 29%;
   }
 
   .ocean-blue {
+    --background: 221 83% 99%;
     --primary: 221 83% 53%;
     --secondary: 221 83% 95%;
+    --accent: 191 91% 42%;
     --ring: 221 83% 53%;
   }
 
   .sunset-orange {
+    --background: 25 100% 99%;
+    --foreground: 25 95% 10%;
     --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 100%;
     --accent: 45 93% 47%;
+    --accent-foreground: 0 0% 100%;
+    --secondary: 25 95% 95%;
+    --muted: 25 10% 95%;
+    --border: 25 20% 90%;
     --ring: 25 95% 53%;
   }
 
   .royal-purple {
     --primary: 262 83% 58%;
     --secondary: 262 83% 95%;
+    --accent: 320 100% 50%;
     --ring: 262 83% 58%;
   }
 
   .forest-amber {
     --primary: 142 76% 36%;
+    --secondary: 142 76% 95%;
     --accent: 38 92% 50%;
     --ring: 142 76% 36%;
   }
@@ -148,36 +147,42 @@
   .ocean-breeze {
     --primary: 191 91% 42%;
     --secondary: 191 91% 95%;
+    --accent: 221 83% 53%;
     --ring: 191 91% 42%;
   }
 
   .lavender-mint {
     --primary: 262 70% 60%;
     --accent: 160 70% 40%;
+    --secondary: 262 70% 95%;
     --ring: 262 70% 60%;
   }
 
   .sunrise-peach {
     --primary: 12 100% 63%;
     --accent: 45 93% 47%;
+    --secondary: 12 100% 95%;
     --ring: 12 100% 63%;
   }
 
   .classic-crimson {
     --primary: 0 72% 51%;
-    --accent: 210 20% 20%;
+    --accent: 215 25% 27%;
+    --secondary: 0 72% 95%;
     --ring: 0 72% 51%;
   }
 
   .professional-slate {
     --primary: 215 25% 27%;
     --accent: 160 70% 40%;
+    --secondary: 215 25% 95%;
     --ring: 215 25% 27%;
   }
 
   .earthy-tones {
     --primary: 25 30% 40%;
     --accent: 142 70% 45%;
+    --secondary: 25 30% 95%;
     --ring: 25 30% 40%;
   }
 
@@ -186,9 +191,9 @@
     --foreground: 210 40% 98%;
     --card: 222 47% 13%;
     --card-foreground: 210 40% 98%;
-    --primary: 45 93% 47%; /* Gold */
+    --primary: 45 93% 47%; 
     --primary-foreground: 222 47% 11%;
-    --accent: 142 70% 45%; /* Crescent Green */
+    --accent: 142 70% 45%; 
     --border: 217 32% 17%;
     --ring: 45 93% 47%;
   }

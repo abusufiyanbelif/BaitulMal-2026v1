@@ -1,4 +1,3 @@
-
 'use client';
 
 import { LogOut, User, LogIn, Settings, LayoutDashboard } from 'lucide-react';
