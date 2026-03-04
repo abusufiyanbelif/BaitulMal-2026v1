@@ -1,9 +1,9 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Settings, Save, Loader2, CheckSquare } from 'lucide-react';
+import { Settings, Save, Loader2, CheckSquare, Edit, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -38,7 +38,8 @@ const MANDATORY_FIELDS = [
 export default function DonationSettingsPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
-  const [isSaving, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const visRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_visibility') : null, [firestore]);
   const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_config') : null, [firestore]);
@@ -53,6 +54,12 @@ export default function DonationSettingsPage() {
     if (visibilitySettings) setLocalVis(visibilitySettings);
     if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
   }, [visibilitySettings, configSettings]);
+
+  const isDirty = useMemo(() => {
+    const visChanged = JSON.stringify(localVis) !== JSON.stringify(visibilitySettings || {});
+    const mandatoryChanged = JSON.stringify(localMandatory) !== JSON.stringify(configSettings?.mandatoryFields || {});
+    return visChanged || mandatoryChanged;
+  }, [localVis, localMandatory, visibilitySettings, configSettings]);
 
   const handleVisToggle = (id: string, group: 'public' | 'member') => {
     const key = `${group}_${id}`;
@@ -72,6 +79,7 @@ export default function DonationSettingsPage() {
             setDoc(configRef, { mandatoryFields: localMandatory }, { merge: true })
         ]);
         toast({ title: "Settings saved", variant: "success" });
+        setIsEditMode(false);
     } catch (e) {
         toast({ title: "Failed to save", variant: "destructive" });
     } finally {
@@ -79,14 +87,42 @@ export default function DonationSettingsPage() {
     }
   };
 
+  const handleCancel = () => {
+    if (visibilitySettings) setLocalVis(visibilitySettings);
+    if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
+    setIsEditMode(false);
+  };
+
   if (isVisLoading || isConfigLoading) return <BrandedLoader />;
 
   return (
     <div className="space-y-6">
-        <Card className="animate-fade-in-zoom border-primary/20">
+        <div className="flex justify-between items-center">
+            <div className="space-y-1">
+                <h2 className="text-2xl font-bold text-primary">Donation settings</h2>
+                <p className="text-sm text-muted-foreground font-normal">Configure financial reporting and data requirements for donations.</p>
+            </div>
+            {!isEditMode ? (
+                <Button onClick={() => setIsEditMode(true)} className="font-bold">
+                    <Edit className="mr-2 h-4 w-4" /> Edit Settings
+                </Button>
+            ) : (
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary">
+                        <X className="mr-2 h-4 w-4" /> Cancel
+                    </Button>
+                    <Button onClick={handleSave} disabled={isSubmitting || !isDirty} className="font-bold">
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+                        Save Changes
+                    </Button>
+                </div>
+            )}
+        </div>
+
+        <Card className="animate-fade-in-zoom border-primary/10">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-bold text-primary">
-                    <Settings className="h-5 w-5" /> Donation hub visibility settings
+                    <Settings className="h-5 w-5" /> Visibility settings
                 </CardTitle>
                 <CardDescription className="font-normal">
                     Control the visibility of financial components in the primary donation summary pages.
@@ -95,7 +131,7 @@ export default function DonationSettingsPage() {
             <CardContent className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">
-                        <h3 className="font-bold text-primary text-xs tracking-widest">Public summary visibility</h3>
+                        <h3 className="font-bold text-primary text-xs tracking-widest uppercase">Public view</h3>
                         <div className="space-y-3">
                             {VISIBILITY_OPTIONS.map(opt => (
                                 <div key={`public_don_${opt.id}`} className="flex items-center space-x-2">
@@ -103,6 +139,7 @@ export default function DonationSettingsPage() {
                                         id={`public_don_${opt.id}`} 
                                         checked={localVis[`public_${opt.id}`] !== false} 
                                         onCheckedChange={() => handleVisToggle(opt.id, 'public')} 
+                                        disabled={!isEditMode}
                                     />
                                     <Label htmlFor={`public_don_${opt.id}`} className="cursor-pointer font-normal">{opt.name}</Label>
                                 </div>
@@ -110,7 +147,7 @@ export default function DonationSettingsPage() {
                         </div>
                     </div>
                     <div className="space-y-4">
-                        <h3 className="font-bold text-primary text-xs tracking-widest">Member summary visibility</h3>
+                        <h3 className="font-bold text-primary text-xs tracking-widest uppercase">Member view</h3>
                         <div className="space-y-3">
                             {VISIBILITY_OPTIONS.map(opt => (
                                 <div key={`member_don_${opt.id}`} className="flex items-center space-x-2">
@@ -118,6 +155,7 @@ export default function DonationSettingsPage() {
                                         id={`member_don_${opt.id}`} 
                                         checked={localVis[`member_${opt.id}`] !== false} 
                                         onCheckedChange={() => handleVisToggle(opt.id, 'member')} 
+                                        disabled={!isEditMode}
                                     />
                                     <Label htmlFor={`member_don_${opt.id}`} className="cursor-pointer font-normal">{opt.name}</Label>
                                 </div>
@@ -128,10 +166,10 @@ export default function DonationSettingsPage() {
             </CardContent>
         </Card>
 
-        <Card className="animate-fade-in-up border-primary/20">
+        <Card className="animate-fade-in-up border-primary/10">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-bold text-primary">
-                    <CheckSquare className="h-5 w-5" /> Mandatory fields setup
+                    <CheckSquare className="h-5 w-5" /> Mandatory fields
                 </CardTitle>
                 <CardDescription className="font-normal">
                     Define which information must be captured for every donation.
@@ -145,18 +183,13 @@ export default function DonationSettingsPage() {
                                 id={`mandatory_don_${field.id}`} 
                                 checked={localMandatory[field.id] === true} 
                                 onCheckedChange={() => handleMandatoryToggle(field.id)} 
+                                disabled={!isEditMode}
                             />
                             <Label htmlFor={`mandatory_don_${field.id}`} className="cursor-pointer font-normal">{field.name}</Label>
                         </div>
                     ))}
                 </div>
             </CardContent>
-            <CardFooter className="justify-end border-t border-primary/10 p-4">
-                <Button onClick={handleSave} disabled={isSaving} className="font-bold text-white bg-primary hover:bg-primary/90">
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                    Save settings
-                </Button>
-            </CardFooter>
         </Card>
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
@@ -12,7 +12,7 @@ import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2 } from 'lucide-react';
+import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -56,7 +56,7 @@ export default function AppSettingsPage() {
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [qrCodeFile, setQrCodeFile] = useState<File | null>(null);
     
-    const canUpdateSettings = userProfile?.role === 'Admin' || !!userProfile?.permissions?.settings?.update;
+    const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.update', false) || !!getNestedValue(userProfile, 'permissions.settings.app.update', false);
 
     const handleFieldChange = useCallback((field: keyof FormDataType, value: string | number) => {
         setEditableData(prev => prev ? { ...prev, [field]: value } : null);
@@ -146,7 +146,7 @@ export default function AppSettingsPage() {
                 const filePath = 'settings/branding/logo.png';
                 const fileRef = storageRef(storage, filePath);
                 const uploadResult = await uploadBytes(fileRef, resizedBlob);
-                newLogoUrl = await getDownloadURL(uploadResult.ref);
+                newLogoUrl = await getDownloadURL(fileRef);
             }
             
             const brandingData = { 
@@ -165,7 +165,7 @@ export default function AppSettingsPage() {
                 const filePath = 'settings/payment/qr_code.png';
                 const fileRef = storageRef(storage, filePath);
                 const uploadResult = await uploadBytes(fileRef, resizedBlob);
-                newQrCodeUrl = await getDownloadURL(uploadResult.ref);
+                newQrCodeUrl = await getDownloadURL(fileRef);
             }
             const paymentData = {
                 qrCodeUrl: newQrCodeUrl, qrWidth: Number(editableData.qrWidth) || null, qrHeight: Number(editableData.qrHeight) || null,
@@ -198,6 +198,28 @@ export default function AppSettingsPage() {
 
     const isLoading = isSessionLoading || isBrandingLoading || isPaymentLoading;
     const isFormDisabled = !isEditMode || isSubmitting;
+
+    const isDirty = useMemo(() => {
+        if (!isEditMode || !editableData) return false;
+        const initialData: FormDataType = {
+            logoUrl: brandingSettings?.logoUrl || '',
+            logoWidth: brandingSettings?.logoWidth || '',
+            logoHeight: brandingSettings?.logoHeight || '',
+            qrCodeUrl: paymentSettings?.qrCodeUrl || '',
+            qrWidth: paymentSettings?.qrWidth || '',
+            qrHeight: paymentSettings?.qrHeight || '',
+            upiId: paymentSettings?.upiId || '',
+            paymentMobileNumber: paymentSettings?.paymentMobileNumber || '',
+            contactEmail: paymentSettings?.contactEmail || '',
+            contactPhone: paymentSettings?.contactPhone || '',
+            regNo: paymentSettings?.regNo || '',
+            pan: paymentSettings?.pan || '',
+            address: paymentSettings?.address || '',
+            website: paymentSettings?.website || '',
+            copyright: paymentSettings?.copyright || '',
+        };
+        return JSON.stringify(initialData) !== JSON.stringify(editableData) || !!logoFile || !!qrCodeFile;
+    }, [isEditMode, editableData, brandingSettings, paymentSettings, logoFile, qrCodeFile]);
     
     const renderImagePreview = (previewUrl: string) => {
         const proxiedUrl = previewUrl.startsWith('http') 
@@ -250,29 +272,33 @@ export default function AppSettingsPage() {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">App Settings</h2>
+                <h2 className="text-2xl font-bold text-primary">App Settings</h2>
                 {!isEditMode ? (
-                    <Button onClick={() => setIsEditMode(true)}><Edit className="mr-2 h-4 w-4"/>Edit Settings</Button>
+                    <Button onClick={() => setIsEditMode(true)} className="font-bold">
+                        <Edit className="mr-2 h-4 w-4"/>Edit Settings
+                    </Button>
                 ) : (
                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleCancel} disabled={isSubmitting}>Cancel</Button>
-                        <Button onClick={handleSave} disabled={isSubmitting}>
-                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary">
+                            <X className="mr-2 h-4 w-4" /> Cancel
+                        </Button>
+                        <Button onClick={handleSave} disabled={isSubmitting || !isDirty} className="font-bold">
+                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                             Save All
                         </Button>
                     </div>
                 )}
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-                <Card className="animate-fade-in-up">
+                <Card className="animate-fade-in-up border-primary/10">
                     <CardHeader>
-                        <CardTitle>Branding Settings</CardTitle>
-                        <CardDescription>Manage the application logo and watermark.</CardDescription>
+                        <CardTitle className="font-bold text-primary">Branding Settings</CardTitle>
+                        <CardDescription className="font-normal">Manage the application logo and watermark.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
-                            <h3 className="text-lg font-medium">Application Logo</h3>
-                            <p className="text-sm text-muted-foreground">
+                            <h3 className="text-lg font-bold text-primary">Application Logo</h3>
+                            <p className="text-sm text-muted-foreground font-normal">
                                 Upload a logo to be displayed in the header and as a watermark.
                             </p>
                         </div>
@@ -283,7 +309,7 @@ export default function AppSettingsPage() {
                                     {logoDisplayUrl ? (
                                         renderImagePreview(logoDisplayUrl)
                                     ) : (
-                                        <div className="text-muted-foreground text-center p-2">
+                                        <div className="text-muted-foreground text-center p-2 font-normal">
                                             <ImageIcon className="mx-auto h-8 w-8" />
                                             <p className="text-xs mt-1">No logo uploaded</p>
                                         </div>
@@ -291,23 +317,23 @@ export default function AppSettingsPage() {
                                 </div>
                                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <Label htmlFor="logoWidth">Width (px)</Label>
-                                        <Input id="logoWidth" type="number" placeholder="e.g., 48" value={displayData.logoWidth || ''} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} />
+                                        <Label htmlFor="logoWidth" className="font-bold text-xs uppercase text-muted-foreground">Width (px)</Label>
+                                        <Input id="logoWidth" type="number" placeholder="e.g., 48" value={displayData.logoWidth || ''} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} className="font-bold"/>
                                     </div>
                                     <div className="space-y-1">
-                                        <Label htmlFor="logoHeight">Height (px)</Label>
-                                        <Input id="logoHeight" type="number" placeholder="e.g., 48" value={displayData.logoHeight || ''} onChange={(e) => handleFieldChange('logoHeight', e.target.value)} disabled={isFormDisabled} />
+                                        <Label htmlFor="logoHeight" className="font-bold text-xs uppercase text-muted-foreground">Height (px)</Label>
+                                        <Input id="logoHeight" type="number" placeholder="e.g., 48" value={displayData.logoHeight || ''} onChange={(e) => handleFieldChange('logoHeight', e.target.value)} disabled={isFormDisabled} className="font-bold"/>
                                     </div>
                                 </div>
                             </div>
                             {isEditMode && (
                                 <div className="space-y-2">
-                                    <label htmlFor="logo-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 w-full cursor-pointer">
+                                    <label htmlFor="logo-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 w-full cursor-pointer">
                                         <UploadCloud className="mr-2 h-4 w-4" /> Change Logo
                                     </label>
                                     <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
                                     {editableData?.logoUrl && (
-                                        <Button type="button" variant="destructive" size="sm" className="w-full" onClick={handleRemoveLogo} disabled={isSubmitting}>
+                                        <Button type="button" variant="destructive" size="sm" className="w-full font-bold" onClick={handleRemoveLogo} disabled={isSubmitting}>
                                             <Trash2 className="mr-2 h-4 w-4" /> Remove Logo
                                         </Button>
                                     )}
@@ -317,36 +343,36 @@ export default function AppSettingsPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="animate-fade-in-up">
+                <Card className="animate-fade-in-up border-primary/10">
                     <CardHeader>
-                        <CardTitle>Contact & Payment</CardTitle>
-                        <CardDescription>Configure organizational and payment details.</CardDescription>
+                        <CardTitle className="font-bold text-primary">Contact & Payment</CardTitle>
+                        <CardDescription className="font-normal">Configure organizational and payment details.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                          <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="regNo">Registration No.</Label>
-                                <Input id="regNo" value={displayData.regNo || ''} onChange={(e) => handleFieldChange('regNo', e.target.value)} placeholder="e.g. Solapur/0000373/2025" disabled={isFormDisabled} />
+                                <Label htmlFor="regNo" className="font-bold text-xs uppercase text-muted-foreground">Registration No.</Label>
+                                <Input id="regNo" value={displayData.regNo || ''} onChange={(e) => handleFieldChange('regNo', e.target.value)} placeholder="e.g. Solapur/0000373/2025" disabled={isFormDisabled} className="font-bold" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="pan">PAN</Label>
-                                <Input id="pan" value={displayData.pan || ''} onChange={(e) => handleFieldChange('pan', e.target.value)} placeholder="e.g. AAPAB1213J" disabled={isFormDisabled} />
+                                <Label htmlFor="pan" className="font-bold text-xs uppercase text-muted-foreground">PAN</Label>
+                                <Input id="pan" value={displayData.pan || ''} onChange={(e) => handleFieldChange('pan', e.target.value)} placeholder="e.g. AAPAB1213J" disabled={isFormDisabled} className="font-bold" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="address">Address</Label>
-                                <Textarea id="address" value={displayData.address || ''} onChange={(e) => handleFieldChange('address', e.target.value)} placeholder="Full address" disabled={isFormDisabled} />
+                                <Label htmlFor="address" className="font-bold text-xs uppercase text-muted-foreground">Address</Label>
+                                <Textarea id="address" value={displayData.address || ''} onChange={(e) => handleFieldChange('address', e.target.value)} placeholder="Full address" disabled={isFormDisabled} className="font-normal" />
                             </div>
                         </div>
                         <Separator />
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label>UPI QR Code</Label>
+                                <Label className="font-bold text-xs uppercase text-muted-foreground">UPI QR Code</Label>
                                  <div className="flex flex-col items-center gap-4">
                                     <div className="relative w-48 h-48 border-2 border-dashed rounded-lg flex items-center justify-center bg-secondary/30">
                                         {qrDisplayUrl ? (
                                             renderImagePreview(qrDisplayUrl)
                                         ) : (
-                                            <div className="text-muted-foreground text-center p-2">
+                                            <div className="text-muted-foreground text-center p-2 font-normal">
                                                 <QrCode className="mx-auto h-8 w-8" />
                                                 <p className="text-xs mt-1">No QR code uploaded</p>
                                             </div>
@@ -354,12 +380,12 @@ export default function AppSettingsPage() {
                                     </div>
                                      {isEditMode && (
                                         <div className="space-y-2 w-full text-center">
-                                            <label htmlFor="qr-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 w-full cursor-pointer">
+                                            <label htmlFor="qr-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 w-full cursor-pointer">
                                                 <UploadCloud className="mr-2 h-4 w-4" /> Change QR Code
                                             </label>
                                             <Input id="qr-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setQrCodeFile(e.target.files[0])} />
                                             {editableData?.qrCodeUrl && (
-                                                <Button type="button" variant="destructive" size="sm" className="w-full" onClick={handleRemoveQrCode} disabled={isSubmitting}>
+                                                <Button type="button" variant="destructive" size="sm" className="w-full font-bold" onClick={handleRemoveQrCode} disabled={isSubmitting}>
                                                     <Trash2 className="mr-2 h-4 w-4" /> Remove QR
                                                 </Button>
                                             )}
@@ -369,16 +395,16 @@ export default function AppSettingsPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="upiId">UPI ID</Label>
-                                <Input id="upiId" value={displayData.upiId || ''} onChange={(e) => handleFieldChange('upiId', e.target.value)} placeholder="e.g. 1234567890@upi" disabled={isFormDisabled} />
+                                <Label htmlFor="upiId" className="font-bold text-xs uppercase text-muted-foreground">UPI ID</Label>
+                                <Input id="upiId" value={displayData.upiId || ''} onChange={(e) => handleFieldChange('upiId', e.target.value)} placeholder="e.g. 1234567890@upi" disabled={isFormDisabled} className="font-bold" />
                             </div>
                              <div className="space-y-2">
-                                <Label htmlFor="contactEmail">Contact Email</Label>
-                                <Input id="contactEmail" value={displayData.contactEmail || ''} onChange={(e) => handleFieldChange('contactEmail', e.target.value)} placeholder="e.g. contact@example.com" disabled={isFormDisabled} />
+                                <Label htmlFor="contactEmail" className="font-bold text-xs uppercase text-muted-foreground">Contact Email</Label>
+                                <Input id="contactEmail" value={displayData.contactEmail || ''} onChange={(e) => handleFieldChange('contactEmail', e.target.value)} placeholder="e.g. contact@example.com" disabled={isFormDisabled} className="font-bold" />
                             </div>
                              <div className="space-y-2">
-                                <Label htmlFor="contactPhone">Contact Phone</Label>
-                                <Input id="contactPhone" value={displayData.contactPhone || ''} onChange={(e) => handleFieldChange('contactPhone', e.target.value)} placeholder="e.g. 9876543210" disabled={isFormDisabled} />
+                                <Label htmlFor="contactPhone" className="font-bold text-xs uppercase text-muted-foreground">Contact Phone</Label>
+                                <Input id="contactPhone" value={displayData.contactPhone || ''} onChange={(e) => handleFieldChange('contactPhone', e.target.value)} placeholder="e.g. 9876543210" disabled={isFormDisabled} className="font-bold" />
                             </div>
                         </div>
                     </CardContent>
@@ -386,4 +412,15 @@ export default function AppSettingsPage() {
             </div>
         </div>
     );
+}
+
+function getNestedValue(obj: any, path: string, defaultValue: any = undefined) {
+    if (typeof path !== 'string') return defaultValue;
+    const keys = path.split('.');
+    let result = obj;
+    for (const key of keys) {
+        result = result?.[key];
+        if (result === undefined) return defaultValue;
+    }
+    return result;
 }
