@@ -38,8 +38,8 @@
     --info: 217.2 91.2% 59.8%;
     --info-foreground: 0 0% 100%;
     
-    --border: 160 70% 40%;
-    --input: 160 70% 40%;
+    --border: 160 10% 85%; /* Light gray border */
+    --input: 160 10% 85%;
     --ring: 160 70% 40%;
     
     --radius: 0.75rem;
