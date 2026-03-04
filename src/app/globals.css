@@ -95,6 +95,34 @@
   }
 
   /* --- Theme Presets (Light Base) --- */
+  .bmss-brand-warm {
+    --background: 45 60% 98%;
+    --foreground: 142.1 25% 15%;
+    --card: 45 60% 98%;
+    --card-foreground: 142.1 25% 15%;
+    --popover: 45 60% 98%;
+    --popover-foreground: 142.1 25% 15%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 45 60% 98%;
+    --secondary: 45 60% 94%;
+    --secondary-foreground: 142.1 25% 15%;
+    --muted: 45 30% 90%;
+    --muted-foreground: 142.1 25% 45%;
+    --accent: 47.9 95.8% 53.1%;
+    --accent-foreground: 45 60% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38.8 92.3% 50.2%;
+    --warning-foreground: 0 0% 100%;
+    --info: 217.2 91.2% 59.8%;
+    --info-foreground: 0 0% 100%;
+    --border: 45 30% 85%;
+    --input: 45 30% 85%;
+    --ring: 142.1 76.2% 36.3%;
+  }
+
   .bmss-brand-1, .bmss-brand-2, .ocean-blue, .sunset-orange, .royal-purple, 
   .forest-amber, .ocean-breeze, .lavender-mint, .sunrise-peach, 
   .classic-crimson, .professional-slate, .earthy-tones {

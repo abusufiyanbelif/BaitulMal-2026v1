@@ -6,6 +6,7 @@ export interface ThemeSuggestion {
 
 export const THEME_SUGGESTIONS: ThemeSuggestion[] = [
   { id: 'light', name: 'BMSS Brand (Default)', isDark: false },
+  { id: 'bmss-brand-warm', name: 'BMSS Brand (Warm)', isDark: false },
   { id: 'bmss-brand-1', name: 'BMSS Brand 1', isDark: false },
   { id: 'bmss-brand-2', name: 'BMSS Brand 2', isDark: false },
   { id: 'ocean-blue', name: 'Ocean Blue', isDark: false },
