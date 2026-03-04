@@ -44,7 +44,7 @@ export default function SettingsLayout({
       
       <Tabs value={getActiveTab()} onValueChange={handleTabChange} className="w-full">
         <ScrollArea className="w-full">
-            <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 h-auto w-full bg-transparent p-0">
+            <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2 h-auto w-full bg-transparent p-0">
                 {settingsSubModules.map(subModule => {
                     const canReadSubModule = userProfile?.role === 'Admin' || getNestedValue(userProfile, `permissions.settings.${subModule.id}.read`, false);
                     if (!canReadSubModule) return null;
@@ -54,7 +54,7 @@ export default function SettingsLayout({
                             key={subModule.id} 
                             value={subModule.id} 
                             asChild
-                            className="h-12 data-[state=active]:bg-primary data-[state=active]:text-white border border-primary/10 shadow-sm font-bold"
+                            className="h-12 data-[state=active]:bg-primary data-[state=active]:text-white border border-primary/10 shadow-sm font-bold tracking-tight"
                         >
                              <Link href={`/settings/${subModule.id}`}>{subModule.name}</Link>
                         </TabsTrigger>

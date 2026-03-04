@@ -1,8 +1,8 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { Copy, Smartphone, QrCode, Mail, Phone, Download, Globe, Users, Info, ShieldCheck, MapPin } from 'lucide-react';
+import { Mail, Phone, MapPin, Info, ShieldCheck, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -10,7 +10,7 @@ import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useBranding } from '@/hooks/use-branding';
 import { useInfoSettings } from '@/hooks/use-info-settings';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import Link from 'next/link';
 
 export function AppFooter() {
@@ -23,35 +23,8 @@ export function AppFooter() {
 
   const isLoading = isPaymentLoading || isBrandingLoading || isInfoSettingsLoading;
 
-  const copyToClipboard = (text: string, type: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      toast({ title: `${type} copied!`, description: text, duration: 3000 });
-    });
-  };
-  
   const validQrCodeUrl = paymentSettings?.qrCodeUrl?.trim() ? paymentSettings.qrCodeUrl : null;
   const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
-  
-  const handleDownloadQr = async () => {
-    if (!validQrCodeUrl) return;
-    toast({ title: "Preparing download...", description: "Your QR code image is being prepared." });
-    try {
-        const response = await fetch(`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`);
-        if (!response.ok) throw new Error('Failed to fetch QR code');
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'payment-qr-code.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        toast({ title: "QR code downloading...", description: "Your QR code image has started downloading.", variant: "success" });
-    } catch (error: any) {
-        toast({ title: "Download failed", description: "Could not download the QR code image.", variant: "destructive" });
-    }
-  };
   
   const hasPaymentInfo = paymentSettings?.upiId || paymentSettings?.paymentMobileNumber || validQrCodeUrl;
   const hasContactInfo = paymentSettings?.contactEmail || paymentSettings?.contactPhone || paymentSettings?.website;
@@ -88,139 +61,99 @@ export function AppFooter() {
                 </div>
                 
                 <div className="space-y-1 text-[11px] text-muted-foreground font-normal">
-                    {isLoading ? <Skeleton className="h-4 w-full" /> : paymentSettings?.address && (
+                    {paymentSettings?.address && (
                         <div className="flex items-start justify-center md:justify-start gap-2">
-                            <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
-                            <p>{paymentSettings.address}</p>
+                            <MapPin className="h-3 w-3 shrink-0 mt-0.5" />
+                            <span>{paymentSettings.address}</span>
                         </div>
                     )}
-                    {isLoading ? <Skeleton className="h-4 w-3/4" /> : paymentSettings?.regNo && <p>Reg. no.: {paymentSettings.regNo}</p>}
-                    {isLoading ? <Skeleton className="h-4 w-1/2" /> : paymentSettings?.pan && <p>PAN: {paymentSettings.pan}</p>}
-                </div>
-
-                <div className="space-y-2 w-full pt-2">
-                    {isLoading ? <Skeleton className="h-4 w-4/5" /> : paymentSettings?.contactEmail && (
-                        <div className="flex items-center justify-center md:justify-start gap-2 text-[11px] font-normal text-primary hover:text-primary/80 transition-colors">
-                            <Mail className="h-4 w-4" />
-                            <span className="break-all">{paymentSettings.contactEmail}</span>
-                        </div>
-                    )}
-                    {isLoading ? <Skeleton className="h-4 w-3/5" /> : paymentSettings?.contactPhone && (
-                        <div className="flex items-center justify-center md:justify-start gap-2 text-[11px] font-normal text-primary hover:text-primary/80 transition-colors">
-                            <Phone className="h-4 w-4" />
-                            <span>{paymentSettings.contactPhone}</span>
-                        </div>
-                    )}
-                    {isLoading ? <Skeleton className="h-4 w-4/5" /> : paymentSettings?.website && (
-                        <div className="flex items-center justify-center md:justify-start gap-2 text-[11px] font-normal text-primary hover:text-primary/80 transition-colors">
-                            <Globe className="h-4 w-4" />
-                            <a href={paymentSettings.website} target="_blank" rel="noopener noreferrer" className="hover:underline break-all">{paymentSettings.website}</a>
-                        </div>
-                    )}
-                </div>
-
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-2 pt-2">
-                    <div className="flex items-center gap-2 text-xs font-bold text-primary hover:opacity-80 transition-opacity">
-                        <Users className="h-3 w-3" />
-                        <Link href="/info/organization" className="hover:underline tracking-tight">About organization</Link>
-                    </div>
-                    {!isLoading && infoSettings?.isDonationInfoPublic && (
-                        <div className="flex items-center gap-2 text-xs font-bold text-primary hover:opacity-80 transition-opacity">
-                            <Info className="h-3 w-3" />
-                            <Link href="/info/donation-info" className="hover:underline tracking-tight">Donation types</Link>
-                        </div>
-                    )}
-                    {!isLoading && infoSettings?.isGuidingPrinciplesPublic && (
-                        <div className="flex items-center gap-2 text-xs font-bold text-primary hover:opacity-80 transition-opacity">
+                    {paymentSettings?.regNo && (
+                        <div className="flex items-center justify-center md:justify-start gap-2">
                             <ShieldCheck className="h-3 w-3" />
-                            <Link href="/info/guiding-principles" className="hover:underline tracking-tight">Guiding principles</Link>
+                            <span>Reg. no.: {paymentSettings.regNo}</span>
+                        </div>
+                    )}
+                    {paymentSettings?.pan && (
+                        <div className="flex items-center justify-center md:justify-start gap-2">
+                            <Info className="h-3 w-3" />
+                            <span>PAN: {paymentSettings.pan}</span>
                         </div>
                     )}
                 </div>
             </div>
 
-            <div className="flex flex-col items-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                <h3 className="font-headline font-bold text-primary uppercase tracking-wider text-sm">For donations</h3>
-                <div className="space-y-3 w-full max-w-[280px]">
-                    {isLoading ? <Skeleton className="h-10 w-full" /> : paymentSettings?.upiId && (
-                        <div className="flex items-center justify-between gap-2 p-2 rounded-lg border border-primary/10 bg-primary/5 hover:bg-primary/10 transition-colors group">
-                            <div className="flex items-center gap-2 min-w-0">
-                                <QrCode className="h-4 w-4 text-primary shrink-0" />
-                                <a href={`upi://pay?pa=${paymentSettings.upiId}&pn=${encodeURIComponent(brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur')}&cu=INR`} className="font-mono text-sm text-primary truncate hover:underline">
-                                    {paymentSettings.upiId}
-                                </a>
-                            </div>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/20 shrink-0" onClick={() => copyToClipboard(paymentSettings!.upiId!, 'UPI ID')}>
-                                <Copy className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    )}
-                    {isLoading ? <Skeleton className="h-10 w-full" /> : paymentSettings?.paymentMobileNumber && (
-                        <div className="flex items-center justify-between gap-2 p-2 rounded-lg border border-primary/10 bg-primary/5 hover:bg-primary/10 transition-colors group">
-                            <div className="flex items-center gap-2 min-w-0">
-                                <Smartphone className="h-4 w-4 text-primary shrink-0" />
-                                <a href={`tel:${paymentSettings.paymentMobileNumber}`} className="font-mono text-sm text-primary truncate hover:underline">
-                                    {paymentSettings.paymentMobileNumber}
-                                </a>
-                            </div>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/20 shrink-0" onClick={() => copyToClipboard(paymentSettings!.paymentMobileNumber!, 'Phone number')}>
-                                <Copy className="h-4 w-4" />
-                            </Button>
-                        </div>
+            <div className="flex flex-col items-center text-center md:items-start md:text-left gap-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                <h4 className="text-xs font-bold text-primary tracking-widest">Quick links</h4>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-[11px] font-bold">
+                    <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+                    <Link href="/campaign-public" className="hover:text-primary transition-colors">Campaigns</Link>
+                    <Link href="/leads-public" className="hover:text-primary transition-colors">Leads</Link>
+                    <Link href="/info/organization" className="hover:text-primary transition-colors">About organization</Link>
+                    {infoSettings?.isDonationInfoPublic && (
+                        <Link href="/info/donation-info" className="hover:text-primary transition-colors">Donation info</Link>
                     )}
                 </div>
             </div>
 
-            <div className="flex justify-center md:justify-end animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            {isLoading ? (
-                <Skeleton className="h-32 w-32 rounded-xl" />
-            ) : (
-                validQrCodeUrl && (
-                    <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
-                        <DialogTrigger asChild>
-                            <button className="relative group cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-xl p-1 bg-white border-2 border-primary/20">
-                                <Image
-                                    src={`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`}
-                                    alt="Payment QR"
-                                    width={paymentSettings?.qrWidth || 120}
-                                    height={paymentSettings?.qrHeight || 120}
-                                    className="object-contain"
-                                />
-                            </button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-md font-body">
-                            <DialogHeader>
-                                <DialogTitle className="font-headline font-bold text-primary">Scan to donate</DialogTitle>
-                                <DialogDescription className="font-normal text-primary/70">
-                                    Use any UPI application to scan this code and contribute to our active initiatives.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div className="flex items-center justify-center p-6 bg-secondary/30 rounded-xl border border-primary/10">
-                                <div className="relative bg-white p-4 rounded-lg shadow-sm border-4 border-primary">
-                                    <Image src={`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`} alt="UPI QR code" className="w-full max-w-[240px] h-auto" width={300} height={300} unoptimized />
-                                </div>
+            <div className="flex flex-col items-center text-center md:items-start md:text-left gap-4 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                <h4 className="text-xs font-bold text-primary tracking-widest">Contact & help</h4>
+                <div className="space-y-3 w-full">
+                    {paymentSettings?.contactEmail && (
+                        <div className="flex items-center justify-center md:justify-start gap-3">
+                            <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+                                <Mail className="h-3.5 w-3.5" />
                             </div>
-                            <DialogFooter>
-                                <Button onClick={handleDownloadQr} className="w-full font-bold transition-all active:scale-95">
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Download QR code
-                                </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-                )
-            )}
+                            <a href={`mailto:${paymentSettings.contactEmail}`} className="text-[11px] font-normal hover:underline">{paymentSettings.contactEmail}</a>
+                        </div>
+                    )}
+                    {paymentSettings?.contactPhone && (
+                        <div className="flex items-center justify-center md:justify-start gap-3">
+                            <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+                                <Phone className="h-3.5 w-3.5" />
+                            </div>
+                            <a href={`tel:${paymentSettings.contactPhone}`} className="text-[11px] font-normal hover:underline">{paymentSettings.contactPhone}</a>
+                        </div>
+                    )}
+                    {validQrCodeUrl && (
+                        <Button variant="outline" size="sm" onClick={() => setIsQrDialogOpen(true)} className="h-8 text-[10px] font-bold border-primary/20 text-primary hover:bg-primary/5 transition-transform active:scale-95">
+                            <QrCode className="mr-2 h-3.5 w-3.5" />
+                            View payment QR
+                        </Button>
+                    )}
+                </div>
             </div>
         </div>
-        
-        <Separator className="my-6 bg-primary/10" />
-        
-        <div className="text-center font-body animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            <p className="text-[11px] font-normal text-primary opacity-80">
-                {paymentSettings?.copyright || "© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved."}
-            </p>
+
+        <Separator className="my-8 opacity-10 bg-primary" />
+
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] text-muted-foreground font-normal">
+            <p>{paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'}. All rights reserved.`}</p>
+            <p className="font-mono opacity-50 truncate max-w-xs">{typeof window !== 'undefined' ? window.location.origin : ''}</p>
         </div>
       </div>
+
+      <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle className="font-bold text-primary">Secure donation QR</DialogTitle>
+                <DialogDescription className="font-normal text-primary/70">Scan with any UPI app to contribute.</DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col items-center justify-center p-6 bg-secondary/20 rounded-xl border border-primary/10">
+                {validQrCodeUrl && (
+                    <div className="relative w-64 h-64 bg-white p-4 rounded-lg shadow-lg border-2 border-primary">
+                        <Image src={`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`} alt="Payment QR" fill className="object-contain" unoptimized />
+                    </div>
+                )}
+                <div className="mt-6 text-center space-y-1">
+                    <p className="text-lg font-mono font-bold text-primary">{paymentSettings?.upiId}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Baitulmal Samajik Sanstha</p>
+                </div>
+            </div>
+            <DialogFooter>
+                <Button onClick={() => setIsQrDialogOpen(false)} className="font-bold">Close</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </footer>
   );
 }

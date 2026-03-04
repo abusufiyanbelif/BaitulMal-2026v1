@@ -271,7 +271,7 @@ export default function InfoSettingsPage() {
             let finalImageUrl = rest.imageUrl || '';
             if (imageFile && imageFile.length > 0) {
                 const file = imageFile[0];
-                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 800, 600, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
+                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
                 const filePath = `settings/info/donation_types/${typeToSave.id}.png`;
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
@@ -329,7 +329,7 @@ export default function InfoSettingsPage() {
                                 />
                             </div>
                             <Button size="sm" variant="outline" onClick={handleSaveVisibility} disabled={isSubmitting || localDonationVisible === !!infoSettings?.isDonationInfoPublic} className="font-bold border-primary/20">
-                                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin"/> : <Save className="h-4 w-4 mr-2"/>}
+                                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                                 Save visibility
                             </Button>
                         </div>

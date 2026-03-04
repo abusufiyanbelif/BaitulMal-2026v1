@@ -66,7 +66,7 @@
   }
 }
 
-/* Specific Theme Class Registry - High Specificity Scoping */
+/* Theme Registry - Specificity Overrides */
 .bmss-brand-warm {
   --background: 45 60% 98%;
   --foreground: 142.1 25% 15%;
