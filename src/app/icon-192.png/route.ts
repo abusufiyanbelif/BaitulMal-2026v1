@@ -15,14 +15,21 @@ export function GET() {
           width: '100%',
           height: '100%',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
-          borderRadius: '24px',
-          fontWeight: 'bold',
+          borderRadius: '20%',
+          fontWeight: '900',
         }
       },
-      'BMS3'
+      React.createElement('div', {
+          style: {
+              border: '6px solid rgba(255,255,255,0.2)',
+              padding: '15px 30px',
+              borderRadius: '20px',
+          }
+      }, 'BMS3')
     ),
     {
       width: 192,

@@ -15,13 +15,22 @@ export default function Icon() {
           width: '100%',
           height: '100%',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
-          fontWeight: 'bold',
+          fontWeight: '900',
+          borderRadius: '22%',
         }}
       >
-        BMS3
+        <div style={{ 
+            display: 'flex', 
+            border: '4px solid rgba(255,255,255,0.2)', 
+            padding: '10px 20px',
+            borderRadius: '15px'
+        }}>
+            BMS3
+        </div>
       </div>
     ),
     {
