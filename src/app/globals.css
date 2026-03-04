@@ -4,171 +4,139 @@
 
 @layer base {
   :root, .light {
-    --background: 0 0% 100%;
-    --foreground: 150 40% 10%;
-    --card: 0 0% 100%;
-    --card-foreground: 150 40% 10%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 150 40% 10%;
-    --primary: 160 70% 40%; 
-    --primary-foreground: 0 0% 100%;
-    --secondary: 160 70% 95%;
-    --secondary-foreground: 160 70% 20%;
-    --muted: 160 10% 90%;
-    --muted-foreground: 160 10% 40%;
-    --accent: 38.8 92.3% 50.2%; 
+    /* Precise BMSS Brand Spec */
+    --background: 45 60% 98%;
+    --foreground: 142.1 25% 15%;
+    --card: 45 60% 99%;
+    --card-foreground: 142.1 25% 15%;
+    --popover: 45 60% 99%;
+    --popover-foreground: 142.1 25% 15%;
+    --primary: 142.1 76.2% 36.3%; 
+    --primary-foreground: 45 60% 98%;
+    --secondary: 142.1 76.2% 95%;
+    --secondary-foreground: 142.1 76.2% 20%;
+    --muted: 142.1 10% 90%;
+    --muted-foreground: 142.1 15% 40%;
+    --accent: 47.9 95.8% 53.1%; 
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    --success: 142.1 70.6% 45.3%;
+    --success: 142.1 76.2% 36.3%;
     --success-foreground: 0 0% 100%;
-    --border: 160 10% 85%;
-    --input: 160 10% 85%;
-    --ring: 160 70% 40%;
+    --warning: 38.8 92.3% 50.2%;
+    --warning-foreground: 0 0% 100%;
+    --info: 217.2 91.2% 59.8%;
+    --info-foreground: 0 0% 100%;
+    --border: 142.1 20% 85%;
+    --input: 142.1 20% 85%;
+    --ring: 142.1 76.2% 36.3%;
     --radius: 0.75rem;
-    --chart-1: 160 70% 40%;
-    --chart-2: 142 76% 36%;
-    --chart-3: 221 83% 53%;
-    --chart-4: 25 95% 53%;
+    --chart-1: 142.1 76.2% 36.3%;
+    --chart-2: 47.9 95.8% 53.1%;
+    --chart-3: 217.2 91.2% 59.8%;
+    --chart-4: 38.8 92.3% 50.2%;
     --chart-5: 262 83% 58%;
   }
 
   .dark {
-    --background: 150 40% 5%;
-    --foreground: 160 10% 95%;
-    --card: 150 40% 7%;
-    --card-foreground: 160 10% 95%;
-    --popover: 150 40% 7%;
-    --popover-foreground: 160 10% 95%;
-    --primary: 160 70% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 160 30% 15%;
-    --secondary-foreground: 160 10% 95%;
-    --muted: 160 20% 12%;
-    --muted-foreground: 160 10% 60%;
-    --accent: 38.8 92.3% 55%;
+    --background: 142.1 25% 5%;
+    --foreground: 45 10% 95%;
+    --card: 142.1 25% 7%;
+    --card-foreground: 45 10% 95%;
+    --popover: 142.1 25% 7%;
+    --popover-foreground: 45 10% 95%;
+    --primary: 142.1 76.2% 45%;
+    --primary-foreground: 142.1 25% 5%;
+    --secondary: 142.1 30% 15%;
+    --secondary-foreground: 45 10% 95%;
+    --muted: 142.1 20% 12%;
+    --muted-foreground: 142.1 10% 60%;
+    --accent: 47.9 95.8% 55%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 160 10% 95%;
-    --border: 160 20% 20%;
-    --input: 160 20% 20%;
-    --ring: 160 70% 45%;
+    --destructive-foreground: 45 10% 95%;
+    --border: 142.1 20% 20%;
+    --input: 142.1 20% 20%;
+    --ring: 142.1 76.2% 45%;
   }
 }
 
-/* Theme Definitions - Scoped for High Priority */
+/* Specific Theme Class Registry */
 .bmss-brand-warm {
   --background: 45 60% 98%;
-  --foreground: 142 76% 15%;
-  --card: 45 60% 99%;
-  --card-foreground: 142 76% 15%;
-  --popover: 45 60% 99%;
-  --popover-foreground: 142 76% 15%;
-  --primary: 142 76% 25%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 142 76% 92%;
-  --secondary-foreground: 142 76% 15%;
-  --muted: 45 20% 90%;
-  --muted-foreground: 142 10% 40%;
-  --accent: 38 92% 50%;
-  --accent-foreground: 0 0% 100%;
-  --border: 142 20% 80%;
-  --input: 142 20% 80%;
-  --ring: 142 76% 25%;
+  --foreground: 142.1 25% 15%;
+  --primary: 142.1 76.2% 36.3%;
+  --accent: 47.9 95.8% 53.1%;
+  --secondary: 142.1 76.2% 95%;
+  --border: 142.1 20% 85%;
 }
 
 .ocean-blue {
   --background: 221 83% 98%;
   --foreground: 221 83% 15%;
   --primary: 221 83% 53%;
-  --primary-foreground: 0 0% 100%;
   --secondary: 221 83% 92%;
   --accent: 191 91% 42%;
-  --ring: 221 83% 53%;
 }
 
 .sunset-orange {
   --background: 25 95% 98%;
   --foreground: 25 95% 15%;
   --primary: 25 95% 53%;
-  --primary-foreground: 0 0% 100%;
   --secondary: 25 95% 92%;
   --accent: 45 93% 47%;
-  --ring: 25 95% 53%;
 }
 
 .sunrise-peach {
   --background: 12 100% 98%;
   --foreground: 12 100% 15%;
   --primary: 12 100% 63%;
-  --primary-foreground: 0 0% 100%;
   --secondary: 12 100% 92%;
   --accent: 45 93% 47%;
-  --ring: 12 100% 63%;
 }
 
 .lavender-mint {
   --background: 262 70% 98%;
   --foreground: 262 70% 15%;
   --primary: 262 70% 60%;
-  --primary-foreground: 0 0% 100%;
   --secondary: 262 70% 95%;
   --accent: 160 70% 40%;
-  --ring: 262 70% 60%;
 }
 
-/* Dark Themes */
 .midnight-ramadan {
   --background: 222 47% 11%;
   --foreground: 210 40% 98%;
-  --card: 222 47% 13%;
-  --card-foreground: 210 40% 98%;
   --primary: 45 93% 47%;
-  --primary-foreground: 222 47% 11%;
   --secondary: 222 47% 20%;
   --accent: 142 70% 45%;
-  --border: 222 47% 25%;
-  --ring: 45 93% 47%;
 }
 
 .midnight-emerald {
   --background: 160 50% 5%;
   --foreground: 160 10% 95%;
-  --card: 160 50% 7%;
   --primary: 160 70% 45%;
   --accent: 38 92% 50%;
-  --border: 160 20% 15%;
-  --ring: 160 70% 45%;
 }
 
 .cyberpunk-neon {
   --background: 280 50% 5%;
   --foreground: 180 100% 50%;
-  --card: 280 50% 7%;
   --primary: 320 100% 50%;
   --accent: 180 100% 50%;
-  --border: 280 50% 20%;
-  --ring: 320 100% 50%;
 }
 
 .dracula-orchid {
   --background: 231 15% 18%;
   --foreground: 60 30% 96%;
-  --card: 231 15% 20%;
   --primary: 265 89% 78%;
   --accent: 320 100% 50%;
-  --border: 231 15% 25%;
-  --ring: 265 89% 78%;
 }
 
 .github-dark {
   --background: 220 40% 8%;
   --foreground: 210 20% 98%;
-  --card: 220 40% 10%;
   --primary: 210 20% 98%;
   --accent: 38 92% 50%;
-  --border: 220 40% 20%;
-  --ring: 210 20% 98%;
 }
 
 @layer base {
