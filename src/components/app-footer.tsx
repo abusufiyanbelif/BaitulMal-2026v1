@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { Copy, Smartphone, QrCode, Mail, Phone, Download, Globe, Users, Info } from 'lucide-react';
+import { Copy, Smartphone, QrCode, Mail, Phone, Download, Globe, Users, Info, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -100,8 +100,8 @@ export function AppFooter() {
               )}
               {isLoading ? <Skeleton className="h-6 w-48" /> : <h3 className="font-bold text-base text-primary">{brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}</h3>}
             </div>
-            {isLoading ? <Skeleton className="h-4 w-full" /> : paymentSettings?.address && <p className="text-xs text-muted-foreground">{paymentSettings.address}</p>}
-            <div className="text-xs text-muted-foreground space-y-1">
+            {isLoading ? <Skeleton className="h-4 w-full" /> : paymentSettings?.address && <p className="text-xs text-muted-foreground font-normal">{paymentSettings.address}</p>}
+            <div className="text-xs text-muted-foreground space-y-1 font-normal">
                     {isLoading ? <Skeleton className="h-4 w-3/4" /> : paymentSettings?.regNo && <p>Reg. No.: {paymentSettings.regNo}</p>}
                     {isLoading ? <Skeleton className="h-4 w-1/2" /> : paymentSettings?.pan && <p>PAN: {paymentSettings.pan}</p>}
                 </div>
@@ -124,23 +124,31 @@ export function AppFooter() {
                 <a href={paymentSettings.website} target="_blank" rel="noopener noreferrer" className="hover:underline break-all">{paymentSettings.website}</a>
                 </div>
             )}
-            {isLoading ? <Skeleton className="h-4 w-3/4" /> : (
-                <div className="flex items-center gap-2 text-xs transition-all hover:text-primary">
-                    <Users className="h-3 w-3" />
-                    <Link href="/info/members" className="hover:underline">Organization Members</Link>
-                </div>
-            )}
-             {isLoading ? <Skeleton className="h-4 w-1/2" /> : (infoSettings?.isDonationInfoPublic &&
-                <div className="flex items-center gap-2 text-xs transition-all hover:text-primary">
-                    <Info className="h-3 w-3" />
-                    <Link href="/info/donation-info" className="hover:underline">Donation Types</Link>
-                </div>
-            )}
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-2 mt-1">
+                {isLoading ? <Skeleton className="h-4 w-3/4" /> : (
+                    <div className="flex items-center gap-2 text-xs transition-all hover:text-primary">
+                        <Users className="h-3 w-3" />
+                        <Link href="/info/members" className="hover:underline">Organization Members</Link>
+                    </div>
+                )}
+                {isLoading ? <Skeleton className="h-4 w-1/2" /> : (infoSettings?.isDonationInfoPublic &&
+                    <div className="flex items-center gap-2 text-xs transition-all hover:text-primary">
+                        <Info className="h-3 w-3" />
+                        <Link href="/info/donation-info" className="hover:underline">Donation Types</Link>
+                    </div>
+                )}
+                {isLoading ? <Skeleton className="h-4 w-1/2" /> : (infoSettings?.isGuidingPrinciplesPublic &&
+                    <div className="flex items-center gap-2 text-xs transition-all hover:text-primary">
+                        <ShieldCheck className="h-3 w-3" />
+                        <Link href="/info/guiding-principles" className="hover:underline">Guiding Principles</Link>
+                    </div>
+                )}
+            </div>
             </div>
 
             {/* Payment Info */}
             <div className="flex flex-col items-center gap-2 transition-transform duration-300 ease-in-out hover:scale-105 animate-slide-in-from-bottom" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
-                {isLoading ? <Skeleton className="h-6 w-1/2" /> : <h3 className="font-semibold text-base text-primary">For Donations</h3>}
+                {isLoading ? <Skeleton className="h-6 w-1/2" /> : <h3 className="font-bold text-base text-primary">For Donations</h3>}
                 {isLoading ? <Skeleton className="h-5 w-4/5" /> : paymentSettings?.upiId && (
                     <div className="flex items-center gap-2 transition-all hover:text-primary">
                     <QrCode className="h-4 w-4" />
@@ -186,7 +194,7 @@ export function AppFooter() {
                         <DialogContent className="sm:max-w-md">
                             <DialogHeader>
                                 <DialogTitle>Scan to Pay</DialogTitle>
-                                <DialogDescription>
+                                <DialogDescription className="font-normal">
                                     Use any UPI app to scan this QR code for your donation.
                                 </DialogDescription>
                             </DialogHeader>
@@ -200,7 +208,7 @@ export function AppFooter() {
                                 />
                             </div>
                             <DialogFooter>
-                                <Button onClick={handleDownloadQr} className="w-full">
+                                <Button onClick={handleDownloadQr} className="w-full font-bold">
                                     <Download className="mr-2 h-4 w-4" />
                                     Download QR Code
                                 </Button>
@@ -212,7 +220,7 @@ export function AppFooter() {
             </div>
         </div>
         <Separator className="my-3" />
-        <div className="text-center text-xs text-muted-foreground">
+        <div className="text-center text-xs text-muted-foreground font-normal">
             {isLoading ? (
                 <Skeleton className="h-4 w-1/2 mx-auto" />
             ) : (

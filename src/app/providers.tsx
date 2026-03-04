@@ -9,6 +9,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { DocuExtractHeader } from '@/components/docu-extract-header';
 import { Watermark } from '@/components/watermark';
 import { cn } from '@/lib/utils';
+import { ThemeProvider } from 'next-themes';
 
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -16,20 +17,21 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <FirebaseClientProvider>
-      <div className="relative min-h-screen">
-        {/* Render watermark here so it persists during AuthProvider state changes */}
-        <Watermark />
-        <AuthProvider>
-            <div className="relative z-10 flex min-h-screen flex-col">
-              <DocuExtractHeader />
-              <main className={cn("flex-1 w-full", isLoginPage && "flex items-center justify-center p-4")}>
-                {children}
-              </main>
-              <AppFooter />
-            </div>
-        </AuthProvider>
-      </div>
-      <Toaster />
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <div className="relative min-h-screen">
+          <Watermark />
+          <AuthProvider>
+              <div className="relative z-10 flex min-h-screen flex-col">
+                <DocuExtractHeader />
+                <main className={cn("flex-1 w-full", isLoginPage && "flex items-center justify-center p-4")}>
+                  {children}
+                </main>
+                <AppFooter />
+              </div>
+          </AuthProvider>
+        </div>
+        <Toaster />
+      </ThemeProvider>
     </FirebaseClientProvider>
   );
 }

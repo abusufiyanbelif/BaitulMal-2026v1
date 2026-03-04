@@ -8,7 +8,9 @@ import Image from 'next/image';
 import { useSession } from '@/hooks/use-session';
 import { useInfoSettings } from '@/hooks/use-info-settings';
 import { useDonationInfo } from '@/hooks/use-donation-info';
+import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
 import { defaultDonationInfo } from '@/lib/donation-info-default';
+import { defaultGuidingPrinciples } from '@/lib/guiding-principles-default';
 import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -17,7 +19,7 @@ import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen, Edit, X } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen, Edit, X, ScrollText, Award } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
@@ -75,8 +77,19 @@ const donationTypeSchema = z.object({
   hideRestrictions: z.boolean().default(false),
 });
 
+const guidingPrincipleSchema = z.object({
+    id: z.string(),
+    text: z.string().min(1, 'Principle text is required.'),
+    isHidden: z.boolean().default(false),
+});
+
 const formSchema = z.object({
   types: z.array(donationTypeSchema),
+  guidingPrinciples: z.object({
+      title: z.string().min(1, 'Title is required.'),
+      description: z.string().optional().or(z.literal('')),
+      principles: z.array(guidingPrincipleSchema),
+  }),
 });
 
 type DonationInfoFormValues = z.infer<typeof formSchema>;
@@ -189,35 +202,87 @@ function QAEditor({ control, typeIndex, isReadOnly }: { control: any, typeIndex:
     );
 }
 
+function GuidingPrinciplesEditor({ control, isReadOnly }: { control: any, isReadOnly: boolean }) {
+    const { fields, append, remove } = useFieldArray({ control, name: `guidingPrinciples.principles` });
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-primary"><Award className="h-4 w-4"/> Institutional Rules</h4>
+                {!isReadOnly && (
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `gp_${Date.now()}`, text: '', isHidden: false })} className="font-bold">
+                        <Plus className="h-3 w-3 mr-1"/> Add Principle
+                    </Button>
+                )}
+            </div>
+            <div className="space-y-3">
+                {fields.map((field, index) => (
+                    <div key={field.id} className="flex gap-2 items-start">
+                        <div className="flex-1">
+                            <FormField control={control} name={`guidingPrinciples.principles.${index}.text`} render={({ field: textField }) => (
+                                <FormControl><Input {...textField} disabled={isReadOnly} placeholder="Enter organizational principle..." className="font-normal" /></FormControl>
+                            )}/>
+                        </div>
+                        {!isReadOnly && (
+                            <div className="flex items-center gap-2 shrink-0 pt-1">
+                                <FormField control={control} name={`guidingPrinciples.principles.${index}.isHidden`} render={({ field: hiddenField }) => (
+                                    <div className="flex items-center space-x-1">
+                                        <Checkbox checked={hiddenField.value} onCheckedChange={hiddenField.onChange} />
+                                        <span className="text-[10px] font-bold uppercase opacity-60">Hide</span>
+                                    </div>
+                                )}/>
+                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => remove(index)}>
+                                    <Trash2 className="h-4 w-4"/>
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                ))}
+                {fields.length === 0 && <p className="text-center text-xs text-muted-foreground py-4 border border-dashed rounded-md italic font-normal">No principles added yet.</p>}
+            </div>
+        </div>
+    );
+}
+
 export default function InfoSettingsPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
     const { infoSettings, isLoading: isInfoSettingsLoading } = useInfoSettings();
-    const { donationInfoData, isLoading: isDonationInfoLoading, forceRefetch } = useDonationInfo();
+    const { donationInfoData, isLoading: isDonationInfoLoading, forceRefetch: forceRefetchDonationInfo } = useDonationInfo();
+    const { guidingPrinciplesData, isLoading: isGPDataLoading, forceRefetch: forceRefetchGP } = useGuidingPrinciples();
+    
     const firestore = useFirestore();
     const storage = useStorage();
     const { toast } = useToast();
 
     const [isDonationInfoPublic, setIsDonationInfoPublic] = useState(false);
+    const [isGuidingPrinciplesPublic, setIsGuidingPrinciplesPublic] = useState(false);
+    
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState<string>('');
     const [isInitialized, setIsInitialized] = useState(false);
     const [editModes, setEditModes] = useState<Record<string, boolean>>({});
+    const [isGPEditMode, setIsGPEditMode] = useState(false);
 
     const form = useForm<DonationInfoFormValues>({
         resolver: zodResolver(formSchema),
-        defaultValues: { types: [] }
+        defaultValues: { 
+            types: [],
+            guidingPrinciples: { title: '', description: '', principles: [] }
+        }
     });
 
-    const { fields, append, remove } = useFieldArray({ control: form.control, name: 'types' });
+    const { fields: donationTypeFields, append: appendDonationType, remove: removeDonationType } = useFieldArray({ control: form.control, name: 'types' });
 
     useEffect(() => {
-        if (infoSettings) setIsDonationInfoPublic(infoSettings.isDonationInfoPublic || false);
+        if (infoSettings) {
+            setIsDonationInfoPublic(infoSettings.isDonationInfoPublic || false);
+            setIsGuidingPrinciplesPublic(infoSettings.isGuidingPrinciplesPublic || false);
+        }
     }, [infoSettings]);
     
     useEffect(() => {
-        if (!isDonationInfoLoading && donationInfoData && !isInitialized) {
-            const dataToLoad = (donationInfoData.types && donationInfoData.types.length > 0) ? donationInfoData.types : defaultDonationInfo;
-            const mappedTypes = dataToLoad.map(t => ({
+        if (!isDonationInfoLoading && !isGPDataLoading && donationInfoData && !isInitialized) {
+            const typesToLoad = (donationInfoData.types && donationInfoData.types.length > 0) ? donationInfoData.types : defaultDonationInfo;
+            const mappedTypes = typesToLoad.map(t => ({
                 ...t,
                 purposePointsRaw: (t as any).purposePoints?.join('\n') || '',
                 useCases: (t.useCases || []),
@@ -229,11 +294,21 @@ export default function InfoSettingsPage() {
                 hideUsage: !!t.hideUsage,
                 hideRestrictions: !!t.hideRestrictions,
             }));
-            form.reset({ types: mappedTypes });
+
+            const gpToLoad = guidingPrinciplesData || defaultGuidingPrinciples;
+
+            form.reset({ 
+                types: mappedTypes,
+                guidingPrinciples: {
+                    title: gpToLoad.title || '',
+                    description: gpToLoad.description || '',
+                    principles: gpToLoad.principles || []
+                }
+            });
             if (mappedTypes.length > 0) setActiveTab(mappedTypes[0].id);
             setIsInitialized(true);
         }
-    }, [donationInfoData, isDonationInfoLoading, isInitialized, form]);
+    }, [donationInfoData, guidingPrinciplesData, isDonationInfoLoading, isGPDataLoading, isInitialized, form]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.update', false) || !!getNestedValue(userProfile, 'permissions.settings.info.update', false);
 
@@ -241,14 +316,14 @@ export default function InfoSettingsPage() {
         if (!firestore || !canUpdateSettings) return;
         setIsSubmitting(true);
         try {
-            await setDoc(doc(firestore, 'settings', 'info'), { isDonationInfoPublic }, { merge: true });
+            await setDoc(doc(firestore, 'settings', 'info'), { isDonationInfoPublic, isGuidingPrinciplesPublic }, { merge: true });
             toast({ title: 'Visibility Updated', description: 'Changes saved.', variant: 'success' });
         } catch (error) {
             errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings/info', operation: 'write' }));
         } finally { setIsSubmitting(false); }
     };
     
-    const handleSaveSingleCategory = async (typeIndex: number) => {
+    const handleSaveDonationCategory = async (typeIndex: number) => {
         if (!firestore || !storage || !canUpdateSettings) return;
         const data = form.getValues();
         const typeToSave = data.types[typeIndex];
@@ -280,13 +355,32 @@ export default function InfoSettingsPage() {
             await setDoc(doc(firestore, 'settings', 'donationInfo'), { types: currentFullData });
             toast({ title: 'Saved!', description: `${categoryLabel} has been updated.`, variant: 'success' });
             setEditModes(prev => ({ ...prev, [typeToSave.id]: false }));
-            forceRefetch();
+            forceRefetchDonationInfo();
         } catch (error: any) {
              errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings/donationInfo', operation: 'write' }));
         } finally { setIsSubmitting(false); }
     };
 
-    if (isSessionLoading || isInfoSettingsLoading || isDonationInfoLoading) {
+    const handleSaveGuidingPrinciples = async () => {
+        if (!firestore || !canUpdateSettings) return;
+        const data = form.getValues().guidingPrinciples;
+        setIsSubmitting(true);
+        toast({ title: 'Saving guiding principles...', description: 'Please wait.' });
+        try {
+            const processedGP = {
+                ...data,
+                principles: data.principles.filter(p => p.text?.trim())
+            };
+            await setDoc(doc(firestore, 'settings', 'guidingPrinciples'), processedGP);
+            toast({ title: 'Success!', description: 'Guiding principles updated.', variant: 'success' });
+            setIsGPEditMode(false);
+            forceRefetchGP();
+        } catch (error: any) {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings/guidingPrinciples', operation: 'write' }));
+        } finally { setIsSubmitting(false); }
+    };
+
+    if (isSessionLoading || isInfoSettingsLoading || isDonationInfoLoading || isGPDataLoading) {
         return <BrandedLoader />;
     }
 
@@ -296,7 +390,7 @@ export default function InfoSettingsPage() {
                 <Alert variant="destructive">
                     <ShieldAlert className="h-4 w-4" />
                     <AlertTitle className="font-bold">Access Denied</AlertTitle>
-                    <AlertDescription className="font-normal">You do not have permission to manage informational settings.</AlertDescription>
+                    <AlertDescription className="font-normal text-primary/70">You do not have permission to manage informational settings.</AlertDescription>
                 </Alert>
             </main>
         );
@@ -311,27 +405,60 @@ export default function InfoSettingsPage() {
                         <div className="space-y-1.5 flex-1"><h3 className="font-bold">Donation Types Explained</h3><p className="text-sm text-muted-foreground font-normal">Detailed information guide for donors.</p><Button variant="outline" size="sm" asChild className="mt-2 font-bold text-primary"><Link href="/info/donation-info" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview Public Page</Link></Button></div>
                         <div className="flex items-center space-x-2 pt-4 sm:pt-0"><Label htmlFor="donation-info-public" className="font-bold">Publicly Available</Label><Switch id="donation-info-public" checked={isDonationInfoPublic} onCheckedChange={setIsDonationInfoPublic} disabled={isSubmitting} /></div>
                     </div>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-1.5 flex-1"><h3 className="font-bold">Our Guiding Principles</h3><p className="text-sm text-muted-foreground font-normal">Organizational rules and standards.</p><Button variant="outline" size="sm" asChild className="mt-2 font-bold text-primary"><Link href="/info/guiding-principles" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview Public Page</Link></Button></div>
+                        <div className="flex items-center space-x-2 pt-4 sm:pt-0"><Label htmlFor="guiding-principles-public" className="font-bold">Publicly Available</Label><Switch id="guiding-principles-public" checked={isGuidingPrinciplesPublic} onCheckedChange={setIsGuidingPrinciplesPublic} disabled={isSubmitting} /></div>
+                    </div>
                 </CardContent>
-                <CardFooter className="justify-end border-t bg-muted/5 p-4"><Button onClick={handleSaveVisibility} disabled={isSubmitting || isDonationInfoPublic === (infoSettings?.isDonationInfoPublic || false)} className="font-bold">{isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4"/>} Save Visibility</Button></CardFooter>
+                <CardFooter className="justify-end border-t bg-muted/5 p-4"><Button onClick={handleSaveVisibility} disabled={isSubmitting} className="font-bold">{isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4"/>} Save Visibility</Button></CardFooter>
             </Card>
 
             <Card className="animate-fade-in-up border-primary/10 overflow-hidden">
                 <CardHeader className="bg-primary/5">
                     <div className="flex items-center justify-between gap-4">
-                        <div><CardTitle className="font-bold text-primary">Content Manager</CardTitle><CardDescription className="font-normal">Manage each donation category independently.</CardDescription></div>
-                        <Button onClick={() => { const id = `type_${Date.now()}`; append({ id, title: 'New Category', useCases: [], qaItems: [], hideKeyHighlights: false, hideUseCases: false, hideQA: false, hideUsage: false, hideRestrictions: false }); setActiveTab(id); setEditModes(p => ({ ...p, [id]: true })); }} variant="outline" size="sm" className="font-bold text-primary"><Plus className="mr-2 h-4 w-4" /> Add Category</Button>
+                        <div><CardTitle className="font-bold text-primary">Guiding Principles Manager</CardTitle><CardDescription className="font-normal">Manage organization-wide operational standards.</CardDescription></div>
+                        {!isGPEditMode ? (
+                            <Button onClick={() => setIsGPEditMode(true)} variant="outline" size="sm" className="font-bold text-primary"><Edit className="mr-2 h-4 w-4" /> Edit Principles</Button>
+                        ) : (
+                            <div className="flex gap-2">
+                                <Button onClick={() => setIsGPEditMode(false)} variant="outline" size="sm" className="font-bold"><X className="mr-2 h-4 w-4"/> Cancel</Button>
+                                <Button onClick={handleSaveGuidingPrinciples} size="sm" disabled={isSubmitting} className="font-bold"><Save className="mr-2 h-4 w-4"/> Save Principles</Button>
+                            </div>
+                        )}
+                    </div>
+                </CardHeader>
+                <CardContent className="pt-6 font-normal">
+                    <div className={cn("space-y-6 transition-opacity", !isGPEditMode && "opacity-70 pointer-events-none")}>
+                        <div className="grid gap-4">
+                            <FormField control={form.control} name="guidingPrinciples.title" render={({ field }) => (
+                                <FormItem><FormLabel className="font-bold uppercase tracking-tighter text-xs text-muted-foreground">Main Title</FormLabel><FormControl><Input {...field} disabled={!isGPEditMode} /></FormControl></FormItem>
+                            )}/>
+                            <FormField control={form.control} name="guidingPrinciples.description" render={({ field }) => (
+                                <FormItem><FormLabel className="font-bold uppercase tracking-tighter text-xs text-muted-foreground">Introduction Description</FormLabel><FormControl><Textarea rows={3} {...field} disabled={!isGPEditMode} /></FormControl></FormItem>
+                            )}/>
+                        </div>
+                        <GuidingPrinciplesEditor control={form.control} isReadOnly={!isGPEditMode} />
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card className="animate-fade-in-up border-primary/10 overflow-hidden">
+                <CardHeader className="bg-primary/5">
+                    <div className="flex items-center justify-between gap-4">
+                        <div><CardTitle className="font-bold text-primary">Donation Content Manager</CardTitle><CardDescription className="font-normal">Manage each donation category independently.</CardDescription></div>
+                        <Button onClick={() => { const id = `type_${Date.now()}`; appendDonationType({ id, title: 'New Category', useCases: [], qaItems: [], hideKeyHighlights: false, hideUseCases: false, hideQA: false, hideUsage: false, hideRestrictions: false }); setActiveTab(id); setEditModes(p => ({ ...p, [id]: true })); }} variant="outline" size="sm" className="font-bold text-primary"><Plus className="mr-2 h-4 w-4" /> Add Category</Button>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0 font-normal">
                     <Form {...form}><form onSubmit={(e) => e.preventDefault()}>
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                            <div className="bg-muted/10 border-b"><ScrollArea className="w-full whitespace-nowrap"><TabsList className="h-auto w-max bg-transparent p-0 rounded-none">{fields.map((field, index) => { const typeId = form.getValues(`types.${index}.id`); const title = form.watch(`types.${index}.title`) || 'New Type'; return (<TabsTrigger key={field.id} value={typeId} className={cn("rounded-none border-b-2 border-transparent px-6 py-4 font-black uppercase tracking-widest text-muted-foreground transition-all duration-300 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground")}>{title}</TabsTrigger>);})}</TabsList><ScrollBar orientation="horizontal" /></ScrollArea></div>
-                            {fields.map((field, index) => {
+                            <div className="bg-muted/10 border-b"><ScrollArea className="w-full whitespace-nowrap"><TabsList className="h-auto w-max bg-transparent p-0 rounded-none">{donationTypeFields.map((field, index) => { const typeId = form.getValues(`types.${index}.id`); const title = form.watch(`types.${index}.title`) || 'New Type'; return (<TabsTrigger key={field.id} value={typeId} className={cn("rounded-none border-b-2 border-transparent px-6 py-4 font-black uppercase tracking-widest text-muted-foreground transition-all duration-300 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground")}>{title}</TabsTrigger>);})}</TabsList><ScrollBar orientation="horizontal" /></ScrollArea></div>
+                            {donationTypeFields.map((field, index) => {
                                 const typeId = form.getValues(`types.${index}.id`);
                                 const isEditingTab = editModes[typeId] || false;
                                 return (
                                     <TabsContent key={field.id} value={typeId} className="p-4 sm:p-8 space-y-8 animate-fade-in-up mt-0">
-                                        <div className="flex justify-between items-center bg-muted/20 p-4 rounded-lg"><div className="flex items-center gap-3"><h3 className="text-xl font-black text-primary uppercase tracking-tight">{form.watch(`types.${index}.title`) || 'Category'}</h3><Badge variant={isEditingTab ? "default" : "secondary"} className="font-bold">{isEditingTab ? "Edit Mode" : "Read Mode"}</Badge></div><div className="flex gap-2">{isEditingTab ? (<Button type="button" variant="outline" size="sm" onClick={() => setEditModes(p => ({...p, [typeId]: false}))} disabled={isSubmitting} className="font-bold"><X className="mr-2 h-4 w-4"/> Cancel</Button>) : (<Button type="button" variant="outline" size="sm" onClick={() => setEditModes(p => ({...p, [typeId]: true}))} className="font-bold text-primary"><Edit className="mr-2 h-4 w-4"/> Edit Category</Button>)}<Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => { remove(index); if (fields.length > 1) setActiveTab(form.getValues('types.0.id')); }}><Trash2 className="h-5 w-5"/></Button></div></div>
+                                        <div className="flex justify-between items-center bg-muted/20 p-4 rounded-lg"><div className="flex items-center gap-3"><h3 className="text-xl font-black text-primary uppercase tracking-tight">{form.watch(`types.${index}.title`) || 'Category'}</h3><Badge variant={isEditingTab ? "default" : "secondary"} className="font-bold">{isEditingTab ? "Edit Mode" : "Read Mode"}</Badge></div><div className="flex gap-2">{isEditingTab ? (<Button type="button" variant="outline" size="sm" onClick={() => setEditModes(p => ({...p, [typeId]: false}))} disabled={isSubmitting} className="font-bold"><X className="mr-2 h-4 w-4"/> Cancel</Button>) : (<Button type="button" variant="outline" size="sm" onClick={() => setEditModes(p => ({...p, [typeId]: true}))} className="font-bold text-primary"><Edit className="mr-2 h-4 w-4"/> Edit Category</Button>)}<Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => { removeDonationType(index); if (donationTypeFields.length > 1) setActiveTab(form.getValues('types.0.id')); }}><Trash2 className="h-5 w-5"/></Button></div></div>
                                         <div className={cn("grid gap-8 transition-opacity", !isEditingTab && "opacity-70 pointer-events-none")}>
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                                                 <div className="md:col-span-2 space-y-4">
@@ -390,7 +517,7 @@ export default function InfoSettingsPage() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="border-t pt-6 flex justify-end"><Button type="button" size="lg" onClick={() => handleSaveSingleCategory(index)} disabled={isSubmitting || !isEditingTab} className="font-bold">{isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />} Save {form.watch(`types.${index}.title`) || 'Category'}</Button></div>
+                                        <div className="border-t pt-6 flex justify-end"><Button type="button" size="lg" onClick={() => handleSaveDonationCategory(index)} disabled={isSubmitting || !isEditingTab} className="font-bold">{isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />} Save {form.watch(`types.${index}.title`) || 'Category'}</Button></div>
                                     </TabsContent>
                                 );
                             })}

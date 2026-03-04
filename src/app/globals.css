@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* Precise Branding Palette (HSL) */
+    /* Precise Branding Palette (HSL) - Light Mode */
     --background: 0 0% 100%;
     --foreground: 150 40% 10%;
     
@@ -38,7 +38,7 @@
     --info: 217.2 91.2% 59.8%;
     --info-foreground: 0 0% 100%;
     
-    --border: 160 10% 85%; /* Light gray border */
+    --border: 160 10% 85%;
     --input: 160 10% 85%;
     --ring: 160 70% 40%;
     
@@ -52,6 +52,46 @@
     --chart-6: 191 91% 42%;
     --chart-7: 0 0% 0%;
     --chart-8: 45 93% 47%;
+  }
+
+  .dark {
+    /* Precise Branding Palette (HSL) - Dark Mode */
+    --background: 150 40% 5%;
+    --foreground: 160 10% 95%;
+    
+    --card: 150 40% 7%;
+    --card-foreground: 160 10% 95%;
+    
+    --popover: 150 40% 7%;
+    --popover-foreground: 160 10% 95%;
+    
+    --primary: 160 70% 45%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 160 30% 15%;
+    --secondary-foreground: 160 10% 95%;
+    
+    --muted: 160 20% 15%;
+    --muted-foreground: 160 10% 60%;
+    
+    --accent: 38.8 92.3% 55%;
+    --accent-foreground: 0 0% 10%;
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38.8 92.3% 50.2%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 217.2 91.2% 59.8%;
+    --info-foreground: 0 0% 100%;
+    
+    --border: 160 20% 20%;
+    --input: 160 20% 20%;
+    --ring: 160 70% 45%;
   }
 
   * {
@@ -165,5 +205,15 @@
 
   @keyframes shimmer {
     100% { transform: translateX(100%); }
+  }
+
+  /* Motion Configuration */
+  [data-animations='disabled'] *,
+  [data-animations='disabled'] ::before,
+  [data-animations='disabled'] ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
