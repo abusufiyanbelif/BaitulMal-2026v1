@@ -61,82 +61,82 @@
   }
 }
 
-/* Specific Theme Class Registry */
+/* Specific Theme Class Registry - High Specificity Block */
 .bmss-brand-warm {
-  --background: 45 60% 98%;
-  --foreground: 142.1 25% 15%;
-  --primary: 142.1 76.2% 36.3%;
-  --accent: 47.9 95.8% 53.1%;
-  --secondary: 142.1 76.2% 95%;
-  --border: 142.1 20% 85%;
+  --background: 45 60% 98% !important;
+  --foreground: 142.1 25% 15% !important;
+  --primary: 142.1 76.2% 36.3% !important;
+  --accent: 47.9 95.8% 53.1% !important;
+  --secondary: 142.1 76.2% 95% !important;
+  --border: 142.1 20% 85% !important;
 }
 
 .ocean-blue {
-  --background: 221 83% 98%;
-  --foreground: 221 83% 15%;
-  --primary: 221 83% 53%;
-  --secondary: 221 83% 92%;
-  --accent: 191 91% 42%;
+  --background: 221 83% 98% !important;
+  --foreground: 221 83% 15% !important;
+  --primary: 221 83% 53% !important;
+  --secondary: 221 83% 92% !important;
+  --accent: 191 91% 42% !important;
 }
 
 .sunset-orange {
-  --background: 25 95% 98%;
-  --foreground: 25 95% 15%;
-  --primary: 25 95% 53%;
-  --secondary: 25 95% 92%;
-  --accent: 45 93% 47%;
+  --background: 25 95% 98% !important;
+  --foreground: 25 95% 15% !important;
+  --primary: 25 95% 53% !important;
+  --secondary: 25 95% 92% !important;
+  --accent: 45 93% 47% !important;
 }
 
 .sunrise-peach {
-  --background: 12 100% 98%;
-  --foreground: 12 100% 15%;
-  --primary: 12 100% 63%;
-  --secondary: 12 100% 92%;
-  --accent: 45 93% 47%;
+  --background: 12 100% 98% !important;
+  --foreground: 12 100% 15% !important;
+  --primary: 12 100% 63% !important;
+  --secondary: 12 100% 92% !important;
+  --accent: 45 93% 47% !important;
 }
 
 .lavender-mint {
-  --background: 262 70% 98%;
-  --foreground: 262 70% 15%;
-  --primary: 262 70% 60%;
-  --secondary: 262 70% 95%;
-  --accent: 160 70% 40%;
+  --background: 262 70% 98% !important;
+  --foreground: 262 70% 15% !important;
+  --primary: 262 70% 60% !important;
+  --secondary: 262 70% 95% !important;
+  --accent: 160 70% 40% !important;
 }
 
 .midnight-ramadan {
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
-  --primary: 45 93% 47%;
-  --secondary: 222 47% 20%;
-  --accent: 142 70% 45%;
+  --background: 222 47% 11% !important;
+  --foreground: 210 40% 98% !important;
+  --primary: 45 93% 47% !important;
+  --secondary: 222 47% 20% !important;
+  --accent: 142 70% 45% !important;
 }
 
 .midnight-emerald {
-  --background: 160 50% 5%;
-  --foreground: 160 10% 95%;
-  --primary: 160 70% 45%;
-  --accent: 38 92% 50%;
+  --background: 160 50% 5% !important;
+  --foreground: 160 10% 95% !important;
+  --primary: 160 70% 45% !important;
+  --accent: 38 92% 50% !important;
 }
 
 .cyberpunk-neon {
-  --background: 280 50% 5%;
-  --foreground: 180 100% 50%;
-  --primary: 320 100% 50%;
-  --accent: 180 100% 50%;
+  --background: 280 50% 5% !important;
+  --foreground: 180 100% 50% !important;
+  --primary: 320 100% 50% !important;
+  --accent: 180 100% 50% !important;
 }
 
 .dracula-orchid {
-  --background: 231 15% 18%;
-  --foreground: 60 30% 96%;
-  --primary: 265 89% 78%;
-  --accent: 320 100% 50%;
+  --background: 231 15% 18% !important;
+  --foreground: 60 30% 96% !important;
+  --primary: 265 89% 78% !important;
+  --accent: 320 100% 50% !important;
 }
 
 .github-dark {
-  --background: 220 40% 8%;
-  --foreground: 210 20% 98%;
-  --primary: 210 20% 98%;
-  --accent: 38 92% 50%;
+  --background: 220 40% 8% !important;
+  --foreground: 210 20% 98% !important;
+  --primary: 210 20% 98% !important;
+  --accent: 38 92% 50% !important;
 }
 
 @layer base {

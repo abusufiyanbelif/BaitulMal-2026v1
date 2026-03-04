@@ -33,10 +33,8 @@ import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 function ComponentPreview({ themeId, isDark }: { themeId: string, isDark: boolean }) {
-    // We apply the themeId class to the container so all variables inside are scoped to the selected theme
     return (
         <div className={cn("rounded-xl border shadow-2xl overflow-hidden bg-background text-foreground transition-all duration-500", themeId)} style={{ transform: 'scale(0.95)' }}>
-            {/* Header Simulation */}
             <div className="bg-card border-b p-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <div className="h-6 w-6 bg-primary rounded flex items-center justify-center text-[10px] text-primary-foreground font-bold shadow-sm">B</div>
@@ -47,25 +45,22 @@ function ComponentPreview({ themeId, isDark }: { themeId: string, isDark: boolea
 
             <ScrollArea className="h-[400px]">
                 <div className="p-4 space-y-6">
-                    {/* Typography & Hero Simulation */}
                     <div className="space-y-2">
                         <h3 className="text-lg font-bold text-primary tracking-tight">Hero title preview</h3>
                         <p className="text-xs text-muted-foreground leading-relaxed font-normal">This is a description of how your organization's primary message will look with the selected palette.</p>
                     </div>
 
-                    {/* Stats Simulation */}
                     <div className="grid grid-cols-2 gap-3">
-                        <Card className="p-3 border-primary/10 bg-white/50 backdrop-blur-sm shadow-sm">
+                        <Card className="p-3 border-primary/10 bg-card/50 backdrop-blur-sm shadow-sm">
                             <p className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest">Collected</p>
                             <p className="text-sm font-bold text-primary font-mono">₹45,000</p>
                         </Card>
-                        <Card className="p-3 border-primary/10 bg-white/50 backdrop-blur-sm shadow-sm">
+                        <Card className="p-3 border-primary/10 bg-card/50 backdrop-blur-sm shadow-sm">
                             <p className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest">Target</p>
                             <p className="text-sm font-bold opacity-60 font-mono">₹1,00,000</p>
                         </Card>
                     </div>
 
-                    {/* Progress Simulation */}
                     <div className="space-y-1.5">
                         <div className="flex justify-between text-[10px] font-bold uppercase tracking-tight">
                             <span className="text-primary">Campaign progress</span>
@@ -74,12 +69,11 @@ function ComponentPreview({ themeId, isDark }: { themeId: string, isDark: boolea
                         <Progress value={45} className="h-1.5" />
                     </div>
 
-                    {/* Table Simulation */}
                     <div className="space-y-2">
                         <p className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1 tracking-widest">
                             <TableIcon className="h-3 w-3" /> Recent activity
                         </p>
-                        <div className="border rounded-md overflow-hidden bg-white shadow-sm">
+                        <div className="border rounded-md overflow-hidden bg-card shadow-sm">
                             <Table>
                                 <TableHeader className="bg-primary/5">
                                     <TableRow>
@@ -101,7 +95,6 @@ function ComponentPreview({ themeId, isDark }: { themeId: string, isDark: boolea
                         </div>
                     </div>
 
-                    {/* Buttons & Badges Simulation */}
                     <div className="space-y-3">
                         <div className="flex flex-wrap gap-2">
                             <Badge variant="default" className="text-[8px] font-bold uppercase shadow-sm">Active</Badge>
@@ -117,7 +110,6 @@ function ComponentPreview({ themeId, isDark }: { themeId: string, isDark: boolea
                 <ScrollBar />
             </ScrollArea>
             
-            {/* Footer Simulation */}
             <div className="bg-muted/20 border-t p-3 text-center">
                 <p className="text-[8px] text-muted-foreground font-normal">© 2026 Your organization. All rights reserved.</p>
             </div>
@@ -160,10 +152,7 @@ export default function ViewportSettingsPage() {
     const handleSave = async () => {
         setIsSubmitting(true);
         try {
-            // Apply Theme Global
             setTheme(pendingTheme);
-            
-            // Persist Motion Settings
             setAnimationsEnabled(pendingAnimations);
             setSmoothScrolling(pendingSmoothScroll);
             setReducedMotion(pendingReducedMotion);
@@ -172,7 +161,6 @@ export default function ViewportSettingsPage() {
             localStorage.setItem('app_smooth_scroll', pendingSmoothScroll ? 'enabled' : 'disabled');
             localStorage.setItem('app_reduced_motion', pendingReducedMotion ? 'enabled' : 'disabled');
 
-            // Apply directly to DOM
             document.documentElement.setAttribute('data-animations', pendingAnimations ? 'enabled' : 'disabled');
             document.documentElement.setAttribute('data-smooth-scroll', pendingSmoothScroll ? 'enabled' : 'disabled');
             document.documentElement.setAttribute('data-motion-reduced', pendingReducedMotion ? 'enabled' : 'disabled');
