@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { Copy, Smartphone, QrCode, Mail, Phone, Download, Globe, Users, Info, ShieldCheck } from 'lucide-react';
+import { Copy, Smartphone, QrCode, Mail, Phone, Download, Globe, Users, Info, ShieldCheck, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -106,7 +106,12 @@ export function AppFooter() {
                 </div>
                 
                 <div className="space-y-1 text-xs text-muted-foreground font-normal">
-                    {isLoading ? <Skeleton className="h-4 w-full" /> : paymentSettings?.address && <p>{paymentSettings.address}</p>}
+                    {isLoading ? <Skeleton className="h-4 w-full" /> : paymentSettings?.address && (
+                        <div className="flex items-start justify-center md:justify-start gap-2">
+                            <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
+                            <p>{paymentSettings.address}</p>
+                        </div>
+                    )}
                     {isLoading ? <Skeleton className="h-4 w-3/4" /> : paymentSettings?.regNo && <p>Reg. no.: {paymentSettings.regNo}</p>}
                     {isLoading ? <Skeleton className="h-4 w-1/2" /> : paymentSettings?.pan && <p>PAN: {paymentSettings.pan}</p>}
                 </div>
