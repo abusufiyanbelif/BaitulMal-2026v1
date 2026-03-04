@@ -20,14 +20,14 @@ service cloud.firestore {
              get(userDocRef()).data.get('role', 'User') == 'Admin';
     }
 
-    // Improved permission check to handle nested modules (e.g. settings.info.update)
     function hasPermission(module, permission) {
         if (!isSignedIn() || !exists(userDocRef())) return false;
         let userData = get(userDocRef()).data;
-        let p = userData.get('permissions', {});
         
         // Admin always has permission
         if (userData.get('role', 'User') == 'Admin') return true;
+        
+        let p = userData.get('permissions', {});
         
         // Check top-level permission: p.settings.update
         if (p.get(module, {}).get(permission, false) == true) return true;
@@ -35,7 +35,6 @@ service cloud.firestore {
         // Check one level deeper for sub-modules: p.settings.info.update
         let modObj = p.get(module, {});
         
-        // We check common sub-module patterns used in our settings and initiative hubs
         return modObj.get('app', {}).get(permission, false) == true ||
                modObj.get('info', {}).get(permission, false) == true ||
                modObj.get('members', {}).get(permission, false) == true ||

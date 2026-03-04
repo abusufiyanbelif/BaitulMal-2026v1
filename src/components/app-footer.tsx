@@ -49,7 +49,7 @@ export function AppFooter() {
                             width={60}
                             height={32}
                             className="object-contain drop-shadow-sm"
-                            style={{ maxHeight: '2.5rem', width: 'auto' }}
+                            style={{ maxHeight: '2rem', width: 'auto' }}
                         />
                     )
                 )}
@@ -83,7 +83,7 @@ export function AppFooter() {
             </div>
 
             <div className="flex flex-col items-center text-center md:items-start md:text-left gap-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                <h4 className="text-xs font-bold text-primary tracking-widest">Quick links</h4>
+                <h4 className="text-xs font-bold text-primary tracking-widest uppercase">Quick links</h4>
                 <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-[11px] font-bold">
                     <Link href="/" className="hover:text-primary transition-colors">Home</Link>
                     <Link href="/campaign-public" className="hover:text-primary transition-colors">Campaigns</Link>
@@ -96,7 +96,7 @@ export function AppFooter() {
             </div>
 
             <div className="flex flex-col items-center text-center md:items-start md:text-left gap-4 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                <h4 className="text-xs font-bold text-primary tracking-widest">Contact & help</h4>
+                <h4 className="text-xs font-bold text-primary tracking-widest uppercase">Contact & help</h4>
                 <div className="space-y-3 w-full">
                     {paymentSettings?.contactEmail && (
                         <div className="flex items-center justify-center md:justify-start gap-3">

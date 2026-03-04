@@ -138,7 +138,7 @@ export function DocuExtractHeader() {
               </div>
             ) : (
               pathname !== '/login' && (
-                <Button asChild size="sm" className="font-bold tracking-tight text-[10px] sm:text-xs bg-primary text-white hover:bg-primary/90 shadow-sm px-2 sm:px-4 h-8">
+                <Button asChild size="sm" className="font-bold tracking-tight text-[10px] sm:text-xs bg-primary text-white hover:bg-primary/90 shadow-sm px-2 sm:px-4 h-8 transition-transform active:scale-95">
                     <Link href="/login">
                         <LogIn className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
                         <span className="hidden xs:inline">Member login</span>
