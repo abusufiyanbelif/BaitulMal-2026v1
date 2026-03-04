@@ -110,7 +110,7 @@ export default function AboutOrganizationPage() {
                         </div>
                     )}
                 </div>
-                <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase">{brandingSettings?.name || 'About our organization'}</h1>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tighter">{brandingSettings?.name || 'About our organization'}</h1>
                 <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-normal italic">
                     Committed to community support and transparent welfare initiatives.
                 </p>
@@ -118,12 +118,12 @@ export default function AboutOrganizationPage() {
 
             <Accordion type="multiple" defaultValue={['verifiable', 'contribution', 'principles']} className="space-y-6">
                 
-                {/* Verifiable Details */}
+                {/* Verifiable details */}
                 <AccordionItem value="verifiable" className="border rounded-xl bg-white shadow-lg overflow-hidden border-primary/10">
                     <AccordionTrigger className="px-6 py-4 hover:no-underline bg-primary/5">
                         <div className="flex items-center gap-3">
                             <ShieldCheck className="h-6 w-6 text-primary" />
-                            <span className="text-xl font-bold tracking-tight uppercase">Verifiable details</span>
+                            <span className="text-xl font-bold tracking-tight">Verifiable details</span>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-6 pt-6 pb-8 space-y-1">
@@ -135,12 +135,12 @@ export default function AboutOrganizationPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* Contribution Details */}
+                {/* Contribution details */}
                 <AccordionItem value="contribution" className="border rounded-xl bg-white shadow-lg overflow-hidden border-primary/10">
                     <AccordionTrigger className="px-6 py-4 hover:no-underline bg-primary/5">
                         <div className="flex items-center gap-3">
                             <Landmark className="h-6 w-6 text-primary" />
-                            <span className="text-xl font-bold tracking-tight uppercase">Contribution details</span>
+                            <span className="text-xl font-bold tracking-tight">Contribution details</span>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-6 pt-6 pb-8">
@@ -171,13 +171,13 @@ export default function AboutOrganizationPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* Guiding Principles Section */}
+                {/* Guiding principles Section */}
                 {isGPVisible && visiblePrinciples.length > 0 && (
                     <AccordionItem value="principles" className="border rounded-xl bg-white shadow-lg overflow-hidden border-primary/10">
                         <AccordionTrigger className="px-6 py-4 hover:no-underline bg-primary/5">
                             <div className="flex items-center gap-3">
                                 <Shield className="h-6 w-6 text-primary" />
-                                <span className="text-xl font-bold tracking-tight uppercase">Guiding principles</span>
+                                <span className="text-xl font-bold tracking-tight">Guiding principles</span>
                             </div>
                         </AccordionTrigger>
                         <AccordionContent className="px-6 pt-8 pb-10">
@@ -202,19 +202,19 @@ export default function AboutOrganizationPage() {
                     </AccordionItem>
                 )}
 
-                {/* Team Directory */}
+                {/* Team directory */}
                 <AccordionItem value="team" className="border rounded-xl bg-white shadow-lg overflow-hidden border-primary/10">
                     <AccordionTrigger className="px-6 py-4 hover:no-underline bg-primary/5">
                         <div className="flex items-center gap-3">
                             <Users className="h-6 w-6 text-primary" />
-                            <span className="text-xl font-bold tracking-tight uppercase">Our dedicated team</span>
+                            <span className="text-xl font-bold tracking-tight">Our dedicated team</span>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-6 pt-6 pb-8">
                         <Accordion type="multiple" defaultValue={['founder', 'co-founder', 'finance', 'member']} className="w-full">
                             {GROUPS.map((group) => (
                                 <AccordionItem value={group.id} key={group.id} className="border-primary/5">
-                                    <AccordionTrigger className="text-lg font-bold hover:text-primary transition-colors py-6 uppercase tracking-tight">
+                                    <AccordionTrigger className="text-lg font-bold hover:text-primary transition-colors py-6 tracking-tight">
                                         {group.name} ({(membersByGroup[group.id] || []).length})
                                     </AccordionTrigger>
                                     <AccordionContent>

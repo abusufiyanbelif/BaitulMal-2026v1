@@ -162,7 +162,7 @@ export default function AppSettingsPage() {
                 logoUrl: brandingSettings?.logoUrl || '',
                 logoWidth: brandingSettings?.logoWidth || 40,
                 logoHeight: brandingSettings?.logoHeight || 40,
-                heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act of Kindness at a Time.',
+                heroTitle: brandingSettings?.heroTitle || 'Empowering our community, one act of kindness at a time.',
                 heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.',
                 qrCodeUrl: paymentSettings?.qrCodeUrl || '',
                 qrWidth: paymentSettings?.qrWidth || 120,
@@ -180,7 +180,7 @@ export default function AppSettingsPage() {
                 bankAccountNumber: paymentSettings?.bankAccountNumber || '',
                 bankIfsc: paymentSettings?.bankIfsc || '',
                 isGuidingPrinciplesPublic: guidingPrinciplesData?.isGuidingPrinciplesPublic || false,
-                gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
+                gpTitle: guidingPrinciplesData?.title || 'Our guiding principles',
                 gpDescription: guidingPrinciplesData?.description || 'To ensure our operations are transparent, fair, and impactful, we adhere to a clear set of guiding principles. These rules govern how we identify beneficiaries, allocate funds, and manage our resources to best serve the community.',
                 principles: guidingPrinciplesData?.principles || [],
             });
@@ -338,7 +338,7 @@ export default function AppSettingsPage() {
         logoUrl: brandingSettings?.logoUrl || '',
         logoWidth: brandingSettings?.logoWidth || 40,
         logoHeight: brandingSettings?.logoHeight || 40,
-        heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act of Kindness at a Time.',
+        heroTitle: brandingSettings?.heroTitle || 'Empowering our community, one act of kindness at a time.',
         heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact.',
         qrCodeUrl: paymentSettings?.qrCodeUrl || '',
         qrWidth: paymentSettings?.qrWidth || 120,
@@ -356,7 +356,7 @@ export default function AppSettingsPage() {
         bankAccountNumber: paymentSettings?.bankAccountNumber || '',
         bankIfsc: paymentSettings?.bankIfsc || '',
         isGuidingPrinciplesPublic: guidingPrinciplesData?.isGuidingPrinciplesPublic || false,
-        gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
+        gpTitle: guidingPrinciplesData?.title || 'Our guiding principles',
         gpDescription: guidingPrinciplesData?.description || '',
         principles: guidingPrinciplesData?.principles || [],
     };
@@ -368,7 +368,7 @@ export default function AppSettingsPage() {
             logoUrl: brandingSettings?.logoUrl || '',
             logoWidth: brandingSettings?.logoWidth || 40,
             logoHeight: brandingSettings?.logoHeight || 40,
-            heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act of Kindness at a Time.',
+            heroTitle: brandingSettings?.heroTitle || 'Empowering our community, one act of kindness at a time.',
             heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact.',
             qrCodeUrl: paymentSettings?.qrCodeUrl || '',
             qrWidth: paymentSettings?.qrWidth || 120,
@@ -386,7 +386,7 @@ export default function AppSettingsPage() {
             bankAccountNumber: paymentSettings?.bankAccountNumber || '',
             bankIfsc: paymentSettings?.bankIfsc || '',
             isGuidingPrinciplesPublic: guidingPrinciplesData?.isGuidingPrinciplesPublic || false,
-            gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
+            gpTitle: guidingPrinciplesData?.title || 'Our guiding principles',
             gpDescription: guidingPrinciplesData?.description || '',
             principles: guidingPrinciplesData?.principles || [],
         };
@@ -438,7 +438,7 @@ export default function AppSettingsPage() {
                 >
                     <div className="space-y-6">
                         <div className="space-y-2">
-                            <Label htmlFor="heroTitle" className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Hero title</Label>
+                            <Label htmlFor="heroTitle" className="font-bold text-xs text-muted-foreground tracking-tighter">Hero title</Label>
                             {isEditMode ? (
                                 <Input 
                                     id="heroTitle"
@@ -452,7 +452,7 @@ export default function AppSettingsPage() {
                             )}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="heroDescription" className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Hero description</Label>
+                            <Label htmlFor="heroDescription" className="font-bold text-xs text-muted-foreground tracking-tighter">Hero description</Label>
                             {isEditMode ? (
                                 <Textarea 
                                     id="heroDescription"
@@ -477,7 +477,7 @@ export default function AppSettingsPage() {
                     defaultOpen={true}
                 >
                     <div className="space-y-8">
-                        {/* Identity & Verification Heading */}
+                        {/* Identity & Registration Heading */}
                         <div className="space-y-4">
                             <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Identity & registration</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
@@ -488,7 +488,7 @@ export default function AppSettingsPage() {
                                     isEditing={isEditMode}
                                     id="org-name"
                                     onChange={(v) => handleFieldChange('name', v)}
-                                    placeholder="Full Legal Name"
+                                    placeholder="Full legal name"
                                 />
                                 <VerifiableItem 
                                     icon={MapPin} 
@@ -497,7 +497,7 @@ export default function AppSettingsPage() {
                                     isEditing={isEditMode}
                                     id="org-address"
                                     onChange={(v) => handleFieldChange('address', v)}
-                                    placeholder="Official Registered Address"
+                                    placeholder="Official registered address"
                                 />
                                 <VerifiableItem 
                                     icon={Hash} 
@@ -515,7 +515,7 @@ export default function AppSettingsPage() {
                                     isEditing={isEditMode}
                                     id="org-pan"
                                     onChange={(v) => handleFieldChange('pan', v)}
-                                    placeholder="Permanent Account Number"
+                                    placeholder="Permanent account number"
                                 />
                                 <VerifiableItem 
                                     icon={Globe} 
@@ -540,7 +540,7 @@ export default function AppSettingsPage() {
                                         ) : (
                                             <div className="text-muted-foreground text-center p-2 font-normal">
                                                 <ImageIcon className="mx-auto h-8 w-8 opacity-20" />
-                                                <p className="text-[10px] mt-1 uppercase font-bold tracking-tighter">No logo</p>
+                                                <p className="text-[10px] mt-1 font-bold tracking-tighter">No logo</p>
                                             </div>
                                         )}
                                     </div>
@@ -560,11 +560,11 @@ export default function AppSettingsPage() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <Label htmlFor="logoWidth" className="font-bold text-[10px] uppercase text-muted-foreground">Logo width (px)</Label>
+                                        <Label htmlFor="logoWidth" className="font-bold text-[10px] text-muted-foreground">Logo width (px)</Label>
                                         <Input id="logoWidth" type="number" value={displayData.logoWidth || 40} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} className="h-9 font-bold" />
                                     </div>
                                     <div className="space-y-1">
-                                        <Label htmlFor="logoHeight" className="font-bold text-[10px] uppercase text-muted-foreground">Logo height (px)</Label>
+                                        <Label htmlFor="logoHeight" className="font-bold text-[10px] text-muted-foreground">Logo height (px)</Label>
                                         <Input id="logoHeight" type="number" value={displayData.logoHeight || 40} onChange={(e) => handleFieldChange('logoHeight', e.target.value)} disabled={isFormDisabled} className="h-9 font-bold" />
                                     </div>
                                 </div>
@@ -609,7 +609,7 @@ export default function AppSettingsPage() {
                                     isEditing={isEditMode}
                                     id="bank-name"
                                     onChange={(v) => handleFieldChange('bankAccountName', v)}
-                                    placeholder="Full Name as per Bank"
+                                    placeholder="Full name as per bank"
                                 />
                                 <VerifiableItem 
                                     icon={CreditCard} 
@@ -618,7 +618,7 @@ export default function AppSettingsPage() {
                                     isEditing={isEditMode}
                                     id="bank-acc"
                                     onChange={(v) => handleFieldChange('bankAccountNumber', v)}
-                                    placeholder="Bank Account Number"
+                                    placeholder="Bank account number"
                                 />
                                 <VerifiableItem 
                                     icon={Landmark} 
@@ -627,7 +627,7 @@ export default function AppSettingsPage() {
                                     isEditing={isEditMode}
                                     id="bank-ifsc"
                                     onChange={(v) => handleFieldChange('bankIfsc', v)}
-                                    placeholder="11-digit IFSC Code"
+                                    placeholder="11-digit IFSC code"
                                 />
                             </div>
                             
@@ -659,7 +659,7 @@ export default function AppSettingsPage() {
                                         ) : (
                                             <div className="text-muted-foreground text-center p-2 font-normal">
                                                 <QrCode className="mx-auto h-8 w-8 opacity-20" />
-                                                <p className="text-[10px] mt-1 uppercase font-bold tracking-tighter">No QR code</p>
+                                                <p className="text-[10px] mt-1 font-bold tracking-tighter">No QR code</p>
                                             </div>
                                         )}
                                     </div>
@@ -678,11 +678,11 @@ export default function AppSettingsPage() {
                                     )}
                                     <div className="w-full grid grid-cols-2 gap-4 mt-2">
                                         <div className="space-y-1">
-                                            <Label htmlFor="qrWidth" className="font-bold text-[10px] uppercase text-muted-foreground">Width (px)</Label>
+                                            <Label htmlFor="qrWidth" className="font-bold text-[10px] text-muted-foreground">Width (px)</Label>
                                             <Input id="qrWidth" type="number" value={displayData.qrWidth || 120} onChange={(e) => handleFieldChange('qrWidth', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold" placeholder="Default: 120"/>
                                         </div>
                                         <div className="space-y-1">
-                                            <Label htmlFor="qrHeight" className="font-bold text-[10px] uppercase text-muted-foreground">Height (px)</Label>
+                                            <Label htmlFor="qrHeight" className="font-bold text-[10px] text-muted-foreground">Height (px)</Label>
                                             <Input id="qrHeight" type="number" value={displayData.qrHeight || 120} onChange={(e) => handleFieldChange('qrHeight', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold" placeholder="Default: 120"/>
                                         </div>
                                     </div>
@@ -705,7 +705,7 @@ export default function AppSettingsPage() {
                                 <p className="text-xs text-muted-foreground font-normal">Controls the visibility of this section on the public about page.</p>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <Label htmlFor="gp-visibility" className="font-bold text-xs uppercase opacity-60">Visible</Label>
+                                <Label htmlFor="gp-visibility" className="font-bold text-xs opacity-60">Visible</Label>
                                 <Switch 
                                     id="gp-visibility" 
                                     checked={displayData.isGuidingPrinciplesPublic} 
@@ -717,7 +717,7 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <Label className="font-bold text-[10px] uppercase text-muted-foreground">Commitment section description</Label>
+                                <Label className="font-bold text-[10px] text-muted-foreground">Commitment section description</Label>
                                 <Textarea 
                                     rows={3} 
                                     value={displayData.gpDescription} 
@@ -735,7 +735,7 @@ export default function AppSettingsPage() {
                             {(displayData.principles || []).map((principle, index) => (
                                 <div key={principle.id || index} className="relative group p-4 border rounded-md bg-muted/5 space-y-3 shadow-sm">
                                     <div className="flex items-center justify-between">
-                                        <p className="font-bold text-primary uppercase text-xs tracking-tight">Principle #{index + 1}</p>
+                                        <p className="font-bold text-primary text-xs tracking-tight">Principle #{index + 1}</p>
                                         {isEditMode && (
                                             <div className="flex items-center gap-3">
                                                 <div className="flex items-center space-x-1.5">
@@ -744,7 +744,7 @@ export default function AppSettingsPage() {
                                                         checked={principle.isHidden} 
                                                         onCheckedChange={(checked) => handlePrincipleChange(index, 'isHidden', !!checked)} 
                                                     />
-                                                    <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold uppercase opacity-60 cursor-pointer">Hide</Label>
+                                                    <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold opacity-60 cursor-pointer">Hide</Label>
                                                 </div>
                                                 <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleRemovePrinciple(index)}>
                                                     <Trash2 className="h-4 w-4"/>
@@ -762,7 +762,7 @@ export default function AppSettingsPage() {
                                     ) : (
                                         <p className="text-sm font-normal text-foreground leading-relaxed">
                                             {principle.text || <span className="italic opacity-50">Empty principle text</span>}
-                                            {principle.isHidden && <Badge variant="outline" className="ml-2 text-[8px] uppercase">Hidden</Badge>}
+                                            {principle.isHidden && <Badge variant="outline" className="ml-2 text-[8px]">Hidden</Badge>}
                                         </p>
                                     )}
                                 </div>
