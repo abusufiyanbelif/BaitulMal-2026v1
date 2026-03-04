@@ -16,15 +16,16 @@ export function TempLogo() {
       />
       <text
         x="50%"
-        y="55%"
+        y="53%"
         dominantBaseline="middle"
         textAnchor="middle"
-        fontSize="48"
+        fontSize="32"
         fill="hsl(var(--primary))"
         fontFamily="sans-serif"
         fontWeight="bold"
+        letterSpacing="-1"
       >
-        B
+        BMS3
       </text>
     </svg>
   );
