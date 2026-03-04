@@ -73,7 +73,7 @@ export default function LoginPage() {
     }
     try {
       await signInWithLoginId(auth, firestore, data.loginId, data.password);
-      toast({ title: 'Login Successful', description: "Welcome back!", variant: 'success' });
+      toast({ title: 'Login successful', description: "Welcome back!", variant: 'success' });
       router.push('/dashboard');
     } catch (error: any) {
       if (error.code === 'auth/configuration-not-found') {
@@ -92,7 +92,7 @@ export default function LoginPage() {
         return;
     }
     if (!resetEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resetEmail)) {
-        toast({ title: "Invalid Email", description: "Please enter a valid email address.", variant: "destructive"});
+        toast({ title: "Invalid email", description: "Please enter a valid email address.", variant: "destructive"});
         return;
     }
 
@@ -105,7 +105,7 @@ export default function LoginPage() {
         await sendPasswordResetEmail(auth, resetEmail, actionCodeSettings);
         // Always show success to prevent user enumeration
         toast({
-            title: "Password Reset Email Sent",
+            title: "Password reset email sent",
             description: `If an account exists for ${resetEmail}, you will receive an email with instructions to reset your password.`,
             variant: "success",
             duration: 9000,
@@ -114,7 +114,7 @@ export default function LoginPage() {
         // Log the actual error for debugging but show a generic success message to the user for security.
         console.error("Password reset error:", error);
         toast({
-            title: "Password Reset Email Sent",
+            title: "Password reset email sent",
             description: `If an account exists for ${resetEmail}, you will receive an email with instructions to reset your password.`,
             variant: "success",
             duration: 9000,
@@ -133,40 +133,41 @@ export default function LoginPage() {
   return (
     <div className="w-full max-w-sm">
         <div className="mb-4 flex animate-slide-in-from-top" style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}>
-            <Button variant="outline" asChild className="transition-transform active:scale-95">
+            <Button variant="outline" asChild className="transition-transform active:scale-95 font-bold border-primary/20 text-primary">
                 <Link href="/">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Home
+                    Back to home
                 </Link>
             </Button>
         </div>
-      <Card className="animate-fade-in-up shadow-xl" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
+      <Card className="animate-fade-in-up shadow-xl border-primary/10 bg-white" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
           <CardHeader className="text-center">
               <div className="flex justify-center items-center gap-3 mb-4">
                 {isBrandingLoading ? (
                     <Skeleton className="h-9 w-full max-w-xs" />
                 ) : (
-                    <h1 className="text-2xl sm:text-3xl font-bold font-headline text-foreground animate-fade-in-zoom">
+                    <h1 className="text-2xl sm:text-3xl font-bold font-headline text-primary animate-fade-in-zoom">
                         {brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}
                     </h1>
                 )}
               </div>
-          <CardTitle>Welcome Back!</CardTitle>
-          <CardDescription>Organization Member Enter your credentials to access your account.</CardDescription>
+          <CardTitle className="font-bold text-primary">Welcome back</CardTitle>
+          <CardDescription className="font-normal">Enter your credentials to access your organization account.</CardDescription>
           </CardHeader>
           <CardContent>
           <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 font-normal">
               <FormField
                   control={form.control}
                   name="loginId"
                   render={({ field }) => (
                   <FormItem>
-                      <FormLabel>Login ID or Phone Number</FormLabel>
+                      <FormLabel className="font-bold">Login ID or phone number</FormLabel>
                       <FormControl>
                       <Input 
-                          placeholder="e.g. your_login_id or 0000000000" 
+                          placeholder="e.g. your_id or 9876543210" 
                           {...field}
+                          className="font-normal"
                       />
                       </FormControl>
                       <FormMessage />
@@ -178,21 +179,22 @@ export default function LoginPage() {
                   name="password"
                   render={({ field }) => (
                   <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel className="font-bold">Password</FormLabel>
                       <FormControl>
                       <Input 
                           type="password" 
                           placeholder="••••••••" 
                           {...field} 
+                          className="font-normal"
                           />
                       </FormControl>
                       <FormMessage />
                   </FormItem>
                   )}
               />
-              <Button type="submit" className="w-full transition-transform active:scale-95" disabled={isLoading}>
+              <Button type="submit" className="w-full transition-transform active:scale-95 font-bold" disabled={isLoading}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Sign In
+                  Sign in
               </Button>
               </form>
           </Form>
@@ -200,17 +202,17 @@ export default function LoginPage() {
           <CardFooter className="justify-center pt-4">
               <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
                   <DialogTrigger asChild>
-                      <Button variant="link" className="p-0 h-auto text-sm font-normal">Forgot Password?</Button>
+                      <Button variant="link" className="p-0 h-auto text-sm font-bold text-primary">Forgot password?</Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px] animate-fade-in-zoom">
                       <DialogHeader>
-                          <DialogTitle>Reset Password</DialogTitle>
-                          <DialogDescription>
+                          <DialogTitle className="font-bold text-primary">Reset password</DialogTitle>
+                          <DialogDescription className="font-normal">
                               Enter your email address and we'll send you a link to reset your password.
                           </DialogDescription>
                       </DialogHeader>
                       <div className="py-4 space-y-2">
-                          <Label htmlFor="reset-email">Email Address</Label>
+                          <Label htmlFor="reset-email" className="font-bold">Email address</Label>
                           <Input
                               id="reset-email"
                               type="email"
@@ -218,13 +220,14 @@ export default function LoginPage() {
                               value={resetEmail}
                               onChange={(e) => setResetEmail(e.target.value)}
                               disabled={isSendingReset}
+                              className="font-normal"
                           />
                       </div>
                       <DialogFooter>
-                          <Button type="button" variant="outline" onClick={() => setIsResetDialogOpen(false)} disabled={isSendingReset}>Cancel</Button>
-                          <Button type="submit" onClick={handlePasswordReset} disabled={isSendingReset} className="transition-transform active:scale-95">
+                          <Button type="button" variant="outline" onClick={() => setIsResetDialogOpen(false)} disabled={isSendingReset} className="font-bold">Cancel</Button>
+                          <Button type="submit" onClick={handlePasswordReset} disabled={isSendingReset} className="transition-transform active:scale-95 font-bold">
                               {isSendingReset && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                              Send Reset Link
+                              Send reset link
                           </Button>
                       </DialogFooter>
                   </DialogContent>
@@ -235,8 +238,8 @@ export default function LoginPage() {
       {loginError && (
           <Alert variant="destructive" className="mt-4 animate-fade-in-up">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Login Failed</AlertTitle>
-              <AlertDescription>
+              <AlertTitle className="font-bold">Login failed</AlertTitle>
+              <AlertDescription className="font-normal">
                   {loginError}
               </AlertDescription>
           </Alert>
@@ -245,12 +248,12 @@ export default function LoginPage() {
       {setupError && (
           <Alert variant="destructive" className="mt-4 animate-fade-in-up">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Action Required: Enable Sign-In Method</AlertTitle>
-              <AlertDescription className="space-y-3">
+              <AlertTitle className="font-bold">Action required: enable sign-in method</AlertTitle>
+              <AlertDescription className="space-y-3 font-normal">
                   <p>For the one-time initial setup, you must enable the 'Email/Password' provider in your Firebase project. This allows the app to create the first admin user.</p>
-                  <Button asChild variant="secondary" size="sm" className="mt-3 w-full transition-transform active:scale-95">
+                  <Button asChild variant="secondary" size="sm" className="mt-3 w-full transition-transform active:scale-95 font-bold">
                       <Link href={authUrl} target="_blank">
-                          Go to Firebase Console to Enable
+                          Go to Firebase Console to enable
                           <ExternalLink className="ml-2 h-4 w-4" />
                       </Link>
                   </Button>
