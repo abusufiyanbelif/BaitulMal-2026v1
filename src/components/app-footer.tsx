@@ -143,7 +143,7 @@ export function AppFooter() {
                     {isLoading ? <Skeleton className="h-4 w-3/4" /> : (
                         <div className="flex items-center gap-2 text-xs font-bold text-primary hover:opacity-80 transition-opacity">
                             <Users className="h-3 w-3" />
-                            <Link href="/info/members" className="hover:underline uppercase tracking-tighter">Organization Members</Link>
+                            <Link href="/info/members" className="hover:underline uppercase tracking-tighter">About Organization</Link>
                         </div>
                     )}
                     {!isLoading && infoSettings?.isDonationInfoPublic && (

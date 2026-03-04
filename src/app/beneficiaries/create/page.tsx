@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState } from 'react';
@@ -58,7 +56,7 @@ export default function CreateBeneficiaryPage() {
     };
 
     const result = await createMasterBeneficiaryAction(
-        newBeneficiary,
+        newBeneficiary as any,
         { id: userProfile.id, name: userProfile.name }
     );
     
@@ -93,7 +91,7 @@ export default function CreateBeneficiaryPage() {
             </div>
             <Alert variant="destructive">
                 <ShieldAlert className="h-4 w-4" />
-                <AlertTitle>Access Denied</AlertTitle>
+                <AlertTitle className="font-bold">Access Denied</AlertTitle>
                 <AlertDescription>
                 You do not have the required permissions to create a new beneficiary.
                 </AlertDescription>
@@ -125,8 +123,8 @@ export default function CreateBeneficiaryPage() {
                 isSubmitting={isSubmitting}
                 itemCategories={[]}
                 isLoading={false}
-                hideZakatInfo={false} // Show Zakat eligibility on master creation
-                hideZakatAllocation={true} // But hide allocation amount
+                hideZakatInfo={false}
+                hideZakatAllocation={true}
                 kitAmountLabel="Kit Amount (₹)"
                 isSessionLoading={isProfileLoading}
             />

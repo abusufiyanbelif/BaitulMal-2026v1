@@ -12,14 +12,11 @@ import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe } from 'lucide-react';
+import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Textarea } from '@/components/ui/textarea';
 import { cn, getNestedValue } from '@/lib/utils';
 
 interface FormDataType {
@@ -39,6 +36,9 @@ interface FormDataType {
     address: string;
     website: string;
     copyright: string;
+    bankAccountName: string;
+    bankAccountNumber: string;
+    bankIfsc: string;
 }
 
 function VerifiableItem({ icon: Icon, label, value, isEditing, id, onChange, placeholder }: { 
@@ -117,6 +117,9 @@ export default function AppSettingsPage() {
                 address: paymentSettings?.address || '',
                 website: paymentSettings?.website || '',
                 copyright: paymentSettings?.copyright || '',
+                bankAccountName: paymentSettings?.bankAccountName || '',
+                bankAccountNumber: paymentSettings?.bankAccountNumber || '',
+                bankIfsc: paymentSettings?.bankIfsc || '',
             });
         } else {
             setEditableData(null);
@@ -209,6 +212,9 @@ export default function AppSettingsPage() {
                 address: editableData.address,
                 website: editableData.website,
                 copyright: editableData.copyright,
+                bankAccountName: editableData.bankAccountName,
+                bankAccountNumber: editableData.bankAccountNumber,
+                bankIfsc: editableData.bankIfsc,
             };
             batch.set(doc(firestore, 'settings', 'payment'), paymentData, { merge: true });
 
@@ -248,6 +254,9 @@ export default function AppSettingsPage() {
         address: paymentSettings?.address || '',
         website: paymentSettings?.website || '',
         copyright: paymentSettings?.copyright || '',
+        bankAccountName: paymentSettings?.bankAccountName || '',
+        bankAccountNumber: paymentSettings?.bankAccountNumber || '',
+        bankIfsc: paymentSettings?.bankIfsc || '',
     };
 
     const isDirty = useMemo(() => {
@@ -269,6 +278,9 @@ export default function AppSettingsPage() {
             address: paymentSettings?.address || '',
             website: paymentSettings?.website || '',
             copyright: paymentSettings?.copyright || '',
+            bankAccountName: paymentSettings?.bankAccountName || '',
+            bankAccountNumber: paymentSettings?.bankAccountNumber || '',
+            bankIfsc: paymentSettings?.bankIfsc || '',
         };
         return JSON.stringify(initialData) !== JSON.stringify(editableData) || !!logoFile || !!qrCodeFile;
     }, [isEditMode, editableData, brandingSettings, paymentSettings, logoFile, qrCodeFile]);
@@ -317,67 +329,106 @@ export default function AppSettingsPage() {
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-                {/* Verifiable Details Section */}
-                <Card className="animate-fade-in-zoom border-primary/10 shadow-sm">
-                    <CardHeader className="bg-primary/5 pb-4">
-                        <CardTitle className="text-xl font-bold text-primary uppercase tracking-tight">Verifiable Details</CardTitle>
-                        <CardDescription className="font-normal">This is the official public profile of the organization.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6 space-y-2">
-                        <VerifiableItem 
-                            icon={Building2} 
-                            label="Organization Name" 
-                            value={displayData.name} 
-                            isEditing={isEditMode}
-                            id="org-name"
-                            onChange={(v) => handleFieldChange('name', v)}
-                            placeholder="Full Legal Name"
-                        />
-                        <VerifiableItem 
-                            icon={MapPin} 
-                            label="Address" 
-                            value={displayData.address} 
-                            isEditing={isEditMode}
-                            id="org-address"
-                            onChange={(v) => handleFieldChange('address', v)}
-                            placeholder="Official Registered Address"
-                        />
-                        <VerifiableItem 
-                            icon={Hash} 
-                            label="Registration No." 
-                            value={displayData.regNo} 
-                            isEditing={isEditMode}
-                            id="org-reg"
-                            onChange={(v) => handleFieldChange('regNo', v)}
-                            placeholder="e.g. Solapur/0000373/2025"
-                        />
-                        <VerifiableItem 
-                            icon={ShieldCheck} 
-                            label="PAN Number" 
-                            value={displayData.pan} 
-                            isEditing={isEditMode}
-                            id="org-pan"
-                            onChange={(v) => handleFieldChange('pan', v)}
-                            placeholder="Permanent Account Number"
-                        />
-                        <VerifiableItem 
-                            icon={Globe} 
-                            label="Website" 
-                            value={displayData.website} 
-                            isEditing={isEditMode}
-                            id="org-web"
-                            onChange={(v) => handleFieldChange('website', v)}
-                            placeholder="https://www.example.org"
-                        />
-                    </CardContent>
-                </Card>
+                <div className="space-y-6">
+                    {/* Verifiable Details Section */}
+                    <Card className="animate-fade-in-zoom border-primary/10 shadow-sm">
+                        <CardHeader className="bg-primary/5 pb-4">
+                            <CardTitle className="text-xl font-bold text-primary uppercase tracking-tight">Verifiable Details</CardTitle>
+                            <CardDescription className="font-normal">Official public profile of the organization.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-6 space-y-2">
+                            <VerifiableItem 
+                                icon={Building2} 
+                                label="Organization Name" 
+                                value={displayData.name} 
+                                isEditing={isEditMode}
+                                id="org-name"
+                                onChange={(v) => handleFieldChange('name', v)}
+                                placeholder="Full Legal Name"
+                            />
+                            <VerifiableItem 
+                                icon={MapPin} 
+                                label="Address" 
+                                value={displayData.address} 
+                                isEditing={isEditMode}
+                                id="org-address"
+                                onChange={(v) => handleFieldChange('address', v)}
+                                placeholder="Official Registered Address"
+                            />
+                            <VerifiableItem 
+                                icon={Hash} 
+                                label="Registration No." 
+                                value={displayData.regNo} 
+                                isEditing={isEditMode}
+                                id="org-reg"
+                                onChange={(v) => handleFieldChange('regNo', v)}
+                                placeholder="e.g. Solapur/0000373/2025"
+                            />
+                            <VerifiableItem 
+                                icon={ShieldCheck} 
+                                label="PAN Number" 
+                                value={displayData.pan} 
+                                isEditing={isEditMode}
+                                id="org-pan"
+                                onChange={(v) => handleFieldChange('pan', v)}
+                                placeholder="Permanent Account Number"
+                            />
+                            <VerifiableItem 
+                                icon={Globe} 
+                                label="Website" 
+                                value={displayData.website} 
+                                isEditing={isEditMode}
+                                id="org-web"
+                                onChange={(v) => handleFieldChange('website', v)}
+                                placeholder="https://www.example.org"
+                            />
+                        </CardContent>
+                    </Card>
+
+                    {/* Bank Transfer Details Section */}
+                    <Card className="animate-fade-in-up border-primary/10 shadow-sm">
+                        <CardHeader className="bg-primary/5 pb-4">
+                            <CardTitle className="text-xl font-bold text-primary uppercase tracking-tight">Bank Transfer Details</CardTitle>
+                            <CardDescription className="font-normal">Traditional bank account information for high-value donations.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-6 space-y-2">
+                            <VerifiableItem 
+                                icon={User} 
+                                label="Account Holder Name" 
+                                value={displayData.bankAccountName} 
+                                isEditing={isEditMode}
+                                id="bank-name"
+                                onChange={(v) => handleFieldChange('bankAccountName', v)}
+                                placeholder="Full Name as per Bank"
+                            />
+                            <VerifiableItem 
+                                icon={CreditCard} 
+                                label="Account Number" 
+                                value={displayData.bankAccountNumber} 
+                                isEditing={isEditMode}
+                                id="bank-acc"
+                                onChange={(v) => handleFieldChange('bankAccountNumber', v)}
+                                placeholder="Bank Account Number"
+                            />
+                            <VerifiableItem 
+                                icon={Landmark} 
+                                label="IFSC Code" 
+                                value={displayData.bankIfsc} 
+                                isEditing={isEditMode}
+                                id="bank-ifsc"
+                                onChange={(v) => handleFieldChange('bankIfsc', v)}
+                                placeholder="11-digit IFSC Code"
+                            />
+                        </CardContent>
+                    </Card>
+                </div>
 
                 <div className="space-y-6">
-                    {/* Branding Assets Section */}
+                    {/* Visual Identity Section */}
                     <Card className="animate-fade-in-up border-primary/10 shadow-sm">
                         <CardHeader className="bg-primary/5 pb-4">
                             <CardTitle className="text-xl font-bold text-primary uppercase tracking-tight">Visual Identity</CardTitle>
-                            <CardDescription className="font-normal">Logo and loading assets.</CardDescription>
+                            <CardDescription className="font-normal">Logo and branding assets.</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-6">
                             <div className="flex flex-col items-center gap-4">

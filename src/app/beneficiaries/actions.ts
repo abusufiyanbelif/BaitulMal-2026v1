@@ -1,5 +1,3 @@
-
-
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
@@ -23,7 +21,7 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
         const docRef = adminDb.collection('beneficiaries').doc();
         await docRef.set({
             ...data,
-            id: docRef.id, // Explicitly set the ID in the document
+            id: docRef.id,
             addedDate: data.addedDate || new Date().toISOString().split('T')[0],
             createdAt: FieldValue.serverTimestamp(),
             createdById: createdBy.id,
@@ -50,7 +48,6 @@ export async function updateMasterBeneficiaryAction(
     try {
         const masterBeneficiaryRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
 
-        // Ensure initiative-specific fields are never written to the master document
         const { zakatAllocation, kitAmount, status, ...masterData } = data;
 
         await masterBeneficiaryRef.set({
@@ -87,7 +84,6 @@ export async function updateInitiativeBeneficiaryDetailsAction(
         const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';
         const docRef = adminDb.doc(`${collectionName}/${initiativeId}/beneficiaries/${beneficiaryId}`);
         
-        // Use set with merge: true to create the document if it doesn't exist, preventing FAILED_PRECONDITION errors.
         await docRef.set(data, { merge: true });
 
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
@@ -117,7 +113,6 @@ export async function updateBeneficiaryStatusInInitiativeAction(
 
     try {
         const docRef = adminDb.doc(docPath);
-        // Use set with merge to be safe
         await docRef.set({ status: newStatus }, { merge: true });
 
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
@@ -145,7 +140,6 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
             const parentRef = docSnap.ref.parent.parent;
             if (parentRef) {
                 const beneficiaryData = docSnap.data() as Beneficiary;
-                // Before deleting, subtract its amount from the parent's target.
                 const amountToSubtract = beneficiaryData.kitAmount || 0;
                 if (amountToSubtract > 0) {
                     batch.update(parentRef, { targetAmount: FieldValue.increment(-amountToSubtract) });
@@ -154,7 +148,6 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
             batch.delete(docSnap.ref);
         }
 
-        // The above loop also includes the master doc if it was found, but deleting it again is fine.
         batch.delete(masterBeneficiaryRef);
 
         const folderPath = `beneficiaries/${beneficiaryId}/`;
@@ -184,18 +177,19 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
     }
     
     try {
-        const batch = adminDb.batch();
+        const db = adminDb;
+        const batch = db.batch();
         let addedCount = 0;
         
-        const masterBeneficiariesSnap = await adminDb.collection('beneficiaries').get();
+        const masterBeneficiariesSnap = await db.collection('beneficiaries').get();
         const masterIds = new Set(masterBeneficiariesSnap.docs.map(d => d.id));
 
-        const campaignsSnap = await adminDb.collection('campaigns').get();
+        const campaignsSnap = await db.collection('campaigns').get();
         for (const campaignDoc of campaignsSnap.docs) {
-            const campaignBeneficiariesSnap = await adminDb.collection(`campaigns/${campaignDoc.id}/beneficiaries`).get();
+            const campaignBeneficiariesSnap = await db.collection(`campaigns/${campaignDoc.id}/beneficiaries`).get();
             for (const benDoc of campaignBeneficiariesSnap.docs) {
                 if (!masterIds.has(benDoc.id)) {
-                    const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
+                    const masterRef = db.collection('beneficiaries').doc(benDoc.id);
                     const sanitizedData = sanitizeBeneficiaryForMasterList(benDoc.data());
                     batch.set(masterRef, sanitizedData, { merge: true });
                     masterIds.add(benDoc.id); 
@@ -204,12 +198,12 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
             }
         }
         
-        const leadsSnap = await adminDb.collection('leads').get();
+        const leadsSnap = await db.collection('leads').get();
         for (const leadDoc of leadsSnap.docs) {
-            const leadBeneficiariesSnap = await adminDb.collection(`leads/${leadDoc.id}/beneficiaries`).get();
+            const leadBeneficiariesSnap = await db.collection(`leads/${leadDoc.id}/beneficiaries`).get();
             for (const benDoc of leadBeneficiariesSnap.docs) {
                 if (!masterIds.has(benDoc.id)) {
-                    const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
+                    const masterRef = db.collection('beneficiaries').doc(benDoc.id);
                     const sanitizedData = sanitizeBeneficiaryForMasterList(benDoc.data());
                     batch.set(masterRef, sanitizedData, { merge: true });
                     masterIds.add(benDoc.id);

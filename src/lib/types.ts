@@ -25,6 +25,10 @@ export interface PaymentSettings extends DocumentData {
   address?: string;
   website?: string;
   copyright?: string;
+  // Bank Details
+  bankAccountName?: string;
+  bankAccountNumber?: string;
+  bankIfsc?: string;
 }
 
 export interface InfoSettings extends DocumentData {
