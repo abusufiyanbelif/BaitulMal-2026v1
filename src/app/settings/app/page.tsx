@@ -181,7 +181,7 @@ export default function AppSettingsPage() {
                 bankIfsc: paymentSettings?.bankIfsc || '',
                 isGuidingPrinciplesPublic: guidingPrinciplesData?.isGuidingPrinciplesPublic || false,
                 gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
-                gpDescription: guidingPrinciplesData?.description || 'To ensure our operations are transparent, fair, and impactful, we adhere to a clear set of guiding principles.',
+                gpDescription: guidingPrinciplesData?.description || 'To ensure our operations are transparent, fair, and impactful, we adhere to a clear set of guiding principles. These rules govern how we identify beneficiaries, allocate funds, and manage our resources to best serve the community.',
                 principles: guidingPrinciplesData?.principles || [],
             });
         } else {
@@ -469,58 +469,126 @@ export default function AppSettingsPage() {
                     </div>
                 </SettingsSection>
 
-                {/* Verifiable Details Section */}
+                {/* Organization Details Section (Merged) */}
                 <SettingsSection 
-                    title="Verifiable details" 
-                    description="Official public profile of the organization."
+                    title="Organization details" 
+                    description="Public profile, visual identity, and contact information."
                     icon={Building2}
+                    defaultOpen={true}
                 >
-                    <div className="space-y-2">
-                        <VerifiableItem 
-                            icon={Building2} 
-                            label="Organization name" 
-                            value={displayData.name} 
-                            isEditing={isEditMode}
-                            id="org-name"
-                            onChange={(v) => handleFieldChange('name', v)}
-                            placeholder="Full Legal Name"
-                        />
-                        <VerifiableItem 
-                            icon={MapPin} 
-                            label="Address" 
-                            value={displayData.address} 
-                            isEditing={isEditMode}
-                            id="org-address"
-                            onChange={(v) => handleFieldChange('address', v)}
-                            placeholder="Official Registered Address"
-                        />
-                        <VerifiableItem 
-                            icon={Hash} 
-                            label="Registration no." 
-                            value={displayData.regNo} 
-                            isEditing={isEditMode}
-                            id="org-reg"
-                            onChange={(v) => handleFieldChange('regNo', v)}
-                            placeholder="e.g. Solapur/0000373/2025"
-                        />
-                        <VerifiableItem 
-                            icon={ShieldCheck} 
-                            label="PAN number" 
-                            value={displayData.pan} 
-                            isEditing={isEditMode}
-                            id="org-pan"
-                            onChange={(v) => handleFieldChange('pan', v)}
-                            placeholder="Permanent Account Number"
-                        />
-                        <VerifiableItem 
-                            icon={Globe} 
-                            label="Website" 
-                            value={displayData.website} 
-                            isEditing={isEditMode}
-                            id="org-web"
-                            onChange={(v) => handleFieldChange('website', v)}
-                            placeholder="https://www.example.org"
-                        />
+                    <div className="space-y-8">
+                        {/* Identity & Verification Heading */}
+                        <div className="space-y-4">
+                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Identity & registration</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                                <VerifiableItem 
+                                    icon={Building2} 
+                                    label="Organization name" 
+                                    value={displayData.name} 
+                                    isEditing={isEditMode}
+                                    id="org-name"
+                                    onChange={(v) => handleFieldChange('name', v)}
+                                    placeholder="Full Legal Name"
+                                />
+                                <VerifiableItem 
+                                    icon={MapPin} 
+                                    label="Address" 
+                                    value={displayData.address} 
+                                    isEditing={isEditMode}
+                                    id="org-address"
+                                    onChange={(v) => handleFieldChange('address', v)}
+                                    placeholder="Official Registered Address"
+                                />
+                                <VerifiableItem 
+                                    icon={Hash} 
+                                    label="Registration no." 
+                                    value={displayData.regNo} 
+                                    isEditing={isEditMode}
+                                    id="org-reg"
+                                    onChange={(v) => handleFieldChange('regNo', v)}
+                                    placeholder="e.g. Solapur/0000373/2025"
+                                />
+                                <VerifiableItem 
+                                    icon={ShieldCheck} 
+                                    label="PAN number" 
+                                    value={displayData.pan} 
+                                    isEditing={isEditMode}
+                                    id="org-pan"
+                                    onChange={(v) => handleFieldChange('pan', v)}
+                                    placeholder="Permanent Account Number"
+                                />
+                                <VerifiableItem 
+                                    icon={Globe} 
+                                    label="Website" 
+                                    value={displayData.website} 
+                                    isEditing={isEditMode}
+                                    id="org-web"
+                                    onChange={(v) => handleFieldChange('website', v)}
+                                    placeholder="https://www.example.org"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Visual Identity Sub-section */}
+                        <div className="space-y-4">
+                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Visual branding</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                                <div className="flex flex-col items-center gap-4 bg-muted/5 rounded-xl p-4 border border-dashed">
+                                    <div className="relative w-full max-w-[200px] aspect-[2/1] rounded-lg flex items-center justify-center bg-white overflow-hidden shadow-inner">
+                                        {(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl) ? (
+                                            <img src={(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent((isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!)}` : (isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)} alt="Logo" className="object-contain p-2 h-full w-full" />
+                                        ) : (
+                                            <div className="text-muted-foreground text-center p-2 font-normal">
+                                                <ImageIcon className="mx-auto h-8 w-8 opacity-20" />
+                                                <p className="text-[10px] mt-1 uppercase font-bold tracking-tighter">No logo</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {isEditMode && (
+                                        <div className="flex gap-2">
+                                            <label htmlFor="logo-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-[10px] font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent h-7 px-3 cursor-pointer">
+                                                <UploadCloud className="mr-1.5 h-3.5 w-3.5" /> Upload logo
+                                            </label>
+                                            <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
+                                            {editableData?.logoUrl && (
+                                                <Button type="button" variant="destructive" size="icon" className="h-7 w-7" onClick={handleRemoveLogo} disabled={isSubmitting}>
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="logoWidth" className="font-bold text-[10px] uppercase text-muted-foreground">Logo width (px)</Label>
+                                        <Input id="logoWidth" type="number" value={displayData.logoWidth || 40} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} className="h-9 font-bold" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="logoHeight" className="font-bold text-[10px] uppercase text-muted-foreground">Logo height (px)</Label>
+                                        <Input id="logoHeight" type="number" value={displayData.logoHeight || 40} onChange={(e) => handleFieldChange('logoHeight', e.target.value)} disabled={isFormDisabled} className="h-9 font-bold" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Communications Sub-section */}
+                        <div className="space-y-4">
+                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Communications & footer</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                                <div className="space-y-1">
+                                    <Label htmlFor="contactEmail" className="font-bold text-sm text-primary">Support email</Label>
+                                    <Input id="contactEmail" value={displayData.contactEmail} onChange={(e) => handleFieldChange('contactEmail', e.target.value)} disabled={isFormDisabled} placeholder="support@org.com" className="h-9 font-normal"/>
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="contactPhone" className="font-bold text-sm text-primary">Contact phone</Label>
+                                    <Input id="contactPhone" value={displayData.contactPhone} onChange={(e) => handleFieldChange('contactPhone', e.target.value)} disabled={isFormDisabled} placeholder="+91 00000 00000" className="h-9 font-normal"/>
+                                </div>
+                                <div className="md:col-span-2 space-y-1">
+                                    <Label htmlFor="copyright" className="font-bold text-sm text-primary">Footer copyright text</Label>
+                                    <Input id="copyright" value={displayData.copyright} onChange={(e) => handleFieldChange('copyright', e.target.value)} disabled={isFormDisabled} placeholder="© 2026 Your Organization. All Rights Reserved." className="h-9 font-normal"/>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </SettingsSection>
 
@@ -529,7 +597,6 @@ export default function AppSettingsPage() {
                     title="Bank transfer & UPI details" 
                     description="Configure all donation channels including bank and digital payment info."
                     icon={CreditCard}
-                    defaultOpen={true}
                 >
                     <div className="space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -625,51 +692,6 @@ export default function AppSettingsPage() {
                     </div>
                 </SettingsSection>
 
-                {/* Visual Identity Section */}
-                <SettingsSection 
-                    title="Visual identity" 
-                    description="Logo and primary branding assets."
-                    icon={ImageIcon}
-                >
-                    <div className="space-y-6">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="relative w-full max-w-[200px] aspect-[2/1] border-2 border-dashed rounded-lg flex items-center justify-center bg-secondary/30 overflow-hidden">
-                                {(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl) ? (
-                                    <img src={(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent((isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!)}` : (isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)} alt="Logo" className="object-contain p-2 h-full w-full" />
-                                ) : (
-                                    <div className="text-muted-foreground text-center p-2 font-normal">
-                                        <ImageIcon className="mx-auto h-8 w-8 opacity-20" />
-                                        <p className="text-[10px] mt-1 uppercase font-bold tracking-tighter">No logo uploaded</p>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="w-full grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <Label htmlFor="logoWidth" className="font-bold text-[10px] uppercase text-muted-foreground">Width (px)</Label>
-                                    <Input id="logoWidth" type="number" value={displayData.logoWidth || 40} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold" placeholder="Default: 40"/>
-                                </div>
-                                <div className="space-y-1">
-                                    <Label htmlFor="logoHeight" className="font-bold text-[10px] uppercase text-muted-foreground">Height (px)</Label>
-                                    <Input id="logoHeight" type="number" value={displayData.logoHeight || 40} onChange={(e) => handleFieldChange('logoHeight', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold" placeholder="Default: 40"/>
-                                </div>
-                            </div>
-                        </div>
-                        {isEditMode && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <label htmlFor="logo-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent h-9 px-4 cursor-pointer">
-                                    <UploadCloud className="mr-2 h-4 w-4" /> Change logo
-                                </label>
-                                <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
-                                {editableData?.logoUrl && (
-                                    <Button type="button" variant="destructive" size="sm" className="font-bold h-9" onClick={handleRemoveLogo} disabled={isSubmitting}>
-                                        <Trash2 className="mr-2 h-4 w-4" /> Remove
-                                    </Button>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </SettingsSection>
-
                 {/* Guiding Principles Manager Section */}
                 <SettingsSection 
                     title="Guiding principles manager" 
@@ -702,7 +724,7 @@ export default function AppSettingsPage() {
                                     onChange={(e) => handleFieldChange('gpDescription', e.target.value)} 
                                     disabled={isFormDisabled} 
                                     placeholder="Brief introduction about your principles..." 
-                                    className="font-normal"
+                                    className="font-normal text-sm leading-relaxed"
                                 />
                             </div>
                         </div>
@@ -735,7 +757,7 @@ export default function AppSettingsPage() {
                                             value={principle.text} 
                                             onChange={(e) => handlePrincipleChange(index, 'text', e.target.value)} 
                                             placeholder="Enter organizational principle..." 
-                                            className="font-normal min-h-[80px]" 
+                                            className="font-normal min-h-[80px] text-sm" 
                                         />
                                     ) : (
                                         <p className="text-sm font-normal text-foreground leading-relaxed">
@@ -755,30 +777,6 @@ export default function AppSettingsPage() {
                                 </Button>
                             </div>
                         )}
-                    </div>
-                </SettingsSection>
-
-                {/* Support Communications Section */}
-                <SettingsSection 
-                    title="Communications" 
-                    description="Public contact information and footer configuration."
-                    icon={FileText}
-                >
-                    <div className="pt-2 space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <Label htmlFor="contactEmail" className="font-bold text-[10px] uppercase text-muted-foreground">Contact email</Label>
-                                <Input id="contactEmail" value={displayData.contactEmail || ''} onChange={(e) => handleFieldChange('contactEmail', e.target.value)} disabled={isFormDisabled} className="h-9 font-bold" />
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label htmlFor="contactPhone" className="font-bold text-[10px] uppercase text-muted-foreground">Contact phone</Label>
-                                <Input id="contactPhone" value={displayData.contactPhone || ''} onChange={(e) => handleFieldChange('contactPhone', e.target.value)} disabled={isFormDisabled} className="h-9 font-bold" />
-                            </div>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="copyright" className="font-bold text-[10px] uppercase text-muted-foreground">Footer copyright</Label>
-                            <Input id="copyright" value={displayData.copyright || ''} onChange={(e) => handleFieldChange('copyright', e.target.value)} disabled={isFormDisabled} className="h-9 font-normal text-xs" />
-                        </div>
                     </div>
                 </SettingsSection>
 
