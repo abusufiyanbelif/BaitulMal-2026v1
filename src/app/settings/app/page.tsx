@@ -5,17 +5,16 @@ import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
-import { useInfoSettings } from '@/hooks/use-info-settings';
 import { useStorage, useFirestore, useAuth } from '@/firebase/provider';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, writeBatch, setDoc } from 'firebase/firestore';
+import { doc, writeBatch } from 'firebase/firestore';
 import Resizer from 'react-image-file-resizer';
 import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, Eye, ChevronDown, Monitor, FileText } from 'lucide-react';
+import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, ChevronDown, Monitor, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -50,10 +49,8 @@ interface FormDataType {
     bankAccountName: string;
     bankAccountNumber: string;
     bankIfsc: string;
-    // Page Visibility
-    isDonationInfoPublic: boolean;
-    isGuidingPrinciplesPublic: boolean;
     // Guiding Principles
+    isGuidingPrinciplesPublic: boolean;
     gpTitle: string;
     gpDescription: string;
     principles: GuidingPrinciple[];
@@ -138,7 +135,6 @@ export default function AppSettingsPage() {
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
     const { guidingPrinciplesData, isLoading: isGPLoading } = useGuidingPrinciples();
-    const { infoSettings, isLoading: isInfoLoading } = useInfoSettings();
     
     const storage = useStorage();
     const firestore = useFirestore();
@@ -183,8 +179,7 @@ export default function AppSettingsPage() {
                 bankAccountName: paymentSettings?.bankAccountName || '',
                 bankAccountNumber: paymentSettings?.bankAccountNumber || '',
                 bankIfsc: paymentSettings?.bankIfsc || '',
-                isDonationInfoPublic: infoSettings?.isDonationInfoPublic || false,
-                isGuidingPrinciplesPublic: infoSettings?.isGuidingPrinciplesPublic || false,
+                isGuidingPrinciplesPublic: guidingPrinciplesData?.isGuidingPrinciplesPublic || false,
                 gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
                 gpDescription: guidingPrinciplesData?.description || 'To ensure our operations are transparent, fair, and impactful, we adhere to a clear set of guiding principles. These rules govern how we identify beneficiaries, allocate funds, and manage our resources to best serve the community.',
                 principles: guidingPrinciplesData?.principles || [],
@@ -194,7 +189,7 @@ export default function AppSettingsPage() {
             setLogoFile(null);
             setQrCodeFile(null);
         }
-    }, [isEditMode, brandingSettings, paymentSettings, guidingPrinciplesData, infoSettings]);
+    }, [isEditMode, brandingSettings, paymentSettings, guidingPrinciplesData]);
 
      useEffect(() => {
         if (logoFile) {
@@ -310,15 +305,9 @@ export default function AppSettingsPage() {
             };
             batch.set(doc(firestore, 'settings', 'payment'), paymentData, { merge: true });
 
-            // Page Visibility Save
-            const infoData = {
-                isDonationInfoPublic: editableData.isDonationInfoPublic,
-                isGuidingPrinciplesPublic: editableData.isGuidingPrinciplesPublic,
-            };
-            batch.set(doc(firestore, 'settings', 'info'), infoData, { merge: true });
-
             // Guiding Principles Save
             const gpData = {
+                isGuidingPrinciplesPublic: editableData.isGuidingPrinciplesPublic,
                 title: editableData.gpTitle,
                 description: editableData.gpDescription,
                 principles: editableData.principles.filter(p => p.text?.trim() !== ''),
@@ -341,7 +330,7 @@ export default function AppSettingsPage() {
     
     const handleCancel = () => setIsEditMode(false);
 
-    const isLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading || isInfoLoading;
+    const isLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
     const isFormDisabled = !isEditMode || isSubmitting;
 
     const displayData = isEditMode && editableData ? editableData : {
@@ -366,8 +355,7 @@ export default function AppSettingsPage() {
         bankAccountName: paymentSettings?.bankAccountName || '',
         bankAccountNumber: paymentSettings?.bankAccountNumber || '',
         bankIfsc: paymentSettings?.bankIfsc || '',
-        isDonationInfoPublic: infoSettings?.isDonationInfoPublic || false,
-        isGuidingPrinciplesPublic: infoSettings?.isGuidingPrinciplesPublic || false,
+        isGuidingPrinciplesPublic: guidingPrinciplesData?.isGuidingPrinciplesPublic || false,
         gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
         gpDescription: guidingPrinciplesData?.description || '',
         principles: guidingPrinciplesData?.principles || [],
@@ -397,14 +385,13 @@ export default function AppSettingsPage() {
             bankAccountName: paymentSettings?.bankAccountName || '',
             bankAccountNumber: paymentSettings?.bankAccountNumber || '',
             bankIfsc: paymentSettings?.bankIfsc || '',
-            isDonationInfoPublic: infoSettings?.isDonationInfoPublic || false,
-            isGuidingPrinciplesPublic: infoSettings?.isGuidingPrinciplesPublic || false,
+            isGuidingPrinciplesPublic: guidingPrinciplesData?.isGuidingPrinciplesPublic || false,
             gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
             gpDescription: guidingPrinciplesData?.description || '',
             principles: guidingPrinciplesData?.principles || [],
         };
         return JSON.stringify(initialData) !== JSON.stringify(editableData) || !!logoFile || !!qrCodeFile;
-    }, [isEditMode, editableData, brandingSettings, paymentSettings, guidingPrinciplesData, infoSettings, logoFile, qrCodeFile]);
+    }, [isEditMode, editableData, brandingSettings, paymentSettings, guidingPrinciplesData, logoFile, qrCodeFile]);
 
     if (isLoading) {
         return (
@@ -416,21 +403,11 @@ export default function AppSettingsPage() {
         )
     }
 
-    if (!canUpdateSettings) {
-        return (
-            <Alert variant="destructive">
-                <ShieldAlert className="h-4 w-4" />
-                <AlertTitle>Access Denied</AlertTitle>
-                <AlertDescription>You do not have permission to modify application settings.</AlertDescription>
-            </Alert>
-        );
-    }
-
     return (
         <div className="space-y-6 text-primary font-normal pb-20">
             <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                    <h2 className="text-2xl font-bold tracking-tight">App Settings</h2>
+                    <h2 className="text-2xl font-bold tracking-tight">App settings</h2>
                     <p className="text-sm text-muted-foreground">Manage organization profile, branding, and core standards.</p>
                 </div>
                 {!isEditMode ? (
@@ -454,14 +431,14 @@ export default function AppSettingsPage() {
                 
                 {/* Homepage Hero Section */}
                 <SettingsSection 
-                    title="Homepage Hero Section" 
+                    title="Homepage hero section" 
                     description="Configure the primary welcome message on the landing page."
                     icon={Monitor}
                     defaultOpen={true}
                 >
                     <div className="space-y-6">
                         <div className="space-y-2">
-                            <Label htmlFor="heroTitle" className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Hero Title</Label>
+                            <Label htmlFor="heroTitle" className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Hero title</Label>
                             {isEditMode ? (
                                 <Input 
                                     id="heroTitle"
@@ -475,7 +452,7 @@ export default function AppSettingsPage() {
                             )}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="heroDescription" className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Hero Description</Label>
+                            <Label htmlFor="heroDescription" className="font-bold text-xs uppercase text-muted-foreground tracking-tighter">Hero description</Label>
                             {isEditMode ? (
                                 <Textarea 
                                     id="heroDescription"
@@ -492,62 +469,16 @@ export default function AppSettingsPage() {
                     </div>
                 </SettingsSection>
 
-                {/* Page Visibility Section */}
-                <SettingsSection 
-                    title="Page Visibility" 
-                    description="Control public availability of information pages."
-                    icon={Eye}
-                >
-                    <div className="grid gap-4">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-muted/5 gap-4 transition-all hover:border-primary/20">
-                            <div className="space-y-1 flex-1">
-                                <h3 className="font-bold text-primary text-sm tracking-tight">Donation Types Explained</h3>
-                                <p className="text-xs text-muted-foreground font-normal">Religious guidance and context for charitable contributions.</p>
-                                <Button variant="link" size="sm" asChild className="p-0 h-auto font-bold text-primary mt-2">
-                                    <Link href="/info/donation-info" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview Public Page</Link>
-                                </Button>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Label htmlFor="donation-info-public" className="font-bold text-xs uppercase opacity-60">Visible</Label>
-                                <Switch 
-                                    id="donation-info-public" 
-                                    checked={displayData.isDonationInfoPublic} 
-                                    onCheckedChange={(val) => handleFieldChange('isDonationInfoPublic', val)} 
-                                    disabled={isFormDisabled} 
-                                />
-                            </div>
-                        </div>
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-muted/5 gap-4 transition-all hover:border-primary/20">
-                            <div className="space-y-1 flex-1">
-                                <h3 className="font-bold text-primary text-sm tracking-tight">Our Guiding Principles</h3>
-                                <p className="text-xs text-muted-foreground font-normal">Organizational standards and ethics guide.</p>
-                                <Button variant="link" size="sm" asChild className="p-0 h-auto font-bold text-primary mt-2">
-                                    <Link href="/info/members" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview on About Page</Link>
-                                </Button>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Label htmlFor="guiding-principles-public" className="font-bold text-xs uppercase opacity-60">Visible</Label>
-                                <Switch 
-                                    id="guiding-principles-public" 
-                                    checked={displayData.isGuidingPrinciplesPublic} 
-                                    onCheckedChange={(val) => handleFieldChange('isGuidingPrinciplesPublic', val)} 
-                                    disabled={isFormDisabled} 
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </SettingsSection>
-
                 {/* Verifiable Details Section */}
                 <SettingsSection 
-                    title="Verifiable Details" 
+                    title="Verifiable details" 
                     description="Official public profile of the organization."
                     icon={Building2}
                 >
                     <div className="space-y-2">
                         <VerifiableItem 
                             icon={Building2} 
-                            label="Organization Name" 
+                            label="Organization name" 
                             value={displayData.name} 
                             isEditing={isEditMode}
                             id="org-name"
@@ -574,7 +505,7 @@ export default function AppSettingsPage() {
                         />
                         <VerifiableItem 
                             icon={ShieldCheck} 
-                            label="PAN Number" 
+                            label="PAN number" 
                             value={displayData.pan} 
                             isEditing={isEditMode}
                             id="org-pan"
@@ -595,14 +526,14 @@ export default function AppSettingsPage() {
 
                 {/* Bank Transfer Details Section */}
                 <SettingsSection 
-                    title="Bank Transfer Details" 
+                    title="Bank transfer details" 
                     description="Traditional bank account information for direct donations."
                     icon={Landmark}
                 >
                     <div className="space-y-2">
                         <VerifiableItem 
                             icon={User} 
-                            label="Account Holder Name" 
+                            label="Account holder name" 
                             value={displayData.bankAccountName} 
                             isEditing={isEditMode}
                             id="bank-name"
@@ -611,7 +542,7 @@ export default function AppSettingsPage() {
                         />
                         <VerifiableItem 
                             icon={CreditCard} 
-                            label="Account Number" 
+                            label="Account number" 
                             value={displayData.bankAccountNumber} 
                             isEditing={isEditMode}
                             id="bank-acc"
@@ -620,7 +551,7 @@ export default function AppSettingsPage() {
                         />
                         <VerifiableItem 
                             icon={Landmark} 
-                            label="IFSC Code" 
+                            label="IFSC code" 
                             value={displayData.bankIfsc} 
                             isEditing={isEditMode}
                             id="bank-ifsc"
@@ -632,7 +563,7 @@ export default function AppSettingsPage() {
 
                 {/* Visual Identity Section */}
                 <SettingsSection 
-                    title="Visual Identity" 
+                    title="Visual identity" 
                     description="Logo and branding assets."
                     icon={ImageIcon}
                     defaultOpen={true}
@@ -678,7 +609,7 @@ export default function AppSettingsPage() {
 
                 {/* Donation Infrastructure Section */}
                 <SettingsSection 
-                    title="Donation Infrastructure" 
+                    title="Donation infrastructure" 
                     description="Configure UPI and QR code for simplified giving."
                     icon={QrCode}
                 >
@@ -714,16 +645,16 @@ export default function AppSettingsPage() {
                                 <Input id="upiId" value={displayData.upiId || ''} onChange={(e) => handleFieldChange('upiId', e.target.value)} placeholder="e.g. 1234567890@upi" disabled={isFormDisabled} className="h-9 font-bold font-mono" />
                             </div>
                             <div className="space-y-1.5">
-                                <Label htmlFor="paymentMobileNumber" className="font-bold text-[10px] uppercase text-muted-foreground">Payment Mobile No.</Label>
+                                <Label htmlFor="paymentMobileNumber" className="font-bold text-[10px] uppercase text-muted-foreground">Payment mobile no.</Label>
                                 <Input id="paymentMobileNumber" value={displayData.paymentMobileNumber || ''} onChange={(e) => handleFieldChange('paymentMobileNumber', e.target.value)} placeholder="e.g. 9876543210" disabled={isFormDisabled} className="h-9 font-bold font-mono" />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="qrWidth" className="font-bold text-[10px] uppercase text-muted-foreground">QR Width</Label>
+                                    <Label htmlFor="qrWidth" className="font-bold text-[10px] uppercase text-muted-foreground">QR width</Label>
                                     <Input id="qrWidth" type="number" value={displayData.qrWidth || ''} onChange={(e) => handleFieldChange('qrWidth', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold"/>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="qrHeight" className="font-bold text-[10px] uppercase text-muted-foreground">QR Height</Label>
+                                    <Label htmlFor="qrHeight" className="font-bold text-[10px] uppercase text-muted-foreground">QR height</Label>
                                     <Input id="qrHeight" type="number" value={displayData.qrHeight || ''} onChange={(e) => handleFieldChange('qrHeight', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold"/>
                                 </div>
                             </div>
@@ -733,14 +664,30 @@ export default function AppSettingsPage() {
 
                 {/* Guiding Principles Manager Section */}
                 <SettingsSection 
-                    title="Guiding Principles Manager" 
-                    description="Define the core values and operational standards for the organization."
+                    title="Guiding principles manager" 
+                    description="Define core values and operational standards displayed on the About page."
                     icon={Shield}
                 >
                     <div className="space-y-6">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-muted/5 gap-4 transition-all hover:border-primary/20">
+                            <div className="space-y-1 flex-1">
+                                <h3 className="font-bold text-primary text-sm tracking-tight">Our guiding principles section</h3>
+                                <p className="text-xs text-muted-foreground font-normal">Controls the visibility of this section on the public About page.</p>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <Label htmlFor="gp-visibility" className="font-bold text-xs uppercase opacity-60">Visible</Label>
+                                <Switch 
+                                    id="gp-visibility" 
+                                    checked={displayData.isGuidingPrinciplesPublic} 
+                                    onCheckedChange={(val) => handleFieldChange('isGuidingPrinciplesPublic', val)} 
+                                    disabled={isFormDisabled} 
+                                />
+                            </div>
+                        </div>
+
                         <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <Label className="font-bold text-[10px] uppercase text-muted-foreground">Commitment Section Description</Label>
+                                <Label className="font-bold text-[10px] uppercase text-muted-foreground">Commitment section description</Label>
                                 <Textarea 
                                     rows={3} 
                                     value={displayData.gpDescription} 
@@ -812,16 +759,16 @@ export default function AppSettingsPage() {
                     <div className="pt-2 space-y-4">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <Label htmlFor="contactEmail" className="font-bold text-[10px] uppercase text-muted-foreground">Contact Email</Label>
+                                <Label htmlFor="contactEmail" className="font-bold text-[10px] uppercase text-muted-foreground">Contact email</Label>
                                 <Input id="contactEmail" value={displayData.contactEmail || ''} onChange={(e) => handleFieldChange('contactEmail', e.target.value)} disabled={isFormDisabled} className="h-9 font-bold" />
                             </div>
                             <div className="space-y-1.5">
-                                <Label htmlFor="contactPhone" className="font-bold text-[10px] uppercase text-muted-foreground">Contact Phone</Label>
+                                <Label htmlFor="contactPhone" className="font-bold text-[10px] uppercase text-muted-foreground">Contact phone</Label>
                                 <Input id="contactPhone" value={displayData.contactPhone || ''} onChange={(e) => handleFieldChange('contactPhone', e.target.value)} disabled={isFormDisabled} className="h-9 font-bold" />
                             </div>
                         </div>
                         <div className="space-y-1.5">
-                            <Label htmlFor="copyright" className="font-bold text-[10px] uppercase text-muted-foreground">Footer Copyright</Label>
+                            <Label htmlFor="copyright" className="font-bold text-[10px] uppercase text-muted-foreground">Footer copyright</Label>
                             <Input id="copyright" value={displayData.copyright || ''} onChange={(e) => handleFieldChange('copyright', e.target.value)} disabled={isFormDisabled} className="h-9 font-normal text-xs" />
                         </div>
                     </div>

@@ -94,6 +94,7 @@ export interface GuidingPrinciplesData extends DocumentData {
   title: string;
   description: string;
   principles: GuidingPrinciple[];
+  isGuidingPrinciplesPublic?: boolean;
 }
 
 export interface CampaignDocument {

@@ -72,6 +72,7 @@ export default function AboutOrganizationPage() {
     const isLoading = isMembersLoading || isBrandingLoading || isPaymentLoading || isGPDataLoading || isInfoLoading;
 
     const gpData = guidingPrinciplesData || defaultGuidingPrinciples;
+    const isGPVisible = guidingPrinciplesData?.isGuidingPrinciplesPublic ?? true;
     const visiblePrinciples = gpData.principles?.filter(p => !p.isHidden && p.text?.trim()) || [];
 
     if (isLoading) {
@@ -173,7 +174,7 @@ export default function AboutOrganizationPage() {
             </div>
 
             {/* Guiding Principles Section */}
-            {infoSettings?.isGuidingPrinciplesPublic && visiblePrinciples.length > 0 && (
+            {isGPVisible && visiblePrinciples.length > 0 && (
                 <Card className="animate-fade-in-up shadow-lg border-primary/10 bg-white" style={{ animationDelay: '300ms' }}>
                     <CardHeader className="bg-primary/5 border-b border-primary/5">
                         <CardTitle className="flex items-center gap-3 text-xl uppercase font-bold tracking-tight">
@@ -221,7 +222,7 @@ export default function AboutOrganizationPage() {
                                             <Card key={member.id} className="group transition-all duration-300 hover:shadow-md hover:-translate-y-1 bg-primary/[0.02] border-primary/5">
                                                 <CardContent className="p-4 flex items-center gap-4">
                                                     <Avatar className="h-16 w-16 border-2 border-primary/10 transition-transform group-hover:scale-105">
-                                                        <AvatarImage src={member.idProofUrl || ''} />
+                                                        <AvatarImage src={member.idProofUrl || ''} alt={member.name || 'Member'} />
                                                         <AvatarFallback className="bg-primary text-white font-bold text-xs">{getInitials(member.name)}</AvatarFallback>
                                                     </Avatar>
                                                     <div className="flex-1 min-w-0">

@@ -7,6 +7,7 @@ import { z } from 'zod';
 import Image from 'next/image';
 import { useSession } from '@/hooks/use-session';
 import { useDonationInfo } from '@/hooks/use-donation-info';
+import { useInfoSettings } from '@/hooks/use-info-settings';
 import { defaultDonationInfo } from '@/lib/donation-info-default';
 import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
@@ -16,7 +17,7 @@ import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, Image as ImageIcon, BookOpen, Edit, X } from 'lucide-react';
+import { Loader2, ShieldAlert, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, Image as ImageIcon, BookOpen, Edit, X, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -27,9 +28,11 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { FileUploader } from '@/components/file-uploader';
+import { Switch } from '@/components/ui/switch';
 import { BrandedLoader } from '@/components/branded-loader';
 import { donationCategories } from '@/lib/modules';
-import { Switch } from '@/components/ui/switch';
+import Link from 'next/link';
 
 const useCaseSchema = z.object({
   id: z.string(),
@@ -189,6 +192,7 @@ function QAEditor({ control, typeIndex, isReadOnly }: { control: any, typeIndex:
 export default function InfoSettingsPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
     const { donationInfoData, isLoading: isDonationInfoLoading, forceRefetch: forceRefetchDonationInfo } = useDonationInfo();
+    const { infoSettings, isLoading: isInfoLoading } = useInfoSettings();
     
     const firestore = useFirestore();
     const storage = useStorage();
@@ -198,6 +202,8 @@ export default function InfoSettingsPage() {
     const [activeTab, setActiveTab] = useState<string>('');
     const [isInitialized, setIsInitialized] = useState(false);
     const [editModes, setEditModes] = useState<Record<string, boolean>>({});
+    
+    const [localDonationVisible, setLocalDonationVisible] = useState(false);
 
     const form = useForm<DonationInfoFormValues>({
         resolver: zodResolver(formSchema),
@@ -232,7 +238,26 @@ export default function InfoSettingsPage() {
         }
     }, [donationInfoData, isDonationInfoLoading, isInitialized, form]);
 
+    useEffect(() => {
+        if (infoSettings) {
+            setLocalDonationVisible(!!infoSettings.isDonationInfoPublic);
+        }
+    }, [infoSettings]);
+
     const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.update', false);
+
+    const handleSaveVisibility = async () => {
+        if (!firestore || !canUpdateSettings) return;
+        setIsSubmitting(true);
+        try {
+            await setDoc(doc(firestore, 'settings', 'info'), { isDonationInfoPublic: localDonationVisible }, { merge: true });
+            toast({ title: 'Visibility updated', variant: 'success' });
+        } catch (e) {
+            toast({ title: 'Failed to update visibility', variant: 'destructive' });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     const handleSaveDonationCategory = async (typeIndex: number) => {
         if (!firestore || !storage || !canUpdateSettings) return;
@@ -272,30 +297,53 @@ export default function InfoSettingsPage() {
         } finally { setIsSubmitting(false); }
     };
 
-    if (isSessionLoading || isDonationInfoLoading) {
+    if (isSessionLoading || isDonationInfoLoading || isInfoLoading) {
         return <BrandedLoader />;
     }
 
-    if (!canUpdateSettings) {
-        return (
-            <main className="container mx-auto p-4 md:p-8">
-                <Alert variant="destructive">
-                    <ShieldAlert className="h-4 w-4" />
-                    <AlertTitle className="font-bold">Access Denied</AlertTitle>
-                    <AlertDescription className="font-normal text-primary/70">You do not have permission to manage informational settings.</AlertDescription>
-                </Alert>
-            </main>
-        );
-    }
-    
     return (
         <div className="space-y-6 text-primary font-normal">
+            
+            {/* Page Visibility Card */}
+            <Card className="animate-fade-in-zoom border-primary/10 overflow-hidden shadow-sm">
+                <CardHeader className="bg-primary/5 border-b">
+                    <CardTitle className="font-bold uppercase tracking-tight">Page visibility</CardTitle>
+                    <CardDescription className="font-normal text-primary/70">Manage the public availability of informational pages.</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-muted/5 gap-4 transition-all hover:border-primary/20">
+                        <div className="space-y-1 flex-1">
+                            <h3 className="font-bold text-primary text-sm tracking-tight">Donation types explained</h3>
+                            <p className="text-xs text-muted-foreground font-normal">Religious guidance and context for charitable contributions.</p>
+                            <Button variant="link" size="sm" asChild className="p-0 h-auto font-bold text-primary mt-2">
+                                <Link href="/info/donation-info" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview public page</Link>
+                            </Button>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center space-x-2">
+                                <Label htmlFor="donation-info-public" className="font-bold text-xs uppercase opacity-60">Visible</Label>
+                                <Switch 
+                                    id="donation-info-public" 
+                                    checked={localDonationVisible} 
+                                    onCheckedChange={setLocalDonationVisible} 
+                                    disabled={isSubmitting} 
+                                />
+                            </div>
+                            <Button size="sm" variant="outline" onClick={handleSaveVisibility} disabled={isSubmitting || localDonationVisible === !!infoSettings?.isDonationInfoPublic} className="font-bold border-primary/20">
+                                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin"/> : <Save className="h-4 w-4 mr-2"/>}
+                                Save visibility
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
             <Form {...form}>
                 <div className="space-y-6">
                     <Card className="animate-fade-in-up border-primary/10 overflow-hidden shadow-sm">
                         <CardHeader className="bg-primary/5 border-b">
                             <div className="flex items-center justify-between gap-4">
-                                <div><CardTitle className="font-bold uppercase tracking-tight">Donation Content Manager</CardTitle><CardDescription className="font-normal text-primary/70">Manage educational content for each donation category.</CardDescription></div>
+                                <div><CardTitle className="font-bold uppercase tracking-tight">Donation content manager</CardTitle><CardDescription className="font-normal text-primary/70">Manage educational content for each donation category.</CardDescription></div>
                                 <Button onClick={() => { const id = `type_${Date.now()}`; appendDonationType({ id, title: 'New Category', useCases: [], qaItems: [], hideKeyHighlights: false, hideUseCases: false, hideQA: false, hideUsage: false, hideRestrictions: false }); setActiveTab(id); setEditModes(p => ({ ...p, [id]: true })); }} variant="outline" size="sm" className="font-bold text-primary border-primary/20 active:scale-95 transition-transform"><Plus className="mr-2 h-4 w-4" /> Add category</Button>
                             </div>
                         </CardHeader>
