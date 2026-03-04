@@ -4,40 +4,47 @@
 
 @layer base {
   :root {
-    --background: 135 25% 96%;
-    --foreground: 115 89% 28%; /* India Green: #138808 */
+    /* Standardized HSL Palette */
+    --background: 0 0% 100%;
+    --foreground: 150 40% 10%; /* High-contrast primary text */
     
     --card: 0 0% 100%;
-    --card-foreground: 115 89% 28%;
+    --card-foreground: 150 40% 10%;
     
-    --popover: 135 25% 96%;
-    --popover-foreground: 115 89% 28%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 40% 10%;
     
-    --primary: 115 89% 28%; 
+    --primary: 160 70% 40%; /* Rich, calm green */
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 135 25% 92%;
-    --secondary-foreground: 115 89% 20%;
+    --secondary: 160 70% 95%;
+    --secondary-foreground: 160 70% 20%;
     
-    --muted: 135 15% 85%;
-    --muted-foreground: 115 20% 40%;
+    --muted: 160 10% 90%;
+    --muted-foreground: 160 10% 40%;
     
-    --accent: 135 25% 90%;
-    --accent-foreground: 115 89% 20%;
+    --accent: 38.8 92.3% 50.2%; /* Vibrant amber/gold */
+    --accent-foreground: 0 0% 100%;
     
-    --destructive: 0 84% 40%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
     
-    --success: 115 89% 28%;
+    --success: 142.1 70.6% 45.3%;
     --success-foreground: 0 0% 100%;
+
+    --warning: 38.8 92.3% 50.2%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 217.2 91.2% 59.8%;
+    --info-foreground: 0 0% 100%;
     
-    --border: 115 89% 28%;
-    --input: 115 89% 28%;
-    --ring: 115 89% 28%;
+    --border: 160 70% 40%;
+    --input: 160 70% 40%;
+    --ring: 160 70% 40%;
     
     --radius: 0.75rem;
     
-    --chart-1: 115 89% 28%;
+    --chart-1: 160 70% 40%;
     --chart-2: 142 76% 36%;
     --chart-3: 221 83% 53%;
     --chart-4: 25 95% 53%;
@@ -53,7 +60,7 @@
 
   body {
     @apply min-h-screen bg-background text-foreground antialiased font-sans font-normal;
-    color: #138808 !important;
+    color: hsl(var(--foreground)) !important;
   }
 
   p, span, label, div, td, th, input, textarea, select, button {
@@ -63,7 +70,7 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold;
-    color: #138808 !important;
+    color: hsl(var(--primary)) !important;
     text-transform: none !important;
   }
 
@@ -77,22 +84,22 @@
     height: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: #f1f9f3;
+    background: hsl(var(--secondary));
     border-radius: 10px;
   }
   ::-webkit-scrollbar-thumb {
-    background: #138808;
+    background: hsl(var(--primary));
     border-radius: 10px;
-    border: 2px solid #f1f9f3;
+    border: 2px solid hsl(var(--secondary));
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #0e6b06;
+    background: hsl(160 70% 30%);
   }
 
   /* Firefox Scrollbar */
   * {
     scrollbar-width: thin;
-    scrollbar-color: #138808 #f1f9f3;
+    scrollbar-color: hsl(var(--primary)) hsl(var(--secondary));
   }
 
   .interactive-hover {

@@ -10,7 +10,7 @@ export function GET() {
     React.createElement('div', {
         style: {
           fontSize: 96,
-          background: '#138808',
+          background: '#1FB278', // Matching HSL 160 70% 40%
           width: '100%',
           height: '100%',
           display: 'flex',
