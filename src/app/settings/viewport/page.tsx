@@ -83,7 +83,7 @@ export default function ViewportSettingsPage() {
             }
 
             toast({ 
-                title: "Settings Saved", 
+                title: "Settings saved", 
                 description: "Your display preferences have been updated.",
                 variant: "success" 
             });
@@ -91,7 +91,7 @@ export default function ViewportSettingsPage() {
             setIsEditMode(false);
         } catch (error) {
             toast({ 
-                title: "Save Failed", 
+                title: "Save failed", 
                 description: "An error occurred while saving your preferences.",
                 variant: "destructive" 
             });
@@ -117,16 +117,16 @@ export default function ViewportSettingsPage() {
                 </div>
                 {!isEditMode ? (
                     <Button onClick={() => setIsEditMode(true)} className="font-bold">
-                        <Edit className="mr-2 h-4 w-4" /> Edit Settings
+                        <Edit className="mr-2 h-4 w-4" /> Edit settings
                     </Button>
                 ) : (
                     <div className="flex gap-2">
                         <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary">
                             <X className="mr-2 h-4 w-4" /> Cancel
                         </Button>
-                        <Button onClick={handleSave} disabled={isSubmitting} className="font-bold">
+                        <Button onClick={handleSave} disabled={isSubmitting} className="font-bold shadow-md">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                            Save Changes
+                            Save changes
                         </Button>
                     </div>
                 )}
@@ -135,20 +135,20 @@ export default function ViewportSettingsPage() {
             <div className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-6">
                     {/* Appearance Mode Summary / Editor */}
-                    <Card className={cn("transition-all duration-300", isEditMode && "border-primary/40 shadow-md")}>
-                        <CardHeader>
+                    <Card className={cn("transition-all duration-300 border-primary/10", isEditMode && "border-primary/40 shadow-md")}>
+                        <CardHeader className="bg-primary/5 border-b">
                             <CardTitle className="flex items-center gap-2 text-primary font-bold">
                                 <Palette className="h-5 w-5" /> Appearance mode
                             </CardTitle>
-                            <CardDescription className="font-normal">Select your basic application interface mode.</CardDescription>
+                            <CardDescription className="font-normal text-primary/70">Select your basic application interface mode.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-4 pt-6">
                             {!isEditMode ? (
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center p-3 rounded-lg bg-muted/20 border">
                                         <div className="flex items-center gap-2">
                                             {resolvedTheme === 'dark' ? <Moon className="h-4 w-4 text-primary" /> : <Sun className="h-4 w-4 text-primary" />}
-                                            <span className="text-sm font-bold capitalize">{resolvedTheme} Mode</span>
+                                            <span className="text-sm font-bold capitalize">{resolvedTheme} mode active</span>
                                         </div>
                                         <Badge variant="secondary" className="font-bold uppercase text-[10px]">{currentThemeName}</Badge>
                                     </div>
@@ -179,23 +179,23 @@ export default function ViewportSettingsPage() {
                                 </div>
                             )}
                             <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest pt-2">
-                                System Status: <span className="text-primary">{resolvedTheme} mode active</span>
+                                System status: <span className="text-primary">{resolvedTheme} mode active</span>
                             </p>
                         </CardContent>
                     </Card>
 
                     {/* Motion & Effects Summary / Editor */}
-                    <Card className={cn("transition-all duration-300", isEditMode && "border-primary/40 shadow-md")}>
-                        <CardHeader>
+                    <Card className={cn("transition-all duration-300 border-primary/10", isEditMode && "border-primary/40 shadow-md")}>
+                        <CardHeader className="bg-primary/5 border-b">
                             <CardTitle className="flex items-center gap-2 text-primary font-bold">
                                 <Zap className="h-5 w-5" /> Motion & effects
                             </CardTitle>
-                            <CardDescription className="font-normal">Configure visual feedback and transitions.</CardDescription>
+                            <CardDescription className="font-normal text-primary/70">Configure visual feedback and transitions.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-6">
+                        <CardContent className="space-y-6 pt-6">
                             <div className="flex items-center justify-between space-x-2 rounded-lg border p-4 bg-muted/5">
                                 <div className="space-y-0.5">
-                                    <Label className="font-bold">UI Animations</Label>
+                                    <Label className="font-bold">UI animations</Label>
                                     <p className="text-xs font-normal text-muted-foreground">Smooth transitions and loading effects.</p>
                                 </div>
                                 <Switch 
@@ -220,8 +220,8 @@ export default function ViewportSettingsPage() {
                 {/* Theme Suggestions Grid (Visible only in Edit Mode) */}
                 <div className="space-y-6">
                     {isEditMode ? (
-                        <Card className="border-primary/40 shadow-md h-full">
-                            <CardHeader>
+                        <Card className="border-primary/40 shadow-md h-full overflow-hidden">
+                            <CardHeader className="bg-primary/5 border-b">
                                 <CardTitle className="flex items-center gap-2 text-primary font-bold">
                                     <Droplets className="h-5 w-5" /> Theme suggestions
                                 </CardTitle>
@@ -229,9 +229,9 @@ export default function ViewportSettingsPage() {
                                     Choose from our curated color palettes.
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <ScrollArea className="h-[400px] pr-4">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <CardContent className="p-0">
+                                <ScrollArea className="h-[400px]">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
                                         {THEME_SUGGESTIONS.map((suggestion) => (
                                             <Button
                                                 key={suggestion.id}
@@ -249,6 +249,7 @@ export default function ViewportSettingsPage() {
                                             </Button>
                                         ))}
                                     </div>
+                                    <ScrollBar orientation="vertical" />
                                 </ScrollArea>
                             </CardContent>
                             <CardFooter className="bg-muted/5 border-t p-4">
@@ -258,38 +259,50 @@ export default function ViewportSettingsPage() {
                             </CardFooter>
                         </Card>
                     ) : (
-                        <Card className="h-full">
-                            <CardHeader>
+                        <Card className="h-full border-primary/10 bg-white">
+                            <CardHeader className="bg-primary/5 border-b">
                                 <CardTitle className="flex items-center gap-2 text-primary font-bold">
-                                    <Info className="h-5 w-5" /> technical audit
+                                    <Info className="h-5 w-5" /> Technical audit
                                 </CardTitle>
-                                <CardDescription className="font-normal">Current UI standards applied to your session.</CardDescription>
+                                <CardDescription className="font-normal text-primary/70">Current UI standards applied to your session.</CardDescription>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="pt-6">
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center py-2 border-b border-dashed">
-                                        <div className="flex items-center gap-2"><Palette className="h-4 w-4 text-muted-foreground"/><span className="text-xs font-bold uppercase tracking-tight">Active Theme</span></div>
+                                        <div className="flex items-center gap-2">
+                                            <Palette className="h-4 w-4 text-muted-foreground"/>
+                                            <span className="text-xs font-bold uppercase tracking-tight">Active theme</span>
+                                        </div>
                                         <Badge variant="outline" className="font-bold text-primary">{currentThemeName}</Badge>
                                     </div>
                                     <div className="flex justify-between items-center py-2 border-b border-dashed">
-                                        <div className="flex items-center gap-2"><Type className="h-4 w-4 text-muted-foreground"/><span className="text-xs font-bold uppercase tracking-tight">Typography</span></div>
+                                        <div className="flex items-center gap-2">
+                                            <Type className="h-4 w-4 text-muted-foreground"/>
+                                            <span className="text-xs font-bold uppercase tracking-tight">Typography</span>
+                                        </div>
                                         <div className="text-right flex flex-wrap gap-1 justify-end">
-                                            <Badge variant="secondary" className="font-normal text-[10px]">SPACE GROTESK</Badge>
-                                            <Badge variant="secondary" className="font-normal text-[10px]">INTER</Badge>
+                                            <Badge variant="secondary" className="font-bold text-[10px]">SPACE GROTESK</Badge>
+                                            <Badge variant="secondary" className="font-bold text-[10px]">INTER</Badge>
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center py-2 border-b border-dashed">
-                                        <div className="flex items-center gap-2"><MousePointer2 className="h-4 w-4 text-muted-foreground"/><span className="text-xs font-bold uppercase tracking-tight">Transitions</span></div>
+                                        <div className="flex items-center gap-2">
+                                            <MousePointer2 className="h-4 w-4 text-muted-foreground"/>
+                                            <span className="text-xs font-bold uppercase tracking-tight">Transitions</span>
+                                        </div>
                                         <span className="text-xs font-mono font-bold text-primary">{animationsEnabled ? '200ms' : '0.01ms'}</span>
                                     </div>
                                     <div className="flex justify-between items-center py-2">
-                                        <div className="flex items-center gap-2"><Eye className="h-4 w-4 text-muted-foreground"/><span className="text-xs font-bold uppercase tracking-tight">Accessibility</span></div>
+                                        <div className="flex items-center gap-2">
+                                            <Eye className="h-4 w-4 text-muted-foreground"/>
+                                            <span className="text-xs font-bold uppercase tracking-tight">Accessibility</span>
+                                        </div>
                                         <Badge variant="success" className="text-[9px] font-bold">OPTIMIZED</Badge>
                                     </div>
                                 </div>
                             </CardContent>
-                            <CardFooter className="bg-primary/5 p-4 rounded-b-lg">
-                                <p className="text-[10px] text-primary/60 font-normal italic">Tip: Click 'Edit Settings' above to change your visual environment.</p>
+                            <CardFooter className="bg-primary/5 p-4 rounded-b-lg mt-auto">
+                                <p className="text-[10px] text-primary/60 font-normal italic">Tip: Click 'Edit settings' above to change your visual environment.</p>
                             </CardFooter>
                         </Card>
                     )}

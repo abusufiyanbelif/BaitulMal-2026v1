@@ -16,7 +16,7 @@ export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
 
-  const allThemes = THEME_SUGGESTIONS.map(t => t.id).concat(['dark', 'system']);
+  const allThemes = THEME_SUGGESTIONS.map(t => t.id).concat(['dark', 'system', 'light']);
 
   return (
     <FirebaseClientProvider>
