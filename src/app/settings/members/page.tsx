@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -18,6 +17,7 @@ import { GROUPS, type GroupId } from '@/lib/modules';
 import { UserSearchDialog } from '@/components/user-search-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { usePageHit } from '@/hooks/use-page-hit';
+import { getInitials } from '@/lib/utils';
 
 export default function OrganizationMembersPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
@@ -123,7 +123,7 @@ export default function OrganizationMembersPage() {
                                                 <CardContent className="p-4 flex items-center gap-4">
                                                     <Avatar className="h-16 w-16">
                                                         <AvatarImage src={member.idProofUrl || undefined} />
-                                                        <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                                                        <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
                                                     </Avatar>
                                                     <div className="flex-1">
                                                         <p className="font-bold">{member.name}</p>
@@ -152,4 +152,3 @@ export default function OrganizationMembersPage() {
         </>
     );
 }
-

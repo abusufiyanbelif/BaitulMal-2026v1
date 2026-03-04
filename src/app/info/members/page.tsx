@@ -16,7 +16,7 @@ import { usePageHit } from '@/hooks/use-page-hit';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 
 function DetailItem({ icon: Icon, label, value, isMono = false }: { icon: any, label: string, value?: string, isMono?: boolean }) {
     if (!value) return null;
@@ -183,7 +183,7 @@ export default function AboutOrganizationPage() {
                                                 <CardContent className="p-4 flex items-center gap-4">
                                                     <Avatar className="h-16 w-16 border-2 border-primary/10 transition-transform group-hover:scale-105">
                                                         <AvatarImage src={member.idProofUrl || ''} />
-                                                        <AvatarFallback className="bg-primary text-white font-bold text-xs">{member.name?.charAt(0)}</AvatarFallback>
+                                                        <AvatarFallback className="bg-primary text-white font-bold text-xs">{getInitials(member.name)}</AvatarFallback>
                                                     </Avatar>
                                                     <div className="flex-1 min-w-0">
                                                         <p className="font-bold text-base truncate">{member.name}</p>
