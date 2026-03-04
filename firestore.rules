@@ -35,19 +35,10 @@ service cloud.firestore {
         // Check one level deeper for sub-modules: p.settings.info.update
         let modObj = p.get(module, {});
         
-        return modObj.get('app', {}).get(permission, false) == true ||
-               modObj.get('info', {}).get(permission, false) == true ||
-               modObj.get('members', {}).get(permission, false) == true ||
-               modObj.get('summary', {}).get(permission, false) == true ||
-               modObj.get('ration', {}).get(permission, false) == true ||
-               modObj.get('beneficiaries', {}).get(permission, false) == true ||
-               modObj.get('donations', {}).get(permission, false) == true ||
-               modObj.get('viewport', {}).get(permission, false) == true ||
-               modObj.get('campaign', {}).get(permission, false) == true ||
-               modObj.get('lead', {}).get(permission, false) == true ||
-               modObj.get('donation', {}).get(permission, false) == true ||
-               modObj.get('beneficiary', {}).get(permission, false) == true ||
-               modObj.get('user', {}).get(permission, false) == true;
+        // Dynamic nested check for common sub-modules
+        let subModules = ['app', 'members', 'info', 'summary', 'ration', 'beneficiaries', 'donations', 'viewport', 'campaign', 'lead', 'donation', 'beneficiary', 'user', 'analytics', 'diagnostics', 'extractor', 'storyCreator'];
+        
+        return subModules.some(sm => modObj.get(sm, {}).get(permission, false) == true);
     }
 
     // ----------------------------------------------------------------------

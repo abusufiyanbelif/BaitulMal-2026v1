@@ -66,7 +66,7 @@
   }
 }
 
-/* Theme Registry - Scope specific variables to ensure no leakage */
+/* Theme Registry - 100% Isolation Overrides */
 .bmss-brand-warm {
   --background: 45 60% 98%;
   --foreground: 142.1 25% 15%;
@@ -87,9 +87,7 @@
   --ring: 142.1 76.2% 36.3%;
   --chart-1: 142.1 76.2% 36.3%;
   --chart-2: 47.9 95.8% 53.1%;
-  --chart-3: 38.8 92.3% 50.2%;
-  --chart-4: 217.2 91.2% 59.8%;
-  --chart-5: 262 83% 58%;
+  --chart-3: 217.2 91.2% 59.8%;
 }
 
 .ocean-blue {
@@ -112,9 +110,6 @@
   --ring: 221 83% 53%;
   --chart-1: 221 83% 53%;
   --chart-2: 191 91% 42%;
-  --chart-3: 221 83% 30%;
-  --chart-4: 191 91% 60%;
-  --chart-5: 221 83% 70%;
 }
 
 .sunset-orange {
@@ -137,9 +132,6 @@
   --ring: 25 95% 53%;
   --chart-1: 25 95% 53%;
   --chart-2: 45 93% 47%;
-  --chart-3: 25 95% 30%;
-  --chart-4: 45 93% 60%;
-  --chart-5: 25 95% 70%;
 }
 
 .sunrise-peach {
@@ -162,9 +154,6 @@
   --ring: 12 100% 63%;
   --chart-1: 12 100% 63%;
   --chart-2: 45 93% 47%;
-  --chart-3: 12 100% 40%;
-  --chart-4: 45 93% 65%;
-  --chart-5: 12 100% 80%;
 }
 
 .lavender-mint {
@@ -187,9 +176,6 @@
   --ring: 262 70% 60%;
   --chart-1: 262 70% 60%;
   --chart-2: 160 70% 40%;
-  --chart-3: 262 70% 40%;
-  --chart-4: 160 70% 60%;
-  --chart-5: 262 70% 80%;
 }
 
 .midnight-ramadan {
@@ -212,9 +198,6 @@
   --ring: 45 93% 47%;
   --chart-1: 45 93% 47%;
   --chart-2: 142 70% 45%;
-  --chart-3: 222 47% 40%;
-  --chart-4: 142 70% 65%;
-  --chart-5: 45 93% 70%;
 }
 
 .midnight-emerald {
@@ -237,9 +220,6 @@
   --ring: 160 70% 45%;
   --chart-1: 160 70% 45%;
   --chart-2: 38 92% 50%;
-  --chart-3: 160 70% 30%;
-  --chart-4: 38 92% 70%;
-  --chart-5: 160 70% 65%;
 }
 
 .cyberpunk-neon {
@@ -262,9 +242,6 @@
   --ring: 320 100% 50%;
   --chart-1: 320 100% 50%;
   --chart-2: 180 100% 50%;
-  --chart-3: 280 50% 30%;
-  --chart-4: 180 100% 70%;
-  --chart-5: 320 100% 70%;
 }
 
 .dracula-orchid {
@@ -287,9 +264,6 @@
   --ring: 265 89% 78%;
   --chart-1: 265 89% 78%;
   --chart-2: 320 100% 50%;
-  --chart-3: 231 15% 40%;
-  --chart-4: 320 100% 70%;
-  --chart-5: 265 89% 90%;
 }
 
 .github-dark {
@@ -312,9 +286,6 @@
   --ring: 210 20% 98%;
   --chart-1: 210 20% 98%;
   --chart-2: 38 92% 50%;
-  --chart-3: 220 40% 30%;
-  --chart-4: 38 92% 70%;
-  --chart-5: 210 20% 80%;
 }
 
 @layer base {

@@ -16,7 +16,7 @@ export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
 
-  // Extract unique theme IDs, ensuring 'light' and 'dark' are handled correctly
+  // Extract unique theme IDs, ensuring the registry is strictly followed.
   const allThemes = Array.from(new Set([
     ...THEME_SUGGESTIONS.map(t => t.id),
     'dark',
