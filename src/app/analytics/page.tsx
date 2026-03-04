@@ -27,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StorageAnalytics } from '@/components/storage-analytics';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getPageHits } from './actions';
+import { SectionLoader } from '@/components/section-loader';
 
 function StatCard({ title, value, icon: Icon, isLoading }: { title: string, value: number, icon: React.ComponentType<{className?: string}>, isLoading: boolean }) {
     return (
@@ -292,95 +293,101 @@ export default function AnalyticsPage() {
                 </TabsList>
                 <TabsContent value="general">
                     <div className="space-y-6">
-                        <Card className="animate-fade-in-zoom">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-3xl"> General Analytics Overview</CardTitle>
-                                <CardDescription>A summary of key metrics from across the application.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                <StatCard title="Total Users" value={users?.length || 0} icon={Users} isLoading={isLoading} />
-                                <StatCard title="Total Campaigns" value={campaigns?.length || 0} icon={FolderKanban} isLoading={isLoading} />
-                                <StatCard title="Total Leads" value={leads?.length || 0} icon={Lightbulb} isLoading={isLoading} />
-                                <StatCard title="Total Beneficiaries (Master)" value={beneficiaries?.length || 0} icon={HandHelping} isLoading={isLoading} />
-                                <StatCard title="Total Donations" value={donations?.length || 0} icon={DollarSign} isLoading={isLoading} />
-                                <StatCard title="Total Donation Amount" value={totalDonationAmount} icon={DollarSign} isLoading={isLoading} />
-                            </CardContent>
-                        </Card>
-                        <div className="grid gap-6 lg:grid-cols-3">
-                            <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '200ms'}}>
-                                <CardHeader>
-                                    <CardTitle>Donations by Category</CardTitle>
-                                    <CardDescription>Total amount received for each donation category.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                {isClient ? (
-                                    <ChartContainer config={donationCategoryChartConfig} className="h-[300px] w-full">
-                                        <PieChart>
-                                            <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                            <Pie data={chartDataWithColors} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
-                                                {chartDataWithColors.map((entry) => (
-                                                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                                                ))}
-                                            </Pie>
-                                            <ChartLegend content={<ChartLegendContent />} />
-                                        </PieChart>
-                                    </ChartContainer>
-                                ) : <Skeleton className="h-[300px] w-full" />}
-                                </CardContent>
-                            </Card>
-                            <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '300ms'}}>
-                                <CardHeader>
-                                    <CardTitle>Top 5 Funded Campaigns</CardTitle>
-                                    <CardDescription>The campaigns that have received the most funding.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    {isClient ? (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Campaign</TableHead>
-                                                <TableHead className="text-right">Amount Collected</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {topCampaigns.map(campaign => (
-                                                <TableRow key={campaign.name}>
-                                                    <TableCell className="font-medium">{campaign.name}</TableCell>
-                                                    <TableCell className="text-right font-mono">₹{campaign.collected.toLocaleString('en-IN')}</TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                    ) : <Skeleton className="h-[300px] w-full" />}
-                                </CardContent>
-                            </Card>
-                             <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '400ms'}}>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2"><Eye/> Page Hits</CardTitle>
-                                    <CardDescription>Total visits for key pages.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    {hitsLoading ? <Skeleton className="h-40 w-full"/> : (
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>Page</TableHead>
-                                                    <TableHead className="text-right">Hits</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {pageHits?.sort((a, b) => b.hits - a.hits).map(hit => (
-                                                    <TableRow key={hit.id}>
-                                                        <TableCell className="font-medium capitalize">{hit.id.replace(/_/g, ' ')}</TableCell>
-                                                        <TableCell className="text-right font-mono">{hit.hits.toLocaleString()}</TableCell>
+                        {isLoading ? (
+                            <SectionLoader label="Calculating general analytics..." description="Aggregating counts for users, campaigns, and beneficiaries." />
+                        ) : (
+                            <>
+                                <Card className="animate-fade-in-zoom">
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2 text-3xl text-primary font-bold"> General Analytics Overview</CardTitle>
+                                        <CardDescription className="font-normal">A summary of key metrics from across the application.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                        <StatCard title="Total Users" value={users?.length || 0} icon={Users} isLoading={isLoading} />
+                                        <StatCard title="Total Campaigns" value={campaigns?.length || 0} icon={FolderKanban} isLoading={isLoading} />
+                                        <StatCard title="Total Leads" value={leads?.length || 0} icon={Lightbulb} isLoading={isLoading} />
+                                        <StatCard title="Total Beneficiaries (Master)" value={beneficiaries?.length || 0} icon={HandHelping} isLoading={isLoading} />
+                                        <StatCard title="Total Donations" value={donations?.length || 0} icon={DollarSign} isLoading={isLoading} />
+                                        <StatCard title="Total Donation Amount" value={totalDonationAmount} icon={DollarSign} isLoading={isLoading} />
+                                    </CardContent>
+                                </Card>
+                                <div className="grid gap-6 lg:grid-cols-3">
+                                    <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '200ms'}}>
+                                        <CardHeader>
+                                            <CardTitle className="text-primary font-bold">Donations by Category</CardTitle>
+                                            <CardDescription className="font-normal">Total amount received for each donation category.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                        {isClient ? (
+                                            <ChartContainer config={donationCategoryChartConfig} className="h-[300px] w-full">
+                                                <PieChart>
+                                                    <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                                    <Pie data={chartDataWithColors} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+                                                        {chartDataWithColors.map((entry) => (
+                                                            <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                                                        ))}
+                                                    </Pie>
+                                                    <ChartLegend content={<ChartLegendContent />} />
+                                                </PieChart>
+                                            </ChartContainer>
+                                        ) : <Skeleton className="h-[300px] w-full" />}
+                                        </CardContent>
+                                    </Card>
+                                    <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '300ms'}}>
+                                        <CardHeader>
+                                            <CardTitle className="text-primary font-bold">Top 5 Funded Campaigns</CardTitle>
+                                            <CardDescription className="font-normal">The campaigns that have received the most funding.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            {isClient ? (
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead className="font-bold text-primary">Campaign</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary">Amount Collected</TableHead>
                                                     </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </div>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {topCampaigns.map(campaign => (
+                                                        <TableRow key={campaign.name}>
+                                                            <TableCell className="font-medium text-foreground">{campaign.name}</TableCell>
+                                                            <TableCell className="text-right font-mono text-primary font-bold">₹{campaign.collected.toLocaleString('en-IN')}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                            ) : <Skeleton className="h-[300px] w-full" />}
+                                        </CardContent>
+                                    </Card>
+                                    <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '400ms'}}>
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2 text-primary font-bold"><Eye/> Page Hits</CardTitle>
+                                            <CardDescription className="font-normal">Total visits for key pages.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            {hitsLoading ? <Skeleton className="h-40 w-full"/> : (
+                                                <Table>
+                                                    <TableHeader>
+                                                        <TableRow>
+                                                            <TableHead className="font-bold text-primary">Page</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary">Hits</TableHead>
+                                                        </TableRow>
+                                                    </TableHeader>
+                                                    <TableBody>
+                                                        {pageHits?.sort((a, b) => b.hits - a.hits).map(hit => (
+                                                            <TableRow key={hit.id}>
+                                                                <TableCell className="font-medium capitalize text-foreground">{hit.id.replace(/_/g, ' ')}</TableCell>
+                                                                <TableCell className="text-right font-mono text-primary font-bold">{hit.hits.toLocaleString()}</TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
+                                                </Table>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </TabsContent>
                 <TabsContent value="storage">
@@ -388,161 +395,167 @@ export default function AnalyticsPage() {
                 </TabsContent>
                 <TabsContent value="database">
                     <div className="space-y-6">
-                        <Card className="animate-fade-in-zoom">
-                            <CardHeader>
-                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                    <div>
-                                        <CardTitle>Activity Over Time</CardTitle>
-                                        <CardDescription>Track new donations, users, and beneficiaries over a selected period.</CardDescription>
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button id="date" variant={"outline"} className={cn("w-full sm:w-[260px] justify-start text-left font-normal", !date && "text-muted-foreground")}>
-                                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                                    {date?.from ? (date.to ? (<>{format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}</>) : (format(date.from, "LLL dd, y"))) : (<span>Pick a date</span>)}
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" align="end">
-                                                <Calendar initialFocus mode="range" defaultMonth={date?.from} selected={date} onSelect={setDate} numberOfMonths={2} />
-                                            </PopoverContent>
-                                        </Popover>
-                                        <UiSelect onValueChange={(value) => {
-                                            const now = new Date();
-                                            if (value === 'all_time') setDate({ from: undefined, to: undefined });
-                                            else if (value === 'this_month') setDate({ from: startOfMonth(now), to: endOfMonth(now) });
-                                            else if (value === 'this_quarter') setDate({ from: startOfQuarter(now), to: endOfQuarter(now) });
-                                            else if (value === 'this_year') setDate({ from: startOfYear(now), to: endOfYear(now) });
-                                            else if (value === 'last_3_months') setDate({ from: subMonths(now, 3), to: now });
-                                        }}>
-                                            <SelectTrigger className="w-full sm:w-auto"><SelectValue placeholder="Quick Select" /></SelectTrigger>
+                        {isLoading ? (
+                            <SectionLoader label="Processing database trends..." description="Analyzing document creation history and distribution." />
+                        ) : (
+                            <>
+                                <Card className="animate-fade-in-zoom">
+                                    <CardHeader>
+                                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                                            <div>
+                                                <CardTitle className="text-primary font-bold">Activity Over Time</CardTitle>
+                                                <CardDescription className="font-normal">Track new donations, users, and beneficiaries over a selected period.</CardDescription>
+                                            </div>
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <Button id="date" variant={"outline"} className={cn("w-full sm:w-[260px] justify-start text-left font-normal border-primary/20 text-primary", !date && "text-muted-foreground")}>
+                                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                                            {date?.from ? (date.to ? (<>{format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}</>) : (format(date.from, "LLL dd, y"))) : (<span>Pick a date</span>)}
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-auto p-0" align="end">
+                                                        <Calendar initialFocus mode="range" defaultMonth={date?.from} selected={date} onSelect={setDate} numberOfMonths={2} />
+                                                    </PopoverContent>
+                                                </Popover>
+                                                <UiSelect onValueChange={(value) => {
+                                                    const now = new Date();
+                                                    if (value === 'all_time') setDate({ from: undefined, to: undefined });
+                                                    else if (value === 'this_month') setDate({ from: startOfMonth(now), to: endOfMonth(now) });
+                                                    else if (value === 'this_quarter') setDate({ from: startOfQuarter(now), to: endOfQuarter(now) });
+                                                    else if (value === 'this_year') setDate({ from: startOfYear(now), to: endOfYear(now) });
+                                                    else if (value === 'last_3_months') setDate({ from: subMonths(now, 3), to: now });
+                                                }}>
+                                                    <SelectTrigger className="w-full sm:w-auto font-bold border-primary/20 text-primary"><SelectValue placeholder="Quick Select" /></SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="all_time" className="font-bold">All Time</SelectItem>
+                                                        <SelectItem value="this_month" className="font-bold">This Month</SelectItem>
+                                                        <SelectItem value="this_quarter" className="font-bold">This Quarter</SelectItem>
+                                                        <SelectItem value="this_year" className="font-bold">This Year</SelectItem>
+                                                        <SelectItem value="last_3_months" className="font-bold">Last 3 Months</SelectItem>
+                                                    </SelectContent>
+                                                </UiSelect>
+                                            </div>
+                                        </div>
+                                        <div className="pt-4 flex flex-wrap gap-4 items-center">
+                                            <UiSelect value={selectedMetric} onValueChange={(value) => setSelectedMetric(value as any)}>
+                                            <SelectTrigger className="w-full sm:w-auto font-bold border-primary/20 text-primary">
+                                                <SelectValue placeholder="Select Metric" />
+                                            </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="all_time">All Time</SelectItem>
-                                                <SelectItem value="this_month">This Month</SelectItem>
-                                                <SelectItem value="this_quarter">This Quarter</SelectItem>
-                                                <SelectItem value="this_year">This Year</SelectItem>
-                                                <SelectItem value="last_3_months">Last 3 Months</SelectItem>
+                                                <SelectItem value="donations" className="font-bold">Donations</SelectItem>
+                                                <SelectItem value="users" className="font-bold">New Users</SelectItem>
+                                                <SelectItem value="beneficiaries" className="font-bold">New Beneficiaries</SelectItem>
                                             </SelectContent>
-                                        </UiSelect>
-                                    </div>
-                                </div>
-                                <div className="pt-4 flex flex-wrap gap-4 items-center">
-                                    <UiSelect value={selectedMetric} onValueChange={(value) => setSelectedMetric(value as any)}>
-                                    <SelectTrigger className="w-full sm:w-auto">
-                                        <SelectValue placeholder="Select Metric" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="donations">Donations</SelectItem>
-                                        <SelectItem value="users">New Users</SelectItem>
-                                        <SelectItem value="beneficiaries">New Beneficiaries</SelectItem>
-                                    </SelectContent>
-                                    </UiSelect>
-                                    <UiSelect value={granularity} onValueChange={(value) => setGranularity(value as any)}>
-                                    <SelectTrigger className="w-full sm:w-auto">
-                                        <SelectValue placeholder="Select Granularity" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="daily">Daily</SelectItem>
-                                        <SelectItem value="weekly">Weekly</SelectItem>
-                                        <SelectItem value="monthly">Monthly</SelectItem>
-                                        <SelectItem value="quarterly">Quarterly</SelectItem>
-                                        <SelectItem value="yearly">Yearly</SelectItem>
-                                    </SelectContent>
-                                    </UiSelect>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                {isClient ? (
-                                <ChartContainer config={activityChartConfig} className="h-[350px] w-full">
-                                    <AreaChart data={timeSeriesData} margin={{ left: 12, right: 12 }}>
-                                    <CartesianGrid vertical={false} />
-                                    <XAxis
-                                        dataKey="date"
-                                        tickLine={false}
-                                        axisLine={false}
-                                        tickMargin={8}
-                                        tickFormatter={(value) => {
-                                        try {
-                                            if (granularity === 'yearly') return value;
-                                            if (granularity === 'quarterly') return value;
-                                            if (granularity === 'monthly') return format(parseISO(`${value}-01`), 'MMM yy');
-                                            return format(parseISO(value), 'd MMM');
-                                        } catch (e) { return value; }
-                                        }}
-                                    />
-                                    <YAxis tickFormatter={(value) => value.toLocaleString()} />
-                                    <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                                    <Area
-                                        dataKey="count"
-                                        type="natural"
-                                        fill="var(--color-count)"
-                                        fillOpacity={0.4}
-                                        stroke="var(--color-count)"
-                                        stackId="a"
-                                    />
-                                    {selectedMetric === 'donations' && (
-                                        <Area
-                                            dataKey="amount"
-                                            type="natural"
-                                            fill="var(--color-amount)"
-                                            fillOpacity={0.4}
-                                            stroke="var(--color-amount)"
-                                            stackId="b"
-                                        />
-                                    )}
-                                    <ChartLegend content={<ChartLegendContent />} />
-                                    </AreaChart>
-                                </ChartContainer>
-                                ) : (
-                                <Skeleton className="h-[350px] w-full" />
-                                )}
-                            </CardContent>
-                        </Card>
-                        <div className="grid gap-6 lg:grid-cols-2 animate-fade-in-up" style={{ animationDelay: '200ms'}}>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Document Distribution</CardTitle>
-                                    <CardDescription>The proportion of documents in each main collection.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                {isClient ? (
-                                    <ChartContainer config={documentDistributionChartConfig} className="h-[300px] w-full">
-                                        <PieChart>
-                                            <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                            <Pie data={documentDistributionData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
-                                                {documentDistributionData.map((entry) => (
-                                                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                                                ))}
-                                            </Pie>
+                                            </UiSelect>
+                                            <UiSelect value={granularity} onValueChange={(value) => setGranularity(value as any)}>
+                                            <SelectTrigger className="w-full sm:w-auto font-bold border-primary/20 text-primary">
+                                                <SelectValue placeholder="Select Granularity" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="daily" className="font-bold">Daily</SelectItem>
+                                                <SelectItem value="weekly" className="font-bold">Weekly</SelectItem>
+                                                <SelectItem value="monthly" className="font-bold">Monthly</SelectItem>
+                                                <SelectItem value="quarterly" className="font-bold">Quarterly</SelectItem>
+                                                <SelectItem value="yearly" className="font-bold">Yearly</SelectItem>
+                                            </SelectContent>
+                                            </UiSelect>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {isClient ? (
+                                        <ChartContainer config={activityChartConfig} className="h-[350px] w-full">
+                                            <AreaChart data={timeSeriesData} margin={{ left: 12, right: 12 }}>
+                                            <CartesianGrid vertical={false} />
+                                            <XAxis
+                                                dataKey="date"
+                                                tickLine={false}
+                                                axisLine={false}
+                                                tickMargin={8}
+                                                tickFormatter={(value) => {
+                                                try {
+                                                    if (granularity === 'yearly') return value;
+                                                    if (granularity === 'quarterly') return value;
+                                                    if (granularity === 'monthly') return format(parseISO(`${value}-01`), 'MMM yy');
+                                                    return format(parseISO(value), 'd MMM');
+                                                } catch (e) { return value; }
+                                                }}
+                                            />
+                                            <YAxis tickFormatter={(value) => value.toLocaleString()} />
+                                            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                                            <Area
+                                                dataKey="count"
+                                                type="natural"
+                                                fill="var(--color-count)"
+                                                fillOpacity={0.4}
+                                                stroke="var(--color-count)"
+                                                stackId="a"
+                                            />
+                                            {selectedMetric === 'donations' && (
+                                                <Area
+                                                    dataKey="amount"
+                                                    type="natural"
+                                                    fill="var(--color-amount)"
+                                                    fillOpacity={0.4}
+                                                    stroke="var(--color-amount)"
+                                                    stackId="b"
+                                                />
+                                            )}
                                             <ChartLegend content={<ChartLegendContent />} />
-                                        </PieChart>
-                                    </ChartContainer>
-                                ) : <Skeleton className="h-[300px] w-full" />}
-                                </CardContent>
-                            </Card>
+                                            </AreaChart>
+                                        </ChartContainer>
+                                        ) : (
+                                        <Skeleton className="h-[350px] w-full" />
+                                        )}
+                                    </CardContent>
+                                </Card>
+                                <div className="grid gap-6 lg:grid-cols-2 animate-fade-in-up" style={{ animationDelay: '200ms'}}>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-primary font-bold">Document Distribution</CardTitle>
+                                            <CardDescription className="font-normal">The proportion of documents in each main collection.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                        {isClient ? (
+                                            <ChartContainer config={documentDistributionChartConfig} className="h-[300px] w-full">
+                                                <PieChart>
+                                                    <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                                    <Pie data={documentDistributionData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+                                                        {documentDistributionData.map((entry) => (
+                                                            <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                                                        ))}
+                                                    </Pie>
+                                                    <ChartLegend content={<ChartLegendContent />} />
+                                                </PieChart>
+                                            </ChartContainer>
+                                        ) : <Skeleton className="h-[300px] w-full" />}
+                                        </CardContent>
+                                    </Card>
 
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Detailed Usage Metrics</CardTitle>
-                                    <CardDescription>Information about database reads, writes, and deletes.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Alert>
-                                        <Database className="h-4 w-4" />
-                                        <AlertTitle>View Usage in Firebase Console</AlertTitle>
-                                        <AlertDescription>
-                                            <p>For detailed, real-time metrics on database operations (document reads, writes, deletes), network usage, and storage, please visit your Firebase Console.</p>
-                                            <p className="mt-2">The "Activity Over Time" chart on this tab can provide insight into document creation trends.</p>
-                                            <Button asChild variant="link" className="p-0 h-auto mt-2">
-                                                <a href={`https://console.firebase.google.com/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/firestore/usage`} target="_blank" rel="noopener noreferrer">
-                                                    Go to Firebase Console Usage <ExternalLink className="ml-1 h-3 w-3" />
-                                                </a>
-                                            </Button>
-                                        </AlertDescription>
-                                    </Alert>
-                                </CardContent>
-                            </Card>
-                        </div>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-primary font-bold">Detailed Usage Metrics</CardTitle>
+                                            <CardDescription className="font-normal">Information about database reads, writes, and deletes.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <Alert className="border-primary/20">
+                                                <Database className="h-4 w-4 text-primary" />
+                                                <AlertTitle className="text-primary font-bold">View Usage in Firebase Console</AlertTitle>
+                                                <AlertDescription className="font-normal text-primary/80">
+                                                    <p>For detailed, real-time metrics on database operations (document reads, writes, deletes), network usage, and storage, please visit your Firebase Console.</p>
+                                                    <p className="mt-2">The "Activity Over Time" chart on this tab can provide insight into document creation trends.</p>
+                                                    <Button asChild variant="link" className="p-0 h-auto mt-2 text-primary font-bold">
+                                                        <a href={`https://console.firebase.google.com/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/firestore/usage`} target="_blank" rel="noopener noreferrer">
+                                                            Go to Firebase Console Usage <ExternalLink className="ml-1 h-3 w-3" />
+                                                        </a>
+                                                    </Button>
+                                                </AlertDescription>
+                                            </Alert>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </TabsContent>
             </Tabs>

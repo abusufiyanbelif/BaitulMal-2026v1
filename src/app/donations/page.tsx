@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, MoreHorizontal, Edit, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, DollarSign, FolderKanban, Lightbulb, Trash2, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, ImageIcon } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Edit, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, DollarSign, FolderKanban, Lightbulb, Trash2, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, ImageIcon, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,6 +53,7 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { syncDonationsAction, deleteDonationAction } from './actions';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { SectionLoader } from '@/components/section-loader';
 
 type SortKey = keyof Donation | 'srNo';
 
@@ -341,17 +342,18 @@ export default function DonationsPage() {
 
   const isLoading = areDonationsLoading || isProfileLoading;
 
-  if (isLoading) return <BrandedLoader />;
+  if (isLoading) return <SectionLoader label="Loading donation records..." description="Retrieving verified financial logs." />;
 
   return (
     <main className="container mx-auto p-4 md:p-8">
         <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold tracking-tighter text-primary">Donations</h1>
             <div className="flex gap-2">
-                <Button variant="outline" onClick={handleSync} disabled={isSyncing} className="font-bold text-[10px] border-primary/20 text-primary">
-                  <DatabaseZap className="mr-2 h-4 w-4"/> Sync donations
+                <Button variant="outline" onClick={handleSync} disabled={isSyncing} className="font-bold text-[10px] border-primary/20 text-primary active:scale-95 transition-transform">
+                  {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
+                  Sync donations
                 </Button>
-                <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="bg-primary hover:bg-primary/90 text-white font-bold text-xs">
+                <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md">
                   <PlusCircle className="mr-2 h-4 w-4" /> Add record
                 </Button>
             </div>
@@ -365,10 +367,10 @@ export default function DonationsPage() {
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
                             <SelectTrigger className="w-[180px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="All statuses"/></SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="All">All statuses</SelectItem>
-                                <SelectItem value="Verified">Verified</SelectItem>
-                                <SelectItem value="Pending">Pending</SelectItem>
-                                <SelectItem value="Canceled">Canceled</SelectItem>
+                                <SelectItem value="All" className="font-bold">All statuses</SelectItem>
+                                <SelectItem value="Verified" className="font-bold">Verified</SelectItem>
+                                <SelectItem value="Pending" className="font-bold">Pending</SelectItem>
+                                <SelectItem value="Canceled" className="font-bold text-destructive">Canceled</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

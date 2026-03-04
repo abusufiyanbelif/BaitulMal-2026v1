@@ -53,6 +53,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { usePublicData } from '@/hooks/use-public-data';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { SectionLoader } from '@/components/section-loader';
 
 interface CampaignCardProps {
     campaign: Campaign & { collected: number; progress: number; };
@@ -298,6 +299,8 @@ export default function CampaignPage() {
 
   const isLoading = isProfileLoading || isDeleting || isDataLoading;
   
+  if (isLoading) return <SectionLoader label="Loading organization campaigns..." description="Fetching active and historical initiatives." />;
+
   if (!isLoading && userProfile && !canViewCampaigns) {
     return (
       <main className="container mx-auto p-4 md:p-8">
@@ -319,14 +322,14 @@ export default function CampaignPage() {
             <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link>
           </Button>
           {canCreate && !isLoading && (
-            <Button asChild size="sm" className="font-bold">
+            <Button asChild size="sm" className="font-bold active:scale-95 transition-transform shadow-md">
               <Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New campaign</Link>
             </Button>
           )}
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Campaigns</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Campaigns</h1>
           <p className="text-sm max-w-2xl font-normal leading-relaxed opacity-70">Organization-wide initiatives, budget vetting, and strategic tracking.</p>
         </div>
 
@@ -352,11 +355,7 @@ export default function CampaignPage() {
             </ScrollArea>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 bg-card/30">
-            {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-xl" />)}
-              </div>
-            ) : sections.length > 0 ? (
+            {sections.length > 0 ? (
               <Accordion type="multiple" defaultValue={['active']} className="space-y-6">
                 {sections.map(section => (
                   <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-sm overflow-hidden">

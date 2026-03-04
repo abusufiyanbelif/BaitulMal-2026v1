@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -13,6 +12,7 @@ import { FileUploader } from './file-uploader';
 import { Skeleton } from './ui/skeleton';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { SectionLoader } from './section-loader';
 
 export function TextExtractor() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -88,9 +88,9 @@ export function TextExtractor() {
 
   return (
     <div className="grid md:grid-cols-2 gap-6">
-      <Card>
+      <Card className="border-primary/10">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-primary font-bold">
             <FileText className="w-6 h-6" />
             Upload Document
           </CardTitle>
@@ -109,7 +109,7 @@ export function TextExtractor() {
               <RadioGroupItem value="image" id="image" className="peer sr-only" />
               <Label
                 htmlFor="image"
-                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer font-bold transition-all"
               >
                 Image
               </Label>
@@ -118,7 +118,7 @@ export function TextExtractor() {
               <RadioGroupItem value="pdf" id="pdf" className="peer sr-only" />
               <Label
                 htmlFor="pdf"
-                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer font-bold transition-all"
               >
                 PDF
               </Label>
@@ -131,37 +131,37 @@ export function TextExtractor() {
               key={uploadType} 
           />
 
-          <Button onClick={handleScanText} disabled={uploadedFiles.length === 0 || isLoading} className="w-full">
+          <Button onClick={handleScanText} disabled={uploadedFiles.length === 0 || isLoading} className="w-full font-bold active:scale-95 transition-transform shadow-md">
             {isLoading ? <Loader2 className="animate-spin mr-2" /> : <ScanLine className="mr-2" />}
             Extract Text
           </Button>
 
           {uploadedFiles.length > 0 && (
-              <Button onClick={handleClear} variant="outline" className="w-full">
+              <Button onClick={handleClear} variant="outline" className="w-full font-bold border-primary/20 text-primary">
                   <Trash2 className="mr-2 h-4 w-4" /> Clear
               </Button>
           )}
         </CardContent>
       </Card>
-      <Card>
+      <Card className="border-primary/10">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-primary font-bold">
             <FileText className="w-6 h-6" />
             Extracted Text
           </CardTitle>
           {textResult && (
-            <Button variant="outline" size="sm" onClick={handleDownloadText}>
+            <Button variant="outline" size="sm" onClick={handleDownloadText} className="font-bold border-primary/20 text-primary">
               <Download className="mr-2 h-4 w-4" /> Download
             </Button>
           )}
         </CardHeader>
         <CardContent>
           {isLoading && (
-            <Skeleton className="h-64 w-full" />
+            <SectionLoader label="Extracting text with AI..." description="Scanning document and correcting character identification." />
           )}
           
           {!isLoading && !textResult && (
-            <div className="flex items-center justify-center h-64 text-muted-foreground">
+            <div className="flex items-center justify-center h-64 text-muted-foreground italic font-normal">
               <p>Your extracted text will appear here.</p>
             </div>
           )}
@@ -171,7 +171,7 @@ export function TextExtractor() {
               value={textResult.extractedText}
               onChange={(e) => setTextResult({ extractedText: e.target.value })}
               rows={12}
-              className="font-code bg-secondary"
+              className="font-code bg-secondary/30 text-primary font-normal"
             />
           )}
         </CardContent>

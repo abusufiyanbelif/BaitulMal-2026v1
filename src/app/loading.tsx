@@ -2,6 +2,9 @@
 
 import { BrandedLoader } from '@/components/branded-loader';
 
+/**
+ * Global Next.js page-level loading state.
+ */
 export default function Loading() {
-  return <BrandedLoader />;
+  return <BrandedLoader message="Loading page resources..." />;
 }

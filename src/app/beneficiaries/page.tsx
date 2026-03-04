@@ -39,7 +39,7 @@ import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterB
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn, getNestedValue } from '@/lib/utils';
-import { BrandedLoader } from '@/components/branded-loader';
+import { SectionLoader } from '@/components/section-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const gridClass = "grid grid-cols-[50px_250px_120px_100px_100px_120px_140px_200px_60px] items-center gap-4 min-w-[1200px]";
@@ -91,7 +91,8 @@ export default function BeneficiariesPage() {
   };
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
-  if (isLoading) return <BrandedLoader />;
+  
+  if (isLoading) return <SectionLoader label="Loading master list..." description="Retrieving beneficiary records from the database." />;
   
   if (!canRead) return (
     <main className="container mx-auto p-8 text-primary">
@@ -106,7 +107,7 @@ export default function BeneficiariesPage() {
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary">
       <div className="flex items-center justify-between">
-        <Button variant="outline" asChild className="font-bold border-primary/20 hover:bg-primary/10 text-primary">
+        <Button variant="outline" asChild className="font-bold border-primary/20 hover:bg-primary/10 text-primary transition-transform active:scale-95">
           <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to dashboard</Link>
         </Button>
       </div>
@@ -114,11 +115,12 @@ export default function BeneficiariesPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-primary">Master beneficiary list ({beneficiaries?.length || 0})</h1>
         <div className="flex items-center gap-2">
-          <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync complete' : 'Sync failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="outline" size="sm" className="font-bold border-primary/20 text-primary">
-            <DatabaseZap className="mr-2 h-4 w-4"/> Sync master list
+          <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync complete' : 'Sync failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="outline" size="sm" className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+            {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
+            Sync master list
           </Button>
           {canCreate && (
-            <Button onClick={() => router.push('/beneficiaries/create')} size="sm" className="font-bold">
+            <Button onClick={() => router.push('/beneficiaries/create')} size="sm" className="font-bold active:scale-95 transition-transform shadow-md">
               <PlusCircle className="mr-2 h-4 w-4" /> Create beneficiary
             </Button>
           )}

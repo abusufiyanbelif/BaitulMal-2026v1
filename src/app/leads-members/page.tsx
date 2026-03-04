@@ -32,6 +32,7 @@ import { usePublicData } from '@/hooks/use-public-data';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { SectionLoader } from '@/components/section-loader';
 
 interface LeadCardProps {
     lead: Lead & { collected: number; progress: number; };
@@ -141,7 +142,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                 <Badge variant="outline" className="text-[10px] border-primary/20 font-normal text-primary">{lead.purpose}</Badge>
                 <Badge 
                   variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
-                  className={cn("text-[10px] font-normal", lead.status === 'Active' && "animate-status-pulse")}
+                  className={cn("text-[10px] font-bold", lead.status === 'Active' && "animate-status-pulse")}
                 >
                   {lead.status}
                 </Badge>
@@ -276,6 +277,8 @@ export default function LeadPage() {
 
   const isLoading = isProfileLoading || isDeleting || isDataLoading;
   
+  if (isLoading) return <SectionLoader label="Loading individual leads..." description="Retrieving support appeals and vetting status." />;
+
   if (!isLoading && userProfile && !canViewLeads) {
     return (
       <main className="container mx-auto p-4 md:p-8 text-primary">
@@ -294,7 +297,7 @@ export default function LeadPage() {
       <main className="container mx-auto p-4 sm:p-6 space-y-6 text-primary">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <Button variant="outline" asChild size="sm" className="interactive-hover font-bold border-primary/20 hover:bg-primary/10 text-primary"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
-          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold tracking-tight interactive-hover shadow-lg bg-primary hover:bg-primary/90 text-white"><Link href="/leads-members/create"><Plus className="mr-2 h-4 w-4" /> New appeal</Link></Button>}
+          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold tracking-tight interactive-hover shadow-lg bg-primary hover:bg-primary/90 text-white active:scale-95 transition-transform"><Link href="/leads-members/create"><Plus className="mr-2 h-4 w-4" /> New appeal</Link></Button>}
         </div>
 
         <div className="space-y-2">
@@ -324,11 +327,7 @@ export default function LeadPage() {
             </ScrollArea>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 bg-card/30">
-            {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-xl" />)}
-              </div>
-            ) : (sections && sections.length > 0) ? (
+            {(sections && sections.length > 0) ? (
               <Accordion type="multiple" defaultValue={['active']} className="space-y-6">
                 {sections.map(section => (
                   <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-sm overflow-hidden">
