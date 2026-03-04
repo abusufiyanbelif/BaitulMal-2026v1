@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, ArrowLeft, Users, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, QrCode } from 'lucide-react';
+import { Loader2, ArrowLeft, Users, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, QrCode, Award, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -15,6 +15,9 @@ import { getPublicMembersAction } from '@/app/users/actions';
 import { usePageHit } from '@/hooks/use-page-hit';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
+import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
+import { useInfoSettings } from '@/hooks/use-info-settings';
+import { defaultGuidingPrinciples } from '@/lib/guiding-principles-default';
 import { Separator } from '@/components/ui/separator';
 import { cn, getInitials } from '@/lib/utils';
 
@@ -40,6 +43,8 @@ export default function AboutOrganizationPage() {
     const [isMembersLoading, setIsMembersLoading] = useState(true);
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
+    const { guidingPrinciplesData, isLoading: isGPDataLoading } = useGuidingPrinciples();
+    const { infoSettings, isLoading: isInfoLoading } = useInfoSettings();
     
     usePageHit('about_organization');
 
@@ -64,7 +69,10 @@ export default function AboutOrganizationPage() {
         }, {} as Record<GroupId, UserProfile[]>);
     }, [members]);
 
-    const isLoading = isMembersLoading || isBrandingLoading || isPaymentLoading;
+    const isLoading = isMembersLoading || isBrandingLoading || isPaymentLoading || isGPDataLoading || isInfoLoading;
+
+    const gpData = guidingPrinciplesData || defaultGuidingPrinciples;
+    const visiblePrinciples = gpData.principles?.filter(p => !p.isHidden && p.text?.trim()) || [];
 
     if (isLoading) {
         return (
@@ -163,6 +171,37 @@ export default function AboutOrganizationPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Guiding Principles Section */}
+            {infoSettings?.isGuidingPrinciplesPublic && visiblePrinciples.length > 0 && (
+                <Card className="animate-fade-in-up shadow-lg border-primary/10 bg-white" style={{ animationDelay: '300ms' }}>
+                    <CardHeader className="bg-primary/5 border-b border-primary/5">
+                        <CardTitle className="flex items-center gap-3 text-xl uppercase font-bold tracking-tight">
+                            <Shield className="h-6 w-6 text-primary" />
+                            Guiding Principles
+                        </CardTitle>
+                        <CardDescription className="font-normal text-primary/70">
+                            {gpData.description}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-8">
+                        <div className="grid gap-6">
+                            {visiblePrinciples.map((principle, idx) => (
+                                <div key={principle.id} className="flex gap-4 group">
+                                    <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
+                                        {idx + 1}
+                                    </div>
+                                    <div className="pt-1">
+                                        <p className="text-base font-normal leading-relaxed text-foreground/90">
+                                            {principle.text}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             <Card className="animate-fade-in-up shadow-lg border-primary/10 bg-white" style={{ animationDelay: '400ms' }}>
                 <CardHeader className="bg-primary/5 border-b border-primary/5">
