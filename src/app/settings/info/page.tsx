@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Image from 'next/image';
 import { useSession } from '@/hooks/use-session';
-import { useInfoSettings } from '@/hooks/use-info-settings';
 import { useDonationInfo } from '@/hooks/use-donation-info';
 import { defaultDonationInfo } from '@/lib/donation-info-default';
 import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
@@ -17,12 +16,8 @@ import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen, Edit, X } from 'lucide-react';
+import { Loader2, ShieldAlert, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, Image as ImageIcon, BookOpen, Edit, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import Link from 'next/link';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -34,6 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { BrandedLoader } from '@/components/branded-loader';
 import { donationCategories } from '@/lib/modules';
+import { Switch } from '@/components/ui/switch';
 
 const useCaseSchema = z.object({
   id: z.string(),
@@ -87,10 +83,10 @@ function UseCaseEditor({ control, typeIndex, isReadOnly }: { control: any, typeI
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-primary"><HelpCircle className="h-4 w-4"/> Scenarios & Rules</h4>
+                <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-primary"><HelpCircle className="h-4 w-4"/> Scenarios & rules</h4>
                 {!isReadOnly && (
                     <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `uc_${Date.now()}`, title: '', description: '', isAllowed: true, isHidden: false })} className="font-bold">
-                        <Plus className="h-3 w-3 mr-1"/> Add Scenario
+                        <Plus className="h-3 w-3 mr-1"/> Add scenario
                     </Button>
                 )}
             </div>
@@ -118,15 +114,15 @@ function UseCaseEditor({ control, typeIndex, isReadOnly }: { control: any, typeI
                                 </FormItem>
                             )}/>
                             <FormField control={control} name={`types.${typeIndex}.useCases.${index}.title`} render={({ field: titleField }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Scenario Name</FormLabel><FormControl><Input placeholder="e.g. Case 1: Ration Kit" {...titleField} disabled={isReadOnly} /></FormControl></FormItem>
+                                <FormItem className="flex-1"><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Scenario name</FormLabel><FormControl><Input placeholder="e.g. Case 1: Ration Kit" {...titleField} disabled={isReadOnly} /></FormControl></FormItem>
                             )}/>
                         </div>
                         <FormField control={control} name={`types.${typeIndex}.useCases.${index}.description`} render={({ field: descField }) => (
-                            <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Guideline / Rule</FormLabel><FormControl><Textarea rows={2} {...descField} disabled={isReadOnly} /></FormControl></FormItem>
+                            <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Guideline / rule</FormLabel><FormControl><Textarea rows={2} {...descField} disabled={isReadOnly} /></FormControl></FormItem>
                         )}/>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-dashed">
                             <FormField control={control} name={`types.${typeIndex}.useCases.${index}.quranVerse`} render={({ field: verseField }) => (
-                                <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Religious Proof</FormLabel><FormControl><Textarea rows={2} className="text-xs" placeholder="Verse or Hadith text..." {...verseField} disabled={isReadOnly} /></FormControl></FormItem>
+                                <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Religious proof</FormLabel><FormControl><Textarea rows={2} className="text-xs" placeholder="Verse or Hadith text..." {...verseField} disabled={isReadOnly} /></FormControl></FormItem>
                             )}/>
                             <FormField control={control} name={`types.${typeIndex}.useCases.${index}.quranSource`} render={({ field: sourceField }) => (
                                 <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Citation</FormLabel><FormControl><Input className="text-xs" placeholder="Source citation..." {...sourceField} disabled={isReadOnly} /></FormControl></FormItem>
@@ -145,10 +141,10 @@ function QAEditor({ control, typeIndex, isReadOnly }: { control: any, typeIndex:
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-blue-700"><BookOpen className="h-4 w-4"/> FAQ Items</h4>
+                <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-blue-700"><BookOpen className="h-4 w-4"/> FAQ items</h4>
                 {!isReadOnly && (
                     <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `qa_${Date.now()}`, question: '', answer: '', reference: '', isHidden: false })} className="font-bold">
-                        <Plus className="h-3 w-3 mr-1"/> Add Question
+                        <Plus className="h-3 w-3 mr-1"/> Add question
                     </Button>
                 )}
             </div>
@@ -176,7 +172,7 @@ function QAEditor({ control, typeIndex, isReadOnly }: { control: any, typeIndex:
                         )}/>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-dashed border-blue-200">
                             <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.quranVerse`} render={({ field: vField }) => (
-                                <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Religious Proof</FormLabel><FormControl><Textarea rows={2} className="text-xs" placeholder="Verse or Hadith text..." {...vField} disabled={isReadOnly} /></FormControl></FormItem>
+                                <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Religious proof</FormLabel><FormControl><Textarea rows={2} className="text-xs" placeholder="Verse or Hadith text..." {...vField} disabled={isReadOnly} /></FormControl></FormItem>
                             )}/>
                             <FormField control={control} name={`types.${typeIndex}.qaItems.${index}.quranSource`} render={({ field: sField }) => (
                                 <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Citation</FormLabel><FormControl><Input className="text-xs" placeholder="Source citation..." {...sField} disabled={isReadOnly} /></FormControl></FormItem>
@@ -192,16 +188,12 @@ function QAEditor({ control, typeIndex, isReadOnly }: { control: any, typeIndex:
 
 export default function InfoSettingsPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
-    const { infoSettings, isLoading: isInfoSettingsLoading } = useInfoSettings();
     const { donationInfoData, isLoading: isDonationInfoLoading, forceRefetch: forceRefetchDonationInfo } = useDonationInfo();
     
     const firestore = useFirestore();
     const storage = useStorage();
     const { toast } = useToast();
 
-    const [isDonationInfoPublic, setIsDonationInfoPublic] = useState(false);
-    const [isGuidingPrinciplesPublic, setIsGuidingPrinciplesPublic] = useState(false);
-    
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState<string>('');
     const [isInitialized, setIsInitialized] = useState(false);
@@ -216,13 +208,6 @@ export default function InfoSettingsPage() {
 
     const { fields: donationTypeFields, append: appendDonationType, remove: removeDonationType } = useFieldArray({ control: form.control, name: 'types' });
 
-    useEffect(() => {
-        if (infoSettings) {
-            setIsDonationInfoPublic(infoSettings.isDonationInfoPublic || false);
-            setIsGuidingPrinciplesPublic(infoSettings.isGuidingPrinciplesPublic || false);
-        }
-    }, [infoSettings]);
-    
     useEffect(() => {
         if (!isDonationInfoLoading && donationInfoData && !isInitialized) {
             const typesToLoad = (donationInfoData.types && donationInfoData.types.length > 0) ? donationInfoData.types : defaultDonationInfo;
@@ -247,19 +232,8 @@ export default function InfoSettingsPage() {
         }
     }, [donationInfoData, isDonationInfoLoading, isInitialized, form]);
 
-    const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.update', false) || !!getNestedValue(userProfile, 'permissions.settings.info.update', false);
+    const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.update', false);
 
-    const handleSaveVisibility = async () => {
-        if (!firestore || !canUpdateSettings) return;
-        setIsSubmitting(true);
-        try {
-            await setDoc(doc(firestore, 'settings', 'info'), { isDonationInfoPublic, isGuidingPrinciplesPublic }, { merge: true });
-            toast({ title: 'Visibility Updated', description: 'Changes saved.', variant: 'success' });
-        } catch (error) {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings/info', operation: 'write' }));
-        } finally { setIsSubmitting(false); }
-    };
-    
     const handleSaveDonationCategory = async (typeIndex: number) => {
         if (!firestore || !storage || !canUpdateSettings) return;
         const data = form.getValues();
@@ -298,7 +272,7 @@ export default function InfoSettingsPage() {
         } finally { setIsSubmitting(false); }
     };
 
-    if (isSessionLoading || isInfoSettingsLoading || isDonationInfoLoading) {
+    if (isSessionLoading || isDonationInfoLoading) {
         return <BrandedLoader />;
     }
 
@@ -315,28 +289,13 @@ export default function InfoSettingsPage() {
     }
     
     return (
-        <div className="space-y-6">
-            <Card className="animate-fade-in-zoom shadow-sm border-primary/10">
-                <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary">Page Visibility</CardTitle><CardDescription className="font-normal">Control public availability of information pages.</CardDescription></CardHeader>
-                <CardContent className="space-y-6 pt-6">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-white shadow-sm">
-                        <div className="space-y-1.5 flex-1"><h3 className="font-bold text-primary uppercase text-sm tracking-tight">Donation Types Explained</h3><p className="text-xs text-muted-foreground font-normal">Religious guidance and context for charitable contributions.</p><Button variant="link" size="sm" asChild className="p-0 h-auto font-bold text-primary mt-2"><Link href="/info/donation-info" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview Public Page</Link></Button></div>
-                        <div className="flex items-center space-x-2 pt-4 sm:pt-0"><Label htmlFor="donation-info-public" className="font-bold text-xs uppercase opacity-60">Visible</Label><Switch id="donation-info-public" checked={isDonationInfoPublic} onCheckedChange={setIsDonationInfoPublic} disabled={isSubmitting} /></div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-white shadow-sm">
-                        <div className="space-y-1.5 flex-1"><h3 className="font-bold text-primary uppercase text-sm tracking-tight">Our Guiding Principles</h3><p className="text-xs text-muted-foreground font-normal">Organizational standards and ethics guide.</p><Button variant="link" size="sm" asChild className="p-0 h-auto font-bold text-primary mt-2"><Link href="/info/members" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview on About Page</Link></Button></div>
-                        <div className="flex items-center space-x-2 pt-4 sm:pt-0"><Label htmlFor="guiding-principles-public" className="font-bold text-xs uppercase opacity-60">Visible</Label><Switch id="guiding-principles-public" checked={isGuidingPrinciplesPublic} onCheckedChange={setIsGuidingPrinciplesPublic} disabled={isSubmitting} /></div>
-                    </div>
-                </CardContent>
-                <CardFooter className="justify-end border-t bg-muted/5 p-4"><Button onClick={handleSaveVisibility} disabled={isSubmitting} className="font-bold">{isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4"/>} Save Visibility</Button></CardFooter>
-            </Card>
-
+        <div className="space-y-6 text-primary font-normal">
             <Form {...form}>
                 <div className="space-y-6">
                     <Card className="animate-fade-in-up border-primary/10 overflow-hidden shadow-sm">
                         <CardHeader className="bg-primary/5 border-b">
                             <div className="flex items-center justify-between gap-4">
-                                <div><CardTitle className="font-bold text-primary uppercase tracking-tight">Donation Content Manager</CardTitle><CardDescription className="font-normal text-primary/70">Manage educational content for each donation category.</CardDescription></div>
+                                <div><CardTitle className="font-bold uppercase tracking-tight">Donation Content Manager</CardTitle><CardDescription className="font-normal text-primary/70">Manage educational content for each donation category.</CardDescription></div>
                                 <Button onClick={() => { const id = `type_${Date.now()}`; appendDonationType({ id, title: 'New Category', useCases: [], qaItems: [], hideKeyHighlights: false, hideUseCases: false, hideQA: false, hideUsage: false, hideRestrictions: false }); setActiveTab(id); setEditModes(p => ({ ...p, [id]: true })); }} variant="outline" size="sm" className="font-bold text-primary border-primary/20 active:scale-95 transition-transform"><Plus className="mr-2 h-4 w-4" /> Add category</Button>
                             </div>
                         </CardHeader>
@@ -356,7 +315,7 @@ export default function InfoSettingsPage() {
                                                         <FormField control={form.control} name={`types.${index}.description`} render={({ field: dField }) => (<FormItem><FormLabel className="font-bold uppercase tracking-tighter text-xs text-muted-foreground">Introduction</FormLabel><FormControl><Textarea rows={4} {...dField} disabled={!isEditingTab} /></FormControl></FormItem>)} />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <FormLabel className="font-bold uppercase tracking-tighter text-xs text-muted-foreground">Category Image</FormLabel>
+                                                        <FormLabel className="font-bold uppercase tracking-tighter text-xs text-muted-foreground">Category image</FormLabel>
                                                         <div className="relative aspect-[4/3] w-full rounded-md border-2 border-dashed overflow-hidden flex items-center justify-center bg-muted/30">
                                                             {form.watch(`types.${index}.imageUrl`) ? (<Image src={form.watch(`types.${index}.imageUrl`)!.startsWith('data:') ? form.watch(`types.${index}.imageUrl`)! : `/api/image-proxy?url=${encodeURIComponent(form.watch(`types.${index}.imageUrl`)!)}`} alt="Header" fill className="object-cover" unoptimized />) : (<div className="text-center p-4"><ImageIcon className="h-10 w-10 mx-auto text-muted-foreground/40" /></div>)}
                                                         </div>
@@ -369,7 +328,7 @@ export default function InfoSettingsPage() {
                                                             <h4 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-primary"><Quote className="h-4 w-4"/> Divine proof</h4>
                                                             <FormField control={form.control} name={`types.${index}.hideKeyHighlights`} render={({ field: hideField }) => (<FormItem className="flex items-center space-x-2 space-y-0"><FormControl><Checkbox checked={hideField.value} onCheckedChange={hideField.onChange} disabled={!isEditingTab}/></FormControl><FormLabel className="text-[10px] font-bold uppercase cursor-pointer opacity-60">Hide</FormLabel></FormItem>)}/>
                                                         </div>
-                                                        <FormField control={form.control} name={`types.${index}.quranVerse`} render={({ field: qvField }) => (<FormItem><FormLabel className="text-[10px] font-bold uppercase text-muted-foreground">Verse Text</FormLabel><FormControl><Textarea rows={3} {...qvField} disabled={!isEditingTab} className="text-xs italic" /></FormControl></FormItem>)}/>
+                                                        <FormField control={form.control} name={`types.${index}.quranVerse`} render={({ field: qvField }) => (<FormItem><FormLabel className="text-[10px] font-bold uppercase text-muted-foreground">Verse text</FormLabel><FormControl><Textarea rows={3} {...qvField} disabled={!isEditingTab} className="text-xs italic" /></FormControl></FormItem>)}/>
                                                         <FormField control={form.control} name={`types.${index}.quranSource`} render={({ field: qsField }) => (<FormItem><FormLabel className="text-[10px] font-bold uppercase text-muted-foreground">Citation</FormLabel><FormControl><Input {...qsField} disabled={!isEditingTab} className="text-xs" /></FormControl></FormItem>)}/>
                                                     </div>
                                                     <div className="space-y-4">
@@ -379,7 +338,7 @@ export default function InfoSettingsPage() {
                                                 </div>
                                                 <div className="space-y-4 rounded-lg border-2 border-primary/10 p-4 bg-primary/5 shadow-sm">
                                                     <div className="flex items-center justify-between gap-4">
-                                                        <FormField control={form.control} name={`types.${index}.useCasesHeading`} render={({ field: uhField }) => (<FormItem className="flex-1"><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Scenarios Heading</FormLabel><FormControl><Input {...uhField} disabled={!isEditingTab} placeholder="e.g. Practical Scenarios" /></FormControl></FormItem>)}/>
+                                                        <FormField control={form.control} name={`types.${index}.useCasesHeading`} render={({ field: uhField }) => (<FormItem className="flex-1"><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Scenarios heading</FormLabel><FormControl><Input {...uhField} disabled={!isEditingTab} placeholder="e.g. Practical Scenarios" /></FormControl></FormItem>)}/>
                                                         <FormField control={form.control} name={`types.${index}.hideUseCases`} render={({ field: hideField }) => (<FormItem className="flex items-center space-x-2 space-y-0 mt-6"><FormControl><Checkbox checked={hideField.value} onCheckedChange={hideField.onChange} disabled={!isEditingTab}/></FormControl><FormLabel className="text-[10px] font-bold uppercase cursor-pointer opacity-60">Hide section</FormLabel></FormItem>)}/>
                                                     </div>
                                                     <UseCaseEditor control={form.control} typeIndex={index} isReadOnly={!isEditingTab} />
@@ -407,7 +366,7 @@ export default function InfoSettingsPage() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="border-t pt-6 flex justify-end gap-3"><Button type="button" variant="outline" size="lg" onClick={() => setEditModes(p => ({...p, [typeId]: false}))} disabled={isSubmitting || !isEditingTab} className="font-bold border-primary/20 text-primary">Discard Changes</Button><Button type="button" size="lg" onClick={() => handleSaveDonationCategory(index)} disabled={isSubmitting || !isEditingTab} className="font-bold shadow-md">{isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />} Save {form.watch(`types.${index}.title`) || 'Category'}</Button></div>
+                                            <div className="border-t pt-6 flex justify-end gap-3"><Button type="button" variant="outline" size="lg" onClick={() => setEditModes(p => ({...p, [typeId]: false}))} disabled={isSubmitting || !isEditingTab} className="font-bold border-primary/20">Discard Changes</Button><Button type="button" size="lg" onClick={() => handleSaveDonationCategory(index)} disabled={isSubmitting || !isEditingTab} className="font-bold shadow-md">{isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />} Save {form.watch(`types.${index}.title`) || 'Category'}</Button></div>
                                         </TabsContent>
                                     );
                                 })}

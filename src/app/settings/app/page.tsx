@@ -5,15 +5,17 @@ import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
+import { useInfoSettings } from '@/hooks/use-info-settings';
 import { useStorage, useFirestore, useAuth } from '@/firebase/provider';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, writeBatch } from 'firebase/firestore';
+import { doc, writeBatch, setDoc } from 'firebase/firestore';
 import Resizer from 'react-image-file-resizer';
+import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield } from 'lucide-react';
+import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,6 +24,7 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import type { GuidingPrinciple } from '@/lib/types';
 
 interface FormDataType {
@@ -44,6 +47,9 @@ interface FormDataType {
     bankAccountName: string;
     bankAccountNumber: string;
     bankIfsc: string;
+    // Page Visibility
+    isDonationInfoPublic: boolean;
+    isGuidingPrinciplesPublic: boolean;
     // Guiding Principles
     gpTitle: string;
     gpDescription: string;
@@ -65,7 +71,7 @@ function VerifiableItem({ icon: Icon, label, value, isEditing, id, onChange, pla
                 <Icon className="h-5 w-5" />
             </div>
             <div className="flex-1 space-y-1">
-                <p className="text-sm font-bold text-primary uppercase tracking-tight">{label}</p>
+                <p className="text-sm font-bold text-primary tracking-tight">{label}</p>
                 {isEditing ? (
                     <Input 
                         id={id}
@@ -89,6 +95,7 @@ export default function AppSettingsPage() {
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
     const { guidingPrinciplesData, isLoading: isGPLoading } = useGuidingPrinciples();
+    const { infoSettings, isLoading: isInfoLoading } = useInfoSettings();
     
     const storage = useStorage();
     const firestore = useFirestore();
@@ -103,7 +110,7 @@ export default function AppSettingsPage() {
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [qrCodeFile, setQrCodeFile] = useState<File | null>(null);
     
-    const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.update', false) || !!getNestedValue(userProfile, 'permissions.settings.app.update', false);
+    const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.update', false);
 
     const handleFieldChange = useCallback((field: keyof FormDataType, value: any) => {
         setEditableData(prev => prev ? { ...prev, [field]: value } : null);
@@ -131,8 +138,10 @@ export default function AppSettingsPage() {
                 bankAccountName: paymentSettings?.bankAccountName || '',
                 bankAccountNumber: paymentSettings?.bankAccountNumber || '',
                 bankIfsc: paymentSettings?.bankIfsc || '',
+                isDonationInfoPublic: infoSettings?.isDonationInfoPublic || false,
+                isGuidingPrinciplesPublic: infoSettings?.isGuidingPrinciplesPublic || false,
                 gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
-                gpDescription: guidingPrinciplesData?.description || '',
+                gpDescription: guidingPrinciplesData?.description || 'To ensure our operations are transparent, fair, and impactful, we adhere to a clear set of guiding principles. These rules govern how we identify beneficiaries, allocate funds, and manage our resources to best serve the community.',
                 principles: guidingPrinciplesData?.principles || [],
             });
         } else {
@@ -140,7 +149,7 @@ export default function AppSettingsPage() {
             setLogoFile(null);
             setQrCodeFile(null);
         }
-    }, [isEditMode, brandingSettings, paymentSettings, guidingPrinciplesData]);
+    }, [isEditMode, brandingSettings, paymentSettings, guidingPrinciplesData, infoSettings]);
 
      useEffect(() => {
         if (logoFile) {
@@ -195,7 +204,7 @@ export default function AppSettingsPage() {
 
         if (logoFile || qrCodeFile) {
             if (!auth?.currentUser) {
-                toast({ title: "Authentication Error", description: "User not authenticated yet.", variant: "destructive" });
+                toast({ title: "Authentication error", description: "User not authenticated yet.", variant: "destructive" });
                 return;
             }
         }
@@ -254,6 +263,13 @@ export default function AppSettingsPage() {
             };
             batch.set(doc(firestore, 'settings', 'payment'), paymentData, { merge: true });
 
+            // Page Visibility Save
+            const infoData = {
+                isDonationInfoPublic: editableData.isDonationInfoPublic,
+                isGuidingPrinciplesPublic: editableData.isGuidingPrinciplesPublic,
+            };
+            batch.set(doc(firestore, 'settings', 'info'), infoData, { merge: true });
+
             // Guiding Principles Save
             const gpData = {
                 title: editableData.gpTitle,
@@ -269,7 +285,7 @@ export default function AppSettingsPage() {
             if (error.code === 'permission-denied') {
                 errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings documents', operation: 'write' }));
             } else {
-                toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
+                toast({ title: 'Save failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
             }
         } finally {
             setIsSubmitting(false);
@@ -278,7 +294,7 @@ export default function AppSettingsPage() {
     
     const handleCancel = () => setIsEditMode(false);
 
-    const isLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
+    const isLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading || isInfoLoading;
     const isFormDisabled = !isEditMode || isSubmitting;
 
     const displayData = isEditMode && editableData ? editableData : {
@@ -301,6 +317,8 @@ export default function AppSettingsPage() {
         bankAccountName: paymentSettings?.bankAccountName || '',
         bankAccountNumber: paymentSettings?.bankAccountNumber || '',
         bankIfsc: paymentSettings?.bankIfsc || '',
+        isDonationInfoPublic: infoSettings?.isDonationInfoPublic || false,
+        isGuidingPrinciplesPublic: infoSettings?.isGuidingPrinciplesPublic || false,
         gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
         gpDescription: guidingPrinciplesData?.description || '',
         principles: guidingPrinciplesData?.principles || [],
@@ -328,16 +346,18 @@ export default function AppSettingsPage() {
             bankAccountName: paymentSettings?.bankAccountName || '',
             bankAccountNumber: paymentSettings?.bankAccountNumber || '',
             bankIfsc: paymentSettings?.bankIfsc || '',
+            isDonationInfoPublic: infoSettings?.isDonationInfoPublic || false,
+            isGuidingPrinciplesPublic: infoSettings?.isGuidingPrinciplesPublic || false,
             gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
             gpDescription: guidingPrinciplesData?.description || '',
             principles: guidingPrinciplesData?.principles || [],
         };
         return JSON.stringify(initialData) !== JSON.stringify(editableData) || !!logoFile || !!qrCodeFile;
-    }, [isEditMode, editableData, brandingSettings, paymentSettings, guidingPrinciplesData, logoFile, qrCodeFile]);
+    }, [isEditMode, editableData, brandingSettings, paymentSettings, guidingPrinciplesData, infoSettings, logoFile, qrCodeFile]);
 
     if (isLoading) {
         return (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-6">
                 <Card><CardHeader><Skeleton className="h-8 w-48" /></CardHeader><CardContent><Skeleton className="h-64 w-full" /></CardContent></Card>
                 <Card><CardHeader><Skeleton className="h-8 w-64" /></CardHeader><CardContent><Skeleton className="h-64 w-full" /></CardContent></Card>
             </div>
@@ -355,11 +375,11 @@ export default function AppSettingsPage() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 text-primary font-normal">
             <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                    <h2 className="text-2xl font-bold text-primary tracking-tight">App Settings</h2>
-                    <p className="text-sm font-normal text-muted-foreground">Manage organization profile, branding, and core standards.</p>
+                    <h2 className="text-2xl font-bold tracking-tight">App Settings</h2>
+                    <p className="text-sm text-muted-foreground">Manage organization profile, branding, and core standards.</p>
                 </div>
                 {!isEditMode ? (
                     <Button onClick={() => setIsEditMode(true)} className="font-bold">
@@ -367,7 +387,7 @@ export default function AppSettingsPage() {
                     </Button>
                 ) : (
                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary">
+                        <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="font-bold border-primary/20">
                             <X className="mr-2 h-4 w-4" /> Cancel
                         </Button>
                         <Button onClick={handleSave} disabled={isSubmitting || !isDirty} className="font-bold">
@@ -378,12 +398,58 @@ export default function AppSettingsPage() {
                 )}
             </div>
 
+            {/* Page Visibility Section */}
+            <Card className="animate-fade-in-zoom border-primary/10 shadow-sm overflow-hidden">
+                <CardHeader className="bg-primary/5 border-b">
+                    <CardTitle className="font-bold text-lg uppercase tracking-tight">Page Visibility</CardTitle>
+                    <CardDescription className="font-normal">Control public availability of information pages.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-white shadow-sm gap-4 transition-all hover:border-primary/20">
+                        <div className="space-y-1 flex-1">
+                            <h3 className="font-bold text-primary text-sm tracking-tight">Donation Types Explained</h3>
+                            <p className="text-xs text-muted-foreground font-normal">Religious guidance and context for charitable contributions.</p>
+                            <Button variant="link" size="sm" asChild className="p-0 h-auto font-bold text-primary mt-2">
+                                <Link href="/info/donation-info" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview Public Page</Link>
+                            </Button>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <Label htmlFor="donation-info-public" className="font-bold text-xs uppercase opacity-60">Visible</Label>
+                            <Switch 
+                                id="donation-info-public" 
+                                checked={displayData.isDonationInfoPublic} 
+                                onCheckedChange={(val) => handleFieldChange('isDonationInfoPublic', val)} 
+                                disabled={isFormDisabled} 
+                            />
+                        </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-white shadow-sm gap-4 transition-all hover:border-primary/20">
+                        <div className="space-y-1 flex-1">
+                            <h3 className="font-bold text-primary text-sm tracking-tight">Our Guiding Principles</h3>
+                            <p className="text-xs text-muted-foreground font-normal">Organizational standards and ethics guide.</p>
+                            <Button variant="link" size="sm" asChild className="p-0 h-auto font-bold text-primary mt-2">
+                                <Link href="/info/members" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview on About Page</Link>
+                            </Button>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <Label htmlFor="guiding-principles-public" className="font-bold text-xs uppercase opacity-60">Visible</Label>
+                            <Switch 
+                                id="guiding-principles-public" 
+                                checked={displayData.isGuidingPrinciplesPublic} 
+                                onCheckedChange={(val) => handleFieldChange('isGuidingPrinciplesPublic', val)} 
+                                disabled={isFormDisabled} 
+                            />
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
             <div className="grid gap-6 lg:grid-cols-2">
                 <div className="space-y-6">
                     {/* Verifiable Details Section */}
-                    <Card className="animate-fade-in-zoom border-primary/10 shadow-sm">
-                        <CardHeader className="bg-primary/5 pb-4">
-                            <CardTitle className="text-xl font-bold text-primary uppercase tracking-tight">Verifiable Details</CardTitle>
+                    <Card className="animate-fade-in-up border-primary/10 shadow-sm">
+                        <CardHeader className="bg-primary/5 pb-4 border-b border-primary/5">
+                            <CardTitle className="text-lg font-bold uppercase tracking-tight">Verifiable Details</CardTitle>
                             <CardDescription className="font-normal">Official public profile of the organization.</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-2">
@@ -437,8 +503,8 @@ export default function AppSettingsPage() {
 
                     {/* Bank Transfer Details Section */}
                     <Card className="animate-fade-in-up border-primary/10 shadow-sm">
-                        <CardHeader className="bg-primary/5 pb-4">
-                            <CardTitle className="text-xl font-bold text-primary uppercase tracking-tight">Bank Transfer Details</CardTitle>
+                        <CardHeader className="bg-primary/5 pb-4 border-b border-primary/5">
+                            <CardTitle className="text-lg font-bold uppercase tracking-tight">Bank Transfer Details</CardTitle>
                             <CardDescription className="font-normal">Traditional bank account information for high-value donations.</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-2">
@@ -476,8 +542,8 @@ export default function AppSettingsPage() {
                 <div className="space-y-6">
                     {/* Visual Identity Section */}
                     <Card className="animate-fade-in-up border-primary/10 shadow-sm">
-                        <CardHeader className="bg-primary/5 pb-4">
-                            <CardTitle className="text-xl font-bold text-primary uppercase tracking-tight">Visual Identity</CardTitle>
+                        <CardHeader className="bg-primary/5 pb-4 border-b border-primary/5">
+                            <CardTitle className="text-lg font-bold uppercase tracking-tight">Visual Identity</CardTitle>
                             <CardDescription className="font-normal">Logo and branding assets.</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-6">
@@ -521,8 +587,8 @@ export default function AppSettingsPage() {
 
                     {/* Support Contact Section */}
                     <Card className="animate-fade-in-up border-primary/10 shadow-sm">
-                        <CardHeader className="bg-primary/5 pb-4">
-                            <CardTitle className="text-xl font-bold text-primary uppercase tracking-tight">Communications</CardTitle>
+                        <CardHeader className="bg-primary/5 pb-4 border-b border-primary/5">
+                            <CardTitle className="text-lg font-bold uppercase tracking-tight">Communications</CardTitle>
                             <CardDescription className="font-normal">Public contact information.</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-4">
@@ -546,9 +612,9 @@ export default function AppSettingsPage() {
             </div>
 
             {/* Donation Infrastructure Section */}
-            <Card className="animate-fade-in-up border-primary/10 shadow-sm">
-                <CardHeader className="bg-primary/5 pb-4">
-                    <CardTitle className="text-xl font-bold text-primary uppercase tracking-tight">Donation Infrastructure</CardTitle>
+            <Card className="animate-fade-in-up border-primary/10 shadow-sm overflow-hidden">
+                <CardHeader className="bg-primary/5 pb-4 border-b">
+                    <CardTitle className="text-lg font-bold uppercase tracking-tight">Donation Infrastructure</CardTitle>
                     <CardDescription className="font-normal">Configure UPI and QR code for simplified giving.</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-6">
@@ -607,7 +673,7 @@ export default function AppSettingsPage() {
                 <CardHeader className="bg-primary/5 border-b">
                     <div className="flex items-center justify-between gap-4">
                         <div>
-                            <CardTitle className="text-xl font-bold text-primary uppercase tracking-tight">Guiding Principles Manager</CardTitle>
+                            <CardTitle className="text-xl font-bold uppercase tracking-tight">Guiding Principles Manager</CardTitle>
                             <CardDescription className="font-normal text-primary/70">Define the core values and operational standards displayed on the 'About' page.</CardDescription>
                         </div>
                     </div>
@@ -634,7 +700,7 @@ export default function AppSettingsPage() {
                             {(displayData.principles || []).map((principle, index) => (
                                 <div key={principle.id || index} className="relative group p-4 border rounded-md bg-muted/5 space-y-3 shadow-sm">
                                     <div className="flex items-center justify-between">
-                                        <FormLabel className="font-bold text-primary uppercase text-xs tracking-tight">Principle #{index + 1}</FormLabel>
+                                        <p className="font-bold text-primary uppercase text-xs tracking-tight">Principle #{index + 1}</p>
                                         {isEditMode && (
                                             <div className="flex items-center gap-3">
                                                 <div className="flex items-center space-x-1.5">

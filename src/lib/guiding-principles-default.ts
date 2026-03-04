@@ -7,7 +7,7 @@ export const defaultGuidingPrinciples: GuidingPrinciplesData = {
     { id: 'gp1', text: "Trust is focused on assisting educational and health beneficiaries.", isHidden: false },
     { id: 'gp2', text: "Priority will be given to males studying in their final year of a course.", isHidden: false },
     { id: 'gp3', text: "Assisting orphan girls in all forms except marriage.", isHidden: false },
-    { id: 'gp4', text: "Providing ration to the most deserving (mustahik) in the last week of each month, depending on available funds.", isHidden: false },
+    { id: 'gp4', text: "Providing ration to the most deserving (Mustahik) in the last week of each month, depending on available funds.", isHidden: false },
     { id: 'gp5', text: "A return agreement will be secured from educational beneficiaries if the amount exceeds ₹25,000.", isHidden: false },
     { id: 'gp6', text: "The maximum capital credited will be ₹40,000, but this can be raised in exceptional cases.", isHidden: false },
   ]
