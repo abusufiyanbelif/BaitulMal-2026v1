@@ -14,7 +14,7 @@ import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, ChevronDown, Monitor, FileText } from 'lucide-react';
+import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, ChevronDown, Monitor, FileText, Smartphone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -160,13 +160,13 @@ export default function AppSettingsPage() {
             setEditableData({
                 name: brandingSettings?.name || '',
                 logoUrl: brandingSettings?.logoUrl || '',
-                logoWidth: brandingSettings?.logoWidth || '',
-                logoHeight: brandingSettings?.logoHeight || '',
+                logoWidth: brandingSettings?.logoWidth || 40,
+                logoHeight: brandingSettings?.logoHeight || 40,
                 heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act of Kindness at a Time.',
                 heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.',
                 qrCodeUrl: paymentSettings?.qrCodeUrl || '',
-                qrWidth: paymentSettings?.qrWidth || '',
-                qrHeight: paymentSettings?.qrHeight || '',
+                qrWidth: paymentSettings?.qrWidth || 120,
+                qrHeight: paymentSettings?.qrHeight || 120,
                 upiId: paymentSettings?.upiId || '',
                 paymentMobileNumber: paymentSettings?.paymentMobileNumber || '',
                 contactEmail: paymentSettings?.contactEmail || '',
@@ -181,7 +181,7 @@ export default function AppSettingsPage() {
                 bankIfsc: paymentSettings?.bankIfsc || '',
                 isGuidingPrinciplesPublic: guidingPrinciplesData?.isGuidingPrinciplesPublic || false,
                 gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
-                gpDescription: guidingPrinciplesData?.description || 'To ensure our operations are transparent, fair, and impactful, we adhere to a clear set of guiding principles. These rules govern how we identify beneficiaries, allocate funds, and manage our resources to best serve the community.',
+                gpDescription: guidingPrinciplesData?.description || 'To ensure our operations are transparent, fair, and impactful, we adhere to a clear set of guiding principles.',
                 principles: guidingPrinciplesData?.principles || [],
             });
         } else {
@@ -288,8 +288,8 @@ export default function AppSettingsPage() {
             }
             const paymentData = {
                 qrCodeUrl: newQrCodeUrl, 
-                qrWidth: Number(editableData.qrWidth) || null, 
-                qrHeight: Number(editableData.qrHeight) || null,
+                qrWidth: Number(editableData.qrWidth) || 120, 
+                qrHeight: Number(editableData.qrHeight) || 120,
                 upiId: editableData.upiId, 
                 paymentMobileNumber: editableData.paymentMobileNumber, 
                 contactEmail: editableData.contactEmail,
@@ -336,13 +336,13 @@ export default function AppSettingsPage() {
     const displayData = isEditMode && editableData ? editableData : {
         name: brandingSettings?.name || '',
         logoUrl: brandingSettings?.logoUrl || '',
-        logoWidth: brandingSettings?.logoWidth || '',
-        logoHeight: brandingSettings?.logoHeight || '',
+        logoWidth: brandingSettings?.logoWidth || 40,
+        logoHeight: brandingSettings?.logoHeight || 40,
         heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act of Kindness at a Time.',
-        heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.',
+        heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact.',
         qrCodeUrl: paymentSettings?.qrCodeUrl || '',
-        qrWidth: paymentSettings?.qrWidth || '',
-        qrHeight: paymentSettings?.qrHeight || '',
+        qrWidth: paymentSettings?.qrWidth || 120,
+        qrHeight: paymentSettings?.qrHeight || 120,
         upiId: paymentSettings?.upiId || '',
         paymentMobileNumber: paymentSettings?.paymentMobileNumber || '',
         contactEmail: paymentSettings?.contactEmail || '',
@@ -366,13 +366,13 @@ export default function AppSettingsPage() {
         const initialData: FormDataType = {
             name: brandingSettings?.name || '',
             logoUrl: brandingSettings?.logoUrl || '',
-            logoWidth: brandingSettings?.logoWidth || '',
-            logoHeight: brandingSettings?.logoHeight || '',
+            logoWidth: brandingSettings?.logoWidth || 40,
+            logoHeight: brandingSettings?.logoHeight || 40,
             heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act of Kindness at a Time.',
-            heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.',
+            heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact.',
             qrCodeUrl: paymentSettings?.qrCodeUrl || '',
-            qrWidth: paymentSettings?.qrWidth || '',
-            qrHeight: paymentSettings?.qrHeight || '',
+            qrWidth: paymentSettings?.qrWidth || 120,
+            qrHeight: paymentSettings?.qrHeight || 120,
             upiId: paymentSettings?.upiId || '',
             paymentMobileNumber: paymentSettings?.paymentMobileNumber || '',
             contactEmail: paymentSettings?.contactEmail || '',
@@ -412,7 +412,7 @@ export default function AppSettingsPage() {
                 </div>
                 {!isEditMode ? (
                     <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md">
-                        <Edit className="mr-2 h-4 w-4"/>Edit Settings
+                        <Edit className="mr-2 h-4 w-4"/>Edit settings
                     </Button>
                 ) : (
                     <div className="flex gap-2">
@@ -421,7 +421,7 @@ export default function AppSettingsPage() {
                         </Button>
                         <Button onClick={handleSave} disabled={isSubmitting || !isDirty} className="font-bold shadow-md">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                            Save All Changes
+                            Save all changes
                         </Button>
                     </div>
                 )}
@@ -496,7 +496,7 @@ export default function AppSettingsPage() {
                         />
                         <VerifiableItem 
                             icon={Hash} 
-                            label="Registration No." 
+                            label="Registration no." 
                             value={displayData.regNo} 
                             isEditing={isEditMode}
                             id="org-reg"
@@ -524,49 +524,112 @@ export default function AppSettingsPage() {
                     </div>
                 </SettingsSection>
 
-                {/* Bank Transfer Details Section */}
+                {/* Bank Transfer & UPI Details Section */}
                 <SettingsSection 
-                    title="Bank transfer details" 
-                    description="Traditional bank account information for direct donations."
-                    icon={Landmark}
+                    title="Bank transfer & UPI details" 
+                    description="Configure all donation channels including bank and digital payment info."
+                    icon={CreditCard}
+                    defaultOpen={true}
                 >
-                    <div className="space-y-2">
-                        <VerifiableItem 
-                            icon={User} 
-                            label="Account holder name" 
-                            value={displayData.bankAccountName} 
-                            isEditing={isEditMode}
-                            id="bank-name"
-                            onChange={(v) => handleFieldChange('bankAccountName', v)}
-                            placeholder="Full Name as per Bank"
-                        />
-                        <VerifiableItem 
-                            icon={CreditCard} 
-                            label="Account number" 
-                            value={displayData.bankAccountNumber} 
-                            isEditing={isEditMode}
-                            id="bank-acc"
-                            onChange={(v) => handleFieldChange('bankAccountNumber', v)}
-                            placeholder="Bank Account Number"
-                        />
-                        <VerifiableItem 
-                            icon={Landmark} 
-                            label="IFSC code" 
-                            value={displayData.bankIfsc} 
-                            isEditing={isEditMode}
-                            id="bank-ifsc"
-                            onChange={(v) => handleFieldChange('bankIfsc', v)}
-                            placeholder="11-digit IFSC Code"
-                        />
+                    <div className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Traditional bank transfer</h4>
+                                <VerifiableItem 
+                                    icon={User} 
+                                    label="Account holder name" 
+                                    value={displayData.bankAccountName} 
+                                    isEditing={isEditMode}
+                                    id="bank-name"
+                                    onChange={(v) => handleFieldChange('bankAccountName', v)}
+                                    placeholder="Full Name as per Bank"
+                                />
+                                <VerifiableItem 
+                                    icon={CreditCard} 
+                                    label="Account number" 
+                                    value={displayData.bankAccountNumber} 
+                                    isEditing={isEditMode}
+                                    id="bank-acc"
+                                    onChange={(v) => handleFieldChange('bankAccountNumber', v)}
+                                    placeholder="Bank Account Number"
+                                />
+                                <VerifiableItem 
+                                    icon={Landmark} 
+                                    label="IFSC code" 
+                                    value={displayData.bankIfsc} 
+                                    isEditing={isEditMode}
+                                    id="bank-ifsc"
+                                    onChange={(v) => handleFieldChange('bankIfsc', v)}
+                                    placeholder="11-digit IFSC Code"
+                                />
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">UPI & QR setup</h4>
+                                <VerifiableItem 
+                                    icon={QrCode} 
+                                    label="UPI ID" 
+                                    value={displayData.upiId} 
+                                    isEditing={isEditMode}
+                                    id="upi-id"
+                                    onChange={(v) => handleFieldChange('upiId', v)}
+                                    placeholder="e.g. 1234567890@upi"
+                                />
+                                <VerifiableItem 
+                                    icon={Smartphone} 
+                                    label="Payment mobile no." 
+                                    value={displayData.paymentMobileNumber} 
+                                    isEditing={isEditMode}
+                                    id="pay-mob"
+                                    onChange={(v) => handleFieldChange('paymentMobileNumber', v)}
+                                    placeholder="e.g. 9876543210"
+                                />
+                                
+                                <div className="pt-4 flex flex-col items-center gap-4 bg-secondary/30 rounded-xl p-4 border border-primary/10">
+                                    <div className="relative w-32 h-32 border-2 border-dashed rounded-lg flex items-center justify-center bg-white overflow-hidden">
+                                        {(isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl) ? (
+                                            <img src={(isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)!.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent((isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)!)}` : (isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)} alt="QR" className="object-contain p-2 h-full w-full" />
+                                        ) : (
+                                            <div className="text-muted-foreground text-center p-2 font-normal">
+                                                <QrCode className="mx-auto h-8 w-8 opacity-20" />
+                                                <p className="text-[10px] mt-1 uppercase font-bold tracking-tighter">No QR code</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {isEditMode && (
+                                        <div className="w-full flex justify-center gap-2">
+                                            <label htmlFor="qr-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent h-8 px-3 cursor-pointer">
+                                                <UploadCloud className="mr-2 h-4 w-4" /> Change QR
+                                            </label>
+                                            <Input id="qr-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setQrCodeFile(e.target.files[0])} />
+                                            {editableData?.qrCodeUrl && (
+                                                <Button type="button" variant="destructive" size="sm" className="font-bold h-8" onClick={handleRemoveQrCode} disabled={isSubmitting}>
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    )}
+                                    <div className="w-full grid grid-cols-2 gap-4 mt-2">
+                                        <div className="space-y-1">
+                                            <Label htmlFor="qrWidth" className="font-bold text-[10px] uppercase text-muted-foreground">Width (px)</Label>
+                                            <Input id="qrWidth" type="number" value={displayData.qrWidth || 120} onChange={(e) => handleFieldChange('qrWidth', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold" placeholder="Default: 120"/>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label htmlFor="qrHeight" className="font-bold text-[10px] uppercase text-muted-foreground">Height (px)</Label>
+                                            <Input id="qrHeight" type="number" value={displayData.qrHeight || 120} onChange={(e) => handleFieldChange('qrHeight', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold" placeholder="Default: 120"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </SettingsSection>
 
                 {/* Visual Identity Section */}
                 <SettingsSection 
                     title="Visual identity" 
-                    description="Logo and branding assets."
+                    description="Logo and primary branding assets."
                     icon={ImageIcon}
-                    defaultOpen={true}
                 >
                     <div className="space-y-6">
                         <div className="flex flex-col items-center gap-4">
@@ -583,18 +646,18 @@ export default function AppSettingsPage() {
                             <div className="w-full grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
                                     <Label htmlFor="logoWidth" className="font-bold text-[10px] uppercase text-muted-foreground">Width (px)</Label>
-                                    <Input id="logoWidth" type="number" value={displayData.logoWidth || ''} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold"/>
+                                    <Input id="logoWidth" type="number" value={displayData.logoWidth || 40} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold" placeholder="Default: 40"/>
                                 </div>
                                 <div className="space-y-1">
                                     <Label htmlFor="logoHeight" className="font-bold text-[10px] uppercase text-muted-foreground">Height (px)</Label>
-                                    <Input id="logoHeight" type="number" value={displayData.logoHeight || ''} onChange={(e) => handleFieldChange('logoHeight', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold"/>
+                                    <Input id="logoHeight" type="number" value={displayData.logoHeight || 40} onChange={(e) => handleFieldChange('logoHeight', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold" placeholder="Default: 40"/>
                                 </div>
                             </div>
                         </div>
                         {isEditMode && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <label htmlFor="logo-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent h-9 px-4 cursor-pointer">
-                                    <UploadCloud className="mr-2 h-4 w-4" /> Change Logo
+                                    <UploadCloud className="mr-2 h-4 w-4" /> Change logo
                                 </label>
                                 <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
                                 {editableData?.logoUrl && (
@@ -607,72 +670,17 @@ export default function AppSettingsPage() {
                     </div>
                 </SettingsSection>
 
-                {/* Donation Infrastructure Section */}
-                <SettingsSection 
-                    title="Donation infrastructure" 
-                    description="Configure UPI and QR code for simplified giving."
-                    icon={QrCode}
-                >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="relative w-48 h-48 border-2 border-dashed rounded-lg flex items-center justify-center bg-secondary/30 overflow-hidden">
-                                {(isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl) ? (
-                                    <img src={(isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)!.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent((isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)!)}` : (isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)} alt="QR" className="object-contain p-2 h-full w-full" />
-                                ) : (
-                                    <div className="text-muted-foreground text-center p-2 font-normal">
-                                        <QrCode className="mx-auto h-8 w-8 opacity-20" />
-                                        <p className="text-[10px] mt-1 uppercase font-bold tracking-tighter">No QR code</p>
-                                    </div>
-                                )}
-                            </div>
-                            {isEditMode && (
-                                <div className="w-full flex justify-center gap-2">
-                                    <label htmlFor="qr-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent h-9 px-4 cursor-pointer">
-                                        <UploadCloud className="mr-2 h-4 w-4" /> Change QR
-                                    </label>
-                                    <Input id="qr-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setQrCodeFile(e.target.files[0])} />
-                                    {editableData?.qrCodeUrl && (
-                                        <Button type="button" variant="destructive" size="sm" className="font-bold h-9" onClick={handleRemoveQrCode} disabled={isSubmitting}>
-                                            <Trash2 className="mr-2 h-4 w-4" /> Remove
-                                        </Button>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                        <div className="space-y-4">
-                            <div className="space-y-1.5">
-                                <Label htmlFor="upiId" className="font-bold text-[10px] uppercase text-muted-foreground">UPI ID</Label>
-                                <Input id="upiId" value={displayData.upiId || ''} onChange={(e) => handleFieldChange('upiId', e.target.value)} placeholder="e.g. 1234567890@upi" disabled={isFormDisabled} className="h-9 font-bold font-mono" />
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label htmlFor="paymentMobileNumber" className="font-bold text-[10px] uppercase text-muted-foreground">Payment mobile no.</Label>
-                                <Input id="paymentMobileNumber" value={displayData.paymentMobileNumber || ''} onChange={(e) => handleFieldChange('paymentMobileNumber', e.target.value)} placeholder="e.g. 9876543210" disabled={isFormDisabled} className="h-9 font-bold font-mono" />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="qrWidth" className="font-bold text-[10px] uppercase text-muted-foreground">QR width</Label>
-                                    <Input id="qrWidth" type="number" value={displayData.qrWidth || ''} onChange={(e) => handleFieldChange('qrWidth', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold"/>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="qrHeight" className="font-bold text-[10px] uppercase text-muted-foreground">QR height</Label>
-                                    <Input id="qrHeight" type="number" value={displayData.qrHeight || ''} onChange={(e) => handleFieldChange('qrHeight', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold"/>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </SettingsSection>
-
                 {/* Guiding Principles Manager Section */}
                 <SettingsSection 
                     title="Guiding principles manager" 
-                    description="Define core values and operational standards displayed on the About page."
+                    description="Define core values and operational standards displayed on the about page."
                     icon={Shield}
                 >
                     <div className="space-y-6">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-muted/5 gap-4 transition-all hover:border-primary/20">
                             <div className="space-y-1 flex-1">
                                 <h3 className="font-bold text-primary text-sm tracking-tight">Our guiding principles section</h3>
-                                <p className="text-xs text-muted-foreground font-normal">Controls the visibility of this section on the public About page.</p>
+                                <p className="text-xs text-muted-foreground font-normal">Controls the visibility of this section on the public about page.</p>
                             </div>
                             <div className="flex items-center space-x-2">
                                 <Label htmlFor="gp-visibility" className="font-bold text-xs uppercase opacity-60">Visible</Label>
@@ -743,14 +751,14 @@ export default function AppSettingsPage() {
                         {isEditMode && (
                             <div className="flex justify-center pt-2">
                                 <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="font-bold border-primary/20 text-primary">
-                                    <Plus className="h-4 w-4 mr-2"/> Add New Principle
+                                    <Plus className="h-4 w-4 mr-2"/> Add new principle
                                 </Button>
                             </div>
                         )}
                     </div>
                 </SettingsSection>
 
-                {/* Support Contact Section */}
+                {/* Support Communications Section */}
                 <SettingsSection 
                     title="Communications" 
                     description="Public contact information and footer configuration."
