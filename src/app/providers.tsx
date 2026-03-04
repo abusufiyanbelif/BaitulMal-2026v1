@@ -16,7 +16,13 @@ export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
 
-  const allThemes = THEME_SUGGESTIONS.map(t => t.id).concat(['dark', 'system', 'light']);
+  // Extract unique theme IDs, ensuring 'light' and 'dark' are handled correctly
+  const allThemes = Array.from(new Set([
+    ...THEME_SUGGESTIONS.map(t => t.id),
+    'dark',
+    'system',
+    'light'
+  ]));
 
   useEffect(() => {
     // Apply Motion Preferences on Mount

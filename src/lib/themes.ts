@@ -5,11 +5,11 @@ export interface ThemeSuggestion {
 }
 
 export const THEME_SUGGESTIONS: ThemeSuggestion[] = [
-  // Special Brand Theme
+  // Special Brand Themes
   { id: 'bmss-brand-warm', name: 'BMSS Brand (Warm)', isDark: false },
-  
-  // 5 Light Themes
   { id: 'light', name: 'BMSS Brand (Default)', isDark: false },
+  
+  // 4 More Light Themes (Total 5 including Default)
   { id: 'ocean-blue', name: 'Ocean Blue', isDark: false },
   { id: 'sunset-orange', name: 'Sunset Orange', isDark: false },
   { id: 'sunrise-peach', name: 'Sunrise Peach', isDark: false },
