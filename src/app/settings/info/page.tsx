@@ -8,9 +8,7 @@ import Image from 'next/image';
 import { useSession } from '@/hooks/use-session';
 import { useInfoSettings } from '@/hooks/use-info-settings';
 import { useDonationInfo } from '@/hooks/use-donation-info';
-import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
 import { defaultDonationInfo } from '@/lib/donation-info-default';
-import { defaultGuidingPrinciples } from '@/lib/guiding-principles-default';
 import { useFirestore, useStorage, useAuth } from '@/firebase/provider';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -19,7 +17,7 @@ import Resizer from 'react-image-file-resizer';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen, Edit, X, ScrollText, Award } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, Save, Plus, Trash2, Quote, ListChecks, HelpCircle, UploadCloud, Image as ImageIcon, BookOpen, Edit, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
@@ -34,8 +32,8 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { FileUploader } from '@/components/file-uploader';
 import { BrandedLoader } from '@/components/branded-loader';
+import { donationCategories } from '@/lib/modules';
 
 const useCaseSchema = z.object({
   id: z.string(),
@@ -78,19 +76,8 @@ const donationTypeSchema = z.object({
   hideRestrictions: z.boolean().default(false),
 });
 
-const guidingPrincipleSchema = z.object({
-    id: z.string(),
-    text: z.string().min(1, 'Principle text is required.'),
-    isHidden: z.boolean().default(false),
-});
-
 const formSchema = z.object({
   types: z.array(donationTypeSchema),
-  guidingPrinciples: z.object({
-      title: z.string().min(1, 'Title is required.'),
-      description: z.string().optional().or(z.literal('')),
-      principles: z.array(guidingPrincipleSchema),
-  }),
 });
 
 type DonationInfoFormValues = z.infer<typeof formSchema>;
@@ -203,68 +190,10 @@ function QAEditor({ control, typeIndex, isReadOnly }: { control: any, typeIndex:
     );
 }
 
-function GuidingPrinciplesEditor({ control, isReadOnly }: { control: any, isReadOnly: boolean }) {
-    const { fields, append, remove } = useFieldArray({ control, name: `guidingPrinciples.principles` });
-    return (
-        <div className="space-y-6">
-            <div className="space-y-4">
-                <FormField control={control} name="guidingPrinciples.description" render={({ field }) => (
-                    <FormItem>
-                        <FormLabel className="font-bold text-primary">Commitment Section Description</FormLabel>
-                        <FormControl>
-                            <Textarea rows={3} {...field} disabled={isReadOnly} placeholder="Brief introduction about your principles..." />
-                        </FormControl>
-                    </FormItem>
-                )}/>
-            </div>
-
-            <Separator className="bg-primary/10" />
-
-            <div className="space-y-6">
-                {fields.map((field, index) => (
-                    <div key={field.id} className="relative group p-4 border rounded-md bg-muted/5 space-y-3">
-                        <div className="flex items-center justify-between">
-                            <FormLabel className="font-bold text-primary">Principle #{index + 1}</FormLabel>
-                            {!isReadOnly && (
-                                <div className="flex items-center gap-3">
-                                    <FormField control={control} name={`guidingPrinciples.principles.${index}.isHidden`} render={({ field: hiddenField }) => (
-                                        <div className="flex items-center space-x-1.5">
-                                            <Checkbox checked={hiddenField.value} onCheckedChange={hiddenField.onChange} />
-                                            <span className="text-[10px] font-bold uppercase opacity-60">Hide</span>
-                                        </div>
-                                    )}/>
-                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => remove(index)}>
-                                        <Trash2 className="h-4 w-4"/>
-                                    </Button>
-                                </div>
-                            )}
-                        </div>
-                        <FormField control={control} name={`guidingPrinciples.principles.${index}.text`} render={({ field: textField }) => (
-                            <FormControl>
-                                <Textarea {...textField} disabled={isReadOnly} placeholder="Enter organizational principle..." className="font-normal min-h-[80px]" />
-                            </FormControl>
-                        )}/>
-                    </div>
-                ))}
-                {fields.length === 0 && <p className="text-center text-xs text-muted-foreground py-8 border border-dashed rounded-md italic font-normal">No principles added yet.</p>}
-            </div>
-
-            {!isReadOnly && (
-                <div className="flex justify-center pt-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ id: `gp_${Date.now()}`, text: '', isHidden: false })} className="font-bold border-primary/20 text-primary">
-                        <Plus className="h-4 w-4 mr-2"/> Add New Principle
-                    </Button>
-                </div>
-            )}
-        </div>
-    );
-}
-
 export default function InfoSettingsPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
     const { infoSettings, isLoading: isInfoSettingsLoading } = useInfoSettings();
     const { donationInfoData, isLoading: isDonationInfoLoading, forceRefetch: forceRefetchDonationInfo } = useDonationInfo();
-    const { guidingPrinciplesData, isLoading: isGPDataLoading, forceRefetch: forceRefetchGP } = useGuidingPrinciples();
     
     const firestore = useFirestore();
     const storage = useStorage();
@@ -277,13 +206,11 @@ export default function InfoSettingsPage() {
     const [activeTab, setActiveTab] = useState<string>('');
     const [isInitialized, setIsInitialized] = useState(false);
     const [editModes, setEditModes] = useState<Record<string, boolean>>({});
-    const [isGPEditMode, setIsGPEditMode] = useState(false);
 
     const form = useForm<DonationInfoFormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: { 
             types: [],
-            guidingPrinciples: { title: '', description: '', principles: [] }
         }
     });
 
@@ -297,7 +224,7 @@ export default function InfoSettingsPage() {
     }, [infoSettings]);
     
     useEffect(() => {
-        if (!isDonationInfoLoading && !isGPDataLoading && donationInfoData && !isInitialized) {
+        if (!isDonationInfoLoading && donationInfoData && !isInitialized) {
             const typesToLoad = (donationInfoData.types && donationInfoData.types.length > 0) ? donationInfoData.types : defaultDonationInfo;
             const mappedTypes = typesToLoad.map(t => ({
                 ...t,
@@ -312,20 +239,13 @@ export default function InfoSettingsPage() {
                 hideRestrictions: !!t.hideRestrictions,
             }));
 
-            const gpToLoad = guidingPrinciplesData || defaultGuidingPrinciples;
-
             form.reset({ 
                 types: mappedTypes,
-                guidingPrinciples: {
-                    title: gpToLoad.title || '',
-                    description: gpToLoad.description || '',
-                    principles: gpToLoad.principles || []
-                }
             });
             if (mappedTypes.length > 0) setActiveTab(mappedTypes[0].id);
             setIsInitialized(true);
         }
-    }, [donationInfoData, guidingPrinciplesData, isDonationInfoLoading, isGPDataLoading, isInitialized, form]);
+    }, [donationInfoData, isDonationInfoLoading, isInitialized, form]);
 
     const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.update', false) || !!getNestedValue(userProfile, 'permissions.settings.info.update', false);
 
@@ -378,26 +298,7 @@ export default function InfoSettingsPage() {
         } finally { setIsSubmitting(false); }
     };
 
-    const handleSaveGuidingPrinciples = async () => {
-        if (!firestore || !canUpdateSettings) return;
-        const data = form.getValues().guidingPrinciples;
-        setIsSubmitting(true);
-        toast({ title: 'Saving guiding principles...', description: 'Please wait.' });
-        try {
-            const processedGP = {
-                ...data,
-                principles: data.principles.filter(p => p.text?.trim())
-            };
-            await setDoc(doc(firestore, 'settings', 'guidingPrinciples'), processedGP);
-            toast({ title: 'Success!', description: 'Guiding principles updated.', variant: 'success' });
-            setIsGPEditMode(false);
-            forceRefetchGP();
-        } catch (error: any) {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings/guidingPrinciples', operation: 'write' }));
-        } finally { setIsSubmitting(false); }
-    };
-
-    if (isSessionLoading || isInfoSettingsLoading || isDonationInfoLoading || isGPDataLoading) {
+    if (isSessionLoading || isInfoSettingsLoading || isDonationInfoLoading) {
         return <BrandedLoader />;
     }
 
@@ -432,30 +333,6 @@ export default function InfoSettingsPage() {
 
             <Form {...form}>
                 <div className="space-y-6">
-                    <Card className="animate-fade-in-up border-primary/10 overflow-hidden shadow-sm">
-                        <CardHeader className="bg-primary/5 border-b">
-                            <div className="flex items-center justify-between gap-4">
-                                <div><CardTitle className="font-bold text-primary uppercase tracking-tight">Guiding Principles Manager</CardTitle><CardDescription className="font-normal text-primary/70">Define the core values and operational standards displayed on the 'About' page.</CardDescription></div>
-                                {!isGPEditMode ? (
-                                    <Button onClick={() => setIsGPEditMode(true)} variant="outline" size="sm" className="font-bold text-primary border-primary/20 active:scale-95 transition-transform"><Edit className="mr-2 h-4 w-4" /> Edit principles</Button>
-                                ) : (
-                                    <div className="flex gap-2">
-                                        <Button onClick={() => setIsGPEditMode(false)} variant="outline" size="sm" className="font-bold border-primary/20 text-primary"><X className="mr-2 h-4 w-4"/> Cancel</Button>
-                                        <Button onClick={handleSaveGuidingPrinciples} size="sm" disabled={isSubmitting} className="font-bold shadow-md"><Save className="mr-2 h-4 w-4"/> Save principles</Button>
-                                    </div>
-                                )}
-                            </div>
-                        </CardHeader>
-                        <CardContent className="pt-6 font-normal">
-                            <div className={cn("space-y-6 transition-all", !isGPEditMode && "opacity-70 pointer-events-none")}>
-                                <FormField control={form.control} name="guidingPrinciples.title" render={({ field }) => (
-                                    <FormItem className="hidden"><FormControl><Input {...field} /></FormControl></FormItem>
-                                )}/>
-                                <GuidingPrinciplesEditor control={form.control} isReadOnly={!isGPEditMode} />
-                            </div>
-                        </CardContent>
-                    </Card>
-
                     <Card className="animate-fade-in-up border-primary/10 overflow-hidden shadow-sm">
                         <CardHeader className="bg-primary/5 border-b">
                             <div className="flex items-center justify-between gap-4">

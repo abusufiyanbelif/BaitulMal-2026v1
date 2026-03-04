@@ -4,20 +4,25 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
+import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
 import { useStorage, useFirestore, useAuth } from '@/firebase/provider';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, writeBatch } from 'firebase/firestore';
 import Resizer from 'react-image-file-resizer';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard } from 'lucide-react';
+import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { cn, getNestedValue } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import type { GuidingPrinciple } from '@/lib/types';
 
 interface FormDataType {
     name: string;
@@ -39,6 +44,10 @@ interface FormDataType {
     bankAccountName: string;
     bankAccountNumber: string;
     bankIfsc: string;
+    // Guiding Principles
+    gpTitle: string;
+    gpDescription: string;
+    principles: GuidingPrinciple[];
 }
 
 function VerifiableItem({ icon: Icon, label, value, isEditing, id, onChange, placeholder }: { 
@@ -79,6 +88,8 @@ export default function AppSettingsPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
+    const { guidingPrinciplesData, isLoading: isGPLoading } = useGuidingPrinciples();
+    
     const storage = useStorage();
     const firestore = useFirestore();
     const auth = useAuth();
@@ -94,7 +105,7 @@ export default function AppSettingsPage() {
     
     const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.update', false) || !!getNestedValue(userProfile, 'permissions.settings.app.update', false);
 
-    const handleFieldChange = useCallback((field: keyof FormDataType, value: string | number) => {
+    const handleFieldChange = useCallback((field: keyof FormDataType, value: any) => {
         setEditableData(prev => prev ? { ...prev, [field]: value } : null);
     }, []);
 
@@ -120,13 +131,16 @@ export default function AppSettingsPage() {
                 bankAccountName: paymentSettings?.bankAccountName || '',
                 bankAccountNumber: paymentSettings?.bankAccountNumber || '',
                 bankIfsc: paymentSettings?.bankIfsc || '',
+                gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
+                gpDescription: guidingPrinciplesData?.description || '',
+                principles: guidingPrinciplesData?.principles || [],
             });
         } else {
             setEditableData(null);
             setLogoFile(null);
             setQrCodeFile(null);
         }
-    }, [isEditMode, brandingSettings, paymentSettings]);
+    }, [isEditMode, brandingSettings, paymentSettings, guidingPrinciplesData]);
 
      useEffect(() => {
         if (logoFile) {
@@ -152,6 +166,28 @@ export default function AppSettingsPage() {
     const handleRemoveQrCode = () => {
         setQrCodeFile(null);
         handleFieldChange('qrCodeUrl', '');
+    };
+
+    const handleAddPrinciple = () => {
+        if (!editableData) return;
+        const newPrinciples = [
+            ...editableData.principles,
+            { id: `gp_${Date.now()}`, text: '', isHidden: false }
+        ];
+        handleFieldChange('principles', newPrinciples);
+    };
+
+    const handleRemovePrinciple = (index: number) => {
+        if (!editableData) return;
+        const newPrinciples = editableData.principles.filter((_, i) => i !== index);
+        handleFieldChange('principles', newPrinciples);
+    };
+
+    const handlePrincipleChange = (index: number, field: 'text' | 'isHidden', value: any) => {
+        if (!editableData) return;
+        const newPrinciples = [...editableData.principles];
+        newPrinciples[index] = { ...newPrinciples[index], [field]: value };
+        handleFieldChange('principles', newPrinciples);
     };
 
     const handleSave = async () => {
@@ -218,12 +254,20 @@ export default function AppSettingsPage() {
             };
             batch.set(doc(firestore, 'settings', 'payment'), paymentData, { merge: true });
 
+            // Guiding Principles Save
+            const gpData = {
+                title: editableData.gpTitle,
+                description: editableData.gpDescription,
+                principles: editableData.principles.filter(p => p.text?.trim() !== ''),
+            };
+            batch.set(doc(firestore, 'settings', 'guidingPrinciples'), gpData);
+
             await batch.commit();
-            toast({ title: 'Success!', description: 'App settings have been updated.', variant: 'success' });
+            toast({ title: 'Success!', description: 'All settings have been updated.', variant: 'success' });
             setIsEditMode(false);
         } catch (error: any) {
             if (error.code === 'permission-denied') {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings/branding or settings/payment', operation: 'write' }));
+                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings documents', operation: 'write' }));
             } else {
                 toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
             }
@@ -234,7 +278,7 @@ export default function AppSettingsPage() {
     
     const handleCancel = () => setIsEditMode(false);
 
-    const isLoading = isSessionLoading || isBrandingLoading || isPaymentLoading;
+    const isLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
     const isFormDisabled = !isEditMode || isSubmitting;
 
     const displayData = isEditMode && editableData ? editableData : {
@@ -257,6 +301,9 @@ export default function AppSettingsPage() {
         bankAccountName: paymentSettings?.bankAccountName || '',
         bankAccountNumber: paymentSettings?.bankAccountNumber || '',
         bankIfsc: paymentSettings?.bankIfsc || '',
+        gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
+        gpDescription: guidingPrinciplesData?.description || '',
+        principles: guidingPrinciplesData?.principles || [],
     };
 
     const isDirty = useMemo(() => {
@@ -281,9 +328,12 @@ export default function AppSettingsPage() {
             bankAccountName: paymentSettings?.bankAccountName || '',
             bankAccountNumber: paymentSettings?.bankAccountNumber || '',
             bankIfsc: paymentSettings?.bankIfsc || '',
+            gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
+            gpDescription: guidingPrinciplesData?.description || '',
+            principles: guidingPrinciplesData?.principles || [],
         };
         return JSON.stringify(initialData) !== JSON.stringify(editableData) || !!logoFile || !!qrCodeFile;
-    }, [isEditMode, editableData, brandingSettings, paymentSettings, logoFile, qrCodeFile]);
+    }, [isEditMode, editableData, brandingSettings, paymentSettings, guidingPrinciplesData, logoFile, qrCodeFile]);
 
     if (isLoading) {
         return (
@@ -309,7 +359,7 @@ export default function AppSettingsPage() {
             <div className="flex items-center justify-between">
                 <div className="space-y-1">
                     <h2 className="text-2xl font-bold text-primary tracking-tight">App Settings</h2>
-                    <p className="text-sm font-normal text-muted-foreground">Manage organization profile, branding, and payment configuration.</p>
+                    <p className="text-sm font-normal text-muted-foreground">Manage organization profile, branding, and core standards.</p>
                 </div>
                 {!isEditMode ? (
                     <Button onClick={() => setIsEditMode(true)} className="font-bold">
@@ -548,6 +598,84 @@ export default function AppSettingsPage() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Guiding Principles Manager Section */}
+            <Card className="animate-fade-in-up border-primary/10 overflow-hidden shadow-sm">
+                <CardHeader className="bg-primary/5 border-b">
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <CardTitle className="text-xl font-bold text-primary uppercase tracking-tight">Guiding Principles Manager</CardTitle>
+                            <CardDescription className="font-normal text-primary/70">Define the core values and operational standards displayed on the 'About' page.</CardDescription>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="pt-6 font-normal">
+                    <div className="space-y-6">
+                        <div className="space-y-4">
+                            <div className="space-y-1.5">
+                                <Label className="font-bold text-[10px] uppercase text-muted-foreground">Commitment Section Description</Label>
+                                <Textarea 
+                                    rows={3} 
+                                    value={displayData.gpDescription} 
+                                    onChange={(e) => handleFieldChange('gpDescription', e.target.value)} 
+                                    disabled={isFormDisabled} 
+                                    placeholder="Brief introduction about your principles..." 
+                                    className="font-normal"
+                                />
+                            </div>
+                        </div>
+
+                        <Separator className="bg-primary/10" />
+
+                        <div className="space-y-6">
+                            {(displayData.principles || []).map((principle, index) => (
+                                <div key={principle.id || index} className="relative group p-4 border rounded-md bg-muted/5 space-y-3 shadow-sm">
+                                    <div className="flex items-center justify-between">
+                                        <FormLabel className="font-bold text-primary uppercase text-xs tracking-tight">Principle #{index + 1}</FormLabel>
+                                        {isEditMode && (
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex items-center space-x-1.5">
+                                                    <Checkbox 
+                                                        id={`gp-hide-${index}`}
+                                                        checked={principle.isHidden} 
+                                                        onCheckedChange={(checked) => handlePrincipleChange(index, 'isHidden', !!checked)} 
+                                                    />
+                                                    <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold uppercase opacity-60 cursor-pointer">Hide</Label>
+                                                </div>
+                                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleRemovePrinciple(index)}>
+                                                    <Trash2 className="h-4 w-4"/>
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {isEditMode ? (
+                                        <Textarea 
+                                            value={principle.text} 
+                                            onChange={(e) => handlePrincipleChange(index, 'text', e.target.value)} 
+                                            placeholder="Enter organizational principle..." 
+                                            className="font-normal min-h-[80px]" 
+                                        />
+                                    ) : (
+                                        <p className="text-sm font-normal text-foreground leading-relaxed">
+                                            {principle.text || <span className="italic opacity-50">Empty principle text</span>}
+                                            {principle.isHidden && <Badge variant="outline" className="ml-2 text-[8px] uppercase">Hidden</Badge>}
+                                        </p>
+                                    )}
+                                </div>
+                            ))}
+                            {(displayData.principles || []).length === 0 && !isEditMode && <p className="text-center text-xs text-muted-foreground py-8 border border-dashed rounded-md italic font-normal">No principles defined yet.</p>}
+                        </div>
+
+                        {isEditMode && (
+                            <div className="flex justify-center pt-2">
+                                <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="font-bold border-primary/20 text-primary">
+                                    <Plus className="h-4 w-4 mr-2"/> Add New Principle
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>
