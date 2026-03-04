@@ -5,7 +5,6 @@ import { useTheme } from 'next-themes';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { 
@@ -19,12 +18,14 @@ import {
     Palette, 
     MousePointer2, 
     Info, 
-    CheckCircle2,
-    Eye
+    Eye,
+    Droplets
 } from 'lucide-react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { THEME_SUGGESTIONS } from '@/lib/themes';
+import { cn } from '@/lib/utils';
 
 export default function ViewportSettingsPage() {
     const { theme, setTheme, resolvedTheme } = useTheme();
@@ -72,9 +73,9 @@ export default function ViewportSettingsPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-primary font-bold">
-                                <Palette className="h-5 w-5" /> Appearance theme
+                                <Palette className="h-5 w-5" /> Appearance mode
                             </CardTitle>
-                            <CardDescription className="font-normal">Select your preferred application color scheme.</CardDescription>
+                            <CardDescription className="font-normal">Select your basic application interface mode.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -137,53 +138,14 @@ export default function ViewportSettingsPage() {
                     </Card>
                 </div>
 
-                {/* UI/UX Audit & Preview */}
+                {/* Configuration Audit */}
                 <div className="space-y-6">
-                    <Card className="bg-primary/5 border-primary/10">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-primary font-bold">
-                                <Layout className="h-5 w-5" /> Live component preview
-                            </CardTitle>
-                            <CardDescription className="font-normal text-primary/70">Test the current theme and motion settings below.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="p-6 rounded-lg bg-background border shadow-sm space-y-4">
-                                <h3 className="text-lg font-bold text-primary">Space Grotesk Heading</h3>
-                                <p className="text-sm font-normal text-foreground leading-normal">
-                                    This is a sample of Inter body text at 14px. It follows the sentence-case standard for professional clarity.
-                                </p>
-                                <div className="flex flex-wrap gap-2 pt-2">
-                                    <Button className="btn-primary">Primary action</Button>
-                                    <Button variant="outline" className="font-bold border-primary/20 text-primary">Secondary choice</Button>
-                                    <Badge className="bg-accent text-accent-foreground font-bold">Accent highlight</Badge>
-                                    <Badge variant="success" className="font-bold">Success state</Badge>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <Label className="text-[10px] font-bold uppercase opacity-60">Interactive hover</Label>
-                                    <div className="h-12 w-full rounded border bg-card flex items-center justify-center interactive-hover cursor-pointer font-bold text-xs text-primary">
-                                        -1px Lift Effect
-                                    </div>
-                                </div>
-                                <div className="space-y-1">
-                                    <Label className="text-[10px] font-bold uppercase opacity-60">Loading state</Label>
-                                    <div className="h-12 w-full rounded border bg-card flex items-center justify-center p-4">
-                                        <div className="h-1 w-full bg-primary/10 rounded-full overflow-hidden">
-                                            <div className="h-full bg-primary animate-shimmer" style={{ width: '40%' }} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-primary font-bold">
-                                <Info className="h-5 w-5" /> Configuration audit
+                                <Info className="h-5 w-5" /> Technical audit
                             </CardTitle>
-                            <CardDescription className="font-normal">Technical standards currently applied to the application.</CardDescription>
+                            <CardDescription className="font-normal">UI standards currently applied to the platform.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <ScrollArea className="w-full">
@@ -214,6 +176,40 @@ export default function ViewportSettingsPage() {
                     </Card>
                 </div>
             </div>
+
+            {/* Theme Suggestions Section */}
+            <Card className="animate-fade-in-up border-primary/10">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-primary font-bold">
+                        <Droplets className="h-5 w-5" /> Theme suggestions
+                    </CardTitle>
+                    <CardDescription className="font-normal text-primary/70">
+                        Choose from a variety of curated color palettes for both light and dark environments.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {THEME_SUGGESTIONS.map((suggestion) => (
+                            <Button
+                                key={suggestion.id}
+                                variant={theme === suggestion.id ? 'default' : 'outline'}
+                                className={cn(
+                                    "font-bold transition-all duration-300",
+                                    theme === suggestion.id && "shadow-md scale-[1.02]"
+                                )}
+                                onClick={() => setTheme(suggestion.id)}
+                            >
+                                {suggestion.name}
+                            </Button>
+                        ))}
+                    </div>
+                </CardContent>
+                <CardFooter className="bg-muted/5 border-t p-4 text-center justify-center">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                        Selected: <span className="text-primary">{THEME_SUGGESTIONS.find(t => t.id === theme)?.name || theme}</span>
+                    </p>
+                </CardFooter>
+            </Card>
         </div>
     );
 }

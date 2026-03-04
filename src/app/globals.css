@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root, .light {
     /* Precise Branding Palette (HSL) - Light Mode */
     --background: 0 0% 100%;
     --foreground: 150 40% 10%;
@@ -94,6 +94,68 @@
     --ring: 160 70% 45%;
   }
 
+  /* --- Theme Presets (Light Base) --- */
+  .bmss-brand-1, .bmss-brand-2, .ocean-blue, .sunset-orange, .royal-purple, 
+  .forest-amber, .ocean-breeze, .lavender-mint, .sunrise-peach, 
+  .classic-crimson, .professional-slate, .earthy-tones {
+    --background: 0 0% 100%;
+    --foreground: 150 40% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 150 40% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 40% 10%;
+    --secondary: 160 70% 95%;
+    --secondary-foreground: 160 70% 20%;
+    --muted: 160 10% 90%;
+    --muted-foreground: 160 10% 40%;
+    --border: 160 10% 85%;
+    --input: 160 10% 85%;
+  }
+
+  .bmss-brand-1 { --primary: 160 84% 39%; --accent: 25 95% 53%; --ring: 160 84% 39%; }
+  .bmss-brand-2 { --primary: 160 60% 45%; --accent: 45 93% 47%; --ring: 160 60% 45%; }
+  .ocean-blue { --primary: 221 83% 53%; --accent: 191 91% 42%; --ring: 221 83% 53%; }
+  .sunset-orange { --primary: 25 95% 53%; --accent: 45 93% 47%; --ring: 25 95% 53%; }
+  .royal-purple { --primary: 262 83% 58%; --accent: 316 70% 50%; --ring: 262 83% 58%; }
+  .forest-amber { --primary: 142 76% 36%; --accent: 38 92% 50%; --ring: 142 76% 36%; }
+  .ocean-breeze { --primary: 199 89% 48%; --accent: 160 70% 40%; --ring: 199 89% 48%; }
+  .lavender-mint { --primary: 262 50% 45%; --accent: 160 80% 40%; --ring: 262 50% 45%; }
+  .sunrise-peach { --primary: 12 85% 60%; --accent: 45 93% 47%; --ring: 12 85% 60%; }
+  .classic-crimson { --primary: 346 84% 50%; --accent: 221 83% 53%; --ring: 346 84% 50%; }
+  .professional-slate { --primary: 215 25% 27%; --accent: 221 83% 53%; --ring: 215 25% 27%; }
+  .earthy-tones { --primary: 25 30% 40%; --accent: 142 76% 36%; --ring: 25 30% 40%; }
+
+  /* --- Theme Presets (Dark Base) --- */
+  .midnight-ramadan, .slate-lime, .midnight-emerald, .cyberpunk-neon, 
+  .dracula-orchid, .github-dark, .solarized-dark, .forest-night, 
+  .rose-pine, .tokyo-night, .nord, .monokai {
+    --background: 150 40% 5%;
+    --foreground: 160 10% 95%;
+    --card: 150 40% 7%;
+    --card-foreground: 160 10% 95%;
+    --popover: 150 40% 7%;
+    --popover-foreground: 160 10% 95%;
+    --secondary: 160 30% 15%;
+    --secondary-foreground: 160 10% 95%;
+    --muted: 160 20% 15%;
+    --muted-foreground: 160 10% 60%;
+    --border: 160 20% 20%;
+    --input: 160 20% 20%;
+  }
+
+  .midnight-ramadan { --primary: 160 70% 45%; --accent: 38.8 92.3% 55%; --ring: 160 70% 45%; }
+  .slate-lime { --primary: 84 81% 44%; --accent: 215 25% 27%; --ring: 84 81% 44%; }
+  .midnight-emerald { --primary: 160 80% 30%; --accent: 160 70% 40%; --ring: 160 80% 30%; }
+  .cyberpunk-neon { --primary: 316 70% 50%; --accent: 191 91% 42%; --ring: 316 70% 50%; }
+  .dracula-orchid { --primary: 262 83% 58%; --accent: 160 70% 40%; --ring: 262 83% 58%; }
+  .github-dark { --primary: 215 20% 65%; --accent: 221 83% 53%; --ring: 215 20% 65%; }
+  .solarized-dark { --primary: 199 89% 48%; --accent: 45 93% 47%; --ring: 199 89% 48%; }
+  .forest-night { --primary: 142 76% 36%; --accent: 38 92% 50%; --ring: 142 76% 36%; }
+  .rose-pine { --primary: 346 84% 50%; --accent: 221 83% 53%; --ring: 346 84% 50%; }
+  .tokyo-night { --primary: 221 83% 53%; --accent: 316 70% 50%; --ring: 221 83% 53%; }
+  .nord { --primary: 199 89% 48%; --accent: 160 70% 40%; --ring: 199 89% 48%; }
+  .monokai { --primary: 45 93% 47%; --accent: 316 70% 50%; --ring: 45 93% 47%; }
+
   * {
     @apply border-border;
   }
@@ -114,8 +176,6 @@
     color: hsl(var(--primary));
   }
 
-  /* Global Overrides for Hierarchy and Casing */
-  
   .text-muted-foreground,
   .text-sm,
   .text-xs,
@@ -125,12 +185,10 @@
     letter-spacing: normal !important;
   }
 
-  /* Action Buttons standard */
   .btn-primary {
     @apply bg-primary text-white font-bold hover:bg-primary/90 transition-all;
   }
 
-  /* Branded Scrollbars */
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -148,7 +206,6 @@
     background: hsl(160 70% 30%);
   }
 
-  /* Firefox Scrollbar */
   * {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--primary)) hsl(var(--secondary));
