@@ -165,16 +165,15 @@ export function PublicCampaignsView() {
   }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, dateRange, selectedYear, selectedMonth]);
 
   const sections = [
-    { id: 'active', title: 'Ongoing campaigns', items: filteredCampaigns.filter(c => c.status === 'Active') },
-    { id: 'upcoming', title: 'Upcoming initiatives', items: filteredCampaigns.filter(c => c.status === 'Upcoming') },
+    { id: 'ongoing_upcoming', title: 'Ongoing & upcoming campaigns', items: filteredCampaigns.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
     { id: 'completed', title: 'Past achievements', items: filteredCampaigns.filter(c => c.status === 'Completed') }
   ].filter(s => s.items.length > 0);
 
   return (
     <div className="space-y-8">
        <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tighter text-[#138808]">Our campaigns</h1>
-          <p className="text-[#138808] text-lg font-bold">Transparent tracking of our community support projects.</p>
+          <h1 className="text-4xl font-bold tracking-tighter text-primary">Our campaigns</h1>
+          <p className="text-primary text-lg font-bold">Transparent tracking of our community support projects.</p>
           
           <div className="space-y-2">
             <NewsTicker items={activeTickerItems} label="Live updates" variant="active" />
@@ -183,7 +182,7 @@ export function PublicCampaignsView() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 pt-4 bg-primary/5 p-4 rounded-xl border border-primary/20">
-              <Input placeholder="Search campaigns..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary text-[#138808] font-bold" disabled={isLoading}/>
+              <Input placeholder="Search campaigns..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-bold" disabled={isLoading}/>
               <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
               <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
               <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
@@ -199,7 +198,7 @@ export function PublicCampaignsView() {
           {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-xl" />)}
         </div>
       ) : sections.length > 0 ? (
-        <Accordion type="multiple" defaultValue={['active']} className="space-y-6">
+        <Accordion type="multiple" defaultValue={['ongoing_upcoming']} className="space-y-6">
           {sections.map(section => (
             <AccordionItem key={section.id} value={section.id} className="border-none">
               <AccordionTrigger className="hover:no-underline group">

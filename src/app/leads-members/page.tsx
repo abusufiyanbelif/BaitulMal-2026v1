@@ -196,7 +196,7 @@ export default function LeadPage() {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
           return {
               id: c.id,
-              text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
+              text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/campaign-members/${c.id}/summary`
           };
       });
@@ -207,7 +207,7 @@ export default function LeadPage() {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
           return {
               id: l.id,
-              text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
+              text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/leads-members/${l.id}/summary`
           };
       });
@@ -270,8 +270,7 @@ export default function LeadPage() {
   }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => [
-    { id: 'active', title: 'Live initiatives', items: filteredLeads.filter(c => c.status === 'Active') },
-    { id: 'upcoming', title: 'Upcoming support', items: filteredLeads.filter(c => c.status === 'Upcoming') },
+    { id: 'ongoing_upcoming', title: 'Ongoing & upcoming leads', items: filteredLeads.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
     { id: 'completed', title: 'Closed appeals', items: filteredLeads.filter(c => c.status === 'Completed') }
   ].filter(s => s.items.length > 0), [filteredLeads]);
 
@@ -328,7 +327,7 @@ export default function LeadPage() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6 bg-card/30">
             {(sections && sections.length > 0) ? (
-              <Accordion type="multiple" defaultValue={['active']} className="space-y-6">
+              <Accordion type="multiple" defaultValue={['ongoing_upcoming']} className="space-y-6">
                 {sections.map(section => (
                   <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-sm overflow-hidden">
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">

@@ -165,8 +165,7 @@ export function PublicLeadsView() {
   }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => [
-    { id: 'active', title: 'Live initiatives', items: filteredLeads.filter(c => c.status === 'Active') },
-    { id: 'upcoming', title: 'Upcoming support', items: filteredLeads.filter(c => c.status === 'Upcoming') },
+    { id: 'ongoing_upcoming', title: 'Ongoing & upcoming leads', items: filteredLeads.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
     { id: 'completed', title: 'Closed appeals', items: filteredLeads.filter(c => c.status === 'Completed') }
   ].filter(s => s.items.length > 0), [filteredLeads]);
   
@@ -199,7 +198,7 @@ export function PublicLeadsView() {
           {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-xl" />)}
         </div>
       ) : (sections && sections.length > 0) ? (
-        <Accordion type="multiple" defaultValue={['active']} className="space-y-6">
+        <Accordion type="multiple" defaultValue={['ongoing_upcoming']} className="space-y-6">
           {sections.map(section => (
             <AccordionItem key={section.id} value={section.id} className="border-none">
               <AccordionTrigger className="hover:no-underline group font-bold">
