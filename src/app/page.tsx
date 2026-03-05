@@ -12,10 +12,12 @@ import { NewsTicker } from '@/components/news-ticker';
 import { usePublicData } from '@/hooks/use-public-data';
 import { useBranding } from '@/hooks/use-branding';
 import { cn } from '@/lib/utils';
-import { FolderKanban, Lightbulb } from 'lucide-react';
+import { FolderKanban, Lightbulb, CheckCircle2, Target, Users } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 
 export default function Home() {
-    const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted } = usePublicData();
+    const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted, overallSummary } = usePublicData();
     const { brandingSettings } = useBranding();
 
     const activeTickerItems = useMemo(() => {
@@ -23,10 +25,9 @@ export default function Home() {
             .filter(c => c.status === 'Active')
             .map(c => {
                 const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
-                const prefix = (c as any).isUpdated ? 'Updated: ' : '';
                 return {
                     id: c.id,
-                    text: `${prefix}Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
+                    text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
                     href: `/campaign-public/${c.id}/summary`
                 };
             });
@@ -35,10 +36,9 @@ export default function Home() {
             .filter(l => l.status === 'Active')
             .map(l => {
                 const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
-                const prefix = (l as any).isUpdated ? 'Updated: ' : '';
                 return {
                     id: l.id,
-                    text: `${prefix}Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
+                    text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
                     href: `/leads-public/${l.id}/summary`
                 };
             });
@@ -46,60 +46,115 @@ export default function Home() {
         return [...activeCampaigns, ...activeLeads];
     }, [campaignsWithProgress, leadsWithProgress]);
 
-    const completedTickerItems = useMemo(() => {
-        const completedCampaigns = campaignsWithProgress
-            .filter(c => c.status === 'Completed')
-            .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-public/${c.id}/summary` }));
-        
-        const completedLeads = leadsWithProgress
-            .filter(l => l.status === 'Completed')
-            .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
-
-        return [...completedCampaigns, ...completedLeads];
-    }, [campaignsWithProgress, leadsWithProgress]);
-
-    const heroTitle = brandingSettings?.heroTitle || 'Empowering Our Community, One Act of Kindness at a Time.';
+    const heroTitle = brandingSettings?.heroTitle || 'Empowering our community, one act of kindness at a time.';
     const heroDescription = brandingSettings?.heroDescription || `Join ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'} to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.`;
 
     return (
-        <div className="container mx-auto p-4 md:p-8">
-            <div className="space-y-8">
-              <section className="text-center py-12 md:py-20 animate-fade-in-up">
-                  <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary max-w-4xl mx-auto">
-                      {heroTitle}
-                  </h1>
-                  <p className="mt-4 max-w-3xl mx-auto text-lg text-primary font-normal leading-relaxed opacity-80">
-                      {heroDescription}
-                  </p>
-                  <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-                      <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md bg-primary text-white">
-                          <Link href="/campaign-public">
-                              <FolderKanban className="mr-2 h-5 w-5" />
-                              View campaigns
-                          </Link>
-                      </Button>
-                      <Button asChild size="lg" variant="secondary" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md bg-white border-primary border text-primary">
-                          <Link href="/leads-public">
-                              <Lightbulb className="mr-2 h-5 w-5" />
-                              View leads
-                          </Link>
-                      </Button>
-                  </div>
-              </section>
+        <div className="container mx-auto p-4 md:p-8 space-y-10">
+            {/* Hero Section */}
+            <section className="text-center py-12 md:py-20 animate-fade-in-up">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter text-primary max-w-5xl mx-auto uppercase">
+                    {heroTitle}
+                </h1>
+                <p className="mt-6 max-w-3xl mx-auto text-lg text-primary font-normal leading-relaxed opacity-80">
+                    {heroDescription}
+                </p>
+                <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md bg-primary text-white px-8 h-12">
+                        <Link href="/campaign-public">
+                            <FolderKanban className="mr-2 h-5 w-5" />
+                            Active campaigns
+                        </Link>
+                    </Button>
+                    <Button asChild size="lg" variant="outline" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md bg-white border-primary/20 text-primary px-8 h-12">
+                        <Link href="/leads-public">
+                            <Lightbulb className="mr-2 h-5 w-5" />
+                            Public appeals
+                        </Link>
+                    </Button>
+                </div>
+            </section>
 
-              <WisdomAndReflection />
+            {/* Top Stats - Transparency Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-zoom">
+                <Card className="border-primary/10 bg-white/50 backdrop-blur-sm shadow-sm">
+                    <CardHeader className="pb-2">
+                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-primary"/> Institutional transparency</CardDescription>
+                        <CardTitle className="text-sm font-bold text-primary uppercase">Verified initiatives</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-black text-primary">{(campaignsWithProgress.length + leadsWithProgress.length) || 0}</div>
+                    </CardContent>
+                </Card>
+                <Card className="border-primary/10 bg-white/50 backdrop-blur-sm shadow-sm">
+                    <CardHeader className="pb-2">
+                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2"><Target className="h-3.5 w-3.5 text-primary"/> Community goals</CardDescription>
+                        <CardTitle className="text-sm font-bold text-primary uppercase">Fundraising target</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-black text-primary font-mono">₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}</div>
+                    </CardContent>
+                </Card>
+                <Card className="border-primary/10 bg-white/50 backdrop-blur-sm shadow-sm">
+                    <CardHeader className="pb-2">
+                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2"><Users className="h-3.5 w-3.5 text-primary"/> Social impact</CardDescription>
+                        <CardTitle className="text-sm font-bold text-primary uppercase">Community impact</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-black text-primary font-mono">₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}</div>
+                    </CardContent>
+                </Card>
+            </div>
 
-              <div className="space-y-2">
+            <WisdomAndReflection />
+
+            {/* News & Updates */}
+            <div className="space-y-2">
                 <NewsTicker items={activeTickerItems} label="Live updates" variant="active" />
-                <NewsTicker items={recentDonationsFormatted} label="Donation updates" variant="donation" />
-                <NewsTicker items={completedTickerItems} label="Recently completed" variant="completed" />
-              </div>
+                <NewsTicker items={recentDonationsFormatted} label="Recent verification" variant="donation" />
+            </div>
 
-              <div className="space-y-6">
+            {/* Detailed Data Sections */}
+            <div className="space-y-10">
                 <OverallFundingSummary />
+                
+                {/* Verification Activity Table */}
+                <Card className="border-primary/10 overflow-hidden bg-white shadow-md">
+                    <CardHeader className="bg-primary/5 border-b">
+                        <CardTitle className="text-xl font-bold tracking-tight text-primary uppercase flex items-center gap-2"><CheckCircle2 className="h-6 w-6"/> Recent verification</CardTitle>
+                        <CardDescription className="font-normal text-primary/70">Secure tracking of confirmed community contributions.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <ScrollArea className="w-full">
+                            <Table>
+                                <TableHeader className="bg-muted/30">
+                                    <TableRow>
+                                        <TableHead className="font-bold text-[10px] uppercase text-primary tracking-widest pl-6">Reference</TableHead>
+                                        <TableHead className="font-bold text-[10px] uppercase text-primary tracking-widest">Allocation</TableHead>
+                                        <TableHead className="font-bold text-[10px] uppercase text-primary tracking-widest text-right pr-6">Confirmed sum</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {recentDonationsFormatted.length > 0 ? (
+                                        recentDonationsFormatted.slice(0, 10).map((item, idx) => (
+                                            <TableRow key={item.id} className="hover:bg-primary/5 transition-colors border-primary/5">
+                                                <TableCell className="pl-6"><div className="text-xs font-bold text-primary truncate max-w-[200px]">{item.text.split(' for ')[0]}</div></TableCell>
+                                                <TableCell><Link href={item.href} className="text-xs font-normal text-muted-foreground hover:text-primary hover:underline transition-colors uppercase tracking-tight">{item.text.split(' for ')[1]}</Link></TableCell>
+                                                <TableCell className="text-right pr-6"><Badge variant="outline" className="text-[10px] font-black border-primary/20 text-primary bg-primary/5">VERIFIED</Badge></TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow><TableCell colSpan={3} className="h-32 text-center text-muted-foreground font-normal italic opacity-60">No recent activity verified.</TableCell></TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                            <ScrollBar orientation="horizontal" />
+                        </ScrollArea>
+                    </CardContent>
+                </Card>
+
                 <DonationSummary />
                 <LeadAndCampaignSummary />
-              </div>
             </div>
         </div>
     );

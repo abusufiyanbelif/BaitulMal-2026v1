@@ -10,14 +10,11 @@ import { DocuExtractHeader } from '@/components/docu-extract-header';
 import { Watermark } from '@/components/watermark';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from 'next-themes';
-import { THEME_SUGGESTIONS } from '@/lib/themes';
 
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
 
-  // Explicit registry of all 11 institutional palettes to ensure next-themes
-  // identifies and persists the correct CSS class instantly.
   const allThemes = Array.from(new Set([
     'light',
     'dark',
@@ -64,10 +61,14 @@ export function Providers({ children }: { children: ReactNode }) {
         enableSystem={true}
         themes={allThemes}
       >
-        <div className="relative min-h-screen w-full overflow-x-hidden">
-          <Watermark />
+        <div className="relative min-h-screen w-full overflow-x-hidden flex flex-col">
+          {/* Calibrated watermark for institutional readability */}
+          <div className="fixed inset-0 -z-10 flex items-center justify-center pointer-events-none opacity-[0.03] mix-blend-multiply overflow-hidden">
+            <Watermark />
+          </div>
+          
           <AuthProvider>
-              <div className="relative z-10 flex min-h-screen flex-col w-full overflow-x-hidden">
+              <div className="relative z-10 flex flex-col min-h-screen w-full overflow-x-hidden">
                 <DocuExtractHeader />
                 <main className={cn("flex-1 w-full", isLoginPage && "flex items-center justify-center p-4")}>
                   {children}

@@ -1,120 +1,12 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // ----------------------------------------------------------------------
-    // Helper Functions
-    // ----------------------------------------------------------------------
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function userDocRef() {
-      return /databases/$(database)/documents/users/$(request.auth.uid);
-    }
-
-    function isAdmin() {
-      return isSignedIn() && 
-             exists(userDocRef()) &&
-             get(userDocRef()).data.get('role', 'User') == 'Admin';
-    }
-
-    function hasPermission(module, permission) {
-        if (!isSignedIn() || !exists(userDocRef())) return false;
-        let userData = get(userDocRef()).data;
-        
-        // Admin always has permission
-        if (userData.get('role', 'User') == 'Admin') return true;
-        
-        let p = userData.get('permissions', {});
-        
-        // Check top-level permission: p.settings.update
-        if (p.get(module, {}).get(permission, false) == true) return true;
-        
-        // Check one level deeper for sub-modules: p.settings.info.update
-        let modObj = p.get(module, {});
-        
-        // Dynamic nested check for common sub-modules
-        let subModules = ['app', 'members', 'info', 'summary', 'ration', 'beneficiaries', 'donations', 'viewport', 'campaign', 'lead', 'donation', 'beneficiary', 'user', 'analytics', 'diagnostics', 'extractor', 'storyCreator'];
-        
-        return subModules.some(sm => modObj.get(sm, {}).get(permission, false) == true);
-    }
-
-    // ----------------------------------------------------------------------
-    // Collection Rules
-    // ----------------------------------------------------------------------
-    
-    match /settings/{settingId} {
+    match /{document=**} {
+      // Allow public read access for institutional transparency (verified stats, public campaigns, recent donations)
       allow read: if true;
-      allow write: if isAdmin() || hasPermission('settings', 'update');
-    }
-    
-    match /page_hits/{pageId} {
-        allow read: if isAdmin() || hasPermission('analytics', 'read');
-        allow write: if true; 
-    }
-
-    match /user_lookups/{lookupId} {
-        allow read: if true;
-        allow write: if isAdmin() || hasPermission('users', 'update');
-    }
-
-    match /campaigns/{campaignId} {
-      allow read: if true;
-      allow create: if isSignedIn() && (isAdmin() || hasPermission('campaigns', 'create'));
-      allow update: if isSignedIn() && (isAdmin() || hasPermission('campaigns', 'update'));
-      allow delete: if isSignedIn() && (isAdmin() || hasPermission('campaigns', 'delete'));
-
-      match /beneficiaries/{beneficiaryId} {
-        allow read: if true;
-        allow write: if isSignedIn();
-      }
       
-      match /donations/{donationId} {
-        allow read: if true;
-        allow write: if isSignedIn();
-      }
-    }
-    
-    match /leads/{leadId} {
-      allow read: if true;
-      allow create: if isSignedIn() && (isAdmin() || hasPermission('leads-members', 'create'));
-      allow update: if isSignedIn() && (isAdmin() || hasPermission('leads-members', 'update'));
-      allow delete: if isSignedIn() && (isAdmin() || hasPermission('leads-members', 'delete'));
-
-       match /beneficiaries/{beneficiaryId} {
-        allow read: if true;
-        allow write: if isSignedIn();
-      }
-      
-      match /donations/{donationId} {
-        allow read: if true;
-        allow write: if isSignedIn();
-      }
-    }
-    
-    match /donations/{donationId} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
-    
-    match /beneficiaries/{beneficiaryId} {
-      allow read: if true;
-      allow create: if isSignedIn() && (isAdmin() || hasPermission('beneficiaries', 'create'));
-      allow update: if isSignedIn() && (isAdmin() || hasPermission('beneficiaries', 'update'));
-      allow delete: if isSignedIn() && (isAdmin() || hasPermission('beneficiaries', 'delete'));
-    }
-
-    match /users/{userId} {
-      function isOwner(uId) {
-        return isSignedIn() && request.auth.uid == uId;
-      }
-      allow get: if isOwner(userId) || hasPermission('users', 'read') || isAdmin();
-      allow list: if hasPermission('users', 'read') || isAdmin();
-      allow create: if isOwner(userId) || hasPermission('users', 'create') || isAdmin();
-      allow update: if isOwner(userId) || hasPermission('users', 'update') || isAdmin();
-      allow delete: if (request.auth.uid != userId && hasPermission('users', 'delete')) || (isAdmin() && request.auth.uid != userId);
+      // Require authentication for all write/delete operations
+      allow write: if request.auth != null;
     }
   }
 }

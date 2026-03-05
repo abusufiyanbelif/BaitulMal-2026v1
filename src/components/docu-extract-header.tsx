@@ -45,44 +45,44 @@ export function DocuExtractHeader() {
   const homeHref = user ? '/dashboard' : '/';
   
   return (
-    <header className="bg-white border-b p-2 shadow-sm sticky top-0 z-50 w-full overflow-hidden">
-      <div className="container mx-auto flex flex-nowrap justify-between items-center gap-2 px-2 sm:px-4">
-        <Link href={homeHref} className="flex items-center gap-2 min-w-0 flex-1 group transition-transform duration-300 ease-in-out hover:scale-[1.01]">
-          <div className="relative flex-shrink-0 flex items-center justify-center h-10 w-auto min-w-[32px]">
+    <header className="bg-white border-b p-3 shadow-sm sticky top-0 z-50 w-full overflow-hidden h-24 flex items-center">
+      <div className="container mx-auto flex flex-nowrap justify-between items-center gap-4 px-4">
+        <Link href={homeHref} className="flex items-center gap-4 min-w-0 flex-1 group transition-transform duration-300 ease-in-out hover:scale-[1.01]">
+          <div className="relative flex-shrink-0 flex items-center justify-center h-20 w-20 bg-primary/5 rounded-xl border border-primary/10 overflow-hidden">
             {isLoading ? (
-                <Skeleton className="h-8 w-8 rounded-lg" />
+                <Skeleton className="h-16 w-16 rounded-lg" />
             ) : (
                 validLogoUrl && (
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                     alt="Institutional logo"
-                    width={60}
-                    height={32}
-                    className="object-contain drop-shadow-sm h-8 w-auto"
+                    width={80}
+                    height={80}
+                    className="object-contain p-1 h-full w-full"
                     priority
                   />
                 )
             )}
             </div>
-          <h1 className="text-sm md:text-base lg:text-xl font-bold tracking-tight text-primary leading-tight">
-            {isBrandingLoading ? <Skeleton className="h-4 w-32 sm:w-64" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
+          <h1 className="text-base md:text-xl lg:text-2xl font-bold tracking-tight text-primary leading-tight uppercase max-w-xl line-clamp-2">
+            {isBrandingLoading ? <Skeleton className="h-6 w-64" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
           </h1>
         </Link>
 
-        <nav className="flex items-center gap-2 flex-shrink-0">
+        <nav className="flex items-center gap-3 flex-shrink-0">
             {isLoading ? (
-                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-10 w-10 rounded-full" />
             ) : user && userProfile ? (
               <div className="flex items-center">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-9 w-9 rounded-full border-2 border-primary/10 p-0 transition-all hover:border-primary active:scale-95">
+                      <Button variant="ghost" className="relative h-12 w-12 rounded-full border-2 border-primary/10 p-0 transition-all hover:border-primary active:scale-95 shadow-sm">
                         <Avatar className="h-full w-full">
                           <AvatarImage
                             src={userProfile?.idProofUrl || ''}
                             alt={userProfile?.name || 'User'}
                           />
-                          <AvatarFallback className="bg-primary text-white font-bold text-xs">
+                          <AvatarFallback className="bg-primary text-white font-bold text-sm">
                             {getInitials(userProfile?.name)}
                           </AvatarFallback>
                         </Avatar>
@@ -134,11 +134,10 @@ export function DocuExtractHeader() {
               </div>
             ) : (
               pathname !== '/login' && (
-                <Button asChild size="sm" className="font-bold tracking-tight text-[10px] sm:text-xs bg-primary text-white hover:bg-primary/90 shadow-sm px-2 sm:px-4 h-8 transition-transform active:scale-95">
+                <Button asChild className="font-bold tracking-tight text-xs bg-primary text-white hover:bg-primary/90 shadow-md px-6 h-10 transition-transform active:scale-95">
                     <Link href="/login">
-                        <LogIn className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-                        <span className="hidden xs:inline">Member login</span>
-                        <span className="xs:hidden">Login</span>
+                        <LogIn className="mr-2 h-4 w-4" />
+                        <span>Member login</span>
                     </Link>
                 </Button>
               )

@@ -1,77 +1,12 @@
 rules_version = '2';
-
 service firebase.storage {
   match /b/{bucket}/o {
-    
-    // ----------------------------------------------------------------------
-    // Helper Functions
-    // ----------------------------------------------------------------------
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function userDocRef() {
-        return /databases/(default)/documents/users/$(request.auth.uid);
-    }
-    
-    function getUserData() {
-        return firestore.get(userDocRef()).data;
-    }
-    
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-    
-    function isAdmin() {
-      return isSignedIn() && 
-             firestore.exists(userDocRef()) &&
-             getUserData().get('role', 'User') == 'Admin';
-    }
-    
-    function hasPermission(module, permission) {
-        if (!isSignedIn() || !firestore.exists(userDocRef())) return false;
-        let data = getUserData();
-        let p = data.get('permissions', {});
-        return isAdmin() || p.get(module, {}).get(permission, false) == true;
-    }
-    
-    // ----------------------------------------------------------------------
-    // Path Rules
-    // ----------------------------------------------------------------------
-
-    match /donations/{donationId}/{allPaths=**} {
+    match /{allPaths=**} {
+      // Allow public read access for institutional transparency (logos, public artifacts, verification screenshots)
       allow read: if true;
-      allow write: if isSignedIn();
-    }
-
-    match /campaigns/{campaignId}/{allPaths=**} {
-      allow read: if true;
-      allow write: if isAdmin() || hasPermission('campaigns', 'update');
-    }
-
-    match /leads/{leadId}/{allPaths=**} {
-      allow read: if true;
-      allow write: if isAdmin() || hasPermission('leads-members', 'update');
-    }
-    
-    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-        allow read: if true;
-        allow write: if isAdmin() || hasPermission('beneficiaries', 'update');
-    }
-
-    match /settings/{allPaths=**} {
-        allow read: if true;
-        allow write: if isAdmin() || hasPermission('settings', 'update');
-    }
-
-    match /users/{userId}/{allPaths=**} {
-      allow read: if true;
-      allow write: if isOwner(userId) || isAdmin() || hasPermission('users', 'update');
-    }
-
-    match /test/{userId}/{allPaths=**} {
-      allow read, write: if isOwner(userId) || isAdmin() || hasPermission('diagnostics', 'read');
+      
+      // Require authentication for all upload/delete operations
+      allow write: if request.auth != null;
     }
   }
 }
