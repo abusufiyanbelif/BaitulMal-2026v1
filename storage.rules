@@ -1,10 +1,12 @@
 rules_version = '2';
-service firebase.storage {
+service map.storage {
   match /b/{bucket}/o {
-    // Public transparency: Allow anyone to view institutional artifacts and logos
+    // Simplified Storage Access Model
+    // 1. Public Transparency: All artifacts are readable by the public.
+    // 2. Member Control: Authenticated members can manage all verification evidence and files.
+    
     match /{allPaths=**} {
       allow read: if true;
-      // Member empowerment: Allow any authenticated member to manage files
       allow write, delete: if request.auth != null;
     }
   }

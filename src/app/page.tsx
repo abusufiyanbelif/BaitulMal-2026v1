@@ -12,7 +12,7 @@ import { NewsTicker } from '@/components/news-ticker';
 import { usePublicData } from '@/hooks/use-public-data';
 import { useBranding } from '@/hooks/use-branding';
 import { cn } from '@/lib/utils';
-import { FolderKanban, Lightbulb, CheckCircle2, Target, Users } from 'lucide-react';
+import { FolderKanban, Lightbulb, CheckCircle2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -88,22 +88,21 @@ export default function Home() {
                 </div>
             </section>
 
-            <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                <WisdomAndReflection />
-            </div>
-
             {/* News & Updates */}
-            <div className="space-y-2 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+            <div className="space-y-2 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                 <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
                 <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
                 <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
+            </div>
+
+            <div className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+                <WisdomAndReflection />
             </div>
 
             {/* Detailed Data Sections */}
             <div className="space-y-10 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
                 <OverallFundingSummary />
                 
-                {/* Recent Verification Table */}
                 <Card className="border-primary/10 overflow-hidden bg-white shadow-md transition-all duration-300 hover:shadow-xl">
                     <CardHeader className="bg-primary/5 border-b">
                         <CardTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2"><CheckCircle2 className="h-6 w-6"/> Recent Verification</CardTitle>
@@ -121,7 +120,7 @@ export default function Home() {
                                 </TableHeader>
                                 <TableBody>
                                     {recentDonationsFormatted.length > 0 ? (
-                                        recentDonationsFormatted.slice(0, 10).map((item, idx) => (
+                                        recentDonationsFormatted.slice(0, 10).map((item) => (
                                             <TableRow key={item.id} className="hover:bg-primary/5 transition-colors border-primary/5">
                                                 <TableCell className="pl-6"><div className="text-xs font-bold text-primary truncate max-w-[200px]">{item.text.split(' for ')[0]}</div></TableCell>
                                                 <TableCell><Link href={item.href} className="text-xs font-normal text-muted-foreground hover:text-primary hover:underline transition-colors tracking-tight">{item.text.split(' for ')[1]}</Link></TableCell>

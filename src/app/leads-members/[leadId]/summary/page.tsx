@@ -381,12 +381,6 @@ export default function LeadSummaryPage() {
         setIsImageViewerOpen(true);
     };
 
-    const isLoading = isLeadLoading || areDonationsLoading || areBeneficiariesLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
-
-    if (isLoading) return <BrandedLoader />;
-    if (!lead) return <main className="container mx-auto p-4 md:p-8 text-center font-bold text-primary"><p>Lead Not Found.</p></main>;
-    
-    const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : lead.purpose === 'Medical' ? HeartPulse : lead.purpose === 'Relief' ? LifeBuoy : lead.purpose === 'Other' ? Info : HandHelping;
     const chartData = fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
 
     const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
@@ -394,19 +388,21 @@ export default function LeadSummaryPage() {
     const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
     const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.update', false);
 
+    const FallbackIcon = lead?.purpose === 'Education' ? GraduationCap : lead?.purpose === 'Medical' ? HeartPulse : lead?.purpose === 'Relief' ? LifeBuoy : lead?.purpose === 'Other' ? Info : HandHelping;
+
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal">
              <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
-                    {editMode ? ( <Input id="name" value={editableLead.name || ''} onChange={(e) => setEditableLead(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary tracking-tight">{lead.name}</h1> )}
+                    {editMode ? ( <Input id="name" value={editableLead.name || ''} onChange={(e) => setEditableLead(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary tracking-tight">{lead?.name}</h1> )}
                     {editMode ? (
                          <Select value={editableLead.status} onValueChange={(value) => setEditableLead(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1 font-bold"><SelectValue placeholder="Select Status" /></SelectTrigger><SelectContent><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></SelectContent></Select>
-                    ): ( <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px]">{lead.status}</p> )}
+                    ): ( <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px]">{lead?.status}</p> )}
                 </div>
                 <div className="flex gap-2">
                     {!editMode && (
-                        <><DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md"><Download className="mr-2 h-4 w-4" /> Download</Button></DropdownMenuTrigger><DropdownMenuContent className="animate-fade-in-zoom"><DropdownMenuItem onClick={() => handleDownload('png')} className="font-bold text-primary">Download As Image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')} className="font-bold text-primary">Download As PDF</DropdownMenuItem></DropdownMenuContent></DropdownMenu><Button onClick={() => { setShareDialogData({ title: `Lead: ${lead.name}`, text: lead.description || '', url: window.location.origin + `/leads-public/${leadId}/summary` }); setIsShareDialogOpen(true); }} variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md"><Share2 className="mr-2 h-4 w-4" /> Share</Button></>
+                        <><DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md"><Download className="mr-2 h-4 w-4" /> Download</Button></DropdownMenuTrigger><DropdownMenuContent className="animate-fade-in-zoom"><DropdownMenuItem onClick={() => handleDownload('png')} className="font-bold text-primary">Download As Image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')} className="font-bold text-primary">Download As PDF</DropdownMenuItem></DropdownMenuContent></DropdownMenu><Button onClick={() => { if(lead) setShareDialogData({ title: `Lead: ${lead.name}`, text: lead.description || '', url: window.location.origin + `/leads-public/${leadId}/summary` }); setIsShareDialogOpen(true); }} variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md"><Share2 className="mr-2 h-4 w-4" /> Share</Button></>
                     )}
                     {canUpdate && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">Cancel</Button><Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Save className="mr-2 h-4 w-4" /> Save Changes</Button></div>) )}
                 </div>
@@ -504,21 +500,21 @@ export default function LeadSummaryPage() {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer transition-all duration-500 hover:shadow-lg group" onClick={() => { if (lead.imageUrl) handleViewImage(lead.imageUrl, lead.name); }}>
-                                        {lead.imageUrl ? ( <Image src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`} alt={lead.name} fill sizes="100vw" className="object-cover transition-transform duration-700 group-hover:scale-110" /> ) : ( <FallbackIcon className="h-20 w-20 text-primary/10 transition-transform duration-500 group-hover:scale-110" /> )}
+                                    <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer transition-all duration-500 hover:shadow-lg group" onClick={() => { if (lead?.imageUrl) handleViewImage(lead.imageUrl, lead.name); }}>
+                                        {lead?.imageUrl ? ( <Image src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`} alt={lead.name} fill sizes="100vw" className="object-cover transition-transform duration-700 group-hover:scale-110" /> ) : ( <FallbackIcon className="h-20 w-20 text-primary/10 transition-transform duration-500 group-hover:scale-110" /> )}
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                     </div>
                                     <div className="space-y-2 font-normal text-foreground">
                                         <Label className="text-muted-foreground uppercase text-[10px] font-bold tracking-widest">Lead Description</Label>
-                                        <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-primary">{lead.description || 'No description provided.'}</p>
+                                        <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-primary">{lead?.description || 'No description provided.'}</p>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                                        <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Purpose</p><p className="font-bold uppercase tracking-tight text-primary text-sm">{lead.purpose} {lead.category && `(${lead.category})`}</p></div>
-                                        <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Target Goal</p><p className="font-bold font-mono text-primary text-sm">₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                        <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Start Date</p><p className="font-bold text-primary text-sm">{lead.startDate || 'N/A'}</p></div>
-                                        <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">End Date</p><p className="font-bold text-primary text-sm">{lead.endDate || 'N/A'}</p></div>
+                                        <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Purpose</p><p className="font-bold uppercase tracking-tight text-primary text-sm">{lead?.purpose} {lead?.category && `(${lead.category})`}</p></div>
+                                        <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Target Goal</p><p className="font-bold font-mono text-primary text-sm">₹{(lead?.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                        <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Start Date</p><p className="font-bold text-primary text-sm">{lead?.startDate || 'N/A'}</p></div>
+                                        <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">End Date</p><p className="font-bold text-primary text-sm">{lead?.endDate || 'N/A'}</p></div>
                                     </div>
-                                    {(lead.purpose === 'Education' || lead.purpose === 'Medical') && (
+                                    {(lead?.purpose === 'Education' || lead?.purpose === 'Medical') && (
                                         <div className="mt-4 p-4 rounded-md border border-primary/10 bg-primary/5 grid grid-cols-1 sm:grid-cols-3 gap-4 font-bold transition-all duration-300 hover:shadow-md">
                                             {lead.purpose === 'Education' ? (
                                                 <>
@@ -528,9 +524,9 @@ export default function LeadSummaryPage() {
                                                 </>
                                             ) : (
                                                 <>
-                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground tracking-widest">Disease Identified</p><p className="text-sm">{lead.diseaseIdentified || 'N/A'}</p></div>
-                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground tracking-widest">Disease Stage</p><p className="text-sm">{lead.diseaseStage || 'N/A'}</p></div>
-                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground tracking-widest">Priority Level</p><p className="text-sm">{lead.seriousness || 'N/A'}</p></div>
+                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground tracking-widest">Disease Identified</p><p className="text-sm">{lead?.diseaseIdentified || 'N/A'}</p></div>
+                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground tracking-widest">Disease Stage</p><p className="text-sm">{lead?.diseaseStage || 'N/A'}</p></div>
+                                                    <div className="space-y-1"><p className="text-[10px] uppercase text-muted-foreground tracking-widest">Priority Level</p><p className="text-sm">{lead?.seriousness || 'N/A'}</p></div>
                                                 </>
                                             )}
                                         </div>
@@ -634,7 +630,7 @@ export default function LeadSummaryPage() {
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
-                                                        {lead.itemCategories?.[0]?.items.map((item, idx) => (
+                                                        {lead?.itemCategories?.[0]?.items.map((item, idx) => (
                                                             <TableRow key={idx} className="hover:bg-primary/5 transition-colors group">
                                                                 <TableCell className="font-medium text-xs transition-transform group-hover:translate-x-1">{item.name}</TableCell>
                                                                 <TableCell className="text-right text-xs">{item.quantity} {item.quantityType}</TableCell>
@@ -647,7 +643,7 @@ export default function LeadSummaryPage() {
                                                         <TableRow>
                                                             <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-[10px] tracking-widest">Single Beneficiary Total</TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-base">
-                                                                ₹{(lead.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
+                                                                ₹{(lead?.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
                                                             </TableCell>
                                                         </TableRow>
                                                     </tfoot>
@@ -760,7 +756,7 @@ export default function LeadSummaryPage() {
                                     ) : <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest italic opacity-60">No documents attached.</p>}
                                 </div>
                             ) : (
-                                lead.documents && lead.documents.length > 0 ? (
+                                lead?.documents && lead?.documents.length > 0 ? (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                         {lead.documents.map((doc, idx) => {
                                             const isImg = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);

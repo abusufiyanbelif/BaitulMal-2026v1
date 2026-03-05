@@ -1,10 +1,12 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Public transparency: Allow anyone to read verified institutional data
+    // Simplified Institutional Security Model
+    // 1. Public Transparency: All data is readable by anyone to ensure organizational trust.
+    // 2. Controlled Management: All authenticated institutional members have full write/delete access.
+    
     match /{document=**} {
       allow read: if true;
-      // Member empowerment: Allow any authenticated organizational member to manage content
       allow write, delete: if request.auth != null;
     }
   }

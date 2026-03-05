@@ -72,7 +72,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
 
     return (
         <Card 
-            className="flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white shadow-sm" 
+            className="flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white shadow-sm animate-fade-in-up" 
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
             onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}
         >
@@ -157,7 +157,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
             </div>
             <CardDescription className="text-[10px] font-normal tracking-normal">{campaign.startDate} To {campaign.endDate}</CardDescription>
           </CardHeader>
-          <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal">
+          <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal text-primary">
               <div className="flex justify-between items-center text-xs">
                 <Badge variant="secondary" className="text-[10px] font-bold">{campaign.category}</Badge>
                 <Badge 

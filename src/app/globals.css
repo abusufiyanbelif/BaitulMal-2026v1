@@ -65,7 +65,7 @@
     --card-foreground: 160 50% 5%;
     --popover: 0 0% 100%;
     --popover-foreground: 160 50% 5%;
-    --primary: 160 84% 20%; /* Deep Indian Green */
+    --primary: 160 84% 20%; /* Deep Institutional Green */
     --primary-foreground: 0 0% 100%;
     --secondary: 160 40% 92%;
     --secondary-foreground: 160 84% 15%;
@@ -82,7 +82,7 @@
   }
 
   .bmss-brand-warm {
-    --primary: 24 95% 40%; /* Warm Orange combination */
+    --primary: 24 95% 40%; 
     --ring: 24 95% 40%;
     --background: 30 20% 98%;
   }
