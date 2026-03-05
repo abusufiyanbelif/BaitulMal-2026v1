@@ -25,7 +25,7 @@ export function AppFooter() {
   if (pathname === '/login') return null;
 
   return (
-    <footer className="bg-white border-t mt-auto p-10 text-primary font-normal w-full overflow-hidden shadow-inner">
+    <footer className="bg-white border-t mt-auto p-10 text-foreground font-normal w-full overflow-hidden shadow-inner">
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
             <div className="md:col-span-6 flex flex-col gap-6 animate-fade-in-up">
@@ -44,7 +44,7 @@ export function AppFooter() {
                         )}
                     </div>
                     <div className="space-y-1">
-                        <h3 className="font-bold text-xl tracking-tight leading-tight">
+                        <h3 className="font-bold text-xl tracking-tight leading-tight text-primary">
                             {brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}
                         </h3>
                         <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Community Welfare Association</p>
@@ -76,7 +76,7 @@ export function AppFooter() {
             <div className="md:col-span-2 space-y-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 <h4 className="text-[10px] font-bold text-primary tracking-widest uppercase border-b border-primary/10 pb-2">Institutional</h4>
                 <div className="flex flex-col gap-3 text-sm font-bold">
-                    <Link href="/info/organization" className="hover:text-primary/70 transition-all flex items-center gap-2 group">
+                    <Link href="/info/organization" className="text-foreground hover:text-primary transition-all flex items-center gap-2 group">
                         <Building2 className="h-4 w-4 opacity-40 group-hover:opacity-100 transition-opacity"/> 
                         <span>About Organization</span>
                         <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0"/>
@@ -91,13 +91,13 @@ export function AppFooter() {
                         {paymentSettings?.contactEmail && (
                             <div className="flex items-center gap-3 bg-muted/20 p-2 rounded-md hover:bg-muted/30 transition-colors">
                                 <Mail className="h-4 w-4 text-primary/60" />
-                                <a href={`mailto:${paymentSettings.contactEmail}`} className="text-xs font-normal hover:underline">{paymentSettings.contactEmail}</a>
+                                <a href={`mailto:${paymentSettings.contactEmail}`} className="text-xs font-normal text-foreground hover:underline">{paymentSettings.contactEmail}</a>
                             </div>
                         )}
                         {paymentSettings?.contactPhone && (
                             <div className="flex items-center gap-3 bg-muted/20 p-2 rounded-md hover:bg-muted/30 transition-colors">
                                 <Phone className="h-4 w-4 text-primary/60" />
-                                <a href={`tel:${paymentSettings.contactPhone}`} className="text-xs font-normal hover:underline">{paymentSettings.contactPhone}</a>
+                                <a href={`tel:${paymentSettings.contactPhone}`} className="text-xs font-normal text-foreground hover:underline">{paymentSettings.contactPhone}</a>
                             </div>
                         )}
                     </div>

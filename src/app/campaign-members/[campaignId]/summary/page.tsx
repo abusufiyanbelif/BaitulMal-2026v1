@@ -390,7 +390,7 @@ export default function CampaignSummaryPage() {
     const FallbackIcon = campaign?.category === 'Ration' ? Utensils : campaign?.category === 'Relief' ? LifeBuoy : HandHelping;
 
     return (
-        <main className="container mx-auto p-4 md:p-8 text-primary font-normal">
+        <main className="container mx-auto p-4 md:p-8 text-foreground font-normal">
              <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
@@ -487,9 +487,9 @@ export default function CampaignSummaryPage() {
                                     )}
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                 </div>
-                                <div className="space-y-2 font-normal text-primary">
+                                <div className="space-y-2 font-normal text-foreground">
                                     <Label className="text-muted-foreground uppercase text-[10px] font-bold tracking-widest">Campaign Description</Label>
-                                    <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-foreground">{campaign?.description || 'No description provided.'}</p>
+                                    <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed">{campaign?.description || 'No description provided.'}</p>
                                 </div>
                             </>
                         )}

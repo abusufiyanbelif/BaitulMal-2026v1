@@ -5,11 +5,11 @@
 @layer base {
   :root, .light {
     --background: 0 0% 100%;
-    --foreground: 160 25% 10%;
+    --foreground: 160 25% 15%; /* Deep charcoal green, not black */
     --card: 0 0% 100%;
-    --card-foreground: 160 25% 10%;
+    --card-foreground: 160 25% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 160 25% 10%;
+    --popover-foreground: 160 25% 15%;
     --primary: 160 70% 40%; /* Classic Indian Green */
     --primary-foreground: 0 0% 100%;
     --secondary: 160 70% 95%;
@@ -60,11 +60,11 @@
 
   .bms3 {
     --background: 0 0% 98%;
-    --foreground: 160 50% 5%;
+    --foreground: 160 60% 10%; /* Deep institutional green, not black */
     --card: 0 0% 100%;
-    --card-foreground: 160 50% 5%;
+    --card-foreground: 160 60% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 160 50% 5%;
+    --popover-foreground: 160 60% 10%;
     --primary: 160 84% 20%; /* Deep Institutional Green */
     --primary-foreground: 0 0% 100%;
     --secondary: 160 40% 92%;
@@ -85,11 +85,13 @@
     --primary: 24 95% 40%; 
     --ring: 24 95% 40%;
     --background: 30 20% 98%;
+    --foreground: 30 20% 15%;
   }
 
   .ocean-blue {
     --primary: 217 91% 40%;
     --ring: 217 91% 40%;
+    --foreground: 217 25% 15%;
   }
 }
 

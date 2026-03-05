@@ -58,7 +58,6 @@ import {
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
 import { Label } from '@/components/ui/label';
@@ -386,12 +385,12 @@ export default function LeadSummaryPage() {
     const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
     const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
     const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
-    const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.update', false);
+    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.update', false) || !!getNestedValue(userProfile, 'permissions.leads-members.summary.update', false);
 
     const FallbackIcon = lead?.purpose === 'Education' ? GraduationCap : lead?.purpose === 'Medical' ? HeartPulse : lead?.purpose === 'Relief' ? LifeBuoy : lead?.purpose === 'Other' ? Info : HandHelping;
 
     return (
-        <main className="container mx-auto p-4 md:p-8 text-primary font-normal">
+        <main className="container mx-auto p-4 md:p-8 text-foreground font-normal">
              <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
@@ -404,7 +403,7 @@ export default function LeadSummaryPage() {
                     {!editMode && (
                         <><DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md"><Download className="mr-2 h-4 w-4" /> Download</Button></DropdownMenuTrigger><DropdownMenuContent className="animate-fade-in-zoom"><DropdownMenuItem onClick={() => handleDownload('png')} className="font-bold text-primary">Download As Image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')} className="font-bold text-primary">Download As PDF</DropdownMenuItem></DropdownMenuContent></DropdownMenu><Button onClick={() => { if(lead) setShareDialogData({ title: `Lead: ${lead.name}`, text: lead.description || '', url: window.location.origin + `/leads-public/${leadId}/summary` }); setIsShareDialogOpen(true); }} variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md"><Share2 className="mr-2 h-4 w-4" /> Share</Button></>
                     )}
-                    {canUpdate && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">Cancel</Button><Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Save className="mr-2 h-4 w-4" /> Save Changes</Button></div>) )}
+                    {canUpdateSummary && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">Cancel</Button><Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Save className="mr-2 h-4 w-4" /> Save Changes</Button></div>) )}
                 </div>
             </div>
 
@@ -423,7 +422,7 @@ export default function LeadSummaryPage() {
             <div className="space-y-6" ref={summaryRef}>
                 <Card className="animate-fade-in-up shadow-md border-primary/10 bg-white transition-all duration-300 hover:shadow-xl">
                         <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight">Lead Details</CardTitle></CardHeader>
-                        <CardContent className="space-y-4 pt-6 text-primary">
+                        <CardContent className="space-y-4 pt-6 text-foreground">
                             {editMode ? (
                                 <div className="space-y-6 font-normal animate-fade-in-zoom">
                                     <div className="space-y-2">
@@ -506,7 +505,7 @@ export default function LeadSummaryPage() {
                                     </div>
                                     <div className="space-y-2 font-normal text-foreground">
                                         <Label className="text-muted-foreground uppercase text-[10px] font-bold tracking-widest">Lead Description</Label>
-                                        <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-primary">{lead?.description || 'No description provided.'}</p>
+                                        <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed">{lead?.description || 'No description provided.'}</p>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                                         <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Purpose</p><p className="font-bold uppercase tracking-tight text-primary text-sm">{lead?.purpose} {lead?.category && `(${lead.category})`}</p></div>
@@ -770,7 +769,7 @@ export default function LeadSummaryPage() {
                                                         <div className="p-2 text-center text-[10px] font-bold text-primary uppercase tracking-tighter truncate transition-colors group-hover:text-primary/80">{doc.name}</div>
                                                     </div>
                                                     <CardFooter className="p-2 border-t mt-auto flex justify-center w-full gap-2 bg-muted/5" onClick={e => e.stopPropagation()}>
-                                                        {canUpdate ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-[9px] text-foreground font-bold uppercase tracking-tighter">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"} className="font-bold uppercase text-[9px] tracking-tighter">{doc.isPublic ? "Public" : "Private"}</Badge> )}
+                                                        {canUpdateSummary ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-[9px] text-foreground font-bold uppercase tracking-tighter">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"} className="font-bold uppercase text-[9px] tracking-tighter">{doc.isPublic ? "Public" : "Private"}</Badge> )}
                                                     </CardFooter>
                                                 </Card>
                                             );
@@ -779,7 +778,7 @@ export default function LeadSummaryPage() {
                                 ) : <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest italic opacity-60">No verifiable evidence attached.</p>
                             )}
                         </CardContent>
-                    </ Card>
+                    </Card>
                 )}
             </div>
 
