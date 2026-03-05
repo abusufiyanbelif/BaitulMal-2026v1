@@ -47,7 +47,7 @@ export function AppFooter() {
                         )}
                     </div>
                     <div className="space-y-1">
-                        <h3 className="font-bold text-xl tracking-tight uppercase leading-tight">
+                        <h3 className="font-bold text-xl tracking-tight leading-tight">
                             {brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}
                         </h3>
                         <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Community welfare association</p>
@@ -121,7 +121,7 @@ export function AppFooter() {
         <Separator className="my-10 opacity-10 bg-primary" />
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-            <p>{paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'}. ALL RIGHTS RESERVED.`}</p>
+            <p>{paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'}. All rights reserved.`}</p>
             <div className="flex items-center gap-4">
                 <span>Secure SSL encryption</span>
                 <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
@@ -143,8 +143,8 @@ export function AppFooter() {
                     </div>
                 )}
                 <div className="mt-8 text-center space-y-2">
-                    <p className="text-xl font-mono font-black text-primary tracking-tighter">{paymentSettings?.upiId}</p>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">{brandingSettings?.name}</p>
+                    <p className="text-xl font-mono font-bold text-primary tracking-tighter">{paymentSettings?.upiId}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60">{brandingSettings?.name}</p>
                 </div>
             </div>
             <DialogFooter className="sm:justify-center">

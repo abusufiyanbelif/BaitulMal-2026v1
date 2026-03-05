@@ -54,7 +54,7 @@ export default function Home() {
         <div className="container mx-auto p-4 md:p-8 space-y-10">
             {/* Hero Section */}
             <section className="text-center py-12 md:py-20 animate-fade-in-up">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter text-primary max-w-5xl mx-auto uppercase">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter text-primary max-w-5xl mx-auto">
                     {heroTitle}
                 </h1>
                 <p className="mt-6 max-w-3xl mx-auto text-lg text-primary font-normal leading-relaxed opacity-80">
@@ -76,33 +76,33 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Top Stats - Transparency Cards */}
+            {/* Top Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-zoom">
                 <Card className="border-primary/10 bg-white/50 backdrop-blur-sm shadow-sm">
                     <CardHeader className="pb-2">
                         <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-primary"/> Institutional transparency</CardDescription>
-                        <CardTitle className="text-sm font-bold text-primary uppercase">Verified initiatives</CardTitle>
+                        <CardTitle className="text-sm font-bold text-primary">Verified initiatives</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-black text-primary">{(campaignsWithProgress.length + leadsWithProgress.length) || 0}</div>
+                        <div className="text-3xl font-bold text-primary">{(campaignsWithProgress.length + leadsWithProgress.length) || 0}</div>
                     </CardContent>
                 </Card>
                 <Card className="border-primary/10 bg-white/50 backdrop-blur-sm shadow-sm">
                     <CardHeader className="pb-2">
                         <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2"><Target className="h-3.5 w-3.5 text-primary"/> Community goals</CardDescription>
-                        <CardTitle className="text-sm font-bold text-primary uppercase">Fundraising target</CardTitle>
+                        <CardTitle className="text-sm font-bold text-primary">Fundraising target</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-black text-primary font-mono">₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}</div>
+                        <div className="text-3xl font-bold text-primary font-mono">₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}</div>
                     </CardContent>
                 </Card>
                 <Card className="border-primary/10 bg-white/50 backdrop-blur-sm shadow-sm">
                     <CardHeader className="pb-2">
                         <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2"><Users className="h-3.5 w-3.5 text-primary"/> Social impact</CardDescription>
-                        <CardTitle className="text-sm font-bold text-primary uppercase">Community impact</CardTitle>
+                        <CardTitle className="text-sm font-bold text-primary">Community impact</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-black text-primary font-mono">₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}</div>
+                        <div className="text-3xl font-bold text-primary font-mono">₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -122,7 +122,7 @@ export default function Home() {
                 {/* Verification Activity Table */}
                 <Card className="border-primary/10 overflow-hidden bg-white shadow-md">
                     <CardHeader className="bg-primary/5 border-b">
-                        <CardTitle className="text-xl font-bold tracking-tight text-primary uppercase flex items-center gap-2"><CheckCircle2 className="h-6 w-6"/> Recent verification</CardTitle>
+                        <CardTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2"><CheckCircle2 className="h-6 w-6"/> Recent verification</CardTitle>
                         <CardDescription className="font-normal text-primary/70">Secure tracking of confirmed community contributions.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
@@ -140,8 +140,8 @@ export default function Home() {
                                         recentDonationsFormatted.slice(0, 10).map((item, idx) => (
                                             <TableRow key={item.id} className="hover:bg-primary/5 transition-colors border-primary/5">
                                                 <TableCell className="pl-6"><div className="text-xs font-bold text-primary truncate max-w-[200px]">{item.text.split(' for ')[0]}</div></TableCell>
-                                                <TableCell><Link href={item.href} className="text-xs font-normal text-muted-foreground hover:text-primary hover:underline transition-colors uppercase tracking-tight">{item.text.split(' for ')[1]}</Link></TableCell>
-                                                <TableCell className="text-right pr-6"><Badge variant="outline" className="text-[10px] font-black border-primary/20 text-primary bg-primary/5">VERIFIED</Badge></TableCell>
+                                                <TableCell><Link href={item.href} className="text-xs font-normal text-muted-foreground hover:text-primary hover:underline transition-colors tracking-tight">{item.text.split(' for ')[1]}</Link></TableCell>
+                                                <TableCell className="text-right pr-6"><Badge variant="outline" className="text-[10px] font-bold border-primary/20 text-primary bg-primary/5">VERIFIED</Badge></TableCell>
                                             </TableRow>
                                         ))
                                     ) : (

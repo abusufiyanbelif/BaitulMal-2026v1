@@ -64,7 +64,7 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-base md:text-xl lg:text-2xl font-bold tracking-tight text-primary leading-tight uppercase max-w-xl line-clamp-2">
+          <h1 className="text-base md:text-xl lg:text-2xl font-bold tracking-tight text-primary leading-tight max-w-xl line-clamp-2">
             {isBrandingLoading ? <Skeleton className="h-6 w-64" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
           </h1>
         </Link>
