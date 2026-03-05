@@ -120,8 +120,8 @@ export default function Home() {
                 </div>
             ) : userProfile ? (
             <div className="space-y-8 animate-fade-in-zoom">
-                <h2 className="text-3xl font-bold tracking-tight mb-4">
-                    Welcome back, {userProfile.name}!
+                <h2 className="text-3xl font-bold tracking-tight mb-4 text-primary">
+                    Welcome Back, {userProfile.name}!
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">

@@ -88,18 +88,18 @@ export default function BeneficiariesPage() {
   const handleStatusChange = async (beneficiary: Beneficiary, newStatus: string) => {
     if (!canUpdate || !userProfile) return;
     const res = await updateMasterBeneficiaryAction(beneficiary.id, { status: newStatus as any }, { id: userProfile.id, name: userProfile.name });
-    toast({ title: res.success ? 'Status updated' : 'Error', variant: res.success ? 'success' : 'destructive' });
+    toast({ title: res.success ? 'Status Updated' : 'Error', variant: res.success ? 'success' : 'destructive' });
   };
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Loading master list..." description="Retrieving beneficiary records from the database." />;
+  if (isLoading) return <SectionLoader label="Loading Master List..." description="Retrieving beneficiary records from the database." />;
   
   if (!canRead) return (
     <main className="container mx-auto p-8 text-primary">
         <Alert variant="destructive">
             <ShieldAlert className="h-4 w-4"/>
-            <AlertTitle className="font-bold">Access denied</AlertTitle>
+            <AlertTitle className="font-bold">Access Denied</AlertTitle>
             <AlertDescription className="font-normal text-primary/70">Missing permissions to view beneficiaries.</AlertDescription>
         </Alert>
     </main>
@@ -109,20 +109,20 @@ export default function BeneficiariesPage() {
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
       <div className="flex items-center justify-between">
         <Button variant="outline" asChild className="font-bold border-primary/20 hover:bg-primary/10 text-primary transition-transform active:scale-95">
-          <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to dashboard</Link>
+          <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
         </Button>
       </div>
       
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight text-primary uppercase">Master beneficiary list ({beneficiaries?.length || 0})</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-primary">Master Beneficiary List ({beneficiaries?.length || 0})</h1>
         <div className="flex items-center gap-2">
-          <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync complete' : 'Sync failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="outline" size="sm" className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+          <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync Complete' : 'Sync Failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="outline" size="sm" className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
             {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
-            Sync master list
+            Sync Master List
           </Button>
           {canCreate && (
             <Button onClick={() => router.push('/beneficiaries/create')} size="sm" className="font-bold active:scale-95 transition-transform shadow-md">
-              <PlusCircle className="mr-2 h-4 w-4" /> Create beneficiary
+              <PlusCircle className="mr-2 h-4 w-4" /> Create Beneficiary
             </Button>
           )}
         </div>
@@ -138,20 +138,20 @@ export default function BeneficiariesPage() {
                 <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
                     <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="All" className="font-bold">All statuses</SelectItem>
+                        <SelectItem value="All" className="font-bold">All Statuses</SelectItem>
                         <SelectItem value="Verified" className="font-bold">Verified</SelectItem>
                         <SelectItem value="Pending" className="font-bold">Pending</SelectItem>
                         <SelectItem value="Given" className="font-bold">Given</SelectItem>
                         <SelectItem value="Hold" className="font-bold">Hold</SelectItem>
-                        <SelectItem value="Need More Details" className="font-bold">Need details</SelectItem>
+                        <SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem>
                     </SelectContent>
                 </Select>
                 <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Zakat status" /></SelectTrigger>
+                    <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Zakat Status" /></SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="All" className="font-bold">All Zakat status</SelectItem>
+                        <SelectItem value="All" className="font-bold">All Zakat Status</SelectItem>
                         <SelectItem value="Eligible" className="font-bold">Eligible</SelectItem>
-                        <SelectItem value="Not Eligible" className="font-bold">Not eligible</SelectItem>
+                        <SelectItem value="Not Eligible" className="font-bold">Not Eligible</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -162,14 +162,14 @@ export default function BeneficiariesPage() {
       <div className="rounded-lg border border-primary/10 bg-white overflow-hidden shadow-sm">
         <ScrollArea className="w-full">
             <div className={cn("bg-primary/5 border-b border-primary/10 text-[11px] font-bold tracking-wider text-primary", gridClass)}>
-                <div>Sr. no.</div>
+                <div>Sr. No.</div>
                 <div>Name</div>
                 <div>Phone</div>
                 <div className="text-center">Status</div>
                 <div className="text-center">Zakat</div>
-                <div className="text-right">Kit amount (₹)</div>
-                <div className="text-right">Zakat allocation (₹)</div>
-                <div className="pl-4">Referred by</div>
+                <div className="text-right">Kit Amount (₹)</div>
+                <div className="text-right">Zakat Allocation (₹)</div>
+                <div className="pl-4">Referred By</div>
                 <div className="text-right">Actions</div>
             </div>
 
@@ -205,7 +205,7 @@ export default function BeneficiariesPage() {
                                             <DropdownMenuRadioItem value="Verified" className="text-xs font-bold">Verified</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Given" className="text-xs font-bold">Given</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Hold" className="text-xs font-bold">Hold</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Need More Details" className="text-xs font-bold">Need details</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Need More Details" className="text-xs font-bold">Need Details</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent></DropdownMenuPortal>
                                         </DropdownMenuSub>
@@ -236,19 +236,19 @@ export default function BeneficiariesPage() {
                         <p className="text-xs font-normal">{b.occupation || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Family details</p>
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Family Details</p>
                         <p className="text-xs font-normal">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">ID proof</p>
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">ID Proof</p>
                         <p className="text-xs font-normal">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Date added</p>
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Date Added</p>
                         <p className="text-xs font-normal">{b.addedDate || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Zakat allocation</p>
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Zakat Allocation</p>
                         <p className="text-xs font-bold">₹{(b.zakatAllocation || 0).toFixed(2)}</p>
                     </div>
                     <div className="space-y-1 md:col-span-2">

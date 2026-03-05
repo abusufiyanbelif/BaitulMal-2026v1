@@ -38,7 +38,7 @@ export function AppFooter() {
                             validLogoUrl && (
                                 <Image
                                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
-                                    alt="Footer logo"
+                                    alt="Footer Logo"
                                     width={80}
                                     height={80}
                                     className="object-contain p-1 h-full w-full"
@@ -50,7 +50,7 @@ export function AppFooter() {
                         <h3 className="font-bold text-xl tracking-tight leading-tight">
                             {brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}
                         </h3>
-                        <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Community welfare association</p>
+                        <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Community Welfare Association</p>
                     </div>
                 </div>
                 
@@ -81,18 +81,18 @@ export function AppFooter() {
                 <h4 className="text-[10px] font-bold text-primary tracking-widest uppercase border-b border-primary/10 pb-2">Institutional</h4>
                 <div className="flex flex-col gap-3 text-sm font-bold">
                     <Link href="/info/organization" className="hover:text-primary/70 transition-colors flex items-center gap-2">
-                        <Building2 className="h-4 w-4 opacity-40"/> About organization
+                        <Building2 className="h-4 w-4 opacity-40"/> About Organization
                     </Link>
                     {infoSettings?.isDonationInfoPublic && (
-                        <Link href="/info/donation-info" className="hover:text-primary/70 transition-colors">Guidance & rules</Link>
+                        <Link href="/info/donation-info" className="hover:text-primary/70 transition-colors">Guidance & Rules</Link>
                     )}
-                    <Link href="/campaign-public" className="hover:text-primary/70 transition-colors">Active initiatives</Link>
+                    <Link href="/campaign-public" className="hover:text-primary/70 transition-colors">Active Initiatives</Link>
                 </div>
             </div>
 
             {/* Contact & Contribution Column */}
             <div className="md:col-span-4 space-y-6 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                <h4 className="text-[10px] font-bold text-primary tracking-widest uppercase border-b border-primary/10 pb-2">Contribution & help</h4>
+                <h4 className="text-[10px] font-bold text-primary tracking-widest uppercase border-b border-primary/10 pb-2">Contribution & Help</h4>
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 gap-3">
                         {paymentSettings?.contactEmail && (
@@ -111,7 +111,7 @@ export function AppFooter() {
                     {validQrCodeUrl && (
                         <Button variant="outline" size="lg" onClick={() => setIsQrDialogOpen(true)} className="w-full h-12 font-bold border-primary/20 text-primary hover:bg-primary/5 shadow-sm active:scale-[0.98] transition-all">
                             <QrCode className="mr-3 h-5 w-5" />
-                            Donate via QR code
+                            Donate via QR Code
                         </Button>
                     )}
                 </div>
@@ -123,9 +123,9 @@ export function AppFooter() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
             <p>{paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'}. All rights reserved.`}</p>
             <div className="flex items-center gap-4">
-                <span>Secure SSL encryption</span>
+                <span>Secure SSL Encryption</span>
                 <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-                <span>Verified NGO record</span>
+                <span>Verified NGO Record</span>
             </div>
         </div>
       </div>
@@ -133,7 +133,7 @@ export function AppFooter() {
       <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
-                <DialogTitle className="font-bold text-primary uppercase text-center">Secure contribution QR</DialogTitle>
+                <DialogTitle className="font-bold text-primary uppercase text-center">Secure Contribution QR</DialogTitle>
                 <DialogDescription className="font-normal text-center pt-2">Scan using Google Pay, PhonePe, or any UPI application to support our community goals.</DialogDescription>
             </DialogHeader>
             <div className="flex flex-col items-center justify-center p-8 bg-secondary/30 rounded-2xl border-2 border-dashed border-primary/20 mt-4">

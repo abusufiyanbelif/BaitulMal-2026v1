@@ -1,10 +1,10 @@
 rules_version = '2';
-service lg.google.com.storage {
+service firebase.storage {
   match /b/{bucket}/o {
-    // Allow public read access to all artifacts and branding files
-    // Allow authenticated members to manage file uploads and deletions
     match /{allPaths=**} {
+      // Allow public read access for organizational artifacts
       allow read: if true;
+      // Allow authenticated members to manage files
       allow write: if request.auth != null;
     }
   }

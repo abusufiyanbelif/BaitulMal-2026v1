@@ -55,7 +55,7 @@ export function DocuExtractHeader() {
                 validLogoUrl && (
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
-                    alt="Institutional logo"
+                    alt="Institutional Logo"
                     width={80}
                     height={80}
                     className="object-contain p-1 h-full w-full"
@@ -110,14 +110,14 @@ export function DocuExtractHeader() {
                       <DropdownMenuItem asChild className="cursor-pointer font-bold h-11">
                         <Link href="/profile">
                           <User className="mr-2 h-4 w-4 text-primary" />
-                          <span>Account settings</span>
+                          <span>Account Settings</span>
                         </Link>
                       </DropdownMenuItem>
                       {userProfile.role === 'Admin' && (
                         <DropdownMenuItem asChild className="cursor-pointer font-bold h-11">
                           <Link href="/settings">
                             <Settings className="mr-2 h-4 w-4 text-primary" />
-                            <span>System admin</span>
+                            <span>System Admin</span>
                           </Link>
                         </DropdownMenuItem>
                       )}
@@ -127,7 +127,7 @@ export function DocuExtractHeader() {
                         className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer font-bold h-11"
                       >
                         <LogOut className="mr-2 h-4 w-4" />
-                        <span>Log out</span>
+                        <span>Log Out</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -137,7 +137,7 @@ export function DocuExtractHeader() {
                 <Button asChild className="font-bold tracking-tight text-xs bg-primary text-white hover:bg-primary/90 shadow-md px-6 h-10 transition-transform active:scale-95">
                     <Link href="/login">
                         <LogIn className="mr-2 h-4 w-4" />
-                        <span>Member login</span>
+                        <span>Member Login</span>
                     </Link>
                 </Button>
               )

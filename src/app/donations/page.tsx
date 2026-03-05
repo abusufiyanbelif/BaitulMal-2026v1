@@ -128,7 +128,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><DollarSign className="h-3 w-3"/> Category breakdown</h4>
+                                    <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><DollarSign className="h-3 w-3"/> Category Breakdown</h4>
                                     <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
                                         <ScrollArea className="w-full">
                                             <Table>
@@ -144,7 +144,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><FolderKanban className="h-3 w-3"/> Initiative allocation</h4>
+                                    <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
                                     <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
                                         <ScrollArea className="w-full">
                                             <Table>
@@ -160,7 +160,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                                         </TableRow>
                                                     ))}
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
-                                                        <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-4 italic text-xs font-normal">Unallocated / general fund</TableCell></TableRow>
+                                                        <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-4 italic text-xs font-normal">Unallocated / General Fund</TableCell></TableRow>
                                                     )}
                                                 </TableBody>
                                             </Table>
@@ -170,14 +170,14 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><ImageIcon className="h-3 w-3"/> Verified transaction logs</h4>
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><ImageIcon className="h-3 w-3"/> Verified Transaction Logs</h4>
                                 <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
                                     <ScrollArea className="w-full">
                                         <Table>
                                             <TableHeader>
                                                 <TableRow className="bg-primary/5">
                                                     <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Sum</TableHead>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Ref id</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Ref ID</TableHead>
                                                     <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Date</TableHead>
                                                     <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Artifact</TableHead>
                                                 </TableRow>
@@ -224,17 +224,6 @@ export default function DonationsPage() {
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [donationToDelete, setDonationToDelete] = useState<string | null>(null);
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
-  const [imageToView, setImageToView] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(1);
-  const [rotation, setRotation] = useState(0);
 
   const donationsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
@@ -322,7 +311,7 @@ export default function DonationsPage() {
         });
         errorEmitter.emit('permission-error', permissionError);
     });
-    toast({ title: "Donation synchronized", description: "The financial record is now secured.", variant: 'success' });
+    toast({ title: "Donation Synchronized", description: "The financial record is now secured.", variant: 'success' });
   };
 
   const handleDeleteConfirm = async () => {
@@ -342,19 +331,19 @@ export default function DonationsPage() {
 
   const isLoading = areDonationsLoading || isProfileLoading;
 
-  if (isLoading) return <SectionLoader label="Loading donation records..." description="Retrieving organizational financial logs." />;
+  if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving organizational financial logs." />;
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-primary">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <h1 className="text-3xl font-bold tracking-tighter text-primary uppercase">Financial donations</h1>
+            <h1 className="text-3xl font-bold tracking-tighter text-primary">Financial Donations</h1>
             <div className="flex gap-2 w-full sm:w-auto">
                 <Button variant="outline" onClick={handleSync} disabled={isSyncing} className="flex-1 sm:flex-none font-bold text-[10px] border-primary/20 text-primary active:scale-95 transition-transform">
                   {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
-                  Sync logs
+                  Sync Logs
                 </Button>
                 <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md">
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add record
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add Record
                 </Button>
             </div>
         </div>
@@ -363,11 +352,11 @@ export default function DonationsPage() {
             <CardHeader className="bg-primary/5 p-4 border-b">
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex flex-nowrap gap-2 pb-2">
-                        <Input placeholder="Search donor, phone, id..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-[300px] h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-normal"/>
+                        <Input placeholder="Search Donor, Phone, ID..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-[300px] h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-normal"/>
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-[180px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="All statuses"/></SelectTrigger>
+                            <SelectTrigger className="w-[180px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="All Statuses"/></SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="All" className="font-bold">All statuses</SelectItem>
+                                <SelectItem value="All" className="font-bold">All Statuses</SelectItem>
                                 <SelectItem value="Verified" className="font-bold">Verified</SelectItem>
                                 <SelectItem value="Pending" className="font-bold">Pending</SelectItem>
                                 <SelectItem value="Canceled" className="font-bold text-destructive">Canceled</SelectItem>
@@ -404,7 +393,7 @@ export default function DonationsPage() {
                                 />
                             ))}
                             {paginatedDonations.length === 0 && (
-                                <TableRow><TableCell colSpan={8} className="text-center py-24 text-primary/40 font-bold bg-primary/[0.02]">No donation records found.</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={8} className="text-center py-24 text-primary/40 font-bold bg-primary/[0.02]">No Donation Records Found.</TableCell></TableRow>
                             )}
                         </TableBody>
                     </Table>
@@ -425,7 +414,7 @@ export default function DonationsPage() {
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden p-0">
                 <DialogHeader className="px-6 py-4 border-b bg-primary/5">
-                    <DialogTitle className="text-xl font-bold text-primary uppercase tracking-tight">{editingDonation ? 'Edit' : 'Add'} donation record</DialogTitle>
+                    <DialogTitle className="text-xl font-bold text-primary tracking-tight">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="flex-1 px-6 py-4">
                     <DonationForm 
@@ -437,24 +426,24 @@ export default function DonationsPage() {
                     />
                 </ScrollArea>
                 <DialogFooter className="px-6 py-4 border-t bg-muted/5">
-                    <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold">Close form</Button>
+                    <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold">Close Form</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent>
-                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Delete record?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently erase this donation record and all attached artifacts. This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Delete Record?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently erase this donation record and all attached artifacts. This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90">Confirm deletion</AlertDialogAction>
+                    <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90">Confirm Deletion</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
 
         <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
             <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0">
-                <DialogHeader className="px-6 py-4 border-b"><DialogTitle className="text-xl font-bold text-primary">Artifact viewer</DialogTitle></DialogHeader>
+                <DialogHeader className="px-6 py-4 border-b"><DialogTitle className="text-xl font-bold text-primary">Artifact Viewer</DialogTitle></DialogHeader>
                 <ScrollArea className="flex-1 bg-secondary/20">
                     <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
                         {imageToView && (

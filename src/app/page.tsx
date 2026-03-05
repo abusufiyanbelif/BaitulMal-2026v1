@@ -64,13 +64,13 @@ export default function Home() {
                     <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md bg-primary text-white px-8 h-12">
                         <Link href="/campaign-public">
                             <FolderKanban className="mr-2 h-5 w-5" />
-                            Active campaigns
+                            Active Campaigns
                         </Link>
                     </Button>
                     <Button asChild size="lg" variant="outline" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md bg-white border-primary/20 text-primary px-8 h-12">
                         <Link href="/leads-public">
                             <Lightbulb className="mr-2 h-5 w-5" />
-                            Public appeals
+                            Public Appeals
                         </Link>
                     </Button>
                 </div>
@@ -80,8 +80,8 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-zoom">
                 <Card className="border-primary/10 bg-white/50 backdrop-blur-sm shadow-sm">
                     <CardHeader className="pb-2">
-                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-primary"/> Institutional transparency</CardDescription>
-                        <CardTitle className="text-sm font-bold text-primary">Verified initiatives</CardTitle>
+                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-primary"/> Institutional Transparency</CardDescription>
+                        <CardTitle className="text-sm font-bold text-primary">Verified Initiatives</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-primary">{(campaignsWithProgress.length + leadsWithProgress.length) || 0}</div>
@@ -89,8 +89,8 @@ export default function Home() {
                 </Card>
                 <Card className="border-primary/10 bg-white/50 backdrop-blur-sm shadow-sm">
                     <CardHeader className="pb-2">
-                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2"><Target className="h-3.5 w-3.5 text-primary"/> Community goals</CardDescription>
-                        <CardTitle className="text-sm font-bold text-primary">Fundraising target</CardTitle>
+                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2"><Target className="h-3.5 w-3.5 text-primary"/> Community Goals</CardDescription>
+                        <CardTitle className="text-sm font-bold text-primary">Fundraising Target</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-primary font-mono">₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}</div>
@@ -98,8 +98,8 @@ export default function Home() {
                 </Card>
                 <Card className="border-primary/10 bg-white/50 backdrop-blur-sm shadow-sm">
                     <CardHeader className="pb-2">
-                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2"><Users className="h-3.5 w-3.5 text-primary"/> Social impact</CardDescription>
-                        <CardTitle className="text-sm font-bold text-primary">Community impact</CardTitle>
+                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2"><Users className="h-3.5 w-3.5 text-primary"/> Social Impact</CardDescription>
+                        <CardTitle className="text-sm font-bold text-primary">Community Impact</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-primary font-mono">₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}</div>
@@ -111,8 +111,8 @@ export default function Home() {
 
             {/* News & Updates */}
             <div className="space-y-2">
-                <NewsTicker items={activeTickerItems} label="Live updates" variant="active" />
-                <NewsTicker items={recentDonationsFormatted} label="Recent verification" variant="donation" />
+                <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
+                <NewsTicker items={recentDonationsFormatted} label="Recent Verification" variant="donation" />
             </div>
 
             {/* Detailed Data Sections */}
@@ -122,7 +122,7 @@ export default function Home() {
                 {/* Verification Activity Table */}
                 <Card className="border-primary/10 overflow-hidden bg-white shadow-md">
                     <CardHeader className="bg-primary/5 border-b">
-                        <CardTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2"><CheckCircle2 className="h-6 w-6"/> Recent verification</CardTitle>
+                        <CardTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2"><CheckCircle2 className="h-6 w-6"/> Recent Verification</CardTitle>
                         <CardDescription className="font-normal text-primary/70">Secure tracking of confirmed community contributions.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
@@ -132,7 +132,7 @@ export default function Home() {
                                     <TableRow>
                                         <TableHead className="font-bold text-[10px] uppercase text-primary tracking-widest pl-6">Reference</TableHead>
                                         <TableHead className="font-bold text-[10px] uppercase text-primary tracking-widest">Allocation</TableHead>
-                                        <TableHead className="font-bold text-[10px] uppercase text-primary tracking-widest text-right pr-6">Confirmed sum</TableHead>
+                                        <TableHead className="font-bold text-[10px] uppercase text-primary tracking-widest text-right pr-6">Confirmed Sum</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
