@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useBranding } from '@/hooks/use-branding';
-import { useInfoSettings } from '@/hooks/use-info-settings';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import Link from 'next/link';
@@ -15,11 +14,10 @@ import Link from 'next/link';
 export function AppFooter() {
   const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
   const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
-  const { infoSettings, isLoading: isInfoSettingsLoading } = useInfoSettings();
   const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
   const pathname = usePathname();
 
-  const isLoading = isPaymentLoading || isBrandingLoading || isInfoSettingsLoading;
+  const isLoading = isPaymentLoading || isBrandingLoading;
 
   const validQrCodeUrl = paymentSettings?.qrCodeUrl?.trim() ? paymentSettings.qrCodeUrl : null;
   const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
@@ -30,7 +28,6 @@ export function AppFooter() {
     <footer className="bg-white border-t mt-auto p-10 text-primary font-normal w-full overflow-hidden shadow-inner">
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
-            {/* Identity Column */}
             <div className="md:col-span-5 flex flex-col gap-6 animate-fade-in-up">
                 <div className="flex items-center gap-4">
                     <div className="relative h-20 w-20 bg-primary/5 rounded-xl border border-primary/10 overflow-hidden flex items-center justify-center">
@@ -76,7 +73,6 @@ export function AppFooter() {
                 </div>
             </div>
 
-            {/* Quick Links Column */}
             <div className="md:col-span-3 space-y-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 <h4 className="text-[10px] font-bold text-primary tracking-widest uppercase border-b border-primary/10 pb-2">Institutional</h4>
                 <div className="flex flex-col gap-3 text-sm font-bold">
@@ -86,7 +82,6 @@ export function AppFooter() {
                 </div>
             </div>
 
-            {/* Contact & Contribution Column */}
             <div className="md:col-span-4 space-y-6 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                 <h4 className="text-[10px] font-bold text-primary tracking-widest uppercase border-b border-primary/10 pb-2">Contribution & Help</h4>
                 <div className="space-y-4">

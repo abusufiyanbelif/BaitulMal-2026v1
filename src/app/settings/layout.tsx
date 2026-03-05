@@ -36,11 +36,11 @@ export default function SettingsLayout({
           <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
               <Link href="/dashboard">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to dashboard
+                  Back To Dashboard
               </Link>
           </Button>
       </div>
-      <h1 className="text-3xl font-bold mb-6 text-primary tracking-tight">System settings</h1>
+      <h1 className="text-3xl font-bold mb-6 text-primary tracking-tight">System Settings</h1>
       
       <Tabs value={getActiveTab()} onValueChange={handleTabChange} className="w-full">
         <ScrollArea className="w-full">

@@ -47,6 +47,18 @@ export default function Home() {
         return [...activeCampaigns, ...activeLeads];
     }, [campaignsWithProgress, leadsWithProgress]);
 
+    const completedTickerItems = useMemo(() => {
+        const completedCampaigns = campaignsWithProgress
+            .filter(c => c.status === 'Completed')
+            .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-public/${c.id}/summary` }));
+        
+        const completedLeads = leadsWithProgress
+            .filter(l => l.status === 'Completed')
+            .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
+
+        return [...completedCampaigns, ...completedLeads];
+    }, [campaignsWithProgress, leadsWithProgress]);
+
     const heroTitle = brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.';
     const heroDescription = brandingSettings?.heroDescription || `Join ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'} to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.`;
 
@@ -76,43 +88,13 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Top Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-zoom">
-                <Card className="border-primary/10 bg-white/50 backdrop-blur-sm shadow-sm">
-                    <CardHeader className="pb-2">
-                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-primary"/> Institutional Transparency</CardDescription>
-                        <CardTitle className="text-sm font-bold text-primary">Verified Initiatives</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold text-primary">{(campaignsWithProgress.length + leadsWithProgress.length) || 0}</div>
-                    </CardContent>
-                </Card>
-                <Card className="border-primary/10 bg-white/50 backdrop-blur-sm shadow-sm">
-                    <CardHeader className="pb-2">
-                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2"><Target className="h-3.5 w-3.5 text-primary"/> Community Goals</CardDescription>
-                        <CardTitle className="text-sm font-bold text-primary">Fundraising Target</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold text-primary font-mono">₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}</div>
-                    </CardContent>
-                </Card>
-                <Card className="border-primary/10 bg-white/50 backdrop-blur-sm shadow-sm">
-                    <CardHeader className="pb-2">
-                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2"><Users className="h-3.5 w-3.5 text-primary"/> Social Impact</CardDescription>
-                        <CardTitle className="text-sm font-bold text-primary">Community Impact</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold text-primary font-mono">₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}</div>
-                    </CardContent>
-                </Card>
-            </div>
-
             <WisdomAndReflection />
 
             {/* News & Updates */}
             <div className="space-y-2">
                 <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
                 <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
+                <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
             </div>
 
             {/* Detailed Data Sections */}

@@ -53,7 +53,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                         </div>
                         <CardHeader className="p-4">
                             <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight text-primary">{lead.name}</CardTitle>
-                            <CardDescription className="text-[10px] font-bold text-muted-foreground">{lead.startDate} to {lead.endDate}</CardDescription>
+                            <CardDescription className="text-[10px] font-bold text-muted-foreground">{lead.startDate} To {lead.endDate}</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-grow space-y-3 p-4 pt-0">
                             <div className="flex justify-between items-center text-xs">
@@ -78,7 +78,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                          <CardFooter className="p-2 border-t bg-primary/5">
                             <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold tracking-tight hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
                                 <Link href={`/leads-public/${lead.id}/summary`}>
-                                    View details
+                                    View Details
                                 </Link>
                             </Button>
                         </CardFooter>
@@ -165,26 +165,26 @@ export function PublicLeadsView() {
   }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => [
-    { id: 'ongoing_upcoming', title: 'Ongoing & upcoming leads', items: filteredLeads.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
-    { id: 'completed', title: 'Closed appeals', items: filteredLeads.filter(c => c.status === 'Completed') }
+    { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Leads', items: filteredLeads.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
+    { id: 'completed', title: 'Closed Appeals', items: filteredLeads.filter(c => c.status === 'Completed') }
   ].filter(s => s.items.length > 0), [filteredLeads]);
   
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight text-primary">Public leads</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-primary">Public Leads</h1>
           <p className="text-lg font-bold text-primary">Verified community appeals requiring your support.</p>
           
           <div className="space-y-2">
-            <NewsTicker items={activeTickerItems} label="Live updates" variant="active" />
-            <NewsTicker items={recentDonationsFormatted} label="Donation updates" variant="donation" />
-            <NewsTicker items={completedTickerItems} label="Recently completed" variant="completed" />
+            <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
+            <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
+            <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
           </div>
 
           <div className="flex flex-wrap items-center gap-2 pt-4 bg-primary/5 p-4 rounded-xl border border-primary/20">
               <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-primary font-bold" disabled={isLoading}/>
-              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
-              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
+              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
               <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
                   <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
                   <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
@@ -217,7 +217,7 @@ export function PublicLeadsView() {
       ) : (
         <div className="text-center py-20 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
             <Lightbulb className="h-12 w-12 mx-auto text-primary/20 mb-4" />
-            <p className="font-bold text-sm opacity-60 text-primary">No appeals found matching criteria.</p>
+            <p className="font-bold text-sm opacity-60 text-primary">No Appeals Found Matching Criteria.</p>
         </div>
       )}
     </div>
