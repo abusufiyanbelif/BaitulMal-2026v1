@@ -694,7 +694,7 @@ export default function LeadSummaryPage() {
                             )}
                         </div>
 
-                        <div className="grid gap-6 lg:grid-cols-2 font-normal text-primary">
+                        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 font-normal text-primary">
                             {isVisible('donations_by_category') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                     <CardHeader><CardTitle className="font-bold text-primary text-sm uppercase tracking-widest">Donations By Category</CardTitle></CardHeader>

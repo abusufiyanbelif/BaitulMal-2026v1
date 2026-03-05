@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 export default function Home() {
-    const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted, overallSummary } = usePublicData();
+    const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted } = usePublicData();
     const { brandingSettings } = useBranding();
 
     const activeTickerItems = useMemo(() => {
