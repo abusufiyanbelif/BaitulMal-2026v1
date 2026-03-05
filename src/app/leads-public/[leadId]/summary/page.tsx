@@ -226,7 +226,7 @@ export default function PublicLeadSummaryPage() {
     if (!lead || lead.publicVisibility !== 'Published') {
         return (
             <main className="container mx-auto p-4 md:p-8 text-center text-primary font-bold">
-                <p className="text-lg text-primary/70 font-normal">This lead is not available for public view.</p>
+                <p className="text-lg text-primary/70 font-normal">This Lead Is Not Available For Public View.</p>
                 <Button asChild className="mt-4 active:scale-95 transition-transform font-bold"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Public Leads</Link></Button>
             </main>
         );
@@ -272,7 +272,7 @@ export default function PublicLeadSummaryPage() {
                 {fundingData && (
                     <div className="grid gap-6 animate-fade-in-up">
                         {isVisible('funding_progress') && (
-                            <Card className="shadow-sm border-primary/5 bg-white">
+                            <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2 font-bold text-primary"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
                                     <CardDescription className="font-normal">Verified donations for this initiative.</CardDescription>
@@ -398,7 +398,7 @@ export default function PublicLeadSummaryPage() {
                                             </div>
                                         ))}
                                         <Separator className="my-2" />
-                                        <div className="flex justify-between items-center text-lg font-bold text-primary"><span>Grand Total Received</span><span className="font-mono font-bold">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-lg font-bold text-primary"><span>Grand Total Received</span><span className="font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</span></div>
                                     </CardContent>
                                 </Card>
                             )}
@@ -496,10 +496,10 @@ export default function PublicLeadSummaryPage() {
                         </div>
                     )}
                     <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setZoom(zoom => zoom * 1.2)} className="font-bold"><ZoomIn className="mr-2 h-4 w-4"/> Zoom In</Button>
-                        <Button variant="outline" size="sm" onClick={() => setZoom(zoom => zoom / 1.2)} className="font-bold"><ZoomOut className="mr-2 h-4 w-4"/> Zoom Out</Button>
-                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold"><RotateCw className="mr-2 h-4 w-4"/> Rotate</Button>
-                        <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold"><RefreshCw className="mr-2 h-4 w-4"/> Reset</Button>
+                        <Button variant="outline" size="sm" onClick={() => setZoom(zoom => zoom * 1.2)} className="font-bold border-primary/20 text-primary h-8 text-[10px]"><ZoomIn className="mr-2 h-4 w-4"/> Zoom In</Button>
+                        <Button variant="outline" size="sm" onClick={() => setZoom(zoom => zoom / 1.2)} className="font-bold border-primary/20 text-primary h-8 text-[10px]"><ZoomOut className="mr-2 h-4 w-4"/> Zoom Out</Button>
+                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold border-primary/20 text-primary h-8 text-[10px]"><RotateCw className="mr-2 h-4 w-4"/> Rotate</Button>
+                        <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold border-primary/20 text-primary h-8 text-[10px]"><RefreshCw className="mr-2 h-4 w-4"/> Reset</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

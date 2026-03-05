@@ -325,7 +325,7 @@ export default function CampaignSummaryPage() {
         if (!campaignDocRef || !userProfile || !canUpdate || !storage) return;
         const hasFileToUpload = !!imageFile || newDocuments.length > 0;
         if (hasFileToUpload && !auth?.currentUser) {
-            toast({ title: "Authentication Error", description: "User not authenticated yet.", variant: "destructive" });
+            toast({ title: "Authentication Error", description: "User Not Authenticated Yet.", variant: "destructive" });
             return;
         }
         let imageUrl = editableCampaign.imageUrl || '';

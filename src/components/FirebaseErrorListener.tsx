@@ -22,7 +22,7 @@ export function FirebaseErrorListener() {
       window.requestAnimationFrame(() => {
         toast({
           variant: 'destructive',
-          title: 'Permission restricted',
+          title: 'Permission Restricted',
           description: `This request was denied by institutional security rules. Path: ${error.request.path}. Operation: ${error.request.method}.`,
           duration: 10000,
         });

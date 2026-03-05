@@ -60,24 +60,24 @@
 }
 
 .bms3 {
-  --background: 0 0% 100%;
-  --foreground: 160 25% 10%;
+  --background: 0 0% 98%;
+  --foreground: 160 50% 5%;
   --card: 0 0% 100%;
-  --card-foreground: 160 25% 10%;
+  --card-foreground: 160 50% 5%;
   --popover: 0 0% 100%;
-  --popover-foreground: 160 25% 10%;
-  --primary: 160 70% 40%;
+  --popover-foreground: 160 50% 5%;
+  --primary: 160 84% 25%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 160 70% 95%;
-  --secondary-foreground: 160 70% 20%;
-  --muted: 160 10% 95%;
-  --muted-foreground: 160 15% 45%;
-  --accent: 160 70% 40%;
+  --secondary: 160 40% 92%;
+  --secondary-foreground: 160 84% 15%;
+  --muted: 160 20% 94%;
+  --muted-foreground: 160 10% 40%;
+  --accent: 160 84% 25%;
   --accent-foreground: 0 0% 100%;
-  --border: 160 20% 90%;
-  --input: 160 20% 90%;
-  --ring: 160 70% 40%;
-  --chart-1: 160 70% 40%;
+  --border: 160 20% 88%;
+  --input: 160 20% 88%;
+  --ring: 160 84% 25%;
+  --chart-1: 160 84% 25%;
   --chart-2: 47.9 95.8% 53.1%;
   --chart-3: 217.2 91.2% 59.8%;
 }
