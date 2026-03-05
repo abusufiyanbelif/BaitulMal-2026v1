@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { FolderKanban, Lightbulb, CheckCircle2, Target, Users } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 export default function Home() {
     const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted, overallSummary } = usePublicData();
