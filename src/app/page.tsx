@@ -65,7 +65,7 @@ export default function Home() {
     return (
         <div className="container mx-auto p-4 md:p-8 space-y-10">
             {/* Hero Section */}
-            <section className="text-center py-12 md:py-20 animate-fade-in-up">
+            <section className="text-center py-12 md:py-20 animate-fade-in-zoom">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter text-primary max-w-5xl mx-auto">
                     {heroTitle}
                 </h1>
@@ -88,21 +88,23 @@ export default function Home() {
                 </div>
             </section>
 
-            <WisdomAndReflection />
+            <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                <WisdomAndReflection />
+            </div>
 
             {/* News & Updates */}
-            <div className="space-y-2">
+            <div className="space-y-2 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
                 <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
                 <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
                 <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
             </div>
 
             {/* Detailed Data Sections */}
-            <div className="space-y-10">
+            <div className="space-y-10 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
                 <OverallFundingSummary />
                 
-                {/* Verification Activity Table */}
-                <Card className="border-primary/10 overflow-hidden bg-white shadow-md">
+                {/* Recent Verification Table */}
+                <Card className="border-primary/10 overflow-hidden bg-white shadow-md transition-all duration-300 hover:shadow-xl">
                     <CardHeader className="bg-primary/5 border-b">
                         <CardTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2"><CheckCircle2 className="h-6 w-6"/> Recent Verification</CardTitle>
                         <CardDescription className="font-normal text-primary/70">Secure tracking of confirmed community contributions.</CardDescription>
@@ -114,7 +116,7 @@ export default function Home() {
                                     <TableRow>
                                         <TableHead className="font-bold text-[10px] uppercase text-primary tracking-widest pl-6">Reference</TableHead>
                                         <TableHead className="font-bold text-[10px] uppercase text-primary tracking-widest">Allocation</TableHead>
-                                        <TableHead className="font-bold text-[10px] uppercase text-primary tracking-widest text-right pr-6">Confirmed Sum</TableHead>
+                                        <TableHead className="font-bold text-[10px] uppercase text-primary tracking-widest text-right pr-6">Status</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>

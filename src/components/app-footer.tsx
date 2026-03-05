@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { Mail, Phone, MapPin, Info, ShieldCheck, QrCode, Building2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Info, ShieldCheck, QrCode, Building2, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
@@ -28,9 +28,9 @@ export function AppFooter() {
     <footer className="bg-white border-t mt-auto p-10 text-primary font-normal w-full overflow-hidden shadow-inner">
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
-            <div className="md:col-span-5 flex flex-col gap-6 animate-fade-in-up">
+            <div className="md:col-span-6 flex flex-col gap-6 animate-fade-in-up">
                 <div className="flex items-center gap-4">
-                    <div className="relative h-20 w-20 bg-primary/5 rounded-xl border border-primary/10 overflow-hidden flex items-center justify-center">
+                    <div className="relative h-20 w-20 bg-primary/5 rounded-xl border border-primary/10 overflow-hidden flex items-center justify-center transition-transform hover:scale-105">
                         {isLoading ? <Skeleton className="h-16 w-16 rounded-lg" /> : (
                             validLogoUrl && (
                                 <Image
@@ -73,11 +73,13 @@ export function AppFooter() {
                 </div>
             </div>
 
-            <div className="md:col-span-3 space-y-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            <div className="md:col-span-2 space-y-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 <h4 className="text-[10px] font-bold text-primary tracking-widest uppercase border-b border-primary/10 pb-2">Institutional</h4>
                 <div className="flex flex-col gap-3 text-sm font-bold">
-                    <Link href="/info/organization" className="hover:text-primary/70 transition-colors flex items-center gap-2">
-                        <Building2 className="h-4 w-4 opacity-40"/> About Organization
+                    <Link href="/info/organization" className="hover:text-primary/70 transition-all flex items-center gap-2 group">
+                        <Building2 className="h-4 w-4 opacity-40 group-hover:opacity-100 transition-opacity"/> 
+                        <span>About Organization</span>
+                        <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0"/>
                     </Link>
                 </div>
             </div>
@@ -87,20 +89,20 @@ export function AppFooter() {
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 gap-3">
                         {paymentSettings?.contactEmail && (
-                            <div className="flex items-center gap-3 bg-muted/20 p-2 rounded-md">
+                            <div className="flex items-center gap-3 bg-muted/20 p-2 rounded-md hover:bg-muted/30 transition-colors">
                                 <Mail className="h-4 w-4 text-primary/60" />
                                 <a href={`mailto:${paymentSettings.contactEmail}`} className="text-xs font-normal hover:underline">{paymentSettings.contactEmail}</a>
                             </div>
                         )}
                         {paymentSettings?.contactPhone && (
-                            <div className="flex items-center gap-3 bg-muted/20 p-2 rounded-md">
+                            <div className="flex items-center gap-3 bg-muted/20 p-2 rounded-md hover:bg-muted/30 transition-colors">
                                 <Phone className="h-4 w-4 text-primary/60" />
                                 <a href={`tel:${paymentSettings.contactPhone}`} className="text-xs font-normal hover:underline">{paymentSettings.contactPhone}</a>
                             </div>
                         )}
                     </div>
                     {validQrCodeUrl && (
-                        <Button variant="outline" size="lg" onClick={() => setIsQrDialogOpen(true)} className="w-full h-12 font-bold border-primary/20 text-primary hover:bg-primary/5 shadow-sm active:scale-[0.98] transition-all">
+                        <Button variant="outline" size="lg" onClick={() => setIsQrDialogOpen(true)} className="w-full h-12 font-bold border-primary/20 text-primary hover:bg-primary/5 shadow-sm active:scale-[0.98] transition-all duration-300">
                             <QrCode className="mr-3 h-5 w-5" />
                             Donate Via QR Code
                         </Button>
@@ -117,14 +119,14 @@ export function AppFooter() {
       </div>
 
       <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md animate-fade-in-zoom">
             <DialogHeader>
                 <DialogTitle className="font-bold text-primary uppercase text-center">Secure Contribution QR</DialogTitle>
                 <DialogDescription className="font-normal text-center pt-2">Scan using Google Pay, PhonePe, or any UPI application to support our community goals.</DialogDescription>
             </DialogHeader>
             <div className="flex flex-col items-center justify-center p-8 bg-secondary/30 rounded-2xl border-2 border-dashed border-primary/20 mt-4">
                 {validQrCodeUrl && (
-                    <div className="relative w-64 h-64 bg-white p-4 rounded-xl shadow-xl border-4 border-primary">
+                    <div className="relative w-64 h-64 bg-white p-4 rounded-xl shadow-xl border-4 border-primary transition-transform duration-500 hover:rotate-1">
                         <Image src={`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`} alt="Payment QR" fill className="object-contain" unoptimized />
                     </div>
                 )}
@@ -134,7 +136,7 @@ export function AppFooter() {
                 </div>
             </div>
             <DialogFooter className="sm:justify-center">
-                <Button onClick={() => setIsQrDialogOpen(false)} className="font-bold px-8">Done</Button>
+                <Button onClick={() => setIsQrDialogOpen(false)} className="font-bold px-8 active:scale-95 transition-transform">Done</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>

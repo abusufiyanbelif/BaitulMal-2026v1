@@ -10,7 +10,7 @@
     --card-foreground: 160 25% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 160 25% 10%;
-    --primary: 160 70% 40%; 
+    --primary: 160 70% 40%; /* Classic Indian Green */
     --primary-foreground: 0 0% 100%;
     --secondary: 160 70% 95%;
     --secondary-foreground: 160 70% 20%;
@@ -57,29 +57,40 @@
     --chart-4: 38.8 92.3% 60%;
     --chart-5: 262 83% 68%;
   }
-}
 
-.bms3 {
-  --background: 0 0% 98%;
-  --foreground: 160 50% 5%;
-  --card: 0 0% 100%;
-  --card-foreground: 160 50% 5%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 160 50% 5%;
-  --primary: 160 84% 25%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 160 40% 92%;
-  --secondary-foreground: 160 84% 15%;
-  --muted: 160 20% 94%;
-  --muted-foreground: 160 10% 40%;
-  --accent: 160 84% 25%;
-  --accent-foreground: 0 0% 100%;
-  --border: 160 20% 88%;
-  --input: 160 20% 88%;
-  --ring: 160 84% 25%;
-  --chart-1: 160 84% 25%;
-  --chart-2: 47.9 95.8% 53.1%;
-  --chart-3: 217.2 91.2% 59.8%;
+  .bms3 {
+    --background: 0 0% 98%;
+    --foreground: 160 50% 5%;
+    --card: 0 0% 100%;
+    --card-foreground: 160 50% 5%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 50% 5%;
+    --primary: 160 84% 20%; /* Deep Indian Green */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 40% 92%;
+    --secondary-foreground: 160 84% 15%;
+    --muted: 160 20% 94%;
+    --muted-foreground: 160 10% 40%;
+    --accent: 160 84% 20%;
+    --accent-foreground: 0 0% 100%;
+    --border: 160 20% 88%;
+    --input: 160 20% 88%;
+    --ring: 160 84% 20%;
+    --chart-1: 160 84% 20%;
+    --chart-2: 47.9 95.8% 53.1%;
+    --chart-3: 217.2 91.2% 59.8%;
+  }
+
+  .bmss-brand-warm {
+    --primary: 24 95% 40%; /* Warm Orange combination */
+    --ring: 24 95% 40%;
+    --background: 30 20% 98%;
+  }
+
+  .ocean-blue {
+    --primary: 217 91% 40%;
+    --ring: 217 91% 40%;
+  }
 }
 
 @layer base {
@@ -93,6 +104,7 @@
     @apply min-h-screen bg-background antialiased font-normal leading-normal text-[14px]; 
     font-family: var(--font-inter), sans-serif; 
     color: hsl(var(--foreground)); 
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   h1, h2, h3, h4, h5, h6 { 
@@ -101,21 +113,17 @@
     color: hsl(var(--primary)); 
   }
 
-  html[data-animations="disabled"] *,
-  html[data-animations="disabled"] *:before,
-  html[data-animations="disabled"] *:after {
-    animation-duration: 0s !important;
-    transition-duration: 0s !important;
+  .animate-fade-in-up { animation: fade-in-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  .animate-fade-in-zoom { animation: fade-in-zoom 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  
+  @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    html[data-motion-reduced="auto"] *,
-    html[data-motion-reduced="enabled"] * {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
+  @keyframes fade-in-zoom {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
   }
 
   .animate-marquee { animation: marquee var(--duration, 60s) linear infinite; }
