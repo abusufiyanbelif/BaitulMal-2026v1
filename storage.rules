@@ -1,11 +1,10 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    // Simplified institutional rules: Public transparency, Member control
     match /{allPaths=**} {
-      // Allow public read access for organizational artifacts
       allow read: if true;
-      // Allow authenticated members to manage files
-      allow write: if request.auth != null;
+      allow write, delete: if request.auth != null;
     }
   }
 }

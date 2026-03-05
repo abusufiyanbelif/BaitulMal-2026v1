@@ -224,6 +224,16 @@ export default function DonationsPage() {
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [donationToDelete, setDonationToDelete] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const [imageToView, setImageToView] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
 
   const donationsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
@@ -402,7 +412,7 @@ export default function DonationsPage() {
             </CardContent>
             {totalPages > 1 && (
                 <CardFooter className="flex justify-between items-center py-4 border-t bg-primary/5 p-4">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Page {currentPage} of {totalPages}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Page {currentPage} Of {totalPages}</p>
                     <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold h-8 border-primary/20 text-primary">Previous</Button>
                         <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold h-8 border-primary/20 text-primary">Next</Button>

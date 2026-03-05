@@ -109,7 +109,7 @@ export default function BeneficiariesPage() {
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
       <div className="flex items-center justify-between">
         <Button variant="outline" asChild className="font-bold border-primary/20 hover:bg-primary/10 text-primary transition-transform active:scale-95">
-          <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+          <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Dashboard</Link>
         </Button>
       </div>
       
@@ -133,7 +133,7 @@ export default function BeneficiariesPage() {
             <div className="flex flex-nowrap items-center gap-3 pb-2">
                 <div className="relative w-[300px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
-                    <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-primary/20 focus-visible:ring-primary font-normal text-primary" />
+                    <Input placeholder="Search Name, Phone, Address..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-primary/20 focus-visible:ring-primary font-normal text-primary" />
                 </div>
                 <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
                     <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
@@ -261,7 +261,7 @@ export default function BeneficiariesPage() {
             ))}
             </Accordion>
             {paginatedBeneficiaries.length === 0 && (
-            <div className="text-center py-20 bg-primary/[0.02] opacity-40 italic font-bold">No beneficiaries found matching criteria.</div>
+            <div className="text-center py-20 bg-primary/[0.02] opacity-40 italic font-bold">No Beneficiaries Found Matching Criteria.</div>
             )}
             <ScrollBar orientation="horizontal" />
         </ScrollArea>
@@ -269,7 +269,7 @@ export default function BeneficiariesPage() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between border-t pt-4">
-          <p className="text-xs font-bold opacity-60 uppercase">Page {currentPage} of {totalPages}</p>
+          <p className="text-xs font-bold opacity-60 uppercase">Page {currentPage} Of {totalPages}</p>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 hover:bg-primary/10 text-primary h-8">Previous</Button>
             <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 hover:bg-primary/10 text-primary h-8">Next</Button>

@@ -47,7 +47,7 @@ export default function Home() {
         return [...activeCampaigns, ...activeLeads];
     }, [campaignsWithProgress, leadsWithProgress]);
 
-    const heroTitle = brandingSettings?.heroTitle || 'Empowering our community, one act of kindness at a time.';
+    const heroTitle = brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.';
     const heroDescription = brandingSettings?.heroDescription || `Join ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'} to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.`;
 
     return (
@@ -112,7 +112,7 @@ export default function Home() {
             {/* News & Updates */}
             <div className="space-y-2">
                 <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
-                <NewsTicker items={recentDonationsFormatted} label="Recent Verification" variant="donation" />
+                <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
             </div>
 
             {/* Detailed Data Sections */}

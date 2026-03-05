@@ -83,10 +83,6 @@ export function AppFooter() {
                     <Link href="/info/organization" className="hover:text-primary/70 transition-colors flex items-center gap-2">
                         <Building2 className="h-4 w-4 opacity-40"/> About Organization
                     </Link>
-                    {infoSettings?.isDonationInfoPublic && (
-                        <Link href="/info/donation-info" className="hover:text-primary/70 transition-colors">Guidance & Rules</Link>
-                    )}
-                    <Link href="/campaign-public" className="hover:text-primary/70 transition-colors">Active Initiatives</Link>
                 </div>
             </div>
 
@@ -111,7 +107,7 @@ export function AppFooter() {
                     {validQrCodeUrl && (
                         <Button variant="outline" size="lg" onClick={() => setIsQrDialogOpen(true)} className="w-full h-12 font-bold border-primary/20 text-primary hover:bg-primary/5 shadow-sm active:scale-[0.98] transition-all">
                             <QrCode className="mr-3 h-5 w-5" />
-                            Donate via QR Code
+                            Donate Via QR Code
                         </Button>
                     )}
                 </div>
@@ -121,12 +117,7 @@ export function AppFooter() {
         <Separator className="my-10 opacity-10 bg-primary" />
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-            <p>{paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'}. All rights reserved.`}</p>
-            <div className="flex items-center gap-4">
-                <span>Secure SSL Encryption</span>
-                <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-                <span>Verified NGO Record</span>
-            </div>
+            <p>{paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'}. All Rights Reserved.`}</p>
         </div>
       </div>
 

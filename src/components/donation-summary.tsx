@@ -36,7 +36,7 @@ const donationCategoryChartConfig = {
   Interest: { label: "Interest", color: "hsl(var(--chart-5))" },
   Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
   Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
-  MonthlyContribution: { label: "Monthly contribution", color: "hsl(var(--chart-8))" },
+  MonthlyContribution: { label: "Monthly Contribution", color: "hsl(var(--chart-8))" },
 } satisfies ChartConfig;
 
 export function DonationSummary() {
@@ -62,7 +62,7 @@ export function DonationSummary() {
           <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 font-bold text-primary">
                 <Calendar className="h-6 w-6 text-primary" />
-                Yearly financial summary
+                Yearly Financial Summary
               </CardTitle>
               <span className="text-2xl font-bold text-primary">{yearlySummary[0]?.year || new Date().getFullYear()}</span>
           </div>
@@ -74,8 +74,8 @@ export function DonationSummary() {
                     <TableRow>
                         <TableHead className="font-bold text-primary">Year</TableHead>
                         <TableHead className="font-bold text-primary">Goal</TableHead>
-                        <TableHead className="font-bold text-primary">Raised for goal</TableHead>
-                        <TableHead className="font-bold text-primary">Total received</TableHead>
+                        <TableHead className="font-bold text-primary">Raised For Goal</TableHead>
+                        <TableHead className="font-bold text-primary">Total Received</TableHead>
                         <TableHead className="text-right font-bold text-primary">Progress</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -103,7 +103,7 @@ export function DonationSummary() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-bold text-primary">
             <PieChartIcon className="h-6 w-6 text-primary" />
-            Donations by category
+            Donations By Category
           </CardTitle>
            <CardDescription className="font-normal text-primary/70">A lifetime breakdown of all donations by their category.</CardDescription>
         </CardHeader>

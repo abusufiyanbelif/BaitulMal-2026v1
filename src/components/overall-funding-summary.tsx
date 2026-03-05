@@ -41,7 +41,7 @@ export function OverallFundingSummary() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-bold text-primary">
             <Target className="h-6 w-6 text-primary" />
-            Overall fundraising progress
+            Overall Fundraising Progress
         </CardTitle>
         <CardDescription className="font-normal text-primary/70">A real-time look at our total collected donations against our published and verified goals.</CardDescription>
       </CardHeader>
@@ -86,19 +86,19 @@ export function OverallFundingSummary() {
             </div>
              <div className="space-y-4 text-center md:text-left">
                 <div>
-                    <p className="text-sm font-bold text-muted-foreground">Total raised for goals</p>
+                    <p className="text-sm font-bold text-muted-foreground">Total Raised For Goals</p>
                     <p className="text-3xl font-bold text-primary">
                     ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
-                    <p className="text-sm font-bold text-muted-foreground">Combined target</p>
+                    <p className="text-sm font-bold text-muted-foreground">Combined Target</p>
                     <p className="text-3xl font-bold text-primary opacity-70">
                     ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
-                    <p className="text-sm font-bold text-muted-foreground">Grand total received (All types)</p>
+                    <p className="text-sm font-bold text-muted-foreground">Grand Total Received (All Types)</p>
                     <p className="text-3xl font-bold text-primary">
                     ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
                     </p>

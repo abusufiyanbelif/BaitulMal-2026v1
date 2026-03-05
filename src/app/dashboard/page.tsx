@@ -139,7 +139,7 @@ export default function Home() {
             </div>
             ) : (
              <div className="text-center">
-                <p>Could not load user profile.</p>
+                <p>Could Not Load User Profile.</p>
              </div>
             )}
         </div>

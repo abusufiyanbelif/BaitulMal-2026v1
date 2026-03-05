@@ -1,11 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Simplified institutional rules: Public transparency, Member control
     match /{document=**} {
-      // Allow public read access for institutional transparency
       allow read: if true;
-      // Allow authenticated members full management access
-      allow write: if request.auth != null;
+      allow write, delete: if request.auth != null;
     }
   }
 }
