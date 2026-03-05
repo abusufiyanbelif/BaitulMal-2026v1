@@ -19,6 +19,7 @@ export function Providers({ children }: { children: ReactNode }) {
     'light',
     'dark',
     'system',
+    'bms3',
     'bmss-brand-warm',
     'ocean-blue',
     'sunset-orange',
@@ -57,12 +58,11 @@ export function Providers({ children }: { children: ReactNode }) {
     <FirebaseClientProvider>
       <ThemeProvider 
         attribute="class" 
-        defaultTheme="light" 
+        defaultTheme="bms3" 
         enableSystem={true}
         themes={allThemes}
       >
         <div className="relative min-h-screen w-full overflow-x-hidden flex flex-col">
-          {/* Calibrated watermark for institutional readability */}
           <div className="fixed inset-0 -z-10 flex items-center justify-center pointer-events-none opacity-[0.03] mix-blend-multiply overflow-hidden">
             <Watermark />
           </div>

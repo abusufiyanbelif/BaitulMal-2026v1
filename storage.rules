@@ -1,12 +1,13 @@
 rules_version = '2';
-service firebase.storage {
+service lg.firebase.storage {
   match /b/{bucket}/o {
-    // Public can read all artifacts for transparency.
-    // Authenticated members can upload and manage files.
+    // Simplified Institutional Rules
+    // 1. Public Visibility: Anyone can view verification screenshots and artifacts.
+    // 2. Member Control: Any authenticated member can upload or remove files.
     
     match /{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write, delete: if request.auth != null;
     }
   }
 }

@@ -5,11 +5,14 @@ export interface ThemeSuggestion {
 }
 
 export const THEME_SUGGESTIONS: ThemeSuggestion[] = [
+  // BMS3 Standard Theme
+  { id: 'bms3', name: 'BMS3 (Official)', isDark: false },
+  
   // Special Brand Themes
   { id: 'bmss-brand-warm', name: 'BMSS Brand (Warm)', isDark: false },
   { id: 'light', name: 'BMSS Brand (Default)', isDark: false },
   
-  // 4 More Light Themes (Total 5 including Default)
+  // 4 More Light Themes
   { id: 'ocean-blue', name: 'Ocean Blue', isDark: false },
   { id: 'sunset-orange', name: 'Sunset Orange', isDark: false },
   { id: 'sunrise-peach', name: 'Sunrise Peach', isDark: false },
