@@ -19,8 +19,7 @@ import {
     ShieldAlert,
     Trash2,
     ChevronDown,
-    Loader2,
-    IndianRupee
+    Loader2
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -44,7 +43,7 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { SectionLoader } from '@/components/section-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
-const gridClass = "grid grid-cols-[40px_50px_250px_120px_100px_100px_120px_140px_200px_60px] items-center gap-4 px-4 py-3 min-w-[1240px]";
+const gridClass = "grid grid-cols-[40px_50px_250px_150px_120px_120px_250px_60px] items-center gap-4 px-4 py-3 min-w-[1040px]";
 
 export default function BeneficiariesPage() {
   const firestore = useFirestore();
@@ -169,8 +168,6 @@ export default function BeneficiariesPage() {
                 <div>Phone</div>
                 <div className="text-center">Status</div>
                 <div className="text-center">Zakat</div>
-                <div className="text-right">Kit Amount (₹)</div>
-                <div className="text-right">Zakat Allocation (₹)</div>
                 <div className="pl-4">Referred By</div>
                 <div className="text-right">Actions</div>
             </div>
@@ -191,8 +188,6 @@ export default function BeneficiariesPage() {
                     <div className="font-mono text-xs opacity-60 text-[#355E3B]">{b.phone || 'N/A'}</div>
                     <div className="text-center"><Badge variant={b.status === 'Given' ? 'given' : 'outline'} className="text-[10px] font-bold uppercase">{b.status}</Badge></div>
                     <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
-                    <div className="text-right font-mono text-sm font-bold text-[#14532D]">₹{(b.kitAmount || 0).toFixed(2)}</div>
-                    <div className="text-right font-mono text-sm font-bold text-[#14532D]">₹{(b.zakatAllocation || 0).toFixed(2)}</div>
                     <div className="pl-4 text-xs font-normal text-[#355E3B]/70">{b.referralBy || 'N/A'}</div>
                     <div className="text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -251,13 +246,9 @@ export default function BeneficiariesPage() {
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Date Added</p>
                         <p className="text-xs font-normal">{b.addedDate || 'N/A'}</p>
                     </div>
-                    <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Zakat Allocation</p>
-                        <p className="text-xs font-bold">₹{(b.zakatAllocation || 0).toFixed(2)}</p>
-                    </div>
-                    <div className="space-y-1 md:col-span-2">
+                    <div className="space-y-1 md:col-span-3">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Notes</p>
-                        <p className="text-xs italic opacity-80 font-normal">{b.notes || (b.isEligibleForZakat ? `Eligible for Zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
+                        <p className="text-xs italic opacity-80 font-normal">{b.notes || (b.isEligibleForZakat ? 'Eligible For Zakat.' : 'N/A')}</p>
                     </div>
                     </div>
                 </AccordionContent>
