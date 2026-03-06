@@ -24,7 +24,7 @@ export default function Home() {
     const { brandingSettings } = useBranding();
 
     const activeTickerItems = useMemo(() => {
-        const activeCampaigns = campaignsWithProgress
+        const activeCampaigns = (campaignsWithProgress || [])
             .filter(c => c.status === 'Active' || c.status === 'Upcoming')
             .map(c => {
                 const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
@@ -35,7 +35,7 @@ export default function Home() {
                 };
             });
         
-        const activeLeads = leadsWithProgress
+        const activeLeads = (leadsWithProgress || [])
             .filter(l => l.status === 'Active' || l.status === 'Upcoming')
             .map(l => {
                 const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
@@ -50,11 +50,11 @@ export default function Home() {
     }, [campaignsWithProgress, leadsWithProgress]);
 
     const completedTickerItems = useMemo(() => {
-        const completedCampaigns = campaignsWithProgress
+        const completedCampaigns = (campaignsWithProgress || [])
             .filter(c => c.status === 'Completed')
             .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-public/${c.id}/summary` }));
         
-        const completedLeads = leadsWithProgress
+        const completedLeads = (leadsWithProgress || [])
             .filter(l => l.status === 'Completed')
             .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
 

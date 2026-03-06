@@ -1,8 +1,8 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Force a fresh build to resolve MODULE_NOT_FOUND and cross-origin issues.
-  // Cache-buster: 2026-02-26-20-00
+  // Force a fresh build to resolve build errors and potential 404s.
+  // Build Timestamp: 2026-03-01-12-00
   reactStrictMode: true,
   allowedDevOrigins: [
     "https://*.cloudworkstations.dev",

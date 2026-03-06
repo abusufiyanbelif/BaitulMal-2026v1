@@ -176,8 +176,8 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
         return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, addedCount: 0 };
     }
     
+    const db = adminDb;
     try {
-        const db = adminDb;
         const batch = db.batch();
         let addedCount = 0;
         

@@ -18,6 +18,7 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 
 interface LinkedInitiative {
     id: string;
@@ -159,7 +160,7 @@ export default function BeneficiaryDetailsPage() {
   const backHref = redirectUrl || '/beneficiaries';
 
   if (isLoading && !formBeneficiaryData) return <BrandedLoader />;
-  if (!beneficiary) return <p className="text-center mt-20">Not Found.</p>;
+  if (!beneficiary) return <p className="text-center mt-20 text-primary font-bold">Beneficiary Not Found.</p>;
 
   const initiativeName = campaign?.name || lead?.name;
   const initiativeType = campaign ? 'Campaign' : lead ? 'Lead' : null;
@@ -171,43 +172,43 @@ export default function BeneficiaryDetailsPage() {
   const canReadDonations = currentUserProfile?.role === 'Admin' || (initiativeType === 'Campaign' ? !!getNestedValue(currentUserProfile, 'permissions.campaigns.donations.read', false) : !!getNestedValue(currentUserProfile, 'permissions.leads-members.donations.read', false));
 
   return (
-    <main className="container mx-auto p-4 md:p-8 space-y-6">
-      <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 text-primary"><Link href={backHref}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Link></Button></div>
+    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
+      <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95"><Link href={backHref}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Link></Button></div>
 
       {initiativeName && initiativeId && initiativeType && (
           <div className="space-y-4">
-              <h1 className="text-3xl font-bold">{initiativeName}</h1>
-              <div className="border-b">
+              <h1 className="text-3xl font-bold tracking-tight">{initiativeName}</h1>
+              <div className="border-b border-primary/10">
                 <ScrollArea className="w-full whitespace-nowrap">
-                    <div className="flex w-max space-x-2">
-                        {canReadSummary && ( <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/summary`} className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 rounded-md">Summary</Link> )}
-                        {canReadRation && ( <Link href={`/campaign-members/${initiativeId}`} className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 rounded-md">Item Lists</Link> )}
-                        {initiativeType === 'Lead' && ( <Link href={`/leads-members/${initiativeId}`} className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 rounded-md">Item List</Link> )}
-                        {canReadBeneficiaries && ( <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/beneficiaries`} className="px-3 py-1.5 text-sm font-medium bg-primary text-primary-foreground rounded-md shadow">Beneficiary List</Link> )}
-                        {canReadDonations && ( <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/donations`} className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 rounded-md">Donations</Link> )}
+                    <div className="flex w-max space-x-2 pb-2">
+                        {canReadSummary && ( <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/summary`} className="px-4 py-2 text-sm font-bold text-muted-foreground hover:bg-primary/10 rounded-md transition-colors">Summary</Link> )}
+                        {canReadRation && ( <Link href={`/campaign-members/${initiativeId}`} className="px-4 py-2 text-sm font-bold text-muted-foreground hover:bg-primary/10 rounded-md transition-colors">Item Lists</Link> )}
+                        {initiativeType === 'Lead' && ( <Link href={`/leads-members/${initiativeId}`} className="px-4 py-2 text-sm font-bold text-muted-foreground hover:bg-primary/10 rounded-md transition-colors">Item List</Link> )}
+                        {canReadBeneficiaries && ( <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/beneficiaries`} className="px-4 py-2 text-sm font-bold bg-primary text-white rounded-md shadow-md">Beneficiary List</Link> )}
+                        {canReadDonations && ( <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/donations`} className="px-4 py-2 text-sm font-bold text-muted-foreground hover:bg-primary/10 rounded-md transition-colors">Donations</Link> )}
                     </div>
                 </ScrollArea>
             </div>
           </div>
       )}
 
-      <Card className="max-w-2xl mx-auto animate-fade-in-zoom border-primary/10 shadow-sm bg-white">
+      <Card className="max-w-2xl mx-auto animate-fade-in-zoom border-primary/10 shadow-sm bg-white overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between border-b bg-primary/5">
           <CardTitle className="font-bold text-primary tracking-tight">Beneficiary: {beneficiary.name}</CardTitle>
-          {canUpdate && !isEditMode && ( <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md"><Edit className="mr-2 h-4 w-4"/>Edit Details</Button> )}
+          {canUpdate && !isEditMode && ( <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md active:scale-95 transition-transform"><Edit className="mr-2 h-4 w-4"/>Edit Details</Button> )}
         </CardHeader>
         <CardContent className="pt-6">
           <BeneficiaryForm beneficiary={formBeneficiaryData} onSubmit={handleSave} onCancel={() => setIsEditMode(false)} isSubmitting={isSubmitting} isLoading={isInitiativeDataLoading} isReadOnly={!isEditMode} itemCategories={[]} hideKitAmount={true} hideZakatAllocation={!initiativeContext} />
         </CardContent>
       </Card>
 
-      <Card className="max-w-2xl mx-auto animate-fade-in-up border-primary/10 shadow-sm bg-white">
+      <Card className="max-w-2xl mx-auto animate-fade-in-up border-primary/10 shadow-sm bg-white overflow-hidden">
         <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight">Linked Initiatives</CardTitle></CardHeader>
         <CardContent className="pt-6">
             {isLinksLoading ? ( <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /> ) : linkedInitiatives.length > 0 ? (
                 <div className="border border-primary/10 rounded-lg overflow-x-auto shadow-sm">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-[#ECFDF5] text-[#14532D] font-bold border-b">
+                        <thead className="bg-[#ECFDF5] text-[#14532D] font-bold border-b text-[10px] uppercase tracking-widest">
                             <tr>
                                 <th className="px-4 py-3">Initiative Name</th>
                                 <th className="px-4 py-3">Current Status</th>
@@ -224,7 +225,7 @@ export default function BeneficiaryDetailsPage() {
                                     {canUpdate && (
                                         <td className="px-4 py-3 align-middle text-right">
                                             <DropdownMenu>
-                                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10 transition-colors h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
                                                     <DropdownMenuSub>
                                                         <DropdownMenuSubTrigger className="font-bold text-primary">Status</DropdownMenuSubTrigger>

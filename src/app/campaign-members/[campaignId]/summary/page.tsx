@@ -188,6 +188,12 @@ export default function CampaignSummaryPage() {
         return campaign?.category === 'Ration';
     }, [campaign]);
 
+    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
+    const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
+    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
+    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
+    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false) || !!getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
+
     const beneficiaryGroups = useMemo(() => {
         if (!campaign || !beneficiaries) return [];
         const categories = (campaign.itemCategories || []).filter(c => c.name !== 'Item Price List');
@@ -208,14 +214,14 @@ export default function CampaignSummaryPage() {
     const fundingData = useMemo(() => {
         if (!allDonations || !campaign || !beneficiaries) return null;
         
-        const donations = allDonations.filter(d => {
+        const donationsList = allDonations.filter(d => {
             if (d.linkSplit && d.linkSplit.length > 0) {
                 return d.linkSplit.some(link => link.linkId === campaign.id && link.linkType === 'campaign');
             }
             return (d as any).campaignId === campaign.id;
         });
 
-        const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
+        const verifiedDonationsList = donationsList.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
         const amountsByPaymentType: Record<string, number> = {};
@@ -307,20 +313,14 @@ export default function CampaignSummaryPage() {
         setExistingDocuments(prev => prev.map(doc => doc.url === urlToToggle ? { ...doc, isPublic: !doc.isPublic } : doc));
     };
 
-    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
-    const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
-    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
-    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
-    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false) || !!getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
-    
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
-        if (!campaignDocRef || !campaign?.documents || !canUpdateSummary) return;
+        if (!leadDocRef || !campaign?.documents || !canUpdateSummary) return;
         const newDocs = campaign.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
         try {
-            await updateDoc(campaignDocRef, { documents: newDocs, updatedAt: serverTimestamp() });
+            await updateDoc(campaignDocRef!, { documents: newDocs, updatedAt: serverTimestamp() });
             toast({ title: "Visibility Updated", variant: "success" });
         } catch (serverError: any) {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: { documents: newDocs } }));
+            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campaignDocRef!.path, operation: 'update', requestResourceData: { documents: newDocs } }));
         }
     };
 
@@ -387,13 +387,17 @@ export default function CampaignSummaryPage() {
         setIsImageViewerOpen(true);
     };
 
-    const chartData = useMemo(() => {
+    const chartDataValues = useMemo(() => {
         return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
             name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` 
         })) : [];
     }, [fundingData]);
 
     const FallbackIcon = campaign?.category === 'Ration' ? Utensils : campaign?.category === 'Relief' ? LifeBuoy : HandHelping;
+
+    const isLoadingPage = isCampaignLoading || isProfileLoading || areBeneficiariesLoading;
+
+    if (isLoadingPage) return <BrandedLoader />;
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal">
@@ -666,8 +670,8 @@ export default function CampaignSummaryPage() {
                                     <CardContent className="p-0 sm:p-6">
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                            <BarChart data={chartData} layout="vertical" margin={{ right: 20 }}>
-                                                <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartData.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
+                                            <BarChart data={chartDataValues} layout="vertical" margin={{ right: 20 }}>
+                                                <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
                                             </BarChart>
                                         </ChartContainer>
                                         ) : <Skeleton className="h-[250px] w-full" />}

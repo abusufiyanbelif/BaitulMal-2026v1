@@ -34,7 +34,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                 return (
                     <Card 
                         key={lead.id} 
-                        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white/50 shadow-sm" 
+                        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white shadow-sm" 
                         style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
                         onClick={() => router.push(`/leads-public/${lead.id}/summary`)}
                     >
@@ -100,7 +100,7 @@ export function PublicLeadsView() {
   const { isLoading, leadsWithProgress, campaignsWithProgress, recentDonationsFormatted } = usePublicData();
 
   const activeTickerItems = useMemo(() => {
-    const activeCampaigns = (campaignsWithProgress || [])
+    const activeCampaignsList = (campaignsWithProgress || [])
       .filter(c => c.status === 'Active' || c.status === 'Upcoming')
       .map(c => {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
@@ -122,7 +122,7 @@ export function PublicLeadsView() {
           };
       });
 
-    return [...activeCampaigns, ...activeLeadsList];
+    return [...activeCampaignsList, ...activeLeadsList];
   }, [campaignsWithProgress, leadsWithProgress]);
 
   const completedTickerItems = useMemo(() => {
