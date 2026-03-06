@@ -346,7 +346,8 @@ export default function CampaignSummaryPage() {
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
                 imageUrl = await getDownloadURL(fileRef);
-                imageUrlFilename = `campaign_${editableCampaign.name?.replace(/\s+/g, '_')}.png`;
+                const dateStr = new Date().toISOString().split('T')[0];
+                imageUrlFilename = `campaign_${editableCampaign.name?.replace(/\s+/g, '_')}_${dateStr}.png`;
             } catch (uploadError) {
                 toast({ title: 'Image Upload Failed', variant: 'destructive'});
                 return;

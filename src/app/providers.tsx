@@ -20,6 +20,7 @@ export function Providers({ children }: { children: ReactNode }) {
     'dark',
     'system',
     'bms3',
+    'bms3-a',
     'bmss-brand-warm',
     'ocean-blue',
     'sunset-orange',
@@ -58,7 +59,7 @@ export function Providers({ children }: { children: ReactNode }) {
     <FirebaseClientProvider>
       <ThemeProvider 
         attribute="class" 
-        defaultTheme="bms3" 
+        defaultTheme="bms3-a" 
         enableSystem={true}
         themes={allThemes}
       >
