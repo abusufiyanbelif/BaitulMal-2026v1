@@ -20,6 +20,7 @@ interface NewsTickerProps {
 
 /**
  * A sophisticated vertical news ticker that cycles through items with a Fade + Slide Up animation.
+ * Fully theme-reactive using primary and secondary semantic variables.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -41,7 +42,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
     setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % items.length);
       setIsTransitioning(false);
-    }, 400); // Matches transition duration
+    }, 400); 
   };
 
   const handlePrev = () => {
@@ -64,10 +65,10 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
       "group border rounded-lg overflow-hidden relative flex items-center mb-2 shadow-sm h-12 bg-white transition-all hover:shadow-md",
       isCompleted ? "border-muted" : "border-primary/10"
     )}>
-      {/* Label Section */}
+      {/* Label Section - Responsive to theme primary color */}
       <div className={cn(
-        "z-30 h-full px-4 flex items-center border-r shadow-md shrink-0 font-bold",
-        isCompleted ? "bg-muted text-muted-foreground" : "bg-primary text-white"
+        "z-30 h-full px-4 flex items-center border-r shadow-md shrink-0 font-bold transition-colors duration-500",
+        isCompleted ? "bg-muted text-muted-foreground" : "bg-primary text-primary-foreground"
       )}>
         {isCompleted ? (
           <CheckCircle2 className="h-4 w-4 mr-2" />
@@ -76,7 +77,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         ) : (
           <Megaphone className="h-4 w-4 mr-2" />
         )}
-        <span className="text-[10px] sm:text-xs font-bold tracking-tight whitespace-nowrap">
+        <span className="text-[10px] sm:text-xs font-bold tracking-tight whitespace-nowrap uppercase">
           {label}
         </span>
       </div>

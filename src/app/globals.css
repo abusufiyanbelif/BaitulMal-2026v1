@@ -71,12 +71,16 @@
     --border: 160 25% 20%;
     --input: 160 25% 20%;
     --ring: 140 68% 38%;
+    --table-header-bg: 160 25% 15%;
+    --table-header-fg: 160 20% 95%;
+    --table-row-hover: 160 25% 18%;
   }
 
   /* BMS3 Official Deep Green */
   .bms3 {
     --primary: 164 88% 14%;
     --badge-active-fg: 164 88% 14%;
+    --ring: 164 88% 14%;
   }
 
   /* Green Warm (Earthy Tint) */
@@ -84,42 +88,49 @@
     --background: 45 30% 96%;
     --primary: 140 40% 25%;
     --badge-active-fg: 140 40% 25%;
+    --ring: 140 40% 25%;
   }
 
   /* Warm Orange Tone */
   .bmss-brand-warm {
     --primary: 24 95% 53%;
     --badge-active-fg: 24 95% 53%;
+    --ring: 24 95% 53%;
   }
 
   /* Ocean Blue (Professional) */
   .ocean-blue {
     --primary: 221 83% 53%;
     --badge-active-fg: 221 83% 53%;
+    --ring: 221 83% 53%;
   }
 
   /* Sky Blue (Bright) */
   .sky-blue {
     --primary: 199 89% 48%;
     --badge-active-fg: 199 89% 48%;
+    --ring: 199 89% 48%;
   }
 
   /* Sunset (Energy) */
   .sunset-orange {
     --primary: 12 90% 50%;
     --badge-active-fg: 12 90% 50%;
+    --ring: 12 90% 50%;
   }
 
   /* Peaceful Lavender */
   .lavender-mint {
     --primary: 262 60% 60%;
     --badge-active-fg: 262 60% 60%;
+    --ring: 262 60% 60%;
   }
 
   /* GitHub Light */
   .github-light {
     --primary: 212 92% 45%;
     --badge-active-fg: 212 92% 45%;
+    --ring: 212 92% 45%;
   }
 
   /* Midnight Ramadan (Gold) */
@@ -144,6 +155,9 @@
     --input: 222 47% 20%;
     --ring: 45 100% 50%;
     --badge-active-fg: 45 100% 50%;
+    --table-header-bg: 222 47% 15%;
+    --table-header-fg: 45 100% 50%;
+    --table-row-hover: 222 47% 18%;
   }
 
   /* Midnight Emerald */
@@ -168,6 +182,9 @@
     --input: 160 50% 15%;
     --ring: 160 100% 40%;
     --badge-active-fg: 160 100% 40%;
+    --table-header-bg: 160 50% 10%;
+    --table-header-fg: 160 100% 40%;
+    --table-row-hover: 160 50% 12%;
   }
 
   /* GitHub Dark */
@@ -192,6 +209,9 @@
     --input: 210 20% 20%;
     --ring: 212 92% 45%;
     --badge-active-fg: 212 92% 45%;
+    --table-header-bg: 210 20% 15%;
+    --table-header-fg: 212 92% 45%;
+    --table-row-hover: 210 20% 18%;
   }
 }
 

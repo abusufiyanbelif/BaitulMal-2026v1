@@ -50,27 +50,26 @@ export function DocuExtractHeader() {
   const homeHref = user ? '/dashboard' : '/';
   
   return (
-    <header className="bg-background/95 backdrop-blur-md border-b border-border sticky top-0 z-50 w-full py-4 flex items-center transition-all duration-300 shadow-sm">
-      <div className="container mx-auto flex justify-between items-center px-4">
+    <header className="bg-background/95 backdrop-blur-md border-b border-border sticky top-0 z-50 w-full py-4 flex items-center transition-all duration-500 shadow-sm">
+      <div className="container mx-auto flex justify-between items-center px-4 gap-4">
         <Link href={homeHref} className="flex items-center gap-4 group transition-all hover:scale-[1.01]">
-          <div className="relative flex-shrink-0 flex items-center justify-center h-20 w-20 bg-primary/5 rounded-xl border border-primary/10 overflow-hidden">
+          <div className="relative flex-shrink-0 flex items-center justify-center h-16 w-16 bg-primary/5 rounded-xl border border-primary/10 overflow-hidden shadow-inner">
             {isLoading ? (
-                <Skeleton className="h-16 w-16 rounded-lg" />
+                <Skeleton className="h-12 w-12 rounded-lg" />
             ) : (
                 validLogoUrl && (
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                     alt="Institutional Logo"
-                    width={80}
-                    height={80}
-                    className="object-contain p-1"
+                    fill
+                    className="object-contain p-1.5"
                     priority
                   />
                 )
             )}
             </div>
-          <h1 className="text-[20px] font-bold text-primary tracking-tight leading-tight transition-colors group-hover:opacity-80">
-            {isBrandingLoading ? <Skeleton className="h-6 w-64" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
+          <h1 className="text-xl sm:text-2xl font-bold text-primary tracking-tighter leading-tight transition-colors group-hover:opacity-80">
+            {isBrandingLoading ? <Skeleton className="h-6 w-48" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
           </h1>
         </Link>
 
@@ -82,57 +81,57 @@ export function DocuExtractHeader() {
                 <NotificationBell />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-12 w-12 rounded-full border-2 border-primary/10 p-0 transition-all hover:border-primary">
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full border-2 border-primary/10 p-0 transition-all hover:border-primary active:scale-95 shadow-sm">
                       <Avatar className="h-full w-full rounded-full overflow-hidden">
                         <AvatarImage
                           src={userProfile?.idProofUrl || ''}
                           alt={userProfile?.name || 'User'}
                         />
-                        <AvatarFallback className="bg-secondary text-primary font-bold text-sm">
+                        <AvatarFallback className="bg-secondary text-primary font-bold text-xs">
                           {getInitials(userProfile?.name)}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-64 mt-2 animate-fade-in-zoom" align="end" forceMount>
+                  <DropdownMenuContent className="w-64 mt-2 animate-fade-in-zoom border-primary/10 shadow-2xl" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal p-4">
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-bold tracking-tight text-primary">
                           {userProfile?.name || 'User'}
                         </p>
-                        <p className="text-xs font-normal text-muted-foreground pt-1 truncate">
+                        <p className="text-[10px] font-normal text-muted-foreground pt-1 truncate uppercase tracking-widest">
                           {user.email}
                         </p>
-                        <Badge variant="outline" className="w-fit mt-2 text-[10px] font-bold border-primary/20 text-primary">Member Account</Badge>
+                        <Badge variant="outline" className="w-fit mt-3 text-[9px] font-bold border-primary/20 text-primary uppercase tracking-tighter">Member Account</Badge>
                       </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                     <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary">
+                    <DropdownMenuSeparator className="bg-primary/5" />
+                     <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                       <Link href="/dashboard" className="flex items-center w-full">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        <LayoutDashboard className="mr-3 h-4 w-4 opacity-60" />
                         <span>Member Dashboard</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary">
+                    <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                       <Link href="/profile" className="flex items-center w-full">
-                        <User className="mr-2 h-4 w-4" />
+                        <User className="mr-3 h-4 w-4 opacity-60" />
                         <span>Profile Settings</span>
                       </Link>
                     </DropdownMenuItem>
                     {userProfile.role === 'Admin' && (
-                      <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary">
+                      <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                         <Link href="/settings" className="flex items-center w-full">
-                          <Settings className="mr-2 h-4 w-4" />
+                          <Settings className="mr-3 h-4 w-4 opacity-60" />
                           <span>System Administration</span>
                         </Link>
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="bg-primary/5" />
                     <DropdownMenuItem
                       onClick={handleLogout}
                       className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer h-11 font-normal"
                     >
-                      <LogOut className="mr-2 h-4 w-4" />
+                      <LogOut className="mr-3 h-4 w-4" />
                       <span>Sign Out</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -140,7 +139,7 @@ export function DocuExtractHeader() {
               </div>
             ) : (
               pathname !== '/login' && (
-                <Button asChild className="font-bold tracking-tight text-xs shadow-md px-6 h-10 transition-all rounded-[12px]">
+                <Button asChild className="font-bold tracking-tight text-xs shadow-md px-6 h-10 transition-all active:scale-95 rounded-xl">
                     <Link href="/login">
                         <LogIn className="mr-2 h-4 w-4" />
                         <span>Member Login</span>

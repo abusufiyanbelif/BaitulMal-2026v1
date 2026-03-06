@@ -16,8 +16,8 @@ const badgeVariants = cva(
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         success:
           "border-transparent bg-primary/10 text-primary hover:bg-primary/20",
-        outline: "text-foreground",
-        // BMS3 A Specific Status Variants
+        outline: "text-foreground border-primary/20",
+        // Semantic Status Variants - Theme Reactive
         eligible: "border-transparent bg-[hsl(var(--badge-eligible-bg))] text-[hsl(var(--badge-eligible-fg))] rounded-[20px] px-[10px] py-[4px]",
         given: "border-transparent bg-[hsl(var(--badge-given-bg))] text-[hsl(var(--badge-given-fg))] px-[10px] py-[4px]",
         active: "border-transparent bg-[hsl(var(--badge-active-bg))] text-[hsl(var(--badge-active-fg))] px-[10px] py-[4px]",
@@ -40,10 +40,16 @@ function Badge({ className, variant, ...props }: BadgeProps) {
   // Title Case Conversion for automatic statuses
   const displayContent = content.charAt(0).toUpperCase() + content.slice(1).toLowerCase();
 
+  // Automatic semantic mapping based on institutional keywords
   if (!variant || variant === 'default' || variant === 'outline' || variant === 'success') {
-    if (displayContent === 'Eligible' || displayContent === 'Verified') finalVariant = 'eligible';
-    else if (displayContent === 'Given') finalVariant = 'given';
-    else if (displayContent === 'Active') finalVariant = 'active';
+    const lowerContent = displayContent.toLowerCase();
+    if (lowerContent === 'eligible' || lowerContent === 'verified' || lowerContent === 'success') {
+        finalVariant = 'eligible';
+    } else if (lowerContent === 'given' || lowerContent === 'completed') {
+        finalVariant = 'given';
+    } else if (lowerContent === 'active' || lowerContent === 'upcoming') {
+        finalVariant = 'active';
+    }
   }
 
   return (
