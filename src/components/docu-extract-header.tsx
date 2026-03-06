@@ -45,7 +45,7 @@ export function DocuExtractHeader() {
   const homeHref = user ? '/dashboard' : '/';
   
   return (
-    <header className="bg-white border-b shadow-sm sticky top-0 z-50 w-full overflow-hidden h-24 flex items-center transition-all duration-300">
+    <header className="bg-white border-b border-[#E2EEE7] shadow-sm sticky top-0 z-50 w-full overflow-hidden h-auto py-4 flex items-center transition-all duration-300">
       <div className="container mx-auto flex flex-nowrap justify-between items-center gap-4 px-4">
         <Link href={homeHref} className="flex items-center gap-4 min-w-0 flex-1 group transition-all duration-300 ease-in-out hover:scale-[1.01] active:scale-95">
           <div className="relative flex-shrink-0 flex items-center justify-center h-20 w-20 bg-primary/5 rounded-xl border border-primary/10 overflow-hidden transition-transform duration-500 group-hover:rotate-2">
@@ -64,7 +64,7 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-base md:text-xl lg:text-2xl font-bold tracking-tight text-primary leading-tight max-w-xl line-clamp-2 transition-colors duration-300 group-hover:text-primary/80">
+          <h1 className="text-[20px] font-semibold tracking-tight text-[#14532D] leading-tight max-w-xl line-clamp-2 transition-colors duration-300 group-hover:opacity-80">
             {isBrandingLoading ? <Skeleton className="h-6 w-64" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
           </h1>
         </Link>
@@ -82,7 +82,7 @@ export function DocuExtractHeader() {
                             src={userProfile?.idProofUrl || ''}
                             alt={userProfile?.name || 'User'}
                           />
-                          <AvatarFallback className="bg-primary text-white font-bold text-sm">
+                          <AvatarFallback className="bg-[#E8F7EE] text-[#1FA34A] font-bold text-sm">
                             {getInitials(userProfile?.name)}
                           </AvatarFallback>
                         </Avatar>
