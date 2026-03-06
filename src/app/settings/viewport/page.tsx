@@ -32,7 +32,7 @@ import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-function ComponentPreview({ themeId, isDark }: { themeId: string, isDark: boolean }) {
+function ComponentPreview({ themeId }: { themeId: string }) {
     return (
         <div className={cn("rounded-xl border shadow-2xl overflow-hidden transition-all duration-500", themeId)} style={{ transform: 'scale(0.95)' }}>
             <div className="bg-background text-foreground min-h-[400px] flex flex-col">
@@ -47,8 +47,8 @@ function ComponentPreview({ themeId, isDark }: { themeId: string, isDark: boolea
                 <ScrollArea className="flex-1">
                     <div className="p-4 space-y-6">
                         <div className="space-y-2">
-                            <h3 className="text-lg font-bold text-primary tracking-tight">Hero Title Preview</h3>
-                            <p className="text-xs text-muted-foreground leading-relaxed font-normal">This is a description of how your organization's primary message will look with the selected palette.</p>
+                            <h3 className="text-lg font-bold text-primary tracking-tight">Theme Preview</h3>
+                            <p className="text-xs text-muted-foreground leading-relaxed font-normal">Observe how colors and styles change when you select a different theme.</p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
@@ -84,11 +84,11 @@ function ComponentPreview({ themeId, isDark }: { themeId: string, isDark: boolea
                                     </TableHeader>
                                     <TableBody>
                                         <TableRow className="h-8 hover:bg-primary/[0.02]">
-                                            <TableCell className="py-1 text-[10px] font-medium">Saleem K.</TableCell>
+                                            <TableCell className="py-1 text-[10px] font-medium">Member A</TableCell>
                                             <TableCell className="py-1 text-right font-mono text-[10px] font-bold text-primary">₹500</TableCell>
                                         </TableRow>
                                         <TableRow className="h-8 border-none hover:bg-primary/[0.02]">
-                                            <TableCell className="py-1 text-[10px] font-medium">Fatima S.</TableCell>
+                                            <TableCell className="py-1 text-[10px] font-medium">Member B</TableCell>
                                             <TableCell className="py-1 text-right font-mono text-[10px] font-bold text-primary">₹1,200</TableCell>
                                         </TableRow>
                                     </TableBody>
@@ -167,7 +167,7 @@ export default function ViewportSettingsPage() {
     };
 
     if (!isMounted) return null;
-    const currentThemeName = THEME_SUGGESTIONS.find(t => t.id === theme)?.name || theme || 'Default';
+    const currentThemeName = THEME_SUGGESTIONS.find(t => t.id === (isEditMode ? pendingTheme : theme))?.name || theme || 'Default';
 
     return (
         <div className="space-y-6 text-primary font-normal pb-10">
@@ -224,7 +224,7 @@ export default function ViewportSettingsPage() {
                                     
                                     <div className="space-y-3">
                                         <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Select Color Theme</Label>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                             {THEME_SUGGESTIONS.map((s) => (
                                                 <Button 
                                                     key={s.id} 
@@ -307,13 +307,12 @@ export default function ViewportSettingsPage() {
                             <div className="p-4">
                                 <ComponentPreview 
                                     themeId={isEditMode ? pendingTheme : (theme || 'bms3-a')} 
-                                    isDark={isEditMode ? (pendingTheme === 'dark' || (pendingTheme === 'system' && resolvedTheme === 'dark')) : (resolvedTheme === 'dark')} 
                                 />
                             </div>
                         </CardContent>
                         <CardFooter className="bg-muted/5 p-3 border-t flex justify-center">
                             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
-                                Showing: {isEditMode ? (THEME_SUGGESTIONS.find(t => t.id === pendingTheme)?.name || pendingTheme) : currentThemeName}
+                                Showing: {currentThemeName}
                             </p>
                         </CardFooter>
                     </Card>

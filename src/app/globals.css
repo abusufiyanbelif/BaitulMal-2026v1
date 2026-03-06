@@ -40,7 +40,7 @@
     --badge-active-fg: 140 68% 38%;
   }
 
-  /* BMS3 (Official Deep Green) - Richer, traditional tone */
+  /* BMS3 (Official Deep Green) */
   .bms3 {
     --background: 140 10% 95%; /* #F0F4F1 */
     --primary: 144 70% 25%; /* #136A33 */
@@ -51,22 +51,120 @@
     --ring: 144 70% 25%;
   }
 
-  /* Green Warm - Earthy, parchment-like background with deep forest green */
+  /* Green Warm - Earthy */
   .green-warm {
-    --background: 45 30% 96%; /* #F9F7F2 - Warm Paper */
+    --background: 45 30% 96%; /* #F9F7F2 */
     --foreground: 155 30% 20%;
     --card: 45 20% 98%;
-    --primary: 155 40% 24%; /* #2D6A4F - Deep Forest */
+    --primary: 155 40% 24%; /* #2D6A4F */
     --primary-foreground: 0 0% 100%;
-    --secondary: 38 40% 92%; /* Warm Amber-Green tint */
-    --secondary-foreground: 155 40% 15%;
-    --muted: 45 20% 94%;
-    --accent: 38 60% 90%;
+    --secondary: 38 40% 92%;
     --border: 38 20% 85%;
     --ring: 155 40% 24%;
-    
-    --table-header-bg: 38 40% 90%;
-    --table-header-fg: 155 40% 15%;
+  }
+
+  /* Warm Orange Tone */
+  .bmss-brand-warm {
+    --background: 30 100% 98%; /* #FFF8F0 */
+    --foreground: 25 60% 20%;
+    --primary: 28 80% 52%; /* #E67E22 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 30 100% 94%;
+    --border: 28 40% 90%;
+    --ring: 28 80% 52%;
+  }
+
+  /* Midnight Ramadan - Dark Gold */
+  .midnight-ramadan {
+    --background: 230 25% 12%; /* #1A1B26 */
+    --foreground: 45 100% 90%;
+    --card: 230 25% 15%;
+    --card-foreground: 45 100% 95%;
+    --primary: 45 65% 53%; /* #D4AF37 - Gold */
+    --primary-foreground: 230 25% 10%;
+    --secondary: 230 20% 20%;
+    --border: 230 20% 25%;
+    --muted: 230 25% 18%;
+    --ring: 45 65% 53%;
+  }
+
+  /* GitHub Dark */
+  .github-dark {
+    --background: 216 28% 7%; /* #0d1117 */
+    --foreground: 210 40% 98%;
+    --card: 216 28% 10%;
+    --primary: 134 61% 41%; /* #238636 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 216 20% 15%;
+    --border: 216 20% 20%;
+    --ring: 134 61% 41%;
+  }
+
+  /* GitHub Light */
+  .github-light {
+    --background: 0 0% 100%;
+    --foreground: 216 28% 7%;
+    --primary: 134 61% 41%; /* #2da44e */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --border: 210 18% 87%;
+    --ring: 134 61% 41%;
+  }
+
+  /* Ocean Blue */
+  .ocean-blue {
+    --background: 210 100% 98%; /* AliceBlue */
+    --foreground: 210 60% 20%;
+    --primary: 201 100% 36%; /* #0077B6 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 100% 94%;
+    --border: 201 40% 85%;
+    --ring: 201 100% 36%;
+  }
+
+  /* Sky Blue */
+  .sky-blue {
+    --background: 195 100% 98%;
+    --foreground: 195 60% 20%;
+    --primary: 195 100% 42%; /* #00B4D8 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 195 100% 94%;
+    --border: 195 40% 85%;
+    --ring: 195 100% 42%;
+  }
+
+  /* Sunset Orange - Charity Energy */
+  .sunset-orange {
+    --background: 12 100% 98%;
+    --foreground: 12 60% 20%;
+    --primary: 12 100% 60%; /* #FF5733 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 12 100% 94%;
+    --border: 12 40% 85%;
+    --ring: 12 100% 60%;
+  }
+
+  /* Lavender Mint - Peaceful */
+  .lavender-mint {
+    --background: 270 30% 98%;
+    --foreground: 270 40% 20%;
+    --primary: 282 44% 47%; /* #8E44AD */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 40% 94%; /* Mint tint */
+    --border: 270 20% 90%;
+    --ring: 282 44% 47%;
+  }
+
+  /* Midnight Emerald - Elegant */
+  .midnight-emerald {
+    --background: 165 80% 4%; /* #022C22 */
+    --foreground: 160 40% 90%;
+    --card: 165 80% 6%;
+    --primary: 161 94% 17%; /* #064E3B */
+    --primary-foreground: 160 40% 95%;
+    --secondary: 165 40% 12%;
+    --border: 165 30% 15%;
+    --ring: 161 94% 17%;
   }
 
   .dark {

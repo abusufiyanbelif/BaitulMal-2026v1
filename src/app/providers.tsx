@@ -24,6 +24,7 @@ export function Providers({ children }: { children: ReactNode }) {
     'green-warm',
     'bmss-brand-warm',
     'ocean-blue',
+    'sky-blue',
     'sunset-orange',
     'sunrise-peach',
     'lavender-mint',
@@ -31,7 +32,8 @@ export function Providers({ children }: { children: ReactNode }) {
     'midnight-emerald',
     'cyberpunk-neon',
     'dracula-orchid',
-    'github-dark'
+    'github-dark',
+    'github-light'
   ]));
 
   useEffect(() => {
