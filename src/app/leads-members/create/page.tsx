@@ -161,7 +161,7 @@ export default function CreateLeadPage() {
     if (!firestore || !canCreate || !userProfile || !storage) return;
     setIsLoading(true);
     setProgress(5);
-    setLoadingMessage('Initializing Lead Creation...');
+    setLoadingMessage('Initializing lead creation...');
 
     const { imageFile, ...leadCoreData } = data;
     
@@ -180,15 +180,15 @@ export default function CreateLeadPage() {
     
     if (hasImageToUpload) {
         setProgress(15);
-        setLoadingMessage('Optimizing Header Image...');
+        setLoadingMessage('Optimizing header image...');
         try {
             const file = imageFile[0];
             const resizedBlob = await new Promise<Blob>((resolve) => {
                 Resizer.imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
             });
             
-            setProgress(30);
-            setLoadingMessage('Uploading Background...');
+            setProgress(35);
+            setLoadingMessage('Uploading background artifacts...');
             const filePath = `leads/${newLeadId}/background.png`;
             const fileRef = storageRef(storage, filePath);
             await uploadBytes(fileRef, resizedBlob);
@@ -203,21 +203,21 @@ export default function CreateLeadPage() {
         }
     }
     
-    setProgress(50);
-    setLoadingMessage('Syncing Lead Artifacts...');
+    setProgress(55);
+    setLoadingMessage('Synchronizing lead artifacts...');
     const documentUploadPromises = documentsToUpload.map(async (file, idx) => {
         const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
         const fileRef = storageRef(storage, `leads/${newLeadId}/documents/${safeFileName}`);
         await uploadBytes(fileRef, file);
         const url = await getDownloadURL(fileRef);
-        const perDocProgress = 30 / Math.max(1, documentsToUpload.length);
+        const perDocProgress = 25 / Math.max(1, documentsToUpload.length);
         setProgress(prev => Math.min(prev + perDocProgress, 80));
         return { name: file.name, url: url, uploadedAt: new Date().toISOString(), isPublic: false };
     });
     const documents = await Promise.all(documentUploadPromises);
 
     setProgress(85);
-    setLoadingMessage('Syncing With Database...');
+    setLoadingMessage('Synchronizing with database...');
     const newLeadData: Partial<Lead> = {
       ...leadCoreData,
       requiredAmount: data.requiredAmount || 0,
@@ -254,6 +254,7 @@ export default function CreateLeadPage() {
     setDoc(newLeadRef, newLeadData)
       .then(() => {
         setProgress(100);
+        setLoadingMessage('Lead appeal registered.');
         toast({ title: 'Success', description: 'Lead Created Successfully.', variant: 'success' });
         router.push(`/leads-members`);
       })

@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 
 /**
  * Compact Institutional Footer for BMS3 A.
- * No bold text, Title Case labels, and streamlined layout.
+ * No bold text (except brand name), Title Case labels, and streamlined layout.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
@@ -50,7 +50,7 @@ export function AppFooter() {
                   />
                 </div>
               )}
-              <span className="text-lg tracking-tight text-[#14532D]">
+              <span className="text-lg font-bold tracking-tight text-[#14532D]">
                 {brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}
               </span>
             </Link>
@@ -97,7 +97,7 @@ export function AppFooter() {
             </nav>
           </div>
 
-          {/* Column 3: Secure Payments */}
+          {/* Column 3: Secure Contributions */}
           <div className="flex flex-col md:items-end gap-4">
             <h3 className="text-[10px] font-normal tracking-widest text-[#14532D] uppercase opacity-60">
               Secure Contributions

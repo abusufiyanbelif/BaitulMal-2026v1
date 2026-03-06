@@ -67,7 +67,7 @@ export default function CreateUserPage() {
 
     const newUserUid = authResult.uid;
     setProgress(40);
-    setLoadingMessage('Optimizing ID proof artifacts...');
+    setLoadingMessage('Optimizing identification artifacts...');
     
     // Step 2: Handle File Upload
     let idProofUrl = '';
@@ -84,8 +84,8 @@ export default function CreateUserPage() {
                 fileExtension = 'png';
             }
             
-            setProgress(60);
-            setLoadingMessage('Uploading proof to secure storage...');
+            setProgress(65);
+            setLoadingMessage('Securing proof in institutional storage...');
             if (file.type.startsWith('image/') || file.type === 'application/pdf') {
                 const filePath = `users/${newUserUid}/id_proof.${fileExtension}`;
                 const fileRef = storageRef(storage, filePath);
@@ -106,7 +106,7 @@ export default function CreateUserPage() {
     }
 
     setProgress(85);
-    setLoadingMessage('Synchronizing permissions & lookups...');
+    setLoadingMessage('Synchronizing permissions & lookup maps...');
 
     // Step 3: Create documents in Firestore
     const batch = writeBatch(firestore);
@@ -142,6 +142,7 @@ export default function CreateUserPage() {
     try {
         await batch.commit();
         setProgress(100);
+        setLoadingMessage('Member registration finalized.');
         toast({ title: 'Success', description: 'User created successfully.', variant: 'success' });
         router.push(`/users`);
     } catch (dbError: any) {
