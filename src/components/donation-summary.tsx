@@ -2,7 +2,7 @@
 
 import { usePublicData } from '@/hooks/use-public-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Calendar, PieChart as PieChartIcon } from 'lucide-react';
+import { Calendar, PieChart as PieChartIcon, IndianRupee } from 'lucide-react';
 import {
   PieChart,
   Pie,

@@ -2,7 +2,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
 import { useSession } from '@/hooks/use-session';
-import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, Database, FlaskConical, LifeBuoy, Eye, BarChart } from 'lucide-react';
+import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, Database, FlaskConical, IndianRupee, Eye, BarChart } from 'lucide-react';
 import { getNestedValue } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import React from 'react';
@@ -54,7 +54,7 @@ export default function Home() {
             title: "Donations",
             description: "View And Manage All Verified Incoming Donations.",
             href: "/donations",
-            icon: LifeBuoy,
+            icon: IndianRupee,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.read', false),
         },
          {

@@ -3,7 +3,7 @@
 import { usePublicData } from '@/hooks/use-public-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from './ui/skeleton';
-import { Target } from 'lucide-react';
+import { Target, IndianRupee } from 'lucide-react';
 import {
   RadialBarChart,
   RadialBar,
@@ -84,22 +84,22 @@ export function OverallFundingSummary() {
                     <span className="text-xs font-normal text-muted-foreground">Funded</span>
                 </div>
             </div>
-             <div className="space-y-4 text-center md:text-left">
+             <div className="space-y-4 text-center md:text-left font-bold text-primary">
                 <div>
-                    <p className="text-sm font-bold text-muted-foreground">Total Raised For Goals</p>
-                    <p className="text-3xl font-bold text-primary">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Total Raised For Goals</p>
+                    <p className="text-3xl font-bold font-mono">
                     ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
-                    <p className="text-sm font-bold text-muted-foreground">Combined Target</p>
-                    <p className="text-3xl font-bold text-primary opacity-70">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Combined Target</p>
+                    <p className="text-3xl font-bold font-mono opacity-70">
                     ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
-                    <p className="text-sm font-bold text-muted-foreground">Grand Total Received (All Types)</p>
-                    <p className="text-3xl font-bold text-primary">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Grand Total Received (All Types)</p>
+                    <p className="text-3xl font-bold font-mono">
                     ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
                     </p>
                 </div>

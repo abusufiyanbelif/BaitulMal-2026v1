@@ -5,7 +5,7 @@ import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, Timestamp, DocumentData, QueryDocumentSnapshot } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Users, FolderKanban, Lightbulb, HandHelping, DollarSign, BarChart, CalendarIcon, Database, ExternalLink, Eye } from 'lucide-react';
+import { ArrowLeft, Users, FolderKanban, Lightbulb, HandHelping, IndianRupee, BarChart, CalendarIcon, Database, ExternalLink, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useMemo, useState, useEffect } from 'react';
@@ -304,8 +304,8 @@ export default function AnalyticsPage() {
                                         <StatCard title="Total Campaigns" value={campaigns?.length || 0} icon={FolderKanban} isLoading={isLoading} />
                                         <StatCard title="Total Leads" value={leads?.length || 0} icon={Lightbulb} isLoading={isLoading} />
                                         <StatCard title="Total Beneficiaries (Master)" value={beneficiaries?.length || 0} icon={HandHelping} isLoading={isLoading} />
-                                        <StatCard title="Total Donations" value={donations?.length || 0} icon={DollarSign} isLoading={isLoading} />
-                                        <StatCard title="Total Donation Amount" value={totalDonationAmount} icon={DollarSign} isLoading={isLoading} />
+                                        <StatCard title="Total Donations" value={donations?.length || 0} icon={IndianRupee} isLoading={isLoading} />
+                                        <StatCard title="Total Donation Amount" value={totalDonationAmount} icon={IndianRupee} isLoading={isLoading} />
                                     </CardContent>
                                 </Card>
                                 <div className="grid gap-6 lg:grid-cols-3">

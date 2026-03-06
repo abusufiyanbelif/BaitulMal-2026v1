@@ -24,7 +24,7 @@ import type { Donation, DonationCategory, Campaign, Lead } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Wallet, Calendar as CalendarIcon, TrendingUp, FolderKanban, Lightbulb, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Loader2, Wallet, Calendar as CalendarIcon, TrendingUp, FolderKanban, Lightbulb, ShieldAlert, IndianRupee } from 'lucide-react';
 import {
   Select,
   SelectContent,

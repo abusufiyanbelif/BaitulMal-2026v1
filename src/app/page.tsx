@@ -24,23 +24,23 @@ export default function Home() {
 
     const activeTickerItems = useMemo(() => {
         const activeCampaigns = campaignsWithProgress
-            .filter(c => c.status === 'Active')
+            .filter(c => c.status === 'Active' || c.status === 'Upcoming')
             .map(c => {
                 const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
                 return {
                     id: c.id,
-                    text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
+                    text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
                     href: `/campaign-public/${c.id}/summary`
                 };
             });
         
         const activeLeads = leadsWithProgress
-            .filter(l => l.status === 'Active')
+            .filter(l => l.status === 'Active' || l.status === 'Upcoming')
             .map(l => {
                 const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
                 return {
                     id: l.id,
-                    text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
+                    text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
                     href: `/leads-public/${l.id}/summary`
                 };
             });
@@ -104,14 +104,13 @@ export default function Home() {
             {/* Detailed Data Sections */}
             <div className="space-y-10 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
                 <OverallFundingSummary />
+                <DonationSummary />
+                <LeadAndCampaignSummary />
                 
-                {/* Dynamic Recent Verification Ticker */}
+                {/* Moved Recent Verification Ticker to end */}
                 {showRecentVerification && (
                     <RecentVerificationTicker items={recentDonationsFormatted} />
                 )}
-
-                <DonationSummary />
-                <LeadAndCampaignSummary />
             </div>
         </div>
     );

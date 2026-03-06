@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import type { Donation, DonationCategory, Campaign, Lead, TransactionDetail as TransactionDetailType, DonationLink } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
-import { Loader2, ScanLine, Replace, Trash2, Plus, DollarSign, ZoomIn, ZoomOut, RotateCw, RefreshCw, ImageIcon, Save } from 'lucide-react';
+import { Loader2, ScanLine, Replace, Trash2, Plus, IndianRupee, ZoomIn, ZoomOut, RotateCw, RefreshCw, ImageIcon, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';

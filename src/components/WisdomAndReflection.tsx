@@ -40,7 +40,7 @@ export function WisdomAndReflection() {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-bold text-primary">
                     <Quote className="h-6 w-6 text-primary" />
-                    Hikmat aur fikr
+                    Hikmat Aur Fikr
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 pl-10">
@@ -56,12 +56,12 @@ export function WisdomAndReflection() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-bold text-primary">
           <Quote className="h-6 w-6 text-primary" />
-          Hikmat aur fikr
+          Hikmat Aur Fikr
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 pl-10">
         {selectedWisdom.quran && (
-            <blockquote className="border-l-2 border-primary/30 pl-4 italic text-muted-foreground relative">
+            <blockquote className="border-l-2 border-primary/30 pl-4 italic text-muted-foreground relative font-normal">
                 "{selectedWisdom.quran.text}"
                 <cite className="block text-right not-italic text-sm font-bold text-primary mt-2">
                     — {selectedWisdom.quran.source}
@@ -69,7 +69,7 @@ export function WisdomAndReflection() {
             </blockquote>
         )}
         {selectedWisdom.reflection && (
-            <blockquote className="border-l-2 border-primary/30 pl-4 italic text-muted-foreground relative">
+            <blockquote className="border-l-2 border-primary/30 pl-4 italic text-muted-foreground relative font-normal">
                 "{selectedWisdom.reflection.text}"
                 <cite className="block text-right not-italic text-sm font-bold text-primary mt-2">
                     — {selectedWisdom.reflection.source}

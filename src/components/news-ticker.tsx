@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Megaphone, CheckCircle2, DollarSign, ChevronUp, ChevronDown } from 'lucide-react';
+import { Megaphone, CheckCircle2, IndianRupee, ChevronUp, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -72,7 +72,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         {isCompleted ? (
           <CheckCircle2 className="h-4 w-4 mr-2" />
         ) : isDonation ? (
-          <DollarSign className="h-4 w-4 mr-2 animate-pulse" />
+          <IndianRupee className="h-4 w-4 mr-2 animate-pulse" />
         ) : (
           <Megaphone className="h-4 w-4 mr-2" />
         )}
