@@ -1,145 +1,31 @@
-'use client';
-import { useState } from 'react';
-import { usePathname } from 'next/navigation';
-import Image from 'next/image';
-import { Mail, Phone, MapPin, Info, ShieldCheck, QrCode, Building2, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { usePaymentSettings } from '@/hooks/use-payment-settings';
-import { useBranding } from '@/hooks/use-branding';
-import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import Link from 'next/link';
 
+'use client';
+import { usePathname } from 'next/navigation';
+import { useBranding } from '@/hooks/use-branding';
+import { usePaymentSettings } from '@/hooks/use-payment-settings';
+import { Separator } from '@/components/ui/separator';
+
+/**
+ * High-fidelity institutional footer for BMS3 A theme.
+ * Uses background #F0FDF4, border-top #E2EEE7, and centered #355E3B text.
+ */
 export function AppFooter() {
-  const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
-  const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
-  const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
+  const { brandingSettings } = useBranding();
+  const { paymentSettings } = usePaymentSettings();
   const pathname = usePathname();
 
-  const isLoading = isPaymentLoading || isBrandingLoading;
-
-  const validQrCodeUrl = paymentSettings?.qrCodeUrl?.trim() ? paymentSettings.qrCodeUrl : null;
-  const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
-  
   if (pathname === '/login') return null;
 
   return (
-    <footer className="bg-white border-t mt-auto p-10 text-foreground font-normal w-full overflow-hidden shadow-inner">
-      <div className="container mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
-            <div className="md:col-span-6 flex flex-col gap-6 animate-fade-in-up">
-                <div className="flex items-center gap-4">
-                    <div className="relative h-20 w-20 bg-primary/5 rounded-xl border border-primary/10 overflow-hidden flex items-center justify-center transition-transform hover:scale-105">
-                        {isLoading ? <Skeleton className="h-16 w-16 rounded-lg" /> : (
-                            validLogoUrl && (
-                                <Image
-                                    src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
-                                    alt="Footer Logo"
-                                    width={80}
-                                    height={80}
-                                    className="object-contain p-1 h-full w-full"
-                                />
-                            )
-                        )}
-                    </div>
-                    <div className="space-y-1">
-                        <h3 className="font-bold text-xl tracking-tight leading-tight text-primary">
-                            {brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}
-                        </h3>
-                        <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Community Welfare Association</p>
-                    </div>
-                </div>
-                
-                <div className="space-y-3 text-xs font-normal text-muted-foreground border-l-2 border-primary/10 pl-6 ml-10">
-                    {paymentSettings?.address && (
-                        <div className="flex items-start gap-3">
-                            <MapPin className="h-4 w-4 shrink-0 text-primary/40" />
-                            <span>{paymentSettings.address}</span>
-                        </div>
-                    )}
-                    {paymentSettings?.regNo && (
-                        <div className="flex items-center gap-3">
-                            <ShieldCheck className="h-4 w-4 text-primary/40" />
-                            <span>Registration: {paymentSettings.regNo}</span>
-                        </div>
-                    )}
-                    {paymentSettings?.pan && (
-                        <div className="flex items-center gap-3">
-                            <Info className="h-4 w-4 text-primary/40" />
-                            <span className="font-mono">PAN: {paymentSettings.pan}</span>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            <div className="md:col-span-2 space-y-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                <h4 className="text-[10px] font-bold text-primary tracking-widest uppercase border-b border-primary/10 pb-2">Institutional</h4>
-                <div className="flex flex-col gap-3 text-sm font-bold">
-                    <Link href="/info/organization" className="text-foreground hover:text-primary transition-all flex items-center gap-2 group">
-                        <Building2 className="h-4 w-4 opacity-40 group-hover:opacity-100 transition-opacity"/> 
-                        <span>About Organization</span>
-                        <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0"/>
-                    </Link>
-                </div>
-            </div>
-
-            <div className="md:col-span-4 space-y-6 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                <h4 className="text-[10px] font-bold text-primary tracking-widest uppercase border-b border-primary/10 pb-2">Contribution & Help</h4>
-                <div className="space-y-4">
-                    <div className="grid grid-cols-1 gap-3">
-                        {paymentSettings?.contactEmail && (
-                            <div className="flex items-center gap-3 bg-muted/20 p-2 rounded-md hover:bg-muted/30 transition-colors">
-                                <Mail className="h-4 w-4 text-primary/60" />
-                                <a href={`mailto:${paymentSettings.contactEmail}`} className="text-xs font-normal text-foreground hover:underline">{paymentSettings.contactEmail}</a>
-                            </div>
-                        )}
-                        {paymentSettings?.contactPhone && (
-                            <div className="flex items-center gap-3 bg-muted/20 p-2 rounded-md hover:bg-muted/30 transition-colors">
-                                <Phone className="h-4 w-4 text-primary/60" />
-                                <a href={`tel:${paymentSettings.contactPhone}`} className="text-xs font-normal text-foreground hover:underline">{paymentSettings.contactPhone}</a>
-                            </div>
-                        )}
-                    </div>
-                    {validQrCodeUrl && (
-                        <Button variant="outline" size="lg" onClick={() => setIsQrDialogOpen(true)} className="w-full h-12 font-bold border-primary/20 text-primary hover:bg-primary/5 shadow-sm active:scale-[0.98] transition-all duration-300">
-                            <QrCode className="mr-3 h-5 w-5" />
-                            Donate Via QR Code
-                        </Button>
-                    )}
-                </div>
-            </div>
-        </div>
-
-        <Separator className="my-10 opacity-10 bg-primary" />
-
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-            <p>{paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'}. All Rights Reserved.`}</p>
-        </div>
+    <footer className="bg-[#F0FDF4] border-t border-[#E2EEE7] py-6 px-4 text-center">
+      <div className="container mx-auto space-y-2">
+        <p className="text-sm font-bold text-[#355E3B] tracking-tight">
+          {brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}
+        </p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#355E3B] opacity-60">
+          {paymentSettings?.copyright || `© ${new Date().getFullYear()} All Rights Reserved.`}
+        </p>
       </div>
-
-      <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
-        <DialogContent className="sm:max-w-md animate-fade-in-zoom">
-            <DialogHeader>
-                <DialogTitle className="font-bold text-primary uppercase text-center">Secure Contribution QR</DialogTitle>
-                <DialogDescription className="font-normal text-center pt-2">Scan using Google Pay, PhonePe, or any UPI application to support our community goals.</DialogDescription>
-            </DialogHeader>
-            <div className="flex flex-col items-center justify-center p-8 bg-secondary/30 rounded-2xl border-2 border-dashed border-primary/20 mt-4">
-                {validQrCodeUrl && (
-                    <div className="relative w-64 h-64 bg-white p-4 rounded-xl shadow-xl border-4 border-primary transition-transform duration-500 hover:rotate-1">
-                        <Image src={`/api/image-proxy?url=${encodeURIComponent(validQrCodeUrl)}`} alt="Payment QR" fill className="object-contain" unoptimized />
-                    </div>
-                )}
-                <div className="mt-8 text-center space-y-2">
-                    <p className="text-xl font-mono font-bold text-primary tracking-tighter">{paymentSettings?.upiId}</p>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60">{brandingSettings?.name}</p>
-                </div>
-            </div>
-            <DialogFooter className="sm:justify-center">
-                <Button onClick={() => setIsQrDialogOpen(false)} className="font-bold px-8 active:scale-95 transition-transform">Done</Button>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </footer>
   );
 }
