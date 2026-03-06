@@ -37,14 +37,19 @@ function Badge({ className, variant, ...props }: BadgeProps) {
   const content = typeof props.children === 'string' ? props.children.trim() : '';
   let finalVariant = variant;
 
+  // Title Case Conversion for automatic statuses
+  const displayContent = content.charAt(0).toUpperCase() + content.slice(1).toLowerCase();
+
   if (!variant || variant === 'default' || variant === 'outline' || variant === 'success') {
-    if (content === 'Eligible' || content === 'Verified') finalVariant = 'eligible';
-    else if (content === 'Given') finalVariant = 'given';
-    else if (content === 'Active') finalVariant = 'active';
+    if (displayContent === 'Eligible' || displayContent === 'Verified') finalVariant = 'eligible';
+    else if (displayContent === 'Given') finalVariant = 'given';
+    else if (displayContent === 'Active') finalVariant = 'active';
   }
 
   return (
-    <div className={cn(badgeVariants({ variant: finalVariant }), className)} {...props} />
+    <div className={cn(badgeVariants({ variant: finalVariant }), className)} {...props}>
+        {displayContent}
+    </div>
   )
 }
 

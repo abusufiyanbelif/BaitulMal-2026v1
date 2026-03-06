@@ -60,7 +60,7 @@ export default function Home() {
     }, [campaignsWithProgress, leadsWithProgress]);
 
     const heroTitle = brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.';
-    const heroDescription = brandingSettings?.heroDescription || `Join ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'} to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.`;
+    const heroDescription = brandingSettings?.heroDescription || `Join ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'} To Make A Lasting Impact. Your Contribution Brings Hope, Changes Lives, And Empowers Our Community.`;
 
     return (
         <div className="container mx-auto p-4 md:p-8 space-y-10 text-primary">
@@ -106,7 +106,7 @@ export default function Home() {
                 <Card className="border-primary/10 overflow-hidden bg-white shadow-md transition-all duration-300 hover:shadow-xl">
                     <CardHeader className="bg-primary/5 border-b">
                         <CardTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2"><CheckCircle2 className="h-6 w-6"/> Recent Verification</CardTitle>
-                        <CardDescription className="font-normal text-primary/70">Secure tracking of confirmed community contributions.</CardDescription>
+                        <CardDescription className="font-normal text-primary/70">Secure Tracking Of Confirmed Community Contributions.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
                         <ScrollArea className="w-full">
@@ -124,11 +124,11 @@ export default function Home() {
                                             <TableRow key={item.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-primary/10 bg-white">
                                                 <TableCell className="pl-6"><div className="text-xs font-bold text-primary truncate max-w-[200px]">{item.text.split(' for ')[0]}</div></TableCell>
                                                 <TableCell><Link href={item.href} className="text-xs font-normal text-muted-foreground hover:text-primary hover:underline transition-colors tracking-tight">{item.text.split(' for ')[1]}</Link></TableCell>
-                                                <TableCell className="text-right pr-6"><Badge variant="eligible" className="text-[10px] font-bold uppercase tracking-tighter">VERIFIED</Badge></TableCell>
+                                                <TableCell className="text-right pr-6"><Badge variant="eligible" className="text-[10px] font-bold uppercase tracking-tighter">Verified</Badge></TableCell>
                                             </TableRow>
                                         ))
                                     ) : (
-                                        <TableRow><TableCell colSpan={3} className="h-32 text-center text-muted-foreground font-normal italic opacity-60">No recent activity verified.</TableCell></TableRow>
+                                        <TableRow><TableCell colSpan={3} className="h-32 text-center text-muted-foreground font-normal italic opacity-60">No Recent Activity Verified.</TableCell></TableRow>
                                     )}
                                 </TableBody>
                             </Table>

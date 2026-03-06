@@ -14,8 +14,8 @@ function HomeDashboardCard({ title, description, href, icon: Icon, delay }: { ti
         <Card className="h-full p-4 transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:-translate-y-1 group-hover:border-primary active:scale-95">
           <div className="flex justify-between items-start gap-4">
             <div className="space-y-1">
-              <CardTitle className="text-md">{title}</CardTitle>
-              <CardDescription className="text-xs">{description}</CardDescription>
+              <CardTitle className="text-md font-bold text-primary">{title}</CardTitle>
+              <CardDescription className="text-xs font-normal">{description}</CardDescription>
             </div>
             <Icon className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-primary shrink-0" />
           </div>
@@ -30,78 +30,78 @@ export default function Home() {
 
     const allCards = [
         {
-            title: "Campaigns",
-            description: "Manage ration, relief, and general campaigns.",
+            title: "Institutional Campaigns",
+            description: "Manage Ration, Relief, And General Campaigns.",
             href: "/campaign-members",
             icon: FolderKanban,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false),
         },
         {
-            title: "Leads",
-            description: "Track and convert new initiatives and opportunities.",
+            title: "Support Appeals",
+            description: "Track And Convert New Initiatives And Individual Leads.",
             href: "/leads-members",
             icon: Lightbulb,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.read', false),
         },
         {
-            title: "Beneficiaries",
-            description: "Manage a master list of all beneficiaries.",
+            title: "Master Beneficiaries",
+            description: "Manage A Comprehensive List Of All Aid Recipients.",
             href: "/beneficiaries",
             icon: Users,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.read', false),
         },
         {
-            title: "Donations",
-            description: "View and manage all incoming donations.",
+            title: "Financial Donations",
+            description: "View And Manage All Verified Incoming Donations.",
             href: "/donations",
             icon: LifeBuoy,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.read', false),
         },
          {
-            title: "Public Summary",
-            description: "Preview public-facing pages.",
+            title: "Public Preview",
+            description: "Review Public-Facing Pages And Summaries.",
             href: "/public-summary",
             icon: Eye,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false) || !!getNestedValue(userProfile, 'permissions.leads-members.read', false),
         },
         {
-            title: "Extractor",
-            description: "Scan & extract data from various documents.",
+            title: "Data Extractor",
+            description: "Scan And Extract Key Information From Documents.",
             href: "/extractor",
             icon: ScanSearch,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.extractor.read', false),
         },
         {
             title: "Story Creator",
-            description: "Generate narratives from documents.",
+            description: "Generate Impact Narratives From Verified Data.",
             href: "/story-creator",
             icon: MessageSquare,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.storyCreator.read', false),
         },
         {
             title: "User Management",
-            description: "Manage user accounts and permissions.",
+            description: "Manage Organization User Accounts And Permissions.",
             href: "/users",
             icon: Users,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.users.read', false),
         },
         {
-            title: "Settings",
-            description: "Configure application branding and payments.",
+            title: "System Settings",
+            description: "Configure Branding, Payments, And Module Rules.",
             href: "/settings",
             icon: Settings,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.read', false),
         },
         {
             title: "Data Analytics",
-            description: "View key metrics and usage statistics.",
+            description: "View Institutional Metrics And Usage Statistics.",
             href: "/analytics",
             icon: BarChart,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.analytics.read', false),
         },
         {
-            title: "Diagnostics",
-            description: "Check system health and configurations.",
+            title: "System Diagnostics",
+            description: "Perform Health Checks On All Critical Resources.",
             href: "/diagnostics",
             icon: FlaskConical,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.diagnostics.read', false),
@@ -139,7 +139,7 @@ export default function Home() {
             </div>
             ) : (
              <div className="text-center">
-                <p className="text-primary font-bold">Could Not Load User Profile.</p>
+                <p className="text-primary font-bold">Could Not Load User Profile Document.</p>
              </div>
             )}
         </div>

@@ -22,8 +22,8 @@ import { cn } from '@/lib/utils';
 
 /**
  * High-Fidelity Institutional Footer for BMS3 A Theme.
- * Restores full organizational transparency, quick links, and secure payment details.
- * Uses background #F0FDF4 and institutional deep green #355E3B.
+ * Provides full transparency, navigation, and secure payment details.
+ * Uses centered layout with #F0FDF4 background and #355E3B text.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
@@ -39,13 +39,13 @@ export function AppFooter() {
     <footer className="bg-[#F0FDF4] border-t border-[#E2EEE7] pt-16 pb-8 px-4 text-center">
       <div className="container mx-auto max-w-6xl space-y-12">
         
-        {/* Top Section: Branding & Identity */}
+        {/* Top Section: Institutional Branding */}
         <div className="flex flex-col items-center gap-6 animate-fade-in-up">
           {validLogoUrl && (
             <div className="relative w-20 h-20 bg-white/50 rounded-2xl p-2 border border-[#E2EEE7] shadow-sm">
               <Image
                 src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
-                alt="Logo"
+                alt="Organization Logo"
                 fill
                 className="object-contain p-1"
               />
@@ -67,7 +67,7 @@ export function AppFooter() {
         {/* Middle Section: Quick Links & Digital Payments */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start max-w-4xl mx-auto animate-fade-in-up" style={{ animationDelay: '100ms' }}>
           
-          {/* Quick Links Column */}
+          {/* Column 1: Institutional Navigation */}
           <div className="space-y-6 text-center md:text-left">
             <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#14532D] flex items-center justify-center md:justify-start gap-2">
               <Info className="h-3.5 w-3.5" /> Institutional Navigation
@@ -92,7 +92,7 @@ export function AppFooter() {
             </nav>
           </div>
 
-          {/* Digital Payments Column */}
+          {/* Column 2: Digital Payment Integration */}
           <div className="flex flex-col items-center md:items-end gap-6">
             <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#14532D] flex items-center gap-2">
               <QrCode className="h-3.5 w-3.5" /> Secure Contributions
@@ -102,7 +102,7 @@ export function AppFooter() {
                 <div className="relative w-32 h-32 bg-white p-2 rounded-xl shadow-lg border-2 border-[#1FA34A]/20 transition-transform hover:scale-105">
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`}
-                    alt="Payment QR"
+                    alt="Institutional UPI QR"
                     fill
                     className="object-contain p-1"
                     unoptimized
@@ -115,7 +115,7 @@ export function AppFooter() {
               )}
               <div className="text-center md:text-right space-y-1">
                 <p className="font-mono text-sm font-bold text-[#14532D] tracking-tight">
-                  {paymentSettings?.upiId || 'No UPI Configured'}
+                  {paymentSettings?.upiId || 'No UPI ID Configured'}
                 </p>
                 <p className="text-[10px] font-bold uppercase text-[#355E3B]/60 tracking-widest">
                   Scan With Any UPI App
@@ -127,7 +127,7 @@ export function AppFooter() {
 
         <Separator className="bg-[#E2EEE7] max-w-4xl mx-auto opacity-50" />
 
-        {/* Contact & Support Section */}
+        {/* Contact & Support Registry */}
         <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-sm font-bold text-[#14532D] animate-fade-in-up" style={{ animationDelay: '200ms' }}>
           {paymentSettings?.contactPhone && (
             <a href={`tel:${paymentSettings.contactPhone}`} className="flex items-center gap-2 hover:text-[#1FA34A] transition-all hover:-translate-y-0.5">
@@ -150,19 +150,19 @@ export function AppFooter() {
               <div className="p-2 rounded-full bg-white shadow-sm border border-[#E2EEE7]">
                 <Globe className="h-4 w-4 text-[#1FA34A]" />
               </div>
-              Official Website
+              Official Portal
             </a>
           )}
         </div>
 
-        {/* Footer Bottom: Verification & Copyright */}
+        {/* Footer Base: Verification & Legal */}
         <div className="space-y-6 pt-4 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
           {(paymentSettings?.regNo || paymentSettings?.pan) && (
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] font-bold text-[#355E3B]/60 uppercase tracking-widest bg-white/40 py-2.5 px-8 rounded-full border border-[#E2EEE7] w-fit mx-auto shadow-sm backdrop-blur-sm">
               {paymentSettings?.regNo && (
                 <span className="flex items-center gap-1.5">
                   <ShieldCheck className="h-3.5 w-3.5 text-[#1FA34A]/60" />
-                  Reg. No: {paymentSettings.regNo}
+                  Registry No: {paymentSettings.regNo}
                 </span>
               )}
               {paymentSettings?.pan && (
@@ -175,7 +175,7 @@ export function AppFooter() {
           )}
           
           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#355E3B]/40">
-            {paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'}. All Rights Reserved.`}
+            {paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}. All Rights Reserved.`}
           </p>
         </div>
       </div>
