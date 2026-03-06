@@ -221,6 +221,8 @@ export default function CampaignPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
+  const [authenticityFilter, setAuthenticityFilter] = useState('All');
+  const [visibilityFilter, setVisibilityFilter] = useState('All');
   const [selectedYear, setSelectedYear] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
@@ -297,6 +299,8 @@ export default function CampaignPage() {
     let items = campaignsWithProgress.filter(c => 
         (statusFilter === 'All' || c.status === statusFilter) &&
         (categoryFilter === 'All' || c.category === categoryFilter) &&
+        (authenticityFilter === 'All' || c.authenticityStatus === authenticityFilter) &&
+        (visibilityFilter === 'All' || c.publicVisibility === visibilityFilter) &&
         c.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -311,7 +315,7 @@ export default function CampaignPage() {
         items = items.filter(c => c.startDate?.startsWith(selectedYear));
     }
     return items;
-  }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, dateRange, selectedYear]);
+  }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => {
     return [
@@ -368,6 +372,8 @@ export default function CampaignPage() {
                     <Input placeholder="Search Initiatives..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary font-bold text-primary" disabled={isLoading}/>
                     <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem></SelectContent></Select>
                     <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Categories</SelectItem><SelectItem value="Ration" className="font-bold">Ration</SelectItem><SelectItem value="Relief" className="font-bold">Relief</SelectItem><SelectItem value="General" className="font-bold">General</SelectItem></SelectContent></Select>
+                    <Select value={authenticityFilter} onValueChange={setAuthenticityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Authenticity" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Authenticity</SelectItem><SelectItem value="Pending Verification" className="font-bold">Pending</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="On Hold" className="font-bold">On Hold</SelectItem><SelectItem value="Rejected" className="font-bold">Rejected</SelectItem><SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem></SelectContent></Select>
+                    <Select value={visibilityFilter} onValueChange={setVisibilityFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Visibility" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Visibilities</SelectItem><SelectItem value="Hold" className="font-bold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-bold">Ready to Publish</SelectItem><SelectItem value="Published" className="font-bold">Published</SelectItem></SelectContent></Select>
                     <div className="flex items-center gap-2 border-l border-primary/10 pl-3">
                         <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select>
                         <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
