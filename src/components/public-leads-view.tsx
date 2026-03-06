@@ -1,7 +1,7 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Lightbulb, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info } from 'lucide-react';
+import { Lightbulb, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info, Clock, CheckCircle2 } from 'lucide-react';
 import type { Lead, Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -111,7 +111,7 @@ export function PublicLeadsView() {
           };
       });
     
-    const activeLeads = (leadsWithProgress || [])
+    const activeLeadsList = (leadsWithProgress || [])
       .filter(l => l.status === 'Active' || l.status === 'Upcoming')
       .map(l => {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
@@ -122,7 +122,7 @@ export function PublicLeadsView() {
           };
       });
 
-    return [...activeCampaigns, ...activeLeads];
+    return [...activeCampaigns, ...activeLeadsList];
   }, [campaignsWithProgress, leadsWithProgress]);
 
   const completedTickerItems = useMemo(() => {
@@ -165,14 +165,14 @@ export function PublicLeadsView() {
   }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => [
-    { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Leads', items: filteredLeads.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
-    { id: 'completed', title: 'Closed Appeals', items: filteredLeads.filter(c => c.status === 'Completed') }
+    { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Leads', icon: Clock, items: filteredLeads.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
+    { id: 'completed', title: 'Closed Appeals', icon: CheckCircle2, items: filteredLeads.filter(c => c.status === 'Completed') }
   ].filter(s => s.items.length > 0), [filteredLeads]);
   
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight text-primary uppercase">Public Leads</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-primary">Public Leads</h1>
           <p className="text-lg font-bold text-primary">Verified Community Appeals Requiring Your Support.</p>
           
           <div className="space-y-2">
@@ -183,8 +183,8 @@ export function PublicLeadsView() {
 
           <div className="flex flex-wrap items-center gap-2 pt-4 bg-primary/5 p-4 rounded-xl border border-primary/20">
               <Input placeholder="Search Appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-primary font-bold text-primary" disabled={isLoading}/>
-              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem></SelectContent></Select>
-              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="All Purposes" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</SelectContent></Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 font-bold text-primary"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem></SelectContent></Select>
+              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs border-primary/20 font-bold text-primary"><SelectValue placeholder="All Purposes" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</SelectContent></Select>
               <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
                   <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select>
                   <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
@@ -204,7 +204,10 @@ export function PublicLeadsView() {
               <AccordionTrigger className="hover:no-underline group font-bold">
                 <div className="flex items-center gap-4">
                   <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
-                  <span className="text-2xl font-bold tracking-tight text-primary uppercase">{section.title}</span>
+                  <div className="flex items-center gap-2">
+                    <section.icon className="h-6 w-6 text-primary" />
+                    <span className="text-2xl font-bold tracking-tight text-primary">{section.title}</span>
+                  </div>
                   <span className="inline-flex items-center justify-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">{section.items.length}</span>
                 </div>
               </AccordionTrigger>
@@ -217,7 +220,7 @@ export function PublicLeadsView() {
       ) : (
         <div className="text-center py-20 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
             <Lightbulb className="h-12 w-12 mx-auto text-primary/20 mb-4" />
-            <p className="font-bold text-sm opacity-60 text-primary uppercase tracking-widest">No Appeals Found Matching Criteria.</p>
+            <p className="font-bold text-sm opacity-60 text-primary uppercase tracking-widest text-center">No Appeals Found Matching Criteria.</p>
         </div>
       )}
     </div>

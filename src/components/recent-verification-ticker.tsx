@@ -64,7 +64,7 @@ export function RecentVerificationTicker({ items }: { items: VerificationItem[] 
       <CardContent className="p-0">
         <div className="flex flex-col">
             {/* Standardized Institutional Table Header */}
-            <div className="grid grid-cols-[1.5fr_1fr_auto] gap-4 px-6 py-3 bg-[#ECFDF5] border-b text-[10px] font-bold uppercase text-[#14532D] tracking-widest">
+            <div className="grid grid-cols-[1.5fr_1fr_auto] gap-4 px-6 py-3 bg-[#ECFDF5] border-b text-[10px] font-bold text-[#14532D] tracking-widest">
                 <span>Reference</span>
                 <span>Allocation</span>
                 <span className="text-right pr-2">Status</span>

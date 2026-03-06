@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { useFirestore, useStorage, useAuth, useMemoFirebase, useDoc, getDocs, getDoc, doc, type DocumentReference, collection } from '@/firebase';
+import { useFirestore, useStorage, useAuth, useMemoFirebase, useDoc, getDocs, getDoc, doc, type DocumentReference, collection, storageRef, uploadBytes, getDownloadURL } from '@/firebase';
 import Resizer from 'react-image-file-resizer';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 
@@ -18,7 +18,6 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { storageRef, uploadBytes, getDownloadURL } from '@/firebase';
 
 interface LinkedInitiative {
     id: string;
@@ -145,7 +144,7 @@ export default function BeneficiaryDetailsPage() {
         await updateInitiativeBeneficiaryDetailsAction(initiativeContext.type, initiativeContext.id, beneficiaryId, { ...formData, idProofUrl, id: beneficiaryId });
     }
 
-    toast({ title: 'Success', description: 'Beneficiary updated.' });
+    toast({ title: 'Success', description: 'Beneficiary Updated.' });
     if (redirectUrl) router.push(redirectUrl);
     else { forceRefetchMaster(); setIsEditMode(false); }
     setIsSubmitting(false);
@@ -160,7 +159,7 @@ export default function BeneficiaryDetailsPage() {
   const backHref = redirectUrl || '/beneficiaries';
 
   if (isLoading && !formBeneficiaryData) return <BrandedLoader />;
-  if (!beneficiary) return <p className="text-center mt-20">Not found.</p>;
+  if (!beneficiary) return <p className="text-center mt-20">Not Found.</p>;
 
   const initiativeName = campaign?.name || lead?.name;
   const initiativeType = campaign ? 'Campaign' : lead ? 'Lead' : null;
@@ -173,7 +172,7 @@ export default function BeneficiaryDetailsPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6">
-      <div className="mb-4"><Button variant="outline" asChild><Link href={backHref}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Link></Button></div>
+      <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 text-primary"><Link href={backHref}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Link></Button></div>
 
       {initiativeName && initiativeId && initiativeType && (
           <div className="space-y-4">
@@ -192,49 +191,49 @@ export default function BeneficiaryDetailsPage() {
           </div>
       )}
 
-      <Card className="max-w-2xl mx-auto animate-fade-in-zoom">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Beneficiary: {beneficiary.name}</CardTitle>
-          {canUpdate && !isEditMode && ( <Button onClick={() => setIsEditMode(true)}><Edit className="mr-2 h-4 w-4"/>Edit</Button> )}
+      <Card className="max-w-2xl mx-auto animate-fade-in-zoom border-primary/10 shadow-sm bg-white">
+        <CardHeader className="flex flex-row items-center justify-between border-b bg-primary/5">
+          <CardTitle className="font-bold text-primary tracking-tight">Beneficiary: {beneficiary.name}</CardTitle>
+          {canUpdate && !isEditMode && ( <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md"><Edit className="mr-2 h-4 w-4"/>Edit Details</Button> )}
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <BeneficiaryForm beneficiary={formBeneficiaryData} onSubmit={handleSave} onCancel={() => setIsEditMode(false)} isSubmitting={isSubmitting} isLoading={isInitiativeDataLoading} isReadOnly={!isEditMode} itemCategories={[]} hideKitAmount={true} hideZakatAllocation={!initiativeContext} />
         </CardContent>
       </Card>
 
-      <Card className="max-w-2xl mx-auto animate-fade-in-up">
-        <CardHeader><CardTitle>Linked Initiatives</CardTitle></CardHeader>
-        <CardContent>
-            {isLinksLoading ? ( <Loader2 className="h-6 w-6 animate-spin mx-auto" /> ) : linkedInitiatives.length > 0 ? (
-                <div className="border rounded-lg overflow-x-auto">
+      <Card className="max-w-2xl mx-auto animate-fade-in-up border-primary/10 shadow-sm bg-white">
+        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight">Linked Initiatives</CardTitle></CardHeader>
+        <CardContent className="pt-6">
+            {isLinksLoading ? ( <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /> ) : linkedInitiatives.length > 0 ? (
+                <div className="border border-primary/10 rounded-lg overflow-x-auto shadow-sm">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
+                        <thead className="bg-[#ECFDF5] text-[#14532D] font-bold border-b">
                             <tr>
-                                <th className="px-4 py-3">Name</th>
-                                <th className="px-4 py-3">Status</th>
-                                <th className="px-4 py-3 text-right">Amount (₹)</th>
+                                <th className="px-4 py-3">Initiative Name</th>
+                                <th className="px-4 py-3">Current Status</th>
+                                <th className="px-4 py-3 text-right">Requirement (₹)</th>
                                 {canUpdate && <th className="px-4 py-3 text-right">Actions</th>}
                             </tr>
                         </thead>
                         <tbody>
                             {linkedInitiatives.map((link) => (
-                                <tr key={link.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                                    <td className="px-4 py-3 align-middle"><Link href={link.type === 'Campaign' ? `/campaign-members/${link.id}/beneficiaries` : `/leads-members/${link.id}/beneficiaries`} className="font-medium text-primary hover:underline">{link.name}</Link></td>
-                                    <td className="px-4 py-3 align-middle"><Badge variant="outline">{link.beneficiaryStatus}</Badge></td>
-                                    <td className="px-4 py-3 align-middle text-right font-mono">₹{link.kitAmount.toFixed(2)}</td>
+                                <tr key={link.id} className="border-b last:border-0 hover:bg-[#F0FDF4] transition-colors bg-white">
+                                    <td className="px-4 py-3 align-middle"><Link href={link.type === 'Campaign' ? `/campaign-members/${link.id}/beneficiaries` : `/leads-members/${link.id}/beneficiaries`} className="font-bold text-primary hover:underline">{link.name}</Link></td>
+                                    <td className="px-4 py-3 align-middle"><Badge variant="outline" className="font-bold uppercase text-[10px]">{link.beneficiaryStatus}</Badge></td>
+                                    <td className="px-4 py-3 align-middle text-right font-mono font-bold text-primary">₹{link.kitAmount.toFixed(2)}</td>
                                     {canUpdate && (
                                         <td className="px-4 py-3 align-middle text-right">
                                             <DropdownMenu>
-                                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
+                                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
                                                     <DropdownMenuSub>
-                                                        <DropdownMenuSubTrigger>Status</DropdownMenuSubTrigger>
+                                                        <DropdownMenuSubTrigger className="font-bold text-primary">Status</DropdownMenuSubTrigger>
                                                         <DropdownMenuPortal>
                                                             <DropdownMenuSubContent>
                                                                 <DropdownMenuRadioGroup value={link.beneficiaryStatus} onValueChange={(s) => handleInitiativeStatusChange(link, s as any)}>
-                                                                    <DropdownMenuRadioItem value="Pending">Pending</DropdownMenuRadioItem>
-                                                                    <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
-                                                                    <DropdownMenuRadioItem value="Given">Given</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Pending" className="font-bold">Pending</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Verified" className="font-bold">Verified</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Given" className="font-bold">Given</DropdownMenuRadioItem>
                                                                 </DropdownMenuRadioGroup>
                                                             </DropdownMenuSubContent>
                                                         </DropdownMenuPortal>
@@ -248,7 +247,7 @@ export default function BeneficiaryDetailsPage() {
                         </tbody>
                     </table>
                 </div>
-            ) : ( <p className="text-sm text-muted-foreground text-center py-4">No links found.</p> )}
+            ) : ( <p className="text-sm text-muted-foreground text-center py-8 italic font-normal">No Linked Initiatives Found.</p> )}
         </CardContent>
       </Card>
     </main>

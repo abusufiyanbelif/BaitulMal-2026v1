@@ -25,7 +25,7 @@ export default function CreateBeneficiaryPage() {
 
   const handleCreateBeneficiary = async (data: BeneficiaryFormData) => {
     if (!canCreate || !userProfile) {
-      toast({ title: 'Permission Denied', description: 'You do not have permission to create beneficiaries.', variant: 'destructive' });
+      toast({ title: 'Permission Denied', description: 'You Do Not Have Permission To Create Beneficiaries.', variant: 'destructive' });
       return;
     }
     setIsSubmitting(true);
@@ -33,14 +33,14 @@ export default function CreateBeneficiaryPage() {
     const fileList = data.idProofFile as FileList | undefined;
     if (fileList && fileList.length > 0) {
       if (isProfileLoading) {
-        toast({ title: 'Please wait', description: 'Authentication is still loading. Please try again in a moment.' });
+        toast({ title: 'Please Wait', description: 'Authentication Is Still Loading. Please Try Again In A Moment.' });
         setIsSubmitting(false);
         return;
       }
       if (!auth?.currentUser) {
           toast({
               title: "Authentication Error",
-              description: "User not authenticated yet. Please wait.",
+              description: "User Not Authenticated Yet. Please Wait.",
               variant: "destructive",
           });
           setIsSubmitting(false);
@@ -85,15 +85,15 @@ export default function CreateBeneficiaryPage() {
                 <Button variant="outline" asChild>
                     <Link href="/beneficiaries">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Beneficiaries
+                        Back To Beneficiaries
                     </Link>
                 </Button>
             </div>
             <Alert variant="destructive">
                 <ShieldAlert className="h-4 w-4" />
                 <AlertTitle className="font-bold">Access Denied</AlertTitle>
-                <AlertDescription>
-                You do not have the required permissions to create a new beneficiary.
+                <AlertDescription className="font-normal text-primary/70">
+                You Do Not Have The Required Permissions To Create A New Beneficiary.
                 </AlertDescription>
             </Alert>
         </main>
@@ -104,17 +104,17 @@ export default function CreateBeneficiaryPage() {
     <>
       <main className="container mx-auto p-4 md:p-8">
         <div className="mb-4">
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
             <Link href="/beneficiaries">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Beneficiaries
+              Back To Beneficiaries
             </Link>
           </Button>
         </div>
-        <Card className="max-w-2xl mx-auto animate-fade-in-zoom">
+        <Card className="max-w-2xl mx-auto animate-fade-in-zoom border-primary/10 bg-white shadow-sm">
           <CardHeader>
-            <CardTitle>Create New Master Beneficiary</CardTitle>
-            <CardDescription>Enter the details for a new beneficiary to be added to the master list.</CardDescription>
+            <CardTitle className="font-bold text-primary tracking-tight">Create New Master Beneficiary</CardTitle>
+            <CardDescription className="font-normal text-primary/70">Enter the details for a new beneficiary to be added to the master list.</CardDescription>
           </CardHeader>
           <CardContent>
             <BeneficiaryForm 

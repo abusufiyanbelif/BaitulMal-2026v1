@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, Utensils, LifeBuoy, ChevronDown, ChevronUp, Globe, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, Utensils, LifeBuoy, ChevronDown, ChevronUp, Globe, ShieldCheck, Clock, CheckCircle2 } from 'lucide-react';
 import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -172,7 +172,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                     <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-tight">{campaign.category}</Badge>
                     <Badge 
                         variant={campaign.status === 'Active' ? 'success' : 'outline'}
-                        className={cn("text-[10px] font-bold uppercase tracking-tight", campaign.status === 'Active' && "animate-status-pulse")}
+                        className={cn("text-[10px] font-bold", campaign.status === 'Active' && "animate-status-pulse")}
                     >
                         {campaign.status}
                     </Badge>
@@ -182,7 +182,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         <ShieldCheck className="h-3 w-3" />
                         {campaign.authenticityStatus?.replace('Verification', '')}
                     </Badge>
-                    <Badge variant={campaign.publicVisibility === 'Published' ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase tracking-tight flex items-center gap-1">
+                    <Badge variant={campaign.publicVisibility === 'Published' ? 'eligible' : 'outline'} className="text-[10px] font-bold flex items-center gap-1">
                         <Globe className="h-3 w-3" />
                         {campaign.publicVisibility || 'Hold'}
                     </Badge>
@@ -319,8 +319,8 @@ export default function CampaignPage() {
 
   const sections = useMemo(() => {
     return [
-      { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Campaigns', items: filteredCampaigns.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
-      { id: 'completed', title: 'Completed Campaigns', items: filteredCampaigns.filter(c => c.status === 'Completed') }
+      { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Campaigns', icon: Clock, items: filteredCampaigns.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
+      { id: 'completed', title: 'Completed Campaigns', icon: CheckCircle2, items: filteredCampaigns.filter(c => c.status === 'Completed') }
     ].filter(s => s.items.length > 0);
   }, [filteredCampaigns]);
 
@@ -356,7 +356,7 @@ export default function CampaignPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-primary uppercase">Campaign Hub</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Campaign Hub</h1>
           <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Organization-Wide Initiatives, Budget Vetting, And Strategic Tracking.</p>
         </div>
 
@@ -391,7 +391,10 @@ export default function CampaignPage() {
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">
                       <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
-                        <span className="text-lg font-bold tracking-tight text-primary uppercase">{section.title}</span>
+                        <div className="flex items-center gap-2">
+                            <section.icon className="h-5 w-5 text-primary" />
+                            <span className="text-lg font-bold tracking-tight text-primary">{section.title}</span>
+                        </div>
                         <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-bold bg-primary/10 text-primary">{section.items.length}</Badge>
                       </div>
                     </AccordionTrigger>
@@ -408,7 +411,7 @@ export default function CampaignPage() {
             ) : (
               <div className="text-center py-24 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
                   <HandHelping className="h-16 w-16 mx-auto text-primary/20 mb-4" />
-                  <p className="font-bold tracking-tight text-sm opacity-60 text-primary uppercase">No Initiatives Found Matching Filters.</p>
+                  <p className="font-bold tracking-tight text-sm opacity-60 text-primary">No Initiatives Found Matching Filters.</p>
               </div>
             )}
           </CardContent>
@@ -416,7 +419,7 @@ export default function CampaignPage() {
       </main>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Delete Initiative?</AlertDialogTitle><AlertDialogDescription className="font-bold opacity-80 text-primary/70">Permanently Erase All Data For '{campaignToDelete?.name}'? This Action Cannot Be Undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete Initiative?</AlertDialogTitle><AlertDialogDescription className="font-bold opacity-80 text-primary/70">Permanently Erase All Data For '{campaignToDelete?.name}'? This Action Cannot Be Undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
       <CopyCampaignDialog open={!!campaignToCopy} onOpenChange={() => setCampaignToCopy(null)} campaign={campaignToCopy} onCopyConfirm={async (opt) => { const res = await copyCampaignAction({ sourceCampaignId: campaignToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setCampaignToCopy(null); }}/>

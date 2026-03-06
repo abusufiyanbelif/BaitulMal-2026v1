@@ -69,7 +69,7 @@ export default function Home() {
         <div className="container mx-auto p-4 md:p-8 space-y-10 text-primary">
             {/* Hero Section */}
             <section className="text-center py-12 md:py-20 animate-fade-in-zoom">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter text-primary max-w-5xl mx-auto uppercase">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter text-primary max-w-5xl mx-auto">
                     {heroTitle}
                 </h1>
                 <p className="mt-6 max-w-3xl mx-auto text-lg text-primary font-normal leading-relaxed opacity-80">

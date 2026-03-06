@@ -67,7 +67,7 @@ export function AppFooter() {
           
           {/* Column 1: Institutional Navigation */}
           <div className="space-y-6 text-center md:text-left">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#14532D] flex items-center justify-center md:justify-start gap-2">
+            <h3 className="text-[10px] font-bold tracking-widest text-[#14532D] flex items-center justify-center md:justify-start gap-2">
               <Info className="h-3.5 w-3.5" /> Institutional Navigation
             </h3>
             <nav className="flex flex-col gap-3">
@@ -88,7 +88,7 @@ export function AppFooter() {
 
           {/* Column 2: Digital Payment Integration */}
           <div className="flex flex-col items-center md:items-end gap-6">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#14532D] flex items-center gap-2">
+            <h3 className="text-[10px] font-bold tracking-widest text-[#14532D] flex items-center gap-2">
               <QrCode className="h-3.5 w-3.5" /> Secure Contributions
             </h3>
             <div className="flex flex-col items-center md:items-end gap-4">
@@ -111,7 +111,7 @@ export function AppFooter() {
                 <p className="font-mono text-sm font-bold text-[#14532D] tracking-tight">
                   {paymentSettings?.upiId || 'No UPI ID Configured'}
                 </p>
-                <p className="text-[10px] font-bold uppercase text-[#355E3B]/60 tracking-widest">
+                <p className="text-[10px] font-bold text-[#355E3B]/60 tracking-widest">
                   Scan With Any UPI App
                 </p>
               </div>
@@ -152,7 +152,7 @@ export function AppFooter() {
         {/* Footer Base: Verification & Legal */}
         <div className="space-y-6 pt-4 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
           {(paymentSettings?.regNo || paymentSettings?.pan) && (
-            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] font-bold text-[#355E3B]/60 uppercase tracking-widest bg-white/40 py-2.5 px-8 rounded-full border border-[#E2EEE7] w-fit mx-auto shadow-sm backdrop-blur-sm">
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] font-bold text-[#355E3B]/60 tracking-widest bg-white/40 py-2.5 px-8 rounded-full border border-[#E2EEE7] w-fit mx-auto shadow-sm backdrop-blur-sm">
               {paymentSettings?.regNo && (
                 <span className="flex items-center gap-1.5">
                   <ShieldCheck className="h-3.5 w-3.5 text-[#1FA34A]/60" />
@@ -162,13 +162,13 @@ export function AppFooter() {
               {paymentSettings?.pan && (
                 <span className="flex items-center gap-1.5">
                   <ShieldCheck className="h-3.5 w-3.5 text-[#1FA34A]/60" />
-                  PAN: {paymentSettings.pan}
+                  Pan: {paymentSettings.pan}
                 </span>
               )}
             </div>
           )}
           
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#355E3B]/40">
+          <p className="text-[11px] font-bold tracking-[0.2em] text-[#355E3B]/40">
             {paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}. All Rights Reserved.`}
           </p>
         </div>

@@ -29,10 +29,10 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
         });
 
         revalidatePath('/beneficiaries');
-        return { success: true, message: 'Beneficiary created successfully.', id: docRef.id };
+        return { success: true, message: 'Beneficiary Created Successfully.', id: docRef.id };
     } catch (error: any) {
         console.error("Error creating beneficiary:", error);
-        return { success: false, message: `Failed to create beneficiary: ${error.message}` };
+        return { success: false, message: `Failed To Create Beneficiary: ${error.message}` };
     }
 }
 
@@ -62,10 +62,10 @@ export async function updateMasterBeneficiaryAction(
         revalidatePath('/campaign-members', 'layout');
         revalidatePath('/leads-members', 'layout');
 
-        return { success: true, message: `Beneficiary's master record updated.` };
+        return { success: true, message: `Beneficiary Master Record Updated.` };
     } catch (error: any) {
         console.error("Error updating master beneficiary:", error);
-        return { success: false, message: `Failed to update beneficiary: ${error.message}` };
+        return { success: false, message: `Failed To Update Beneficiary: ${error.message}` };
     }
 }
 
@@ -89,10 +89,10 @@ export async function updateInitiativeBeneficiaryDetailsAction(
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
         revalidatePath(`/${collectionName}/${initiativeId}/beneficiaries`);
 
-        return { success: true, message: 'Initiative-specific details updated.' };
+        return { success: true, message: 'Initiative-Specific Details Updated.' };
     } catch (error: any) {
         console.error("Error updating initiative beneficiary:", error);
-        return { success: false, message: `Failed to update: ${error.message}` };
+        return { success: false, message: `Failed To Update: ${error.message}` };
     }
 }
 
@@ -116,10 +116,10 @@ export async function updateBeneficiaryStatusInInitiativeAction(
         await docRef.set({ status: newStatus }, { merge: true });
 
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
-        return { success: true, message: 'Beneficiary status updated successfully.' };
+        return { success: true, message: 'Beneficiary Status Updated Successfully.' };
     } catch (error: any) {
         console.error("Error updating beneficiary status:", error);
-        return { success: false, message: `Failed to update status: ${error.message}` };
+        return { success: false, message: `Failed To Update Status: ${error.message}` };
     }
 }
 
@@ -153,7 +153,7 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
         const folderPath = `beneficiaries/${beneficiaryId}/`;
         await adminStorage.bucket().deleteFiles({ prefix: folderPath }).catch((storageError: any) => {
             if (storageError.code !== 404) {
-                console.warn(`Could not delete beneficiary files from storage: ${storageError.message}`);
+                console.warn(`Could Not Delete Beneficiary Files From Storage: ${storageError.message}`);
             }
         });
 
@@ -163,10 +163,10 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
         revalidatePath('/campaign-members', 'layout');
         revalidatePath('/leads-members', 'layout');
 
-        return { success: true, message: 'Beneficiary permanently deleted from the master list and all linked initiatives.' };
+        return { success: true, message: 'Beneficiary Permanently Deleted From Master List And All Linked Initiatives.' };
     } catch (error: any) {
         console.error('Error deleting beneficiary:', error);
-        return { success: false, message: `Failed to delete beneficiary: ${error.message}` };
+        return { success: false, message: `Failed To Delete Beneficiary: ${error.message}` };
     }
 }
 
@@ -217,10 +217,10 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
         }
 
         revalidatePath('/beneficiaries');
-        return { success: true, message: `Sync complete. Added ${addedCount} new beneficiaries to the master list.`, addedCount };
+        return { success: true, message: `Sync Complete. Added ${addedCount} New Beneficiaries To Master List.`, addedCount };
 
     } catch (error: any) {
         console.error("Error syncing master beneficiary list:", error);
-        return { success: false, message: `Sync failed: ${error.message}`, addedCount: 0 };
+        return { success: false, message: `Sync Failed: ${error.message}`, addedCount: 0 };
     }
 }

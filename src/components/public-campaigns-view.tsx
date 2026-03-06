@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { FolderKanban, HandHelping, CalendarIcon, X, Utensils, LifeBuoy } from 'lucide-react';
+import { FolderKanban, HandHelping, CalendarIcon, X, Utensils, LifeBuoy, Clock, CheckCircle2 } from 'lucide-react';
 import type { Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -165,14 +165,14 @@ export function PublicCampaignsView() {
   }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, dateRange, selectedYear, selectedMonth]);
 
   const sections = [
-    { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Campaigns', items: filteredCampaigns.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
-    { id: 'completed', title: 'Past Achievements', items: filteredCampaigns.filter(c => c.status === 'Completed') }
+    { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Campaigns', icon: Clock, items: filteredCampaigns.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
+    { id: 'completed', title: 'Completed Campaigns', icon: CheckCircle2, items: filteredCampaigns.filter(c => c.status === 'Completed') }
   ].filter(s => s.items.length > 0);
 
   return (
     <div className="space-y-8">
        <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tighter text-primary uppercase">Our Campaigns</h1>
+          <h1 className="text-4xl font-bold tracking-tighter text-primary">Our Campaigns</h1>
           <p className="text-primary text-lg font-bold">Transparent Tracking Of Our Community Support Projects.</p>
           
           <div className="space-y-2">
@@ -204,7 +204,10 @@ export function PublicCampaignsView() {
               <AccordionTrigger className="hover:no-underline group font-bold">
                 <div className="flex items-center gap-4">
                   <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
-                  <span className="text-2xl font-bold tracking-tight text-primary uppercase">{section.title}</span>
+                  <div className="flex items-center gap-2">
+                    <section.icon className="h-6 w-6 text-primary" />
+                    <span className="text-2xl font-bold tracking-tight text-primary">{section.title}</span>
+                  </div>
                   <Badge variant="secondary" className="rounded-full h-6 px-3 bg-primary/10 text-primary border-primary/20 font-bold">{section.items.length}</Badge>
                 </div>
               </AccordionTrigger>
@@ -217,7 +220,7 @@ export function PublicCampaignsView() {
       ) : (
         <div className="text-center py-20 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
             <FolderKanban className="h-12 w-12 mx-auto text-primary/20 mb-4" />
-            <p className="text-primary/60 font-bold uppercase tracking-widest text-sm">No Campaigns Found Matching Criteria.</p>
+            <p className="text-primary/60 font-bold tracking-widest text-sm">No Campaigns Found Matching Criteria.</p>
         </div>
       )}
     </div>
