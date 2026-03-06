@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    /* BMS3 A Core Palette */
     --background: 140 33% 97%; /* #F7FBF8 */
     --foreground: 144 27% 23%; /* #355E3B - Deep Body Green */
     --card: 0 0% 100%; /* #FFFFFF */
@@ -13,6 +14,7 @@
     --primary: 140 68% 38%; /* #1FA34A */
     --primary-hover: 140 68% 31%; /* #16863B */
     --primary-foreground: 0 0% 100%;
+    --primary-soft: 143 50% 91%; /* #DDF5E6 */
     --secondary: 143 50% 96%; /* #F0F9F3 */
     --secondary-foreground: 144 61% 20%;
     --muted: 140 33% 97%;
@@ -26,11 +28,24 @@
     --ring: 142 71% 45%; /* #22C55E */
     --radius: 1rem;
     
+    /* Institutional Success/Warning/Danger */
+    --success: 142 71% 45%; /* #22C55E */
+    --danger: 0 84% 60%; /* #EF4444 */
+    --warning: 38 92% 50%; /* #F59E0B */
+
     /* Table Variables */
     --table-header-bg: 158 82% 96%; /* #ECFDF5 */
     --table-header-fg: 144 61% 20%; /* #14532D */
     --table-row-hover: 142 76% 97%; /* #F0FDF4 */
     --table-expanded-bg: 140 33% 97%; /* #F7FBF8 */
+
+    /* Status Badge Palette */
+    --badge-eligible-bg: 142 70% 93%; /* #DCFCE7 */
+    --badge-eligible-fg: 144 41% 15%; /* #166534 */
+    --badge-given-bg: 141 79% 85%; /* #BBF7D0 */
+    --badge-given-fg: 164 88% 14%; /* #065F46 */
+    --badge-active-bg: 143 50% 91%; /* #DDF5E6 */
+    --badge-active-fg: 140 68% 38%; /* #1FA34A */
 
     /* Dropdown Variables */
     --dropdown-hover: 158 82% 96%; /* #ECFDF5 */
@@ -83,6 +98,16 @@
 @keyframes fade-in-zoom {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes status-pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.02); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.animate-status-pulse {
+  animation: status-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .shadow-dropdown {

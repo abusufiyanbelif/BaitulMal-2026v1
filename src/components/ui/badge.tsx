@@ -34,7 +34,6 @@ export interface BadgeProps
     VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {
-  // Logic to auto-assign variants based on text content for consistency
   const content = typeof props.children === 'string' ? props.children.trim() : '';
   let finalVariant = variant;
 
