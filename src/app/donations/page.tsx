@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -14,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, MoreHorizontal, Edit, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, DollarSign, FolderKanban, Lightbulb, Trash2, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, ImageIcon, Loader2 } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Edit, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, IndianRupee, FolderKanban, Lightbulb, Trash2, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, ImageIcon, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -129,7 +128,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-[#14532D]"><DollarSign className="h-3 w-3"/> Category Breakdown</h4>
+                                    <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-[#14532D]"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
                                     <div className="border border-[#E2EEE7] rounded-md bg-white overflow-hidden shadow-sm">
                                         <ScrollArea className="w-full">
                                             <Table>
@@ -322,7 +321,7 @@ export default function DonationsPage() {
         });
         errorEmitter.emit('permission-error', permissionError);
     });
-    toast({ title: "Donation Synchronized", description: "The financial record is now secured.", variant: 'success' });
+    toast({ title: "Donation Synchronized", description: "The Financial Record Is Now Secured.", variant: 'success' });
   };
 
   const handleDeleteConfirm = async () => {
@@ -342,7 +341,7 @@ export default function DonationsPage() {
 
   const isLoading = areDonationsLoading || isProfileLoading;
 
-  if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving organizational financial logs." />;
+  if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Organizational Financial Logs." />;
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-[#14532D]">
@@ -444,7 +443,7 @@ export default function DonationsPage() {
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent className="rounded-[12px] border-[#E2EEE7]">
-                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Delete Record?</AlertDialogTitle><AlertDialogDescription className="font-normal text-[#14532D]/70">Permanently erase this donation record and all attached artifacts. This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Delete Record?</AlertDialogTitle><AlertDialogDescription className="font-normal text-[#14532D]/70">Permanently Erase This Donation Record And All Attached Artifacts. This Action Cannot Be Undone.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel className="font-bold border-[#E2EEE7] text-[#14532D]">Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px]">Confirm Deletion</AlertDialogAction>

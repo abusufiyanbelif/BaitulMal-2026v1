@@ -1,0 +1,89 @@
+'use client';
+
+import { usePublicData } from '@/hooks/use-public-data';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Skeleton } from './ui/skeleton';
+import { IndianRupee, Target } from 'lucide-react';
+import { useMemo } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
+/**
+ * A branded component that displays verified donation totals aggregated by purpose.
+ */
+export function PurposeFundingSummary() {
+  const { isLoading, campaignsWithProgress, leadsWithProgress } = usePublicData();
+
+  const purposeData = useMemo(() => {
+    if (isLoading || !campaignsWithProgress || !leadsWithProgress) return [];
+
+    const totals: Record<string, number> = {};
+
+    // Aggregate from Campaigns
+    campaignsWithProgress.forEach(c => {
+      const p = c.category || 'General';
+      totals[p] = (totals[p] || 0) + c.collected;
+    });
+
+    // Aggregate from Leads
+    leadsWithProgress.forEach(l => {
+      const p = l.purpose || 'Other';
+      totals[p] = (totals[p] || 0) + l.collected;
+    });
+
+    return Object.entries(totals)
+      .map(([name, amount]) => ({ name, amount }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [isLoading, campaignsWithProgress, leadsWithProgress]);
+
+  if (isLoading) {
+    return (
+      <Card className="border-primary/20">
+        <CardHeader>
+          <Skeleton className="h-6 w-1/2" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-32 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (purposeData.length === 0) return null;
+
+  return (
+    <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md transition-all duration-300 hover:shadow-xl">
+      <CardHeader className="bg-primary/5 border-b">
+        <CardTitle className="text-xl font-bold text-primary flex items-center gap-2">
+          <Target className="h-6 w-6 text-primary" />
+          Impact By Purpose
+        </CardTitle>
+        <CardDescription className="font-normal text-primary/70">
+          Total Verified Funds Utilized Across Different Support Categories.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader className="bg-[#ECFDF5]">
+            <TableRow>
+              <TableHead className="text-[10px] font-bold uppercase text-[#14532D] tracking-widest pl-6">Purpose Type</TableHead>
+              <TableHead className="text-right text-[10px] font-bold uppercase text-[#14532D] tracking-widest pr-6">Amount Received</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {purposeData.map((item) => (
+              <TableRow key={item.name} className="hover:bg-[#F0FDF4] transition-colors border-b border-primary/5">
+                <TableCell className="font-bold text-primary text-sm pl-6">{item.name}</TableCell>
+                <TableCell className="text-right font-bold font-mono text-[#1FA34A] text-sm pr-6">
+                  <div className="flex items-center justify-end gap-1">
+                    <IndianRupee className="h-3 w-3" />
+                    {item.amount.toLocaleString('en-IN')}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}

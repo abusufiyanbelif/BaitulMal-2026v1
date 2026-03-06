@@ -6,6 +6,7 @@ import Link from 'next/link';
 import React, { useMemo } from 'react';
 import { OverallFundingSummary } from '@/components/overall-funding-summary';
 import { DonationSummary } from '@/components/donation-summary';
+import { PurposeFundingSummary } from '@/components/purpose-funding-summary';
 import { LeadAndCampaignSummary } from '@/components/lead-campaign-summary';
 import { WisdomAndReflection } from '@/components/WisdomAndReflection';
 import { NewsTicker } from '@/components/news-ticker';
@@ -68,7 +69,7 @@ export default function Home() {
         <div className="container mx-auto p-4 md:p-8 space-y-10 text-primary">
             {/* Hero Section */}
             <section className="text-center py-12 md:py-20 animate-fade-in-zoom">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter text-primary max-w-5xl mx-auto">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter text-primary max-w-5xl mx-auto uppercase">
                     {heroTitle}
                 </h1>
                 <p className="mt-6 max-w-3xl mx-auto text-lg text-primary font-normal leading-relaxed opacity-80">
@@ -104,10 +105,13 @@ export default function Home() {
             {/* Detailed Data Sections */}
             <div className="space-y-10 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
                 <OverallFundingSummary />
-                <DonationSummary />
+                <div className="grid gap-10 lg:grid-cols-2">
+                    <DonationSummary />
+                    <PurposeFundingSummary />
+                </div>
                 <LeadAndCampaignSummary />
                 
-                {/* Moved Recent Verification Ticker to end */}
+                {/* Recent Verification Ticker at end */}
                 {showRecentVerification && (
                     <RecentVerificationTicker items={recentDonationsFormatted} />
                 )}

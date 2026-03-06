@@ -44,7 +44,7 @@ export function DonationSummary() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6">
         <Card className="border-primary/20"><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
         <Card className="border-primary/20"><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
       </div>
@@ -52,13 +52,13 @@ export function DonationSummary() {
   }
   
   if (!yearlySummary || !categorySummary) {
-    return <p className="font-bold text-primary">No donation data available.</p>;
+    return <p className="font-bold text-primary">No Donation Data Available.</p>;
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <Card className="animate-fade-in-up border-primary/20" style={{ animationDelay: '800ms', animationFillMode: 'backwards' }}>
-        <CardHeader>
+    <div className="grid gap-10">
+      <Card className="animate-fade-in-up border-primary/20 bg-white shadow-md transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '800ms', animationFillMode: 'backwards' }}>
+        <CardHeader className="bg-primary/5 border-b">
           <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 font-bold text-primary">
                 <Calendar className="h-6 w-6 text-primary" />
@@ -66,9 +66,9 @@ export function DonationSummary() {
               </CardTitle>
               <span className="text-2xl font-bold text-primary">{yearlySummary[0]?.year || new Date().getFullYear()}</span>
           </div>
-          <CardDescription className="font-normal text-primary/70">A year-by-year breakdown of funds received against fundraising goals.</CardDescription>
+          <CardDescription className="font-normal text-primary/70">A Year-By-Year Breakdown Of Funds Received Against Fundraising Goals.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
             <Table>
                 <TableHeader className="bg-primary/5">
                     <TableRow>
@@ -99,21 +99,21 @@ export function DonationSummary() {
         </CardContent>
       </Card>
       
-      <Card className="animate-fade-in-up border-primary/20" style={{ animationDelay: '900ms', animationFillMode: 'backwards' }}>
-        <CardHeader>
+      <Card className="animate-fade-in-up border-primary/20 bg-white shadow-md transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '900ms', animationFillMode: 'backwards' }}>
+        <CardHeader className="bg-primary/5 border-b">
           <CardTitle className="flex items-center gap-2 font-bold text-primary">
             <PieChartIcon className="h-6 w-6 text-primary" />
             Donations By Category
           </CardTitle>
-           <CardDescription className="font-normal text-primary/70">A lifetime breakdown of all donations by their category.</CardDescription>
+           <CardDescription className="font-normal text-primary/70">A Lifetime Breakdown Of All Donations By Their Category.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
+        <CardContent className="pt-6">
+          <ChartContainer config={donationCategoryChartConfig} className="h-[300px] w-full">
             <PieChart>
               <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-              <Pie data={categorySummary} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} strokeWidth={2}>
+              <Pie data={categorySummary} dataKey="value" nameKey="name" innerRadius={60} outerRadius={100} strokeWidth={5} paddingAngle={2}>
                 {categorySummary.map((entry: any) => (
-                  <Cell key={`cell-${entry.name}`} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />
+                  <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                 ))}
               </Pie>
               <ChartLegend content={<ChartLegendContent nameKey="name" />} />
