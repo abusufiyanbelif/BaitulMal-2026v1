@@ -2,7 +2,7 @@ import type {Metadata} from 'next';
 
 export const metadata: Metadata = {
   title: 'Dashboard',
-  description: 'Application dashboard.',
+  description: 'Manage institutional campaigns, leads, and community donations.',
 };
 
 export default function DashboardLayout({

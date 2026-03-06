@@ -281,7 +281,7 @@ export default function LeadPage() {
   if (!isLoading && userProfile && !canViewLeads) {
     return (
       <main className="container mx-auto p-4 md:p-8 text-primary font-normal">
-        <div className="mb-4"><Button variant="outline" asChild className="border-primary/20 font-bold text-primary transition-transform active:scale-95"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Home</Link></Button></div>
+        <div className="mb-4"><Button variant="secondary" asChild className="border-primary/20 font-bold text-primary transition-transform active:scale-95"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Home</Link></Button></div>
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle className="font-bold">Access Denied</AlertTitle>
@@ -295,8 +295,8 @@ export default function LeadPage() {
     <>
       <main className="container mx-auto p-4 sm:p-6 space-y-6 text-primary font-normal">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <Button variant="outline" asChild size="sm" className="interactive-hover font-bold border-primary/20 hover:bg-primary/10 text-primary transition-transform active:scale-95"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
-          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold tracking-tight interactive-hover shadow-lg bg-primary hover:bg-primary/90 text-white active:scale-95 transition-transform"><Link href="/leads-members/create"><Plus className="mr-2 h-4 w-4" /> New Appeal</Link></Button>}
+          <Button variant="secondary" asChild size="sm" className="interactive-hover font-bold border-primary/20 transition-transform active:scale-95"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
+          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold tracking-tight interactive-hover shadow-lg active:scale-95 transition-transform"><Link href="/leads-members/create"><Plus className="mr-2 h-4 w-4" /> New Appeal</Link></Button>}
         </div>
 
         <div className="space-y-2">

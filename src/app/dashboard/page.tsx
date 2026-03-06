@@ -139,7 +139,7 @@ export default function Home() {
             </div>
             ) : (
              <div className="text-center">
-                <p>Could Not Load User Profile.</p>
+                <p className="text-primary font-bold">Could Not Load User Profile.</p>
              </div>
             )}
         </div>

@@ -34,7 +34,7 @@
 
   .bms3-a {
     --background: 140 33% 97%; /* #F7FBF8 */
-    --foreground: 129 27% 29%; /* #355E3B */
+    --foreground: 144 27% 23%; /* #355E3B (tinted) */
     --card: 0 0% 100%; /* #FFFFFF */
     --card-foreground: 144 61% 20%; /* #14532D */
     --popover: 0 0% 100%;

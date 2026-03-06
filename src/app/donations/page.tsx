@@ -348,7 +348,7 @@ export default function DonationsPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <h1 className="text-3xl font-bold tracking-tighter text-primary">Financial Donations</h1>
             <div className="flex gap-2 w-full sm:w-auto">
-                <Button variant="outline" onClick={handleSync} disabled={isSyncing} className="flex-1 sm:flex-none font-bold text-[10px] border-primary/20 text-primary active:scale-95 transition-transform">
+                <Button variant="secondary" onClick={handleSync} disabled={isSyncing} className="flex-1 sm:flex-none font-bold text-[10px] border-primary/20 text-primary active:scale-95 transition-transform">
                   {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
                   Sync Logs
                 </Button>
@@ -414,8 +414,8 @@ export default function DonationsPage() {
                 <CardFooter className="flex justify-between items-center py-4 border-t bg-primary/5 p-4">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase">Page {currentPage} Of {totalPages}</p>
                     <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold h-8 border-primary/20 text-primary">Previous</Button>
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold h-8 border-primary/20 text-primary">Next</Button>
+                        <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold h-8 border-primary/20 text-primary">Previous</Button>
+                        <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold h-8 border-primary/20 text-primary">Next</Button>
                     </div>
                 </CardFooter>
             )}
@@ -436,7 +436,7 @@ export default function DonationsPage() {
                     />
                 </ScrollArea>
                 <DialogFooter className="px-6 py-4 border-t bg-muted/5">
-                    <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold">Close Form</Button>
+                    <Button variant="secondary" onClick={() => setIsFormOpen(false)} className="font-bold">Close Form</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -463,10 +463,10 @@ export default function DonationsPage() {
                     <ScrollBar orientation="both" />
                 </ScrollArea>
                 <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
-                    <Button variant="outline" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-[10px] border-primary/20 text-primary"><ZoomIn className="mr-1 h-4 w-4"/> In</Button>
-                    <Button variant="outline" size="sm" onClick={() => setZoom(z => z / 1.2) } className="font-bold text-[10px] border-primary/20 text-primary"><ZoomOut className="mr-1 h-4 w-4"/> Out</Button>
-                    <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/20 text-primary"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
-                    <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/20 text-primary"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
+                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-[10px] border-primary/20 text-primary"><ZoomIn className="mr-1 h-4 w-4"/> In</Button>
+                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => z / 1.2) } className="font-bold text-[10px] border-primary/20 text-primary"><ZoomOut className="mr-1 h-4 w-4"/> Out</Button>
+                    <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/20 text-primary"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
+                    <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/20 text-primary"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

@@ -108,7 +108,7 @@ export default function BeneficiariesPage() {
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
       <div className="flex items-center justify-between">
-        <Button variant="outline" asChild className="font-bold border-primary/20 hover:bg-primary/10 text-primary transition-transform active:scale-95">
+        <Button variant="secondary" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
           <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Dashboard</Link>
         </Button>
       </div>
@@ -116,7 +116,7 @@ export default function BeneficiariesPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-primary">Master Beneficiary List ({beneficiaries?.length || 0})</h1>
         <div className="flex items-center gap-2">
-          <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync Complete' : 'Sync Failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="outline" size="sm" className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+          <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync Complete' : 'Sync Failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="secondary" size="sm" className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
             {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
             Sync Master List
           </Button>
@@ -189,7 +189,7 @@ export default function BeneficiariesPage() {
                         <div className="flex items-center justify-end gap-1">
                             <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
                                 <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-primary/10 transition-colors">
-                                    <ChevronDown className="h-4 w-4 text-primary shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                    <ChevronDown className="h-4 w-4 text-primary shrink-0 transition-transform duration-200 group-state-open:rotate-180" />
                                 </div>
                             </AccordionTrigger>
                             <DropdownMenu>
@@ -271,8 +271,8 @@ export default function BeneficiariesPage() {
         <div className="flex items-center justify-between border-t pt-4">
           <p className="text-xs font-bold opacity-60 uppercase">Page {currentPage} Of {totalPages}</p>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 hover:bg-primary/10 text-primary h-8">Previous</Button>
-            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 hover:bg-primary/10 text-primary h-8">Next</Button>
+            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 h-8">Previous</Button>
+            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 h-8">Next</Button>
           </div>
         </div>
       )}
