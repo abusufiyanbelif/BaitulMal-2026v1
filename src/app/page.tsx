@@ -9,6 +9,7 @@ import { DonationSummary } from '@/components/donation-summary';
 import { LeadAndCampaignSummary } from '@/components/lead-campaign-summary';
 import { WisdomAndReflection } from '@/components/WisdomAndReflection';
 import { NewsTicker } from '@/components/news-ticker';
+import { RecentVerificationTicker } from '@/components/recent-verification-ticker';
 import { usePublicData } from '@/hooks/use-public-data';
 import { useBranding } from '@/hooks/use-branding';
 import { cn } from '@/lib/utils';
@@ -103,39 +104,8 @@ export default function Home() {
             <div className="space-y-10 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
                 <OverallFundingSummary />
                 
-                <Card className="border-primary/10 overflow-hidden bg-white shadow-md transition-all duration-300 hover:shadow-xl">
-                    <CardHeader className="bg-primary/5 border-b">
-                        <CardTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2"><CheckCircle2 className="h-6 w-6"/> Recent Verification</CardTitle>
-                        <CardDescription className="font-normal text-primary/70">Secure Tracking Of Confirmed Community Contributions.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <ScrollArea className="w-full">
-                            <Table>
-                                <TableHeader className="bg-[hsl(var(--table-header-bg))]">
-                                    <TableRow>
-                                        <TableHead className="font-semibold text-[10px] uppercase text-[hsl(var(--table-header-fg))] tracking-widest pl-6">Reference</TableHead>
-                                        <TableHead className="font-semibold text-[10px] uppercase text-[hsl(var(--table-header-fg))] tracking-widest">Allocation</TableHead>
-                                        <TableHead className="font-semibold text-[10px] uppercase text-[hsl(var(--table-header-fg))] tracking-widest text-right pr-6">Status</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {recentDonationsFormatted.length > 0 ? (
-                                        recentDonationsFormatted.slice(0, 10).map((item) => (
-                                            <TableRow key={item.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-primary/10 bg-white">
-                                                <TableCell className="pl-6"><div className="text-xs font-bold text-primary truncate max-w-[200px]">{item.text.split(' for ')[0]}</div></TableCell>
-                                                <TableCell><Link href={item.href} className="text-xs font-normal text-muted-foreground hover:text-primary hover:underline transition-colors tracking-tight">{item.text.split(' for ')[1]}</Link></TableCell>
-                                                <TableCell className="text-right pr-6"><Badge variant="eligible" className="text-[10px] font-bold uppercase tracking-tighter">Verified</Badge></TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow><TableCell colSpan={3} className="h-32 text-center text-muted-foreground font-normal italic opacity-60">No Recent Activity Verified.</TableCell></TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                            <ScrollBar orientation="horizontal" />
-                        </ScrollArea>
-                    </CardContent>
-                </Card>
+                {/* Dynamic Recent Verification Ticker */}
+                <RecentVerificationTicker items={recentDonationsFormatted} />
 
                 <DonationSummary />
                 <LeadAndCampaignSummary />
