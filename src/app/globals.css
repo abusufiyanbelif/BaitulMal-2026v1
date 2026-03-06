@@ -5,17 +5,17 @@
 @layer base {
   :root, .light {
     --background: 0 0% 100%;
-    --foreground: 160 25% 15%; /* Deep charcoal green, not black */
+    --foreground: 160 25% 12%; /* Deep charcoal green, not black */
     --card: 0 0% 100%;
-    --card-foreground: 160 25% 15%;
+    --card-foreground: 160 25% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 160 25% 15%;
+    --popover-foreground: 160 25% 12%;
     --primary: 160 70% 40%; /* Classic Indian Green */
     --primary-foreground: 0 0% 100%;
     --secondary: 160 70% 95%;
     --secondary-foreground: 160 70% 20%;
     --muted: 160 10% 95%;
-    --muted-foreground: 160 15% 45%;
+    --muted-foreground: 160 15% 40%;
     --accent: 47.9 95.8% 53.1%; 
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
@@ -33,21 +33,21 @@
 
   .dark {
     --background: 160 25% 5%;
-    --foreground: 45 10% 95%;
+    --foreground: 45 10% 92%; /* Off-white, not pure white */
     --card: 160 25% 7%;
-    --card-foreground: 45 10% 95%;
+    --card-foreground: 45 10% 92%;
     --popover: 160 25% 7%;
-    --popover-foreground: 45 10% 95%;
+    --popover-foreground: 45 10% 92%;
     --primary: 160 70% 45%;
     --primary-foreground: 160 25% 5%;
     --secondary: 160 30% 15%;
-    --secondary-foreground: 45 10% 95%;
+    --secondary-foreground: 45 10% 92%;
     --muted: 160 20% 12%;
-    --muted-foreground: 160 10% 60%;
+    --muted-foreground: 160 10% 55%;
     --accent: 47.9 95.8% 55%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 45 10% 95%;
+    --destructive-foreground: 45 10% 92%;
     --border: 160 20% 20%;
     --input: 160 20% 20%;
     --ring: 160 70% 45%;
@@ -60,17 +60,17 @@
 
   .bms3 {
     --background: 0 0% 98%;
-    --foreground: 160 60% 10%; /* Deep institutional green, not black */
+    --foreground: 160 60% 8%; /* Rich deep institutional green, no black */
     --card: 0 0% 100%;
-    --card-foreground: 160 60% 10%;
+    --card-foreground: 160 60% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 160 60% 10%;
+    --popover-foreground: 160 60% 8%;
     --primary: 160 84% 20%; /* Deep Institutional Green */
     --primary-foreground: 0 0% 100%;
     --secondary: 160 40% 92%;
-    --secondary-foreground: 160 84% 15%;
+    --secondary-foreground: 160 84% 12%;
     --muted: 160 20% 94%;
-    --muted-foreground: 160 10% 40%;
+    --muted-foreground: 160 10% 35%;
     --accent: 160 84% 20%;
     --accent-foreground: 0 0% 100%;
     --border: 160 20% 88%;
@@ -85,13 +85,13 @@
     --primary: 24 95% 40%; 
     --ring: 24 95% 40%;
     --background: 30 20% 98%;
-    --foreground: 30 20% 15%;
+    --foreground: 30 30% 10%;
   }
 
   .ocean-blue {
     --primary: 217 91% 40%;
     --ring: 217 91% 40%;
-    --foreground: 217 25% 15%;
+    --foreground: 217 30% 12%;
   }
 }
 

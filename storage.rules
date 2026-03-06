@@ -1,13 +1,16 @@
 rules_version = '2';
-service map.storage {
+service firebase.storage {
   match /b/{bucket}/o {
-    // Simplified Storage Access Model
-    // 1. Public Transparency: All artifacts are readable by the public.
-    // 2. Member Control: Authenticated members can manage all verification evidence and files.
-    
+    // Helper function to check if user is signed in
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Global Public Read Access for images/documents to prevent UI crashes
+    // Global Member Write Access for any organizational user
     match /{allPaths=**} {
       allow read: if true;
-      allow write, delete: if request.auth != null;
+      allow write, delete: if isSignedIn();
     }
   }
 }

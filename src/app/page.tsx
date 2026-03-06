@@ -63,7 +63,7 @@ export default function Home() {
     const heroDescription = brandingSettings?.heroDescription || `Join ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'} to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.`;
 
     return (
-        <div className="container mx-auto p-4 md:p-8 space-y-10">
+        <div className="container mx-auto p-4 md:p-8 space-y-10 text-primary">
             {/* Hero Section */}
             <section className="text-center py-12 md:py-20 animate-fade-in-zoom">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter text-primary max-w-5xl mx-auto">

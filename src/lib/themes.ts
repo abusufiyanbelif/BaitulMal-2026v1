@@ -6,7 +6,7 @@ export interface ThemeSuggestion {
 
 export const THEME_SUGGESTIONS: ThemeSuggestion[] = [
   // BMS3 Standard Theme
-  { id: 'bms3', name: 'BMS3 (Deep Green)', isDark: false },
+  { id: 'bms3', name: 'BMS3 (Official Deep Green)', isDark: false },
   
   // Classic Indian Green
   { id: 'light', name: 'Indian Green (Default)', isDark: false },
