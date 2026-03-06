@@ -71,28 +71,28 @@ export default function OrganizationMembersPage() {
                                 <Button className="font-bold shadow-md"><UserPlus className="mr-2 h-4 w-4" /> Assign member <ChevronDown className="ml-2 h-4 w-4" /></Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => router.push('/users/create')} className="font-bold text-primary">Create new user</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setIsSearchOpen(true)} className="font-bold text-primary">Assign existing user</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => router.push('/users/create')} className="font-normal text-primary">Create new user</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setIsSearchOpen(true)} className="font-normal text-primary">Assign existing user</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
                 </CardHeader>
-                <CardContent>
-                    <Accordion type="multiple" defaultValue={['founder', 'co-founder', 'finance', 'member']} className="w-full space-y-2">
+                <CardContent className="pt-2">
+                    <Accordion type="multiple" defaultValue={['founder', 'co-founder', 'finance', 'member']} className="w-full space-y-1.5">
                         {GROUPS.map((group) => (
-                            <AccordionItem value={group.id} key={group.id} className="border rounded-lg bg-primary/[0.02] px-4">
-                                <AccordionTrigger className="text-base font-bold hover:no-underline tracking-tight">{group.name} ({(membersByGroup[group.id] || []).length})</AccordionTrigger>
+                            <AccordionItem value={group.id} key={group.id} className="border rounded-lg bg-primary/[0.02] px-3">
+                                <AccordionTrigger className="text-sm font-bold hover:no-underline tracking-tight py-3">{group.name} ({(membersByGroup[group.id] || []).length})</AccordionTrigger>
                                 <AccordionContent>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 pt-2">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 pt-1">
                                         {(membersByGroup[group.id] || []).map(member => (
                                             <Card key={member.id} className="group relative bg-white border-primary/10 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                                                <CardContent className="p-3 flex items-center gap-3">
-                                                    <Avatar className="h-10 w-10 border border-primary/5 transition-transform group-hover:scale-105">
+                                                <CardContent className="p-2 flex items-center gap-3">
+                                                    <Avatar className="h-9 w-9 border border-primary/5 transition-transform group-hover:scale-105">
                                                         <AvatarImage src={member.idProofUrl || undefined} />
                                                         <AvatarFallback className="bg-primary/10 text-primary font-bold text-[10px]">{getInitials(member.name)}</AvatarFallback>
                                                     </Avatar>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="font-bold text-xs truncate">{member.name}</p>
+                                                        <p className="font-bold text-[13px] truncate">{member.name}</p>
                                                         <p className="text-[10px] font-normal text-muted-foreground leading-tight">{member.organizationRole || 'Member'}</p>
                                                     </div>
                                                     <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">

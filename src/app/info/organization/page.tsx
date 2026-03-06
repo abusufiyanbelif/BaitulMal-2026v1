@@ -180,24 +180,24 @@ export default function AboutOrganizationPage() {
                             <span className="text-xl font-bold tracking-tight">Our dedicated team</span>
                         </div>
                     </AccordionTrigger>
-                    <AccordionContent className="px-6 pt-6 pb-8">
+                    <AccordionContent className="px-6 pt-4 pb-6">
                         <Accordion type="multiple" defaultValue={['founder', 'co-founder', 'finance', 'member']} className="w-full">
                             {GROUPS.map((group) => (
                                 <AccordionItem value={group.id} key={group.id} className="border-primary/5 last:border-0">
-                                    <AccordionTrigger className="text-lg font-bold hover:text-primary transition-colors py-6 tracking-tight">
+                                    <AccordionTrigger className="text-base font-bold hover:text-primary transition-colors py-3 tracking-tight">
                                         {group.name} ({(membersByGroup[group.id] || []).length})
                                     </AccordionTrigger>
                                     <AccordionContent>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-2">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 pt-1">
                                             {(membersByGroup[group.id] || []).map((member) => (
                                                 <Card key={member.id} className="group transition-all duration-300 hover:shadow-sm bg-primary/[0.01] border-primary/5 overflow-hidden">
-                                                    <CardContent className="p-3 flex items-center gap-3">
-                                                        <Avatar className="h-10 w-10 border border-primary/5 transition-transform group-hover:scale-105">
+                                                    <CardContent className="p-2 flex items-center gap-3">
+                                                        <Avatar className="h-9 w-9 border border-primary/5 transition-transform group-hover:scale-105">
                                                             <AvatarImage src={member.idProofUrl || ''} alt={member.name || 'Member'} />
                                                             <AvatarFallback className="bg-primary/10 text-primary font-bold text-[10px]">{getInitials(member.name)}</AvatarFallback>
                                                         </Avatar>
                                                         <div className="flex-1 min-w-0">
-                                                            <p className="font-bold text-xs truncate text-primary">{member.name}</p>
+                                                            <p className="font-bold text-[13px] truncate text-primary">{member.name}</p>
                                                             <p className="text-[10px] font-normal text-muted-foreground leading-tight">{member.organizationRole || 'Member'}</p>
                                                         </div>
                                                     </CardContent>
