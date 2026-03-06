@@ -50,7 +50,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                         </div>
                         <CardHeader className="p-4">
                             <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 text-primary">
-                                {campaign.campaignNumber && <span className="text-primary">#{campaign.campaignNumber} </span>}{campaign.name}
+                                {campaign.campaignNumber && <span className="text-primary font-bold">#{campaign.campaignNumber} </span>}{campaign.name}
                             </CardTitle>
                             <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground">{campaign.startDate} To {campaign.endDate}</CardDescription>
                         </CardHeader>
@@ -66,7 +66,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                             </div>
                             {(campaign.targetAmount || 0) > 0 && (
                                 <div className="space-y-1.5">
-                                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
+                                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase">
                                         <span>Collected: ₹{campaign.collected.toLocaleString('en-IN')}</span>
                                         <span>{Math.round(campaign.progress)}%</span>
                                     </div>
@@ -172,7 +172,7 @@ export function PublicCampaignsView() {
   return (
     <div className="space-y-8">
        <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tighter text-primary">Our Campaigns</h1>
+          <h1 className="text-4xl font-bold tracking-tighter text-primary uppercase">Our Campaigns</h1>
           <p className="text-primary text-lg font-bold">Transparent Tracking Of Our Community Support Projects.</p>
           
           <div className="space-y-2">
@@ -183,8 +183,8 @@ export function PublicCampaignsView() {
 
           <div className="flex flex-wrap items-center gap-2 pt-4 bg-primary/5 p-4 rounded-xl border border-primary/20">
               <Input placeholder="Search Campaigns..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-bold" disabled={isLoading}/>
-              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem></SelectContent></Select>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Categories</SelectItem><SelectItem value="Ration" className="font-bold">Ration</SelectItem><SelectItem value="Relief" className="font-bold">Relief</SelectItem><SelectItem value="General" className="font-bold">General</SelectItem></SelectContent></Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem></SelectContent></Select>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="All Categories" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Categories</SelectItem><SelectItem value="Ration" className="font-bold">Ration</SelectItem><SelectItem value="Relief" className="font-bold">Relief</SelectItem><SelectItem value="General" className="font-bold">General</SelectItem></SelectContent></Select>
               <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
                   <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select>
                   <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
@@ -204,7 +204,7 @@ export function PublicCampaignsView() {
               <AccordionTrigger className="hover:no-underline group font-bold">
                 <div className="flex items-center gap-4">
                   <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
-                  <span className="text-2xl font-bold tracking-tight text-primary">{section.title}</span>
+                  <span className="text-2xl font-bold tracking-tight text-primary uppercase">{section.title}</span>
                   <Badge variant="secondary" className="rounded-full h-6 px-3 bg-primary/10 text-primary border-primary/20 font-bold">{section.items.length}</Badge>
                 </div>
               </AccordionTrigger>
