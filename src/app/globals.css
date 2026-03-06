@@ -42,18 +42,35 @@
     --badge-active-fg: 140 68% 38%; /* #1FA34A */
   }
 
-  /* BMS3 (Official Deep Green) */
   .bms3 {
-    --background: 140 10% 95%;
     --primary: 144 70% 25%; /* #136A33 */
+    --background: 144 10% 95%; /* #F0F4F1 */
     --table-header-bg: 144 30% 90%;
   }
 
-  /* Green Warm - Earthy */
   .green-warm {
     --background: 45 30% 96%; /* #F9F7F2 */
     --primary: 155 40% 24%; /* #2D6A4F */
     --secondary: 38 40% 92%;
+  }
+
+  .bmss-brand-warm {
+    --primary: 24 95% 53%; /* #F97316 */
+    --background: 30 33% 98%;
+  }
+
+  .ocean-blue {
+    --primary: 221 83% 53%; /* #2563EB */
+    --background: 210 40% 98%;
+  }
+
+  .midnight-ramadan {
+    --background: 222 47% 11%;
+    --foreground: 45 100% 90%;
+    --primary: 45 93% 47%; /* Gold */
+    --card: 222 47% 15%;
+    --card-foreground: 45 100% 95%;
+    --border: 222 47% 20%;
   }
 
   .dark {

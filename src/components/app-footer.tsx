@@ -34,8 +34,8 @@ export function AppFooter() {
   const validQrUrl = paymentSettings?.qrCodeUrl?.trim() ? paymentSettings.qrCodeUrl : null;
 
   return (
-    <footer className="bg-[#F0FDF4] border-t border-[#E2EEE7] pt-16 pb-8 px-4 text-center">
-      <div className="container mx-auto max-w-6xl space-y-12">
+    <footer className="bg-[#F0FDF4] border-t border-[#E2EEE7] pt-12 pb-8 px-4 text-center">
+      <div className="container mx-auto max-w-6xl space-y-10">
         
         {/* Top Section: Institutional Branding */}
         <div className="flex flex-col items-center gap-6 animate-fade-in-up">

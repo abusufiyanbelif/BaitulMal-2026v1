@@ -11,7 +11,7 @@ function HomeDashboardCard({ title, description, href, icon: Icon, delay }: { ti
   return (
     <div className="animate-fade-in-up" style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
       <Link href={href} className="block group">
-        <Card className="h-full p-4 transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:-translate-y-1 group-hover:border-primary active:scale-95 border-primary/10">
+        <Card className="h-full transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:-translate-y-1 group-hover:border-primary active:scale-95 border-primary/10">
           <div className="flex justify-between items-start gap-4">
             <div className="space-y-1">
               <CardTitle className="text-md font-bold text-primary">{title}</CardTitle>
