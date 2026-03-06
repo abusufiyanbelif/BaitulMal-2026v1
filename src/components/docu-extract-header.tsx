@@ -103,20 +103,20 @@ export function DocuExtractHeader() {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                     <DropdownMenuItem asChild className="cursor-pointer font-bold h-11 text-primary">
+                     <DropdownMenuItem asChild className="cursor-pointer h-11 text-primary">
                       <Link href="/dashboard" className="flex items-center w-full">
                         <LayoutDashboard className="mr-2 h-4 w-4" />
                         <span>Member Dashboard</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="cursor-pointer font-bold h-11 text-primary">
+                    <DropdownMenuItem asChild className="cursor-pointer h-11 text-primary">
                       <Link href="/profile" className="flex items-center w-full">
                         <User className="mr-2 h-4 w-4" />
                         <span>Profile Settings</span>
                       </Link>
                     </DropdownMenuItem>
                     {userProfile.role === 'Admin' && (
-                      <DropdownMenuItem asChild className="cursor-pointer font-bold h-11 text-primary">
+                      <DropdownMenuItem asChild className="cursor-pointer h-11 text-primary">
                         <Link href="/settings" className="flex items-center w-full">
                           <Settings className="mr-2 h-4 w-4" />
                           <span>System Administration</span>
@@ -126,7 +126,7 @@ export function DocuExtractHeader() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleLogout}
-                      className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer font-bold h-11"
+                      className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer h-11"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Sign Out</span>

@@ -291,23 +291,23 @@ export default function UsersPage() {
                         className="max-w-sm font-normal text-primary"
                     />
                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[150px] font-bold text-primary">
+                        <SelectTrigger className="w-auto md:w-[150px] text-primary">
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All" className="font-bold">All Statuses</SelectItem>
-                            <SelectItem value="Active" className="font-bold">Active</SelectItem>
-                            <SelectItem value="Inactive" className="font-bold text-destructive">Inactive</SelectItem>
+                            <SelectItem value="All">All Statuses</SelectItem>
+                            <SelectItem value="Active">Active</SelectItem>
+                            <SelectItem value="Inactive">Inactive</SelectItem>
                         </SelectContent>
                     </Select>
                     <Select value={roleFilter} onValueChange={(value) => { setRoleFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[150px] font-bold text-primary">
+                        <SelectTrigger className="w-auto md:w-[150px] text-primary">
                             <SelectValue placeholder="Role" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All" className="font-bold">All Roles</SelectItem>
-                            <SelectItem value="Admin" className="font-bold">Admin</SelectItem>
-                            <SelectItem value="User" className="font-bold">User</SelectItem>
+                            <SelectItem value="All">All Roles</SelectItem>
+                            <SelectItem value="Admin">Admin</SelectItem>
+                            <SelectItem value="User">User</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -386,25 +386,25 @@ export default function UsersPage() {
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end">
                                           {canUpdate && (
-                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(user)}} className="font-bold text-primary">
+                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(user)}} className="text-primary">
                                                   <Edit className="mr-2 h-4 w-4" />
                                                   View / Edit
                                               </DropdownMenuItem>
                                           )}
                                           {canUpdate && canDelete && <DropdownMenuSeparator />}
                                           {canUpdate && user.status === 'Active' ? (
-                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="font-bold">
+                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id}>
                                                   <UserX className="mr-2 h-4 w-4" />
                                                   Deactivate
                                               </DropdownMenuItem>
                                           ) : canUpdate ? (
-                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} className="font-bold">
+                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}}>
                                                   <UserCheck className="mr-2 h-4 w-4" />
                                                   Activate
                                               </DropdownMenuItem>
                                           ) : null}
                                           {canDelete && (
-                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleDeleteClick(user.id)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-bold">
+                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleDeleteClick(user.id)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
                                                   <Trash2 className="mr-2 h-4 w-4" />
                                                   Delete
                                               </DropdownMenuItem>

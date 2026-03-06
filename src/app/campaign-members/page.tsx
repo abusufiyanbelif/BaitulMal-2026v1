@@ -101,7 +101,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)} className="cursor-pointer font-bold text-primary">
+                        <DropdownMenuItem onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)} className="cursor-pointer text-primary">
                             <Edit className="mr-2 h-4 w-4" />
                             View Details
                         </DropdownMenuItem>
@@ -109,39 +109,39 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         {canUpdate && (
                             <>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="font-bold text-primary"><span>Operational Status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary"><span>Operational Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
                                             <DropdownMenuRadioGroup value={campaign.status} onValueChange={(value) => handleStatusUpdate(campaign, 'status', value)}>
-                                                <DropdownMenuRadioItem value="Upcoming" className="font-bold">Upcoming</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Active" className="font-bold">Active</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Completed" className="font-bold">Completed</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Upcoming">Upcoming</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Active">Active</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Completed">Completed</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="font-bold text-primary"><span>Verification Status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary"><span>Verification Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
                                             <DropdownMenuRadioGroup value={campaign.authenticityStatus} onValueChange={(value) => handleStatusUpdate(campaign, 'authenticityStatus', value as string)}>
-                                                <DropdownMenuRadioItem value="Pending Verification" className="font-bold">Pending Verification</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Verified" className="font-bold">Verified</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="On Hold" className="font-bold">On Hold</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Rejected" className="font-bold text-destructive">Rejected</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details" className="font-bold">Need More Details</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Pending Verification">Pending Verification</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Verified">Verified</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="On Hold">On Hold</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Rejected" className="text-destructive">Rejected</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details">Need More Details</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="font-bold text-primary"><span>Public Visibility</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary"><span>Public Visibility</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
                                             <DropdownMenuRadioGroup value={campaign.publicVisibility} onValueChange={(value) => handleStatusUpdate(campaign, 'publicVisibility', value as string)}>
-                                                <DropdownMenuRadioItem value="Hold" className="font-bold">Hold (Private)</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Ready to Publish" className="font-bold">Ready To Publish</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Published" className="font-bold text-primary">Published</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Hold">Hold (Private)</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Ready to Publish">Ready To Publish</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Published" className="text-primary">Published</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
@@ -150,7 +150,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         )}
                         <DropdownMenuSeparator />
                         {canCreate && (
-                            <DropdownMenuItem onClick={() => handleCopyClick(campaign)} className="cursor-pointer font-bold text-primary">
+                            <DropdownMenuItem onClick={() => handleCopyClick(campaign)} className="cursor-pointer text-primary">
                                 <Copy className="mr-2 h-4 w-4" />
                                 Copy Campaign
                             </DropdownMenuItem>
@@ -158,7 +158,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         {canDelete && (
                             <>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(campaign); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer font-bold">
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(campaign); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Delete
                                 </DropdownMenuItem>
@@ -369,14 +369,14 @@ export default function CampaignPage() {
           <CardHeader className="p-4 sm:p-6 border-b bg-primary/5">
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex flex-nowrap items-center gap-3 pb-2">
-                    <Input placeholder="Search Initiatives..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary font-bold text-primary" disabled={isLoading}/>
-                    <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem></SelectContent></Select>
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Categories</SelectItem><SelectItem value="Ration" className="font-bold">Ration</SelectItem><SelectItem value="Relief" className="font-bold">Relief</SelectItem><SelectItem value="General" className="font-bold">General</SelectItem></SelectContent></Select>
-                    <Select value={authenticityFilter} onValueChange={setAuthenticityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Authenticity" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Authenticity</SelectItem><SelectItem value="Pending Verification" className="font-bold">Pending</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="On Hold" className="font-bold">On Hold</SelectItem><SelectItem value="Rejected" className="font-bold">Rejected</SelectItem><SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem></SelectContent></Select>
-                    <Select value={visibilityFilter} onValueChange={setVisibilityFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Visibility" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Visibilities</SelectItem><SelectItem value="Hold" className="font-bold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-bold">Ready to Publish</SelectItem><SelectItem value="Published" className="font-bold text-primary">Published</SelectItem></SelectContent></Select>
+                    <Input placeholder="Search Initiatives..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary" disabled={isLoading}/>
+                    <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
+                    <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All Categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
+                    <Select value={authenticityFilter} onValueChange={setAuthenticityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary"><SelectValue placeholder="Authenticity" /></SelectTrigger><SelectContent><SelectItem value="All">All Authenticity</SelectItem><SelectItem value="Pending Verification">Pending</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="On Hold">On Hold</SelectItem><SelectItem value="Rejected">Rejected</SelectItem><SelectItem value="Need More Details">Need Details</SelectItem></SelectContent></Select>
+                    <Select value={visibilityFilter} onValueChange={setVisibilityFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary"><SelectValue placeholder="Visibility" /></SelectTrigger><SelectContent><SelectItem value="All">All Visibilities</SelectItem><SelectItem value="Hold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish">Ready to Publish</SelectItem><SelectItem value="Published">Published</SelectItem></SelectContent></Select>
                     <div className="flex items-center gap-2 border-l border-primary/10 pl-3">
-                        <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select>
-                        <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                        <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+                        <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                         {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
                     </div>
                 </div>
@@ -418,7 +418,7 @@ export default function CampaignPage() {
         </Card>
       </main>
       
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog open={!!campaignToDelete} onOpenChange={(open) => !open && setCampaignToDelete(null)}>
         <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete Initiative?</AlertDialogTitle><AlertDialogDescription className="font-bold opacity-80 text-primary/70">Permanently Erase All Data For '{campaignToDelete?.name}'? This Action Cannot Be Undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 

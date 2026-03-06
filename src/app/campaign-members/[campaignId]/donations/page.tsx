@@ -495,24 +495,24 @@ export default function DonationsPage() {
                         className="max-w-sm h-9 text-xs font-normal"
                     />
                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[180px] h-9 text-xs font-bold border-primary/20 text-primary">
+                        <SelectTrigger className="w-auto md:w-[180px] h-9 text-xs text-primary">
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All" className="font-bold">All Statuses</SelectItem>
-                            <SelectItem value="Verified" className="font-bold text-success-foreground">Verified</SelectItem>
-                            <SelectItem value="Pending" className="font-bold">Pending</SelectItem>
-                            <SelectItem value="Canceled" className="font-bold text-destructive">Canceled</SelectItem>
-                            <SelectItem value="No Transactions" className="font-bold">No Transactions</SelectItem>
+                            <SelectItem value="All">All Statuses</SelectItem>
+                            <SelectItem value="Verified" className="text-success-foreground">Verified</SelectItem>
+                            <SelectItem value="Pending">Pending</SelectItem>
+                            <SelectItem value="Canceled" className="text-destructive">Canceled</SelectItem>
+                            <SelectItem value="No Transactions">No Transactions</SelectItem>
                         </SelectContent>
                     </Select>
                     <Select value={typeFilter} onValueChange={(value) => { setTypeFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[180px] h-9 text-xs font-bold border-primary/20 text-primary">
+                        <SelectTrigger className="w-auto md:w-[180px] h-9 text-xs text-primary">
                             <SelectValue placeholder="Category" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All" className="font-bold">All Categories</SelectItem>
-                            {donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-bold">{cat}</SelectItem>)}
+                            <SelectItem value="All">All Categories</SelectItem>
+                            {donationCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
@@ -572,16 +572,16 @@ export default function DonationsPage() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/campaign-members/${campaignId}/donations/${donation.id}`); }} className="font-bold text-primary">
+                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/campaign-members/${campaignId}/donations/${donation.id}`); }} className="text-primary">
                                                     <Eye className="mr-2 h-4 w-4" /> Details
                                                 </DropdownMenuItem>
                                                 {canUpdate && (
-                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(donation); }} className="font-bold text-primary">
+                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(donation); }} className="text-primary">
                                                         <Edit className="mr-2 h-4 w-4" /> Edit
                                                     </DropdownMenuItem>
                                                 )}
                                                 {canUpdate && (
-                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleUnlinkClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-bold cursor-pointer">
+                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleUnlinkClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
                                                         <Link2Off className="mr-2 h-4 w-4" /> Unlink
                                                     </DropdownMenuItem>
                                                 )}

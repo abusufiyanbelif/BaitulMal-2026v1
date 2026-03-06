@@ -234,22 +234,22 @@ export default function BeneficiariesPage() {
             <Input placeholder="Search Name, Phone, Address..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-10 text-sm border-[#E2EEE7] focus-visible:ring-[#1FA34A] font-normal text-[#14532D] rounded-[12px]" />
           </div>
           <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-[#E2EEE7] text-[#14532D] bg-white rounded-[12px]"><SelectValue placeholder="All Statuses" /></SelectTrigger>
-            <SelectContent className="rounded-[12px] shadow-dropdown">
-              <SelectItem value="All" className="font-bold">All Statuses</SelectItem>
-              <SelectItem value="Pending" className="font-bold">Pending</SelectItem>
-              <SelectItem value="Verified" className="font-bold">Verified</SelectItem>
-              <SelectItem value="Given" className="font-bold">Given</SelectItem>
-              <SelectItem value="Hold" className="font-bold">Hold</SelectItem>
-              <SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem>
+            <SelectTrigger className="w-[160px] h-10 text-sm border-[#E2EEE7] text-[#14532D] bg-white rounded-[12px]"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+            <SelectContent className="rounded-[12px] shadow-dropdown border-[#E2EEE7]">
+              <SelectItem value="All">All Statuses</SelectItem>
+              <SelectItem value="Pending">Pending</SelectItem>
+              <SelectItem value="Verified">Verified</SelectItem>
+              <SelectItem value="Given">Given</SelectItem>
+              <SelectItem value="Hold">Hold</SelectItem>
+              <SelectItem value="Need More Details">Need Details</SelectItem>
             </SelectContent>
           </Select>
           <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-[#E2EEE7] text-[#14532D] bg-white rounded-[12px]"><SelectValue placeholder="All Zakat Status" /></SelectTrigger>
-            <SelectContent className="rounded-[12px] shadow-dropdown">
-              <SelectItem value="All" className="font-bold">All Zakat Status</SelectItem>
-              <SelectItem value="Eligible" className="font-bold">Eligible</SelectItem>
-              <SelectItem value="Not Eligible" className="font-bold">Not Eligible</SelectItem>
+            <SelectTrigger className="w-[160px] h-10 text-sm border-[#E2EEE7] text-[#14532D] bg-white rounded-[12px]"><SelectValue placeholder="All Zakat Status" /></SelectTrigger>
+            <SelectContent className="rounded-[12px] shadow-dropdown border-[#E2EEE7]">
+              <SelectItem value="All">All Zakat Status</SelectItem>
+              <SelectItem value="Eligible">Eligible</SelectItem>
+              <SelectItem value="Not Eligible">Not Eligible</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -316,26 +316,26 @@ export default function BeneficiariesPage() {
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-[#1FA34A]"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                                 <DropdownMenuContent align="end" className="rounded-[12px] shadow-dropdown border-[#E2EEE7]">
-                                                                    <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="font-bold text-[#14532D]"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
+                                                                    <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="text-[#14532D]"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
                                                                     {canUpdate && (
                                                                         <DropdownMenuSub>
-                                                                            <DropdownMenuSubTrigger className="font-bold text-[#14532D]">Status</DropdownMenuSubTrigger>
+                                                                            <DropdownMenuSubTrigger className="text-[#14532D]">Status</DropdownMenuSubTrigger>
                                                                             <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-[#E2EEE7]">
                                                                                 <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
-                                                                                    <DropdownMenuRadioItem value="Pending" className="text-xs font-bold">Pending</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Verified" className="text-xs font-bold">Verified</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Given" className="text-xs font-bold">Given</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Hold" className="text-xs font-bold">Hold</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Need More Details" className="text-xs font-bold">Need Details</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Pending" className="text-xs">Pending</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Verified" className="text-xs">Verified</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Given" className="text-xs">Given</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Hold" className="text-xs">Hold</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Need More Details" className="text-xs">Need Details</DropdownMenuRadioItem>
                                                                                 </DropdownMenuRadioGroup>
                                                                             </DropdownMenuSubContent></DropdownMenuPortal>
                                                                         </DropdownMenuSub>
                                                                     )}
-                                                                    {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold text-[#14532D]">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
+                                                                    {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-[#14532D]">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
                                                                     {canUpdate && (
                                                                         <>
-                                                                            <DropdownMenuSeparator />
-                                                                            <DropdownMenuItem onClick={() => handleRemoveFromInitiative(b.id)} className="text-destructive font-bold">
+                                                                            <DropdownMenuSeparator className="bg-[#E2EEE7]" />
+                                                                            <DropdownMenuItem onClick={() => handleRemoveFromInitiative(b.id)} className="text-destructive">
                                                                                 <Trash2 className="mr-2 h-4 w-4" /> Remove From Lead
                                                                             </DropdownMenuItem>
                                                                         </>

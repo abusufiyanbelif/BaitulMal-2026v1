@@ -280,7 +280,7 @@ export default function DonationsPage() {
                 <div className="flex flex-wrap items-center gap-2 pt-4">
                     <Input placeholder="Search donor..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs font-normal" />
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-[140px] h-9 text-xs font-bold"><SelectValue placeholder="Status"/></SelectTrigger>
+                        <SelectTrigger className="w-[140px] h-9 text-xs text-primary"><SelectValue placeholder="Status"/></SelectTrigger>
                         <SelectContent><SelectItem value="All">All statuses</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Canceled">Canceled</SelectItem></SelectContent>
                     </Select>
                 </div>
@@ -310,9 +310,9 @@ export default function DonationsPage() {
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)} className="font-bold text-primary"><Eye className="mr-2 h-4 w-4"/>View details</DropdownMenuItem>
-                                                {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="font-bold text-primary"><Edit className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>}
-                                                {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive font-bold"><Link2Off className="mr-2 h-4 w-4"/>Unlink</DropdownMenuItem>}
+                                                <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)} className="text-primary"><Eye className="mr-2 h-4 w-4"/>View details</DropdownMenuItem>
+                                                {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="text-primary"><Edit className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>}
+                                                {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive"><Link2Off className="mr-2 h-4 w-4"/>Unlink</DropdownMenuItem>}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>

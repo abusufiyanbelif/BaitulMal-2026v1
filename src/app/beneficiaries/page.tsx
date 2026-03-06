@@ -137,22 +137,22 @@ export default function BeneficiariesPage() {
                     <Input placeholder="Search Name, Phone, Address..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-[#E2EEE7] focus-visible:ring-[#1FA34A] font-normal text-[#14532D]" />
                 </div>
                 <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-[#E2EEE7] text-[#14532D]"><SelectValue placeholder="Status" /></SelectTrigger>
+                    <SelectTrigger className="w-[160px] h-10 text-sm border-[#E2EEE7] text-[#14532D]"><SelectValue placeholder="Status" /></SelectTrigger>
                     <SelectContent className="rounded-[12px] border-[#E2EEE7] shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
-                        <SelectItem value="All" className="font-bold">All Statuses</SelectItem>
-                        <SelectItem value="Verified" className="font-bold">Verified</SelectItem>
-                        <SelectItem value="Pending" className="font-bold">Pending</SelectItem>
-                        <SelectItem value="Given" className="font-bold">Given</SelectItem>
-                        <SelectItem value="Hold" className="font-bold">Hold</SelectItem>
-                        <SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem>
+                        <SelectItem value="All">All Statuses</SelectItem>
+                        <SelectItem value="Verified">Verified</SelectItem>
+                        <SelectItem value="Pending">Pending</SelectItem>
+                        <SelectItem value="Given">Given</SelectItem>
+                        <SelectItem value="Hold">Hold</SelectItem>
+                        <SelectItem value="Need More Details">Need Details</SelectItem>
                     </SelectContent>
                 </Select>
                 <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-[#E2EEE7] text-[#14532D]"><SelectValue placeholder="Zakat Status" /></SelectTrigger>
+                    <SelectTrigger className="w-[160px] h-10 text-sm border-[#E2EEE7] text-[#14532D]"><SelectValue placeholder="Zakat Status" /></SelectTrigger>
                     <SelectContent className="rounded-[12px] border-[#E2EEE7] shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
-                        <SelectItem value="All" className="font-bold">All Zakat Status</SelectItem>
-                        <SelectItem value="Eligible" className="font-bold">Eligible</SelectItem>
-                        <SelectItem value="Not Eligible" className="font-bold">Not Eligible</SelectItem>
+                        <SelectItem value="All">All Zakat Status</SelectItem>
+                        <SelectItem value="Eligible">Eligible</SelectItem>
+                        <SelectItem value="Not Eligible">Not Eligible</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -199,17 +199,17 @@ export default function BeneficiariesPage() {
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-[#1FA34A]"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="rounded-[12px] border-[#E2EEE7] shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
-                                    <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="font-bold text-[#14532D]"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="text-[#14532D]"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
                                     {canUpdate && (
                                         <DropdownMenuSub>
-                                        <DropdownMenuSubTrigger className="font-bold text-[#14532D]">Status</DropdownMenuSubTrigger>
+                                        <DropdownMenuSubTrigger className="text-[#14532D]">Status</DropdownMenuSubTrigger>
                                         <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] border-[#E2EEE7] shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
                                             <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
-                                            <DropdownMenuRadioItem value="Pending" className="text-xs font-bold">Pending</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Verified" className="text-xs font-bold">Verified</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Given" className="text-xs font-bold">Given</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Hold" className="text-xs font-bold">Hold</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Need More Details" className="text-xs font-bold">Need Details</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Pending" className="text-xs">Pending</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Verified" className="text-xs">Verified</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Given" className="text-xs">Given</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Hold" className="text-xs">Hold</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Need More Details" className="text-xs">Need Details</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent></DropdownMenuPortal>
                                         </DropdownMenuSub>
@@ -217,7 +217,7 @@ export default function BeneficiariesPage() {
                                     {canDelete && (
                                         <>
                                         <DropdownMenuSeparator className="bg-[#E2EEE7]" />
-                                        <DropdownMenuItem onClick={async () => { if(confirm('Are you sure?')) { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); } }} className="text-destructive font-bold"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={async () => { if(confirm('Are you sure?')) { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); } }} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
                                         </>
                                     )}
                                 </DropdownMenuContent>
