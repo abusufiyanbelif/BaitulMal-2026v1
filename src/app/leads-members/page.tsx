@@ -132,7 +132,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                         {canCreate && (
                             <DropdownMenuItem onClick={() => handleCopyClick(lead)} className="cursor-pointer font-bold text-primary">
                                 <Copy className="mr-2 h-4 w-4" />
-                                Copy Appeal
+                                Copy Lead
                             </DropdownMenuItem>
                         )}
                         {canDelete && (
