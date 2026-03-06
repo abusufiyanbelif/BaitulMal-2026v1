@@ -5,12 +5,12 @@
 @layer base {
   :root, .light {
     --background: 0 0% 100%;
-    --foreground: 160 25% 15%; /* Deep charcoal green instead of black */
+    --foreground: 160 25% 15%;
     --card: 0 0% 100%;
     --card-foreground: 160 25% 15%;
     --popover: 0 0% 100%;
     --popover-foreground: 160 25% 15%;
-    --primary: 160 70% 40%; /* Classic Indian Green */
+    --primary: 160 70% 40%;
     --primary-foreground: 0 0% 100%;
     --secondary: 160 70% 95%;
     --secondary-foreground: 160 70% 20%;
@@ -60,12 +60,12 @@
 
   .bms3 {
     --background: 0 0% 98%;
-    --foreground: 160 60% 10%; /* Rich deep institutional green, no black */
+    --foreground: 160 60% 10%;
     --card: 0 0% 100%;
     --card-foreground: 160 60% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 160 60% 10%;
-    --primary: 160 84% 20%; /* Rich Deep Green */
+    --primary: 160 84% 20%;
     --primary-foreground: 0 0% 100%;
     --secondary: 160 40% 92%;
     --secondary-foreground: 160 84% 15%;
@@ -81,17 +81,41 @@
     --chart-3: 217.2 91.2% 59.8%;
   }
 
+  .bms3-a {
+    --background: 140 33% 97%;
+    --foreground: 129 27% 29%;
+    --card: 0 0% 100%;
+    --card-foreground: 129 27% 29%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 144 61% 20%;
+    --primary: 140 68% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 143 58% 91%;
+    --secondary-foreground: 144 61% 20%;
+    --muted: 140 33% 97%;
+    --muted-foreground: 215 9% 46%;
+    --accent: 140 68% 38%;
+    --accent-foreground: 0 0% 100%;
+    --border: 144 26% 91%;
+    --input: 144 26% 91%;
+    --ring: 140 68% 38%;
+    --chart-1: 140 68% 38%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 38 92% 50%;
+  }
+
   .bmss-brand-warm {
     --primary: 24 95% 40%; 
     --ring: 24 95% 40%;
     --background: 30 20% 98%;
-    --foreground: 30 30% 12%; /* No black */
+    --foreground: 30 30% 12%;
   }
 
   .ocean-blue {
     --primary: 217 91% 40%;
     --ring: 217 91% 40%;
-    --foreground: 217 30% 15%; /* No black */
+    --background: 217 20% 98%;
+    --foreground: 217 30% 15%;
   }
 }
 
