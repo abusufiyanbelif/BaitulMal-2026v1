@@ -310,8 +310,13 @@ export default function LeadSummaryPage() {
         setExistingDocuments(prev => prev.map(doc => doc.url === urlToToggle ? { ...doc, isPublic: !doc.isPublic } : doc));
     };
 
+    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
+    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
+    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
+    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.update', false) || !!getNestedValue(userProfile, 'permissions.leads-members.summary.update', false);
+
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
-        if (!leadDocRef || !lead?.documents || !canUpdate) return;
+        if (!leadDocRef || !lead?.documents || !canUpdateSummary) return;
         const newDocs = lead.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
         try {
             await updateDoc(leadDocRef, { documents: newDocs, updatedAt: serverTimestamp() });
@@ -326,7 +331,7 @@ export default function LeadSummaryPage() {
     };
 
     const handleSave = async () => {
-        if (!leadDocRef || !userProfile || !canUpdate || !storage) return;
+        if (!leadDocRef || !userProfile || !canUpdateSummary || !storage) return;
         const hasFileToUpload = !!imageFile || newDocuments.length > 0;
         if (hasFileToUpload && !auth?.currentUser) {
             toast({ title: "Authentication Error", description: "User Not Authenticated Yet.", variant: "destructive" });
@@ -383,11 +388,6 @@ export default function LeadSummaryPage() {
     const chartData = useMemo(() => {
         return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
     }, [fundingData]);
-
-    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
-    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
-    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
-    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.update', false) || !!getNestedValue(userProfile, 'permissions.leads-members.summary.update', false);
 
     const FallbackIcon = lead?.purpose === 'Education' ? GraduationCap : lead?.purpose === 'Medical' ? HeartPulse : lead?.purpose === 'Relief' ? LifeBuoy : lead?.purpose === 'Other' ? Info : HandHelping;
 

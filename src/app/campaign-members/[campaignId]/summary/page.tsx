@@ -305,9 +305,15 @@ export default function CampaignSummaryPage() {
     const handleToggleDocumentPublic = (urlToToggle: string) => {
         setExistingDocuments(prev => prev.map(doc => doc.url === urlToToggle ? { ...doc, isPublic: !doc.isPublic } : doc));
     };
+
+    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
+    const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
+    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
+    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
+    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false) || !!getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
     
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
-        if (!campaignDocRef || !campaign?.documents || !canUpdate) return;
+        if (!campaignDocRef || !campaign?.documents || !canUpdateSummary) return;
         const newDocuments = campaign.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
         try {
             await updateDoc(campaignDocRef, { documents: newDocuments, updatedAt: serverTimestamp() });
@@ -322,7 +328,7 @@ export default function CampaignSummaryPage() {
     };
 
     const handleSave = async () => {
-        if (!campaignDocRef || !userProfile || !canUpdate || !storage) return;
+        if (!campaignDocRef || !userProfile || !canUpdateSummary || !storage) return;
         const hasFileToUpload = !!imageFile || newDocuments.length > 0;
         if (hasFileToUpload && !auth?.currentUser) {
             toast({ title: "Authentication Error", description: "User Not Authenticated Yet.", variant: "destructive" });
@@ -382,12 +388,6 @@ export default function CampaignSummaryPage() {
     const chartData = useMemo(() => {
         return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value })) : [];
     }, [fundingData]);
-
-    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
-    const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
-    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
-    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
-    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false) || !!getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
 
     const FallbackIcon = campaign?.category === 'Ration' ? Utensils : campaign?.category === 'Relief' ? LifeBuoy : HandHelping;
 
