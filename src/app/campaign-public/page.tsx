@@ -12,10 +12,10 @@ export default function PublicCampaignPage() {
   return (
     <main className="container mx-auto p-4 md:p-8">
       <div className="mb-4">
-        <Button variant="outline" asChild>
+        <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to home
+            Back To Home
           </Link>
         </Button>
       </div>

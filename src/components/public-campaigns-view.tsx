@@ -52,7 +52,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                             <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 text-primary">
                                 {campaign.campaignNumber && <span className="text-primary">#{campaign.campaignNumber} </span>}{campaign.name}
                             </CardTitle>
-                            <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground">{campaign.startDate} to {campaign.endDate}</CardDescription>
+                            <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground">{campaign.startDate} To {campaign.endDate}</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-grow space-y-3 p-4 pt-0">
                             <div className="flex justify-between items-center text-xs">
@@ -77,7 +77,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                         <CardFooter className="p-2 border-t bg-muted/5">
                             <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
                                 <Link href={`/campaign-public/${campaign.id}/summary`}>
-                                    View details
+                                    View Details
                                 </Link>
                             </Button>
                         </CardFooter>
@@ -165,28 +165,28 @@ export function PublicCampaignsView() {
   }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, dateRange, selectedYear, selectedMonth]);
 
   const sections = [
-    { id: 'ongoing_upcoming', title: 'Ongoing & upcoming campaigns', items: filteredCampaigns.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
-    { id: 'completed', title: 'Past achievements', items: filteredCampaigns.filter(c => c.status === 'Completed') }
+    { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Campaigns', items: filteredCampaigns.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
+    { id: 'completed', title: 'Past Achievements', items: filteredCampaigns.filter(c => c.status === 'Completed') }
   ].filter(s => s.items.length > 0);
 
   return (
     <div className="space-y-8">
        <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tighter text-primary">Our campaigns</h1>
-          <p className="text-primary text-lg font-bold">Transparent tracking of our community support projects.</p>
+          <h1 className="text-4xl font-bold tracking-tighter text-primary">Our Campaigns</h1>
+          <p className="text-primary text-lg font-bold">Transparent Tracking Of Our Community Support Projects.</p>
           
           <div className="space-y-2">
-            <NewsTicker items={activeTickerItems} label="Live updates" variant="active" />
-            <NewsTicker items={recentDonationsFormatted} label="Donation updates" variant="donation" />
-            <NewsTicker items={completedTickerItems} label="Recently completed" variant="completed" />
+            <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
+            <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
+            <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
           </div>
 
           <div className="flex flex-wrap items-center gap-2 pt-4 bg-primary/5 p-4 rounded-xl border border-primary/20">
-              <Input placeholder="Search campaigns..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-bold" disabled={isLoading}/>
-              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All">All categories</SelectItem><SelectItem value="Ration">Ration</SelectItem><SelectItem value="Relief">Relief</SelectItem><SelectItem value="General">General</SelectItem></SelectContent></Select>
+              <Input placeholder="Search Campaigns..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-bold" disabled={isLoading}/>
+              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem></SelectContent></Select>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Categories</SelectItem><SelectItem value="Ration" className="font-bold">Ration</SelectItem><SelectItem value="Relief" className="font-bold">Relief</SelectItem><SelectItem value="General" className="font-bold">General</SelectItem></SelectContent></Select>
               <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
-                  <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+                  <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select>
                   <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                   {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
               </div>
@@ -201,7 +201,7 @@ export function PublicCampaignsView() {
         <Accordion type="multiple" defaultValue={['ongoing_upcoming']} className="space-y-6">
           {sections.map(section => (
             <AccordionItem key={section.id} value={section.id} className="border-none">
-              <AccordionTrigger className="hover:no-underline group">
+              <AccordionTrigger className="hover:no-underline group font-bold">
                 <div className="flex items-center gap-4">
                   <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
                   <span className="text-2xl font-bold tracking-tight text-primary">{section.title}</span>
@@ -217,7 +217,7 @@ export function PublicCampaignsView() {
       ) : (
         <div className="text-center py-20 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
             <FolderKanban className="h-12 w-12 mx-auto text-primary/20 mb-4" />
-            <p className="text-primary/60 font-bold uppercase tracking-widest text-sm">No campaigns found matching criteria.</p>
+            <p className="text-primary/60 font-bold uppercase tracking-widest text-sm">No Campaigns Found Matching Criteria.</p>
         </div>
       )}
     </div>

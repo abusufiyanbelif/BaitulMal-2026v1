@@ -122,7 +122,7 @@ export function PublicLeadsView() {
           };
       });
 
-    return [...activeCampaigns, ...activeLeads];
+    return [...activeTickerItems, ...activeLeads];
   }, [campaignsWithProgress, leadsWithProgress]);
 
   const completedTickerItems = useMemo(() => {
@@ -173,7 +173,7 @@ export function PublicLeadsView() {
     <div className="space-y-8">
       <div className="space-y-4">
           <h1 className="text-4xl font-bold tracking-tight text-primary">Public Leads</h1>
-          <p className="text-lg font-bold text-primary">Verified community appeals requiring your support.</p>
+          <p className="text-lg font-bold text-primary">Verified Community Appeals Requiring Your Support.</p>
           
           <div className="space-y-2">
             <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
@@ -182,11 +182,11 @@ export function PublicLeadsView() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 pt-4 bg-primary/5 p-4 rounded-xl border border-primary/20">
-              <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-primary font-bold" disabled={isLoading}/>
-              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Upcoming">Upcoming</SelectItem></SelectContent></Select>
-              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
+              <Input placeholder="Search Appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-primary font-bold text-primary" disabled={isLoading}/>
+              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem></SelectContent></Select>
+              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</SelectContent></Select>
               <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
-                  <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+                  <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select>
                   <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                   {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
               </div>
