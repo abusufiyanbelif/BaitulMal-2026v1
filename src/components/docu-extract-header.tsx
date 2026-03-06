@@ -23,6 +23,10 @@ import { Badge } from '@/components/ui/badge';
 import { getInitials } from '@/lib/utils';
 import { NotificationBell } from './notification-bell';
 
+/**
+ * Institutional Header - Fully theme-reactive.
+ * Uses semantic background and border classes to adapt to all 14 themes.
+ */
 export function DocuExtractHeader() {
   const session = useSession();
   const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
@@ -46,7 +50,7 @@ export function DocuExtractHeader() {
   const homeHref = user ? '/dashboard' : '/';
   
   return (
-    <header className="bg-[#FFFFFF] border-b border-[#E2EEE7] sticky top-0 z-50 w-full py-4 flex items-center transition-all duration-300 shadow-sm">
+    <header className="bg-background/95 backdrop-blur-md border-b border-border sticky top-0 z-50 w-full py-4 flex items-center transition-all duration-300 shadow-sm">
       <div className="container mx-auto flex justify-between items-center px-4">
         <Link href={homeHref} className="flex items-center gap-4 group transition-all hover:scale-[1.01]">
           <div className="relative flex-shrink-0 flex items-center justify-center h-20 w-20 bg-primary/5 rounded-xl border border-primary/10 overflow-hidden">
@@ -65,7 +69,7 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-[20px] font-semibold text-[#14532D] tracking-tight leading-tight transition-colors group-hover:opacity-80">
+          <h1 className="text-[20px] font-bold text-primary tracking-tight leading-tight transition-colors group-hover:opacity-80">
             {isBrandingLoading ? <Skeleton className="h-6 w-64" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
           </h1>
         </Link>
@@ -84,7 +88,7 @@ export function DocuExtractHeader() {
                           src={userProfile?.idProofUrl || ''}
                           alt={userProfile?.name || 'User'}
                         />
-                        <AvatarFallback className="bg-[#E8F7EE] text-[#1FA34A] font-bold text-sm">
+                        <AvatarFallback className="bg-secondary text-primary font-bold text-sm">
                           {getInitials(userProfile?.name)}
                         </AvatarFallback>
                       </Avatar>
@@ -93,30 +97,30 @@ export function DocuExtractHeader() {
                   <DropdownMenuContent className="w-64 mt-2 animate-fade-in-zoom" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal p-4">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-bold tracking-tight text-[#14532D]">
+                        <p className="text-sm font-bold tracking-tight text-primary">
                           {userProfile?.name || 'User'}
                         </p>
                         <p className="text-xs font-normal text-muted-foreground pt-1 truncate">
                           {user.email}
                         </p>
-                        <Badge variant="outline" className="w-fit mt-2 text-[10px] font-bold border-primary/20 text-[#1FA34A]">Member Account</Badge>
+                        <Badge variant="outline" className="w-fit mt-2 text-[10px] font-bold border-primary/20 text-primary">Member Account</Badge>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                     <DropdownMenuItem asChild className="cursor-pointer h-11 text-primary">
+                     <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary">
                       <Link href="/dashboard" className="flex items-center w-full">
                         <LayoutDashboard className="mr-2 h-4 w-4" />
                         <span>Member Dashboard</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="cursor-pointer h-11 text-primary">
+                    <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary">
                       <Link href="/profile" className="flex items-center w-full">
                         <User className="mr-2 h-4 w-4" />
                         <span>Profile Settings</span>
                       </Link>
                     </DropdownMenuItem>
                     {userProfile.role === 'Admin' && (
-                      <DropdownMenuItem asChild className="cursor-pointer h-11 text-primary">
+                      <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary">
                         <Link href="/settings" className="flex items-center w-full">
                           <Settings className="mr-2 h-4 w-4" />
                           <span>System Administration</span>
@@ -126,7 +130,7 @@ export function DocuExtractHeader() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleLogout}
-                      className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer h-11"
+                      className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer h-11 font-normal"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Sign Out</span>
@@ -136,7 +140,7 @@ export function DocuExtractHeader() {
               </div>
             ) : (
               pathname !== '/login' && (
-                <Button asChild className="font-bold tracking-tight text-xs bg-[#1FA34A] text-white hover:bg-[#16863B] shadow-md px-6 h-10 transition-all rounded-[12px]">
+                <Button asChild className="font-bold tracking-tight text-xs shadow-md px-6 h-10 transition-all rounded-[12px]">
                     <Link href="/login">
                         <LogIn className="mr-2 h-4 w-4" />
                         <span>Member Login</span>
