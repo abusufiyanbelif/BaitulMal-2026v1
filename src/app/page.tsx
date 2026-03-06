@@ -63,56 +63,75 @@ export default function Home() {
 
     const heroTitle = brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.';
     const heroDescription = brandingSettings?.heroDescription || `Join ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'} To Make A Lasting Impact. Your Contribution Brings Hope, Changes Lives, And Empowers Our Community.`;
-    const showRecentVerification = brandingSettings?.isRecentVerificationVisible !== false;
+    
+    // Visibility flags from branding settings
+    const isHeroVisible = brandingSettings?.isHeroVisible !== false;
+    const isNewsTickerVisible = brandingSettings?.isNewsTickerVisible !== false;
+    const isWisdomVisible = brandingSettings?.isWisdomVisible !== false;
+    const isOverallSummaryVisible = brandingSettings?.isOverallSummaryVisible !== false;
+    const isDonationSummaryVisible = brandingSettings?.isDonationSummaryVisible !== false;
+    const isPurposeSummaryVisible = brandingSettings?.isPurposeSummaryVisible !== false;
+    const isInitiativeSummaryVisible = brandingSettings?.isInitiativeSummaryVisible !== false;
+    const isRecentVerificationVisible = brandingSettings?.isRecentVerificationVisible !== false;
 
     return (
         <div className="container mx-auto p-4 md:p-8 space-y-10 text-primary">
             {/* Hero Section */}
-            <section className="text-center py-12 md:py-20 animate-fade-in-zoom">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter text-primary max-w-5xl mx-auto">
-                    {heroTitle}
-                </h1>
-                <p className="mt-6 max-w-3xl mx-auto text-lg text-primary font-normal leading-relaxed opacity-80">
-                    {heroDescription}
-                </p>
-                <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md bg-primary text-white px-8 h-12">
-                        <Link href="/campaign-public">
-                            <FolderKanban className="mr-2 h-5 w-5" />
-                            Our Campaigns
-                        </Link>
-                    </Button>
-                    <Button asChild size="lg" variant="secondary" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md px-8 h-12">
-                        <Link href="/leads-public">
-                            <Lightbulb className="mr-2 h-5 w-5" />
-                            Public Appeals (Leads)
-                        </Link>
-                    </Button>
-                </div>
-            </section>
+            {isHeroVisible && (
+                <section className="text-center py-12 md:py-20 animate-fade-in-zoom">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter text-primary max-w-5xl mx-auto">
+                        {heroTitle}
+                    </h1>
+                    <p className="mt-6 max-w-3xl mx-auto text-lg text-primary font-normal leading-relaxed opacity-80">
+                        {heroDescription}
+                    </p>
+                    <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+                        <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md bg-primary text-white px-8 h-12">
+                            <Link href="/campaign-public">
+                                <FolderKanban className="mr-2 h-5 w-5" />
+                                Our Campaigns
+                            </Link>
+                        </Button>
+                        <Button asChild size="lg" variant="secondary" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md px-8 h-12">
+                            <Link href="/leads-public">
+                                <Lightbulb className="mr-2 h-5 w-5" />
+                                Public Appeals (Leads)
+                            </Link>
+                        </Button>
+                    </div>
+                </section>
+            )}
 
             {/* News & Updates */}
-            <div className="space-y-2 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
-                <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
-                <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
-            </div>
+            {isNewsTickerVisible && (
+                <div className="space-y-2 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                    <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
+                    <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
+                    <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
+                </div>
+            )}
 
-            <div className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-                <WisdomAndReflection />
-            </div>
+            {isWisdomVisible && (
+                <div className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+                    <WisdomAndReflection />
+                </div>
+            )}
 
             {/* Detailed Data Sections */}
             <div className="space-y-10 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
-                <OverallFundingSummary />
-                <div className="grid gap-10 lg:grid-cols-2">
-                    <DonationSummary />
-                    <PurposeFundingSummary />
-                </div>
-                <LeadAndCampaignSummary />
+                {isOverallSummaryVisible && <OverallFundingSummary />}
+                
+                {(isDonationSummaryVisible || isPurposeSummaryVisible) && (
+                    <div className="grid gap-10 lg:grid-cols-2">
+                        {isDonationSummaryVisible && <DonationSummary />}
+                        {isPurposeSummaryVisible && <PurposeFundingSummary />}
+                    </div>
+                )}
+                
+                {isInitiativeSummaryVisible && <LeadAndCampaignSummary />}
                 
                 {/* Recent Verification Ticker at end */}
-                {showRecentVerification && (
+                {isRecentVerificationVisible && (
                     <RecentVerificationTicker items={recentDonationsFormatted} />
                 )}
             </div>

@@ -14,7 +14,7 @@ import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, ChevronDown, Monitor, FileText, Smartphone, CheckCircle2 } from 'lucide-react';
+import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, ChevronDown, Monitor, FileText, Smartphone, CheckCircle2, Megaphone, Quote, Target, PieChart, Info, HeartHandshake } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,6 +34,13 @@ interface FormDataType {
     logoHeight: number | string;
     heroTitle: string;
     heroDescription: string;
+    isHeroVisible: boolean;
+    isNewsTickerVisible: boolean;
+    isWisdomVisible: boolean;
+    isOverallSummaryVisible: boolean;
+    isDonationSummaryVisible: boolean;
+    isPurposeSummaryVisible: boolean;
+    isInitiativeSummaryVisible: boolean;
     isRecentVerificationVisible: boolean;
     qrCodeUrl: string;
     qrWidth: number | string;
@@ -86,6 +93,38 @@ function VerifiableItem({ icon: Icon, label, value, isEditing, id, onChange, pla
                         {value || <span className="italic opacity-50">Not Configured</span>}
                     </p>
                 )}
+            </div>
+        </div>
+    );
+}
+
+interface VisibilityToggleProps {
+    id: string;
+    label: string;
+    description: string;
+    icon: any;
+    checked: boolean;
+    onChange: (val: boolean) => void;
+    disabled: boolean;
+}
+
+function VisibilityToggle({ id, label, description, icon: Icon, checked, onChange, disabled }: VisibilityToggleProps) {
+    return (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-muted/5 gap-4 transition-all hover:border-primary/20">
+            <div className="space-y-1 flex-1">
+                <h3 className="font-bold text-primary text-sm tracking-tight flex items-center gap-2">
+                    <Icon className="h-4 w-4" /> {label}
+                </h3>
+                <p className="text-xs text-muted-foreground font-normal">{description}</p>
+            </div>
+            <div className="flex items-center space-x-2">
+                <Label htmlFor={id} className="font-bold text-xs opacity-60 tracking-tight">Visible</Label>
+                <Switch 
+                    id={id} 
+                    checked={checked} 
+                    onCheckedChange={onChange} 
+                    disabled={disabled} 
+                />
             </div>
         </div>
     );
@@ -165,6 +204,13 @@ export default function AppSettingsPage() {
                 logoHeight: brandingSettings?.logoHeight || 40,
                 heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.',
                 heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.',
+                isHeroVisible: brandingSettings?.isHeroVisible ?? true,
+                isNewsTickerVisible: brandingSettings?.isNewsTickerVisible ?? true,
+                isWisdomVisible: brandingSettings?.isWisdomVisible ?? true,
+                isOverallSummaryVisible: brandingSettings?.isOverallSummaryVisible ?? true,
+                isDonationSummaryVisible: brandingSettings?.isDonationSummaryVisible ?? true,
+                isPurposeSummaryVisible: brandingSettings?.isPurposeSummaryVisible ?? true,
+                isInitiativeSummaryVisible: brandingSettings?.isInitiativeSummaryVisible ?? true,
                 isRecentVerificationVisible: brandingSettings?.isRecentVerificationVisible ?? true,
                 qrCodeUrl: paymentSettings?.qrCodeUrl || '',
                 qrWidth: paymentSettings?.qrWidth || 120,
@@ -275,6 +321,13 @@ export default function AppSettingsPage() {
                 logoHeight: Number(editableData.logoHeight) || null,
                 heroTitle: editableData.heroTitle,
                 heroDescription: editableData.heroDescription,
+                isHeroVisible: editableData.isHeroVisible,
+                isNewsTickerVisible: editableData.isNewsTickerVisible,
+                isWisdomVisible: editableData.isWisdomVisible,
+                isOverallSummaryVisible: editableData.isOverallSummaryVisible,
+                isDonationSummaryVisible: editableData.isDonationSummaryVisible,
+                isPurposeSummaryVisible: editableData.isPurposeSummaryVisible,
+                isInitiativeSummaryVisible: editableData.isInitiativeSummaryVisible,
                 isRecentVerificationVisible: editableData.isRecentVerificationVisible,
             };
             batch.set(doc(firestore, 'settings', 'branding'), brandingData, { merge: true });
@@ -343,6 +396,13 @@ export default function AppSettingsPage() {
         logoHeight: brandingSettings?.logoHeight || 40,
         heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.',
         heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact.',
+        isHeroVisible: brandingSettings?.isHeroVisible ?? true,
+        isNewsTickerVisible: brandingSettings?.isNewsTickerVisible ?? true,
+        isWisdomVisible: brandingSettings?.isWisdomVisible ?? true,
+        isOverallSummaryVisible: brandingSettings?.isOverallSummaryVisible ?? true,
+        isDonationSummaryVisible: brandingSettings?.isDonationSummaryVisible ?? true,
+        isPurposeSummaryVisible: brandingSettings?.isPurposeSummaryVisible ?? true,
+        isInitiativeSummaryVisible: brandingSettings?.isInitiativeSummaryVisible ?? true,
         isRecentVerificationVisible: brandingSettings?.isRecentVerificationVisible ?? true,
         qrCodeUrl: paymentSettings?.qrCodeUrl || '',
         qrWidth: paymentSettings?.qrWidth || 120,
@@ -374,6 +434,13 @@ export default function AppSettingsPage() {
             logoHeight: brandingSettings?.logoHeight || 40,
             heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.',
             heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact.',
+            isHeroVisible: brandingSettings?.isHeroVisible ?? true,
+            isNewsTickerVisible: brandingSettings?.isNewsTickerVisible ?? true,
+            isWisdomVisible: brandingSettings?.isWisdomVisible ?? true,
+            isOverallSummaryVisible: brandingSettings?.isOverallSummaryVisible ?? true,
+            isDonationSummaryVisible: brandingSettings?.isDonationSummaryVisible ?? true,
+            isPurposeSummaryVisible: brandingSettings?.isPurposeSummaryVisible ?? true,
+            isInitiativeSummaryVisible: brandingSettings?.isInitiativeSummaryVisible ?? true,
             isRecentVerificationVisible: brandingSettings?.isRecentVerificationVisible ?? true,
             qrCodeUrl: paymentSettings?.qrCodeUrl || '',
             qrWidth: paymentSettings?.qrWidth || 120,
@@ -476,22 +543,79 @@ export default function AppSettingsPage() {
 
                         <Separator className="bg-primary/10" />
 
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-muted/5 gap-4 transition-all hover:border-primary/20">
-                            <div className="space-y-1 flex-1">
-                                <h3 className="font-bold text-primary text-sm tracking-tight flex items-center gap-2">
-                                    <CheckCircle2 className="h-4 w-4" /> Show Recent Verification Ticker
-                                </h3>
-                                <p className="text-xs text-muted-foreground font-normal">Display the animated sliding ticker of confirmed donations on the homepage.</p>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Label htmlFor="recent-verification-visibility" className="font-bold text-xs opacity-60 tracking-tight">Visible</Label>
-                                <Switch 
-                                    id="recent-verification-visibility" 
-                                    checked={displayData.isRecentVerificationVisible} 
-                                    onCheckedChange={(val) => handleFieldChange('isRecentVerificationVisible', val)} 
-                                    disabled={isFormDisabled} 
-                                />
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <VisibilityToggle 
+                                id="hero-visibility"
+                                label="Show Hero Section"
+                                description="Display the primary title and description at the top of the landing page."
+                                icon={Monitor}
+                                checked={displayData.isHeroVisible}
+                                onChange={(val) => handleFieldChange('isHeroVisible', val)}
+                                disabled={isFormDisabled}
+                            />
+                            <VisibilityToggle 
+                                id="news-ticker-visibility"
+                                label="Show News Tickers"
+                                description="Display rolling updates for active campaigns and recent donations."
+                                icon={Megaphone}
+                                checked={displayData.isNewsTickerVisible}
+                                onChange={(val) => handleFieldChange('isNewsTickerVisible', val)}
+                                disabled={isFormDisabled}
+                            />
+                            <VisibilityToggle 
+                                id="wisdom-visibility"
+                                label="Show Hikmat Aur Fikr"
+                                description="Display daily religious wisdom and reflections."
+                                icon={Quote}
+                                checked={displayData.isWisdomVisible}
+                                onChange={(val) => handleFieldChange('isWisdomVisible', val)}
+                                disabled={isFormDisabled}
+                            />
+                            <VisibilityToggle 
+                                id="overall-summary-visibility"
+                                label="Show Overall Funding"
+                                description="Display the combined fundraising progress for all verified goals."
+                                icon={Target}
+                                checked={displayData.isOverallSummaryVisible}
+                                onChange={(val) => handleFieldChange('isOverallSummaryVisible', val)}
+                                disabled={isFormDisabled}
+                            />
+                            <VisibilityToggle 
+                                id="donation-summary-visibility"
+                                label="Show Yearly Summary"
+                                description="Display historical financial data and category breakdowns."
+                                icon={PieChart}
+                                checked={displayData.isDonationSummaryVisible}
+                                onChange={(val) => handleFieldChange('isDonationSummaryVisible', val)}
+                                disabled={isFormDisabled}
+                            />
+                            <VisibilityToggle 
+                                id="purpose-summary-visibility"
+                                label="Show Impact By Purpose"
+                                description="Display verified fund utilization categorized by institutional purpose."
+                                icon={HeartHandshake}
+                                checked={displayData.isPurposeSummaryVisible}
+                                onChange={(val) => handleFieldChange('isPurposeSummaryVisible', val)}
+                                disabled={isFormDisabled}
+                            />
+                            <VisibilityToggle 
+                                id="initiative-summary-visibility"
+                                label="Show Initiative Summaries"
+                                description="Display counts and lists for active campaigns and leads."
+                                icon={Building2}
+                                checked={displayData.isInitiativeSummaryVisible}
+                                onChange={(val) => handleFieldChange('isInitiativeSummaryVisible', val)}
+                                disabled={isFormDisabled}
+                            />
+                            <VisibilityToggle 
+                                id="recent-verification-visibility"
+                                label="Show Verification Ticker"
+                                description="Display the animated sliding ticker of confirmed donations."
+                                icon={CheckCircle2}
+                                checked={displayData.isRecentVerificationVisible}
+                                onChange={(val) => handleFieldChange('isRecentVerificationVisible', val)}
+                                disabled={isFormDisabled}
+                            />
                         </div>
                     </div>
                 </SettingsSection>
@@ -501,7 +625,7 @@ export default function AppSettingsPage() {
                     title="Organization Details" 
                     description="Public profile, visual identity, and contact information."
                     icon={Building2}
-                    defaultOpen={true}
+                    defaultOpen={false}
                 >
                     <div className="space-y-8">
                         {/* Identity & Registration Heading */}

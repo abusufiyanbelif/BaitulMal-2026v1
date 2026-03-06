@@ -12,6 +12,13 @@ export interface BrandingSettings extends DocumentData {
   logoHeight?: number;
   heroTitle?: string;
   heroDescription?: string;
+  isHeroVisible?: boolean;
+  isNewsTickerVisible?: boolean;
+  isWisdomVisible?: boolean;
+  isOverallSummaryVisible?: boolean;
+  isDonationSummaryVisible?: boolean;
+  isPurposeSummaryVisible?: boolean;
+  isInitiativeSummaryVisible?: boolean;
   isRecentVerificationVisible?: boolean;
 }
 
