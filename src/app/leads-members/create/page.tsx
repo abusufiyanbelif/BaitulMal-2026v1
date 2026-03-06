@@ -1,9 +1,9 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage, useMemoFirebase, useAuth } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage, useMemoFirebase, useAuth, useDoc, doc } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Image from 'next/image';
@@ -22,7 +22,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import type { Lead, CampaignDocument } from '@/lib/types';
+import type { Lead } from '@/lib/types';
 import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters } from '@/lib/modules';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -30,7 +30,7 @@ import { FileUploader } from '@/components/file-uploader';
 import { BrandedLoader } from '@/components/branded-loader';
 
 const leadSchema = z.object({
-  name: z.string().min(3, 'Lead name must be at least 3 characters.'),
+  name: z.string().min(3, 'Lead Name Must Be At Least 3 Characters.'),
   description: z.string().optional(),
   purpose: z.enum(['Relief', 'General', 'Education', 'Medical', 'Other']),
   purposeDetails: z.string().optional(),
@@ -39,8 +39,8 @@ const leadSchema = z.object({
   status: z.enum(['Upcoming', 'Active', 'Completed']),
   authenticityStatus: z.enum(['Pending Verification', 'Verified', 'Rejected', 'On Hold', 'Need More Details']),
   publicVisibility: z.enum(['Hold', 'Ready to Publish', 'Published']),
-  startDate: z.string().min(1, 'Start date is required.'),
-  endDate: z.string().min(1, 'End date is required.'),
+  startDate: z.string().min(1, 'Start Date Is Required.'),
+  endDate: z.string().min(1, 'End Date Is Required.'),
   requiredAmount: z.coerce.number().min(0).optional(),
   targetAmount: z.coerce.number().min(0).optional(),
   allowedDonationTypes: z.array(z.enum(donationCategories)).optional(),
@@ -52,7 +52,7 @@ const leadSchema = z.object({
   seriousness: z.enum(leadSeriousnessLevels).optional().or(z.literal('')),
   imageFile: z.any().optional(),
 }).refine(data => new Date(data.startDate) <= new Date(data.endDate), {
-    message: "End date cannot be before the start date.",
+    message: "End Date Cannot Be Before The Start Date.",
     path: ["endDate"],
 }).refine(data => {
     const selectedPurpose = leadPurposesConfig.find(p => p.id === data.purpose);
@@ -61,14 +61,8 @@ const leadSchema = z.object({
     }
     return true;
 }, {
-    message: 'Category is required for this purpose.',
+    message: 'Category Is Required For This Purpose.',
     path: ['category'],
-}).refine(data => data.purpose !== 'Other' || (data.purpose === 'Other' && data.purposeDetails && data.purposeDetails.trim().length > 0), {
-  message: "Details for 'Other' purpose are required.",
-  path: ['purposeDetails'],
-}).refine(data => data.category !== 'Other' || (data.category === 'Other' && data.categoryDetails && data.categoryDetails.trim().length > 0), {
-  message: "Details for 'Other' category are required.",
-  path: ['categoryDetails'],
 });
 
 type LeadFormValues = z.infer<typeof leadSchema>;
@@ -84,6 +78,10 @@ export default function CreateLeadPage() {
   const [loadingMessage, setLoadingMessage] = useState('');
   
   const { userProfile, isLoading: isProfileLoading } = useSession();
+
+  const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_config') : null, [firestore]);
+  const { data: configSettings } = useDoc<any>(configRef);
+  const mandatoryFields = useMemo(() => configSettings?.mandatoryFields || {}, [configSettings]);
   
   const [isDuplicateAlertOpen, setIsDuplicateAlertOpen] = useState(false);
   const [leadDataToCreate, setLeadDataToCreate] = useState<LeadFormValues | null>(null);
@@ -117,8 +115,6 @@ export default function CreateLeadPage() {
   });
 
   const purpose = form.watch('purpose');
-  const category = form.watch('category');
-
   const availableCategories = useMemo(() => {
     const selectedPurpose = leadPurposesConfig.find(p => p.id === purpose);
     return selectedPurpose?.categories || [];
@@ -146,16 +142,32 @@ export default function CreateLeadPage() {
   };
 
   const handleCreateLead = async (data: LeadFormValues) => {
+    const missingFields: string[] = [];
+    Object.entries(mandatoryFields).forEach(([field, isMandatory]) => {
+        if (isMandatory && !data[field as keyof LeadFormValues]) {
+            missingFields.push(field);
+        }
+    });
+
+    if (missingFields.length > 0) {
+        toast({
+            title: "Required Fields Missing",
+            description: `Please Complete The Following: ${missingFields.join(', ')}`,
+            variant: "destructive",
+        });
+        return;
+    }
+
     if (!firestore || !canCreate || !userProfile || !storage) return;
     setIsLoading(true);
     setProgress(5);
-    setLoadingMessage('Initializing lead creation...');
+    setLoadingMessage('Initializing Lead Creation...');
 
     const { imageFile, ...leadCoreData } = data;
     
     const hasImageToUpload = imageFile && imageFile.length > 0;
     if ((hasImageToUpload || documentsToUpload.length > 0) && !auth?.currentUser) {
-        toast({ title: 'Authentication Error', description: 'User not authenticated yet. Please wait.', variant: 'destructive' });
+        toast({ title: 'Authentication Error', description: 'User Not Authenticated Yet. Please Wait.', variant: 'destructive' });
         setIsLoading(false);
         return;
     }
@@ -168,7 +180,7 @@ export default function CreateLeadPage() {
     
     if (hasImageToUpload) {
         setProgress(15);
-        setLoadingMessage('Optimizing header image...');
+        setLoadingMessage('Optimizing Header Image...');
         try {
             const file = imageFile[0];
             const resizedBlob = await new Promise<Blob>((resolve) => {
@@ -176,7 +188,7 @@ export default function CreateLeadPage() {
             });
             
             setProgress(30);
-            setLoadingMessage('Uploading background...');
+            setLoadingMessage('Uploading Background...');
             const filePath = `leads/${newLeadId}/background.png`;
             const fileRef = storageRef(storage, filePath);
             await uploadBytes(fileRef, resizedBlob);
@@ -184,7 +196,7 @@ export default function CreateLeadPage() {
             const dateStr = new Date().toISOString().split('T')[0];
             imageUrlFilename = `lead_${data.name.replace(/\s+/g, '_')}_${dateStr}.png`;
         } catch (uploadError: any) {
-            console.error("Image upload failed:", uploadError);
+            console.error("Image Upload Failed:", uploadError);
             toast({ title: 'Image Upload Failed', description: 'Lead was not created.', variant: 'destructive'});
             setIsLoading(false);
             return;
@@ -192,22 +204,20 @@ export default function CreateLeadPage() {
     }
     
     setProgress(50);
-    setLoadingMessage('Syncing lead artifacts...');
+    setLoadingMessage('Syncing Lead Artifacts...');
     const documentUploadPromises = documentsToUpload.map(async (file, idx) => {
         const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
         const fileRef = storageRef(storage, `leads/${newLeadId}/documents/${safeFileName}`);
         await uploadBytes(fileRef, file);
         const url = await getDownloadURL(fileRef);
-        
         const perDocProgress = 30 / Math.max(1, documentsToUpload.length);
         setProgress(prev => Math.min(prev + perDocProgress, 80));
-        
         return { name: file.name, url: url, uploadedAt: new Date().toISOString(), isPublic: false };
     });
     const documents = await Promise.all(documentUploadPromises);
 
     setProgress(85);
-    setLoadingMessage('Syncing with database...');
+    setLoadingMessage('Syncing With Database...');
     const newLeadData: Partial<Lead> = {
       ...leadCoreData,
       requiredAmount: data.requiredAmount || 0,
@@ -244,7 +254,7 @@ export default function CreateLeadPage() {
     setDoc(newLeadRef, newLeadData)
       .then(() => {
         setProgress(100);
-        toast({ title: 'Success', description: 'Lead created successfully.', variant: 'success' });
+        toast({ title: 'Success', description: 'Lead Created Successfully.', variant: 'success' });
         router.push(`/leads-members`);
       })
       .catch((serverError: any) => {
@@ -272,62 +282,51 @@ export default function CreateLeadPage() {
   };
 
   if (isProfileLoading || areLeadsLoading) {
-    return (
-      <main className="flex items-center justify-center min-h-screen">
-          <BrandedLoader message="Initializing creation hub..." />
-      </main>
-    );
+    return <BrandedLoader message="Initializing Creation Hub..." />;
   }
 
   if (!canCreate) {
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary">
-            <div className="mb-4">
-                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
-                    <Link href="/leads-members">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Leads
-                    </Link>
-                </Button>
-            </div>
-            <Alert variant="destructive">
-                <ShieldAlert className="h-4 w-4" />
-                <AlertTitle className="font-bold">Access denied</AlertTitle>
-                <AlertDescription className="font-normal text-primary/70">
-                You do not have the required permissions to create a new lead appeal.
-                </AlertDescription>
-            </Alert>
+            <div className="mb-4"><Button variant="outline" asChild><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
+            <Alert variant="destructive"><ShieldAlert className="h-4 w-4" /><AlertTitle className="font-bold">Access Denied</AlertTitle><AlertDescription className="font-normal text-primary/70">Missing Permissions To Create A New Support Appeal.</AlertDescription></Alert>
         </main>
     )
   }
+
+  const renderLabel = (label: string, fieldName: string) => (
+    <FormLabel className="font-bold text-primary">
+        {label} {mandatoryFields[fieldName] ? '*' : ''}
+    </FormLabel>
+  );
 
   return (
     <main className="container mx-auto p-4 md:p-8">
       {isLoading && <BrandedLoader message={loadingMessage} progress={progress} />}
       <div className="mb-4">
-        <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
+        <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
           <Link href="/leads-members">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Leads
+            Back To Leads
           </Link>
         </Button>
       </div>
       <Card className="max-w-2xl mx-auto animate-fade-in-zoom border-primary/10 bg-white">
-        <CardHeader>
-          <CardTitle className="font-bold text-primary">Create new lead appeal</CardTitle>
-          <CardDescription className="font-normal">Capture details for individual support vetting.</CardDescription>
+        <CardHeader className="bg-primary/5 border-b">
+          <CardTitle className="font-bold text-primary tracking-tight">Create New Lead Appeal</CardTitle>
+          <CardDescription className="font-normal text-primary/70">Capture Details For Individual Support Vetting.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 font-normal text-primary">
               <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem><FormLabel className="font-bold">Lead name *</FormLabel><FormControl><Input placeholder="e.g. Surgery assistance for Patient A" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem>{renderLabel('Lead Name', 'name')}<FormControl><Input placeholder="e.g. Surgery Assistance For Patient A" {...field} /></FormControl><FormMessage /></FormItem>
               )}/>
               <FormField control={form.control} name="description" render={({ field }) => (
-                <FormItem><FormLabel className="font-bold">Detailed description</FormLabel><FormControl><Textarea placeholder="Background and specific needs..." {...field} rows={4} /></FormControl><FormMessage /></FormItem>
+                <FormItem>{renderLabel('Detailed Description', 'description')}<FormControl><Textarea placeholder="Background And Specific Needs..." {...field} rows={4} /></FormControl><FormMessage /></FormItem>
               )}/>
                 <FormItem>
-                    <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Header image</FormLabel>
+                    <FormLabel className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Header Image</FormLabel>
                     <FormControl>
                         <Input id="imageFile" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} className="hidden" />
                     </FormControl>
@@ -335,7 +334,7 @@ export default function CreateLeadPage() {
                         {imagePreview ? (
                             <>
                                 <Image src={imagePreview} alt="Preview" fill className="object-cover rounded-lg" />
-                                <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleRemoveImage}>
+                                <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 shadow-lg" onClick={handleRemoveImage}>
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
                             </>
@@ -343,16 +342,16 @@ export default function CreateLeadPage() {
                              <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                 <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
                                 <p className="mb-2 text-sm text-center text-muted-foreground font-normal">
-                                    <span className="font-bold text-primary">Click to upload</span> or drag and drop
+                                    <span className="font-bold text-primary">Click To Upload</span> Or Drag And Drop
                                 </p>
-                                <p className="text-[10px] text-muted-foreground font-normal uppercase tracking-tight">PNG, JPG, WEBP recommended</p>
+                                <p className="text-[10px] text-muted-foreground font-normal uppercase tracking-tighter">PNG, JPG, WEBP Recommended</p>
                             </div>
                         )}
                     </label>
                     <FormMessage />
                 </FormItem>
                  <FormItem>
-                    <FormLabel className="font-bold">Lead artifacts & proof</FormLabel>
+                    <FormLabel className="font-bold text-primary">Lead Artifacts & Proof</FormLabel>
                     <FormControl>
                         <FileUploader
                             onFilesChange={setDocumentsToUpload}
@@ -360,78 +359,73 @@ export default function CreateLeadPage() {
                             acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf"
                         />
                     </FormControl>
-                    <FormDescription className="text-xs font-normal">Upload medical reports, marksheets, or verification documents.</FormDescription>
+                    <FormDescription className="text-xs font-normal opacity-70 italic">Upload Medical Reports, Marksheets, Or Verification Documents.</FormDescription>
                 </FormItem>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField control={form.control} name="purpose" render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold">Purpose *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select a purpose" /></SelectTrigger></FormControl><SelectContent>{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                    <FormItem>{renderLabel('Purpose', 'purpose')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Purpose" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                 )}/>
                 {availableCategories.length > 0 && (
                   <FormField control={form.control} name="category" render={({ field }) => (
-                      <FormItem><FormLabel className="font-bold">Category *</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent>{availableCategories.map(cat => <SelectItem key={cat} value={cat} className="font-bold">{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                      <FormItem>{renderLabel('Category', 'category')}<Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Category" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{availableCategories.map(cat => <SelectItem key={cat} value={cat} className="font-bold">{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                   )}/>
                 )}
               </div>
               
               {purpose === 'Other' && (
                 <FormField control={form.control} name="purposeDetails" render={({ field }) => (
-                  <FormItem><FormLabel className="font-bold">Details for 'Other' purpose</FormLabel><FormControl><Input {...field} className="font-bold" /></FormControl><FormMessage /></FormItem>
-                )}/>
-              )}
-              {category === 'Other' && (
-                <FormField control={form.control} name="categoryDetails" render={({ field }) => (
-                  <FormItem><FormLabel className="font-bold">Details for 'Other' category</FormLabel><FormControl><Input {...field} className="font-bold" /></FormControl><FormMessage /></FormItem>
+                  <FormItem>{renderLabel('Specific Purpose Details', 'purposeDetails')}<FormControl><Input {...field} className="font-bold" /></FormControl><FormMessage /></FormItem>
                 )}/>
               )}
 
               {purpose === 'Education' && (
-                <div className="space-y-4 rounded-md border p-4 bg-primary/5 animate-fade-in-zoom border-primary/10">
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Academic details</h3>
+                <div className="space-y-4 rounded-xl border p-4 bg-primary/5 animate-fade-in-zoom border-primary/10">
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Academic Qualifications</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <FormField control={form.control} name="degree" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs">Degree/Class</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Degree..."/></SelectTrigger></FormControl><SelectContent>{educationDegrees.map(d=><SelectItem key={d} value={d} className="font-bold">{d}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem>{renderLabel('Degree/Class', 'degree')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Degree..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{educationDegrees.map(d=><SelectItem key={d} value={d} className="font-bold">{d}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="year" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs">Academic year</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Year..."/></SelectTrigger></FormControl><SelectContent>{educationYears.map(y=><SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem>{renderLabel('Academic Year', 'year')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Year..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{educationYears.map(y=><SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="semester" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs">Semester</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Semester..."/></SelectTrigger></FormControl><SelectContent>{educationSemesters.map(s=><SelectItem key={s} value={s} className="font-bold">{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem>{renderLabel('Semester', 'semester')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Semester..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{educationSemesters.map(s=><SelectItem key={s} value={s} className="font-bold">{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                     )}/>
                   </div>
                 </div>
               )}
 
               {purpose === 'Medical' && (
-                <div className="space-y-4 rounded-md border p-4 bg-primary/5 animate-fade-in-zoom border-primary/10">
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Medical diagnosis</h3>
+                <div className="space-y-4 rounded-xl border p-4 bg-primary/5 animate-fade-in-zoom border-primary/10">
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Medical Assessment</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <FormField control={form.control} name="diseaseIdentified" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs">Disease identified</FormLabel><FormControl><Input placeholder="e.g. Cataract" {...field} className="h-8 font-bold" /></FormControl><FormMessage /></FormItem>
+                        <FormItem>{renderLabel('Disease Identified', 'diseaseIdentified')}<FormControl><Input placeholder="e.g. Cataract" {...field} className="h-8 font-bold" /></FormControl><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="diseaseStage" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs">Stage/Condition</FormLabel><FormControl><Input placeholder="e.g. Initial" {...field} className="h-8 font-bold" /></FormControl><FormMessage /></FormItem>
+                        <FormItem>{renderLabel('Stage/Condition', 'diseaseStage')}<FormControl><Input placeholder="e.g. Initial" {...field} className="h-8 font-bold" /></FormControl><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="seriousness" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs">Priority level</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Select level..."/></SelectTrigger></FormControl><SelectContent>{leadSeriousnessLevels.map(level => <SelectItem key={level} value={level} className="font-bold">{level}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem>{renderLabel('Priority Level', 'seriousness')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Select Level..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{leadSeriousnessLevels.map(level => <SelectItem key={level} value={level} className="font-bold">{level}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                     )}/>
                   </div>
                 </div>
               )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="requiredAmount" render={({ field }) => (<FormItem><FormLabel className="font-bold">Required amount (₹)</FormLabel><FormControl><Input type="number" placeholder="e.g. 125000" {...field} className="font-bold" /></FormControl><FormMessage /></FormItem>)}/>
-                    <FormField control={form.control} name="targetAmount" render={({ field }) => (<FormItem><FormLabel className="font-bold">Fundraising goal (₹)</FormLabel><FormControl><Input type="number" placeholder="e.g. 100000" {...field} className="font-bold" /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="requiredAmount" render={({ field }) => (<FormItem>{renderLabel('Required Amount (₹)', 'requiredAmount')}<FormControl><Input type="number" placeholder="e.g. 125000" {...field} className="font-bold" /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="targetAmount" render={({ field }) => (<FormItem>{renderLabel('Fundraising Goal (₹)', 'targetAmount')}<FormControl><Input type="number" placeholder="e.g. 100000" {...field} className="font-bold" /></FormControl><FormMessage /></FormItem>)}/>
                 </div>
 
                 <FormField control={form.control} name="allowedDonationTypes" render={() => (
                     <FormItem className="space-y-4">
-                      <div><FormLabel className="text-base font-bold">Donation types for goal</FormLabel><FormDescription className="text-xs font-normal">Select fund types that count toward the target amount.</FormDescription></div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5 border-primary/10">
-                        <div className="flex items-center space-x-2"><Checkbox id="select-all-types-lead" checked={form.watch('allowedDonationTypes')?.length === donationCategories.length} onCheckedChange={(checked) => { form.setValue('allowedDonationTypes', checked ? [...donationCategories] : []); }} /><Label htmlFor="select-all-types-lead" className="font-bold text-xs uppercase cursor-pointer">Any</Label></div>
+                      <div><FormLabel className="text-base font-bold text-primary">Qualified Donation Types</FormLabel><FormDescription className="text-xs font-normal opacity-70">Select Which Fund Types Count Toward The Target Goal metrics.</FormDescription></div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-xl bg-primary/5 border-primary/10">
+                        <div className="flex items-center space-x-2"><Checkbox id="select-all-types-lead" checked={form.watch('allowedDonationTypes')?.length === donationCategories.length} onCheckedChange={(checked) => { form.setValue('allowedDonationTypes', checked ? [...donationCategories] : []); }} /><Label htmlFor="select-all-types-lead" className="font-bold text-[10px] uppercase cursor-pointer tracking-widest">Any</Label></div>
                         {donationCategories.map((type) => (
                           <FormField key={type} control={form.control} name="allowedDonationTypes" render={({ field }) => (
                             <FormItem key={type} className="flex flex-row items-center space-x-3 space-y-0">
                                 <FormControl><Checkbox checked={field.value?.includes(type)} onCheckedChange={(checked) => { return checked ? field.onChange([...(field.value || []), type]) : field.onChange((field.value || []).filter((value) => value !== type))}} /></FormControl>
-                                <FormLabel className="font-bold text-xs uppercase cursor-pointer">{type}</FormLabel>
+                                <FormLabel className="font-bold text-[10px] uppercase cursor-pointer tracking-widest opacity-80">{type}</FormLabel>
                             </FormItem>
                           )} />
                         ))}
@@ -441,24 +435,24 @@ export default function CreateLeadPage() {
                 )}/>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField control={form.control} name="startDate" render={({ field }) => (<FormItem><FormLabel className="font-bold">Start date *</FormLabel><FormControl><Input type="date" {...field} className="font-bold"/></FormControl><FormMessage /></FormItem>)}/>
-                  <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem><FormLabel className="font-bold">End date *</FormLabel><FormControl><Input type="date" {...field} className="font-bold"/></FormControl><FormMessage /></FormItem>)}/>
+                  <FormField control={form.control} name="startDate" render={({ field }) => (<FormItem>{renderLabel('Start Date', 'startDate')}<FormControl><Input type="date" {...field} className="font-bold text-primary"/></FormControl><FormMessage /></FormItem>)}/>
+                  <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem>{renderLabel('End Date', 'endDate')}<FormControl><Input type="date" {...field} className="font-bold text-primary"/></FormControl><FormMessage /></FormItem>)}/>
               </div>
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField control={form.control} name="status" render={({ field }) => (<FormItem><FormLabel className="font-bold">Status *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></SelectContent></Select><FormMessage /></FormItem>)}/>
+                  <FormField control={form.control} name="status" render={({ field }) => (<FormItem>{renderLabel('Status', 'status')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Status" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></SelectContent></Select><FormMessage /></FormItem>)}/>
                   <FormField control={form.control} name="authenticityStatus" render={({ field }) => (
-                      <FormItem><FormLabel className="font-bold">Verification *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select authenticity" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Pending Verification" className="font-bold">Pending</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="On Hold" className="font-bold">On hold</SelectItem><SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem><SelectItem value="Need More Details" className="font-bold">Need details</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                      <FormItem>{renderLabel('Verification Level', 'authenticityStatus')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Authenticity" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Pending Verification" className="font-bold">Pending</SelectItem><SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem><SelectItem value="On Hold" className="font-bold">On Hold</SelectItem><SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem><SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                   )}/>
               </div>
               <FormField control={form.control} name="publicVisibility" render={({ field }) => (
-                  <FormItem><FormLabel className="font-bold">Public visibility *</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select visibility" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Hold" className="font-bold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-bold">Ready to publish</SelectItem><SelectItem value="Published" className="font-bold text-primary">Published</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                  <FormItem>{renderLabel('Public Visibility', 'publicVisibility')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Visibility" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Hold" className="font-bold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-bold">Ready To Publish</SelectItem><SelectItem value="Published" className="font-bold text-primary">Published</SelectItem></SelectContent></Select><FormMessage /></FormItem>
               )}/>
-              <div className="flex justify-end gap-3 pt-6 border-t mt-6">
-                  <Button type="button" variant="outline" onClick={() => router.push('/leads-members')} disabled={isLoading} className="font-bold border-primary/20 text-primary">Cancel</Button>
-                  <Button type="button" variant="secondary" onClick={() => { form.reset(); setDocumentsToUpload([]); }} disabled={isLoading} className="font-bold"><RotateCcw className="mr-2 h-4 w-4"/> Reset</Button>
-                  <Button type="submit" disabled={isLoading} className="font-bold bg-primary text-white hover:bg-primary/90">
+              <div className="flex justify-end gap-3 pt-6 border-t mt-6 bg-background/80 backdrop-blur-sm sticky bottom-0 p-4 z-50">
+                  <Button type="button" variant="outline" onClick={() => router.push('/leads-members')} disabled={isLoading} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Discard</Button>
+                  <Button type="button" variant="secondary" onClick={() => { form.reset(); setDocumentsToUpload([]); }} disabled={isLoading} className="font-bold transition-transform active:scale-95"><RotateCcw className="mr-2 h-4 w-4"/> Reset Form</Button>
+                  <Button type="submit" disabled={isLoading} className="font-bold bg-primary text-white hover:bg-primary/90 shadow-md transition-transform active:scale-95">
                       {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                      Create lead
+                      Register Lead Appeal
                   </Button>
               </div>
             </form>
@@ -467,21 +461,17 @@ export default function CreateLeadPage() {
       </Card>
       
        <AlertDialog open={isDuplicateAlertOpen} onOpenChange={setIsDuplicateAlertOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown">
             <AlertDialogHeader>
-                <AlertDialogTitle className="font-bold">Duplicate lead name</AlertDialogTitle>
+                <AlertDialogTitle className="font-bold text-primary">Duplicate Lead Entry Detected</AlertDialogTitle>
                 <AlertDialogDescription className="font-normal text-primary/70">
-                    A lead with this name already exists. Are you sure you want to create another one?
+                    An Appeal With This Name Already Exists In The Institutional Records. Are You Certain You Want To Create A Duplicate Record?
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setLeadDataToCreate(null)} className="font-bold">Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => {
-                    if (leadDataToCreate) {
-                        handleCreateLead(leadDataToCreate);
-                    }
-                }} className="font-bold bg-primary text-white">
-                    Create anyway
+                <AlertDialogCancel onClick={() => setLeadDataToCreate(null)} className="font-bold border-primary/20 text-primary">Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => { if (leadDataToCreate) { handleCreateLead(leadDataToCreate); } }} className="font-bold bg-primary text-white hover:bg-primary/90">
+                    Confirm Creation
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
