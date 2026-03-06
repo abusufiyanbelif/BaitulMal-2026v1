@@ -310,9 +310,6 @@ export default function LeadSummaryPage() {
         setExistingDocuments(prev => prev.map(doc => doc.url === urlToToggle ? { ...doc, isPublic: !doc.isPublic } : doc));
     };
 
-    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
-    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
-    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
     const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.update', false) || !!getNestedValue(userProfile, 'permissions.leads-members.summary.update', false);
 
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
@@ -390,6 +387,14 @@ export default function LeadSummaryPage() {
     }, [fundingData]);
 
     const FallbackIcon = lead?.purpose === 'Education' ? GraduationCap : lead?.purpose === 'Medical' ? HeartPulse : lead?.purpose === 'Relief' ? LifeBuoy : lead?.purpose === 'Other' ? Info : HandHelping;
+
+    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
+    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
+    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
+
+    if (isLeadLoading || isProfileLoading || areBeneficiariesLoading || isBrandingLoading || isPaymentLoading) {
+        return <BrandedLoader />;
+    }
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal">

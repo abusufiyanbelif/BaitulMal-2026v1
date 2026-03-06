@@ -59,6 +59,30 @@
     --chart-5: 262 83% 68%;
   }
 
+  .bms3-a {
+    --background: 140 33% 97%; /* #F7FBF8 */
+    --foreground: 129 27% 29%; /* #355E3B */
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 129 27% 29%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 144 61% 20%; /* #14532D */
+    --primary: 140 68% 38%; /* #1FA34A */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 143 50% 96%; /* #F0F9F3 */
+    --secondary-foreground: 144 61% 20%; /* #14532D */
+    --muted: 140 33% 97%;
+    --muted-foreground: 215 9% 46%; /* #6B7280 */
+    --accent: 140 68% 38%;
+    --accent-foreground: 0 0% 100%;
+    --border: 140 33% 85%; /* #CDE8D5 */
+    --input: 140 33% 85%;
+    --ring: 140 68% 38%;
+    --radius: 0.75rem; /* 12px primary */
+    --chart-1: 140 68% 38%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 38 92% 50%;
+  }
+
   .bms3 {
     --background: 160 20% 98%;
     --foreground: 160 60% 10%;
@@ -80,43 +104,6 @@
     --chart-1: 160 84% 20%;
     --chart-2: 47.9 95.8% 53.1%;
     --chart-3: 217.2 91.2% 59.8%;
-  }
-
-  .bms3-a {
-    --background: 140 33% 97%; /* #F7FBF8 */
-    --foreground: 129 27% 29%; /* #355E3B */
-    --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 129 27% 29%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 144 61% 20%; /* #14532D */
-    --primary: 140 68% 38%; /* #1FA34A */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 143 58% 91%; /* #E8F7EE */
-    --secondary-foreground: 144 61% 20%; /* #14532D */
-    --muted: 140 33% 97%;
-    --muted-foreground: 215 9% 46%; /* #6B7280 */
-    --accent: 140 68% 38%;
-    --accent-foreground: 0 0% 100%;
-    --border: 144 26% 91%; /* #E2EEE7 */
-    --input: 144 26% 91%;
-    --ring: 140 68% 38%;
-    --chart-1: 140 68% 38%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 38 92% 50%;
-  }
-
-  .bmss-brand-warm {
-    --primary: 24 95% 40%; 
-    --ring: 24 95% 40%;
-    --background: 30 20% 98%;
-    --foreground: 30 30% 12%;
-  }
-
-  .ocean-blue {
-    --primary: 217 91% 40%;
-    --ring: 217 91% 40%;
-    --background: 217 20% 98%;
-    --foreground: 217 30% 15%;
   }
 }
 
