@@ -21,6 +21,7 @@ export function Providers({ children }: { children: ReactNode }) {
     'system',
     'bms3',
     'bms3-a',
+    'green-warm',
     'bmss-brand-warm',
     'ocean-blue',
     'sunset-orange',

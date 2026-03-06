@@ -3,53 +3,70 @@
 @tailwind utilities;
 
 @layer base {
+  /* Default: BMS3 A (Modern Green) */
   :root {
-    /* BMS3 A Core Palette */
     --background: 140 33% 97%; /* #F7FBF8 */
-    --foreground: 144 27% 23%; /* #355E3B - Deep Body Green */
-    --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 144 61% 20%; /* #14532D - Title Green */
+    --foreground: 144 27% 23%; /* #355E3B */
+    --card: 0 0% 100%;
+    --card-foreground: 144 61% 20%; /* #14532D */
     --popover: 0 0% 100%;
     --popover-foreground: 144 61% 20%;
     --primary: 140 68% 38%; /* #1FA34A */
     --primary-hover: 140 68% 31%; /* #16863B */
     --primary-foreground: 0 0% 100%;
-    --primary-soft: 143 50% 91%; /* #DDF5E6 */
     --secondary: 143 50% 96%; /* #F0F9F3 */
     --secondary-foreground: 144 61% 20%;
     --muted: 140 33% 97%;
-    --muted-foreground: 215 9% 46%; /* #6B7280 */
+    --muted-foreground: 215 9% 46%;
     --accent: 143 50% 96%;
     --accent-foreground: 144 61% 20%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
     --border: 140 33% 91%; /* #E2EEE7 */
-    --input: 140 33% 91%; /* #E2EEE7 */
-    --ring: 142 71% 45%; /* #22C55E */
+    --input: 140 33% 91%;
+    --ring: 142 71% 45%;
     --radius: 1rem;
     
-    /* Institutional Success/Warning/Danger */
-    --success: 142 71% 45%; /* #22C55E */
-    --danger: 0 84% 60%; /* #EF4444 */
-    --warning: 38 92% 50%; /* #F59E0B */
+    --table-header-bg: 158 82% 96%;
+    --table-header-fg: 144 61% 20%;
+    --table-row-hover: 142 76% 97%;
+    --table-expanded-bg: 140 33% 97%;
 
-    /* Table Variables */
-    --table-header-bg: 158 82% 96%; /* #ECFDF5 */
-    --table-header-fg: 144 61% 20%; /* #14532D */
-    --table-row-hover: 142 76% 97%; /* #F0FDF4 */
-    --table-expanded-bg: 140 33% 97%; /* #F7FBF8 */
+    --badge-eligible-bg: 142 70% 93%;
+    --badge-eligible-fg: 144 41% 15%;
+    --badge-given-bg: 141 79% 85%;
+    --badge-given-fg: 164 88% 14%;
+    --badge-active-bg: 143 50% 91%;
+    --badge-active-fg: 140 68% 38%;
+  }
 
-    /* Status Badge Palette */
-    --badge-eligible-bg: 142 70% 93%; /* #DCFCE7 */
-    --badge-eligible-fg: 144 41% 15%; /* #166534 */
-    --badge-given-bg: 141 79% 85%; /* #BBF7D0 */
-    --badge-given-fg: 164 88% 14%; /* #065F46 */
-    --badge-active-bg: 143 50% 91%; /* #DDF5E6 */
-    --badge-active-fg: 140 68% 38%; /* #1FA34A */
+  /* BMS3 (Official Deep Green) - Richer, traditional tone */
+  .bms3 {
+    --background: 140 10% 95%; /* #F0F4F1 */
+    --primary: 144 70% 25%; /* #136A33 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 144 30% 92%;
+    --border: 144 20% 88%;
+    --card-foreground: 144 80% 15%;
+    --ring: 144 70% 25%;
+  }
 
-    /* Dropdown Variables */
-    --dropdown-hover: 158 82% 96%; /* #ECFDF5 */
-    --dropdown-selected: 143 50% 91%; /* #DDF5E6 */
+  /* Green Warm - Earthy, parchment-like background with deep forest green */
+  .green-warm {
+    --background: 45 30% 96%; /* #F9F7F2 - Warm Paper */
+    --foreground: 155 30% 20%;
+    --card: 45 20% 98%;
+    --primary: 155 40% 24%; /* #2D6A4F - Deep Forest */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 38 40% 92%; /* Warm Amber-Green tint */
+    --secondary-foreground: 155 40% 15%;
+    --muted: 45 20% 94%;
+    --accent: 38 60% 90%;
+    --border: 38 20% 85%;
+    --ring: 155 40% 24%;
+    
+    --table-header-bg: 38 40% 90%;
+    --table-header-fg: 155 40% 15%;
   }
 
   .dark {
@@ -57,20 +74,11 @@
     --foreground: 160 20% 90%;
     --card: 160 25% 12%;
     --card-foreground: 160 20% 95%;
-    --popover: 160 25% 12%;
-    --popover-foreground: 160 20% 95%;
     --primary: 140 68% 38%;
     --primary-foreground: 0 0% 100%;
     --secondary: 160 20% 15%;
     --secondary-foreground: 160 20% 90%;
-    --muted: 160 20% 15%;
-    --muted-foreground: 160 10% 60%;
-    --accent: 160 20% 15%;
-    --accent-foreground: 160 20% 95%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 100%;
     --border: 160 20% 20%;
-    --input: 160 20% 20%;
     --ring: 142 71% 45%;
   }
 }
@@ -80,10 +88,6 @@
   body { 
     @apply bg-background text-foreground antialiased font-normal; 
     font-family: var(--font-inter), sans-serif;
-  }
-  h1, h2, h3, h4, h5, h6 { 
-    @apply font-bold tracking-tight text-card-foreground; 
-    font-family: var(--font-space-grotesk), sans-serif;
   }
 }
 
@@ -108,16 +112,4 @@
 
 .animate-status-pulse {
   animation: status-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.shadow-dropdown {
-  box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-}
-
-.shadow-card {
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-}
-
-.shadow-card-hover {
-  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
 }

@@ -34,84 +34,86 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 function ComponentPreview({ themeId, isDark }: { themeId: string, isDark: boolean }) {
     return (
-        <div className={cn("rounded-xl border shadow-2xl overflow-hidden bg-background text-foreground transition-all duration-500", themeId)} style={{ transform: 'scale(0.95)' }}>
-            <div className="bg-card border-b p-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 bg-primary rounded flex items-center justify-center text-[10px] text-primary-foreground font-bold shadow-sm">B</div>
-                    <span className="text-xs font-bold text-primary tracking-tight">Organization Name</span>
+        <div className={cn("rounded-xl border shadow-2xl overflow-hidden transition-all duration-500", themeId)} style={{ transform: 'scale(0.95)' }}>
+            <div className="bg-background text-foreground min-h-[400px] flex flex-col">
+                <div className="bg-card border-b p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <div className="h-6 w-6 bg-primary rounded flex items-center justify-center text-[10px] text-primary-foreground font-bold shadow-sm">B</div>
+                        <span className="text-xs font-bold text-primary tracking-tight">Organization Name</span>
+                    </div>
+                    <div className="h-6 w-6 rounded-full bg-muted border border-primary/10" />
                 </div>
-                <div className="h-6 w-6 rounded-full bg-muted border border-primary/10" />
-            </div>
 
-            <ScrollArea className="h-[400px]">
-                <div className="p-4 space-y-6">
-                    <div className="space-y-2">
-                        <h3 className="text-lg font-bold text-primary tracking-tight">Hero Title Preview</h3>
-                        <p className="text-xs text-muted-foreground leading-relaxed font-normal">This is a description of how your organization's primary message will look with the selected palette.</p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <Card className="p-3 border-primary/10 bg-card/50 backdrop-blur-sm shadow-sm">
-                            <p className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest">Collected</p>
-                            <p className="text-sm font-bold text-primary font-mono">₹45,000</p>
-                        </Card>
-                        <Card className="p-3 border-primary/10 bg-card/50 backdrop-blur-sm shadow-sm">
-                            <p className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest">Target</p>
-                            <p className="text-sm font-bold opacity-60 font-mono">₹1,00,000</p>
-                        </Card>
-                    </div>
-
-                    <div className="space-y-1.5">
-                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-tight">
-                            <span className="text-primary">Campaign Progress</span>
-                            <span className="text-foreground/60">45%</span>
+                <ScrollArea className="flex-1">
+                    <div className="p-4 space-y-6">
+                        <div className="space-y-2">
+                            <h3 className="text-lg font-bold text-primary tracking-tight">Hero Title Preview</h3>
+                            <p className="text-xs text-muted-foreground leading-relaxed font-normal">This is a description of how your organization's primary message will look with the selected palette.</p>
                         </div>
-                        <Progress value={45} className="h-1.5" />
-                    </div>
 
-                    <div className="space-y-2">
-                        <p className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1 tracking-widest">
-                            <TableIcon className="h-3 w-3" /> Recent Activity
-                        </p>
-                        <div className="border rounded-md overflow-hidden bg-card shadow-sm">
-                            <Table>
-                                <TableHeader className="bg-primary/5">
-                                    <TableRow>
-                                        <TableHead className="h-7 text-[9px] font-bold text-primary">Donor</TableHead>
-                                        <TableHead className="h-7 text-[9px] font-bold text-right text-primary">Amount</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    <TableRow className="h-8 hover:bg-primary/[0.02]">
-                                        <TableCell className="py-1 text-[10px] font-medium">Saleem K.</TableCell>
-                                        <TableCell className="py-1 text-right font-mono text-[10px] font-bold text-primary">₹500</TableCell>
-                                    </TableRow>
-                                    <TableRow className="h-8 border-none hover:bg-primary/[0.02]">
-                                        <TableCell className="py-1 text-[10px] font-medium">Fatima S.</TableCell>
-                                        <TableCell className="py-1 text-right font-mono text-[10px] font-bold text-primary">₹1,200</TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
+                        <div className="grid grid-cols-2 gap-3">
+                            <Card className="p-3 border-primary/10 bg-card/50 backdrop-blur-sm shadow-sm">
+                                <p className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest">Collected</p>
+                                <p className="text-sm font-bold text-primary font-mono">₹45,000</p>
+                            </Card>
+                            <Card className="p-3 border-primary/10 bg-card/50 backdrop-blur-sm shadow-sm">
+                                <p className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest">Target</p>
+                                <p className="text-sm font-bold opacity-60 font-mono">₹1,00,000</p>
+                            </Card>
                         </div>
-                    </div>
 
-                    <div className="space-y-3">
-                        <div className="flex flex-wrap gap-2">
-                            <Badge variant="default" className="text-[8px] font-bold uppercase shadow-sm">Active</Badge>
-                            <Badge variant="success" className="text-[8px] font-bold uppercase shadow-sm">Verified</Badge>
-                            <Badge variant="outline" className="text-[8px] font-bold uppercase border-primary/20 text-primary">Pending</Badge>
+                        <div className="space-y-1.5">
+                            <div className="flex justify-between text-[10px] font-bold uppercase tracking-tight">
+                                <span className="text-primary">Campaign Progress</span>
+                                <span className="text-foreground/60">45%</span>
+                            </div>
+                            <Progress value={45} className="h-1.5" />
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <Button size="sm" className="h-8 text-[10px] font-bold shadow-md">Primary Action</Button>
-                            <Button size="sm" variant="outline" className="h-8 text-[10px] font-bold border-primary/20 text-primary hover:bg-primary/5">Secondary</Button>
+
+                        <div className="space-y-2">
+                            <p className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1 tracking-widest">
+                                <TableIcon className="h-3 w-3" /> Recent Activity
+                            </p>
+                            <div className="border rounded-md overflow-hidden bg-card shadow-sm">
+                                <Table>
+                                    <TableHeader className="bg-primary/5">
+                                        <TableRow>
+                                            <TableHead className="h-7 text-[9px] font-bold text-primary">Donor</TableHead>
+                                            <TableHead className="h-7 text-[9px] font-bold text-right text-primary">Amount</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        <TableRow className="h-8 hover:bg-primary/[0.02]">
+                                            <TableCell className="py-1 text-[10px] font-medium">Saleem K.</TableCell>
+                                            <TableCell className="py-1 text-right font-mono text-[10px] font-bold text-primary">₹500</TableCell>
+                                        </TableRow>
+                                        <TableRow className="h-8 border-none hover:bg-primary/[0.02]">
+                                            <TableCell className="py-1 text-[10px] font-medium">Fatima S.</TableCell>
+                                            <TableCell className="py-1 text-right font-mono text-[10px] font-bold text-primary">₹1,200</TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="flex flex-wrap gap-2">
+                                <Badge variant="default" className="text-[8px] font-bold uppercase shadow-sm">Active</Badge>
+                                <Badge variant="success" className="text-[8px] font-bold uppercase shadow-sm">Verified</Badge>
+                                <Badge variant="outline" className="text-[8px] font-bold uppercase border-primary/20 text-primary">Pending</Badge>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <Button size="sm" className="h-8 text-[10px] font-bold shadow-md">Primary Action</Button>
+                                <Button size="sm" variant="outline" className="h-8 text-[10px] font-bold border-primary/20 text-primary hover:bg-primary/5">Secondary</Button>
+                            </div>
                         </div>
                     </div>
+                    <ScrollBar />
+                </ScrollArea>
+                
+                <div className="bg-muted/20 border-t p-3 text-center">
+                    <p className="text-[8px] text-muted-foreground font-normal">© 2026 Your Organization. All rights reserved.</p>
                 </div>
-                <ScrollBar />
-            </ScrollArea>
-            
-            <div className="bg-muted/20 border-t p-3 text-center">
-                <p className="text-[8px] text-muted-foreground font-normal">© 2026 Your Organization. All rights reserved.</p>
             </div>
         </div>
     );
@@ -138,16 +140,8 @@ export default function ViewportSettingsPage() {
         setAnimationsEnabled(localStorage.getItem('app_animations') !== 'disabled');
         setSmoothScrolling(localStorage.getItem('app_smooth_scroll') !== 'disabled');
         setReducedMotion(localStorage.getItem('app_reduced_motion') === 'enabled');
-    }, []);
-
-    useEffect(() => {
-        if (isEditMode) {
-            setPendingTheme(theme || 'light');
-            setPendingAnimations(animationsEnabled);
-            setPendingSmoothScroll(smoothScrolling);
-            setPendingReducedMotion(reducedMotion);
-        }
-    }, [isEditMode, theme, animationsEnabled, smoothScrolling, reducedMotion]);
+        setPendingTheme(theme || 'bms3-a');
+    }, [theme]);
 
     const handleSave = async () => {
         setIsSubmitting(true);
@@ -312,7 +306,7 @@ export default function ViewportSettingsPage() {
                         <CardContent className="p-0 bg-primary/[0.01]">
                             <div className="p-4">
                                 <ComponentPreview 
-                                    themeId={isEditMode ? pendingTheme : (theme || 'light')} 
+                                    themeId={isEditMode ? pendingTheme : (theme || 'bms3-a')} 
                                     isDark={isEditMode ? (pendingTheme === 'dark' || (pendingTheme === 'system' && resolvedTheme === 'dark')) : (resolvedTheme === 'dark')} 
                                 />
                             </div>
