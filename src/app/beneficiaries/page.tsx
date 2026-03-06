@@ -88,7 +88,7 @@ export default function BeneficiariesPage() {
   const handleStatusChange = async (beneficiary: Beneficiary, newStatus: string) => {
     if (!canUpdate || !userProfile) return;
     const res = await updateMasterBeneficiaryAction(beneficiary.id, { status: newStatus as any }, { id: userProfile.id, name: userProfile.name });
-    toast({ title: res.success ? 'Status Updated' : 'Error', variant: res.success ? 'success' : 'destructive' });
+    toast({ title: 'Status Updated', variant: res.success ? 'success' : 'destructive' });
   };
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
@@ -180,7 +180,7 @@ export default function BeneficiariesPage() {
                     <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
                     <div className="font-bold text-sm truncate pr-2 text-primary">{b.name}</div>
                     <div className="font-mono text-xs opacity-60 text-primary">{b.phone || 'N/A'}</div>
-                    <div className="text-center"><Badge variant={b.status === 'Given' ? 'success' : 'outline'} className="text-[10px] font-bold uppercase">{b.status}</Badge></div>
+                    <div className="text-center"><Badge variant={b.status === 'Given' ? 'given' : 'outline'} className="text-[10px] font-bold uppercase">{b.status}</Badge></div>
                     <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
                     <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.kitAmount || 0).toFixed(2)}</div>
                     <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toFixed(2)}</div>
@@ -253,7 +253,7 @@ export default function BeneficiariesPage() {
                     </div>
                     <div className="space-y-1 md:col-span-2">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Notes</p>
-                        <p className="text-xs italic opacity-80 font-normal">{b.notes || (b.isEligibleForZakat ? `Eligible for zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
+                        <p className="text-xs italic opacity-80 font-normal">{b.notes || (b.isEligibleForZakat ? `Eligible for Zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
                     </div>
                     </div>
                 </AccordionContent>

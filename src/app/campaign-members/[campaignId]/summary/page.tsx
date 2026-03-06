@@ -310,7 +310,7 @@ export default function CampaignSummaryPage() {
     const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false) || !!getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
     
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
-        if (!campaignDocRef || !campaign?.documents || !canUpdateSummary) return;
+        if (!leadDocRef || !campaign?.documents || !canUpdateSummary) return;
         const newDocs = campaign.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
         try {
             await updateDoc(campaignDocRef, { documents: newDocs, updatedAt: serverTimestamp() });
