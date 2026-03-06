@@ -84,7 +84,8 @@ import {
   Cell,
   XAxis,
   YAxis,
-  CartesianGrid
+  CartesianGrid,
+  ResponsiveContainer
 } from 'recharts';
 import {
   ChartContainer,
