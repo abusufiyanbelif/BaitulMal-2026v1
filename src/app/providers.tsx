@@ -15,26 +15,23 @@ export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
 
-  const allThemes = Array.from(new Set([
+  const allThemes = [
     'light',
     'dark',
     'system',
-    'bms3',
     'bms3-a',
+    'bms3',
     'green-warm',
     'bmss-brand-warm',
     'ocean-blue',
     'sky-blue',
     'sunset-orange',
-    'sunrise-peach',
     'lavender-mint',
+    'github-light',
     'midnight-ramadan',
     'midnight-emerald',
-    'cyberpunk-neon',
-    'dracula-orchid',
-    'github-dark',
-    'github-light'
-  ]));
+    'github-dark'
+  ];
 
   useEffect(() => {
     const applyMotionSettings = () => {
