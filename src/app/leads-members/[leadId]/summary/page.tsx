@@ -38,12 +38,6 @@ import {
     UploadCloud, 
     Trash2, 
     File, 
-    ShieldAlert, 
-    GraduationCap, 
-    HeartPulse, 
-    LifeBuoy, 
-    Info, 
-    HandHelping,
     Target,
     Users,
     Gift,
@@ -54,7 +48,12 @@ import {
     ZoomOut,
     RotateCw,
     RefreshCw,
-    ImageIcon
+    ImageIcon,
+    GraduationCap,
+    HeartPulse,
+    LifeBuoy,
+    Info,
+    HandHelping
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -774,7 +773,7 @@ export default function LeadSummaryPage() {
                                                         <div className="p-2 text-center text-[10px] font-bold text-primary uppercase tracking-tighter truncate transition-colors group-hover:text-primary/80">{doc.name}</div>
                                                     </div>
                                                     <CardFooter className="p-2 border-t mt-auto flex justify-center w-full gap-2 bg-muted/5" onClick={e => e.stopPropagation()}>
-                                                        {canUpdateSummary ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-[9px] text-foreground font-bold uppercase tracking-tighter">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "outline" : "secondary"} className="font-bold uppercase text-[9px] tracking-tighter">{doc.isPublic ? "Public" : "Private"}</Badge> )}
+                                                        {canUpdateSummary ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-[9px] text-foreground font-bold uppercase tracking-tighter">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "eligible" : "secondary"} className="font-bold uppercase text-[9px] tracking-tighter">{doc.isPublic ? "Public" : "Private"}</Badge> )}
                                                     </CardFooter>
                                                 </Card>
                                             );

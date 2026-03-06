@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-normal transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
@@ -15,8 +15,12 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         success:
-          "border-transparent bg-success text-success-foreground hover:bg-success/80",
+          "border-transparent bg-primary/10 text-primary hover:bg-primary/20",
         outline: "text-foreground",
+        // BMS3 A Specific Status Variants
+        eligible: "border-transparent bg-[hsl(var(--badge-eligible-bg))] text-[hsl(var(--badge-eligible-fg))] rounded-[20px] px-[10px] py-[4px]",
+        given: "border-transparent bg-[hsl(var(--badge-given-bg))] text-[hsl(var(--badge-given-fg))] px-[10px] py-[4px]",
+        active: "border-transparent bg-[hsl(var(--badge-active-bg))] text-[hsl(var(--badge-active-fg))] px-[10px] py-[4px]",
       },
     },
     defaultVariants: {
@@ -30,8 +34,18 @@ export interface BadgeProps
     VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {
+  // Logic to auto-assign variants based on text content for consistency
+  const content = typeof props.children === 'string' ? props.children.trim() : '';
+  let finalVariant = variant;
+
+  if (!variant || variant === 'default' || variant === 'outline' || variant === 'success') {
+    if (content === 'Eligible' || content === 'Verified') finalVariant = 'eligible';
+    else if (content === 'Given') finalVariant = 'given';
+    else if (content === 'Active') finalVariant = 'active';
+  }
+
   return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+    <div className={cn(badgeVariants({ variant: finalVariant }), className)} {...props} />
   )
 }
 
