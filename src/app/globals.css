@@ -31,18 +31,24 @@
     --chart-4: 38.8 92.3% 50.2%;
     --chart-5: 262 83% 58%;
     
-    /* Status Badge Variables (Default) */
+    /* Status Badge Variables */
     --badge-eligible-bg: 142 76% 93%;
     --badge-eligible-fg: 144 45% 15%;
     --badge-given-bg: 142 72% 85%;
     --badge-given-fg: 164 88% 12%;
     --badge-active-bg: 143 50% 91%;
     --badge-active-fg: 140 68% 38%;
+
+    /* Table Variables */
+    --table-header-bg: 160 84% 96%;
+    --table-header-fg: 144 61% 20%;
+    --table-row-hover: 142 76% 97%;
+    --table-expanded-bg: 140 33% 97%;
   }
 
   .bms3-a {
     --background: 140 33% 97%; /* #F7FBF8 */
-    --foreground: 144 27% 23%; /* #355E3B - Deep Body Green (No Black) */
+    --foreground: 144 27% 23%; /* #355E3B - Deep Body Green */
     --card: 0 0% 100%; /* #FFFFFF */
     --card-foreground: 144 61% 20%; /* #14532D - Title Green */
     --popover: 0 0% 100%;
@@ -70,11 +76,17 @@
     --badge-given-fg: 164 88% 12%; /* #065F46 */
     --badge-active-bg: 143 50% 91%; /* #DDF5E6 */
     --badge-active-fg: 140 68% 38%; /* #1FA34A */
+
+    /* Table Variables (BMS3 A Specific) */
+    --table-header-bg: 158 82% 96%; /* #ECFDF5 */
+    --table-header-fg: 144 61% 20%; /* #14532D */
+    --table-row-hover: 142 76% 97%; /* #F0FDF4 */
+    --table-expanded-bg: 140 33% 97%; /* #F7FBF8 */
   }
 
   .bms3 {
     --background: 160 20% 98%;
-    --foreground: 160 60% 10%; /* Dark Tinted Green instead of Black */
+    --foreground: 160 60% 10%;
     --card: 0 0% 100%;
     --card-foreground: 160 60% 10%;
     --popover: 0 0% 100%;

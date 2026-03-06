@@ -237,7 +237,7 @@ export default function BeneficiariesPage() {
 
         <div className="rounded-lg border border-primary/10 bg-white overflow-hidden shadow-sm">
             <ScrollArea className="w-full">
-                <div className={cn("bg-primary/5 border-b border-primary/10 text-[12px] font-bold uppercase tracking-wider text-primary", gridClass)}>
+                <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[12px] font-semibold uppercase tracking-wider text-[hsl(var(--table-header-fg))]", gridClass)}>
                     <div>Sr. no.</div>
                     <div>Name</div>
                     <div>Phone</div>
@@ -274,13 +274,13 @@ export default function BeneficiariesPage() {
                                 <CollapsibleContent className="w-full">
                                     <Accordion type="single" collapsible className="w-full">
                                         {paginatedList.map((b, idx) => (
-                                            <AccordionItem key={b.id} value={b.id} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors">
+                                            <AccordionItem key={b.id} value={b.id} className="border-b border-primary/10 last:border-0 hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white">
                                                 <div className={gridClass}>
                                                     <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
                                                     <div className="font-bold text-sm text-primary">{b.name}</div>
                                                     <div className="font-mono text-xs opacity-60">{b.phone || 'N/A'}</div>
                                                     <div className="text-center"><Badge variant={b.status === 'Given' ? 'success' : 'outline'} className="text-[10px] font-bold uppercase">{b.status}</Badge></div>
-                                                    <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
+                                                    <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
                                                     <div className="text-right font-mono text-sm font-bold">₹{(b.kitAmount || 0).toFixed(2)}</div>
                                                     <div className="text-right font-mono text-sm font-bold">₹{(b.zakatAllocation || 0).toFixed(2)}</div>
                                                     <div className="text-sm font-normal text-primary/70">{b.referralBy || 'N/A'}</div>
@@ -309,13 +309,13 @@ export default function BeneficiariesPage() {
                                                                             </DropdownMenuSubContent></DropdownMenuPortal>
                                                                         </DropdownMenuSub>
                                                                     )}
-                                                                    {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold text-primary">{b.isEligibleForZakat ? 'Mark ineligible' : 'Mark zakat eligible'}</DropdownMenuItem>}
+                                                                    {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold text-primary">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
                                                                 </DropdownMenuContent>
                                                             </DropdownMenu>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <AccordionContent className="bg-primary/[0.01] border-t border-primary/5 px-12 py-6">
+                                                <AccordionContent className="bg-[hsl(var(--table-expanded-bg))] border-t border-primary/5 px-12 py-6">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-primary font-normal">
                                                         <div className="space-y-2">
                                                             <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Address</p>
@@ -332,19 +332,19 @@ export default function BeneficiariesPage() {
                                                             </div>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Family details</p>
+                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Family Details</p>
                                                             <p className="text-sm font-normal text-primary">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">ID proof</p>
+                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">ID Proof</p>
                                                             <p className="text-sm font-normal text-primary">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Date added</p>
+                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Date Added</p>
                                                             <p className="text-sm font-normal text-primary">{b.addedDate || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Zakat allocation</p>
+                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Zakat Allocation</p>
                                                             <p className="text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toFixed(2)}</p>
                                                         </div>
                                                         <div className="space-y-2 md:col-span-2">
@@ -367,7 +367,7 @@ export default function BeneficiariesPage() {
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase">Add new beneficiary</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase">Add New Beneficiary</DialogTitle></DialogHeader>
                 <BeneficiaryForm onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} itemCategories={lead?.itemCategories || []} />
             </DialogContent>
         </Dialog>

@@ -47,7 +47,7 @@ type SortKey = keyof UserProfile | 'srNo';
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <TableHead className={cn("cursor-pointer hover:bg-muted/50", className)} onClick={() => handleSort(sortKey)}>
+        <TableHead className={cn("cursor-pointer hover:bg-muted/50 text-[hsl(var(--table-header-fg))] font-semibold", className)} onClick={() => handleSort(sortKey)}>
             <div className="flex items-center gap-2">
                 {children}
                 {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
@@ -252,13 +252,13 @@ export default function UsersPage() {
                 <Button variant="outline" asChild className="text-primary border-primary/20">
                     <Link href="/">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to home
+                        Back To Home
                     </Link>
                 </Button>
             </div>
             <Alert variant="destructive">
                 <ShieldAlert className="h-4 w-4" />
-                <AlertTitle className="font-bold">Access denied</AlertTitle>
+                <AlertTitle className="font-bold">Access Denied</AlertTitle>
                 <AlertDescription className="font-normal">
                 You do not have the required permissions to manage users.
                 </AlertDescription>
@@ -273,19 +273,19 @@ export default function UsersPage() {
           <Button variant="outline" asChild className="text-primary border-primary/20">
               <Link href="/dashboard">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to dashboard
+                  Back To Dashboard
               </Link>
           </Button>
       </div>
 
-      <Card className="animate-fade-in-zoom border-primary/10">
-        <CardHeader>
+      <Card className="animate-fade-in-zoom border-primary/10 shadow-sm overflow-hidden bg-white">
+        <CardHeader className="bg-primary/5 border-b">
           <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
             <div className="flex-1 space-y-2">
-                <CardTitle className="text-primary font-bold">User management ({filteredAndSortedUsers.length})</CardTitle>
+                <CardTitle className="text-primary font-bold">User Management ({filteredAndSortedUsers.length})</CardTitle>
                 <div className="flex flex-wrap items-center gap-2">
                     <Input 
-                        placeholder="Search name, email, phone..."
+                        placeholder="Search Name, Email, Phone..."
                         value={searchTerm}
                         onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                         className="max-w-sm font-normal text-primary"
@@ -295,7 +295,7 @@ export default function UsersPage() {
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All" className="font-bold">All statuses</SelectItem>
+                            <SelectItem value="All" className="font-bold">All Statuses</SelectItem>
                             <SelectItem value="Active" className="font-bold">Active</SelectItem>
                             <SelectItem value="Inactive" className="font-bold text-destructive">Inactive</SelectItem>
                         </SelectContent>
@@ -305,7 +305,7 @@ export default function UsersPage() {
                             <SelectValue placeholder="Role" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All" className="font-bold">All roles</SelectItem>
+                            <SelectItem value="All" className="font-bold">All Roles</SelectItem>
                             <SelectItem value="Admin" className="font-bold">Admin</SelectItem>
                             <SelectItem value="User" className="font-bold">User</SelectItem>
                         </SelectContent>
@@ -322,28 +322,28 @@ export default function UsersPage() {
                     </Button>
                 )}
                 {canCreate && (
-                    <Button onClick={handleAdd} disabled={areUsersLoading} className="font-bold text-white">
+                    <Button onClick={handleAdd} disabled={areUsersLoading} className="font-bold text-white shadow-md">
                         <PlusCircle className="mr-2 h-4 w-4" />
-                        Add user
+                        Add User
                     </Button>
                 )}
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <div className="w-full overflow-x-auto">
               <Table>
-                  <TableHeader>
-                      <TableRow className="bg-primary/5">
+                  <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                      <TableRow>
                           <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">#</SortableHeader>
                           <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>
                           <SortableHeader sortKey="email" sortConfig={sortConfig} handleSort={handleSort}>Email</SortableHeader>
                           <SortableHeader sortKey="phone" sortConfig={sortConfig} handleSort={handleSort}>Phone</SortableHeader>
                           <SortableHeader sortKey="loginId" sortConfig={sortConfig} handleSort={handleSort}>Login ID</SortableHeader>
-                          <SortableHeader sortKey="userKey" sortConfig={sortConfig} handleSort={handleSort}>User key</SortableHeader>
+                          <SortableHeader sortKey="userKey" sortConfig={sortConfig} handleSort={handleSort}>User Key</SortableHeader>
                           <SortableHeader sortKey="role" sortConfig={sortConfig} handleSort={handleSort}>Role</SortableHeader>
                           <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
-                            {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right font-bold text-primary">Actions</TableHead>}
+                            {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right font-semibold text-[hsl(var(--table-header-fg))]">Actions</TableHead>}
                       </TableRow>
                   </TableHeader>
                   <TableBody className="font-normal text-primary">
@@ -363,18 +363,18 @@ export default function UsersPage() {
                           ))
                       ) : paginatedUsers.length > 0 ? (
                           paginatedUsers.map((user, index) => (
-                          <TableRow key={user.id} onClick={() => handleEdit(user)} className="cursor-pointer hover:bg-accent/50 transition-colors">
+                          <TableRow key={user.id} onClick={() => handleEdit(user)} className="cursor-pointer bg-white border-b border-primary/10 hover:bg-[hsl(var(--table-row-hover))] transition-colors group">
                               <TableCell className="pl-4 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
-                              <TableCell className="font-bold text-sm">{user.name}</TableCell>
+                              <TableCell className="font-bold text-sm text-primary">{user.name}</TableCell>
                               <TableCell className="text-xs">{user.email}</TableCell>
                               <TableCell className="font-mono text-xs">{user.phone}</TableCell>
                               <TableCell className="text-xs">{user.loginId}</TableCell>
                               <TableCell className="font-mono text-xs opacity-60">{user.userKey}</TableCell>
                               <TableCell>
-                              <Badge variant={user.role === 'Admin' ? 'destructive' : 'secondary'} className="text-[10px] font-bold">{user.role}</Badge>
+                              <Badge variant={user.role === 'Admin' ? 'destructive' : 'secondary'} className="text-[10px] font-bold uppercase">{user.role}</Badge>
                               </TableCell>
                               <TableCell>
-                              <Badge variant={user.status === 'Active' ? 'default' : 'outline'} className="text-[10px] font-bold">{user.status}</Badge>
+                              <Badge variant={user.status === 'Active' ? 'active' : 'outline'} className="text-[10px] font-bold uppercase">{user.status}</Badge>
                               </TableCell>
                               {(canUpdate || canDelete) && (
                               <TableCell className="text-right">
@@ -418,7 +418,7 @@ export default function UsersPage() {
                       ) : (
                       <TableRow>
                           <TableCell colSpan={canUpdate || canDelete ? 9 : 8} className="text-center h-24 text-muted-foreground font-normal italic">
-                              No users found matching your criteria.
+                              No Users Found Matching Your Criteria.
                           </TableCell>
                       </TableRow>
                       )}
@@ -429,7 +429,7 @@ export default function UsersPage() {
         {totalPages > 1 && (
             <CardFooter className="flex items-center justify-between border-t bg-primary/5 p-4">
               <p className="text-xs font-bold text-muted-foreground">
-                  Showing {paginatedUsers.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredAndSortedUsers.length)} of {filteredAndSortedUsers.length} users
+                  Showing {paginatedUsers.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredAndSortedUsers.length)} of {filteredAndSortedUsers.length} Users
               </p>
               <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold h-8 border-primary/20 text-primary">Previous</Button>
@@ -443,7 +443,7 @@ export default function UsersPage() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
-                <AlertDialogTitle className="font-bold text-destructive">Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogTitle className="font-bold text-destructive">Are You Absolutely Sure?</AlertDialogTitle>
                 <AlertDialogDescription className="font-normal text-primary/70">
                     This will permanently delete the user's account, their database profile, and all associated files from storage. This action is irreversible.
                 </AlertDialogDescription>
@@ -452,8 +452,8 @@ export default function UsersPage() {
                 <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
                 <AlertDialogAction 
                     onClick={handleDeleteConfirm} 
-                    className="bg-destructive hover:bg-destructive/90 text-white font-bold shadow-lg">
-                        Delete
+                    className="bg-destructive hover:bg-destructive/90 text-white font-bold shadow-lg transition-transform active:scale-95">
+                        Confirm Deletion
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>

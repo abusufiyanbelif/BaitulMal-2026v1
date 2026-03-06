@@ -67,7 +67,7 @@ type SortKey = keyof Donation | 'srNo' | 'amountForThisCampaign';
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <TableHead className={cn("cursor-pointer hover:bg-muted/50", className)} onClick={() => handleSort(sortKey)}>
+        <TableHead className={cn("cursor-pointer hover:bg-muted/50 text-[hsl(var(--table-header-fg))] font-semibold", className)} onClick={() => handleSort(sortKey)}>
             <div className="flex items-center gap-2 whitespace-nowrap">
                 {children}
                 {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
@@ -427,7 +427,7 @@ export default function DonationsPage() {
             <Button asChild className="mt-4 font-bold">
                 <Link href="/campaign-members">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to campaigns
+                    Back to Campaigns
                 </Link>
             </Button>
         </main>
@@ -441,7 +441,7 @@ export default function DonationsPage() {
             <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
                 <Link href="/campaign-members">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to campaigns
+                    Back to Campaigns
                 </Link>
             </Button>
         </div>
@@ -456,10 +456,10 @@ export default function DonationsPage() {
                         <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
                     )}
                     {canReadRation && (
-                        <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item lists</Link>
+                        <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item Lists</Link>
                     )}
                     {canReadBeneficiaries && (
-                        <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary list</Link>
+                        <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>
                     )}
                     {canReadDonations && (
                         <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>
@@ -473,7 +473,7 @@ export default function DonationsPage() {
             <CardHeader className="bg-primary/5 p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
                 <div className="flex-1 space-y-1.5">
-                    <CardTitle className="text-xl font-bold text-primary tracking-tight">Donation list ({filteredAndSortedDonations.length})</CardTitle>
+                    <CardTitle className="text-xl font-bold text-primary tracking-tight">Donation List ({filteredAndSortedDonations.length})</CardTitle>
                     <CardDescription className="font-normal text-primary/70">
                     Total for filtered donations: <span className="font-bold text-foreground">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisCampaign, 0).toFixed(2)}</span>
                     </CardDescription>
@@ -482,7 +482,7 @@ export default function DonationsPage() {
                     <div className="flex flex-wrap gap-2">
                         <Button onClick={handleAdd} className="font-bold shadow-md">
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            Add donation
+                            Add Donation
                         </Button>
                     </div>
                 )}
@@ -499,11 +499,11 @@ export default function DonationsPage() {
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All" className="font-bold">All statuses</SelectItem>
+                            <SelectItem value="All" className="font-bold">All Statuses</SelectItem>
                             <SelectItem value="Verified" className="font-bold text-success-foreground">Verified</SelectItem>
                             <SelectItem value="Pending" className="font-bold">Pending</SelectItem>
                             <SelectItem value="Canceled" className="font-bold text-destructive">Canceled</SelectItem>
-                            <SelectItem value="No Transactions" className="font-bold">No transactions</SelectItem>
+                            <SelectItem value="No Transactions" className="font-bold">No Transactions</SelectItem>
                         </SelectContent>
                     </Select>
                     <Select value={typeFilter} onValueChange={(value) => { setTypeFilter(value); setCurrentPage(1); }}>
@@ -511,7 +511,7 @@ export default function DonationsPage() {
                             <SelectValue placeholder="Category" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All" className="font-bold">All categories</SelectItem>
+                            <SelectItem value="All" className="font-bold">All Categories</SelectItem>
                             {donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-bold">{cat}</SelectItem>)}
                         </SelectContent>
                     </Select>
@@ -520,15 +520,15 @@ export default function DonationsPage() {
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
                 <Table>
-                    <TableHeader className="bg-primary/5">
+                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                     <TableRow>
                         <SortableHeader sortKey="srNo" className="w-[50px] pl-4" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
                         <SortableHeader sortKey="donorName" className="w-[200px]" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
                         <SortableHeader sortKey="amountForThisCampaign" className="w-[150px] text-right" sortConfig={sortConfig} handleSort={handleSort}>Value (₹)</SortableHeader>
-                        <SortableHeader sortKey="donationDate" className="w-[150px]" sortConfig={sortConfig} handleSort={handleSort}>Entry date</SortableHeader>
-                        <TableHead className="w-[200px] font-bold text-primary tracking-tight">Details</TableHead>
+                        <SortableHeader sortKey="donationDate" className="w-[150px]" sortConfig={sortConfig} handleSort={handleSort}>Entry Date</SortableHeader>
+                        <TableHead className="w-[200px] font-semibold text-[hsl(var(--table-header-fg))] tracking-tight">Details</TableHead>
                         <SortableHeader sortKey="status" className="w-[120px]" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
-                        <TableHead className="w-[100px] text-right pr-4 font-bold text-primary tracking-tight">Actions</TableHead>
+                        <TableHead className="w-[100px] text-right pr-4 font-semibold text-[hsl(var(--table-header-fg))] tracking-tight">Actions</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody className="font-normal text-primary">
@@ -543,7 +543,7 @@ export default function DonationsPage() {
                         const isOpen = openRows[donation.id] || false;
                         return (
                             <React.Fragment key={donation.id}>
-                            <TableRow className="bg-background hover:bg-accent/50 cursor-pointer group transition-colors" data-state={isOpen ? 'open' : 'closed'} onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
+                            <TableRow className="bg-white border-b border-primary/10 hover:bg-[hsl(var(--table-row-hover))] cursor-pointer group transition-colors" data-state={isOpen ? 'open' : 'closed'} onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
                                 <TableCell className="pl-4 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                                 <TableCell>
                                     <div className="font-bold text-sm text-foreground">{donation.donorName}</div>
@@ -591,21 +591,21 @@ export default function DonationsPage() {
                                 </TableCell>
                             </TableRow>
                             {isOpen && (
-                                <TableRow className="bg-primary/[0.02] hover:bg-primary/[0.02] border-b border-primary/5">
+                                <TableRow className="bg-[hsl(var(--table-expanded-bg))] border-b border-primary/10">
                                 <TableCell colSpan={7} className="p-4">
-                                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Linked transaction logs</h4>
-                                    <div className="border border-primary/10 rounded-md bg-background overflow-hidden">
+                                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Linked Transaction Logs</h4>
+                                    <div className="border border-primary/10 rounded-md bg-white overflow-hidden shadow-sm">
                                     <Table>
-                                        <TableHeader className="bg-primary/5">
+                                        <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                         <TableRow>
-                                            <TableHead className="text-[10px] font-bold text-primary tracking-tight uppercase">Amount</TableHead>
-                                            <TableHead className="text-[10px] font-bold text-primary tracking-tight uppercase">Transaction ID</TableHead>
-                                            <TableHead className="text-right text-[10px] font-bold text-primary tracking-tight uppercase">Artifact</TableHead>
+                                            <TableHead className="text-[10px] font-semibold text-[hsl(var(--table-header-fg))] tracking-tight uppercase">Amount</TableHead>
+                                            <TableHead className="text-[10px] font-semibold text-[hsl(var(--table-header-fg))] tracking-tight uppercase">Transaction ID</TableHead>
+                                            <TableHead className="text-right text-[10px] font-semibold text-[hsl(var(--table-header-fg))] tracking-tight uppercase">Artifact</TableHead>
                                         </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                         {(donation.transactions || []).map((tx) => (
-                                            <TableRow key={tx.id}>
+                                            <TableRow key={tx.id} className="hover:bg-[hsl(var(--table-row-hover))]">
                                             <TableCell className="font-bold font-mono text-sm">₹{tx.amount.toFixed(2)}</TableCell>
                                             <TableCell className="font-mono text-xs opacity-70">{tx.transactionId || 'N/A'}</TableCell>
                                             <TableCell className="text-right">
@@ -629,7 +629,7 @@ export default function DonationsPage() {
                     ) : (
                     <TableRow>
                         <TableCell colSpan={7} className="text-center h-24 text-muted-foreground italic font-normal">
-                            No donations found matching criteria.
+                            No Donations Found Matching Criteria.
                         </TableCell>
                     </TableRow>
                     )}
@@ -654,7 +654,7 @@ export default function DonationsPage() {
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0 text-primary">
             <DialogHeader className="px-6 py-4 border-b bg-primary/5">
-                <DialogTitle className="text-xl font-bold text-primary tracking-tight">{editingDonation ? 'Edit' : 'Add'} donation record</DialogTitle>
+                <DialogTitle className="text-xl font-bold text-primary tracking-tight">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle>
             </DialogHeader>
             <ScrollArea className="flex-1 px-6 py-4">
                 <DonationForm
@@ -675,7 +675,7 @@ export default function DonationsPage() {
       <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
-                <AlertDialogTitle className="font-bold text-destructive">Unlink donation?</AlertDialogTitle>
+                <AlertDialogTitle className="font-bold text-destructive">Unlink Donation?</AlertDialogTitle>
                 <AlertDialogDescription className="font-normal text-primary/70">
                     Remove the donation from this campaign? The record itself will remain in the global list, but will not contribute to this initiative's totals.
                 </AlertDialogDescription>
@@ -685,7 +685,7 @@ export default function DonationsPage() {
                 <AlertDialogAction 
                     onClick={handleUnlinkConfirm} 
                     className="bg-destructive hover:bg-destructive/90 text-white font-bold">
-                        Confirm unlink
+                        Confirm Unlink
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
@@ -694,14 +694,14 @@ export default function DonationsPage() {
       <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
         <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden text-primary">
             <DialogHeader className="px-6 py-4 border-b bg-primary/5">
-                <DialogTitle className="text-xl font-bold text-primary tracking-tight">Artifact viewer</DialogTitle>
+                <DialogTitle className="text-xl font-bold text-primary tracking-tight">Artifact Viewer</DialogTitle>
             </DialogHeader>
             <ScrollArea className="flex-1 bg-secondary/20 p-4">
                 <div className="relative min-h-[70vh] w-full flex items-center justify-center">
                     {imageToView && (
                         <Image
                             src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
-                            alt="Donation artifact"
+                            alt="Donation Artifact"
                             fill
                             sizes="100vw"
                             className="object-contain transition-transform duration-200 ease-out origin-center"

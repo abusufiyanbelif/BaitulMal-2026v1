@@ -111,20 +111,20 @@ export default function Home() {
                     <CardContent className="p-0">
                         <ScrollArea className="w-full">
                             <Table>
-                                <TableHeader className="bg-muted/30">
+                                <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                     <TableRow>
-                                        <TableHead className="font-bold text-[10px] uppercase text-primary tracking-widest pl-6">Reference</TableHead>
-                                        <TableHead className="font-bold text-[10px] uppercase text-primary tracking-widest">Allocation</TableHead>
-                                        <TableHead className="font-bold text-[10px] uppercase text-primary tracking-widest text-right pr-6">Status</TableHead>
+                                        <TableHead className="font-semibold text-[10px] uppercase text-[hsl(var(--table-header-fg))] tracking-widest pl-6">Reference</TableHead>
+                                        <TableHead className="font-semibold text-[10px] uppercase text-[hsl(var(--table-header-fg))] tracking-widest">Allocation</TableHead>
+                                        <TableHead className="font-semibold text-[10px] uppercase text-[hsl(var(--table-header-fg))] tracking-widest text-right pr-6">Status</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {recentDonationsFormatted.length > 0 ? (
                                         recentDonationsFormatted.slice(0, 10).map((item) => (
-                                            <TableRow key={item.id} className="hover:bg-primary/5 transition-colors border-primary/5">
+                                            <TableRow key={item.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-primary/10 bg-white">
                                                 <TableCell className="pl-6"><div className="text-xs font-bold text-primary truncate max-w-[200px]">{item.text.split(' for ')[0]}</div></TableCell>
                                                 <TableCell><Link href={item.href} className="text-xs font-normal text-muted-foreground hover:text-primary hover:underline transition-colors tracking-tight">{item.text.split(' for ')[1]}</Link></TableCell>
-                                                <TableCell className="text-right pr-6"><Badge variant="outline" className="text-[10px] font-bold border-primary/20 text-primary bg-primary/5">VERIFIED</Badge></TableCell>
+                                                <TableCell className="text-right pr-6"><Badge variant="eligible" className="text-[10px] font-bold uppercase tracking-tighter">VERIFIED</Badge></TableCell>
                                             </TableRow>
                                         ))
                                     ) : (

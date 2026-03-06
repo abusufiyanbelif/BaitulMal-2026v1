@@ -161,7 +161,7 @@ export default function BeneficiariesPage() {
 
       <div className="rounded-lg border border-primary/10 bg-white overflow-hidden shadow-sm">
         <ScrollArea className="w-full">
-            <div className={cn("bg-primary/5 border-b border-primary/10 text-[11px] font-bold tracking-wider text-primary", gridClass)}>
+            <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-semibold tracking-wider text-[hsl(var(--table-header-fg))]", gridClass)}>
                 <div>Sr. No.</div>
                 <div>Name</div>
                 <div>Phone</div>
@@ -175,13 +175,13 @@ export default function BeneficiariesPage() {
 
             <Accordion type="single" collapsible className="w-full">
             {paginatedBeneficiaries.map((b, idx) => (
-                <AccordionItem key={b.id} value={b.id} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors">
+                <AccordionItem key={b.id} value={b.id} className="border-b border-primary/10 last:border-0 hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white">
                 <div className={cn("py-3 px-4", gridClass)}>
                     <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
                     <div className="font-bold text-sm truncate pr-2 text-primary">{b.name}</div>
                     <div className="font-mono text-xs opacity-60 text-primary">{b.phone || 'N/A'}</div>
                     <div className="text-center"><Badge variant={b.status === 'Given' ? 'success' : 'outline'} className="text-[10px] font-bold uppercase">{b.status}</Badge></div>
-                    <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'success' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
+                    <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
                     <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.kitAmount || 0).toFixed(2)}</div>
                     <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toFixed(2)}</div>
                     <div className="pl-4 text-xs font-normal text-primary/70">{b.referralBy || 'N/A'}</div>
@@ -189,7 +189,7 @@ export default function BeneficiariesPage() {
                         <div className="flex items-center justify-end gap-1">
                             <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
                                 <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-primary/10 transition-colors">
-                                    <ChevronDown className="h-4 w-4 text-primary shrink-0 transition-transform duration-200 group-state-open:rotate-180" />
+                                    <ChevronDown className="h-4 w-4 text-primary shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                                 </div>
                             </AccordionTrigger>
                             <DropdownMenu>
@@ -221,7 +221,7 @@ export default function BeneficiariesPage() {
                         </div>
                     </div>
                 </div>
-                <AccordionContent className="bg-primary/[0.01] px-4 pt-0 pb-4 border-t border-primary/5">
+                <AccordionContent className="bg-[hsl(var(--table-expanded-bg))] px-4 pt-0 pb-4 border-t border-primary/5">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 px-12 text-primary font-normal">
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Address</p>
