@@ -11,7 +11,7 @@ function HomeDashboardCard({ title, description, href, icon: Icon, delay }: { ti
   return (
     <div className="animate-fade-in-up" style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
       <Link href={href} className="block group">
-        <Card className="h-full p-4 transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:-translate-y-1 group-hover:border-primary active:scale-95">
+        <Card className="h-full p-4 transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:-translate-y-1 group-hover:border-primary active:scale-95 border-primary/10">
           <div className="flex justify-between items-start gap-4">
             <div className="space-y-1">
               <CardTitle className="text-md font-bold text-primary">{title}</CardTitle>
@@ -30,28 +30,28 @@ export default function Home() {
 
     const allCards = [
         {
-            title: "Institutional Campaigns",
+            title: "Campaigns",
             description: "Manage Ration, Relief, And General Campaigns.",
             href: "/campaign-members",
             icon: FolderKanban,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false),
         },
         {
-            title: "Support Appeals",
+            title: "Leads",
             description: "Track And Convert New Initiatives And Individual Leads.",
             href: "/leads-members",
             icon: Lightbulb,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.read', false),
         },
         {
-            title: "Master Beneficiaries",
+            title: "Beneficiaries",
             description: "Manage A Comprehensive List Of All Aid Recipients.",
             href: "/beneficiaries",
             icon: Users,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.read', false),
         },
         {
-            title: "Financial Donations",
+            title: "Donations",
             description: "View And Manage All Verified Incoming Donations.",
             href: "/donations",
             icon: LifeBuoy,
@@ -65,7 +65,7 @@ export default function Home() {
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false) || !!getNestedValue(userProfile, 'permissions.leads-members.read', false),
         },
         {
-            title: "Data Extractor",
+            title: "Extractor",
             description: "Scan And Extract Key Information From Documents.",
             href: "/extractor",
             icon: ScanSearch,
@@ -86,21 +86,21 @@ export default function Home() {
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.users.read', false),
         },
         {
-            title: "System Settings",
+            title: "Settings",
             description: "Configure Branding, Payments, And Module Rules.",
             href: "/settings",
             icon: Settings,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.read', false),
         },
         {
-            title: "Data Analytics",
+            title: "Analytics",
             description: "View Institutional Metrics And Usage Statistics.",
             href: "/analytics",
             icon: BarChart,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.analytics.read', false),
         },
         {
-            title: "System Diagnostics",
+            title: "Diagnostics",
             description: "Perform Health Checks On All Critical Resources.",
             href: "/diagnostics",
             icon: FlaskConical,
@@ -111,11 +111,11 @@ export default function Home() {
     const visibleCards = allCards.filter(card => card.isVisible);
 
     return (
-        <div className="container mx-auto p-4 md:p-8">
+        <div className="container mx-auto p-4 md:p-8 text-primary font-normal">
             {isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[...Array(3)].map((_, i) => (
-                        <Skeleton key={i} className="h-40" />
+                        <Skeleton key={i} className="h-40 rounded-[16px]" />
                     ))}
                 </div>
             ) : userProfile ? (
@@ -138,8 +138,8 @@ export default function Home() {
                 </div>
             </div>
             ) : (
-             <div className="text-center">
-                <p className="text-primary font-bold">Could Not Load User Profile Document.</p>
+             <div className="text-center py-20">
+                <p className="text-primary font-bold text-lg">Could Not Load User Profile Document.</p>
              </div>
             )}
         </div>

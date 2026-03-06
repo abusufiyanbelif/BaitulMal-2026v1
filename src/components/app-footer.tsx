@@ -14,7 +14,6 @@ import {
   QrCode, 
   Info, 
   HeartHandshake, 
-  ExternalLink,
   Users
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
@@ -22,7 +21,7 @@ import { cn } from '@/lib/utils';
 
 /**
  * High-Fidelity Institutional Footer for BMS3 A Theme.
- * Provides full transparency, navigation, and secure payment details.
+ * Provides Full Transparency, Navigation, And Secure Payment Details.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
@@ -41,7 +40,7 @@ export function AppFooter() {
         {/* Top Section: Institutional Branding */}
         <div className="flex flex-col items-center gap-6 animate-fade-in-up">
           {validLogoUrl && (
-            <div className="relative w-20 h-20 bg-white/50 rounded-2xl p-2 border border-[#E2EEE7] shadow-sm">
+            <div className="relative w-20 h-20 bg-white/50 rounded-2xl p-2 border border-[#E2EEE7] shadow-sm transition-transform hover:scale-105">
               <Image
                 src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                 alt="Organization Logo"
@@ -83,10 +82,6 @@ export function AppFooter() {
               <Link href="/info/guiding-principles" className="text-sm font-bold text-[#355E3B] hover:text-[#1FA34A] transition-colors flex items-center justify-center md:justify-start gap-2 group">
                 <ShieldCheck className="h-4 w-4 opacity-40 group-hover:opacity-100" />
                 Our Guiding Principles
-              </Link>
-              <Link href="/campaign-public" className="text-sm font-bold text-[#355E3B] hover:text-[#1FA34A] transition-colors flex items-center justify-center md:justify-start gap-2 group">
-                <ExternalLink className="h-4 w-4 opacity-40 group-hover:opacity-100" />
-                Explore Active Campaigns
               </Link>
             </nav>
           </div>

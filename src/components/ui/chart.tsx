@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -13,10 +12,9 @@ export type ChartConfig = {
   [k in string]: {
     label?: React.ReactNode
     icon?: React.ComponentType
-  } & (
-    | { color?: string; theme?: never }
-    | { color?: never; theme: Record<keyof typeof THEMES, string> }
-  )
+    color?: string
+    theme?: Record<keyof typeof THEMES, string>
+  }
 }
 
 type ChartContextProps = {
@@ -89,7 +87,9 @@ ${colorConfig
     const color =
       itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
       itemConfig.color
-    return color ? `  --color-${key.replace(/\s+/g, '')}: ${color};` : null
+    // Sanitize the key by removing spaces for CSS variable validity
+    const sanitizedKey = key.replace(/\s+/g, '');
+    return color ? `  --color-${sanitizedKey}: ${color};` : null
   })
   .join("\n")}
 }
@@ -294,7 +294,7 @@ const ChartLegendContent = React.forwardRef<
             <div
               key={item.value}
               className={cn(
-                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
+                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground font-bold tracking-tight text-[10px]"
               )}
             >
               {itemConfig?.icon && !hideIcon ? (

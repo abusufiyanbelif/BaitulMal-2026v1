@@ -1,13 +1,11 @@
-
-
 'use client';
 
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useSession } from '@/hooks/use-session';
-import { collection, query, DocumentData } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
 import Link from 'next/link';
 import {
   BarChart,
@@ -18,18 +16,15 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from 'recharts';
 import { DateRange } from 'react-day-picker';
-import { format, startOfMonth, endOfMonth, startOfQuarter, endOfYear, subMonths, startOfYear, endOfQuarter } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfQuarter, subMonths, startOfYear, endOfQuarter } from 'date-fns';
 
 import type { Donation, DonationCategory, Campaign, Lead } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Wallet, PieChart as PieChartIcon, BarChart as BarChartIcon, Calendar as CalendarIcon, TrendingUp, FolderKanban, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Loader2, Wallet, Calendar as CalendarIcon, TrendingUp, FolderKanban, Lightbulb, ShieldAlert } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -47,14 +42,12 @@ import {
 import type { ChartConfig } from '@/components/ui/chart';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ShieldAlert } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
@@ -74,15 +67,9 @@ const donationPaymentTypeChartConfig = {
     Other: { label: "Other", color: "hsl(var(--chart-4))" },
 } satisfies ChartConfig;
 
-const donationStatusChartConfig = {
-    Verified: { label: "Verified", color: "hsl(var(--chart-2))" },
-    Pending: { label: "Pending", color: "hsl(var(--chart-4))" },
-    Canceled: { label: "Canceled", color: "hsl(var(--chart-3))" },
-} satisfies ChartConfig;
-
 const monthlyContributionChartConfig = {
   total: {
-    label: "Total",
+    label: "Total Amount (₹)",
     color: "hsl(var(--chart-1))",
   },
 } satisfies ChartConfig;
@@ -91,7 +78,6 @@ export default function DonationsSummaryPage() {
     const firestore = useFirestore();
     const pathname = usePathname();
     const { userProfile, isLoading: isProfileLoading } = useSession();
-    const { toast } = useToast();
 
     const [date, setDate] = useState<DateRange | undefined>(undefined);
     const [isClient, setIsClient] = useState(false);
@@ -250,7 +236,8 @@ export default function DonationsSummaryPage() {
             amountsByCategory,
             amountsByStatus,
             countsByStatus,
-            donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value })),
+            donationPaymentTypeChartData: Object.entries(paymentTypeData).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` })),
+            donationCategoryChartData: Object.entries(amountsByCategory).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` })),
             fundTotals: {
                 fitra: fitraTotal,
                 zakat: zakatTotal,
@@ -301,7 +288,7 @@ export default function DonationsSummaryPage() {
                 <Alert variant="destructive">
                     <ShieldAlert className="h-4 w-4" />
                     <AlertTitle>Access Denied</AlertTitle>
-                    <AlertDescription>
+                    <AlertDescription className="font-normal">
                         You do not have permission to view this page.
                     </AlertDescription>
                 </Alert>
@@ -310,30 +297,30 @@ export default function DonationsSummaryPage() {
     }
     
     return (
-        <div className="container mx-auto p-4 md:p-8">
+        <div className="container mx-auto p-4 md:p-8 text-primary font-normal">
             <div className="mb-4">
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
                     <Link href="/dashboard">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Dashboard
+                        Back To Dashboard
                     </Link>
                 </Button>
             </div>
 
             <div className="flex items-center justify-between mb-4">
-                <h1 className="text-3xl font-bold">Donation Summary</h1>
+                <h1 className="text-3xl font-bold tracking-tight">Donation Summary</h1>
             </div>
 
             <div className="border-b mb-4">
                 <ScrollArea className="w-full whitespace-nowrap">
-                    <div className="flex w-max space-x-2">
+                    <div className="flex w-max space-x-2 pb-2">
                         <Link href="/donations/summary" className={cn(
-                            "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                            pathname === '/donations/summary' ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                            "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
+                            pathname === '/donations/summary' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
                         )}>Donation Summary</Link>
                         <Link href="/donations" className={cn(
-                            "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                            pathname === '/donations' ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                            "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
+                            pathname === '/donations' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
                         )}>Donation List</Link>
                     </div>
                     <ScrollBar orientation="horizontal" />
@@ -346,7 +333,7 @@ export default function DonationsSummaryPage() {
                         <Button
                         id="date"
                         variant={"outline"}
-                        className={cn("w-full sm:w-[300px] justify-start text-left font-normal",!date && "text-muted-foreground")}
+                        className={cn("w-full sm:w-[300px] justify-start text-left font-bold border-primary/20 text-primary",!date && "text-muted-foreground")}
                         >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {date?.from ? (
@@ -358,7 +345,7 @@ export default function DonationsSummaryPage() {
                             format(date.from, "LLL dd, y")
                             )
                         ) : (
-                            <span>All time</span>
+                            <span>Filter By All Time</span>
                         )}
                         </Button>
                     </PopoverTrigger>
@@ -389,56 +376,56 @@ export default function DonationsSummaryPage() {
                         }
                     }}
                     >
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder="Quick Select" />
+                    <SelectTrigger className="w-full sm:w-[180px] font-bold border-primary/20 text-primary rounded-[10px]">
+                        <SelectValue placeholder="Quick Period Select" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all_time">All Time</SelectItem>
-                        <SelectItem value="this_month">This Month</SelectItem>
-                        <SelectItem value="this_quarter">This Quarter</SelectItem>
-                        <SelectItem value="this_year">This Year</SelectItem>
-                        <SelectItem value="last_3_months">Last 3 Months</SelectItem>
+                        <SelectItem value="all_time" className="font-bold">All Time</SelectItem>
+                        <SelectItem value="this_month" className="font-bold">This Month</SelectItem>
+                        <SelectItem value="this_quarter" className="font-bold">This Quarter</SelectItem>
+                        <SelectItem value="this_year" className="font-bold">This Year</SelectItem>
+                        <SelectItem value="last_3_months" className="font-bold">Last 3 Months</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
             
             <div className="space-y-6 animate-fade-in-zoom">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
+                <Card className="border-primary/10 shadow-sm overflow-hidden bg-white">
+                    <CardHeader className="bg-primary/5 border-b">
+                        <CardTitle className="flex items-center gap-2 font-bold text-primary">
                             <TrendingUp className="h-6 w-6 text-primary" />
-                            Donations by Initiative
+                            Donations By Initiative
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="font-normal text-primary/70">
                             Total donation amounts allocated to each campaign and lead.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-0">
                         {isLoading ? (
                             <Skeleton className="h-48 w-full" />
                         ) : (
                             <Table>
-                                <TableHeader>
+                                <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                     <TableRow>
-                                        <TableHead>Initiative</TableHead>
-                                        <TableHead className="text-right">Donation Count</TableHead>
-                                        <TableHead className="text-right">Total Amount</TableHead>
+                                        <TableHead className="font-bold text-[hsl(var(--table-header-fg))]">Initiative</TableHead>
+                                        <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))]">Donation Count</TableHead>
+                                        <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))]">Total Amount</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {summaryData?.sortedInitiatives.map((initiative) => (
-                                        <TableRow key={`${initiative.type}_${initiative.name}`}>
-                                            <TableCell className="font-medium flex items-center gap-2">
-                                                {initiative.type === 'campaign' ? <FolderKanban className="h-4 w-4 text-muted-foreground" /> : initiative.type === 'lead' ? <Lightbulb className="h-4 w-4 text-muted-foreground" /> : <Wallet className="h-4 w-4 text-muted-foreground" />}
+                                        <TableRow key={`${initiative.type}_${initiative.name}`} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
+                                            <TableCell className="font-bold text-sm flex items-center gap-2 text-primary">
+                                                {initiative.type === 'campaign' ? <FolderKanban className="h-4 w-4 opacity-40" /> : initiative.type === 'lead' ? <Lightbulb className="h-4 w-4 opacity-40" /> : <Wallet className="h-4 w-4 opacity-40" />}
                                                 {initiative.name}
                                             </TableCell>
-                                            <TableCell className="text-right">{initiative.count}</TableCell>
-                                            <TableCell className="text-right font-mono">₹{initiative.amount.toLocaleString('en-IN')}</TableCell>
+                                            <TableCell className="text-right font-normal">{initiative.count}</TableCell>
+                                            <TableCell className="text-right font-bold font-mono text-primary">₹{initiative.amount.toLocaleString('en-IN')}</TableCell>
                                         </TableRow>
                                     ))}
                                     {summaryData?.sortedInitiatives.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={3} className="text-center h-24 text-muted-foreground">
+                                            <TableCell colSpan={3} className="text-center h-24 text-muted-foreground font-normal italic opacity-60">
                                                 No specific initiative allocations in this period.
                                             </TableCell>
                                         </TableRow>
@@ -449,124 +436,117 @@ export default function DonationsSummaryPage() {
                     </CardContent>
                 </Card>
                 <div className="grid gap-6 lg:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Fund Totals by Type</CardTitle>
-                            <CardDescription>A breakdown of all collected funds by their designated purpose.</CardDescription>
+                    <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                        <CardHeader className="bg-primary/5 border-b">
+                            <CardTitle className="font-bold text-primary">Fund Totals By Type</CardTitle>
+                            <CardDescription className="font-normal text-primary/70">A breakdown of all collected funds by their designated purpose.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fitra</span><span className="font-semibold">₹{summaryData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Zakat</span><span className="font-semibold">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Sadaqah</span><span className="font-semibold">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Fidiya</span><span className="font-semibold">₹{summaryData?.fundTotals?.fidiya.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lillah</span><span className="font-semibold">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Monthly Contribution</span><span className="font-semibold">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Interest (for disposal)</span><span className="font-semibold">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Loan (Qard-e-Hasana)</span><span className="font-semibold">₹{summaryData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <Separator />
-                            <div className="flex justify-between items-center text-lg">
-                                <span className="font-semibold">Grand Total</span>
-                                <span className="font-bold text-primary">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span>
+                        <CardContent className="space-y-2 pt-6 font-normal">
+                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Fitra</span><span className="font-mono">₹{summaryData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Zakat</span><span className="font-mono">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Sadaqah</span><span className="font-mono">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Fidiya</span><span className="font-mono">₹{summaryData?.fundTotals?.fidiya.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Lillah</span><span className="font-mono">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Monthly Contribution</span><span className="font-mono">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Interest (For Disposal)</span><span className="font-mono">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Loan (Qard-e-Hasana)</span><span className="font-mono">₹{summaryData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                            <Separator className="bg-primary/10 my-2" />
+                            <div className="flex justify-between items-center text-lg font-bold text-primary px-2">
+                                <span>Grand Total</span>
+                                <span className="font-mono text-primary">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span>
                             </div>
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Zakat Utilization</CardTitle>
-                            <CardDescription>Overall tracking of Zakat funds collected across all initiatives.</CardDescription>
+                    <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                        <CardHeader className="bg-primary/5 border-b">
+                            <CardTitle className="font-bold text-primary">Zakat Utilization</CardTitle>
+                            <CardDescription className="font-normal text-primary/70">Overall tracking of Zakat funds collected across all initiatives.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex justify-between items-center text-lg">
-                                <span className="font-semibold">Total Zakat Collected</span>
-                                <span className="font-bold text-primary">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
+                        <CardContent className="space-y-4 pt-6">
+                            <div className="flex justify-between items-center text-xl font-bold text-primary">
+                                <span className="tracking-tight">Total Zakat Collected</span>
+                                <span className="font-mono">₹{summaryData?.fundTotals.zakat.toLocaleString('en-IN') ?? '0.00'}</span>
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                                To see how Zakat is allocated, please view the summary page for each individual campaign and lead.
+                            <Separator className="bg-primary/10" />
+                            <p className="text-xs text-muted-foreground font-normal leading-relaxed italic">
+                                To Observe How Zakat Resources Are Distributed At The Individual Case Level, Please Review The Summary Page For Each Dedicated Initiative.
                             </p>
                         </CardContent>
                     </Card>
                 </div>
                 <div className="grid gap-6 lg:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>All Donations by Category</CardTitle>
+                    <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                        <CardHeader className="bg-primary/5 border-b">
+                            <CardTitle className="font-bold text-primary">Donations By Category</CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-6">
                           {isClient ? (
-                            <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                <BarChart data={Object.entries(summaryData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))}>
-                                    <CartesianGrid vertical={false} />
-                                    <XAxis
-                                        dataKey="name"
-                                        tickLine={false}
-                                        tickMargin={10}
-                                        axisLine={false}
-                                        angle={-45}
-                                        textAnchor="end"
-                                        height={60}
-                                    />
-                                    <YAxis tickFormatter={(value) => `₹${new Intl.NumberFormat('en-IN', { notation: 'compact' }).format(value)}`} />
-                                    <ChartTooltip content={<ChartTooltipContent />} />
-                                    <Bar dataKey="value" radius={4}>
-                                        {Object.keys(summaryData?.amountsByCategory || {}).map((name) => (
-                                            <Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ChartContainer>
-                          ) : <Skeleton className="h-[250px] w-full"/>}
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>All Donations by Payment Type</CardTitle>
-                            <CardDescription>Count of donations per payment type.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          {isClient ? (
-                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
+                            <ChartContainer config={donationCategoryChartConfig} className="h-[300px] w-full">
                                 <PieChart>
                                     <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                    <Pie data={summaryData?.donationPaymentTypeChartData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5}>
-                                        {summaryData?.donationPaymentTypeChartData?.map((entry) => (
-                                            <Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />
+                                    <Pie data={summaryData?.donationCategoryChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} strokeWidth={5} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
+                                        {summaryData?.donationCategoryChartData?.map((entry) => (
+                                            <Cell key={`cell-cat-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />
                                         ))}
                                     </Pie>
                                     <ChartLegend content={<ChartLegendContent />} />
                                 </PieChart>
                             </ChartContainer>
-                          ) : <Skeleton className="h-[250px] w-full"/>}
+                          ) : <Skeleton className="h-[300px] w-full rounded-md"/>}
+                        </CardContent>
+                    </Card>
+                    <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                        <CardHeader className="bg-primary/5 border-b">
+                            <CardTitle className="font-bold text-primary">Donations By Payment Type</CardTitle>
+                            <CardDescription className="font-normal text-primary/70">Count of donations per payment channel.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-6">
+                          {isClient ? (
+                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[300px] w-full">
+                                <PieChart>
+                                    <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                    <Pie data={summaryData?.donationPaymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} strokeWidth={5} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
+                                        {summaryData?.donationPaymentTypeChartData?.map((entry) => (
+                                            <Cell key={`cell-pay-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />
+                                        ))}
+                                    </Pie>
+                                    <ChartLegend content={<ChartLegendContent />} />
+                                </PieChart>
+                            </ChartContainer>
+                          ) : <Skeleton className="h-[300px] w-full rounded-md"/>}
                         </CardContent>
                     </Card>
                 </div>
                 {monthlyContributionData && monthlyContributionData.length > 0 && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Monthly Contributions Over Time</CardTitle>
+                    <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                        <CardHeader className="bg-primary/5 border-b">
+                            <CardTitle className="font-bold text-primary">Monthly Contributions Over Time</CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-6">
                           {isClient ? (
                             <ChartContainer config={monthlyContributionChartConfig} className="h-[300px] w-full">
                                 <BarChart data={monthlyContributionData}>
-                                <CartesianGrid vertical={false} />
+                                <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.3} />
                                 <XAxis
                                     dataKey="month"
                                     tickLine={false}
                                     tickMargin={10}
                                     axisLine={false}
                                     tickFormatter={(value) => format(new Date(value), 'MMM yyyy')}
+                                    tick={{ fontSize: 10, fontWeight: 'bold' }}
                                 />
                                 <YAxis
                                     tickFormatter={(value) => `₹${new Intl.NumberFormat('en-IN', { notation: 'compact' }).format(value)}`}
+                                    tick={{ fontSize: 10, fontWeight: 'bold' }}
                                 />
                                 <ChartTooltip
                                     cursor={{ fill: "hsl(var(--muted))" }}
                                     content={<ChartTooltipContent indicator="dot" />}
                                 />
-                                <Bar dataKey="total" fill="hsl(var(--chart-1))" radius={4} />
+                                <Bar dataKey="total" fill="var(--color-total)" radius={4} className="transition-all duration-1000 ease-out" />
                                 </BarChart>
                             </ChartContainer>
-                            ) : <Skeleton className="h-[300px] w-full"/>}
+                            ) : <Skeleton className="h-[300px] w-full rounded-md"/>}
                         </CardContent>
                     </Card>
                 )}
