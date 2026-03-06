@@ -43,7 +43,7 @@ const leadSchema = z.object({
   endDate: z.string().min(1, 'End Date Is Required.'),
   requiredAmount: z.coerce.number().min(0).optional(),
   targetAmount: z.coerce.number().min(0).optional(),
-  allowedDonationTypes: z.array(z.enum(donationCategories)).optional(),
+  allowedDonationTypes: z.array(z.string()).default([...donationCategories]),
   degree: z.string().optional(),
   year: z.string().optional(),
   semester: z.string().optional(),
@@ -417,23 +417,40 @@ export default function CreateLeadPage() {
                     <FormField control={form.control} name="targetAmount" render={({ field }) => (<FormItem>{renderLabel('Fundraising Goal (₹)', 'targetAmount')}<FormControl><Input type="number" placeholder="e.g. 100000" {...field} className="font-bold" /></FormControl><FormMessage /></FormItem>)}/>
                 </div>
 
-                <FormField control={form.control} name="allowedDonationTypes" render={() => (
-                    <FormItem className="space-y-4">
-                      <div><FormLabel className="text-base font-bold text-primary">Qualified Donation Types</FormLabel><FormDescription className="text-xs font-normal opacity-70">Select Which Fund Types Count Toward The Target Goal metrics.</FormDescription></div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-xl bg-primary/5 border-primary/10">
-                        <div className="flex items-center space-x-2"><Checkbox id="select-all-types-lead" checked={form.watch('allowedDonationTypes')?.length === donationCategories.length} onCheckedChange={(checked) => { form.setValue('allowedDonationTypes', checked ? [...donationCategories] : []); }} /><Label htmlFor="select-all-types-lead" className="font-bold text-[10px] uppercase cursor-pointer tracking-widest">Any</Label></div>
+                <div className="space-y-4">
+                    <div>
+                        <FormLabel className="text-base font-bold text-primary">Qualified Donation Types</FormLabel>
+                        <FormDescription className="text-xs font-normal opacity-70">Select Which Fund Types Count Toward The Target Goal metrics.</FormDescription>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-xl bg-primary/5 border-primary/10">
+                        <div className="flex items-center space-x-2">
+                            <Checkbox 
+                                id="select-all-types-lead" 
+                                checked={form.watch('allowedDonationTypes')?.length === donationCategories.length} 
+                                onCheckedChange={(checked) => { 
+                                    form.setValue('allowedDonationTypes', checked ? [...donationCategories] : [], { shouldDirty: true, shouldValidate: true }); 
+                                }} 
+                            />
+                            <Label htmlFor="select-all-types-lead" className="font-bold text-[10px] uppercase cursor-pointer tracking-widest">Any</Label>
+                        </div>
                         {donationCategories.map((type) => (
-                          <FormField key={type} control={form.control} name="allowedDonationTypes" render={({ field }) => (
-                            <FormItem key={type} className="flex flex-row items-center space-x-3 space-y-0">
-                                <FormControl><Checkbox checked={field.value?.includes(type)} onCheckedChange={(checked) => { return checked ? field.onChange([...(field.value || []), type]) : field.onChange((field.value || []).filter((value) => value !== type))}} /></FormControl>
-                                <FormLabel className="font-bold text-[10px] uppercase cursor-pointer tracking-widest opacity-80">{type}</FormLabel>
-                            </FormItem>
-                          )} />
+                            <div key={type} className="flex flex-row items-center space-x-3 space-y-0">
+                                <Checkbox 
+                                    id={`type-lead-${type}`}
+                                    checked={form.watch('allowedDonationTypes')?.includes(type)} 
+                                    onCheckedChange={(checked) => { 
+                                        const current = form.getValues('allowedDonationTypes') || [];
+                                        const updated = checked 
+                                            ? [...current, type] 
+                                            : current.filter((value) => value !== type);
+                                        form.setValue('allowedDonationTypes', updated, { shouldDirty: true, shouldValidate: true });
+                                    }} 
+                                />
+                                <Label htmlFor={`type-lead-${type}`} className="font-bold text-[10px] uppercase cursor-pointer tracking-widest opacity-80">{type}</Label>
+                            </div>
                         ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                )}/>
+                    </div>
+                </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField control={form.control} name="startDate" render={({ field }) => (<FormItem>{renderLabel('Start Date', 'startDate')}<FormControl><Input type="date" {...field} className="font-bold text-primary"/></FormControl><FormMessage /></FormItem>)}/>

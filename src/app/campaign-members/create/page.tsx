@@ -39,7 +39,7 @@ const campaignSchema = z.object({
   startDate: z.string().min(1, 'Start Date Is Required.'),
   endDate: z.string().min(1, 'End Date Is Required.'),
   targetAmount: z.coerce.number().min(0, 'Target Amount Must Be A Positive Number.').optional(),
-  allowedDonationTypes: z.array(z.enum(donationCategories)).optional(),
+  allowedDonationTypes: z.array(z.string()).default([...donationCategories]),
   imageFile: z.any().optional(),
 }).refine(data => new Date(data.startDate) <= new Date(data.endDate), {
     message: "End Date Cannot Be Before The Start Date.",
@@ -329,23 +329,42 @@ export default function CreateCampaignPage() {
                 <FormField control={form.control} name="targetAmount" render={({ field }) => (
                     <FormItem>{renderLabel('Target Fundraising Goal (₹)', 'targetAmount')}<FormControl><Input type="number" placeholder="e.g. 100000" {...field} className="font-bold" /></FormControl><FormDescription className="font-normal text-xs opacity-70">The Combined Financial Target For All Verified Goal Contributions.</FormDescription><FormMessage /></FormItem>
                 )}/>
-                <FormField control={form.control} name="allowedDonationTypes" render={() => (
-                    <FormItem className="space-y-4">
-                      <div><FormLabel className="text-base font-bold text-primary">Qualified Donation Types</FormLabel><FormDescription className="font-normal text-xs opacity-70">Select Which Fund Types Count Towards The Fundraising Goal Metrics.</FormDescription></div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-xl bg-primary/5 border-primary/10">
-                        <div className="flex items-center space-x-2"><Checkbox id="select-all-types" checked={form.watch('allowedDonationTypes')?.length === donationCategories.length} onCheckedChange={(checked) => { form.setValue('allowedDonationTypes', checked ? [...donationCategories] : []); }} /><Label htmlFor="select-all-types" className="font-bold text-[10px] uppercase cursor-pointer tracking-widest">Any</Label></div>
+                
+                <div className="space-y-4">
+                    <div>
+                        <FormLabel className="text-base font-bold text-primary">Qualified Donation Types</FormLabel>
+                        <FormDescription className="font-normal text-xs opacity-70">Select Which Fund Types Count Towards The Fundraising Goal Metrics.</FormDescription>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-xl bg-primary/5 border-primary/10">
+                        <div className="flex items-center space-x-2">
+                            <Checkbox 
+                                id="select-all-types" 
+                                checked={form.watch('allowedDonationTypes')?.length === donationCategories.length} 
+                                onCheckedChange={(checked) => { 
+                                    form.setValue('allowedDonationTypes', checked ? [...donationCategories] : [], { shouldDirty: true, shouldValidate: true }); 
+                                }} 
+                            />
+                            <Label htmlFor="select-all-types" className="font-bold text-[10px] uppercase cursor-pointer tracking-widest">Any</Label>
+                        </div>
                         {donationCategories.map((type) => (
-                          <FormField key={type} control={form.control} name="allowedDonationTypes" render={({ field }) => (
-                            <FormItem key={type} className="flex flex-row items-center space-x-3 space-y-0">
-                                <FormControl><Checkbox checked={field.value?.includes(type)} onCheckedChange={(checked) => { return checked ? field.onChange([...(field.value || []), type]) : field.onChange((field.value || []).filter((value) => value !== type))}} /></FormControl>
-                                <FormLabel className="font-bold text-[10px] uppercase cursor-pointer tracking-widest opacity-80">{type}</FormLabel>
-                            </FormItem>
-                          )} />
+                            <div key={type} className="flex flex-row items-center space-x-3 space-y-0">
+                                <Checkbox 
+                                    id={`type-${type}`}
+                                    checked={form.watch('allowedDonationTypes')?.includes(type)} 
+                                    onCheckedChange={(checked) => { 
+                                        const current = form.getValues('allowedDonationTypes') || [];
+                                        const updated = checked 
+                                            ? [...current, type] 
+                                            : current.filter((value) => value !== type);
+                                        form.setValue('allowedDonationTypes', updated, { shouldDirty: true, shouldValidate: true });
+                                    }} 
+                                />
+                                <Label htmlFor={`type-${type}`} className="font-bold text-[10px] uppercase cursor-pointer tracking-widest opacity-80">{type}</Label>
+                            </div>
                         ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                )}/>
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField control={form.control} name="startDate" render={({ field }) => (<FormItem>{renderLabel('Start Date', 'startDate')}<FormControl><Input type="date" {...field} className="font-bold text-primary"/></FormControl><FormMessage /></FormItem>)}/>
                     <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem>{renderLabel('End Date', 'endDate')}<FormControl><Input type="date" {...field} className="font-bold text-primary"/></FormControl><FormMessage /></FormItem>)}/>
