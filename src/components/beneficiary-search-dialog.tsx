@@ -1,18 +1,17 @@
-
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useFirestore, useMemoFirebase, useCollection, collection, query, where, getDocs, limit, type QueryDocumentSnapshot, type DocumentData } from '@/firebase';
+import { useFirestore, useMemoFirebase, useCollection, collection, query, getDocs, type QueryDocumentSnapshot } from '@/firebase';
 import type { Beneficiary } from '@/lib/types';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Search } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getInitials } from '@/lib/utils';
+import { Loader2, Search, Users, Filter, X } from 'lucide-react';
 import { Badge } from './ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 interface BeneficiarySearchDialogProps {
   open: boolean;
@@ -25,8 +24,9 @@ interface BeneficiarySearchDialogProps {
 export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiary, currentLeadId, initiativeType }: BeneficiarySearchDialogProps) {
   const firestore = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<Beneficiary[]>([]);
+  const [referralFilter, setReferralFilter] = useState('All');
+  const [isInitialLoading, setIsInitialLoading] = useState(false);
+  const [masterBeneficiaries, setMasterBeneficiaries] = useState<Beneficiary[]>([]);
   
   const existingBeneficiariesCollectionRef = useMemoFirebase(() => {
     if (!firestore || !currentLeadId || !initiativeType) return null;
@@ -40,96 +40,164 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
     return new Set(existingBeneficiaries?.map(b => b.id) || []);
   }, [existingBeneficiaries]);
 
-  const handleSearch = useCallback(async () => {
-    if (!firestore || !searchTerm.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    setIsSearching(true);
-    
-    const lowerCaseTerm = searchTerm.toLowerCase();
-
+  const fetchMasterList = useCallback(async () => {
+    if (!firestore) return;
+    setIsInitialLoading(true);
     try {
       const beneficiariesQuery = query(collection(firestore, 'beneficiaries'));
       const querySnapshot = await getDocs(beneficiariesQuery);
-      const allBeneficiaries: Beneficiary[] = [];
+      const results: Beneficiary[] = [];
       querySnapshot.forEach((doc: QueryDocumentSnapshot) => {
-          allBeneficiaries.push({ id: doc.id, ...doc.data() } as Beneficiary);
+          results.push({ id: doc.id, ...doc.data() } as Beneficiary);
       });
-
-      const filtered = allBeneficiaries.filter(b => {
-        const nameMatch = b.name ? b.name.toLowerCase().includes(lowerCaseTerm) : false;
-        const phoneMatch = b.phone ? b.phone.includes(searchTerm) : false;
-        const isExisting = existingBeneficiaryIds.has(b.id);
-        
-        return (nameMatch || phoneMatch) && !isExisting;
-      }).slice(0, 20);
-
-      setSearchResults(filtered);
+      setMasterBeneficiaries(results);
     } catch (e: any) {
-      console.error("Beneficiary search failed:", e);
+      console.error("Failed to fetch master beneficiary list:", e);
     } finally {
-      setIsSearching(false);
+      setIsInitialLoading(false);
     }
-  }, [firestore, searchTerm, existingBeneficiaryIds]);
+  }, [firestore]);
+
+  useEffect(() => {
+    if (open) {
+      fetchMasterList();
+      setSearchTerm('');
+      setReferralFilter('All');
+    }
+  }, [open, fetchMasterList]);
+
+  const referralSources = useMemo(() => {
+    const sources = new Set<string>();
+    masterBeneficiaries.forEach(b => {
+        if (b.referralBy?.trim()) sources.add(b.referralBy.trim());
+    });
+    return Array.from(sources).sort();
+  }, [masterBeneficiaries]);
+
+  const filteredResults = useMemo(() => {
+    const lowerTerm = searchTerm.toLowerCase();
+    return masterBeneficiaries.filter(b => {
+        // 1. Exclude if already in this initiative
+        if (existingBeneficiaryIds.has(b.id)) return false;
+
+        // 2. Filter by Referral Source
+        if (referralFilter !== 'All' && b.referralBy !== referralFilter) return false;
+
+        // 3. Search by Name, Phone, ID, or Address
+        if (!searchTerm) return true;
+        
+        const nameMatch = (b.name || '').toLowerCase().includes(lowerTerm);
+        const phoneMatch = (b.phone || '').includes(searchTerm);
+        const idMatch = (b.idNumber || '').toLowerCase().includes(lowerTerm);
+        const addressMatch = (b.address || '').toLowerCase().includes(lowerTerm);
+
+        return nameMatch || phoneMatch || idMatch || addressMatch;
+    });
+  }, [masterBeneficiaries, searchTerm, referralFilter, existingBeneficiaryIds]);
 
   const handleSelect = (beneficiary: Beneficiary) => {
     onSelectBeneficiary(beneficiary);
     onOpenChange(false);
   };
 
-  useEffect(() => {
-    // Reset search when dialog opens
-    if (open) {
-      setSearchTerm('');
-      setSearchResults([]);
-    }
-  }, [open]);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Search Existing Beneficiaries</DialogTitle>
-          <DialogDescription>
-            Search by name or phone number to find and add an existing beneficiary from the master list. Beneficiaries already in this initiative will not be shown.
+      <DialogContent className="sm:max-w-2xl text-primary font-normal p-0 overflow-hidden rounded-[16px] border-[#E2EEE7]">
+        <DialogHeader className="px-6 py-4 bg-[#F0FDF4] border-b border-[#E2EEE7]">
+          <DialogTitle className="text-xl font-bold tracking-tight text-[#14532D]">Search Master List</DialogTitle>
+          <DialogDescription className="text-sm font-normal text-[#355E3B]/70">
+            Select beneficiaries from the verified master database to add them to this initiative.
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4 space-y-4">
-            <div className="flex gap-2">
-                <Input
-                    placeholder="Enter name or phone number..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                />
-                <Button onClick={handleSearch} disabled={isSearching}>
-                    {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4"/>}
-                </Button>
-            </div>
-            <ScrollArea className="h-64 border rounded-md">
-                <div className="p-2 space-y-1">
-                    {isSearching && [...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
-                    {!isSearching && searchResults.length === 0 && (
-                        <p className="text-center text-muted-foreground pt-10">{searchTerm ? 'No results found.' : 'Enter a search term to begin.'}</p>
+        
+        <div className="p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#1FA34A]/50" />
+                    <Input
+                        placeholder="Search Name, Phone, ID, Address..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 h-10 text-sm border-[#E2EEE7] focus-visible:ring-[#1FA34A] rounded-[12px]"
+                    />
+                    {searchTerm && (
+                        <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent" onClick={() => setSearchTerm('')}>
+                            <X className="h-4 w-4 text-muted-foreground" />
+                        </Button>
                     )}
-                    {!isSearching && searchResults.map(beneficiary => (
-                        <div key={beneficiary.id} className="flex justify-between items-center p-2 rounded-md hover:bg-accent">
-                            <div>
-                                <p className="font-medium">{beneficiary.name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                    {beneficiary.phone || 'No Phone'}
-                                    {beneficiary.address && ` - ${beneficiary.address}`}
-                                </p>
-                            </div>
-                            <Button size="sm" onClick={() => handleSelect(beneficiary)}>Select</Button>
-                        </div>
-                    ))}
                 </div>
-            </ScrollArea>
+                <Select value={referralFilter} onValueChange={setReferralFilter}>
+                    <SelectTrigger className="w-full sm:w-[200px] h-10 font-bold text-sm border-[#E2EEE7] rounded-[12px]">
+                        <div className="flex items-center gap-2">
+                            <Filter className="h-3.5 w-3.5 opacity-40" />
+                            <SelectValue placeholder="All Referral Sources" />
+                        </div>
+                    </SelectTrigger>
+                    <SelectContent className="rounded-[12px] shadow-dropdown border-[#E2EEE7]">
+                        <SelectItem value="All" className="font-bold">All Referral Sources</SelectItem>
+                        {referralSources.map(source => (
+                            <SelectItem key={source} value={source} className="font-bold">{source}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+
+            <div className="rounded-[12px] border border-[#E2EEE7] bg-[#F7FBF8]/50 overflow-hidden shadow-inner">
+                <ScrollArea className="h-80 w-full">
+                    <div className="p-2 space-y-2">
+                        {isInitialLoading ? (
+                            <div className="space-y-2 p-2">
+                                {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-[10px]" />)}
+                            </div>
+                        ) : filteredResults.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
+                                <Users className="h-12 w-12 mb-2" />
+                                <p className="text-sm font-bold italic">No Beneficiaries Found Matching Criteria.</p>
+                            </div>
+                        ) : (
+                            filteredResults.map(beneficiary => (
+                                <div 
+                                    key={beneficiary.id} 
+                                    className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-[12px] bg-white border border-transparent hover:border-[#1FA34A]/20 hover:shadow-sm transition-all group cursor-pointer"
+                                    onClick={() => handleSelect(beneficiary)}
+                                >
+                                    <div className="flex-1 min-w-0 space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-bold text-sm text-[#14532D] truncate">{beneficiary.name}</p>
+                                            <Badge variant="outline" className="text-[9px] font-bold uppercase border-[#E2EEE7] text-[#355E3B]/60">
+                                                {beneficiary.status || 'Verified'}
+                                            </Badge>
+                                        </div>
+                                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#355E3B]/70">
+                                            <span className="font-mono">{beneficiary.phone || 'No Phone'}</span>
+                                            {beneficiary.idNumber && <span className="font-mono">ID: {beneficiary.idNumber}</span>}
+                                            {beneficiary.referralBy && <span className="font-bold text-[#1FA34A]">Ref: {beneficiary.referralBy}</span>}
+                                        </div>
+                                        {beneficiary.address && (
+                                            <p className="text-[10px] text-muted-foreground truncate italic">{beneficiary.address}</p>
+                                        )}
+                                    </div>
+                                    <Button size="sm" className="mt-2 sm:mt-0 font-bold bg-[#1FA34A] hover:bg-[#16863B] text-white rounded-[10px] h-8 px-4 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow-sm">
+                                        Select Record
+                                    </Button>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                    <ScrollBar orientation="vertical" />
+                </ScrollArea>
+            </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+
+        <DialogFooter className="px-6 py-4 bg-[#F7FBF8] border-t border-[#E2EEE7]">
+          <div className="flex justify-between items-center w-full">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                Showing {filteredResults.length} Of {masterBeneficiaries.length - existingBeneficiaryIds.size} Available Records
+            </p>
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-[#CDE8D5] text-[#14532D] h-9 rounded-[10px] transition-transform active:scale-95">
+                Cancel
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
