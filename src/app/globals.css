@@ -33,16 +33,17 @@
   }
 
   .bms3-a {
+    /* Base HSL values mapped from your hex specifications */
     --background: 140 33% 97%; /* #F7FBF8 */
-    --foreground: 144 27% 23%; /* #355E3B (tinted) */
+    --foreground: 144 27% 23%; /* #355E3B - Deep Body Green (No Black) */
     --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 144 61% 20%; /* #14532D */
+    --card-foreground: 144 61% 20%; /* #14532D - Title Green */
     --popover: 0 0% 100%;
-    --popover-foreground: 144 61% 20%; /* #14532D */
+    --popover-foreground: 144 61% 20%;
     --primary: 140 68% 38%; /* #1FA34A */
     --primary-foreground: 0 0% 100%;
     --secondary: 143 50% 96%; /* #F0F9F3 */
-    --secondary-foreground: 144 61% 20%; /* #14532D */
+    --secondary-foreground: 144 61% 20%;
     --muted: 140 33% 97%;
     --muted-foreground: 215 9% 46%; /* #6B7280 */
     --accent: 140 68% 38%;
@@ -50,15 +51,15 @@
     --border: 140 33% 91%; /* #E2EEE7 */
     --input: 140 33% 91%;
     --ring: 140 68% 38%;
-    --radius: 1rem; /* 16px */
+    --radius: 1rem; /* 16px radius for cards */
     --chart-1: 140 68% 38%;
-    --chart-2: 142 71% 45%;
+    --chart-2: 144 61% 20%;
     --chart-3: 38 92% 50%;
   }
 
   .bms3 {
     --background: 160 20% 98%;
-    --foreground: 160 60% 10%;
+    --foreground: 160 60% 10%; /* Dark Tinted Green instead of Black */
     --card: 0 0% 100%;
     --card-foreground: 160 60% 10%;
     --popover: 0 0% 100%;

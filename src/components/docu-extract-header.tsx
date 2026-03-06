@@ -91,32 +91,32 @@ export function DocuExtractHeader() {
                     <DropdownMenuContent className="w-64 mt-2 animate-fade-in-zoom" align="end" forceMount>
                       <DropdownMenuLabel className="font-normal p-4">
                         <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-bold tracking-tight text-primary">
+                          <p className="text-sm font-bold tracking-tight text-[#14532D]">
                             {userProfile?.name || 'User'}
                           </p>
                           <p className="text-xs font-normal text-muted-foreground pt-1 truncate">
                             {user.email}
                           </p>
-                          <Badge variant="outline" className="w-fit mt-2 text-[10px] font-bold border-primary/20 text-primary">Member Account</Badge>
+                          <Badge variant="outline" className="w-fit mt-2 text-[10px] font-bold border-primary/20 text-[#1FA34A]">Member Account</Badge>
                         </div>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
                        <DropdownMenuItem asChild className="cursor-pointer font-bold h-11 transition-colors">
                         <Link href="/dashboard" className="flex items-center w-full">
-                          <LayoutDashboard className="mr-2 h-4 w-4 text-primary" />
+                          <LayoutDashboard className="mr-2 h-4 w-4 text-[#1FA34A]" />
                           <span>Member Dashboard</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild className="cursor-pointer font-bold h-11 transition-colors">
                         <Link href="/profile" className="flex items-center w-full">
-                          <User className="mr-2 h-4 w-4 text-primary" />
+                          <User className="mr-2 h-4 w-4 text-[#1FA34A]" />
                           <span>Profile Settings</span>
                         </Link>
                       </DropdownMenuItem>
                       {userProfile.role === 'Admin' && (
                         <DropdownMenuItem asChild className="cursor-pointer font-bold h-11 transition-colors">
                           <Link href="/settings" className="flex items-center w-full">
-                            <Settings className="mr-2 h-4 w-4 text-primary" />
+                            <Settings className="mr-2 h-4 w-4 text-[#1FA34A]" />
                             <span>System Administration</span>
                           </Link>
                         </DropdownMenuItem>
@@ -134,7 +134,7 @@ export function DocuExtractHeader() {
               </div>
             ) : (
               pathname !== '/login' && (
-                <Button asChild className="font-bold tracking-tight text-xs bg-primary text-white hover:bg-primary/90 shadow-md px-6 h-10 transition-all duration-300 hover:scale-105 active:scale-95">
+                <Button asChild className="font-bold tracking-tight text-xs bg-[#1FA34A] text-white hover:bg-[#16863B] shadow-md px-6 h-10 transition-all duration-300 hover:scale-105 active:scale-95 rounded-[12px]">
                     <Link href="/login">
                         <LogIn className="mr-2 h-4 w-4" />
                         <span>Member Login</span>
