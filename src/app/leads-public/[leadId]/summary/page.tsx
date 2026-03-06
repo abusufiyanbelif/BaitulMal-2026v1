@@ -21,7 +21,7 @@ import {
   Pie
 } from 'recharts';
 
-import type { Lead, Beneficiary, Donation, DonationCategory } from '@/lib/types';
+import type { Lead, Beneficiary, Donation, DonationCategory, CampaignDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { 
@@ -57,6 +57,12 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { ChartConfig } from '@/components/ui/chart';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -258,7 +264,7 @@ export default function PublicLeadSummaryPage() {
                     <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                         <div className="space-y-2">
                             <Label className="text-muted-foreground uppercase text-[10px] font-bold tracking-widest">Description</Label>
-                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-primary">{lead.description || 'No description provided.'}</p>
+                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-primary">{lead.description || 'No Description Provided.'}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 text-primary">
                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Required Amount</p><p className="mt-1 text-lg font-bold text-primary font-mono">₹{(lead.requiredAmount ?? 0).toLocaleString('en-IN')}</p></div>

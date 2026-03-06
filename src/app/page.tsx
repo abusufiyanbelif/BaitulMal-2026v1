@@ -85,7 +85,7 @@ export default function Home() {
                     <Button asChild size="lg" variant="secondary" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md px-8 h-12">
                         <Link href="/leads-public">
                             <Lightbulb className="mr-2 h-5 w-5" />
-                            Public Appeals(Leads)
+                            Public Appeals (Leads)
                         </Link>
                     </Button>
                 </div>
