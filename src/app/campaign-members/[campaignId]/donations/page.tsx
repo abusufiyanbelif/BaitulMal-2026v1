@@ -4,7 +4,7 @@ import { useParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { FirestorePermissionError } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, doc, serverTimestamp, setDoc, DocumentReference, updateDoc, deleteField } from 'firebase/firestore';
 import type { Donation, Campaign, Lead } from '@/lib/types';
@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, Link2Off, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, Link2Off, ChevronDown, ChevronUp, Link as LinkIcon, ImageIcon } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +42,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
+import { DonationSearchDialog } from '@/components/donation-search-dialog';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import {
@@ -116,6 +117,7 @@ export default function DonationsPage() {
   const { data: allLeads } = useCollection<Lead>(allLeadsCollectionRef);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
   const [isUnlinkDialogOpen, setIsUnlinkDialogOpen] = useState(false);
   const [donationToUnlink, setDonationToUnlink] = useState<string | null>(null);
@@ -318,7 +320,10 @@ export default function DonationsPage() {
                         <CardTitle className="text-xl font-bold tracking-tight">Donation List ({filteredAndSortedDonations.length})</CardTitle>
                         <CardDescription className="font-normal">Total verified for this campaign: <span className="font-bold text-primary font-mono">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisCampaign, 0).toFixed(2)}</span></CardDescription>
                     </div>
-                    {canCreate && <Button onClick={handleAdd} className="font-bold shadow-md active:scale-95 transition-transform"><PlusCircle className="mr-2 h-4 w-4" /> Add Donation</Button>}
+                    <div className="flex gap-2">
+                        {canUpdate && <Button variant="outline" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><LinkIcon className="mr-2 h-4 w-4"/> Select From Master</Button>}
+                        {canCreate && <Button onClick={handleAdd} className="font-bold shadow-md active:scale-95 transition-transform"><PlusCircle className="mr-2 h-4 w-4" /> Add Record</Button>}
+                    </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-4">
                     <Input placeholder="Search donor..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-xs h-9 text-xs font-normal" />
@@ -416,6 +421,15 @@ export default function DonationsPage() {
             <DialogFooter className="p-4 border-t bg-muted/5"><Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold">Close Form</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <DonationSearchDialog 
+        open={isSearchOpen} 
+        onOpenChange={setIsSearchOpen} 
+        targetId={campaignId} 
+        targetName={campaign.name} 
+        targetType="campaign" 
+        allowedTypes={campaign.allowedDonationTypes || [...donationCategories]} 
+      />
       
       <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
         <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown">

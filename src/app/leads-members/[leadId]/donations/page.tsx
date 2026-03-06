@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, Link2Off, ChevronDown, ChevronUp, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, Link2Off, ChevronDown, ChevronUp, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +26,8 @@ import {
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import {
@@ -41,12 +43,12 @@ import {
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
+    DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
+import { DonationSearchDialog } from '@/components/donation-search-dialog';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import {
@@ -58,6 +60,7 @@ import {
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
 import { BrandedLoader } from '@/components/branded-loader';
+import { donationCategories } from '@/lib/modules';
 
 type SortKey = keyof Donation | 'srNo' | 'amountForThisLead';
 
@@ -114,6 +117,7 @@ export default function DonationsPage() {
   const { data: allLeads } = useCollection<Lead>(leadsCollectionRef);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
   const [isUnlinkDialogOpen, setIsUnlinkDialogOpen] = useState(false);
   const [donationToUnlink, setDonationToUnlink] = useState<string | null>(null);
@@ -275,7 +279,10 @@ export default function DonationsPage() {
                         <CardTitle>Donation list ({filteredAndSortedDonations.length})</CardTitle>
                         <CardDescription>Total verified collection for this lead: <span className="font-bold text-primary font-mono">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisLead, 0).toFixed(2)}</span></CardDescription>
                     </div>
-                    {canCreate && <Button onClick={() => setIsFormOpen(true)} className="interactive-hover font-bold"><PlusCircle className="mr-2 h-4 w-4"/>Add donation</Button>}
+                    <div className="flex gap-2">
+                        {canUpdate && <Button variant="outline" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><LinkIcon className="mr-2 h-4 w-4"/> Select From Master</Button>}
+                        {canCreate && <Button onClick={() => setIsFormOpen(true)} className="interactive-hover font-bold"><PlusCircle className="mr-2 h-4 w-4"/>Add Record</Button>}
+                    </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-4">
                     <Input placeholder="Search donor..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs font-normal" />
@@ -337,7 +344,7 @@ export default function DonationsPage() {
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle className="text-xl font-bold">{editingDonation ? 'Edit' : 'Add'} donation</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle className="text-xl font-bold">{editingDonation ? 'Edit' : 'Add'} Record</DialogTitle></DialogHeader>
                 <DonationForm 
                     donation={editingDonation} 
                     onSubmit={handleFormSubmit} 
@@ -351,6 +358,15 @@ export default function DonationsPage() {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <DonationSearchDialog 
+            open={isSearchOpen} 
+            onOpenChange={setIsSearchOpen} 
+            targetId={leadId} 
+            targetName={lead.name} 
+            targetType="lead" 
+            allowedTypes={lead.allowedDonationTypes || [...donationCategories]} 
+        />
 
         <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
             <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold">Unlink donation?</AlertDialogTitle><AlertDialogDescription>This will remove the donation from this initiative but will not delete the record.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold">Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
