@@ -168,8 +168,6 @@ export default function LeadSummaryPage() {
                 description: lead.description || '',
                 purpose: lead.purpose || 'General',
                 category: lead.category || '',
-                purposeDetails: lead.purposeDetails || '',
-                categoryDetails: lead.categoryDetails || '',
                 startDate: lead.startDate || '',
                 endDate: lead.endDate || '',
                 status: lead.status || 'Upcoming',
@@ -317,7 +315,7 @@ export default function LeadSummaryPage() {
         const newDocs = lead.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
         try {
             await updateDoc(leadDocRef, { documents: newDocs, updatedAt: serverTimestamp() });
-            toast({ title: "Visibility Updated" });
+            toast({ title: "Visibility Updated", variant: "success" });
         } catch (serverError: any) {
             errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: { documents: newDocs } }));
         }
@@ -401,7 +399,7 @@ export default function LeadSummaryPage() {
              <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
-                    {editMode ? ( <Input id="name" value={editableLead.name || ''} onChange={(e) => setEditableLead(p => ({...p, name: e.target.value}))} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary tracking-tight">{lead?.name}</h1> )}
+                    {editMode ? ( <Input id="name" value={editableLead.name || ''} onChange={(e) => handleFieldChange('name', e.target.value)} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary tracking-tight">{lead?.name}</h1> )}
                     {editMode ? (
                          <Select value={editableLead.status} onValueChange={(value) => setEditableLead(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1 font-bold"><SelectValue placeholder="Select Status" /></SelectTrigger><SelectContent className="animate-fade-in-zoom"><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></SelectContent></Select>
                     ): ( <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px]">{lead?.status}</p> )}
