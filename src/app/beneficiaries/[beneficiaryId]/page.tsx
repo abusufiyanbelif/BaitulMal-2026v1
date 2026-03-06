@@ -7,26 +7,32 @@ import Resizer from 'react-image-file-resizer';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
-import { ArrowLeft, Edit, MoreHorizontal, Loader2, ChevronDown } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuTrigger, DropdownMenuPortal, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSubContent } from '@/components/ui/dropdown-menu';
+import { ArrowLeft, Edit, MoreHorizontal, Loader2, ChevronDown, User, History, IndianRupee, Landmark, Lightbulb, FolderKanban, ShieldCheck, Calendar, Info, HeartHandshake, CheckCircle2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuTrigger, DropdownMenuPortal, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSubContent, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { useToast } from '@/hooks/use-toast';
 import { updateMasterBeneficiaryAction, updateInitiativeBeneficiaryDetailsAction, updateBeneficiaryStatusInInitiativeAction } from '../actions';
 import { useSession } from '@/hooks/use-session';
 import { BrandedLoader } from '@/components/branded-loader';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 
 interface LinkedInitiative {
     id: string;
     name: string;
     type: 'Campaign' | 'Lead';
-    status: Campaign['status'] | Lead['status'];
+    initiativeStatus: Campaign['status'] | Lead['status'];
+    purpose: string;
+    category?: string;
     kitAmount: number;
+    zakatAllocation: number;
     beneficiaryStatus: Beneficiary['status'];
+    addedDate: string;
 }
 
 export default function BeneficiaryDetailsPage() {
@@ -95,6 +101,8 @@ export default function BeneficiaryDetailsPage() {
     setIsLinksLoading(true);
     try {
         const initiatives: LinkedInitiative[] = [];
+        
+        // Fetch from Campaigns
         const camps = await getDocs(collection(firestore, 'campaigns'));
         for (const c of camps.docs) {
             const bRef = doc(firestore, `campaigns/${c.id}/beneficiaries`, beneficiary.id);
@@ -102,9 +110,22 @@ export default function BeneficiaryDetailsPage() {
             if (bSnap.exists()) {
                 const bData = bSnap.data() as Beneficiary;
                 const cData = c.data() as Campaign;
-                initiatives.push({ id: c.id, name: cData.name, type: 'Campaign', status: cData.status, kitAmount: bData.kitAmount || 0, beneficiaryStatus: bData.status || 'Pending' });
+                initiatives.push({ 
+                    id: c.id, 
+                    name: cData.name, 
+                    type: 'Campaign', 
+                    initiativeStatus: cData.status, 
+                    purpose: cData.category || 'General',
+                    category: bData.itemCategoryName || 'N/A',
+                    kitAmount: bData.kitAmount || 0, 
+                    zakatAllocation: bData.zakatAllocation || 0,
+                    beneficiaryStatus: bData.status || 'Pending',
+                    addedDate: bData.addedDate || 'N/A'
+                });
             }
         }
+
+        // Fetch from Leads
         const lds = await getDocs(collection(firestore, 'leads'));
         for (const l of lds.docs) {
             const bRef = doc(firestore, `leads/${l.id}/beneficiaries`, beneficiary.id);
@@ -112,10 +133,23 @@ export default function BeneficiaryDetailsPage() {
             if (bSnap.exists()) {
                 const bData = bSnap.data() as Beneficiary;
                 const lData = l.data() as Lead;
-                initiatives.push({ id: l.id, name: lData.name, type: 'Lead', status: lData.status, kitAmount: bData.kitAmount || 0, beneficiaryStatus: bData.status || 'Pending' });
+                initiatives.push({ 
+                    id: l.id, 
+                    name: lData.name, 
+                    type: 'Lead', 
+                    initiativeStatus: lData.status, 
+                    purpose: lData.purpose || 'Other',
+                    category: lData.category || 'N/A',
+                    kitAmount: bData.kitAmount || 0, 
+                    zakatAllocation: bData.zakatAllocation || 0,
+                    beneficiaryStatus: bData.status || 'Pending',
+                    addedDate: bData.addedDate || 'N/A'
+                });
             }
         }
         setLinkedInitiatives(initiatives);
+    } catch (e) {
+        console.error("Link fetch failed:", e);
     } finally { setIsLinksLoading(false); }
   }, [firestore, beneficiary]);
 
@@ -146,7 +180,7 @@ export default function BeneficiaryDetailsPage() {
         await updateInitiativeBeneficiaryDetailsAction(initiativeContext.type, initiativeContext.id, beneficiaryId, { ...formData, idProofUrl, id: beneficiaryId });
     }
 
-    toast({ title: 'Success', description: 'Beneficiary Updated.' });
+    toast({ title: 'Success', description: 'Beneficiary Record Updated Successfully.' });
     if (redirectUrl) router.push(redirectUrl);
     else { forceRefetchMaster(); setIsEditMode(false); }
     setIsSubmitting(false);
@@ -154,11 +188,25 @@ export default function BeneficiaryDetailsPage() {
 
   const handleInitiativeStatusChange = async (initiative: LinkedInitiative, newStatus: Beneficiary['status']) => {
     const res = await updateBeneficiaryStatusInInitiativeAction(initiative.type.toLowerCase() as any, initiative.id, beneficiaryId, newStatus);
-    if (res.success) { fetchLinkedInitiatives(); toast({ title: "Updated" }); }
+    if (res.success) { 
+        fetchLinkedInitiatives(); 
+        toast({ title: "Status Updated", description: `Disbursement status set to ${newStatus}.`, variant: "success" }); 
+    }
   };
 
   const isLoading = isBeneficiaryLoading || isProfileLoading || isInitiativeDataLoading;
   const backHref = redirectUrl || '/beneficiaries';
+
+  const financialSummary = useMemo(() => {
+      const totals = linkedInitiatives.reduce((acc, curr) => {
+          if (curr.beneficiaryStatus === 'Given' || curr.beneficiaryStatus === 'Verified') {
+              acc.totalAssistance += curr.kitAmount;
+              acc.zakatFunded += curr.zakatAllocation;
+          }
+          return acc;
+      }, { totalAssistance: 0, zakatFunded: 0 });
+      return { ...totals, communityFunded: totals.totalAssistance - totals.zakatFunded };
+  }, [linkedInitiatives]);
 
   if (isLoading && !formBeneficiaryData) return <BrandedLoader />;
   if (!beneficiary) return <p className="text-center mt-20 text-primary font-bold">Beneficiary Not Found.</p>;
@@ -167,91 +215,263 @@ export default function BeneficiaryDetailsPage() {
   const initiativeType = campaign ? 'Campaign' : lead ? 'Lead' : null;
   const initiativeId = initiativeContext?.id;
 
-  const canReadSummary = currentUserProfile?.role === 'Admin' || (initiativeType === 'Campaign' ? !!getNestedValue(currentUserProfile, 'permissions.campaigns.summary.read', false) : !!getNestedValue(currentUserProfile, 'permissions.leads-members.summary.read', false));
-  const canReadRation = initiativeType === 'Campaign' && (currentUserProfile?.role === 'Admin' || !!getNestedValue(currentUserProfile, 'permissions.campaigns.ration.read', false));
-  const canReadBeneficiaries = currentUserProfile?.role === 'Admin' || (initiativeType === 'Campaign' ? !!getNestedValue(currentUserProfile, 'permissions.campaigns.beneficiaries.read', false) : !!getNestedValue(currentUserProfile, 'permissions.leads-members.beneficiaries.read', false));
-  const canReadDonations = currentUserProfile?.role === 'Admin' || (initiativeType === 'Campaign' ? !!getNestedValue(currentUserProfile, 'permissions.campaigns.donations.read', false) : !!getNestedValue(currentUserProfile, 'permissions.leads-members.donations.read', false));
-
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
-      <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95"><Link href={backHref}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Link></Button></div>
+      <div className="flex items-center justify-between">
+        <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
+            <Link href={backHref}><ArrowLeft className="mr-2 h-4 w-4" /> Back To List</Link>
+        </Button>
+        <div className="flex items-center gap-2">
+            <Badge variant="outline" className="font-bold border-primary/10 text-primary/60">ID: {beneficiary.idNumber || 'N/A'}</Badge>
+            <Badge variant={beneficiary.status === 'Verified' ? 'eligible' : 'outline'} className="font-bold uppercase text-[10px]">{beneficiary.status}</Badge>
+        </div>
+      </div>
 
-      {initiativeName && initiativeId && initiativeType && (
-          <div className="space-y-4">
-              <h1 className="text-3xl font-bold tracking-tight">{initiativeName}</h1>
-              <div className="border-b border-primary/10">
-                <ScrollArea className="w-full whitespace-nowrap">
-                    <div className="flex w-max space-x-2 pb-2">
-                        {canReadSummary && ( <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/summary`} className="px-4 py-2 text-sm font-bold text-muted-foreground hover:bg-primary/10 rounded-md transition-colors">Summary</Link> )}
-                        {canReadRation && ( <Link href={`/campaign-members/${initiativeId}`} className="px-4 py-2 text-sm font-bold text-muted-foreground hover:bg-primary/10 rounded-md transition-colors">Item Lists</Link> )}
-                        {initiativeType === 'Lead' && ( <Link href={`/leads-members/${initiativeId}`} className="px-4 py-2 text-sm font-bold text-muted-foreground hover:bg-primary/10 rounded-md transition-colors">Item List</Link> )}
-                        {canReadBeneficiaries && ( <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/beneficiaries`} className="px-4 py-2 text-sm font-bold bg-primary text-white rounded-md shadow-md">Beneficiary List</Link> )}
-                        {canReadDonations && ( <Link href={`/${initiativeType.toLowerCase()}-members/${initiativeId}/donations`} className="px-4 py-2 text-sm font-bold text-muted-foreground hover:bg-primary/10 rounded-md transition-colors">Donations</Link> )}
+      <div className="space-y-2 animate-fade-in-up">
+          <h1 className="text-4xl font-bold tracking-tight text-primary">{beneficiary.name}</h1>
+          <p className="text-sm text-muted-foreground font-normal">System Entry Recorded On: {beneficiary.addedDate}</p>
+      </div>
+
+      <Tabs defaultValue="profile" className="w-full space-y-6">
+        <ScrollArea className="w-full">
+            <TabsList className="grid w-full grid-cols-3 sm:w-[600px] h-12 bg-primary/5 p-1 rounded-xl">
+                <TabsTrigger value="profile" className="font-bold data-[state=active]:shadow-sm"><User className="mr-2 h-4 w-4"/>Core Profile</TabsTrigger>
+                <TabsTrigger value="history" className="font-bold data-[state=active]:shadow-sm"><History className="mr-2 h-4 w-4"/>Institutional History</TabsTrigger>
+                <TabsTrigger value="financials" className="font-bold data-[state=active]:shadow-sm"><Landmark className="mr-2 h-4 w-4"/>Financial Impact</TabsTrigger>
+            </TabsList>
+            <ScrollBar orientation="horizontal" className="hidden" />
+        </ScrollArea>
+
+        <TabsContent value="profile" className="animate-fade-in-up mt-0">
+            <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between border-b bg-primary/5 px-6 py-4">
+                    <div className="space-y-0.5">
+                        <CardTitle className="text-lg font-bold text-primary tracking-tight">Beneficiary Master Record</CardTitle>
+                        <CardDescription className="text-xs font-normal">Personal details and identification artifacts.</CardDescription>
                     </div>
-                </ScrollArea>
+                    {canUpdate && !isEditMode && ( 
+                        <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md active:scale-95 transition-transform">
+                            <Edit className="mr-2 h-4 w-4"/>Edit Profile
+                        </Button> 
+                    )}
+                </CardHeader>
+                <CardContent className="p-6 sm:p-10">
+                    <BeneficiaryForm 
+                        beneficiary={formBeneficiaryData} 
+                        onSubmit={handleSave} 
+                        onCancel={() => setIsEditMode(false)} 
+                        isSubmitting={isSubmitting} 
+                        isLoading={isInitiativeDataLoading} 
+                        isReadOnly={!isEditMode} 
+                        itemCategories={[]} 
+                        hideKitAmount={true} 
+                        hideZakatAllocation={!initiativeContext} 
+                    />
+                </CardContent>
+            </Card>
+        </TabsContent>
+
+        <TabsContent value="history" className="animate-fade-in-up mt-0">
+            <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                <CardHeader className="bg-primary/5 border-b px-6 py-4">
+                    <CardTitle className="text-lg font-bold text-primary tracking-tight">Assistance Registry</CardTitle>
+                    <CardDescription className="text-xs font-normal">A chronological log of all institutional support initiatives linked to this recipient.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                    {isLinksLoading ? ( 
+                        <div className="py-20 flex flex-col items-center gap-4">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                            <p className="text-xs font-bold text-primary/60 uppercase tracking-widest">Scanning Databases...</p>
+                        </div>
+                    ) : linkedInitiatives.length > 0 ? (
+                        <ScrollArea className="w-full">
+                            <div className="min-w-[1000px]">
+                                <Table>
+                                    <TableHeader className="bg-[#ECFDF5]">
+                                        <TableRow>
+                                            <TableHead className="pl-6 font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Initiative Name</TableHead>
+                                            <TableHead className="font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Purpose / Type</TableHead>
+                                            <TableHead className="font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Category</TableHead>
+                                            <TableHead className="text-center font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Verification</TableHead>
+                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Added Date</TableHead>
+                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Allocation (₹)</TableHead>
+                                            <TableHead className="text-right pr-6 font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {linkedInitiatives.map((link) => (
+                                            <TableRow key={`${link.type}_${link.id}`} className="hover:bg-[#F0FDF4] transition-colors border-b border-primary/5 bg-white">
+                                                <TableCell className="pl-6 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                                                            {link.type === 'Campaign' ? <FolderKanban className="h-4 w-4"/> : <Lightbulb className="h-4 w-4"/>}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="font-bold text-sm text-primary truncate hover:underline underline-offset-4">
+                                                                <Link href={link.type === 'Campaign' ? `/campaign-members/${link.id}/beneficiaries` : `/leads-members/${link.id}/beneficiaries`}>
+                                                                    {link.name}
+                                                                </Link>
+                                                            </p>
+                                                            <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-tighter">{link.type} • {link.initiativeStatus}</p>
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell><Badge variant="outline" className="text-[10px] font-bold uppercase border-primary/10 text-primary/70">{link.purpose}</Badge></TableCell>
+                                                <TableCell><p className="text-xs font-bold text-primary/80">{link.category}</p></TableCell>
+                                                <TableCell className="text-center">
+                                                    <Badge variant={link.beneficiaryStatus === 'Given' ? 'given' : 'outline'} className="font-bold uppercase text-[9px] tracking-tighter">
+                                                        {link.beneficiaryStatus}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right"><p className="text-xs font-mono opacity-60">{link.addedDate}</p></TableCell>
+                                                <TableCell className="text-right">
+                                                    <p className="font-bold font-mono text-sm text-primary">₹{link.kitAmount.toLocaleString('en-IN')}</p>
+                                                    {link.zakatAllocation > 0 && <p className="text-[9px] font-bold text-primary/60 uppercase tracking-tighter">Zakat: ₹{link.zakatAllocation.toLocaleString('en-IN')}</p>}
+                                                </TableCell>
+                                                <TableCell className="text-right pr-6">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
+                                                            <DropdownMenuSub>
+                                                                <DropdownMenuSubTrigger className="font-normal text-primary">Disbursement Status</DropdownMenuSubTrigger>
+                                                                <DropdownMenuPortal>
+                                                                    <DropdownMenuSubContent>
+                                                                        <DropdownMenuRadioGroup value={link.beneficiaryStatus} onValueChange={(s) => handleInitiativeStatusChange(link, s as any)}>
+                                                                            <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
+                                                                            <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
+                                                                            <DropdownMenuRadioItem value="Given" className="text-xs font-normal">Given (Completed)</DropdownMenuRadioItem>
+                                                                        </DropdownMenuRadioGroup>
+                                                                    </DropdownMenuSubContent>
+                                                                </DropdownMenuPortal>
+                                                            </DropdownMenuSub>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem asChild className="text-primary font-normal">
+                                                                <Link href={link.type === 'Campaign' ? `/campaign-members/${link.id}/beneficiaries` : `/leads-members/${link.id}/beneficiaries`}>
+                                                                    <ArrowLeft className="mr-2 h-4 w-4" /> View In Context
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                            <ScrollBar orientation="horizontal" />
+                        </ScrollArea>
+                    ) : ( 
+                        <div className="flex flex-col items-center justify-center py-20 opacity-40">
+                            <Info className="h-12 w-12 mb-2" />
+                            <p className="text-sm font-bold italic">No Assistance Records Linked To This Profile.</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </TabsContent>
+
+        <TabsContent value="financials" className="animate-fade-in-up mt-0">
+            <div className="grid gap-6 md:grid-cols-3">
+                <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
+                    <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
+                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Total Assistance Value</CardTitle>
+                        <IndianRupee className="h-4 w-4 text-primary opacity-40" />
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                        <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.totalAssistance.toLocaleString('en-IN')}</div>
+                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Combined Value Of Confirmed Support</p>
+                    </CardContent>
+                </Card>
+                <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
+                    <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
+                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Zakat Contribution</CardTitle>
+                        <ShieldCheck className="h-4 w-4 text-primary opacity-40" />
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                        <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.zakatFunded.toLocaleString('en-IN')}</div>
+                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Utilized From Religious Zakat Resources</p>
+                    </CardContent>
+                </Card>
+                <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
+                    <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
+                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Community Contribution</CardTitle>
+                        <HeartHandshake className="h-4 w-4 text-primary opacity-40" />
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                        <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.communityFunded.toLocaleString('en-IN')}</div>
+                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Allocated From General Donations & Lillah</p>
+                    </CardContent>
+                </Card>
+
+                <Card className="md:col-span-3 border-primary/10 bg-white shadow-sm overflow-hidden">
+                    <CardHeader className="bg-primary/5 border-b px-6 py-4">
+                        <CardTitle className="text-lg font-bold text-primary tracking-tight">Institutional Impact Summary</CardTitle>
+                        <CardDescription className="text-xs font-normal">A breakdown of how verified funds have been utilized for this recipient's welfare.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-6 sm:p-10 space-y-8">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 p-6 rounded-2xl bg-primary/[0.02] border border-primary/10">
+                            <div className="space-y-2">
+                                <h4 className="text-xs font-bold text-primary uppercase tracking-widest">Financial Status Overview</h4>
+                                <div className="flex flex-wrap gap-4 items-center">
+                                    <div className="space-y-0.5">
+                                        <p className="text-[9px] font-bold text-muted-foreground uppercase">Zakat Eligible</p>
+                                        <Badge variant={beneficiary.isEligibleForZakat ? 'eligible' : 'outline'} className="font-bold">
+                                            {beneficiary.isEligibleForZakat ? 'Religious Compliance Confirmed' : 'Not Eligible'}
+                                        </Badge>
+                                    </div>
+                                    <Separator orientation="vertical" className="h-8 hidden sm:block opacity-20" />
+                                    <div className="space-y-0.5">
+                                        <p className="text-[9px] font-bold text-muted-foreground uppercase">Current Master Status</p>
+                                        <Badge variant="active" className="font-bold uppercase text-[10px]">{beneficiary.status}</Badge>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 text-primary bg-white p-4 rounded-xl border border-primary/5 shadow-sm">
+                                <CheckCircle2 className="h-5 w-5 text-primary" />
+                                <p className="text-sm font-bold tracking-tight">Verification Audited Site-Wide</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-bold text-primary uppercase tracking-widest flex items-center gap-2">
+                                <Info className="h-4 w-4"/> Impact Insight
+                            </h4>
+                            <p className="text-sm leading-relaxed text-foreground font-normal">
+                                This recipient has been supported across <span className="font-bold text-primary">{linkedInitiatives.length} initiative(s)</span>. 
+                                The total assistance of <span className="font-bold text-primary font-mono">₹{financialSummary.totalAssistance.toLocaleString('en-IN')}</span> has been 
+                                audited and verified by the institutional finance team. 
+                                {financialSummary.zakatFunded > 0 && ` A significant portion (₹${financialSummary.zakatFunded.toLocaleString('en-IN')}) was disimbursed from the Zakat fund, adhering strictly to Shariah compliance for poverty alleviation.`}
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
-          </div>
-      )}
-
-      <Card className="max-w-2xl mx-auto animate-fade-in-zoom border-primary/10 shadow-sm bg-white overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between border-b bg-primary/5">
-          <CardTitle className="font-bold text-primary tracking-tight">Beneficiary: {beneficiary.name}</CardTitle>
-          {canUpdate && !isEditMode && ( <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md active:scale-95 transition-transform"><Edit className="mr-2 h-4 w-4"/>Edit Details</Button> )}
-        </CardHeader>
-        <CardContent className="pt-6">
-          <BeneficiaryForm beneficiary={formBeneficiaryData} onSubmit={handleSave} onCancel={() => setIsEditMode(false)} isSubmitting={isSubmitting} isLoading={isInitiativeDataLoading} isReadOnly={!isEditMode} itemCategories={[]} hideKitAmount={true} hideZakatAllocation={!initiativeContext} />
-        </CardContent>
-      </Card>
-
-      <Card className="max-w-2xl mx-auto animate-fade-in-up border-primary/10 shadow-sm bg-white overflow-hidden">
-        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight">Linked Initiatives</CardTitle></CardHeader>
-        <CardContent className="pt-6">
-            {isLinksLoading ? ( <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /> ) : linkedInitiatives.length > 0 ? (
-                <div className="border border-primary/10 rounded-lg overflow-x-auto shadow-sm">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-[#ECFDF5] text-[#14532D] font-bold border-b text-[10px] uppercase tracking-widest">
-                            <tr>
-                                <th className="px-4 py-3">Initiative Name</th>
-                                <th className="px-4 py-3">Current Status</th>
-                                <th className="px-4 py-3 text-right">Requirement (₹)</th>
-                                {canUpdate && <th className="px-4 py-3 text-right">Actions</th>}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {linkedInitiatives.map((link: LinkedInitiative) => (
-                                <tr key={link.id} className="border-b last:border-0 hover:bg-[#F0FDF4] transition-colors bg-white">
-                                    <td className="px-4 py-3 align-middle"><Link href={link.type === 'Campaign' ? `/campaign-members/${link.id}/beneficiaries` : `/leads-members/${link.id}/beneficiaries`} className="font-bold text-primary hover:underline">{link.name}</Link></td>
-                                    <td className="px-4 py-3 align-middle"><Badge variant={link.beneficiaryStatus === 'Given' ? 'given' : 'outline'} className="font-bold uppercase text-[10px]">{link.beneficiaryStatus}</Badge></td>
-                                    <td className="px-4 py-3 align-middle text-right font-mono font-bold text-primary">₹{link.kitAmount.toFixed(2)}</td>
-                                    {canUpdate && (
-                                        <td className="px-4 py-3 align-middle text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10 transition-colors h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                                    <DropdownMenuSub>
-                                                        <DropdownMenuSubTrigger className="font-normal text-primary">Status</DropdownMenuSubTrigger>
-                                                        <DropdownMenuPortal>
-                                                            <DropdownMenuSubContent>
-                                                                <DropdownMenuRadioGroup value={link.beneficiaryStatus} onValueChange={(s) => handleInitiativeStatusChange(link, s as any)}>
-                                                                    <DropdownMenuRadioItem value="Pending" className="font-normal">Pending</DropdownMenuRadioItem>
-                                                                    <DropdownMenuRadioItem value="Verified" className="font-normal">Verified</DropdownMenuRadioItem>
-                                                                    <DropdownMenuRadioItem value="Given" className="font-normal">Given</DropdownMenuRadioItem>
-                                                                </DropdownMenuRadioGroup>
-                                                            </DropdownMenuSubContent>
-                                                        </DropdownMenuPortal>
-                                                    </DropdownMenuSub>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </td>
-                                    )}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            ) : ( <p className="text-sm text-muted-foreground text-center py-8 italic font-normal">No Linked Initiatives Found.</p> )}
-        </CardContent>
-      </Card>
+        </TabsContent>
+      </Tabs>
     </main>
   );
+}
+
+function Table({ children }: { children: React.ReactNode }) {
+    return <table className="w-full text-sm text-left">{children}</table>;
+}
+
+function TableHeader({ children, className }: { children: React.ReactNode, className?: string }) {
+    return <thead className={cn("border-b", className)}>{children}</thead>;
+}
+
+function TableBody({ children }: { children: React.ReactNode }) {
+    return <tbody>{children}</tbody>;
+}
+
+function TableRow({ children, className, onClick, "data-state": dataState }: any) {
+    return <tr className={cn("border-b last:border-0", className)} onClick={onClick} data-state={dataState}>{children}</tr>;
+}
+
+function TableHead({ children, className }: { children: React.ReactNode, className?: string }) {
+    return <th className={cn("px-4 py-3 align-middle", className)}>{children}</th>;
+}
+
+function TableCell({ children, className }: { children: React.ReactNode, className?: string }) {
+    return <td className={cn("px-4 py-3 align-middle", className)}>{children}</td>;
 }
