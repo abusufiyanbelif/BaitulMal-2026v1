@@ -10,8 +10,8 @@
     --card-foreground: 144 61% 20%; /* #14532D */
     --popover: 0 0% 100%;
     --popover-foreground: 144 61% 20%;
-    --primary: 140 68% 38%; /* #1FA34A */
-    --primary-hover: 140 68% 31%; /* #16863B */
+    --primary: 140 68% 38%; /* #1FA34A - Modern Green */
+    --primary-hover: 140 68% 31%;
     --primary-foreground: 0 0% 100%;
     --secondary: 143 50% 96%; /* #F0F9F3 */
     --secondary-foreground: 144 61% 20%;
@@ -31,15 +31,12 @@
     --table-row-hover: 142 76% 97%; /* #F0FDF4 */
     --table-expanded-bg: 140 33% 97%; /* #F7FBF8 */
 
-    --dropdown-hover: 158 82% 96%; /* #ECFDF5 */
-    --dropdown-selected: 143 50% 91%; /* #DDF5E6 */
-
-    --badge-eligible-bg: 142 70% 93%; /* #DCFCE7 */
-    --badge-eligible-fg: 144 41% 15%; /* #166534 */
-    --badge-given-bg: 141 79% 85%; /* #BBF7D0 */
-    --badge-given-fg: 164 88% 14%; /* #065F46 */
-    --badge-active-bg: 143 50% 91%; /* #DDF5E6 */
-    --badge-active-fg: 140 68% 38%; /* #1FA34A */
+    --badge-eligible-bg: 142 70% 93%;
+    --badge-eligible-fg: 144 41% 15%;
+    --badge-given-bg: 141 79% 85%;
+    --badge-given-fg: 164 88% 14%;
+    --badge-active-bg: 143 50% 91%;
+    --badge-active-fg: 140 68% 38%;
 
     --chart-1: 142 71% 45%;
     --chart-2: 217 91% 60%;
@@ -51,167 +48,93 @@
     --chart-8: 24 95% 53%;
   }
 
-  .dark {
-    --background: 160 25% 10%;
-    --foreground: 160 20% 90%;
-    --card: 160 25% 12%;
-    --card-foreground: 160 20% 95%;
-    --popover: 160 25% 12%;
-    --popover-foreground: 160 20% 95%;
+  .bms3-a {
     --primary: 140 68% 38%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 160 25% 15%;
-    --secondary-foreground: 160 20% 95%;
-    --muted: 160 25% 15%;
-    --muted-foreground: 160 10% 60%;
-    --accent: 160 25% 15%;
-    --accent-foreground: 160 20% 95%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 160 20% 95%;
-    --border: 160 25% 20%;
-    --input: 160 25% 20%;
-    --ring: 140 68% 38%;
-    --table-header-bg: 160 25% 15%;
-    --table-header-fg: 160 20% 95%;
-    --table-row-hover: 160 25% 18%;
+    --badge-active-fg: 140 68% 38%;
   }
 
-  /* BMS3 Official Deep Green */
   .bms3 {
-    --primary: 164 88% 14%;
-    --badge-active-fg: 164 88% 14%;
-    --ring: 164 88% 14%;
+    --primary: 144 61% 20%; /* Official Deep Green */
+    --badge-active-fg: 144 61% 20%;
+    --table-header-fg: 144 61% 20%;
   }
 
-  /* Green Warm (Earthy Tint) */
   .green-warm {
     --background: 45 30% 96%;
     --primary: 140 40% 25%;
     --badge-active-fg: 140 40% 25%;
-    --ring: 140 40% 25%;
   }
 
-  /* Warm Orange Tone */
   .bmss-brand-warm {
     --primary: 24 95% 53%;
     --badge-active-fg: 24 95% 53%;
     --ring: 24 95% 53%;
   }
 
-  /* Ocean Blue (Professional) */
   .ocean-blue {
     --primary: 221 83% 53%;
     --badge-active-fg: 221 83% 53%;
     --ring: 221 83% 53%;
   }
 
-  /* Sky Blue (Bright) */
   .sky-blue {
     --primary: 199 89% 48%;
     --badge-active-fg: 199 89% 48%;
     --ring: 199 89% 48%;
   }
 
-  /* Sunset (Energy) */
   .sunset-orange {
     --primary: 12 90% 50%;
     --badge-active-fg: 12 90% 50%;
     --ring: 12 90% 50%;
   }
 
-  /* Peaceful Lavender */
   .lavender-mint {
     --primary: 262 60% 60%;
     --badge-active-fg: 262 60% 60%;
     --ring: 262 60% 60%;
   }
 
-  /* GitHub Light */
   .github-light {
     --primary: 212 92% 45%;
     --badge-active-fg: 212 92% 45%;
     --ring: 212 92% 45%;
   }
 
-  /* Midnight Ramadan (Gold) */
-  .midnight-ramadan {
+  .dark {
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
     --card: 222 47% 13%;
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 13%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 45 100% 50%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 222 47% 15%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 222 47% 15%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 222 47% 15%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --primary: 140 68% 38%;
+    --primary-foreground: 0 0% 100%;
     --border: 222 47% 20%;
-    --input: 222 47% 20%;
-    --ring: 45 100% 50%;
-    --badge-active-fg: 45 100% 50%;
     --table-header-bg: 222 47% 15%;
-    --table-header-fg: 45 100% 50%;
-    --table-row-hover: 222 47% 18%;
   }
 
-  /* Midnight Emerald */
+  .midnight-ramadan {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --primary: 45 100% 50%;
+    --primary-foreground: 222 47% 11%;
+    --badge-active-fg: 45 100% 50%;
+    --table-header-fg: 45 100% 50%;
+  }
+
   .midnight-emerald {
     --background: 160 50% 5%;
     --foreground: 160 20% 90%;
-    --card: 160 50% 7%;
-    --card-foreground: 160 20% 95%;
-    --popover: 160 50% 7%;
-    --popover-foreground: 160 20% 95%;
     --primary: 160 100% 40%;
     --primary-foreground: 160 50% 5%;
-    --secondary: 160 50% 10%;
-    --secondary-foreground: 160 20% 95%;
-    --muted: 160 50% 10%;
-    --muted-foreground: 160 10% 60%;
-    --accent: 160 50% 10%;
-    --accent-foreground: 160 20% 95%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 160 20% 95%;
-    --border: 160 50% 15%;
-    --input: 160 50% 15%;
-    --ring: 160 100% 40%;
     --badge-active-fg: 160 100% 40%;
-    --table-header-bg: 160 50% 10%;
-    --table-header-fg: 160 100% 40%;
-    --table-row-hover: 160 50% 12%;
   }
 
-  /* GitHub Dark */
   .github-dark {
     --background: 210 20% 10%;
     --foreground: 210 20% 90%;
-    --card: 210 20% 12%;
-    --card-foreground: 210 20% 95%;
-    --popover: 210 20% 12%;
-    --popover-foreground: 210 20% 95%;
     --primary: 212 92% 45%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 20% 15%;
-    --secondary-foreground: 210 20% 95%;
-    --muted: 210 20% 15%;
-    --muted-foreground: 210 10% 60%;
-    --accent: 210 20% 15%;
-    --accent-foreground: 210 20% 95%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 20% 95%;
-    --border: 210 20% 20%;
-    --input: 210 20% 20%;
-    --ring: 212 92% 45%;
     --badge-active-fg: 212 92% 45%;
-    --table-header-bg: 210 20% 15%;
-    --table-header-fg: 212 92% 45%;
-    --table-row-hover: 210 20% 18%;
   }
 }
 
@@ -222,10 +145,6 @@
     font-family: var(--font-inter), sans-serif;
   }
 }
-
-.shadow-card { shadow: 0 4px 10px rgba(0,0,0,0.05); }
-.shadow-card-hover { shadow: 0 10px 24px rgba(0,0,0,0.08); }
-.shadow-dropdown { shadow: 0 10px 20px rgba(0,0,0,0.08); }
 
 .animate-fade-in-up { animation: fade-in-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
 .animate-fade-in-zoom { animation: fade-in-zoom 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
@@ -252,20 +171,9 @@
 
 @keyframes zoom-in-out {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  50% { transform: scale(1.1); }
 }
 
 .animate-zoom-in-out {
   animation: zoom-in-out 3s ease-in-out infinite;
-}
-
-@keyframes shake {
-  0%, 100% { transform: rotate(0); }
-  25% { transform: rotate(10deg); }
-  75% { transform: rotate(-10deg); }
-}
-
-.animate-shake {
-  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
-  transform-origin: top center;
 }

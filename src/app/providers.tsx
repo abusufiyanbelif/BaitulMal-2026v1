@@ -10,28 +10,13 @@ import { DocuExtractHeader } from '@/components/docu-extract-header';
 import { Watermark } from '@/components/watermark';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from 'next-themes';
+import { THEME_SUGGESTIONS } from '@/lib/themes';
 
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
 
-  const allThemes = [
-    'light',
-    'dark',
-    'system',
-    'bms3-a',
-    'bms3',
-    'green-warm',
-    'bmss-brand-warm',
-    'ocean-blue',
-    'sky-blue',
-    'sunset-orange',
-    'lavender-mint',
-    'github-light',
-    'midnight-ramadan',
-    'midnight-emerald',
-    'github-dark'
-  ];
+  const allThemes = THEME_SUGGESTIONS.map(t => t.id);
 
   useEffect(() => {
     const applyMotionSettings = () => {
