@@ -15,6 +15,8 @@ export const GROUPS = [
 export type GroupId = typeof GROUPS[number]['id'];
 export const GROUP_IDS = GROUPS.map(g => g.id);
 
+export const priorityLevels = ['Low', 'Medium', 'High', 'Urgent'] as const;
+export type PriorityLevel = typeof priorityLevels[number];
 
 export type DonationCategory = typeof donationCategories[number];
 export type CrudPermissions = typeof crudPermissions;

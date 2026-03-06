@@ -29,7 +29,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from '@/components/news-ticker';
 import { usePublicData } from '@/hooks/use-public-data';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirestorePermissionError } from '@/firebase/error-emitter';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
@@ -167,6 +167,9 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                         {lead.publicVisibility || 'Hold'}
                     </Badge>
                 </div>
+                <div className={cn("text-[10px] font-bold uppercase tracking-tight", lead.priority === 'Urgent' ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary')}>
+                    {lead.priority || 'Low'} Priority
+                </div>
             </div>
             <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground pt-1">{lead.startDate} To {lead.endDate}</CardDescription>
         </CardHeader>
@@ -222,7 +225,7 @@ export default function LeadPage() {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
           return {
               id: c.id,
-              text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
+              text: `[${c.priority || 'Low'}] ${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/campaign-members/${c.id}/summary`
           };
       });
@@ -233,7 +236,7 @@ export default function LeadPage() {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
           return {
               id: l.id,
-              text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
+              text: `[${l.priority || 'Low'}] ${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/leads-members/${l.id}/summary`
           };
       });
@@ -266,7 +269,7 @@ export default function LeadPage() {
     if (!firestore || !canUpdate) return;
     const docRef = doc(firestore, 'leads', leadToUpdate.id);
     const updateData = { [field]: value };
-    updateDoc(docRef, updatedData)
+    updateDoc(docRef, updateData)
         .then(() => toast({ title: 'Success', description: `Lead Visibility Updated.`, variant: 'success' }))
         .catch((serverError: any) => {
             const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData });

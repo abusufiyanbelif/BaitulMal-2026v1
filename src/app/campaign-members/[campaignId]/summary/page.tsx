@@ -63,7 +63,7 @@ import { Label } from '@/components/ui/label';
 import { cn, getNestedValue } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ShareDialog } from '@/components/share-dialog';
-import { donationCategories } from '@/lib/modules';
+import { donationCategories, priorityLevels } from '@/lib/modules';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { FileUploader } from '@/components/file-uploader';
@@ -169,6 +169,7 @@ export default function CampaignSummaryPage() {
                 endDate: campaign.endDate || '',
                 category: campaign.category || 'General',
                 status: campaign.status || 'Upcoming',
+                priority: campaign.priority || 'Low',
                 targetAmount: campaign.targetAmount || 0,
                 authenticityStatus: campaign.authenticityStatus || 'Pending Verification',
                 publicVisibility: campaign.publicVisibility || 'Hold',
@@ -405,20 +406,16 @@ export default function CampaignSummaryPage() {
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
                     {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => handleFieldChange('name', e.target.value)} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary tracking-tight">{campaign?.name}</h1> )}
-                    {editMode ? ( 
-                        <div className="flex flex-wrap gap-2 pt-1">
-                            <Select value={editableCampaign.status} onValueChange={(value) => setEditableCampaign(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1 font-bold"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent className="animate-fade-in-zoom"><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></SelectContent></Select>
-                            <Select value={editableCampaign.authenticityStatus} onValueChange={(value) => setEditableCampaign(p => ({...p, authenticityStatus: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1 font-bold"><SelectValue placeholder="Verification" /></SelectTrigger><SelectContent className="animate-fade-in-zoom"><SelectItem value="Pending Verification" className="font-bold">Pending Verification</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="Rejected" className="font-bold">Rejected</SelectItem><SelectItem value="On Hold" className="font-bold">On Hold</SelectItem><SelectItem value="Need More Details" className="font-bold">Need More Details</SelectItem></SelectContent></Select>
-                        </div>
-                    ): ( 
-                        <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest">{campaign?.status}</Badge>
-                            <Badge variant={campaign?.authenticityStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold flex items-center gap-1">
-                                <ShieldCheck className="h-3 w-3" />
-                                {campaign?.authenticityStatus}
-                            </Badge>
-                        </div>
-                    )}
+                    <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest">{campaign?.status}</Badge>
+                        <Badge variant={campaign?.authenticityStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold flex items-center gap-1">
+                            <ShieldCheck className="h-3 w-3" />
+                            {campaign?.authenticityStatus}
+                        </Badge>
+                        <Badge variant={campaign?.priority === 'Urgent' ? 'destructive' : 'outline'} className={cn("text-[10px] font-bold", campaign?.priority === 'Urgent' && "animate-in fade-in slide-in-from-left")}>
+                            {campaign?.priority || 'Low'} Priority
+                        </Badge>
+                    </div>
                 </div>
                 <div className="flex gap-2">
                     {!editMode && (
@@ -460,7 +457,7 @@ export default function CampaignSummaryPage() {
                                         {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 transition-all duration-300 hover:scale-110 active:scale-90 shadow-lg" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6 transition-transform group-hover:scale-105"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground group-hover:text-primary" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click To Upload</span></p></div> )}
                                     </label>
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div className="space-y-1">
                                         <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Category</Label>
                                         <Select value={editableCampaign.category} onValueChange={(val) => handleFieldChange('category', val)}>
@@ -469,6 +466,52 @@ export default function CampaignSummaryPage() {
                                                 <SelectItem value="Ration" className="font-bold">Ration</SelectItem>
                                                 <SelectItem value="Relief" className="font-bold">Relief</SelectItem>
                                                 <SelectItem value="General" className="font-bold">General</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Priority</Label>
+                                        <Select value={editableCampaign.priority} onValueChange={(val) => handleFieldChange('priority', val)}>
+                                            <SelectTrigger className="font-bold text-primary"><SelectValue/></SelectTrigger>
+                                            <SelectContent className="animate-fade-in-zoom">
+                                                {priorityLevels.map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Operational Status</Label>
+                                        <Select value={editableCampaign.status} onValueChange={(value) => handleFieldChange('status', value)}>
+                                            <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
+                                            <SelectContent className="animate-fade-in-zoom">
+                                                <SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem>
+                                                <SelectItem value="Active" className="font-bold text-primary">Active</SelectItem>
+                                                <SelectItem value="Completed" className="font-bold">Completed</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Verification Level</Label>
+                                        <Select value={editableCampaign.authenticityStatus} onValueChange={(value) => handleFieldChange('authenticityStatus', value)}>
+                                            <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
+                                            <SelectContent className="animate-fade-in-zoom">
+                                                <SelectItem value="Pending Verification" className="font-bold">Pending</SelectItem>
+                                                <SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem>
+                                                <SelectItem value="On Hold" className="font-bold">On Hold</SelectItem>
+                                                <SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem>
+                                                <SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Public Visibility</Label>
+                                        <Select value={editableCampaign.publicVisibility} onValueChange={(value) => handleFieldChange('publicVisibility', value)}>
+                                            <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
+                                            <SelectContent className="animate-fade-in-zoom">
+                                                <SelectItem value="Hold" className="font-bold">Hold (Private)</SelectItem>
+                                                <SelectItem value="Ready to Publish" className="font-bold">Ready To Publish</SelectItem>
+                                                <SelectItem value="Published" className="font-bold text-primary">Published</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>

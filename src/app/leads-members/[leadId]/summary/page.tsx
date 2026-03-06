@@ -65,7 +65,7 @@ import { Label } from '@/components/ui/label';
 import { cn, getNestedValue } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ShareDialog } from '@/components/share-dialog';
-import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters } from '@/lib/modules';
+import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters, priorityLevels } from '@/lib/modules';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { FileUploader } from '@/components/file-uploader';
@@ -173,6 +173,7 @@ export default function LeadSummaryPage() {
                 startDate: lead.startDate || '',
                 endDate: lead.endDate || '',
                 status: lead.status || 'Upcoming',
+                priority: lead.priority || 'Low',
                 requiredAmount: lead.requiredAmount || 0,
                 targetAmount: lead.targetAmount || 0,
                 authenticityStatus: lead.authenticityStatus || 'Pending Verification',
@@ -400,20 +401,16 @@ export default function LeadSummaryPage() {
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
                     {editMode ? ( <Input id="name" value={editableLead.name || ''} onChange={(e) => handleFieldChange('name', e.target.value)} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary tracking-tight">{lead?.name}</h1> )}
-                    {editMode ? ( 
-                        <div className="flex flex-wrap gap-2 pt-1">
-                            <Select value={editableLead.status} onValueChange={(value) => setEditableLead(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1 font-bold"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent className="animate-fade-in-zoom"><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></SelectContent></Select>
-                            <Select value={editableLead.authenticityStatus} onValueChange={(value) => setEditableLead(p => ({...p, authenticityStatus: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1 font-bold"><SelectValue placeholder="Verification" /></SelectTrigger><SelectContent className="animate-fade-in-zoom"><SelectItem value="Pending Verification" className="font-bold">Pending Verification</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="Rejected" className="font-bold">Rejected</SelectItem><SelectItem value="On Hold" className="font-bold">On Hold</SelectItem><SelectItem value="Need More Details" className="font-bold">Need More Details</SelectItem></SelectContent></Select>
-                        </div>
-                    ): ( 
-                        <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest">{lead?.status}</Badge>
-                            <Badge variant={lead?.authenticityStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold flex items-center gap-1">
-                                <ShieldCheck className="h-3 w-3" />
-                                {lead?.authenticityStatus}
-                            </Badge>
-                        </div>
-                    )}
+                    <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest">{lead?.status}</Badge>
+                        <Badge variant={lead?.authenticityStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold flex items-center gap-1">
+                            <ShieldCheck className="h-3 w-3" />
+                            {lead?.authenticityStatus}
+                        </Badge>
+                        <Badge variant={lead?.priority === 'Urgent' ? 'destructive' : 'outline'} className={cn("text-[10px] font-bold", lead?.priority === 'Urgent' && "animate-in fade-in slide-in-from-left")}>
+                            {lead?.priority || 'Low'} Priority
+                        </Badge>
+                    </div>
                 </div>
                 <div className="flex gap-2">
                     {!editMode && (
@@ -467,12 +464,58 @@ export default function LeadSummaryPage() {
                                             {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 transition-all duration-300 hover:scale-110 active:scale-90 shadow-lg" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6 transition-transform group-hover:scale-105"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground group-hover:text-primary" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click To Upload</span></p></div> )}
                                         </label>
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                         <div className="space-y-1">
                                             <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Purpose</Label>
                                             <Select value={editableLead.purpose} onValueChange={(val) => handleFieldChange('purpose', val)}>
                                                 <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
                                                 <SelectContent className="animate-fade-in-zoom">{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Priority</Label>
+                                            <Select value={editableLead.priority} onValueChange={(val) => handleFieldChange('priority', val)}>
+                                                <SelectTrigger className="font-bold text-primary"><SelectValue/></SelectTrigger>
+                                                <SelectContent className="animate-fade-in-zoom">
+                                                    {priorityLevels.map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Operational Status</Label>
+                                            <Select value={editableLead.status} onValueChange={(value) => handleFieldChange('status', value)}>
+                                                <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
+                                                <SelectContent className="animate-fade-in-zoom">
+                                                    <SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem>
+                                                    <SelectItem value="Active" className="font-bold text-primary">Active</SelectItem>
+                                                    <SelectItem value="Completed" className="font-bold">Completed</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Verification Level</Label>
+                                            <Select value={editableLead.authenticityStatus} onValueChange={(value) => handleFieldChange('authenticityStatus', value)}>
+                                                <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
+                                                <SelectContent className="animate-fade-in-zoom">
+                                                    <SelectItem value="Pending Verification" className="font-bold">Pending</SelectItem>
+                                                    <SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem>
+                                                    <SelectItem value="On Hold" className="font-bold">On Hold</SelectItem>
+                                                    <SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem>
+                                                    <SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Public Visibility</Label>
+                                            <Select value={editableLead.publicVisibility} onValueChange={(value) => handleFieldChange('publicVisibility', value)}>
+                                                <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
+                                                <SelectContent className="animate-fade-in-zoom">
+                                                    <SelectItem value="Hold" className="font-bold">Hold (Private)</SelectItem>
+                                                    <SelectItem value="Ready to Publish" className="font-bold">Ready To Publish</SelectItem>
+                                                    <SelectItem value="Published" className="font-bold text-primary">Published</SelectItem>
+                                                </SelectContent>
                                             </Select>
                                         </div>
                                         {availableCategories.length > 0 && (
@@ -613,7 +656,7 @@ export default function LeadSummaryPage() {
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
                                 <CardHeader className="bg-primary/5 border-b">
                                     <CardTitle className="font-bold text-primary uppercase tracking-tight">
-                                        {isRationInitiative ? 'Beneficiary Categories' : 'Required Financial Allocation'}
+                                        {isRationInitiative ? 'Beneficiary Groups' : 'Required Financial Allocation'}
                                     </CardTitle>
                                     <CardDescription className="font-normal text-primary/70">
                                         {isRationInitiative 

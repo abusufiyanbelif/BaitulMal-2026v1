@@ -1,5 +1,5 @@
 import type { DocumentData, Timestamp, FieldValue } from 'firebase/firestore';
-import type { UserPermissions, GroupId } from './modules';
+import type { UserPermissions, GroupId, PriorityLevel } from './modules';
 import { donationCategories } from './modules';
 
 export type DonationCategory = typeof donationCategories[number];
@@ -141,6 +141,7 @@ export interface Campaign extends DocumentData {
   startDate: string;
   endDate: string;
   status: 'Upcoming' | 'Active' | 'Completed';
+  priority?: PriorityLevel;
   authenticityStatus?: 'Pending Verification' | 'Verified' | 'Rejected' | 'On Hold' | 'Need More Details';
   publicVisibility?: 'Hold' | 'Ready to Publish' | 'Published';
   priceDate: string;
@@ -173,6 +174,7 @@ export interface Lead extends DocumentData {
   startDate: string;
   endDate: string;
   status: 'Upcoming' | 'Active' | 'Completed';
+  priority?: PriorityLevel;
   authenticityStatus?: 'Pending Verification' | 'Verified' | 'Rejected' | 'On Hold' | 'Need More Details';
   publicVisibility?: 'Hold' | 'Ready to Publish' | 'Published';
   priceDate: string;

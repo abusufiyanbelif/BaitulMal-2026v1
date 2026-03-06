@@ -1,5 +1,5 @@
 'use client';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage, useMemoFirebase, useAuth, useDoc, doc } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
@@ -23,7 +23,7 @@ import { z } from 'zod';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import type { Campaign } from '@/lib/types';
-import { donationCategories } from '@/lib/modules';
+import { donationCategories, priorityLevels } from '@/lib/modules';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { FileUploader } from '@/components/file-uploader';
@@ -34,6 +34,7 @@ const campaignSchema = z.object({
   description: z.string().optional(),
   category: z.enum(['Ration', 'Relief', 'General']),
   status: z.enum(['Upcoming', 'Active', 'Completed']),
+  priority: z.enum(priorityLevels),
   authenticityStatus: z.enum(['Pending Verification', 'Verified', 'Rejected', 'On Hold', 'Need More Details']),
   publicVisibility: z.enum(['Hold', 'Ready to Publish', 'Published']),
   startDate: z.string().min(1, 'Start Date Is Required.'),
@@ -84,6 +85,7 @@ export default function CreateCampaignPage() {
       description: '',
       category: 'Ration',
       status: 'Upcoming',
+      priority: 'Low',
       authenticityStatus: 'Pending Verification',
       publicVisibility: 'Hold',
       startDate: new Date().toISOString().split('T')[0],
@@ -323,9 +325,14 @@ export default function CreateCampaignPage() {
                     </FormControl>
                     <FormDescription className="font-normal text-xs opacity-70 italic">Upload Proposals, Vetted Reports, Or Verification Photos.</FormDescription>
                 </FormItem>
-                 <FormField control={form.control} name="category" render={({ field }) => (
-                    <FormItem>{renderLabel('Campaign Category', 'category')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Category" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Ration" className="font-bold">Ration</SelectItem><SelectItem value="Relief" className="font-bold">Relief</SelectItem><SelectItem value="General" className="font-bold">General</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                )}/>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField control={form.control} name="category" render={({ field }) => (
+                        <FormItem>{renderLabel('Campaign Category', 'category')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Category" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Ration" className="font-bold">Ration</SelectItem><SelectItem value="Relief" className="font-bold">Relief</SelectItem><SelectItem value="General" className="font-bold">General</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                    )}/>
+                    <FormField control={form.control} name="priority" render={({ field }) => (
+                        <FormItem>{renderLabel('Priority Level', 'priority')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Priority" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{priorityLevels.map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                    )}/>
+                </div>
                 <FormField control={form.control} name="targetAmount" render={({ field }) => (
                     <FormItem>{renderLabel('Target Fundraising Goal (₹)', 'targetAmount')}<FormControl><Input type="number" placeholder="e.g. 100000" {...field} className="font-bold" /></FormControl><FormDescription className="font-normal text-xs opacity-70">The Combined Financial Target For All Verified Goal Contributions.</FormDescription><FormMessage /></FormItem>
                 )}/>

@@ -23,7 +23,7 @@ import { z } from 'zod';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import type { Lead } from '@/lib/types';
-import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters } from '@/lib/modules';
+import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters, priorityLevels } from '@/lib/modules';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { FileUploader } from '@/components/file-uploader';
@@ -37,6 +37,7 @@ const leadSchema = z.object({
   category: z.string().optional(),
   categoryDetails: z.string().optional(),
   status: z.enum(['Upcoming', 'Active', 'Completed']),
+  priority: z.enum(priorityLevels),
   authenticityStatus: z.enum(['Pending Verification', 'Verified', 'Rejected', 'On Hold', 'Need More Details']),
   publicVisibility: z.enum(['Hold', 'Ready to Publish', 'Published']),
   startDate: z.string().min(1, 'Start Date Is Required.'),
@@ -104,6 +105,7 @@ export default function CreateLeadPage() {
       purpose: 'Relief',
       category: '',
       status: 'Upcoming',
+      priority: 'Low',
       authenticityStatus: 'Pending Verification',
       publicVisibility: 'Hold',
       startDate: new Date().toISOString().split('T')[0],
@@ -373,6 +375,12 @@ export default function CreateLeadPage() {
                 )}
               </div>
               
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField control={form.control} name="priority" render={({ field }) => (
+                    <FormItem>{renderLabel('Priority Level', 'priority')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Priority" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{priorityLevels.map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                )}/>
+              </div>
+
               {purpose === 'Other' && (
                 <FormField control={form.control} name="purposeDetails" render={({ field }) => (
                   <FormItem>{renderLabel('Specific Purpose Details', 'purposeDetails')}<FormControl><Input {...field} className="font-bold" /></FormControl><FormMessage /></FormItem>
