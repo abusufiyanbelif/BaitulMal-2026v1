@@ -52,37 +52,6 @@
     --chart-8: 24 95% 53%;   /* Orange */
   }
 
-  .bms3 {
-    --primary: 144 70% 25%; /* #136A33 */
-    --background: 144 10% 95%; /* #F0F4F1 */
-    --table-header-bg: 144 30% 90%;
-  }
-
-  .green-warm {
-    --background: 45 30% 96%; /* #F9F7F2 */
-    --primary: 155 40% 24%; /* #2D6A4F */
-    --secondary: 38 40% 92%;
-  }
-
-  .bmss-brand-warm {
-    --primary: 24 95% 53%; /* #F97316 */
-    --background: 30 33% 98%;
-  }
-
-  .ocean-blue {
-    --primary: 221 83% 53%; /* #2563EB */
-    --background: 210 40% 98%;
-  }
-
-  .midnight-ramadan {
-    --background: 222 47% 11%;
-    --foreground: 45 100% 90%;
-    --primary: 45 93% 47%; /* Gold */
-    --card: 222 47% 15%;
-    --card-foreground: 45 100% 95%;
-    --border: 222 47% 20%;
-  }
-
   .dark {
     --background: 160 25% 10%;
     --foreground: 160 20% 90%;
@@ -132,4 +101,15 @@
 
 .animate-zoom-in-out {
   animation: zoom-in-out 3s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(10deg); }
+  75% { transform: rotate(-10deg); }
+}
+
+.animate-shake {
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+  transform-origin: top center;
 }
