@@ -12,6 +12,7 @@ export interface BrandingSettings extends DocumentData {
   logoHeight?: number;
   heroTitle?: string;
   heroDescription?: string;
+  isRecentVerificationVisible?: boolean;
 }
 
 export interface PaymentSettings extends DocumentData {

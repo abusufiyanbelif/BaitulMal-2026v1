@@ -62,6 +62,7 @@ export default function Home() {
 
     const heroTitle = brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.';
     const heroDescription = brandingSettings?.heroDescription || `Join ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'} To Make A Lasting Impact. Your Contribution Brings Hope, Changes Lives, And Empowers Our Community.`;
+    const showRecentVerification = brandingSettings?.isRecentVerificationVisible !== false;
 
     return (
         <div className="container mx-auto p-4 md:p-8 space-y-10 text-primary">
@@ -105,7 +106,9 @@ export default function Home() {
                 <OverallFundingSummary />
                 
                 {/* Dynamic Recent Verification Ticker */}
-                <RecentVerificationTicker items={recentDonationsFormatted} />
+                {showRecentVerification && (
+                    <RecentVerificationTicker items={recentDonationsFormatted} />
+                )}
 
                 <DonationSummary />
                 <LeadAndCampaignSummary />

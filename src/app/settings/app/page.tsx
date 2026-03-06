@@ -14,7 +14,7 @@ import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, ChevronDown, Monitor, FileText, Smartphone } from 'lucide-react';
+import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, ChevronDown, Monitor, FileText, Smartphone, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,6 +34,7 @@ interface FormDataType {
     logoHeight: number | string;
     heroTitle: string;
     heroDescription: string;
+    isRecentVerificationVisible: boolean;
     qrCodeUrl: string;
     qrWidth: number | string;
     qrHeight: number | string;
@@ -164,6 +165,7 @@ export default function AppSettingsPage() {
                 logoHeight: brandingSettings?.logoHeight || 40,
                 heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.',
                 heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.',
+                isRecentVerificationVisible: brandingSettings?.isRecentVerificationVisible ?? true,
                 qrCodeUrl: paymentSettings?.qrCodeUrl || '',
                 qrWidth: paymentSettings?.qrWidth || 120,
                 qrHeight: paymentSettings?.qrHeight || 120,
@@ -273,6 +275,7 @@ export default function AppSettingsPage() {
                 logoHeight: Number(editableData.logoHeight) || null,
                 heroTitle: editableData.heroTitle,
                 heroDescription: editableData.heroDescription,
+                isRecentVerificationVisible: editableData.isRecentVerificationVisible,
             };
             batch.set(doc(firestore, 'settings', 'branding'), brandingData, { merge: true });
 
@@ -340,6 +343,7 @@ export default function AppSettingsPage() {
         logoHeight: brandingSettings?.logoHeight || 40,
         heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.',
         heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact.',
+        isRecentVerificationVisible: brandingSettings?.isRecentVerificationVisible ?? true,
         qrCodeUrl: paymentSettings?.qrCodeUrl || '',
         qrWidth: paymentSettings?.qrWidth || 120,
         qrHeight: paymentSettings?.qrHeight || 120,
@@ -370,6 +374,7 @@ export default function AppSettingsPage() {
             logoHeight: brandingSettings?.logoHeight || 40,
             heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.',
             heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact.',
+            isRecentVerificationVisible: brandingSettings?.isRecentVerificationVisible ?? true,
             qrCodeUrl: paymentSettings?.qrCodeUrl || '',
             qrWidth: paymentSettings?.qrWidth || 120,
             qrHeight: paymentSettings?.qrHeight || 120,
@@ -429,42 +434,64 @@ export default function AppSettingsPage() {
 
             <div className="space-y-6 animate-fade-in-up">
                 
-                {/* Homepage Hero Section */}
+                {/* Landing Page Configuration */}
                 <SettingsSection 
-                    title="Homepage Hero Section" 
-                    description="Configure the primary welcome message on the landing page."
+                    title="Landing Page Configuration" 
+                    description="Configure the primary welcome message and component visibility on the homepage."
                     icon={Monitor}
                     defaultOpen={true}
                 >
                     <div className="space-y-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="heroTitle" className="font-bold text-xs text-muted-foreground tracking-tighter">Hero Title</Label>
-                            {isEditMode ? (
-                                <Input 
-                                    id="heroTitle"
-                                    value={displayData.heroTitle}
-                                    onChange={(e) => handleFieldChange('heroTitle', e.target.value)}
-                                    placeholder="Enter primary heading..."
-                                    className="font-bold"
-                                />
-                            ) : (
-                                <p className="text-lg font-bold text-primary">{displayData.heroTitle}</p>
-                            )}
+                        <div className="grid gap-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="heroTitle" className="font-bold text-xs text-muted-foreground tracking-tighter uppercase">Hero Title</Label>
+                                {isEditMode ? (
+                                    <Input 
+                                        id="heroTitle"
+                                        value={displayData.heroTitle}
+                                        onChange={(e) => handleFieldChange('heroTitle', e.target.value)}
+                                        placeholder="Enter primary heading..."
+                                        className="font-bold"
+                                    />
+                                ) : (
+                                    <p className="text-lg font-bold text-primary">{displayData.heroTitle}</p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="heroDescription" className="font-bold text-xs text-muted-foreground tracking-tighter uppercase">Hero Description</Label>
+                                {isEditMode ? (
+                                    <Textarea 
+                                        id="heroDescription"
+                                        rows={3}
+                                        value={displayData.heroDescription}
+                                        onChange={(e) => handleFieldChange('heroDescription', e.target.value)}
+                                        placeholder="Enter subtext description..."
+                                        className="font-normal"
+                                    />
+                                ) : (
+                                    <p className="text-sm font-normal text-muted-foreground leading-relaxed">{displayData.heroDescription}</p>
+                                )}
+                            </div>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="heroDescription" className="font-bold text-xs text-muted-foreground tracking-tighter">Hero Description</Label>
-                            {isEditMode ? (
-                                <Textarea 
-                                    id="heroDescription"
-                                    rows={3}
-                                    value={displayData.heroDescription}
-                                    onChange={(e) => handleFieldChange('heroDescription', e.target.value)}
-                                    placeholder="Enter subtext description..."
-                                    className="font-normal"
+
+                        <Separator className="bg-primary/10" />
+
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-muted/5 gap-4 transition-all hover:border-primary/20">
+                            <div className="space-y-1 flex-1">
+                                <h3 className="font-bold text-primary text-sm tracking-tight flex items-center gap-2">
+                                    <CheckCircle2 className="h-4 w-4" /> Show Recent Verification Ticker
+                                </h3>
+                                <p className="text-xs text-muted-foreground font-normal">Display the animated sliding ticker of confirmed donations on the homepage.</p>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <Label htmlFor="recent-verification-visibility" className="font-bold text-xs opacity-60 tracking-tight">Visible</Label>
+                                <Switch 
+                                    id="recent-verification-visibility" 
+                                    checked={displayData.isRecentVerificationVisible} 
+                                    onCheckedChange={(val) => handleFieldChange('isRecentVerificationVisible', val)} 
+                                    disabled={isFormDisabled} 
                                 />
-                            ) : (
-                                <p className="text-sm font-normal text-muted-foreground leading-relaxed">{displayData.heroDescription}</p>
-                            )}
+                            </div>
                         </div>
                     </div>
                 </SettingsSection>
