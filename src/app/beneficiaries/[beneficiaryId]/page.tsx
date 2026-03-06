@@ -9,7 +9,7 @@ import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
-import { ArrowLeft, Edit, MoreHorizontal, Loader2, ChevronDown, User, History, IndianRupee, Landmark, Lightbulb, FolderKanban, ShieldCheck, Calendar, Info, HeartHandshake, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, Loader2, ChevronDown, User, History, IndianRupee, Landmark, Lightbulb, FolderKanban, ShieldCheck, Calendar, Info, HeartHandshake, CheckCircle2, Target, Hourglass } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuTrigger, DropdownMenuPortal, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSubContent, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { useToast } from '@/hooks/use-toast';
@@ -198,14 +198,19 @@ export default function BeneficiaryDetailsPage() {
   const backHref = redirectUrl || '/beneficiaries';
 
   const financialSummary = useMemo(() => {
-      const totals = linkedInitiatives.reduce((acc, curr) => {
-          if (curr.beneficiaryStatus === 'Given' || curr.beneficiaryStatus === 'Verified') {
-              acc.totalAssistance += curr.kitAmount;
-              acc.zakatFunded += curr.zakatAllocation;
+      return linkedInitiatives.reduce((acc, curr) => {
+          acc.requested += curr.kitAmount;
+          if (curr.beneficiaryStatus === 'Given') {
+              acc.disbursed += curr.kitAmount;
+              acc.zakatDisbursed += curr.zakatAllocation;
+          } else if (curr.beneficiaryStatus === 'Verified') {
+              acc.verified += curr.kitAmount;
+              acc.zakatVerified += curr.zakatAllocation;
+          } else {
+              acc.pending += curr.kitAmount;
           }
           return acc;
-      }, { totalAssistance: 0, zakatFunded: 0 });
-      return { ...totals, communityFunded: totals.totalAssistance - totals.zakatFunded };
+      }, { requested: 0, disbursed: 0, verified: 0, pending: 0, zakatDisbursed: 0, zakatVerified: 0 });
   }, [linkedInitiatives]);
 
   if (isLoading && !formBeneficiaryData) return <BrandedLoader />;
@@ -375,76 +380,160 @@ export default function BeneficiaryDetailsPage() {
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
                     <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
                         <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Total Assistance Value</CardTitle>
-                        <IndianRupee className="h-4 w-4 text-primary opacity-40" />
+                        <Target className="h-4 w-4 text-primary opacity-40" />
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
-                        <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.totalAssistance.toLocaleString('en-IN')}</div>
-                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Combined Value Of Confirmed Support</p>
+                        <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.requested.toLocaleString('en-IN')}</div>
+                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Combined Value Of All Linked Requirements</p>
                     </CardContent>
                 </Card>
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
                     <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Zakat Contribution</CardTitle>
-                        <ShieldCheck className="h-4 w-4 text-primary opacity-40" />
+                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Verified (Secured)</CardTitle>
+                        <CheckCircle2 className="h-4 w-4 text-primary opacity-40" />
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
-                        <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.zakatFunded.toLocaleString('en-IN')}</div>
-                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Utilized From Religious Zakat Resources</p>
+                        <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.verified.toLocaleString('en-IN')}</div>
+                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Institutional Funds Reserved For This Member</p>
                     </CardContent>
                 </Card>
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
                     <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Community Contribution</CardTitle>
+                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Disbursed (Given)</CardTitle>
                         <HeartHandshake className="h-4 w-4 text-primary opacity-40" />
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
-                        <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.communityFunded.toLocaleString('en-IN')}</div>
-                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Allocated From General Donations & Lillah</p>
+                        <div className="text-3xl font-bold text-[#166534] font-mono">₹{financialSummary.disbursed.toLocaleString('en-IN')}</div>
+                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Confirmed Value Successfully Provided To Recipient</p>
                     </CardContent>
                 </Card>
 
                 <Card className="md:col-span-3 border-primary/10 bg-white shadow-sm overflow-hidden">
                     <CardHeader className="bg-primary/5 border-b px-6 py-4">
-                        <CardTitle className="text-lg font-bold text-primary tracking-tight">Institutional Impact Summary</CardTitle>
-                        <CardDescription className="text-xs font-normal">A breakdown of how verified funds have been utilized for this recipient's welfare.</CardDescription>
+                        <CardTitle className="text-lg font-bold text-primary tracking-tight">Institutional Allocation Breakdown</CardTitle>
+                        <CardDescription className="text-xs font-normal">Detailed split of aid across initiatives, identifying source funds and current disbursement status.</CardDescription>
                     </CardHeader>
-                    <CardContent className="p-6 sm:p-10 space-y-8">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 p-6 rounded-2xl bg-primary/[0.02] border border-primary/10">
-                            <div className="space-y-2">
-                                <h4 className="text-xs font-bold text-primary uppercase tracking-widest">Financial Status Overview</h4>
-                                <div className="flex flex-wrap gap-4 items-center">
-                                    <div className="space-y-0.5">
-                                        <p className="text-[9px] font-bold text-muted-foreground uppercase">Zakat Eligible</p>
-                                        <Badge variant={beneficiary.isEligibleForZakat ? 'eligible' : 'outline'} className="font-bold">
-                                            {beneficiary.isEligibleForZakat ? 'Religious Compliance Confirmed' : 'Not Eligible'}
-                                        </Badge>
-                                    </div>
-                                    <Separator orientation="vertical" className="h-8 hidden sm:block opacity-20" />
-                                    <div className="space-y-0.5">
-                                        <p className="text-[9px] font-bold text-muted-foreground uppercase">Current Master Status</p>
-                                        <Badge variant="active" className="font-bold uppercase text-[10px]">{beneficiary.status}</Badge>
-                                    </div>
-                                </div>
+                    <CardContent className="p-0">
+                        <ScrollArea className="w-full">
+                            <div className="min-w-[1000px]">
+                                <Table>
+                                    <TableHeader className="bg-[#ECFDF5]">
+                                        <TableRow>
+                                            <TableHead className="pl-6 font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Initiative Source</TableHead>
+                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Requirement (₹)</TableHead>
+                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Zakat Allocation (₹)</TableHead>
+                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Community Fund (₹)</TableHead>
+                                            <TableHead className="text-center font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Financial Status</TableHead>
+                                            <TableHead className="text-right pr-6 font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Net Provision (₹)</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {linkedInitiatives.map((link) => {
+                                            const communityFund = link.kitAmount - link.zakatAllocation;
+                                            return (
+                                                <TableRow key={`fin_${link.type}_${link.id}`} className="hover:bg-[#F0FDF4] transition-colors border-b border-primary/5 bg-white">
+                                                    <TableCell className="pl-6 py-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="p-1.5 rounded-md bg-primary/5 text-primary">
+                                                                {link.type === 'Campaign' ? <FolderKanban className="h-3.5 w-3.5"/> : <Lightbulb className="h-3.5 w-3.5"/>}
+                                                            </div>
+                                                            <p className="font-bold text-sm text-primary">{link.name}</p>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-mono text-xs opacity-60">₹{link.kitAmount.toLocaleString('en-IN')}</TableCell>
+                                                    <TableCell className="text-right">
+                                                        <p className="font-bold font-mono text-sm text-primary">₹{link.zakatAllocation.toLocaleString('en-IN')}</p>
+                                                        <p className="text-[8px] font-bold text-muted-foreground uppercase">Religious Reserved</p>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <p className="font-bold font-mono text-sm text-primary">₹{communityFund.toLocaleString('en-IN')}</p>
+                                                        <p className="text-[8px] font-bold text-muted-foreground uppercase">Lillah / Sadaqah</p>
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <Badge 
+                                                            variant={link.beneficiaryStatus === 'Given' ? 'given' : link.beneficiaryStatus === 'Verified' ? 'eligible' : 'outline'} 
+                                                            className="font-bold uppercase text-[9px] tracking-tight"
+                                                        >
+                                                            {link.beneficiaryStatus === 'Given' ? 'Disbursed' : link.beneficiaryStatus === 'Verified' ? 'Secured' : 'Evaluation'}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-right pr-6">
+                                                        <div className="flex flex-col items-end">
+                                                            <span className={cn("font-bold font-mono text-sm", link.beneficiaryStatus === 'Given' ? "text-[#166534]" : "text-primary")}>
+                                                                ₹{link.kitAmount.toLocaleString('en-IN')}
+                                                            </span>
+                                                            <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Net Value</span>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                        {linkedInitiatives.length === 0 && (
+                                            <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground italic font-normal">No Financial Records Available.</TableCell></TableRow>
+                                        )}
+                                    </TableBody>
+                                    <tfoot className="bg-primary/5 border-t">
+                                        <TableRow>
+                                            <TableCell className="pl-6 py-4 font-bold text-primary text-xs uppercase tracking-widest">Aggregate Totals</TableCell>
+                                            <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{financialSummary.requested.toLocaleString('en-IN')}</TableCell>
+                                            <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{(financialSummary.zakatDisbursed + financialSummary.zakatVerified).toLocaleString('en-IN')}</TableCell>
+                                            <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{(financialSummary.requested - (financialSummary.zakatDisbursed + financialSummary.zakatVerified)).toLocaleString('en-IN')}</TableCell>
+                                            <TableCell colSpan={2} className="text-right pr-6 font-bold text-primary text-sm uppercase tracking-tighter">
+                                                Net Assistance: ₹{financialSummary.requested.toLocaleString('en-IN')}
+                                            </TableCell>
+                                        </TableRow>
+                                    </tfoot>
+                                </Table>
                             </div>
-                            <div className="flex items-center gap-2 text-primary bg-white p-4 rounded-xl border border-primary/5 shadow-sm">
-                                <CheckCircle2 className="h-5 w-5 text-primary" />
-                                <p className="text-sm font-bold tracking-tight">Verification Audited Site-Wide</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h4 className="text-sm font-bold text-primary uppercase tracking-widest flex items-center gap-2">
-                                <Info className="h-4 w-4"/> Impact Insight
-                            </h4>
-                            <p className="text-sm leading-relaxed text-foreground font-normal">
-                                This recipient has been supported across <span className="font-bold text-primary">{linkedInitiatives.length} initiative(s)</span>. 
-                                The total assistance of <span className="font-bold text-primary font-mono">₹{financialSummary.totalAssistance.toLocaleString('en-IN')}</span> has been 
-                                audited and verified by the institutional finance team. 
-                                {financialSummary.zakatFunded > 0 && ` A significant portion (₹${financialSummary.zakatFunded.toLocaleString('en-IN')}) was disimbursed from the Zakat fund, adhering strictly to Shariah compliance for poverty alleviation.`}
-                            </p>
-                        </div>
+                            <ScrollBar orientation="horizontal" />
+                        </ScrollArea>
                     </CardContent>
                 </Card>
+
+                <div className="md:col-span-3 space-y-6">
+                    <Card className="border-primary/10 bg-white shadow-sm overflow-hidden">
+                        <CardHeader className="bg-primary/5 border-b px-6 py-4">
+                            <CardTitle className="text-lg font-bold text-primary tracking-tight">Institutional Impact Summary</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-6 sm:p-10 space-y-8">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 p-6 rounded-2xl bg-primary/[0.02] border border-primary/10">
+                                <div className="space-y-2">
+                                    <h4 className="text-xs font-bold text-primary uppercase tracking-widest">Religious Compliance Tracking</h4>
+                                    <div className="flex flex-wrap gap-4 items-center">
+                                        <div className="space-y-0.5">
+                                            <p className="text-[9px] font-bold text-muted-foreground uppercase">Zakat Eligible</p>
+                                            <Badge variant={beneficiary.isEligibleForZakat ? 'eligible' : 'outline'} className="font-bold">
+                                                {beneficiary.isEligibleForZakat ? 'Confirmed' : 'Not Eligible'}
+                                            </Badge>
+                                        </div>
+                                        <Separator orientation="vertical" className="h-8 hidden sm:block opacity-20" />
+                                        <div className="space-y-0.5">
+                                            <p className="text-[9px] font-bold text-muted-foreground uppercase">Total Zakat Provision</p>
+                                            <p className="text-sm font-bold text-primary font-mono">₹{(financialSummary.zakatDisbursed + financialSummary.zakatVerified).toLocaleString('en-IN')}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 text-primary bg-white p-4 rounded-xl border border-primary/5 shadow-sm">
+                                    <CheckCircle2 className="h-5 w-5 text-primary" />
+                                    <p className="text-sm font-bold tracking-tight">Audit Synchronized Site-Wide</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <h4 className="text-sm font-bold text-primary uppercase tracking-widest flex items-center gap-2">
+                                    <Info className="h-4 w-4"/> Impact Summary
+                                </h4>
+                                <p className="text-sm leading-relaxed text-foreground font-normal">
+                                    This recipient has been supported across <span className="font-bold text-primary">{linkedInitiatives.length} initiative(s)</span>. 
+                                    Out of the total requirement of <span className="font-bold text-primary font-mono">₹{financialSummary.requested.toLocaleString('en-IN')}</span>, 
+                                    the organization has successfully disbursed <span className="font-bold text-[#166534] font-mono">₹{financialSummary.disbursed.toLocaleString('en-IN')}</span>. 
+                                    {financialSummary.verified > 0 && ` An additional ₹${financialSummary.verified.toLocaleString('en-IN')} has been verified and reserved for future provision.`}
+                                    {financialSummary.zakatDisbursed > 0 && ` A significant portion (₹${financialSummary.zakatDisbursed.toLocaleString('en-IN')}) was provided from the Zakat fund, adhering strictly to religious compliance for poverty alleviation.`}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </TabsContent>
       </Tabs>
