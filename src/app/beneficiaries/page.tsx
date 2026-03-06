@@ -44,7 +44,7 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { SectionLoader } from '@/components/section-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
-const gridClass = "grid grid-cols-[50px_250px_120px_100px_100px_120px_140px_200px_60px] items-center gap-4 px-4 py-3 min-w-[1200px]";
+const gridClass = "grid grid-cols-[40px_50px_250px_120px_100px_100px_120px_140px_200px_60px] items-center gap-4 px-4 py-3 min-w-[1240px]";
 
 export default function BeneficiariesPage() {
   const firestore = useFirestore();
@@ -94,14 +94,14 @@ export default function BeneficiariesPage() {
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Master List..." description="Retrieving beneficiary records from the database." />;
+  if (isLoading) return <SectionLoader label="Loading Master List..." description="Retrieving Beneficiary Records From The Database." />;
   
   if (!canRead) return (
     <main className="container mx-auto p-8 text-[#14532D]">
         <Alert variant="destructive">
             <ShieldAlert className="h-4 w-4"/>
             <AlertTitle className="font-bold">Access Denied</AlertTitle>
-            <AlertDescription className="font-normal text-[#14532D]/70">Missing permissions to view beneficiaries.</AlertDescription>
+            <AlertDescription className="font-normal text-[#14532D]/70">Missing Permissions To View Beneficiaries.</AlertDescription>
         </Alert>
     </main>
   );
@@ -163,6 +163,7 @@ export default function BeneficiariesPage() {
       <div className="rounded-[16px] border border-[#E2EEE7] bg-white overflow-hidden shadow-[0_4px_10px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_10px_24px_rgba(0,0,0,0.08)]">
         <ScrollArea className="w-full">
             <div className={cn("bg-[#ECFDF5] border-b border-[#E2EEE7] text-[11px] font-semibold tracking-wider text-[#14532D]", gridClass)}>
+                <div></div>
                 <div>Sr. No.</div>
                 <div>Name</div>
                 <div>Phone</div>
@@ -178,6 +179,13 @@ export default function BeneficiariesPage() {
             {paginatedBeneficiaries.map((b, idx) => (
                 <AccordionItem key={b.id} value={b.id} className="border-b border-[#E2EEE7] last:border-0 hover:bg-[#F0FDF4] transition-colors bg-white">
                 <div className={cn("py-3 px-4", gridClass)}>
+                    <div className="flex justify-center">
+                        <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-[#1FA34A]/10 transition-colors">
+                                <ChevronDown className="h-4 w-4 text-[#1FA34A] shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                            </div>
+                        </AccordionTrigger>
+                    </div>
                     <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
                     <div className="font-bold text-sm truncate pr-2 text-[#14532D]">{b.name}</div>
                     <div className="font-mono text-xs opacity-60 text-[#355E3B]">{b.phone || 'N/A'}</div>
@@ -188,11 +196,6 @@ export default function BeneficiariesPage() {
                     <div className="pl-4 text-xs font-normal text-[#355E3B]/70">{b.referralBy || 'N/A'}</div>
                     <div className="text-right">
                         <div className="flex items-center justify-end gap-1">
-                            <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
-                                <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-[#1FA34A]/10 transition-colors">
-                                    <ChevronDown className="h-4 w-4 text-[#1FA34A] shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                                </div>
-                            </AccordionTrigger>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-[#1FA34A]"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="rounded-[12px] border-[#E2EEE7] shadow-[0_10px_20px_rgba(0,0,0,0.08)]">

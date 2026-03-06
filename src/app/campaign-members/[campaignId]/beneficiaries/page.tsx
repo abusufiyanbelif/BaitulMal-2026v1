@@ -13,6 +13,7 @@ import {
     serverTimestamp, 
     writeBatch, 
     updateDoc,
+    deleteDoc,
     type DocumentReference 
 } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -34,7 +35,8 @@ import {
     CopyPlus,
     MoreHorizontal,
     ChevronDown,
-    Loader2
+    Loader2,
+    Trash2
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -47,6 +49,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import {
     Dialog,
@@ -65,8 +68,8 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-// Column Widths calibrated to match the reference screenshot
-const gridClass = "grid grid-cols-[60px_250px_140px_120px_120px_140px_160px_200px_80px] items-center gap-4 px-4 py-3 min-w-[1270px]";
+// Updated Grid Class to include chevron in first column
+const gridClass = "grid grid-cols-[40px_60px_250px_140px_120px_120px_140px_160px_200px_80px] items-center gap-4 px-4 py-3 min-w-[1310px]";
 
 export default function BeneficiariesPage() {
   const params = useParams();
@@ -148,6 +151,16 @@ export default function BeneficiariesPage() {
     updateMasterBeneficiaryAction(beneficiary.id, { isEligibleForZakat: newZakatStatus }, { id: userProfile.id, name: userProfile.name });
   };
 
+  const handleRemoveFromInitiative = (beneficiaryId: string) => {
+    if (!firestore || !campaignId || !canUpdate) return;
+    if (!confirm('Are you sure you want to remove this beneficiary from this campaign? The master record will remain unaffected.')) return;
+    
+    const ref = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiaryId);
+    deleteDoc(ref).then(() => {
+        toast({ title: 'Beneficiary Removed', variant: 'success' });
+    }).catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'delete' })));
+  };
+
   const handleFormSubmit = async (data: BeneficiaryFormData, masterIdOrEvent?: string | React.BaseSyntheticEvent) => {
     setIsSubmitting(true);
     if (!firestore || !storage || !campaignId || !userProfile || !campaign) { setIsSubmitting(false); return; }
@@ -218,10 +231,10 @@ export default function BeneficiariesPage() {
         <div className="flex flex-wrap items-center gap-3 bg-[#1FA34A]/5 p-4 rounded-xl border border-[#E2EEE7]">
           <div className="relative flex-1 min-w-[300px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#1FA34A]/50" />
-            <Input placeholder="Search name, phone, address..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-10 text-sm border-[#E2EEE7] focus-visible:ring-[#1FA34A] font-normal text-[#14532D] rounded-[12px]" />
+            <Input placeholder="Search Name, Phone, Address..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-10 text-sm border-[#E2EEE7] focus-visible:ring-[#1FA34A] font-normal text-[#14532D] rounded-[12px]" />
           </div>
           <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-[#E2EEE7] text-[#14532D] bg-white rounded-[12px]"><SelectValue placeholder="All statuses" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-[#E2EEE7] text-[#14532D] bg-white rounded-[12px]"><SelectValue placeholder="All Statuses" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown">
               <SelectItem value="All" className="font-bold">All Statuses</SelectItem>
               <SelectItem value="Pending" className="font-bold">Pending</SelectItem>
@@ -232,7 +245,7 @@ export default function BeneficiariesPage() {
             </SelectContent>
           </Select>
           <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-[#E2EEE7] text-[#14532D] bg-white rounded-[12px]"><SelectValue placeholder="All Zakat status" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-10 text-sm font-bold border-[#E2EEE7] text-[#14532D] bg-white rounded-[12px]"><SelectValue placeholder="All Zakat Status" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown">
               <SelectItem value="All" className="font-bold">All Zakat Status</SelectItem>
               <SelectItem value="Eligible" className="font-bold">Eligible</SelectItem>
@@ -244,6 +257,7 @@ export default function BeneficiariesPage() {
         <div className="rounded-[16px] border border-[#E2EEE7] bg-white overflow-hidden shadow-[0_4px_10px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_10px_24px_rgba(0,0,0,0.08)]">
             <ScrollArea className="w-full">
                 <div className={cn("bg-[#ECFDF5] border-b border-[#E2EEE7] text-[11px] font-bold uppercase tracking-widest text-[#14532D]", gridClass)}>
+                    <div></div>
                     <div>Sr. No.</div>
                     <div>Name</div>
                     <div>Phone</div>
@@ -282,6 +296,13 @@ export default function BeneficiariesPage() {
                                         {paginatedList.map((b, idx) => (
                                             <AccordionItem key={b.id} value={b.id} className="border-b border-[#E2EEE7] last:border-0 hover:bg-[#F0FDF4] transition-colors">
                                                 <div className={gridClass}>
+                                                    <div className="flex justify-center">
+                                                        <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
+                                                            <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-[#1FA34A]/10 transition-colors">
+                                                                <ChevronDown className="h-4 w-4 text-[#1FA34A] shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                                            </div>
+                                                        </AccordionTrigger>
+                                                    </div>
                                                     <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
                                                     <div className="font-bold text-sm text-[#14532D]">{b.name}</div>
                                                     <div className="font-mono text-xs opacity-60">{b.phone || 'N/A'}</div>
@@ -292,11 +313,6 @@ export default function BeneficiariesPage() {
                                                     <div className="text-xs font-normal text-[#355E3B]/70">{b.referralBy || 'N/A'}</div>
                                                     <div className="text-right">
                                                         <div className="flex items-center justify-end gap-1">
-                                                            <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
-                                                                <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-[#1FA34A]/10 transition-colors">
-                                                                    <ChevronDown className="h-4 w-4 text-[#1FA34A] shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                                                                </div>
-                                                            </AccordionTrigger>
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-[#1FA34A]"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                                 <DropdownMenuContent align="end" className="rounded-[12px] shadow-dropdown border-[#E2EEE7]">
@@ -316,6 +332,14 @@ export default function BeneficiariesPage() {
                                                                         </DropdownMenuSub>
                                                                     )}
                                                                     {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-bold text-[#14532D]">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
+                                                                    {canUpdate && (
+                                                                        <>
+                                                                            <DropdownMenuSeparator />
+                                                                            <DropdownMenuItem onClick={() => handleRemoveFromInitiative(b.id)} className="text-destructive font-bold">
+                                                                                <Trash2 className="mr-2 h-4 w-4" /> Remove From Campaign
+                                                                            </DropdownMenuItem>
+                                                                        </>
+                                                                    )}
                                                                 </DropdownMenuContent>
                                                             </DropdownMenu>
                                                         </div>
