@@ -1,7 +1,7 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Lightbulb, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info, Clock, CheckCircle2 } from 'lucide-react';
+import { Lightbulb, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info, Clock, CheckCircle2, ShieldCheck } from 'lucide-react';
 import type { Lead, Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -56,13 +56,17 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                             <CardDescription className="text-[10px] font-bold text-muted-foreground">{lead.startDate} To {lead.endDate}</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-grow space-y-3 p-4 pt-0">
-                            <div className="flex justify-between items-center text-xs">
-                                <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary">{lead.purpose}</Badge>
+                            <div className="flex flex-wrap gap-2 items-center text-xs">
+                                <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary uppercase">{lead.purpose}</Badge>
                                 <Badge 
                                   variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
                                   className={cn("text-[10px] font-bold", lead.status === 'Active' && "animate-status-pulse")}
                                 >
                                   {lead.status}
+                                </Badge>
+                                <Badge variant="eligible" className="text-[10px] font-bold flex items-center gap-1">
+                                    <ShieldCheck className="h-3 w-3" />
+                                    {lead.authenticityStatus === 'Verified' ? 'Verified' : lead.authenticityStatus}
                                 </Badge>
                             </div>
                             {(lead.targetAmount || 0) > 0 && (
@@ -78,7 +82,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                          <CardFooter className="p-2 border-t bg-primary/5">
                             <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold tracking-tight hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
                                 <Link href={`/leads-public/${lead.id}/summary`}>
-                                    View Details
+                                    View Detailed Summary
                                 </Link>
                             </Button>
                         </CardFooter>

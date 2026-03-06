@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { FolderKanban, HandHelping, CalendarIcon, X, Utensils, LifeBuoy, Clock, CheckCircle2 } from 'lucide-react';
+import { FolderKanban, HandHelping, CalendarIcon, X, Utensils, LifeBuoy, Clock, CheckCircle2, ShieldCheck } from 'lucide-react';
 import type { Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -31,11 +31,11 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                 return (
                     <Card 
                         key={campaign.id} 
-                        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20" 
+                        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white shadow-sm" 
                         style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
                         onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}
                     >
-                        <div className="relative h-32 w-full bg-secondary flex items-center justify-center">
+                        <div className="relative h-32 w-full bg-secondary flex items-center justify-center border-b border-primary/5">
                             {campaign.imageUrl ? (
                                 <Image
                                   src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`}
@@ -55,7 +55,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                             <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground">{campaign.startDate} To {campaign.endDate}</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-grow space-y-3 p-4 pt-0">
-                            <div className="flex justify-between items-center text-xs">
+                            <div className="flex flex-wrap gap-2 items-center text-xs">
                                 <Badge variant="outline" className="text-[10px] border-primary/20 text-primary font-bold">{campaign.category}</Badge>
                                 <Badge 
                                   variant={campaign.status === 'Active' ? 'success' : 'outline'}
@@ -63,21 +63,25 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                 >
                                   {campaign.status}
                                 </Badge>
+                                <Badge variant="eligible" className="text-[10px] font-bold flex items-center gap-1">
+                                    <ShieldCheck className="h-3 w-3" />
+                                    {campaign.authenticityStatus === 'Verified' ? 'Verified' : campaign.authenticityStatus}
+                                </Badge>
                             </div>
                             {(campaign.targetAmount || 0) > 0 && (
                                 <div className="space-y-1.5">
                                     <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase">
-                                        <span>Collected: ₹{campaign.collected.toLocaleString('en-IN')}</span>
+                                        <span>Raised: ₹{campaign.collected.toLocaleString('en-IN')}</span>
                                         <span>{Math.round(campaign.progress)}%</span>
                                     </div>
                                     <Progress value={campaign.progress} className="h-1.5" />
                                 </div>
                             )}
                         </CardContent>
-                        <CardFooter className="p-2 border-t bg-muted/5">
-                            <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
+                        <CardFooter className="p-2 border-t bg-primary/5">
+                            <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold tracking-tight hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
                                 <Link href={`/campaign-public/${campaign.id}/summary`}>
-                                    View Details
+                                    View Detailed Summary
                                 </Link>
                             </Button>
                         </CardFooter>

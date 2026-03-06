@@ -51,7 +51,8 @@ import {
     ImageIcon,
     Utensils,
     LifeBuoy,
-    HandHelping
+    HandHelping,
+    ShieldCheck
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -314,7 +315,7 @@ export default function CampaignSummaryPage() {
     };
 
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
-        if (!leadDocRef || !campaign?.documents || !canUpdateSummary) return;
+        if (!campaignDocRef || !campaign?.documents || !canUpdateSummary) return;
         const newDocs = campaign.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
         try {
             await updateDoc(campaignDocRef!, { documents: newDocs, updatedAt: serverTimestamp() });
@@ -405,14 +406,27 @@ export default function CampaignSummaryPage() {
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
                     {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => handleFieldChange('name', e.target.value)} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary tracking-tight">{campaign?.name}</h1> )}
-                    {editMode ? ( <Select value={editableCampaign.status} onValueChange={(value) => setEditableCampaign(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1 font-bold"><SelectValue placeholder="Select Status" /></SelectTrigger><SelectContent className="animate-fade-in-zoom"><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></SelectContent></Select> ): ( <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px]">{campaign?.status}</p> )}
+                    {editMode ? ( 
+                        <div className="flex flex-wrap gap-2 pt-1">
+                            <Select value={editableCampaign.status} onValueChange={(value) => setEditableCampaign(p => ({...p, status: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1 font-bold"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent className="animate-fade-in-zoom"><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></SelectContent></Select>
+                            <Select value={editableCampaign.authenticityStatus} onValueChange={(value) => setEditableCampaign(p => ({...p, authenticityStatus: value as any}))}><SelectTrigger className="w-fit border-0 shadow-none focus:ring-0 p-0 h-auto text-muted-foreground [&>svg]:ml-1 font-bold"><SelectValue placeholder="Verification" /></SelectTrigger><SelectContent className="animate-fade-in-zoom"><SelectItem value="Pending Verification" className="font-bold">Pending Verification</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="Rejected" className="font-bold">Rejected</SelectItem><SelectItem value="On Hold" className="font-bold">On Hold</SelectItem><SelectItem value="Need More Details" className="font-bold">Need More Details</SelectItem></SelectContent></Select>
+                        </div>
+                    ): ( 
+                        <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest">{campaign?.status}</Badge>
+                            <Badge variant={campaign?.authenticityStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold flex items-center gap-1">
+                                <ShieldCheck className="h-3 w-3" />
+                                {campaign?.authenticityStatus}
+                            </Badge>
+                        </div>
+                    )}
                 </div>
                 <div className="flex gap-2">
                     {!editMode && (
                         <>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild><Button variant="secondary" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md"><Download className="mr-2 h-4 w-4" /> Download</Button></DropdownMenuTrigger>
-                                <DropdownMenuContent className="animate-fade-in-zoom"><DropdownMenuItem onClick={() => handleDownload('png')} className="font-bold text-primary">Download As Image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')} className="font-bold text-primary">Download As PDF</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
+                                <DropdownMenuContent className="animate-fade-in-zoom"><DropdownMenuItem onClick={() => handleDownload('png')} className="font-normal text-primary">Download As Image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')} className="font-normal text-primary">Download As PDF</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
                             <Button onClick={() => { if(campaign) setShareDialogData({ title: `Campaign: ${campaign.name}`, text: campaign.description || '', url: window.location.origin + `/campaign-public/${campaignId}/summary` }); setIsShareDialogOpen(true); }} variant="secondary" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md"><Share2 className="mr-2 h-4 w-4" /> Share</Button>
                         </>
                     )}
