@@ -41,14 +41,15 @@
     --badge-active-bg: 143 50% 91%; /* #DDF5E6 */
     --badge-active-fg: 140 68% 38%; /* #1FA34A */
 
-    --chart-1: 142 71% 45%;
-    --chart-2: 142 71% 95%;
-    --chart-3: 142 71% 10%;
-    --chart-4: 142 71% 60%;
-    --chart-5: 142 71% 30%;
-    --chart-6: 142 71% 75%;
-    --chart-7: 142 71% 20%;
-    --chart-8: 142 71% 85%;
+    /* Vibrant Multi-Color Chart Palette */
+    --chart-1: 142 71% 45%;  /* Green */
+    --chart-2: 217 91% 60%;  /* Blue */
+    --chart-3: 47 95% 55%;   /* Amber */
+    --chart-4: 346 84% 61%;  /* Rose */
+    --chart-5: 262 83% 58%;  /* Purple */
+    --chart-6: 173 80% 40%;  /* Teal */
+    --chart-7: 239 84% 67%;  /* Indigo */
+    --chart-8: 24 95% 53%;   /* Orange */
   }
 
   .bms3 {

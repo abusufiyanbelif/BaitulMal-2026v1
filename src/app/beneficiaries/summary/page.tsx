@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -24,16 +23,16 @@ import type { ChartConfig } from '@/components/ui/chart';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const statusChartConfig = {
-    Verified: { label: "Verified", color: "hsl(var(--chart-2))" },
-    Pending: { label: "Pending", color: "hsl(var(--chart-4))" },
+    Verified: { label: "Verified", color: "hsl(var(--chart-1))" },
+    Pending: { label: "Pending", color: "hsl(var(--chart-2))" },
     Hold: { label: "On Hold", color: "hsl(var(--chart-3))" },
-    'Need More Details': { label: "Need Details", color: "hsl(var(--chart-5))" },
-    Given: { label: "Given", color: "hsl(var(--chart-1))" },
+    'Need More Details': { label: "Need Details", color: "hsl(var(--chart-4))" },
+    Given: { label: "Given", color: "hsl(var(--chart-6))" },
 } satisfies ChartConfig;
 
 const zakatChartConfig = {
     Eligible: { label: "Eligible", color: "hsl(var(--chart-1))" },
-    'Not Eligible': { label: "Not Eligible", color: "hsl(var(--chart-2))" },
+    'Not Eligible': { label: "Not Eligible", color: "hsl(var(--chart-8))" },
 } satisfies ChartConfig;
 
 
@@ -123,36 +122,37 @@ export default function BeneficiariesSummaryPage() {
     }
     
     if (!summaryData) {
-         return <main className="container mx-auto p-4 md:p-8"><p>Could not load summary data.</p></main>;
+         return <main className="container mx-auto p-4 md:p-8"><p>Could Not Load Summary Data.</p></main>;
     }
 
     return (
-        <div className="container mx-auto p-4 md:p-8">
+        <div className="container mx-auto p-4 md:p-8 text-primary font-normal">
             <div className="mb-4">
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
                     <Link href="/beneficiaries">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Beneficiary List
+                        Back To Beneficiary List
                     </Link>
                 </Button>
             </div>
             
             <div className="flex items-center justify-between mb-4">
-                <h1 className="text-3xl font-bold">Beneficiary Summary</h1>
+                <h1 className="text-3xl font-bold tracking-tight">Beneficiary Summary</h1>
             </div>
 
             <div className="border-b mb-4">
                 <ScrollArea className="w-full whitespace-nowrap">
-                    <div className="flex w-max space-x-2">
+                    <div className="flex w-max space-x-2 pb-2">
                          <Link href="/beneficiaries/summary" className={cn(
-                            "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                            pathname === '/beneficiaries/summary' ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                            "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
+                            pathname === '/beneficiaries/summary' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
                         )}>Summary</Link>
                         <Link href="/beneficiaries" className={cn(
-                            "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                            pathname === '/beneficiaries' ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground"
+                            "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
+                            pathname === '/beneficiaries' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
                         )}>Beneficiary List</Link>
                     </div>
+                    <ScrollBar orientation="horizontal" />
                 </ScrollArea>
             </div>
             
@@ -162,7 +162,7 @@ export default function BeneficiariesSummaryPage() {
                         <Button
                         id="date"
                         variant={"outline"}
-                        className={cn("w-full sm:w-[300px] justify-start text-left font-normal",!date && "text-muted-foreground")}
+                        className={cn("w-full sm:w-[300px] justify-start text-left font-bold border-primary/20 text-primary",!date && "text-muted-foreground")}
                         >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {date?.from ? (
@@ -174,7 +174,7 @@ export default function BeneficiariesSummaryPage() {
                             format(date.from, "LLL dd, y")
                             )
                         ) : (
-                            <span>All time</span>
+                            <span>All Time</span>
                         )}
                         </Button>
                     </PopoverTrigger>
@@ -205,113 +205,115 @@ export default function BeneficiariesSummaryPage() {
                         }
                     }}
                     >
-                    <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectTrigger className="w-full sm:w-[180px] font-bold border-primary/20 text-primary">
                         <SelectValue placeholder="Quick Select" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all_time">All Time</SelectItem>
-                        <SelectItem value="this_month">This Month</SelectItem>
-                        <SelectItem value="this_quarter">This Quarter</SelectItem>
-                        <SelectItem value="this_year">This Year</SelectItem>
-                        <SelectItem value="last_3_months">Last 3 Months</SelectItem>
+                        <SelectItem value="all_time" className="font-bold">All Time</SelectItem>
+                        <SelectItem value="this_month" className="font-bold">This Month</SelectItem>
+                        <SelectItem value="this_quarter" className="font-bold">This Quarter</SelectItem>
+                        <SelectItem value="this_year" className="font-bold">This Year</SelectItem>
+                        <SelectItem value="last_3_months" className="font-bold">Last 3 Months</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
             
              <div className="space-y-6 animate-fade-in-zoom">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card>
+                    <Card className="bg-white border-primary/10">
                         <CardHeader className="p-4 flex-row items-center justify-between">
-                            <CardTitle className="text-sm font-medium">Total Beneficiaries</CardTitle>
+                            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Total Beneficiaries</CardTitle>
                             <Users className="h-4 w-4 text-muted-foreground"/>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
-                            <div className="text-3xl font-bold">{summaryData.total}</div>
+                            <div className="text-3xl font-bold text-primary">{summaryData.total}</div>
                         </CardContent>
                     </Card>
-                     <Card>
+                     <Card className="bg-white border-primary/10">
                         <CardHeader className="p-4 flex-row items-center justify-between">
-                            <CardTitle className="text-sm font-medium">Verified</CardTitle>
+                            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Verified</CardTitle>
                             <CheckCircle2 className="h-4 w-4 text-green-500"/>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
-                            <div className="text-3xl font-bold">{summaryData.statusCounts.Verified || 0}</div>
+                            <div className="text-3xl font-bold text-primary">{summaryData.statusCounts.Verified || 0}</div>
                         </CardContent>
                     </Card>
-                     <Card>
+                     <Card className="bg-white border-primary/10">
                         <CardHeader className="p-4 flex-row items-center justify-between">
-                            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+                            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Pending</CardTitle>
                             <Hourglass className="h-4 w-4 text-amber-500"/>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
-                            <div className="text-3xl font-bold">{summaryData.statusCounts.Pending || 0}</div>
+                            <div className="text-3xl font-bold text-primary">{summaryData.statusCounts.Pending || 0}</div>
                         </CardContent>
                     </Card>
-                     <Card>
+                     <Card className="bg-white border-primary/10">
                         <CardHeader className="p-4 flex-row items-center justify-between">
-                            <CardTitle className="text-sm font-medium">Zakat Eligible</CardTitle>
+                            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Zakat Eligible</CardTitle>
                             <UserCheck className="h-4 w-4 text-primary"/>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
-                            <div className="text-3xl font-bold">{summaryData.zakatCounts.Eligible || 0}</div>
+                            <div className="text-3xl font-bold text-primary">{summaryData.zakatCounts.Eligible || 0}</div>
                         </CardContent>
                     </Card>
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Beneficiaries by Status</CardTitle>
+                    <Card className="border-primary/10 bg-white overflow-hidden shadow-sm">
+                        <CardHeader className="bg-primary/5 border-b">
+                            <CardTitle className="font-bold text-primary">Beneficiaries By Status</CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-6">
                             {isClient ? (
                                 <ChartContainer config={statusChartConfig} className="h-[250px] w-full">
                                     <PieChart>
                                         <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                        <Pie data={summaryData.statusChartData} dataKey="value" nameKey="name" innerRadius={60}>
+                                        <Pie data={summaryData.statusChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} strokeWidth={5} paddingAngle={2}>
                                             {summaryData.statusChartData.map((entry) => (
                                                 <Cell key={entry.name} fill={entry.fill} />
                                             ))}
                                         </Pie>
+                                        <ChartLegend content={<ChartLegendContent />} />
                                     </PieChart>
                                 </ChartContainer>
                             ) : <Skeleton className="h-[250px] w-full" />}
                         </CardContent>
                     </Card>
-                     <Card>
-                        <CardHeader>
-                            <CardTitle>Beneficiaries by Zakat Eligibility</CardTitle>
+                     <Card className="border-primary/10 bg-white overflow-hidden shadow-sm">
+                        <CardHeader className="bg-primary/5 border-b">
+                            <CardTitle className="font-bold text-primary">Beneficiaries By Zakat Eligibility</CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-6">
                             {isClient ? (
                                 <ChartContainer config={zakatChartConfig} className="h-[250px] w-full">
                                     <PieChart>
                                         <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                        <Pie data={summaryData.zakatChartData} dataKey="value" nameKey="name" innerRadius={60}>
+                                        <Pie data={summaryData.zakatChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} strokeWidth={5} paddingAngle={2}>
                                              {summaryData.zakatChartData.map((entry) => (
                                                 <Cell key={entry.name} fill={entry.fill} />
                                             ))}
                                         </Pie>
+                                        <ChartLegend content={<ChartLegendContent />} />
                                     </PieChart>
                                 </ChartContainer>
                             ) : <Skeleton className="h-[250px] w-full" />}
                         </CardContent>
                     </Card>
                 </div>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Top Referral Sources</CardTitle>
-                        <CardDescription>Top 10 sources referring the most beneficiaries.</CardDescription>
+                 <Card className="border-primary/10 bg-white overflow-hidden shadow-sm">
+                    <CardHeader className="bg-primary/5 border-b">
+                        <CardTitle className="font-bold text-primary">Top Referral Sources</CardTitle>
+                        <CardDescription className="font-normal text-primary/70">Top 10 Sources Referring The Most Beneficiaries.</CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-6">
                         {isClient ? (
                         <ChartContainer config={{}} className="h-[300px] w-full">
                             <BarChart data={summaryData.topReferrals.map(([name, value]) => ({name, value}))} layout="vertical" margin={{left: 30, right: 30}}>
-                                <CartesianGrid horizontal={false} />
-                                <YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} width={120}/>
-                                <XAxis type="number" />
+                                <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} />
+                                <YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={120}/>
+                                <XAxis type="number" hide />
                                 <ChartTooltip content={<ChartTooltipContent />} />
-                                <Bar dataKey="value" fill="hsl(var(--primary))" radius={4} />
+                                <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
                             </BarChart>
                         </ChartContainer>
                          ) : <Skeleton className="h-[300px] w-full" />}

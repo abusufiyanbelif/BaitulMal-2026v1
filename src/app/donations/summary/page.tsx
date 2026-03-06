@@ -51,19 +51,19 @@ import { cn } from '@/lib/utils';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-7))" },
-    Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
-    Sadaqah: { label: "Sadaqah", color: "hsl(var(--chart-2))" },
+    Zakat: { label: "Zakat", color: "hsl(var(--chart-3))" },
+    Sadaqah: { label: "Sadaqah", color: "hsl(var(--chart-1))" },
     Fidiya: { label: "Fidiya", color: "hsl(var(--chart-8))" },
     Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
-    Interest: { label: "Interest", color: "hsl(var(--chart-3))" },
-    Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
+    Interest: { label: "Interest", color: "hsl(var(--chart-6))" },
+    Loan: { label: "Loan", color: "hsl(var(--chart-2))" },
     'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-5))" },
 } satisfies ChartConfig;
 
 const donationPaymentTypeChartConfig = {
     Cash: { label: "Cash", color: "hsl(var(--chart-1))" },
     'Online Payment': { label: "Online Payment", color: "hsl(var(--chart-2))" },
-    Check: { label: "Check", color: "hsl(var(--chart-5))" },
+    Check: { label: "Check", color: "hsl(var(--chart-3))" },
     Other: { label: "Other", color: "hsl(var(--chart-4))" },
 } satisfies ChartConfig;
 
@@ -289,7 +289,7 @@ export default function DonationsSummaryPage() {
                     <ShieldAlert className="h-4 w-4" />
                     <AlertTitle>Access Denied</AlertTitle>
                     <AlertDescription className="font-normal">
-                        You do not have permission to view this page.
+                        You Do Not Have Permission To View This Page.
                     </AlertDescription>
                 </Alert>
             </div>
@@ -299,7 +299,7 @@ export default function DonationsSummaryPage() {
     return (
         <div className="container mx-auto p-4 md:p-8 text-primary font-normal">
             <div className="mb-4">
-                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
+                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
                     <Link href="/dashboard">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back To Dashboard
@@ -397,7 +397,7 @@ export default function DonationsSummaryPage() {
                             Donations By Initiative
                         </CardTitle>
                         <CardDescription className="font-normal text-primary/70">
-                            Total donation amounts allocated to each campaign and lead.
+                            Total Donation Amounts Allocated To Each Campaign And Lead.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
@@ -426,7 +426,7 @@ export default function DonationsSummaryPage() {
                                     {summaryData?.sortedInitiatives.length === 0 && (
                                         <TableRow>
                                             <TableCell colSpan={3} className="text-center h-24 text-muted-foreground font-normal italic opacity-60">
-                                                No specific initiative allocations in this period.
+                                                No Specific Initiative Allocations In This Period.
                                             </TableCell>
                                         </TableRow>
                                     )}
@@ -439,7 +439,7 @@ export default function DonationsSummaryPage() {
                     <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                         <CardHeader className="bg-primary/5 border-b">
                             <CardTitle className="font-bold text-primary">Fund Totals By Type</CardTitle>
-                            <CardDescription className="font-normal text-primary/70">A breakdown of all collected funds by their designated purpose.</CardDescription>
+                            <CardDescription className="font-normal text-primary/70">A Breakdown Of All Collected Funds By Their Designated Purpose.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-2 pt-6 font-normal">
                             <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Fitra</span><span className="font-mono">₹{summaryData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
@@ -460,7 +460,7 @@ export default function DonationsSummaryPage() {
                     <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                         <CardHeader className="bg-primary/5 border-b">
                             <CardTitle className="font-bold text-primary">Zakat Utilization</CardTitle>
-                            <CardDescription className="font-normal text-primary/70">Overall tracking of Zakat funds collected across all initiatives.</CardDescription>
+                            <CardDescription className="font-normal text-primary/70">Overall Tracking Of Zakat Funds Collected Across All Initiatives.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4 pt-6">
                             <div className="flex justify-between items-center text-xl font-bold text-primary">
@@ -484,7 +484,7 @@ export default function DonationsSummaryPage() {
                             <ChartContainer config={donationCategoryChartConfig} className="h-[300px] w-full">
                                 <PieChart>
                                     <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                    <Pie data={summaryData?.donationCategoryChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} strokeWidth={5} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
+                                    <Pie data={summaryData?.donationCategoryChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} strokeWidth={5} paddingAngle={2} className="transition-all duration-1000 ease-out focus:outline-none">
                                         {summaryData?.donationCategoryChartData?.map((entry) => (
                                             <Cell key={`cell-cat-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />
                                         ))}
@@ -498,14 +498,14 @@ export default function DonationsSummaryPage() {
                     <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                         <CardHeader className="bg-primary/5 border-b">
                             <CardTitle className="font-bold text-primary">Donations By Payment Type</CardTitle>
-                            <CardDescription className="font-normal text-primary/70">Count of donations per payment channel.</CardDescription>
+                            <CardDescription className="font-normal text-primary/70">Count Of Donations Per Payment Channel.</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-6">
                           {isClient ? (
                              <ChartContainer config={donationPaymentTypeChartConfig} className="h-[300px] w-full">
                                 <PieChart>
                                     <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                    <Pie data={summaryData?.donationPaymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} strokeWidth={5} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
+                                    <Pie data={summaryData?.donationPaymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} strokeWidth={5} paddingAngle={2} className="transition-all duration-1000 ease-out focus:outline-none">
                                         {summaryData?.donationPaymentTypeChartData?.map((entry) => (
                                             <Cell key={`cell-pay-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />
                                         ))}

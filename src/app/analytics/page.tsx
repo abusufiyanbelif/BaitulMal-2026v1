@@ -50,7 +50,7 @@ function StatCard({ title, value, icon: Icon, isLoading }: { title: string, valu
 const donationCategoryChartConfig = donationCategories.reduce((acc, category, index) => {
     acc[category] = {
         label: category,
-        color: `hsl(var(--chart-${index + 1}))`,
+        color: `hsl(var(--chart-${(index % 8) + 1}))`,
     };
     return acc;
 }, {} as ChartConfig);
@@ -178,11 +178,9 @@ export default function AnalyticsPage() {
 
         if (!sourceData) return [];
 
-        // Pre-filter to ensure all items have a valid date field, preventing crashes.
         const dataWithDates = sourceData.filter(item => {
             const itemDateValue = item[dateField];
             if (!itemDateValue) return false;
-            // For Timestamps, check for toDate method. For strings, check if it's a valid date string.
             if (typeof itemDateValue === 'string') {
                 return isValid(parseISO(itemDateValue));
             }
@@ -190,7 +188,7 @@ export default function AnalyticsPage() {
         });
 
         const filteredData = dataWithDates.filter(item => {
-            if (!date?.from) return true; // 'All time' filter handles showing all valid dates
+            if (!date?.from) return true;
 
             const itemDateValue = item[dateField];
             
@@ -201,7 +199,6 @@ export default function AnalyticsPage() {
                 itemDate = itemDateValue.toDate();
             }
 
-            // No need for extra isValid check as it's done in dataWithDates pre-filter
             const from = startOfDay(date.from);
             const to = date.to ? endOfDay(date.to) : endOfDay(date.from);
             return itemDate >= from && itemDate <= to;
@@ -255,11 +252,11 @@ export default function AnalyticsPage() {
     } satisfies ChartConfig;
     
     const documentDistributionChartConfig = {
-        Users: { label: "Users", color: "hsl(var(--chart-1))" },
+        Users: { label: "Users", color: "hsl(var(--chart-5))" },
         Campaigns: { label: "Campaigns", color: "hsl(var(--chart-2))" },
         Leads: { label: "Leads", color: "hsl(var(--chart-3))" },
         Beneficiaries: { label: "Beneficiaries", color: "hsl(var(--chart-4))" },
-        Donations: { label: "Donations", color: "hsl(var(--chart-5))" },
+        Donations: { label: "Donations", color: "hsl(var(--chart-1))" },
     } satisfies ChartConfig;
 
     const documentDistributionData = useMemo(() => {
@@ -277,19 +274,19 @@ export default function AnalyticsPage() {
     return (
         <div className="container mx-auto p-4 md:p-8">
             <div className="mb-4">
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
                     <Link href="/dashboard">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Dashboard
+                        Back To Dashboard
                     </Link>
                 </Button>
             </div>
             
             <Tabs defaultValue="general" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 mb-6">
-                    <TabsTrigger value="general"><BarChart className="mr-2 h-4 w-4" />General Analytics</TabsTrigger>
-                    <TabsTrigger value="storage"><Database className="mr-2 h-4 w-4" />Storage Analytics</TabsTrigger>
-                    <TabsTrigger value="database"><Database className="mr-2 h-4 w-4" />Database Analytics</TabsTrigger>
+                    <TabsTrigger value="general" className="font-bold"><BarChart className="mr-2 h-4 w-4" />General Analytics</TabsTrigger>
+                    <TabsTrigger value="storage" className="font-bold"><Database className="mr-2 h-4 w-4" />Storage Analytics</TabsTrigger>
+                    <TabsTrigger value="database" className="font-bold"><Database className="mr-2 h-4 w-4" />Database Analytics</TabsTrigger>
                 </TabsList>
                 <TabsContent value="general">
                     <div className="space-y-6">
@@ -300,7 +297,7 @@ export default function AnalyticsPage() {
                                 <Card className="animate-fade-in-zoom">
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2 text-3xl text-primary font-bold"> General Analytics Overview</CardTitle>
-                                        <CardDescription className="font-normal text-primary/70">A summary of key metrics from across the application.</CardDescription>
+                                        <CardDescription className="font-normal text-primary/70">A Summary Of Key Metrics From Across The Application.</CardDescription>
                                     </CardHeader>
                                     <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                                         <StatCard title="Total Users" value={users?.length || 0} icon={Users} isLoading={isLoading} />
@@ -315,14 +312,14 @@ export default function AnalyticsPage() {
                                     <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '200ms'}}>
                                         <CardHeader>
                                             <CardTitle className="text-primary font-bold">Donations By Category</CardTitle>
-                                            <CardDescription className="font-normal text-primary/70">Total amount received for each donation category.</CardDescription>
+                                            <CardDescription className="font-normal text-primary/70">Total Amount Received For Each Donation Category.</CardDescription>
                                         </CardHeader>
                                         <CardContent>
                                         {isClient ? (
                                             <ChartContainer config={donationCategoryChartConfig} className="h-[300px] w-full">
                                                 <PieChart>
                                                     <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                                    <Pie data={chartDataWithColors} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+                                                    <Pie data={chartDataWithColors} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5} paddingAngle={2}>
                                                         {chartDataWithColors.map((entry) => (
                                                             <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                                                         ))}
@@ -336,7 +333,7 @@ export default function AnalyticsPage() {
                                     <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '300ms'}}>
                                         <CardHeader>
                                             <CardTitle className="text-primary font-bold">Top 5 Funded Campaigns</CardTitle>
-                                            <CardDescription className="font-normal text-primary/70">The campaigns that have received the most funding.</CardDescription>
+                                            <CardDescription className="font-normal text-primary/70">The Campaigns That Have Received The Most Funding.</CardDescription>
                                         </CardHeader>
                                         <CardContent>
                                             {isClient ? (
@@ -362,7 +359,7 @@ export default function AnalyticsPage() {
                                     <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '400ms'}}>
                                         <CardHeader>
                                             <CardTitle className="flex items-center gap-2 text-primary font-bold"><Eye/> Page Hits</CardTitle>
-                                            <CardDescription className="font-normal text-primary/70">Total visits for key pages.</CardDescription>
+                                            <CardDescription className="font-normal text-primary/70">Total Visits For Key Pages.</CardDescription>
                                         </CardHeader>
                                         <CardContent>
                                             {hitsLoading ? <Skeleton className="h-40 w-full"/> : (
@@ -404,12 +401,12 @@ export default function AnalyticsPage() {
                                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                                             <div>
                                                 <CardTitle className="text-primary font-bold">Activity Over Time</CardTitle>
-                                                <CardDescription className="font-normal text-primary/70">Track new donations, users, and beneficiaries over a selected period.</CardDescription>
+                                                <CardDescription className="font-normal text-primary/70">Track New Donations, Users, And Beneficiaries Over A Selected Period.</CardDescription>
                                             </div>
                                             <div className="flex flex-wrap items-center gap-2">
                                                 <Popover>
                                                     <PopoverTrigger asChild>
-                                                        <Button id="date" variant={"outline"} className={cn("w-full sm:w-[260px] justify-start text-left font-normal border-primary/20 text-primary", !date && "text-muted-foreground")}>
+                                                        <Button id="date" variant={"outline"} className={cn("w-full sm:w-[260px] justify-start text-left font-bold border-primary/20 text-primary", !date && "text-muted-foreground")}>
                                                             <CalendarIcon className="mr-2 h-4 w-4" />
                                                             {date?.from ? (date.to ? (<>{format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}</>) : (format(date.from, "LLL dd, y"))) : (<span>Pick A Date</span>)}
                                                         </Button>
@@ -513,14 +510,14 @@ export default function AnalyticsPage() {
                                     <Card>
                                         <CardHeader>
                                             <CardTitle className="text-primary font-bold">Document Distribution</CardTitle>
-                                            <CardDescription className="font-normal text-primary/70">The proportion of documents in each main collection.</CardDescription>
+                                            <CardDescription className="font-normal text-primary/70">The Proportion Of Documents In Each Main Collection.</CardDescription>
                                         </CardHeader>
                                         <CardContent>
                                         {isClient ? (
                                             <ChartContainer config={documentDistributionChartConfig} className="h-[300px] w-full">
                                                 <PieChart>
                                                     <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                                    <Pie data={documentDistributionData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+                                                    <Pie data={documentDistributionData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5} paddingAngle={2}>
                                                         {documentDistributionData.map((entry) => (
                                                             <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                                                         ))}
@@ -535,7 +532,7 @@ export default function AnalyticsPage() {
                                     <Card>
                                         <CardHeader>
                                             <CardTitle className="text-primary font-bold">Detailed Usage Metrics</CardTitle>
-                                            <CardDescription className="font-normal text-primary/70">Information about database reads, writes, and deletes.</CardDescription>
+                                            <CardDescription className="font-normal text-primary/70">Information About Database Reads, Writes, And Deletes.</CardDescription>
                                         </CardHeader>
                                         <CardContent>
                                             <Alert className="border-primary/20">
