@@ -109,7 +109,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
           variant="ghost"
           size="icon"
           className="h-1/2 w-8 rounded-none hover:bg-primary/5 text-primary/40 hover:text-primary transition-colors"
-          onClick={(e) => { e.preventDefault(); handlePrev(); }}
+          onClick={(e) => { e.preventDefault(); handleNext(); }}
         >
           <ChevronUp className="h-3 w-3" />
         </Button>
@@ -117,7 +117,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
           variant="ghost"
           size="icon"
           className="h-1/2 w-8 rounded-none border-t border-primary/5 hover:bg-primary/5 text-primary/40 hover:text-primary transition-colors"
-          onClick={(e) => { e.preventDefault(); handleNext(); }}
+          onClick={(e) => { e.preventDefault(); handlePrev(); }}
         >
           <ChevronDown className="h-3 w-3" />
         </Button>

@@ -1,10 +1,14 @@
 rules_version = '2';
-service firebase.storage {
+service border.storage {
   match /b/{bucket}/o {
-    // Allow global public read access for artifacts and branding
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
     match /{allPaths=**} {
       allow read: if true;
-      allow write, delete: if request.auth != null;
+      allow write: if isSignedIn();
+      allow delete: if isSignedIn();
     }
   }
 }

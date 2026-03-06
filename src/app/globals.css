@@ -32,38 +32,11 @@
     --chart-5: 262 83% 58%;
   }
 
-  .dark {
-    --background: 160 25% 5%;
-    --foreground: 45 10% 92%;
-    --card: 160 25% 7%;
-    --card-foreground: 45 10% 92%;
-    --popover: 160 25% 7%;
-    --popover-foreground: 45 10% 92%;
-    --primary: 160 70% 45%;
-    --primary-foreground: 160 25% 5%;
-    --secondary: 160 30% 15%;
-    --secondary-foreground: 45 10% 92%;
-    --muted: 160 20% 12%;
-    --muted-foreground: 160 10% 55%;
-    --accent: 47.9 95.8% 55%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 45 10% 92%;
-    --border: 160 20% 20%;
-    --input: 160 20% 20%;
-    --ring: 160 70% 45%;
-    --chart-1: 160 70% 45%;
-    --chart-2: 47.9 95.8% 55%;
-    --chart-3: 217.2 91.2% 65%;
-    --chart-4: 38.8 92.3% 60%;
-    --chart-5: 262 83% 68%;
-  }
-
   .bms3-a {
     --background: 140 33% 97%; /* #F7FBF8 */
     --foreground: 129 27% 29%; /* #355E3B */
     --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 129 27% 29%;
+    --card-foreground: 144 61% 20%; /* #14532D */
     --popover: 0 0% 100%;
     --popover-foreground: 144 61% 20%; /* #14532D */
     --primary: 140 68% 38%; /* #1FA34A */
@@ -74,10 +47,10 @@
     --muted-foreground: 215 9% 46%; /* #6B7280 */
     --accent: 140 68% 38%;
     --accent-foreground: 0 0% 100%;
-    --border: 140 33% 85%; /* #CDE8D5 */
-    --input: 140 33% 85%;
+    --border: 140 33% 91%; /* #E2EEE7 */
+    --input: 140 33% 91%;
     --ring: 140 68% 38%;
-    --radius: 0.75rem; /* 12px primary */
+    --radius: 1rem; /* 16px */
     --chart-1: 140 68% 38%;
     --chart-2: 142 71% 45%;
     --chart-3: 38 92% 50%;
@@ -124,7 +97,7 @@
   h1, h2, h3, h4, h5, h6 { 
     @apply font-bold tracking-tight; 
     font-family: var(--font-space-grotesk), sans-serif; 
-    color: hsl(var(--primary)); 
+    color: hsl(var(--card-foreground)); 
   }
 
   .animate-fade-in-up { animation: fade-in-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
