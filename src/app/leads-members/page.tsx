@@ -191,23 +191,23 @@ export default function LeadPage() {
 
   const activeTickerItems = useMemo(() => {
     const activeCampaigns = (campaignsWithProgress || [])
-      .filter(c => c.status === 'Active')
+      .filter(c => c.status === 'Active' || c.status === 'Upcoming')
       .map(c => {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
           return {
               id: c.id,
-              text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
+              text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
               href: `/campaign-members/${c.id}/summary`
           };
       });
     
     const activeLeads = (leadsWithProgress || [])
-      .filter(l => l.status === 'Active')
+      .filter(l => l.status === 'Active' || l.status === 'Upcoming')
       .map(l => {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
           return {
               id: l.id,
-              text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
+              text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
               href: `/leads-members/${l.id}/summary`
           };
       });
@@ -240,7 +240,7 @@ export default function LeadPage() {
     if (!firestore || !canUpdate) return;
     const docRef = doc(firestore, 'leads', leadToUpdate.id);
     const updateData = { [field]: value };
-    updateDoc(docRef, updateData)
+    updateDoc(docRef, updatedData)
         .then(() => toast({ title: 'Success', description: `Lead updated.`, variant: 'success' }))
         .catch(err => {
             const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData });
@@ -266,7 +266,7 @@ export default function LeadPage() {
     } else if (selectedYear !== 'All') {
         items = items.filter(l => l.startDate?.startsWith(selectedYear));
     }
-    return items;
+    return items.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
   }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => [
@@ -315,7 +315,7 @@ export default function LeadPage() {
                 <div className="flex flex-nowrap items-center gap-3 pb-2">
                     <Input placeholder="Search Appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary font-normal text-primary" disabled={isLoading}/>
                     <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 font-bold text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem></SelectContent></Select>
-                    <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs border-primary/20 font-bold text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</SelectContent></Select>
+                    <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Purpose" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</SelectContent></Select>
                     <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
                         <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select>
                         <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>

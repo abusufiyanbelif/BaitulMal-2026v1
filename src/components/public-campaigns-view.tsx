@@ -99,24 +99,24 @@ export function PublicCampaignsView() {
   const { isLoading, campaignsWithProgress, leadsWithProgress, recentDonationsFormatted } = usePublicData();
 
   const activeTickerItems = useMemo(() => {
-    const activeCampaigns = campaignsWithProgress
-      .filter(c => c.status === 'Active')
+    const activeCampaigns = (campaignsWithProgress || [])
+      .filter(c => c.status === 'Active' || c.status === 'Upcoming')
       .map(c => {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
           return {
               id: c.id,
-              text: `Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
+              text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
               href: `/campaign-public/${c.id}/summary`
           };
       });
     
-    const activeLeads = leadsWithProgress
-      .filter(l => l.status === 'Active')
+    const activeLeads = (leadsWithProgress || [])
+      .filter(l => l.status === 'Active' || l.status === 'Upcoming')
       .map(l => {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
           return {
               id: l.id,
-              text: `Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
+              text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
               href: `/leads-public/${l.id}/summary`
           };
       });
@@ -125,11 +125,11 @@ export function PublicCampaignsView() {
   }, [campaignsWithProgress, leadsWithProgress]);
 
   const completedTickerItems = useMemo(() => {
-    const completedCampaigns = campaignsWithProgress
+    const completedCampaigns = (campaignsWithProgress || [])
       .filter(c => c.status === 'Completed')
       .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-public/${c.id}/summary` }));
     
-    const completedLeads = leadsWithProgress
+    const completedLeads = (leadsWithProgress || [])
       .filter(l => l.status === 'Completed')
       .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
 
@@ -138,7 +138,7 @@ export function PublicCampaignsView() {
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
-    campaignsWithProgress.forEach(c => c.startDate && years.add(c.startDate.split('-')[0]));
+    (campaignsWithProgress || []).forEach(c => c.startDate && years.add(c.startDate.split('-')[0]));
     return Array.from(years).sort((a, b) => b.localeCompare(a));
   }, [campaignsWithProgress]);
 
