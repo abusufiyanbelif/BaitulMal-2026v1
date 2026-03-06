@@ -108,12 +108,12 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1FA34A]"><MoreHorizontal className="h-4 w-4"/></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="rounded-[12px] border-[#E2EEE7] shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
-                            <DropdownMenuItem onClick={() => router.push(`/donations/${donation.id}`)} className="text-[#14532D]"><Eye className="mr-2 h-4 w-4"/> Details</DropdownMenuItem>
-                            {canUpdate && <DropdownMenuItem onClick={handleEdit} className="text-[#14532D]"><Edit className="mr-2 h-4 w-4"/> Edit</DropdownMenuItem>}
+                            <DropdownMenuItem onClick={() => router.push(`/donations/${donation.id}`)} className="text-[#14532D] font-normal"><Eye className="mr-2 h-4 w-4"/> Details</DropdownMenuItem>
+                            {canUpdate && <DropdownMenuItem onClick={handleEdit} className="text-[#14532D] font-normal"><Edit className="mr-2 h-4 w-4"/> Edit</DropdownMenuItem>}
                             {canDelete && (
                                 <>
                                     <DropdownMenuSeparator className="bg-[#E2EEE7]" />
-                                    <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
+                                    <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal">
                                         <Trash2 className="mr-2 h-4 w-4"/> Delete
                                     </DropdownMenuItem>
                                 </>
@@ -313,7 +313,7 @@ export default function DonationsPage() {
         uploadedById: userProfile.id,
         createdAt: editingDonation ? (editingDonation as any).createdAt : serverTimestamp()
     }, { merge: true })
-    .catch(async (serverError) => {
+    .catch(async (serverError: any) => {
         const permissionError = new FirestorePermissionError({
             path: docRef.path,
             operation: editingDonation ? 'update' : 'create',
@@ -366,10 +366,10 @@ export default function DonationsPage() {
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
                             <SelectTrigger className="w-[180px] h-9 text-xs border-[#E2EEE7] text-[#14532D] rounded-[10px] bg-[#F7FBF8]"><SelectValue placeholder="All Statuses"/></SelectTrigger>
                             <SelectContent className="rounded-[12px] border-[#E2EEE7] shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
-                                <SelectItem value="All">All Statuses</SelectItem>
-                                <SelectItem value="Verified">Verified</SelectItem>
-                                <SelectItem value="Pending">Pending</SelectItem>
-                                <SelectItem value="Canceled">Canceled</SelectItem>
+                                <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
+                                <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
+                                <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
+                                <SelectItem value="Canceled" className="font-normal">Canceled</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

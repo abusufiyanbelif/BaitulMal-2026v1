@@ -1,8 +1,7 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore } from '@/firebase/provider';
-import { useCollection } from '@/firebase/firestore/use-collection';
+import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useSession } from '@/hooks/use-session';
@@ -20,6 +19,12 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -37,9 +42,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { deleteUserAction } from './actions';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
-import { getNestedValue } from '@/lib/utils';
-import { useMemoFirebase } from '@/firebase/provider';
+import { cn, getNestedValue } from '@/lib/utils';
 import { usePageHit } from '@/hooks/use-page-hit';
 
 type SortKey = keyof UserProfile | 'srNo';
@@ -107,15 +110,15 @@ export default function UsersPage() {
   
   const handleToggleStatus = (userToUpdate: UserProfile) => {
     if (!firestore || !canUpdate) {
-        toast({ title: 'Permission Denied', description: 'You do not have permission to update users.', variant: 'destructive'});
+        toast({ title: 'Permission Denied', description: 'You Do Not Have Permission To Update Users.', variant: 'destructive'});
         return;
     };
     if (userToUpdate.userKey === 'admin') {
-        toast({ title: 'Action Forbidden', description: 'The default admin user cannot be deactivated.', variant: 'destructive' });
+        toast({ title: 'Action Forbidden', description: 'The Default Admin User Cannot Be Deactivated.', variant: 'destructive' });
         return;
     }
     if (userToUpdate.id === userProfile?.id) {
-        toast({ title: 'Action Forbidden', description: 'You cannot deactivate your own account.', variant: 'destructive' });
+        toast({ title: 'Action Forbidden', description: 'You Cannot Deactivate Your Own Account.', variant: 'destructive' });
         return;
     }
 
@@ -125,7 +128,7 @@ export default function UsersPage() {
 
     updateDoc(docRef, updatedData)
         .then(() => {
-            toast({ title: 'Success', description: `${userToUpdate.name}'s account is now ${newStatus}.`, variant: 'success' });
+            toast({ title: 'Success', description: `${userToUpdate.name}'s Account Is Now ${newStatus}.`, variant: 'success' });
         })
         .catch(async (serverError: any) => {
             const permissionError = new FirestorePermissionError({
@@ -139,7 +142,7 @@ export default function UsersPage() {
 
   const handleDeleteConfirm = async () => {
     if (!userToDelete || !canDelete || !users) {
-        toast({ title: 'Permission Denied', description: 'You do not have permission to delete users.', variant: 'destructive'});
+        toast({ title: 'Permission Denied', description: 'You Do Not Have Permission To Delete Users.', variant: 'destructive'});
         return;
     };
 
@@ -147,14 +150,14 @@ export default function UsersPage() {
     if (!userBeingDeleted) return;
 
     if (userBeingDeleted.userKey === 'admin') {
-        toast({ title: 'Action Forbidden', description: 'The default admin user cannot be deleted.', variant: 'destructive' });
+        toast({ title: 'Action Forbidden', description: 'The Default Admin User Cannot Be Deleted.', variant: 'destructive' });
         setUserToDelete(null);
         setIsDeleteDialogOpen(false);
         return;
     }
 
     if (userBeingDeleted.id === userProfile?.id) {
-        toast({ title: 'Action Forbidden', description: 'You cannot delete your own account.', variant: 'destructive' });
+        toast({ title: 'Action Forbidden', description: 'You Cannot Delete Your Own Account.', variant: 'destructive' });
         setUserToDelete(null);
         setIsDeleteDialogOpen(false);
         return;
@@ -260,7 +263,7 @@ export default function UsersPage() {
                 <ShieldAlert className="h-4 w-4" />
                 <AlertTitle className="font-bold">Access Denied</AlertTitle>
                 <AlertDescription className="font-normal">
-                You do not have the required permissions to manage users.
+                You Do Not Have The Required Permissions To Manage Users.
                 </AlertDescription>
             </Alert>
         </main>
@@ -295,9 +298,9 @@ export default function UsersPage() {
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All">All Statuses</SelectItem>
-                            <SelectItem value="Active">Active</SelectItem>
-                            <SelectItem value="Inactive">Inactive</SelectItem>
+                            <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
+                            <SelectItem value="Active" className="font-normal">Active</SelectItem>
+                            <SelectItem value="Inactive" className="font-normal">Inactive</SelectItem>
                         </SelectContent>
                     </Select>
                     <Select value={roleFilter} onValueChange={(value) => { setRoleFilter(value); setCurrentPage(1); }}>
@@ -305,9 +308,9 @@ export default function UsersPage() {
                             <SelectValue placeholder="Role" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All">All Roles</SelectItem>
-                            <SelectItem value="Admin">Admin</SelectItem>
-                            <SelectItem value="User">User</SelectItem>
+                            <SelectItem value="All" className="font-normal">All Roles</SelectItem>
+                            <SelectItem value="Admin" className="font-normal">Admin</SelectItem>
+                            <SelectItem value="User" className="font-normal">User</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -366,10 +369,10 @@ export default function UsersPage() {
                           <TableRow key={user.id} onClick={() => handleEdit(user)} className="cursor-pointer bg-white border-b border-primary/10 hover:bg-[hsl(var(--table-row-hover))] transition-colors group">
                               <TableCell className="pl-4 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                               <TableCell className="font-bold text-sm text-primary">{user.name}</TableCell>
-                              <TableCell className="text-xs">{user.email}</TableCell>
-                              <TableCell className="font-mono text-xs">{user.phone}</TableCell>
-                              <TableCell className="text-xs">{user.loginId}</TableCell>
-                              <TableCell className="font-mono text-xs opacity-60">{user.userKey}</TableCell>
+                              <TableCell className="text-xs font-normal">{user.email}</TableCell>
+                              <TableCell className="font-mono text-xs font-normal">{user.phone}</TableCell>
+                              <TableCell className="text-xs font-normal">{user.loginId}</TableCell>
+                              <TableCell className="font-mono text-xs opacity-60 font-normal">{user.userKey}</TableCell>
                               <TableCell>
                               <Badge variant={user.role === 'Admin' ? 'destructive' : 'secondary'} className="text-[10px] font-bold uppercase">{user.role}</Badge>
                               </TableCell>
@@ -386,25 +389,25 @@ export default function UsersPage() {
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end">
                                           {canUpdate && (
-                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(user)}} className="text-primary">
+                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(user)}} className="text-primary font-normal">
                                                   <Edit className="mr-2 h-4 w-4" />
                                                   View / Edit
                                               </DropdownMenuItem>
                                           )}
                                           {canUpdate && canDelete && <DropdownMenuSeparator />}
                                           {canUpdate && user.status === 'Active' ? (
-                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id}>
+                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="font-normal">
                                                   <UserX className="mr-2 h-4 w-4" />
                                                   Deactivate
                                               </DropdownMenuItem>
                                           ) : canUpdate ? (
-                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}}>
+                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} className="font-normal">
                                                   <UserCheck className="mr-2 h-4 w-4" />
                                                   Activate
                                               </DropdownMenuItem>
                                           ) : null}
                                           {canDelete && (
-                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleDeleteClick(user.id)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="text-destructive focus:bg-destructive/20 focus:text-destructive">
+                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleDeleteClick(user.id)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal">
                                                   <Trash2 className="mr-2 h-4 w-4" />
                                                   Delete
                                               </DropdownMenuItem>
@@ -445,7 +448,7 @@ export default function UsersPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle className="font-bold text-destructive">Are You Absolutely Sure?</AlertDialogTitle>
                 <AlertDialogDescription className="font-normal text-primary/70">
-                    This will permanently delete the user's account, their database profile, and all associated files from storage. This action is irreversible.
+                    This Will Permanently Delete The User's Account, Their Database Profile, And All Associated Files From Storage. This Action Is Irreversible.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

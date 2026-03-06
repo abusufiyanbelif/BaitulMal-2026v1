@@ -1,14 +1,15 @@
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { useFirestore, useStorage, useAuth, useMemoFirebase, useDoc, getDocs, getDoc, doc, type DocumentReference, collection, storageRef, uploadBytes, getDownloadURL } from '@/firebase';
+import { useFirestore, useStorage, useMemoFirebase, useDoc, getDocs, getDoc, doc, type DocumentReference, collection, storageRef, uploadBytes, getDownloadURL } from '@/firebase';
+import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import Resizer from 'react-image-file-resizer';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { ArrowLeft, Edit, MoreHorizontal, Eye, Loader2, ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, Loader2, ChevronDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuTrigger, DropdownMenuPortal, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSubContent } from '@/components/ui/dropdown-menu';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { useToast } from '@/hooks/use-toast';
@@ -18,7 +19,6 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 
 interface LinkedInitiative {
     id: string;
@@ -38,7 +38,6 @@ export default function BeneficiaryDetailsPage() {
 
   const firestore = useFirestore();
   const storage = useStorage();
-  const auth = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -102,7 +101,8 @@ export default function BeneficiaryDetailsPage() {
             const bSnap = await getDoc(bRef);
             if (bSnap.exists()) {
                 const bData = bSnap.data() as Beneficiary;
-                initiatives.push({ id: c.id, name: c.data().name, type: 'Campaign', status: c.data().status, kitAmount: bData.kitAmount || 0, beneficiaryStatus: bData.status || 'Pending' });
+                const cData = c.data() as Campaign;
+                initiatives.push({ id: c.id, name: cData.name, type: 'Campaign', status: cData.status, kitAmount: bData.kitAmount || 0, beneficiaryStatus: bData.status || 'Pending' });
             }
         }
         const lds = await getDocs(collection(firestore, 'leads'));
@@ -111,7 +111,8 @@ export default function BeneficiaryDetailsPage() {
             const bSnap = await getDoc(bRef);
             if (bSnap.exists()) {
                 const bData = bSnap.data() as Beneficiary;
-                initiatives.push({ id: l.id, name: l.data().name, type: 'Lead', status: l.data().status, kitAmount: bData.kitAmount || 0, beneficiaryStatus: bData.status || 'Pending' });
+                const lData = l.data() as Lead;
+                initiatives.push({ id: l.id, name: lData.name, type: 'Lead', status: lData.status, kitAmount: bData.kitAmount || 0, beneficiaryStatus: bData.status || 'Pending' });
             }
         }
         setLinkedInitiatives(initiatives);
@@ -130,7 +131,7 @@ export default function BeneficiaryDetailsPage() {
     const fileList = data.idProofFile as FileList | undefined;
     if (fileList && fileList.length > 0) {
         const file = fileList[0];
-        const resized = await new Promise<Blob>((res) => { Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (b: any) => res(b as Blob), 'blob'); });
+        const resized = await new Promise<Blob>((res) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (b: any) => res(b as Blob), 'blob'); });
         const fRef = storageRef(storage, `beneficiaries/${beneficiaryId}/id_proof.png`);
         await uploadBytes(fRef, resized);
         idProofUrl = await getDownloadURL(fRef);
@@ -217,10 +218,10 @@ export default function BeneficiaryDetailsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {linkedInitiatives.map((link) => (
+                            {linkedInitiatives.map((link: LinkedInitiative) => (
                                 <tr key={link.id} className="border-b last:border-0 hover:bg-[#F0FDF4] transition-colors bg-white">
                                     <td className="px-4 py-3 align-middle"><Link href={link.type === 'Campaign' ? `/campaign-members/${link.id}/beneficiaries` : `/leads-members/${link.id}/beneficiaries`} className="font-bold text-primary hover:underline">{link.name}</Link></td>
-                                    <td className="px-4 py-3 align-middle"><Badge variant="outline" className="font-bold uppercase text-[10px]">{link.beneficiaryStatus}</Badge></td>
+                                    <td className="px-4 py-3 align-middle"><Badge variant={link.beneficiaryStatus === 'Given' ? 'given' : 'outline'} className="font-bold uppercase text-[10px]">{link.beneficiaryStatus}</Badge></td>
                                     <td className="px-4 py-3 align-middle text-right font-mono font-bold text-primary">₹{link.kitAmount.toFixed(2)}</td>
                                     {canUpdate && (
                                         <td className="px-4 py-3 align-middle text-right">
@@ -228,13 +229,13 @@ export default function BeneficiaryDetailsPage() {
                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10 transition-colors h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
                                                     <DropdownMenuSub>
-                                                        <DropdownMenuSubTrigger className="font-bold text-primary">Status</DropdownMenuSubTrigger>
+                                                        <DropdownMenuSubTrigger className="font-normal text-primary">Status</DropdownMenuSubTrigger>
                                                         <DropdownMenuPortal>
                                                             <DropdownMenuSubContent>
                                                                 <DropdownMenuRadioGroup value={link.beneficiaryStatus} onValueChange={(s) => handleInitiativeStatusChange(link, s as any)}>
-                                                                    <DropdownMenuRadioItem value="Pending" className="font-bold">Pending</DropdownMenuRadioItem>
-                                                                    <DropdownMenuRadioItem value="Verified" className="font-bold">Verified</DropdownMenuRadioItem>
-                                                                    <DropdownMenuRadioItem value="Given" className="font-bold">Given</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Pending" className="font-normal">Pending</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Verified" className="font-normal">Verified</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Given" className="font-normal">Given</DropdownMenuRadioItem>
                                                                 </DropdownMenuRadioGroup>
                                                             </DropdownMenuSubContent>
                                                         </DropdownMenuPortal>

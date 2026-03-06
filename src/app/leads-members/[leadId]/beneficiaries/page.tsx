@@ -140,14 +140,14 @@ export default function BeneficiariesPage() {
   const handleStatusChange = (beneficiary: Beneficiary, newStatus: any) => {
     if (!firestore || !leadId || !canUpdate) return;
     const ref = doc(firestore, 'leads', leadId, 'beneficiaries', beneficiary.id);
-    updateDoc(ref, { status: newStatus }).catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { status: newStatus } })));
+    updateDoc(ref, { status: newStatus }).catch((err: any) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { status: newStatus } })));
   };
 
   const handleZakatToggle = (beneficiary: Beneficiary) => {
     if (!canUpdate || !userProfile || !firestore || !leadId) return;
     const newZakatStatus = !beneficiary.isEligibleForZakat;
     const ref = doc(firestore, 'leads', leadId, 'beneficiaries', beneficiary.id);
-    updateDoc(ref, { isEligibleForZakat: newZakatStatus }).catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { isEligibleForZakat: newZakatStatus } })));
+    updateDoc(ref, { isEligibleForZakat: newZakatStatus }).catch((err: any) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { isEligibleForZakat: newZakatStatus } })));
     updateMasterBeneficiaryAction(beneficiary.id, { isEligibleForZakat: newZakatStatus }, { id: userProfile.id, name: userProfile.name });
   };
 
@@ -158,7 +158,7 @@ export default function BeneficiariesPage() {
     const ref = doc(firestore, 'leads', leadId, 'beneficiaries', beneficiaryId);
     deleteDoc(ref).then(() => {
         toast({ title: 'Beneficiary Removed', variant: 'success' });
-    }).catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'delete' })));
+    }).catch((err: any) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'delete' })));
   };
 
   const handleFormSubmit = async (data: BeneficiaryFormData, masterIdOrEvent?: string | React.BaseSyntheticEvent) => {
@@ -219,7 +219,7 @@ export default function BeneficiariesPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <h2 className="text-3xl font-bold text-primary tracking-tight">Beneficiary List ({beneficiaries?.length || 0})</h2>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="font-bold border-[#E2EEE7] text-[#1FA34A] bg-white hover:bg-[#F0F9F3] active:scale-95 transition-transform">
+            <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="font-normal border-[#E2EEE7] text-[#1FA34A] bg-white hover:bg-[#F0F9F3] active:scale-95 transition-transform">
               <CopyPlus className="mr-2 h-4 w-4"/> Select From Master
             </Button>
             <Button size="sm" onClick={() => setIsFormOpen(true)} className="bg-[#1FA34A] hover:bg-[#16863B] text-white font-bold active:scale-95 transition-transform shadow-md rounded-[12px]">
@@ -236,20 +236,20 @@ export default function BeneficiariesPage() {
           <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPages({}); }}>
             <SelectTrigger className="w-[160px] h-10 text-sm border-[#E2EEE7] text-[#14532D] bg-white rounded-[12px]"><SelectValue placeholder="All Statuses" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown border-[#E2EEE7]">
-              <SelectItem value="All">All Statuses</SelectItem>
-              <SelectItem value="Pending">Pending</SelectItem>
-              <SelectItem value="Verified">Verified</SelectItem>
-              <SelectItem value="Given">Given</SelectItem>
-              <SelectItem value="Hold">Hold</SelectItem>
-              <SelectItem value="Need More Details">Need Details</SelectItem>
+              <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
+              <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
+              <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
+              <SelectItem value="Given" className="font-normal">Given</SelectItem>
+              <SelectItem value="Hold" className="font-normal">Hold</SelectItem>
+              <SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem>
             </SelectContent>
           </Select>
           <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPages({}); }}>
             <SelectTrigger className="w-[160px] h-10 text-sm border-[#E2EEE7] text-[#14532D] bg-white rounded-[12px]"><SelectValue placeholder="All Zakat Status" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown border-[#E2EEE7]">
-              <SelectItem value="All">All Zakat Status</SelectItem>
-              <SelectItem value="Eligible">Eligible</SelectItem>
-              <SelectItem value="Not Eligible">Not Eligible</SelectItem>
+              <SelectItem value="All" className="font-normal">All Zakat Status</SelectItem>
+              <SelectItem value="Eligible" className="font-normal">Eligible</SelectItem>
+              <SelectItem value="Not Eligible" className="font-normal">Not Eligible</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -316,26 +316,26 @@ export default function BeneficiariesPage() {
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-[#1FA34A]"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                                 <DropdownMenuContent align="end" className="rounded-[12px] shadow-dropdown border-[#E2EEE7]">
-                                                                    <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="text-[#14532D]"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
+                                                                    <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="text-[#14532D] font-normal"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
                                                                     {canUpdate && (
                                                                         <DropdownMenuSub>
-                                                                            <DropdownMenuSubTrigger className="text-[#14532D]">Status</DropdownMenuSubTrigger>
+                                                                            <DropdownMenuSubTrigger className="font-normal text-primary">Status</DropdownMenuSubTrigger>
                                                                             <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-[#E2EEE7]">
                                                                                 <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
-                                                                                    <DropdownMenuRadioItem value="Pending" className="text-xs">Pending</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Verified" className="text-xs">Verified</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Given" className="text-xs">Given</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Hold" className="text-xs">Hold</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Need More Details" className="text-xs">Need Details</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Given" className="text-xs font-normal">Given</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Need More Details" className="text-xs font-normal">Need Details</DropdownMenuRadioItem>
                                                                                 </DropdownMenuRadioGroup>
                                                                             </DropdownMenuSubContent></DropdownMenuPortal>
                                                                         </DropdownMenuSub>
                                                                     )}
-                                                                    {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-[#14532D]">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
+                                                                    {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-[#14532D] font-normal">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
                                                                     {canUpdate && (
                                                                         <>
                                                                             <DropdownMenuSeparator className="bg-[#E2EEE7]" />
-                                                                            <DropdownMenuItem onClick={() => handleRemoveFromInitiative(b.id)} className="text-destructive">
+                                                                            <DropdownMenuItem onClick={() => handleRemoveFromInitiative(b.id)} className="text-destructive font-normal">
                                                                                 <Trash2 className="mr-2 h-4 w-4" /> Remove From Lead
                                                                             </DropdownMenuItem>
                                                                         </>

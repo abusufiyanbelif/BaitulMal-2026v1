@@ -6,18 +6,18 @@ import { Progress } from './ui/progress';
 import { cn } from '@/lib/utils';
 
 /**
- * A refined branded loading screen that displays the organizational logo with a smooth zoom animation.
- * Supports deterministic progress tracking with percentage labels and status messages.
+ * A high-fidelity branded loading screen that displays the organizational logo.
+ * Provides deterministic progress tracking and milestone reporting.
  */
-export function BrandedLoader({ message = "Initializing system...", progress }: { message?: string, progress?: number }) {
-  const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
+export function BrandedLoader({ message = "Initializing Institutional Systems...", progress }: { message?: string, progress?: number }) {
+  const { brandingSettings } = useBranding();
 
   const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-md">
       <div className="relative z-10 flex flex-col items-center gap-8 w-full max-w-sm px-6">
-        {/* Logo Container - Displays fallback if still loading or missing */}
+        {/* Logo Container - Exclusively uses the verified institutional logo */}
         <div className="relative w-28 h-28 flex items-center justify-center">
           {validLogoUrl ? (
             <div className="relative w-full h-full animate-zoom-in-out">
@@ -31,9 +31,7 @@ export function BrandedLoader({ message = "Initializing system...", progress }: 
               />
             </div>
           ) : (
-            <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center animate-pulse">
-              <span className="text-primary font-black text-2xl">B</span>
-            </div>
+            <div className="h-16 w-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
           )}
         </div>
 
@@ -49,7 +47,7 @@ export function BrandedLoader({ message = "Initializing system...", progress }: 
               </p>
             )}
           </div>
-          <div className="w-full h-2 rounded-full bg-primary/10 overflow-hidden border border-primary/5">
+          <div className="w-full h-1.5 rounded-full bg-primary/10 overflow-hidden border border-primary/5">
             <Progress value={progress} className="h-full bg-primary transition-all duration-500 ease-out" />
           </div>
         </div>

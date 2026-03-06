@@ -5,9 +5,9 @@ import Image from 'next/image';
 import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
-import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, where, setDoc, DocumentReference, deleteField } from 'firebase/firestore';
-import type { Donation, Campaign, Lead, TransactionDetail } from '@/lib/types';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, doc, serverTimestamp, setDoc, DocumentReference, updateDoc, deleteField } from 'firebase/firestore';
+import type { Donation, Campaign, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import Resizer from 'react-image-file-resizer';
@@ -16,16 +16,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Upload, Download, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, Check, ChevronsUpDown, X, Link2Off, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, Link2Off, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuPortal,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import {
@@ -41,13 +37,11 @@ import {
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
+    DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import {
@@ -116,10 +110,10 @@ export default function DonationsPage() {
   }, [allDonations, campaignId]);
 
   const allCampaignsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
-  const { data: allCampaigns, isLoading: areAllCampaignsLoading } = useCollection<Campaign>(allCampaignsCollectionRef);
+  const { data: allCampaigns } = useCollection<Campaign>(allCampaignsCollectionRef);
 
   const allLeadsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
-  const { data: allLeads, isLoading: areAllLeadsLoading } = useCollection<Lead>(allLeadsCollectionRef);
+  const { data: allLeads } = useCollection<Lead>(allLeadsCollectionRef);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
@@ -134,10 +128,8 @@ export default function DonationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
-  const [donationTypeFilter, setDonationTypeFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
-  const [isSyncing, setIsSyncing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
@@ -148,29 +140,6 @@ export default function DonationsPage() {
 
   const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.create', false);
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.update', false);
-  const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.delete', false);
-
-  const handleSync = async () => {
-    if (!canUpdate) {
-        toast({ title: "Permission denied", description: "You don't have permission to sync data.", variant: "destructive"});
-        return;
-    }
-    setIsSyncing(true);
-    toast({ title: 'Syncing donations...', description: 'Updating donation records to the modern format.' });
-
-    try {
-        const result = await syncDonationsAction();
-        if (result.success) {
-            toast({ title: 'Sync complete', description: result.message, variant: 'success' });
-        } else {
-            toast({ title: 'Sync failed', description: result.message, variant: 'destructive' });
-        }
-    } catch (error: any) {
-         toast({ title: 'Sync error', description: 'An unexpected client-side error occurred.', variant: 'destructive' });
-    }
-
-    setIsSyncing(false);
-  };
 
   const handleAdd = () => {
     if (!canCreate) return;
@@ -208,9 +177,7 @@ export default function DonationsPage() {
     const docRef = doc(firestore, 'donations', donationToUnlink);
     const newLinkSplit = (donationData.linkSplit || []).filter(link => link.linkId !== campaignId || link.linkType !== 'campaign');
     
-    const updateData = {
-        linkSplit: newLinkSplit,
-    };
+    const updateData = { linkSplit: newLinkSplit };
     
     updateDoc(docRef, updateData)
         .catch(async (serverError: any) => {
@@ -222,7 +189,7 @@ export default function DonationsPage() {
             errorEmitter.emit('permission-error', permissionError);
         })
         .finally(() => {
-            toast({ title: 'Success', description: 'Donation unlinked from this campaign successfully.', variant: 'success' });
+            toast({ title: 'Success', description: 'Donation unlinked successfully.', variant: 'success' });
             setDonationToUnlink(null);
         });
   };
@@ -230,392 +197,191 @@ export default function DonationsPage() {
   const handleFormSubmit = async (data: DonationFormData) => {
     const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
     if (hasFilesToUpload && !auth?.currentUser) {
-        toast({
-            title: "Authentication error",
-            description: "User not authenticated yet. Please wait for the session to load or log in again.",
-            variant: "destructive",
-        });
+        toast({ title: "Authentication error", description: "User not authenticated yet.", variant: "destructive" });
         return;
     }
 
     if (!firestore || !storage || !userProfile || !allCampaigns || !allLeads) return;
     
-    if (editingDonation && !canUpdate) return;
-    if (!editingDonation && !canCreate) return;
-
     setIsFormOpen(false);
     setEditingDonation(null);
 
-    const docRef = editingDonation
-        ? doc(firestore, 'donations', editingDonation.id)
-        : doc(collection(firestore, 'donations'));
+    const docRef = editingDonation ? doc(firestore, 'donations', editingDonation.id) : doc(collection(firestore, 'donations'));
     
-    let finalData: any;
-
     try {
         const transactionPromises = data.transactions.map(async (transaction) => {
             let screenshotUrl = transaction.screenshotUrl || '';
             const fileList = transaction.screenshotFile as FileList | undefined;
             if (fileList && fileList.length > 0) {
                 const file = fileList[0];
-                const resizedBlob = await new Promise<Blob>((resolve) => {
-                     (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
-                });
+                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
                 const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
                 const fileRef = storageRef(storage, filePath);
-                const uploadResult = await uploadBytes(fileRef, resizedBlob);
-                screenshotUrl = await getDownloadURL(uploadResult.ref);
+                await uploadBytes(fileRef, resizedBlob);
+                screenshotUrl = await getDownloadURL(fileRef);
             }
-            return {
-                id: transaction.id,
-                amount: transaction.amount,
-                transactionId: transaction.transactionId || '',
-                screenshotUrl: screenshotUrl,
-                screenshotIsPublic: transaction.screenshotIsPublic || false,
-            };
+            return { id: transaction.id, amount: transaction.amount, transactionId: transaction.transactionId || '', screenshotUrl, screenshotIsPublic: transaction.screenshotIsPublic || false };
         });
 
         const finalTransactions = await Promise.all(transactionPromises);
-
         const { transactions, ...donationData } = data;
         
         const finalLinkSplit = data.linkSplit?.map(split => {
-            if (!split.linkId || split.linkId === 'unlinked') {
-                if (split.amount > 0) {
-                    return {
-                        linkId: 'unallocated',
-                        linkName: 'Unallocated',
-                        linkType: 'general' as const,
-                        amount: split.amount
-                    };
-                }
-                return null;
-            }
+            if (!split.linkId || split.linkId === 'unlinked') return split.amount > 0 ? { linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general' as const, amount: split.amount } : null;
             const [type, id] = split.linkId.split('_');
             const linkType = type as 'campaign' | 'lead';
             const source = linkType === 'campaign' ? allCampaigns : allLeads;
             const linkedItem = source?.find(item => item.id === id);
-
-            return {
-                linkId: id,
-                linkName: linkedItem?.name || 'Unknown initiative',
-                linkType: linkType,
-                amount: split.amount
-            };
+            return { linkId: id, linkName: linkedItem?.name || 'Unknown', linkType, amount: split.amount };
         }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
         
-        finalData = {
-            ...donationData,
-            transactions: finalTransactions,
-            amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0),
-            linkSplit: finalLinkSplit,
-            uploadedBy: userProfile.name,
-            uploadedById: userProfile.id,
-            ...(!editingDonation && { createdAt: serverTimestamp() }),
-        };
+        const finalData = { ...donationData, transactions: finalTransactions, amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0), linkSplit: finalLinkSplit, uploadedBy: userProfile.name, uploadedById: userProfile.id, ...(!editingDonation && { createdAt: serverTimestamp() }) };
 
         if (editingDonation) {
-            finalData.campaignId = deleteField();
-            finalData.campaignName = deleteField();
+            (finalData as any).campaignId = deleteField();
+            (finalData as any).campaignName = deleteField();
         }
 
         await setDoc(docRef, finalData, { merge: true });
-
-        toast({ title: 'Success', description: `Donation ${editingDonation ? 'updated' : 'added'}.`, variant: 'success' });
-
+        toast({ title: 'Success', description: 'Donation saved.', variant: 'success' });
     } catch (error: any) {
-        console.error("Error during form submission:", error);
-        if (error.code === 'permission-denied') {
-            const permissionError = new FirestorePermissionError({
-                path: docRef.path,
-                operation: editingDonation ? 'update' : 'create',
-                requestResourceData: finalData,
-            } satisfies SecurityRuleContext);
-            errorEmitter.emit('permission-error', permissionError);
-        } else {
-            toast({ title: 'Save failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
-        }
+        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: editingDonation ? 'update' : 'create', requestResourceData: data }));
     }
   };
   
   const handleSort = (key: SortKey) => {
     let direction: 'ascending' | 'descending' = 'ascending';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
-        direction = 'descending';
-    }
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') direction = 'descending';
     setSortConfig({ key, direction });
     setCurrentPage(1);
   };
   
   const filteredAndSortedDonations = useMemo(() => {
     if (!donations) return [];
-    let sortableItems = [...donations];
+    let items = [...donations];
 
-    // Filtering logic
     if (statusFilter === 'No Transactions') {
-        sortableItems = sortableItems.filter(d => !d.transactions || d.transactions.length === 0);
+        items = items.filter(d => !d.transactions || d.transactions.length === 0);
     } else if (statusFilter !== 'All') {
-        sortableItems = sortableItems.filter(d => d.status === statusFilter);
+        items = items.filter(d => d.status === statusFilter);
     }
 
     if (typeFilter !== 'All') {
-        sortableItems = sortableItems.filter(d => d.typeSplit?.some(s => s.category === typeFilter));
-    }
-    if (donationTypeFilter !== 'All') {
-        sortableItems = sortableItems.filter(d => d.donationType === donationTypeFilter);
+        items = items.filter(d => d.typeSplit?.some(s => s.category === typeFilter));
     }
     if (searchTerm) {
-      const lowercasedTerm = searchTerm.toLowerCase();
-      sortableItems = sortableItems.filter(d => 
-        (d.donorName || '').toLowerCase().includes(lowercasedTerm) ||
-        (d.receiverName || '').toLowerCase().includes(lowercasedTerm) ||
-        (d.donorPhone || '').toLowerCase().includes(lowercasedTerm) ||
-        (d.referral || '').toLowerCase().includes(lowercasedTerm) ||
-        (d.transactions || []).some(t => t.transactionId?.toLowerCase().includes(lowercasedTerm))
-      );
+      const term = searchTerm.toLowerCase();
+      items = items.filter(d => (d.donorName || '').toLowerCase().includes(term) || (d.donorPhone || '').includes(term));
     }
 
-    // Sorting
     if (sortConfig !== null) {
-      sortableItems.sort((a, b) => {
+      items.sort((a, b) => {
         if (sortConfig.key === 'srNo') return 0;
-        
-        const key = sortConfig.key;
-        const aValue = (a as any)[key];
-        const bValue = (b as any)[key];
-
-        if (key === 'amount' || key === 'amountForThisCampaign') {
-            const numA = Number(aValue) || 0;
-            const numB = Number(bValue) || 0;
-            return sortConfig.direction === 'ascending' ? numA - numB : numB - numA;
-        }
-
-        if (key === 'donationDate') {
-            const dateA = new Date(aValue as string).getTime() || 0;
-            const dateB = new Date(bValue as string).getTime() || 0;
-            return sortConfig.direction === 'ascending' ? dateA - dateB : dateB - dateA;
-        }
-
-        const strA = String(aValue || '').toLowerCase();
-        const strB = String(bValue || '').toLowerCase();
-        if (strA < strB) return sortConfig.direction === 'ascending' ? -1 : 1;
-        if (strA > strB) return sortConfig.direction === 'ascending' ? 1 : -1;
-        
-        return 0;
+        const aVal = (a as any)[sortConfig.key];
+        const bVal = (b as any)[sortConfig.key];
+        if (typeof aVal === 'number') return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
+        return sortConfig.direction === 'ascending' ? String(aVal).localeCompare(String(bVal)) : String(bVal).localeCompare(String(aVal));
       });
     }
-    
-    return sortableItems;
-  }, [donations, searchTerm, statusFilter, typeFilter, donationTypeFilter, sortConfig]);
+    return items;
+  }, [donations, searchTerm, statusFilter, typeFilter, sortConfig]);
 
   const totalPages = Math.ceil(filteredAndSortedDonations.length / itemsPerPage);
-  const paginatedDonations = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredAndSortedDonations.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredAndSortedDonations, currentPage, itemsPerPage]);
+  const paginatedDonations = useMemo(() => filteredAndSortedDonations.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [filteredAndSortedDonations, currentPage, itemsPerPage]);
 
-  const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading || areAllCampaignsLoading || areAllLeadsLoading;
+  const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading;
   
-  if (isLoading && !campaign) {
-    return <BrandedLoader />;
-  }
-  
-  if (!campaign) {
-    return (
-        <main className="container mx-auto p-4 md:p-8 text-center">
-            <p className="text-lg text-muted-foreground font-normal">Campaign not found.</p>
-            <Button asChild className="mt-4 font-bold">
-                <Link href="/campaign-members">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Campaigns
-                </Link>
-            </Button>
-        </main>
-    );
-  }
+  if (isLoading && !campaign) return <BrandedLoader />;
+  if (!campaign) return <div className="p-8 text-center"><p>Campaign not found.</p><Button asChild variant="outline" className="mt-4"><Link href="/campaign-members"><ArrowLeft className="mr-2"/>Back</Link></Button></div>;
 
   return (
-    <>
-    <main className="container mx-auto p-4 md:p-8 space-y-6">
-        <div className="mb-4">
-            <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
-                <Link href="/campaign-members">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Campaigns
-                </Link>
-            </Button>
-        </div>
-        <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold text-primary">{campaign.name}</h1>
-        </div>
+    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary">
+        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button></div>
+        <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold tracking-tight">{campaign.name}</h1></div>
         
         <div className="mb-6">
             <ScrollArea className="w-full">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full bg-transparent p-0 border-b border-primary/10 pb-4">
-                    {canReadSummary && (
-                        <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
-                    )}
-                    {canReadRation && (
-                        <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item Lists</Link>
-                    )}
-                    {canReadBeneficiaries && (
-                        <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>
-                    )}
-                    {canReadDonations && (
-                        <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center h-12 rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10", pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>
-                    )}
+                    {canReadSummary && (<Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>)}
+                    {canReadRation && (<Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item Lists</Link>)}
+                    {canReadBeneficiaries && (<Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>)}
+                    {canReadDonations && (<Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>)}
                 </div>
                 <ScrollBar orientation="horizontal" className="hidden" />
             </ScrollArea>
         </div>
 
         <Card className="animate-fade-in-zoom border-primary/10 shadow-sm overflow-hidden bg-white">
-            <CardHeader className="bg-primary/5 p-4 sm:p-6">
+            <CardHeader className="bg-primary/5 p-4 sm:p-6 border-b">
                 <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
-                <div className="flex-1 space-y-1.5">
-                    <CardTitle className="text-xl font-bold text-primary tracking-tight">Donation List ({filteredAndSortedDonations.length})</CardTitle>
-                    <CardDescription className="font-normal text-primary/70">
-                    Total for filtered donations: <span className="font-bold text-foreground">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisCampaign, 0).toFixed(2)}</span>
-                    </CardDescription>
-                </div>
-                {canCreate && (
-                    <div className="flex flex-wrap gap-2">
-                        <Button onClick={handleAdd} className="font-bold shadow-md">
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            Add Donation
-                        </Button>
+                    <div className="space-y-1.5">
+                        <CardTitle className="text-xl font-bold tracking-tight">Donation List ({filteredAndSortedDonations.length})</CardTitle>
+                        <CardDescription className="font-normal">Total verified for this campaign: <span className="font-bold text-primary font-mono">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisCampaign, 0).toFixed(2)}</span></CardDescription>
                     </div>
-                )}
+                    {canCreate && <Button onClick={handleAdd} className="font-bold shadow-md active:scale-95 transition-transform"><PlusCircle className="mr-2 h-4 w-4" /> Add Donation</Button>}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-4">
-                    <Input
-                        placeholder="Search donor, receiver, phone, etc."
-                        value={searchTerm}
-                        onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                        className="max-w-sm h-9 text-xs font-normal"
-                    />
+                    <Input placeholder="Search donor..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-xs h-9 text-xs font-normal" />
                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[180px] h-9 text-xs text-primary">
-                            <SelectValue placeholder="Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="All">All Statuses</SelectItem>
-                            <SelectItem value="Verified" className="text-success-foreground">Verified</SelectItem>
-                            <SelectItem value="Pending">Pending</SelectItem>
-                            <SelectItem value="Canceled" className="text-destructive">Canceled</SelectItem>
-                            <SelectItem value="No Transactions">No Transactions</SelectItem>
-                        </SelectContent>
+                        <SelectTrigger className="w-[140px] h-9 text-xs text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
+                        <SelectContent><SelectItem value="All" className="font-normal">All Statuses</SelectItem><SelectItem value="Verified" className="font-normal">Verified</SelectItem><SelectItem value="Pending" className="font-normal">Pending</SelectItem><SelectItem value="Canceled" className="font-normal">Canceled</SelectItem></SelectContent>
                     </Select>
                     <Select value={typeFilter} onValueChange={(value) => { setTypeFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[180px] h-9 text-xs text-primary">
-                            <SelectValue placeholder="Category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="All">All Categories</SelectItem>
-                            {donationCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                        </SelectContent>
+                        <SelectTrigger className="w-[140px] h-9 text-xs text-primary"><SelectValue placeholder="Category" /></SelectTrigger>
+                        <SelectContent><SelectItem value="All" className="font-normal">All Categories</SelectItem>{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent>
                     </Select>
                 </div>
             </CardHeader>
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
                 <Table>
-                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                    <TableHeader className="bg-[#ECFDF5]">
                     <TableRow>
-                        <SortableHeader sortKey="srNo" className="w-[50px] pl-4" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
-                        <SortableHeader sortKey="donorName" className="w-[200px]" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
-                        <SortableHeader sortKey="amountForThisCampaign" className="w-[150px] text-right" sortConfig={sortConfig} handleSort={handleSort}>Value (₹)</SortableHeader>
-                        <SortableHeader sortKey="donationDate" className="w-[150px]" sortConfig={sortConfig} handleSort={handleSort}>Entry Date</SortableHeader>
-                        <TableHead className="w-[200px] font-semibold text-[hsl(var(--table-header-fg))] tracking-tight">Details</TableHead>
-                        <SortableHeader sortKey="status" className="w-[120px]" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
-                        <TableHead className="w-[100px] text-right pr-4 font-semibold text-[hsl(var(--table-header-fg))] tracking-tight">Actions</TableHead>
+                        <SortableHeader sortKey="srNo" className="w-[60px] pl-4" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
+                        <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
+                        <SortableHeader sortKey="amountForThisCampaign" className="text-right" sortConfig={sortConfig} handleSort={handleSort}>Amount</SortableHeader>
+                        <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort}>Date</SortableHeader>
+                        <TableHead className="font-bold">Status</TableHead>
+                        <TableHead className="text-right pr-4 font-bold">Actions</TableHead>
                     </TableRow>
                     </TableHeader>
-                    <TableBody className="font-normal text-primary">
-                    {areDonationsLoading ? (
-                    [...Array(3)].map((_, i) => (
-                        <TableRow key={i}>
-                            <TableCell colSpan={8}><Skeleton className="h-12 w-full" /></TableCell>
-                        </TableRow>
-                    ))
-                    ) : (paginatedDonations && paginatedDonations.length > 0) ? (
-                    paginatedDonations.map((donation, index) => {
+                    <TableBody>
+                    {paginatedDonations.map((donation, index) => {
                         const isOpen = openRows[donation.id] || false;
                         return (
                             <React.Fragment key={donation.id}>
-                            <TableRow className="bg-white border-b border-primary/10 hover:bg-[hsl(var(--table-row-hover))] cursor-pointer group transition-colors" data-state={isOpen ? 'open' : 'closed'} onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
-                                <TableCell className="pl-4 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
-                                <TableCell>
-                                    <div className="font-bold text-sm text-foreground">{donation.donorName}</div>
-                                    <div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone || 'N/A'}</div>
-                                </TableCell>
-                                <TableCell className="text-right font-bold font-mono text-sm text-primary">₹{donation.amountForThisCampaign.toFixed(2)}</TableCell>
-                                <TableCell className="text-xs font-normal text-foreground">{donation.donationDate}</TableCell>
-                                <TableCell>
-                                    <div className="flex flex-wrap items-center gap-1">
-                                        {donation.typeSplit?.map(split => (<Badge key={split.category} variant="secondary" className="text-[9px] font-bold tracking-tight">{split.category}</Badge>))}
-                                        <Badge variant="outline" className="text-[9px] font-bold border-primary/20 text-primary">{donation.donationType}</Badge>
+                            <TableRow className="bg-white border-b border-primary/10 hover:bg-[#F0FDF4] cursor-pointer group transition-colors" onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
+                                <TableCell className="pl-4">
+                                    <div className="flex items-center gap-2">
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" disabled={!donation.transactions || donation.transactions.length === 0}>{isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</Button>
+                                        <span className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</span>
                                     </div>
                                 </TableCell>
-                                <TableCell>
-                                    <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'} className="text-[9px] font-bold">{donation.status}</Badge>
-                                </TableCell>
-                                <TableCell className="text-right pr-4">
-                                        <div className="flex items-center justify-end gap-1">
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" disabled={!donation.transactions || donation.transactions.length === 0}>
-                                            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                        </Button>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/campaign-members/${campaignId}/donations/${donation.id}`); }} className="text-primary">
-                                                    <Eye className="mr-2 h-4 w-4" /> Details
-                                                </DropdownMenuItem>
-                                                {canUpdate && (
-                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(donation); }} className="text-primary">
-                                                        <Edit className="mr-2 h-4 w-4" /> Edit
-                                                    </DropdownMenuItem>
-                                                )}
-                                                {canUpdate && (
-                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleUnlinkClick(donation.id); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer">
-                                                        <Link2Off className="mr-2 h-4 w-4" /> Unlink
-                                                    </DropdownMenuItem>
-                                                )}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
+                                <TableCell><div className="font-bold text-sm text-primary">{donation.donorName}</div><div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone || 'N/A'}</div></TableCell>
+                                <TableCell className="text-right font-bold font-mono text-primary">₹{donation.amountForThisCampaign.toFixed(2)}</TableCell>
+                                <TableCell className="text-xs font-normal">{donation.donationDate}</TableCell>
+                                <TableCell><Badge variant={donation.status === 'Verified' ? 'success' : 'outline'} className="text-[10px] font-bold uppercase">{donation.status}</Badge></TableCell>
+                                <TableCell className="text-right pr-4" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => router.push(`/campaign-members/${campaignId}/donations/${donation.id}`)} className="font-normal text-primary"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
+                                            {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="font-normal text-primary"><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
+                                            {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive font-normal"><Link2Off className="mr-2 h-4 w-4" /> Unlink</DropdownMenuItem>}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </TableCell>
                             </TableRow>
                             {isOpen && (
-                                <TableRow className="bg-[hsl(var(--table-expanded-bg))] border-b border-primary/10">
-                                <TableCell colSpan={7} className="p-4">
-                                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Linked Transaction Logs</h4>
+                                <TableRow className="bg-[#F7FBF8] border-b border-primary/10">
+                                <TableCell colSpan={6} className="p-4">
+                                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Linked Transactions</h4>
                                     <div className="border border-primary/10 rounded-md bg-white overflow-hidden shadow-sm">
                                     <Table>
-                                        <TableHeader className="bg-[hsl(var(--table-header-bg))]">
-                                        <TableRow>
-                                            <TableHead className="text-[10px] font-semibold text-[hsl(var(--table-header-fg))] tracking-tight uppercase">Amount</TableHead>
-                                            <TableHead className="text-[10px] font-semibold text-[hsl(var(--table-header-fg))] tracking-tight uppercase">Transaction ID</TableHead>
-                                            <TableHead className="text-right text-[10px] font-semibold text-[hsl(var(--table-header-fg))] tracking-tight uppercase">Artifact</TableHead>
-                                        </TableRow>
-                                        </TableHeader>
+                                        <TableHeader className="bg-[#ECFDF5]"><TableRow><TableHead className="text-[10px] font-bold text-primary">Sum</TableHead><TableHead className="text-[10px] font-bold text-primary">Reference</TableHead><TableHead className="text-right text-[10px] font-bold text-primary">Artifact</TableHead></TableRow></TableHeader>
                                         <TableBody>
                                         {(donation.transactions || []).map((tx) => (
-                                            <TableRow key={tx.id} className="hover:bg-[hsl(var(--table-row-hover))]">
-                                            <TableCell className="font-bold font-mono text-sm">₹{tx.amount.toFixed(2)}</TableCell>
-                                            <TableCell className="font-mono text-xs opacity-70">{tx.transactionId || 'N/A'}</TableCell>
-                                            <TableCell className="text-right">
-                                                {tx.screenshotUrl ? (
-                                                <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }} className="font-bold border-primary/20 text-primary hover:bg-primary/10 h-7 text-[10px]">
-                                                    <Eye className="mr-1 h-3 w-3" /> View
-                                                </Button>
-                                                ) : <span className="text-muted-foreground text-xs italic font-normal">None</span>}
-                                            </TableCell>
-                                            </TableRow>
+                                            <TableRow key={tx.id} className="hover:bg-[#F0FDF4]"><TableCell className="font-bold font-mono text-sm">₹{tx.amount.toFixed(2)}</TableCell><TableCell className="font-mono text-xs opacity-70">{tx.transactionId || 'N/A'}</TableCell><TableCell className="text-right">{tx.screenshotUrl ? (<Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)} className="font-bold text-[10px] h-7"><ImageIcon className="mr-1 h-3 w-3" /> View</Button>) : <span className="text-muted-foreground text-[10px]">None</span>}</TableCell></TableRow>
                                         ))}
                                         </TableBody>
                                     </Table>
@@ -625,102 +391,53 @@ export default function DonationsPage() {
                             )}
                             </React.Fragment>
                         );
-                    })
-                    ) : (
-                    <TableRow>
-                        <TableCell colSpan={7} className="text-center h-24 text-muted-foreground italic font-normal">
-                            No Donations Found Matching Criteria.
-                        </TableCell>
-                    </TableRow>
-                    )}
-                </TableBody>
+                    })}
+                    {paginatedDonations.length === 0 && <TableRow><TableCell colSpan={6} className="text-center py-20 text-muted-foreground italic font-normal">No Donation Records Matching Your Criteria.</TableCell></TableRow>}
+                    </TableBody>
                 </Table>
                 <ScrollBar orientation="horizontal" />
                 </ScrollArea>
             </CardContent>
             {totalPages > 1 && (
                 <CardFooter className="flex items-center justify-between py-4 border-t bg-primary/5">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
-                    Page {currentPage} of {totalPages}
-                </p>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 text-primary h-8">Previous</Button>
-                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 text-primary h-8">Next</Button>
-                </div>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Page {currentPage} of {totalPages}</p>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 h-8">Previous</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 h-8">Next</Button>
+                    </div>
                 </CardFooter>
             )}
         </Card>
       
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0 text-primary">
-            <DialogHeader className="px-6 py-4 border-b bg-primary/5">
-                <DialogTitle className="text-xl font-bold text-primary tracking-tight">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle>
-            </DialogHeader>
-            <ScrollArea className="flex-1 px-6 py-4">
-                <DonationForm
-                    donation={editingDonation}
-                    onSubmit={handleFormSubmit}
-                    onCancel={() => setIsFormOpen(false)}
-                    campaigns={allCampaigns || []}
-                    leads={allLeads || []}
-                    defaultLinkId={`campaign_${campaignId}`}
-                />
-            </ScrollArea>
-            <DialogFooter className="px-6 py-4 border-t bg-muted/5">
-                <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold">Close</Button>
-            </DialogFooter>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10">
+            <DialogHeader className="border-b bg-primary/5 p-4"><DialogTitle className="text-xl font-bold tracking-tight">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle></DialogHeader>
+            <div className="p-4"><DonationForm donation={editingDonation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} campaigns={allCampaigns || []} leads={allLeads || []} defaultLinkId={`campaign_${campaignId}`} /></div>
+            <DialogFooter className="p-4 border-t bg-muted/5"><Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold">Close Form</Button></DialogFooter>
         </DialogContent>
       </Dialog>
       
       <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-                <AlertDialogTitle className="font-bold text-destructive">Unlink Donation?</AlertDialogTitle>
-                <AlertDialogDescription className="font-normal text-primary/70">
-                    Remove the donation from this campaign? The record itself will remain in the global list, but will not contribute to this initiative's totals.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
-                <AlertDialogAction 
-                    onClick={handleUnlinkConfirm} 
-                    className="bg-destructive hover:bg-destructive/90 text-white font-bold">
-                        Confirm Unlink
-                </AlertDialogAction>
-            </AlertDialogFooter>
+        <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown">
+            <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink Donation?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach this record from the current campaign? The donation remains in the global database but will no longer contribute to this project's totals.</AlertDialogDescription></AlertDialogHeader>
+            <AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-        <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden text-primary">
-            <DialogHeader className="px-6 py-4 border-b bg-primary/5">
-                <DialogTitle className="text-xl font-bold text-primary tracking-tight">Artifact Viewer</DialogTitle>
-            </DialogHeader>
-            <ScrollArea className="flex-1 bg-secondary/20 p-4">
-                <div className="relative min-h-[70vh] w-full flex items-center justify-center">
-                    {imageToView && (
-                        <Image
-                            src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
-                            alt="Donation Artifact"
-                            fill
-                            sizes="100vw"
-                            className="object-contain transition-transform duration-200 ease-out origin-center"
-                            style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
-                            unoptimized
-                        />
-                    )}
-                </div>
-                <ScrollBar orientation="both" />
-            </ScrollArea>
-             <DialogFooter className="px-6 py-4 border-t bg-white flex-wrap gap-2 justify-center sm:justify-center">
-                <Button variant="outline" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-primary border-primary/20"><ZoomIn className="mr-1 h-4 w-4"/> In</Button>
-                <Button variant="outline" size="sm" onClick={() => setZoom(z => z / 1.2)} className="font-bold text-primary border-primary/20"><ZoomOut className="mr-1 h-4 w-4"/> Out</Button>
-                <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-primary border-primary/20"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
-                <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-primary border-primary/20"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-[16px] border-primary/10">
+            <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary uppercase">Institutional Artifact Viewer</DialogTitle></DialogHeader>
+            <div className="p-4 bg-secondary/20 h-[70vh] flex items-center justify-center">
+                {imageToView && (<div className="relative w-full h-full"><Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Vetting Evidence" fill sizes="100vw" className="object-contain transition-all duration-300 origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized /></div>)}
+            </div>
+             <DialogFooter className="px-6 py-4 border-t bg-white flex-wrap gap-2 justify-center">
+                <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-primary h-8 text-[10px]"><ZoomIn className="mr-1 h-4 w-4"/> In</Button>
+                <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5))} className="font-bold text-primary h-8 text-[10px]"><ZoomOut className="mr-1 h-4 w-4"/> Out</Button>
+                <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-primary h-8 text-[10px]"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
+                <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-primary h-8 text-[10px]"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>
     </main>
-    </>
   );
 }

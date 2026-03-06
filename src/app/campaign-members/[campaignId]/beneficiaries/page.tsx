@@ -140,14 +140,14 @@ export default function BeneficiariesPage() {
   const handleStatusChange = (beneficiary: Beneficiary, newStatus: any) => {
     if (!firestore || !campaignId || !canUpdate) return;
     const ref = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiary.id);
-    updateDoc(ref, { status: newStatus }).catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { status: newStatus } })));
+    updateDoc(ref, { status: newStatus }).catch((err: any) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { status: newStatus } })));
   };
 
   const handleZakatToggle = (beneficiary: Beneficiary) => {
     if (!canUpdate || !userProfile || !firestore || !campaignId) return;
     const newZakatStatus = !beneficiary.isEligibleForZakat;
     const ref = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiary.id);
-    updateDoc(ref, { isEligibleForZakat: newZakatStatus }).catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { isEligibleForZakat: newZakatStatus } })));
+    updateDoc(ref, { isEligibleForZakat: newZakatStatus }).catch((err: any) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { isEligibleForZakat: newZakatStatus } })));
     updateMasterBeneficiaryAction(beneficiary.id, { isEligibleForZakat: newZakatStatus }, { id: userProfile.id, name: userProfile.name });
   };
 
@@ -158,7 +158,7 @@ export default function BeneficiariesPage() {
     const ref = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiaryId);
     deleteDoc(ref).then(() => {
         toast({ title: 'Beneficiary Removed', variant: 'success' });
-    }).catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'delete' })));
+    }).catch((err: any) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'delete' })));
   };
 
   const handleFormSubmit = async (data: BeneficiaryFormData, masterIdOrEvent?: string | React.BaseSyntheticEvent) => {
@@ -173,7 +173,7 @@ export default function BeneficiariesPage() {
     const fileList = data.idProofFile as FileList | undefined;
     if (fileList && fileList.length > 0) {
         const file = fileList[0];
-        const resized = await new Promise<Blob>((resolve) => { Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (b: any) => resolve(b as Blob), 'blob'); });
+        const resized = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (b: any) => resolve(b as Blob), 'blob'); });
         const fRef = storageRef(storage, `beneficiaries/${masterRef.id}/id_proof.png`);
         await uploadBytes(fRef, resized);
         idProofUrl = await getDownloadURL(fRef);
@@ -202,7 +202,7 @@ export default function BeneficiariesPage() {
             </Button>
         </div>
         
-        <h1 className="text-4xl font-bold tracking-tight text-primary uppercase">{campaign.name}</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-primary">{campaign.name}</h1>
         
         <div className="border-b border-[#E2EEE7] mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
@@ -219,7 +219,7 @@ export default function BeneficiariesPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <h2 className="text-3xl font-bold text-primary tracking-tight">Beneficiary List ({beneficiaries?.length || 0})</h2>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="font-bold border-[#E2EEE7] text-[#1FA34A] bg-white hover:bg-[#F0F9F3] active:scale-95 transition-transform">
+            <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="font-normal border-[#E2EEE7] text-[#1FA34A] bg-white hover:bg-[#F0F9F3] active:scale-95 transition-transform">
               <CopyPlus className="mr-2 h-4 w-4"/> Select From Master
             </Button>
             <Button size="sm" onClick={() => setIsFormOpen(true)} className="bg-[#1FA34A] hover:bg-[#16863B] text-white font-bold active:scale-95 transition-transform shadow-md rounded-[12px]">
@@ -319,14 +319,14 @@ export default function BeneficiariesPage() {
                                                                     <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="text-[#14532D]"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
                                                                     {canUpdate && (
                                                                         <DropdownMenuSub>
-                                                                            <DropdownMenuSubTrigger className="text-[#14532D]">Status</DropdownMenuSubTrigger>
+                                                                            <DropdownMenuSubTrigger className="font-normal text-primary">Status</DropdownMenuSubTrigger>
                                                                             <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-[#E2EEE7]">
                                                                                 <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
-                                                                                    <DropdownMenuRadioItem value="Pending" className="text-xs">Pending</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Verified" className="text-xs">Verified</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Given" className="text-xs">Given</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Hold" className="text-xs">Hold</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Need More Details" className="text-xs">Need Details</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Pending" className="font-normal">Pending</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Verified" className="font-normal">Verified</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Given" className="font-normal">Given</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Hold" className="font-normal">Hold</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Need More Details" className="font-normal">Need Details</DropdownMenuRadioItem>
                                                                                 </DropdownMenuRadioGroup>
                                                                             </DropdownMenuSubContent></DropdownMenuPortal>
                                                                         </DropdownMenuSub>
@@ -397,7 +397,7 @@ export default function BeneficiariesPage() {
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-[#E2EEE7]">
-                <DialogHeader><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase">Add New Beneficiary</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle className="text-xl font-bold text-primary tracking-tight">Add New Beneficiary</DialogTitle></DialogHeader>
                 <BeneficiaryForm onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} itemCategories={campaign.itemCategories || []} />
             </DialogContent>
         </Dialog>

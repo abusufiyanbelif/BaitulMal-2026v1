@@ -8,19 +8,17 @@ import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { 
   Mail, 
   Phone, 
-  Globe, 
   MapPin, 
   ShieldCheck, 
   QrCode, 
-  Info, 
-  HeartHandshake, 
-  Users
+  Users,
+  HeartHandshake
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 /**
- * Compact Institutional Footer for BMS3 A.
- * No bold text (except brand name), Title Case labels, and streamlined layout.
+ * Compact Institutional Footer for Baitulmal.
+ * Standard weight labels and streamlined navigation.
+ * Organization name is bolded for brand prominence.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
@@ -33,7 +31,7 @@ export function AppFooter() {
   const validQrUrl = paymentSettings?.qrCodeUrl?.trim() ? paymentSettings.qrCodeUrl : null;
 
   return (
-    <footer className="bg-[#F0FDF4] border-t border-[#E2EEE7] py-8 px-4 font-normal text-primary">
+    <footer className="bg-[#F0FDF4] border-t border-[#E2EEE7] py-6 px-4 font-normal text-primary">
       <div className="container mx-auto max-w-6xl">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
           
@@ -41,7 +39,7 @@ export function AppFooter() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
               {validLogoUrl && (
-                <div className="relative w-10 h-10 bg-white rounded-lg p-1 border border-[#E2EEE7]">
+                <div className="relative w-8 h-8 bg-white rounded-lg p-1 border border-[#E2EEE7]">
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                     alt="Logo"
@@ -90,10 +88,6 @@ export function AppFooter() {
                 <HeartHandshake className="h-3.5 w-3.5 opacity-40" />
                 Donation Types Explained
               </Link>
-              <Link href="/info/guiding-principles" className="text-sm text-[#355E3B] hover:text-[#1FA34A] transition-colors flex items-center gap-2">
-                <ShieldCheck className="h-3.5 w-3.5 opacity-40" />
-                Our Guiding Principles
-              </Link>
             </nav>
           </div>
 
@@ -112,7 +106,7 @@ export function AppFooter() {
                 </p>
               </div>
               {validQrUrl ? (
-                <div className="relative w-16 h-16 bg-white p-1 rounded-lg border border-[#E2EEE7] shadow-sm">
+                <div className="relative w-12 h-12 bg-white p-1 rounded-lg border border-[#E2EEE7] shadow-sm">
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`}
                     alt="UPI QR"
@@ -122,15 +116,15 @@ export function AppFooter() {
                   />
                 </div>
               ) : (
-                <div className="w-16 h-16 bg-white/50 rounded-lg border border-dashed border-[#E2EEE7] flex items-center justify-center text-[#355E3B]/20">
-                  <QrCode className="h-6 w-6" />
+                <div className="w-12 h-12 bg-white/50 rounded-lg border border-dashed border-[#E2EEE7] flex items-center justify-center text-[#355E3B]/20">
+                  <QrCode className="h-5 w-5" />
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-[#E2EEE7] flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-[#355E3B]/50 tracking-wide">
+        <div className="mt-8 pt-6 border-t border-[#E2EEE7] flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-[#355E3B]/50 tracking-wide">
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             {paymentSettings?.regNo && (
               <span className="flex items-center gap-1.5">
