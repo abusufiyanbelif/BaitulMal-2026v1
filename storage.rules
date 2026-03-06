@@ -1,16 +1,10 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Helper function to check if user is signed in
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    // Global Public Read Access for images/documents to prevent UI crashes
-    // Global Member Write Access for any organizational user
+    // Allow global public read access for artifacts and branding
     match /{allPaths=**} {
       allow read: if true;
-      allow write, delete: if isSignedIn();
+      allow write, delete: if request.auth != null;
     }
   }
 }

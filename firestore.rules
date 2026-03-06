@@ -1,16 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if user is signed in
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    // Global Public Read Access for institutional transparency
-    // Global Member Write/Delete Access for any organizational user
+    // Allow global public read access for transparency
     match /{document=**} {
       allow read: if true;
-      allow write, delete: if isSignedIn();
+      allow write, delete: if request.auth != null;
     }
   }
 }
