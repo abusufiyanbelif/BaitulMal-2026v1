@@ -33,7 +33,7 @@ function StatCard({ title, value, icon: Icon, isLoading }: { title: string, valu
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                <CardTitle className="text-sm font-bold">{title}</CardTitle>
                 <Icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -48,7 +48,7 @@ function StatCard({ title, value, icon: Icon, isLoading }: { title: string, valu
 }
 
 const donationCategoryChartConfig = donationCategories.reduce((acc, category, index) => {
-    acc[category.replace(/\s+/g, '')] = {
+    acc[category] = {
         label: category,
         color: `hsl(var(--chart-${index + 1}))`,
     };
@@ -294,13 +294,13 @@ export default function AnalyticsPage() {
                 <TabsContent value="general">
                     <div className="space-y-6">
                         {isLoading ? (
-                            <SectionLoader label="Calculating general analytics..." description="Aggregating counts for users, campaigns, and beneficiaries." />
+                            <SectionLoader label="Calculating General Analytics..." description="Aggregating counts for users, campaigns, and beneficiaries." />
                         ) : (
                             <>
                                 <Card className="animate-fade-in-zoom">
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2 text-3xl text-primary font-bold"> General Analytics Overview</CardTitle>
-                                        <CardDescription className="font-normal">A summary of key metrics from across the application.</CardDescription>
+                                        <CardDescription className="font-normal text-primary/70">A summary of key metrics from across the application.</CardDescription>
                                     </CardHeader>
                                     <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                                         <StatCard title="Total Users" value={users?.length || 0} icon={Users} isLoading={isLoading} />
@@ -314,8 +314,8 @@ export default function AnalyticsPage() {
                                 <div className="grid gap-6 lg:grid-cols-3">
                                     <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '200ms'}}>
                                         <CardHeader>
-                                            <CardTitle className="text-primary font-bold">Donations by Category</CardTitle>
-                                            <CardDescription className="font-normal">Total amount received for each donation category.</CardDescription>
+                                            <CardTitle className="text-primary font-bold">Donations By Category</CardTitle>
+                                            <CardDescription className="font-normal text-primary/70">Total amount received for each donation category.</CardDescription>
                                         </CardHeader>
                                         <CardContent>
                                         {isClient ? (
@@ -336,7 +336,7 @@ export default function AnalyticsPage() {
                                     <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '300ms'}}>
                                         <CardHeader>
                                             <CardTitle className="text-primary font-bold">Top 5 Funded Campaigns</CardTitle>
-                                            <CardDescription className="font-normal">The campaigns that have received the most funding.</CardDescription>
+                                            <CardDescription className="font-normal text-primary/70">The campaigns that have received the most funding.</CardDescription>
                                         </CardHeader>
                                         <CardContent>
                                             {isClient ? (
@@ -362,7 +362,7 @@ export default function AnalyticsPage() {
                                     <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '400ms'}}>
                                         <CardHeader>
                                             <CardTitle className="flex items-center gap-2 text-primary font-bold"><Eye/> Page Hits</CardTitle>
-                                            <CardDescription className="font-normal">Total visits for key pages.</CardDescription>
+                                            <CardDescription className="font-normal text-primary/70">Total visits for key pages.</CardDescription>
                                         </CardHeader>
                                         <CardContent>
                                             {hitsLoading ? <Skeleton className="h-40 w-full"/> : (
@@ -396,7 +396,7 @@ export default function AnalyticsPage() {
                 <TabsContent value="database">
                     <div className="space-y-6">
                         {isLoading ? (
-                            <SectionLoader label="Processing database trends..." description="Analyzing document creation history and distribution." />
+                            <SectionLoader label="Processing Database Trends..." description="Analyzing document creation history and distribution." />
                         ) : (
                             <>
                                 <Card className="animate-fade-in-zoom">
@@ -404,14 +404,14 @@ export default function AnalyticsPage() {
                                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                                             <div>
                                                 <CardTitle className="text-primary font-bold">Activity Over Time</CardTitle>
-                                                <CardDescription className="font-normal">Track new donations, users, and beneficiaries over a selected period.</CardDescription>
+                                                <CardDescription className="font-normal text-primary/70">Track new donations, users, and beneficiaries over a selected period.</CardDescription>
                                             </div>
                                             <div className="flex flex-wrap items-center gap-2">
                                                 <Popover>
                                                     <PopoverTrigger asChild>
                                                         <Button id="date" variant={"outline"} className={cn("w-full sm:w-[260px] justify-start text-left font-normal border-primary/20 text-primary", !date && "text-muted-foreground")}>
                                                             <CalendarIcon className="mr-2 h-4 w-4" />
-                                                            {date?.from ? (date.to ? (<>{format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}</>) : (format(date.from, "LLL dd, y"))) : (<span>Pick a date</span>)}
+                                                            {date?.from ? (date.to ? (<>{format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}</>) : (format(date.from, "LLL dd, y"))) : (<span>Pick A Date</span>)}
                                                         </Button>
                                                     </PopoverTrigger>
                                                     <PopoverContent className="w-auto p-0" align="end">
@@ -507,13 +507,13 @@ export default function AnalyticsPage() {
                                         ) : (
                                         <Skeleton className="h-[350px] w-full" />
                                         )}
-                                    </CardContent>
+                                    </CardHeader>
                                 </Card>
                                 <div className="grid gap-6 lg:grid-cols-2 animate-fade-in-up" style={{ animationDelay: '200ms'}}>
                                     <Card>
                                         <CardHeader>
                                             <CardTitle className="text-primary font-bold">Document Distribution</CardTitle>
-                                            <CardDescription className="font-normal">The proportion of documents in each main collection.</CardDescription>
+                                            <CardDescription className="font-normal text-primary/70">The proportion of documents in each main collection.</CardDescription>
                                         </CardHeader>
                                         <CardContent>
                                         {isClient ? (
@@ -535,18 +535,18 @@ export default function AnalyticsPage() {
                                     <Card>
                                         <CardHeader>
                                             <CardTitle className="text-primary font-bold">Detailed Usage Metrics</CardTitle>
-                                            <CardDescription className="font-normal">Information about database reads, writes, and deletes.</CardDescription>
+                                            <CardDescription className="font-normal text-primary/70">Information about database reads, writes, and deletes.</CardDescription>
                                         </CardHeader>
                                         <CardContent>
                                             <Alert className="border-primary/20">
                                                 <Database className="h-4 w-4 text-primary" />
-                                                <AlertTitle className="text-primary font-bold">View Usage in Firebase Console</AlertTitle>
+                                                <AlertTitle className="text-primary font-bold">View Usage In Firebase Console</AlertTitle>
                                                 <AlertDescription className="font-normal text-primary/80">
                                                     <p>For detailed, real-time metrics on database operations (document reads, writes, deletes), network usage, and storage, please visit your Firebase Console.</p>
                                                     <p className="mt-2">The "Activity Over Time" chart on this tab can provide insight into document creation trends.</p>
                                                     <Button asChild variant="link" className="p-0 h-auto mt-2 text-primary font-bold">
                                                         <a href={`https://console.firebase.google.com/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/firestore/usage`} target="_blank" rel="noopener noreferrer">
-                                                            Go to Firebase Console Usage <ExternalLink className="ml-1 h-3 w-3" />
+                                                            Go To Firebase Console Usage <ExternalLink className="ml-1 h-3 w-3" />
                                                         </a>
                                                     </Button>
                                                 </AlertDescription>
