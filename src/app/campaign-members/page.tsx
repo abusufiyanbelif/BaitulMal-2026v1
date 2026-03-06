@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, Utensils, LifeBuoy, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, Utensils, LifeBuoy, ChevronDown, ChevronUp, Globe, ShieldCheck } from 'lucide-react';
 import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -89,7 +89,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                 <FallbackIcon className="h-16 w-16 text-primary/10" />
             )}
           </div>
-          <CardHeader className="p-4">
+          <CardHeader className="p-4 space-y-3">
             <div className="flex justify-between items-start gap-2">
                 <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight text-primary">
                     {campaign.campaignNumber && <span className="text-primary font-bold">#{campaign.campaignNumber} </span>}{campaign.name}
@@ -109,7 +109,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         {canUpdate && (
                             <>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="font-bold text-primary"><span>Change Status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="font-bold text-primary"><span>Operational Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
                                             <DropdownMenuRadioGroup value={campaign.status} onValueChange={(value) => handleStatusUpdate(campaign, 'status', value)}>
@@ -121,15 +121,27 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="font-bold text-primary"><span>Verification</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="font-bold text-primary"><span>Verification Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
                                             <DropdownMenuRadioGroup value={campaign.authenticityStatus} onValueChange={(value) => handleStatusUpdate(campaign, 'authenticityStatus', value as string)}>
-                                                <DropdownMenuRadioItem value="Pending Verification" className="font-bold">Pending</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Pending Verification" className="font-bold">Pending Verification</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Verified" className="font-bold">Verified</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="On Hold" className="font-bold">On Hold</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Rejected" className="font-bold text-destructive">Rejected</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details" className="font-bold">Need Details</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details" className="font-bold">Need More Details</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
+                                </DropdownMenuSub>
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger className="font-bold text-primary"><span>Public Visibility</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuRadioGroup value={campaign.publicVisibility} onValueChange={(value) => handleStatusUpdate(campaign, 'publicVisibility', value as string)}>
+                                                <DropdownMenuRadioItem value="Hold" className="font-bold">Hold (Private)</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Ready to Publish" className="font-bold">Ready To Publish</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Published" className="font-bold text-primary">Published</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
@@ -155,33 +167,45 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                     </DropdownMenuContent>
                   </DropdownMenu>
             </div>
-            <CardDescription className="text-[10px] font-normal tracking-normal">{campaign.startDate} To {campaign.endDate}</CardDescription>
+            <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                    <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-tight">{campaign.category}</Badge>
+                    <Badge 
+                        variant={campaign.status === 'Active' ? 'success' : 'outline'}
+                        className={cn("text-[10px] font-bold uppercase tracking-tight", campaign.status === 'Active' && "animate-status-pulse")}
+                    >
+                        {campaign.status}
+                    </Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                    <Badge variant="outline" className="text-[10px] font-bold border-primary/20 text-primary flex items-center gap-1">
+                        <ShieldCheck className="h-3 w-3" />
+                        {campaign.authenticityStatus?.replace('Verification', '')}
+                    </Badge>
+                    <Badge variant={campaign.publicVisibility === 'Published' ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase tracking-tight flex items-center gap-1">
+                        <Globe className="h-3 w-3" />
+                        {campaign.publicVisibility || 'Hold'}
+                    </Badge>
+                </div>
+            </div>
+            <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground pt-1">{campaign.startDate} To {campaign.endDate}</CardDescription>
           </CardHeader>
           <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal text-primary">
-              <div className="flex justify-between items-center text-xs">
-                <Badge variant="secondary" className="text-[10px] font-bold">{campaign.category}</Badge>
-                <Badge 
-                  variant={campaign.status === 'Active' ? 'success' : 'outline'}
-                  className={cn("text-[10px] font-bold", campaign.status === 'Active' && "animate-status-pulse")}
-                >
-                  {campaign.status}
-                </Badge>
-            </div>
             {(campaign.targetAmount || 0) > 0 && (
                 <div className="space-y-1.5">
-                    <div className="flex justify-between text-[10px] font-normal text-muted-foreground uppercase">
+                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
                         <span>Raised: ₹{campaign.collected.toLocaleString('en-IN')}</span>
                         <span>{Math.round(campaign.progress)}%</span>
                     </div>
                     <Progress value={campaign.progress} className="h-1.5" />
-                    <p className="text-center text-[10px] text-muted-foreground font-normal">Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</p>
+                    <p className="text-center text-[10px] text-muted-foreground font-bold tracking-tight">Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</p>
                 </div>
             )}
           </CardContent>
           <CardFooter className="p-2 border-t bg-primary/5">
             <Button asChild className="w-full text-xs font-bold tracking-tight" size="sm" variant="ghost">
                 <Link href={`/campaign-members/${campaign.id}/summary`}>
-                    View Details
+                    View Detailed Summary
                 </Link>
             </Button>
           </CardFooter>
@@ -261,7 +285,7 @@ export default function CampaignPage() {
     const docRef = doc(firestore, 'campaigns', campaignToUpdate.id);
     const updateData = { [field]: value };
     updateDoc(docRef, updateData)
-        .then(() => toast({ title: 'Success', description: `Campaign Updated.`, variant: 'success' }))
+        .then(() => toast({ title: 'Success', description: `Campaign Visibility Updated.`, variant: 'success' }))
         .catch(err => {
             const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData });
             errorEmitter.emit('permission-error', permissionError);
@@ -298,7 +322,7 @@ export default function CampaignPage() {
 
   const isLoading = isProfileLoading || isDeleting || isDataLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Organization Campaigns..." description="Fetching active and historical initiatives." />;
+  if (isLoading) return <SectionLoader label="Loading Organization Campaigns..." description="Fetching Active And Historical Initiatives." />;
 
   if (!isLoading && userProfile && !canViewCampaigns) {
     return (
@@ -307,7 +331,7 @@ export default function CampaignPage() {
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle className="font-bold">Access Denied</AlertTitle>
-          <AlertDescription className="font-normal text-primary/70">Missing permissions to manage campaigns.</AlertDescription>
+          <AlertDescription className="font-normal text-primary/70">Missing Permissions To Manage Campaigns.</AlertDescription>
         </Alert>
       </main>
     );
@@ -328,8 +352,8 @@ export default function CampaignPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Campaign Hub</h1>
-          <p className="text-sm max-w-2xl font-normal leading-relaxed opacity-70">Organization-wide initiatives, budget vetting, and strategic tracking.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-primary uppercase">Campaign Hub</h1>
+          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Organization-Wide Initiatives, Budget Vetting, And Strategic Tracking.</p>
         </div>
 
         <div className="space-y-2">
@@ -341,7 +365,7 @@ export default function CampaignPage() {
           <CardHeader className="p-4 sm:p-6 border-b bg-primary/5">
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex flex-nowrap items-center gap-3 pb-2">
-                    <Input placeholder="Search Initiatives..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary font-normal text-primary" disabled={isLoading}/>
+                    <Input placeholder="Search Initiatives..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary font-bold text-primary" disabled={isLoading}/>
                     <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem></SelectContent></Select>
                     <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Categories</SelectItem><SelectItem value="Ration" className="font-bold">Ration</SelectItem><SelectItem value="Relief" className="font-bold">Relief</SelectItem><SelectItem value="General" className="font-bold">General</SelectItem></SelectContent></Select>
                     <div className="flex items-center gap-2 border-l border-primary/10 pl-3">
@@ -361,7 +385,7 @@ export default function CampaignPage() {
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">
                       <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
-                        <span className="text-lg font-bold tracking-tight text-primary">{section.title}</span>
+                        <span className="text-lg font-bold tracking-tight text-primary uppercase">{section.title}</span>
                         <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-bold bg-primary/10 text-primary">{section.items.length}</Badge>
                       </div>
                     </AccordionTrigger>
@@ -378,7 +402,7 @@ export default function CampaignPage() {
             ) : (
               <div className="text-center py-24 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
                   <HandHelping className="h-16 w-16 mx-auto text-primary/20 mb-4" />
-                  <p className="font-bold tracking-tight text-sm opacity-60 text-primary">No Initiatives Found Matching Filters.</p>
+                  <p className="font-bold tracking-tight text-sm opacity-60 text-primary uppercase">No Initiatives Found Matching Filters.</p>
               </div>
             )}
           </CardContent>
@@ -386,7 +410,7 @@ export default function CampaignPage() {
       </main>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete Initiative?</AlertDialogTitle><AlertDialogDescription className="font-normal opacity-80 text-primary/70">Permanently erase all data for '{campaignToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Delete Initiative?</AlertDialogTitle><AlertDialogDescription className="font-bold opacity-80 text-primary/70">Permanently Erase All Data For '{campaignToDelete?.name}'? This Action Cannot Be Undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
       <CopyCampaignDialog open={!!campaignToCopy} onOpenChange={() => setCampaignToCopy(null)} campaign={campaignToCopy} onCopyConfirm={async (opt) => { const res = await copyCampaignAction({ sourceCampaignId: campaignToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setCampaignToCopy(null); }}/>
