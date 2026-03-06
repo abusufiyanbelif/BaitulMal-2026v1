@@ -23,7 +23,6 @@ import { cn } from '@/lib/utils';
 /**
  * High-Fidelity Institutional Footer for BMS3 A Theme.
  * Provides full transparency, navigation, and secure payment details.
- * Uses centered layout with #F0FDF4 background and #355E3B text.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();

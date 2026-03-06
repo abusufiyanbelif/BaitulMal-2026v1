@@ -310,7 +310,7 @@ export default function CampaignSummaryPage() {
     const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false) || !!getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
     
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
-        if (!leadDocRef || !campaign?.documents || !canUpdateSummary) return;
+        if (!campaignDocRef || !campaign?.documents || !canUpdateSummary) return;
         const newDocs = campaign.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
         try {
             await updateDoc(campaignDocRef, { documents: newDocs, updatedAt: serverTimestamp() });
@@ -414,7 +414,7 @@ export default function CampaignSummaryPage() {
              <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 <ScrollArea className="w-full">
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full bg-transparent p-0 border-b border-primary/10 pb-4">
-                        {canReadSummary && ( <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Summary</Link> )}
+                        <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Summary</Link>
                         {isVisible('ration') && ( <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Item Lists</Link> )}
                         {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link> )}
                          {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Donations</Link> )}
@@ -552,17 +552,17 @@ export default function CampaignSummaryPage() {
                                         <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm">
                                             {isRationInitiative ? (
                                                 <Table>
-                                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                                                    <TableHeader className="bg-[#ECFDF5]">
                                                         <TableRow>
-                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Category Name</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Beneficiaries</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Kit Amount</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Total Amount</TableHead>
+                                                            <TableHead className="font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Category Name</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Beneficiaries</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Kit Amount</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Total Amount</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {beneficiaryGroups.map((group) => (
-                                                            <TableRow key={group.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white">
+                                                            <TableRow key={group.id} className="hover:bg-[#F0FDF4] transition-colors group bg-white">
                                                                 <TableCell className="font-bold text-primary text-xs transition-transform group-hover:translate-x-1">{group.name}</TableCell>
                                                                 <TableCell className="text-right font-normal text-xs">{group.count}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-xs">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
@@ -581,17 +581,17 @@ export default function CampaignSummaryPage() {
                                                 </Table>
                                             ) : (
                                                 <Table>
-                                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                                                    <TableHeader className="bg-[#ECFDF5]">
                                                         <TableRow>
-                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Requirement Description</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Quantity</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Unit Price</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Total Cost</TableHead>
+                                                            <TableHead className="font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Requirement Description</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Quantity</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Unit Price</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Total Cost</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {campaign?.itemCategories?.[0]?.items.map((item, idx) => (
-                                                            <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white">
+                                                            <TableRow key={idx} className="hover:bg-[#F0FDF4] transition-colors group bg-white">
                                                                 <TableCell className="font-medium text-xs transition-transform group-hover:translate-x-1">{item.name}</TableCell>
                                                                 <TableCell className="text-right text-xs">{item.quantity} {item.quantityType}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>

@@ -596,17 +596,17 @@ export default function LeadSummaryPage() {
                                         <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm">
                                             {isRationInitiative ? (
                                                 <Table>
-                                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                                                    <TableHeader className="bg-[#ECFDF5]">
                                                         <TableRow>
-                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Category Name</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Beneficiaries</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Kit Amount</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Total Amount</TableHead>
+                                                            <TableHead className="font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Category Name</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Beneficiaries</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Kit Amount</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Total Amount</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {beneficiaryGroups.map((group) => (
-                                                            <TableRow key={group.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white">
+                                                            <TableRow key={group.id} className="hover:bg-[#F0FDF4] transition-colors group bg-white">
                                                                 <TableCell className="font-bold text-primary text-xs transition-transform group-hover:translate-x-1">{group.name}</TableCell>
                                                                 <TableCell className="text-right font-normal text-xs">{group.count}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-xs">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
@@ -625,17 +625,17 @@ export default function LeadSummaryPage() {
                                                 </Table>
                                             ) : (
                                                 <Table>
-                                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                                                    <TableHeader className="bg-[#ECFDF5]">
                                                         <TableRow>
-                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Requirement Description</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Quantity</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Unit Price</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Total Cost</TableHead>
+                                                            <TableHead className="font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Requirement Description</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Quantity</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Unit Price</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Total Cost</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {lead?.itemCategories?.[0]?.items.map((item, idx) => (
-                                                            <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white">
+                                                            <TableRow key={idx} className="hover:bg-[#F0FDF4] transition-colors group bg-white">
                                                                 <TableCell className="font-medium text-xs transition-transform group-hover:translate-x-1">{item.name}</TableCell>
                                                                 <TableCell className="text-right text-xs">{item.quantity} {item.quantityType}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
