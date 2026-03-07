@@ -52,7 +52,7 @@ function ComponentPreview({ themeId }: { themeId: string }) {
                     <div className="p-4 space-y-6">
                         <div className="space-y-2">
                             <h3 className="text-lg font-bold text-primary tracking-tight">Theme Preview</h3>
-                            <p className="text-xs text-muted-foreground leading-relaxed font-normal">Observe how colors and styles change when you select a different theme.</p>
+                            <p className="text-xs text-muted-foreground leading-relaxed font-normal">Observe How Colors And Styles Change When You Select A Different Theme.</p>
                         </div>
 
                         {/* Mock Financial Cards */}
@@ -81,22 +81,22 @@ function ComponentPreview({ themeId }: { themeId: string }) {
                             <p className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1 tracking-widest">
                                 <TableIcon className="h-3 w-3" /> Recent Activity
                             </p>
-                            <div className="border rounded-md overflow-hidden bg-card shadow-sm">
+                            <div className="border border-primary/10 rounded-md overflow-hidden bg-card shadow-sm">
                                 <Table>
-                                    <TableHeader className="bg-primary/5">
-                                        <TableRow className="border-b">
-                                            <TableHead className="h-7 text-[9px] font-bold text-primary">Donor</TableHead>
-                                            <TableHead className="h-7 text-[9px] font-bold text-right text-primary">Amount</TableHead>
+                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                                        <TableRow className="border-b border-primary/10">
+                                            <TableHead className="h-7 text-[9px] font-bold text-[hsl(var(--table-header-fg))]">Donor</TableHead>
+                                            <TableHead className="h-7 text-[9px] font-bold text-right text-[hsl(var(--table-header-fg))]">Amount</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        <TableRow className="h-8 border-b hover:bg-primary/[0.02]">
-                                            <TableCell className="py-1 text-[10px] font-medium">Member A</TableCell>
-                                            <TableCell className="py-1 text-right font-mono text-[10px] font-bold text-primary">₹500</TableCell>
+                                        <TableRow className="h-8 border-b border-primary/10 hover:bg-[hsl(var(--table-row-hover))]">
+                                            <TableCell className="py-1 text-[10px] font-medium bg-transparent">Member A</TableCell>
+                                            <TableCell className="py-1 text-right font-mono text-[10px] font-bold text-primary bg-transparent">₹500</TableCell>
                                         </TableRow>
-                                        <TableRow className="h-8 border-none hover:bg-primary/[0.02]">
-                                            <TableCell className="py-1 text-[10px] font-medium">Member B</TableCell>
-                                            <TableCell className="py-1 text-right font-mono text-[10px] font-bold text-primary">₹1,200</TableCell>
+                                        <TableRow className="h-8 border-none hover:bg-[hsl(var(--table-row-hover))]">
+                                            <TableCell className="py-1 text-[10px] font-medium bg-transparent">Member B</TableCell>
+                                            <TableCell className="py-1 text-right font-mono text-[10px] font-bold text-primary bg-transparent">₹1,200</TableCell>
                                         </TableRow>
                                     </TableBody>
                                 </Table>
@@ -119,7 +119,7 @@ function ComponentPreview({ themeId }: { themeId: string }) {
                     <ScrollBar />
                 </ScrollArea>
                 
-                <div className="bg-muted/20 border-t p-3 text-center">
+                <div className="bg-muted/20 border-t border-primary/10 p-3 text-center">
                     <p className="text-[8px] text-muted-foreground font-normal">© 2026 Your Organization. All Rights Reserved.</p>
                 </div>
             </div>
@@ -207,7 +207,7 @@ export default function ViewportSettingsPage() {
             <div className="grid gap-6 lg:grid-cols-12">
                 <div className="lg:col-span-8 space-y-6">
                     <Card className={cn("transition-all duration-300 border-primary/10", isEditMode && "border-primary/40 shadow-md bg-white")}>
-                        <CardHeader className="bg-primary/5 border-b">
+                        <CardHeader className="bg-primary/5 border-b border-primary/10">
                             <CardTitle className="flex items-center gap-2 font-bold text-base"><Palette className="h-5 w-5" /> Appearance Palette</CardTitle>
                             <CardDescription className="font-normal text-xs text-primary/60">Choose A Color Scheme That Reflects Your Organization's Identity.</CardDescription>
                         </CardHeader>
@@ -242,7 +242,7 @@ export default function ViewportSettingsPage() {
                                                 <Button 
                                                     key={s.id} 
                                                     variant={pendingTheme === s.id ? 'default' : 'outline'} 
-                                                    className={cn("font-bold justify-between px-4 h-12 transition-all group overflow-hidden relative", pendingTheme === s.id && "shadow-lg scale-[1.02] border-primary/40")} 
+                                                    className={cn("font-normal justify-between px-4 h-12 transition-all group overflow-hidden relative", pendingTheme === s.id && "shadow-lg scale-[1.02] border-primary/40")} 
                                                     onClick={() => setPendingTheme(s.id)}
                                                 >
                                                     <span className="truncate relative z-10">{s.name}</span>
@@ -258,16 +258,16 @@ export default function ViewportSettingsPage() {
                     </Card>
 
                     <Card className={cn("transition-all duration-300 border-primary/10 bg-white", isEditMode && "border-primary/40 shadow-md")}>
-                        <CardHeader className="bg-primary/5 border-b">
+                        <CardHeader className="bg-primary/5 border-b border-primary/10">
                             <CardTitle className="flex items-center gap-2 font-bold text-base"><Zap className="h-5 w-5" /> Motion & Visual Effects</CardTitle>
                             <CardDescription className="font-normal text-xs text-primary/60">Customize The Responsiveness And Fluidity Of The Institutional Interface.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4 pt-6">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="flex items-center justify-between space-x-2 rounded-lg border p-4 bg-muted/5 transition-all hover:border-primary/20">
+                                <div className="flex items-center justify-between space-x-2 rounded-lg border border-primary/10 p-4 bg-muted/5 transition-all hover:border-primary/20">
                                     <div className="space-y-0.5">
                                         <Label className="font-bold text-sm">UI Transitions</Label>
-                                        <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-tight">Fade-ins and scaling effects.</p>
+                                        <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-tight">Fade-Ins And Scaling Effects.</p>
                                     </div>
                                     <Switch 
                                         checked={isEditMode ? pendingAnimations : animationsEnabled} 
@@ -275,10 +275,10 @@ export default function ViewportSettingsPage() {
                                         disabled={!isEditMode} 
                                     />
                                 </div>
-                                <div className="flex items-center justify-between space-x-2 rounded-lg border p-4 bg-muted/5 transition-all hover:border-primary/20">
+                                <div className="flex items-center justify-between space-x-2 rounded-lg border border-primary/10 p-4 bg-muted/5 transition-all hover:border-primary/20">
                                     <div className="space-y-0.5">
                                         <Label className="font-bold text-sm">Smooth Scrolling</Label>
-                                        <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-tight">Fluid navigation between sections.</p>
+                                        <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-tight">Fluid Navigation Between Sections.</p>
                                     </div>
                                     <Switch 
                                         checked={isEditMode ? pendingSmoothScroll : smoothScrolling} 
@@ -286,13 +286,13 @@ export default function ViewportSettingsPage() {
                                         disabled={!isEditMode} 
                                     />
                                 </div>
-                                <div className="flex items-center justify-between space-x-2 rounded-lg border p-4 bg-muted/5 transition-all hover:border-primary/20 sm:col-span-2">
+                                <div className="flex items-center justify-between space-x-2 rounded-lg border border-primary/10 p-4 bg-muted/5 transition-all hover:border-primary/20 sm:col-span-2">
                                     <div className="space-y-0.5">
                                         <div className="flex items-center gap-2">
                                             <Label className="font-bold text-sm">Reduced Motion Mode</Label>
-                                            <Badge variant="secondary" className="text-[8px] h-4 font-bold tracking-tighter">ACCESSIBILITY</Badge>
+                                            <Badge variant="secondary" className="text-[8px] h-4 font-bold tracking-tighter">Accessibility</Badge>
                                         </div>
-                                        <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-tight">Minimizes non-essential movement for enhanced comfort.</p>
+                                        <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-tight">Minimizes Non-Essential Movement For Enhanced Comfort.</p>
                                     </div>
                                     <Switch 
                                         checked={isEditMode ? pendingReducedMotion : reducedMotion} 
@@ -307,14 +307,14 @@ export default function ViewportSettingsPage() {
 
                 <div className="lg:col-span-4 space-y-6">
                     <Card className={cn("sticky top-24 transition-all duration-500 border-primary/10 shadow-lg bg-white overflow-hidden", isEditMode ? "border-primary/20 opacity-100" : "opacity-50 grayscale pointer-events-none")}>
-                        <CardHeader className="bg-primary/5 border-b pb-3">
+                        <CardHeader className="bg-primary/5 border-b border-primary/10 pb-3">
                             <div className="flex items-center justify-between">
                                 <CardTitle className="flex items-center gap-2 font-bold text-sm tracking-widest uppercase text-primary">
-                                    <Eye className="h-4 w-4" /> Real-time Preview
+                                    <Eye className="h-4 w-4" /> Real-Time Preview
                                 </CardTitle>
                                 {isEditMode && <Badge variant="success" className="animate-pulse text-[10px] font-bold">Live Interaction</Badge>}
                             </div>
-                            <CardDescription className="text-[10px] font-normal">Visual simulation of organizational components.</CardDescription>
+                            <CardDescription className="text-[10px] font-normal">Visual Simulation Of Organizational Components.</CardDescription>
                         </CardHeader>
                         <CardContent className="p-0 bg-primary/[0.01]">
                             <div className="p-4">
@@ -323,7 +323,7 @@ export default function ViewportSettingsPage() {
                                 />
                             </div>
                         </CardContent>
-                        <CardFooter className="bg-muted/5 p-3 border-t flex justify-center">
+                        <CardFooter className="bg-muted/5 p-3 border-t border-primary/10 flex justify-center">
                             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
                                 Currently Rendering: {currentThemeName}
                             </p>
@@ -332,9 +332,9 @@ export default function ViewportSettingsPage() {
 
                     {!isEditMode && (
                         <Card className="h-fit border-primary/10 bg-white shadow-sm overflow-hidden animate-fade-in-up">
-                            <CardHeader className="bg-primary/5 border-b">
+                            <CardHeader className="bg-primary/5 border-b border-primary/10">
                                 <CardTitle className="flex items-center gap-2 font-bold text-base"><Info className="h-5 w-5" /> Technical Profile</CardTitle>
-                                <CardDescription className="font-normal text-xs text-primary/60">Active system visual configuration logs.</CardDescription>
+                                <CardDescription className="font-normal text-xs text-primary/60">Active System Visual Configuration Logs.</CardDescription>
                             </CardHeader>
                             <CardContent className="pt-6 space-y-4">
                                 <div className="flex justify-between items-center py-2 border-b border-dashed border-primary/10">
@@ -354,8 +354,8 @@ export default function ViewportSettingsPage() {
                                     <Badge variant={reducedMotion ? "secondary" : "success"} className="text-[9px] font-bold">{reducedMotion ? 'Reduced Motion' : 'Full Effects'}</Badge>
                                 </div>
                             </CardContent>
-                            <CardFooter className="bg-muted/5 p-4 border-t italic text-[10px] text-muted-foreground font-normal text-center w-full">
-                                Optimized for high-fidelity institutional rendering.
+                            <CardFooter className="bg-muted/5 p-4 border-t border-primary/10 italic text-[10px] text-muted-foreground font-normal text-center w-full">
+                                Optimized For High-Fidelity Institutional Rendering.
                             </CardFooter>
                         </Card>
                     )}
