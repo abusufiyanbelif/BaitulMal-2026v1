@@ -36,7 +36,7 @@ import { Label } from '@/components/ui/label';
 
 /**
  * Institutional Footer - Optimized for clarity and interaction.
- * Provides a secure hub for contributions and contact information.
+ * Consolidated redundant contribution buttons into a single Hub.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
@@ -124,7 +124,7 @@ export function AppFooter() {
 
           {/* Column 2: Navigation */}
           <div className="space-y-6 md:pl-10">
-            <h3 className="text-xs font-bold text-primary opacity-40 tracking-tight">
+            <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">
               Institutional Hub
             </h3>
             <nav className="flex flex-col gap-4">
@@ -141,26 +141,21 @@ export function AppFooter() {
 
           {/* Column 3: Secure Contributions */}
           <div className="flex flex-col md:items-end gap-6">
-            <h3 className="text-xs font-bold text-primary opacity-40 tracking-tight">
+            <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">
               Secure Contribution
             </h3>
-            <div className="flex flex-col gap-3 w-full sm:w-auto">
+            <div className="w-full sm:w-auto">
                 <Button 
                     variant="outline" 
                     onClick={() => setIsDonationDialogOpen(true)}
-                    className="font-bold border-primary/20 text-primary h-12 px-6 rounded-xl hover:bg-primary hover:text-white transition-all active:scale-95 shadow-md group"
+                    className="font-semibold border-primary/20 text-primary h-12 px-10 rounded-xl hover:bg-primary hover:text-white transition-all active:scale-95 shadow-md group w-full"
                 >
-                    <QrCode className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                    Upi Qr & Details
+                    <HeartHandshake className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                    Contribution Hub
                 </Button>
-                <Button 
-                    variant="outline" 
-                    onClick={() => setIsDonationDialogOpen(true)}
-                    className="font-bold border-primary/20 text-primary h-12 px-6 rounded-xl hover:bg-primary hover:text-white transition-all active:scale-95 shadow-md group"
-                >
-                    <Landmark className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                    Bank Transfer Details
-                </Button>
+                <p className="text-[9px] text-muted-foreground mt-3 font-normal italic md:text-right uppercase tracking-tighter opacity-60">
+                    Upi Qr, Bank Transfer, And Global Support Channels.
+                </p>
             </div>
           </div>
         </div>
@@ -180,14 +175,14 @@ export function AppFooter() {
               </span>
             )}
           </div>
-          <p className="text-center sm:text-right font-normal text-muted-foreground">
+          <p className="text-center sm:text-right font-normal text-muted-foreground opacity-80">
             {paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}. All Rights Reserved.`}
           </p>
         </div>
       </div>
 
       {/* Donation Options Hub Dialog */}
-      <Dialog open={isDonationDialogOpen} onOpenChange={setIsDonationDialogOpen}>
+      <Dialog open={isDonationDialogOpen} onOpenChange={isDonationDialogOpen ? setIsDonationDialogOpen : undefined}>
         <DialogContent className="sm:max-w-xl border-primary/10 overflow-hidden rounded-[24px] p-0 animate-fade-in-zoom">
           <DialogHeader className="bg-primary/5 px-6 py-6 border-b">
             <DialogTitle className="text-2xl font-bold text-primary tracking-tight">Institutional Contribution Hub</DialogTitle>
