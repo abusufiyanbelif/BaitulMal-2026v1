@@ -51,7 +51,6 @@ import {
     ImageIcon,
     GraduationCap,
     HeartPulse,
-    LifeBuoy,
     Info,
     HandHelping,
     ShieldCheck
@@ -395,7 +394,7 @@ export default function LeadSummaryPage() {
     const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
 
     return (
-        <main className="container mx-auto p-4 md:p-8 text-primary font-normal">
+        <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
              <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
@@ -644,7 +643,7 @@ export default function LeadSummaryPage() {
                         )}
 
                         {isVisible('quick_stats') && (
-                            <div className="grid gap-6 sm:grid-cols-3 font-normal">
+                            <div className="grid gap-6 grid-cols-1 sm:grid-cols-3 font-normal">
                                 <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.totalBeneficiaries}</div></CardContent></Card>
                                 <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Assistance Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesGiven}</div></CardContent></Card>
                                 <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Pending Support</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesPending}</div></CardContent></Card>
@@ -665,7 +664,7 @@ export default function LeadSummaryPage() {
                                 </CardHeader>
                                 <CardContent className="p-0 sm:p-6 font-normal">
                                     <ScrollArea className="w-full">
-                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm">
+                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[600px]">
                                             {isRationInitiative ? (
                                                 <Table>
                                                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">

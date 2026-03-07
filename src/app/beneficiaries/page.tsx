@@ -76,21 +76,19 @@ import { BeneficiaryImportDialog } from '@/components/beneficiary-import-dialog'
 
 const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_140px_140px_100px_200px_60px] items-center gap-4 px-4 py-3 min-w-[1150px]";
 
-type SortKey = keyof Beneficiary | 'srNo';
-
 function StatCard({ title, count, description, icon: Icon, colorClass, delay }: { title: string, count: number, description: string, icon: any, colorClass?: string, delay: string }) {
     return (
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md hover:-translate-y-1", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-widest">{title}</p>
-                    <p className="text-3xl font-black text-primary tracking-tight">{count}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">{title}</p>
+                    <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
-                <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                    <Icon className="h-5 w-5" />
+                <div className="p-2 rounded-lg bg-primary/5 text-primary">
+                    <Icon className="h-4 w-4" />
                 </div>
             </div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-auto">{description}</p>
+            <p className="text-[9px] font-medium text-muted-foreground mt-auto">{description}</p>
         </Card>
     )
 }
@@ -297,9 +295,9 @@ export default function BeneficiariesPage() {
   );
 
   return (
-    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative">
+    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative overflow-hidden">
       <div className="flex items-center justify-between">
-        <Button variant="secondary" asChild className="font-bold border-primary/10 text-primary transition-transform active:scale-95">
+        <Button variant="outline" asChild className="font-bold border-primary/10 text-primary transition-transform active:scale-95">
           <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Dashboard</Link>
         </Button>
       </div>
@@ -307,7 +305,7 @@ export default function BeneficiariesPage() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="space-y-1">
             <h1 className="text-3xl font-bold tracking-tight text-primary">Master Beneficiary Registry</h1>
-            <p className="text-sm font-bold text-muted-foreground opacity-70">Total Vetted Records: {beneficiaries?.length || 0}</p>
+            <p className="text-sm font-medium text-muted-foreground opacity-70">Total Vetted Records: {beneficiaries?.length || 0}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button onClick={handleExport} variant="outline" size="sm" className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
@@ -338,9 +336,9 @@ export default function BeneficiariesPage() {
       </div>
 
       <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
-        <ScrollArea className="w-full whitespace-nowrap">
+        <ScrollArea className="w-full">
             <div className="flex flex-nowrap items-center gap-3 pb-2">
-                <div className="relative w-[250px]">
+                <div className="relative w-[250px] shrink-0">
                     <Input 
                         placeholder="Search Name, Phone..." 
                         value={searchTerm} 
@@ -354,7 +352,7 @@ export default function BeneficiariesPage() {
                 
                 <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-[220px] justify-between h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white">
+                        <Button variant="outline" className="w-[220px] shrink-0 justify-between h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white">
                             <div className="flex items-center gap-2 truncate">
                                 <Filter className="h-3.5 w-3.5 opacity-40 shrink-0" />
                                 <span className="truncate">
@@ -391,7 +389,7 @@ export default function BeneficiariesPage() {
                 </Popover>
 
                 <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[180px] h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white"><SelectValue placeholder="Vetting Status" /></SelectTrigger>
+                    <SelectTrigger className="w-[180px] shrink-0 h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white"><SelectValue placeholder="Vetting Status" /></SelectTrigger>
                     <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
                         <SelectItem value="All" className="font-normal">All Vetting</SelectItem>
                         <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
@@ -401,7 +399,7 @@ export default function BeneficiariesPage() {
                     </SelectContent>
                 </Select>
                 <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[180px] h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
+                    <SelectTrigger className="w-[180px] shrink-0 h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
                     <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
                         <SelectItem value="All" className="font-normal">All Zakat Status</SelectItem>
                         <SelectItem value="Eligible" className="font-normal">Eligible</SelectItem>
@@ -413,7 +411,7 @@ export default function BeneficiariesPage() {
         </ScrollArea>
       </div>
 
-      <div className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
+      <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
         <ScrollArea className="w-full">
             <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-semibold tracking-wider text-[hsl(var(--table-header-fg))]", gridClass)}>
                 <div className="flex justify-center">
@@ -480,7 +478,7 @@ export default function BeneficiariesPage() {
                                             <DropdownMenuRadioGroup value={b.status || 'Pending'} onValueChange={(s) => handleStatusChange(b, s)}>
                                             <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</SelectItem>
+                                            <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Need More Details" className="text-xs font-normal">Need Details</DropdownMenuRadioItem></DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent></DropdownMenuPortal>
                                         </DropdownMenuSub>
@@ -536,11 +534,11 @@ export default function BeneficiariesPage() {
             )}
             <ScrollBar orientation="horizontal" />
         </ScrollArea>
-      </div>
+      </Card>
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between border-t pt-4">
-          <p className="text-xs font-bold opacity-60 uppercase">Page {currentPage} Of {totalPages}</p>
+          <p className="text-[10px] font-bold opacity-60 uppercase">Page {currentPage} Of {totalPages}</p>
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/10 h-8">Previous</Button>
             <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/10 h-8">Next</Button>
@@ -550,18 +548,19 @@ export default function BeneficiariesPage() {
 
       {/* Bulk Action Bar */}
       {selectedIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-bottom">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-bottom w-full max-w-[95vw] sm:max-w-fit">
             <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
                 <div className="flex items-center gap-2 pr-4 border-r border-white/20">
                     <CheckSquare className="h-5 w-5" />
-                    <span className="text-sm font-bold tracking-tight">{selectedIds.length} Selected</span>
+                    <span className="text-sm font-bold tracking-tight whitespace-nowrap">{selectedIds.length} Selected</span>
                 </div>
                 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
                             {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ChevronsUpDown className="mr-2 h-4 w-4"/>}
-                            Bulk Change Status
+                            <span className="hidden sm:inline">Bulk Change Status</span>
+                            <span className="sm:hidden">Actions</span>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">

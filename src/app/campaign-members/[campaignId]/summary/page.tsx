@@ -315,13 +315,13 @@ export default function CampaignSummaryPage() {
     };
 
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
-        if (!campaignDocRef || !campaign?.documents || !canUpdateSummary) return;
-        const newDocs = campaign.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
+        if (!leadDocRef || !lead?.documents || !canUpdateSummary) return;
+        const newDocs = lead.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
         try {
-            await updateDoc(campaignDocRef!, { documents: newDocs, updatedAt: serverTimestamp() });
+            await updateDoc(leadDocRef, { documents: newDocs, updatedAt: serverTimestamp() });
             toast({ title: "Visibility Updated", variant: "success" });
         } catch (serverError: any) {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campaignDocRef!.path, operation: 'update', requestResourceData: { documents: newDocs } }));
+            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: { documents: newDocs } }));
         }
     };
 
@@ -401,7 +401,7 @@ export default function CampaignSummaryPage() {
     if (isLoadingPage) return <BrandedLoader />;
 
     return (
-        <main className="container mx-auto p-4 md:p-8 text-primary font-normal">
+        <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
              <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="secondary" asChild className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
@@ -614,7 +614,7 @@ export default function CampaignSummaryPage() {
                                 </CardHeader>
                                 <CardContent className="p-0 sm:p-6 font-normal">
                                     <ScrollArea className="w-full">
-                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm">
+                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[600px]">
                                             {isRationInitiative ? (
                                                 <Table>
                                                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
