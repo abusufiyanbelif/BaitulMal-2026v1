@@ -23,19 +23,48 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+<<<<<<< HEAD
 .env*.local
 .env
+=======
+<<<<<<< Updated upstream
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+=======
+.env*.local
+.env
+>>>>>>> Stashed changes
+>>>>>>> ec143c0fbd59660a5bff17afcf13151048a4b79c
 
 # vercel
 .vercel
 
+<<<<<<< HEAD
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 
 # Firebase Studio Specific
 serviceAccountKey.json
+=======
+<<<<<<< Updated upstream
+# sensitive files
+serviceAccountKey.json
+=======
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Firebase Studio Specific
+serviceAccountKey.json
+>>>>>>> ec143c0fbd59660a5bff17afcf13151048a4b79c
 src/serviceAccountKey.json
 backend.json
 firestore.rules
 storage.rules
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+>>>>>>> ec143c0fbd59660a5bff17afcf13151048a4b79c

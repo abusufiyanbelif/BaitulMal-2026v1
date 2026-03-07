@@ -13,11 +13,36 @@ import { ThemeProvider } from 'next-themes';
 import { THEME_SUGGESTIONS } from '@/lib/themes';
 
 export function Providers({ children }: { children: ReactNode }) {
+<<<<<<< HEAD
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
 
   // Extract all valid theme IDs for the provider
   const allThemes = THEME_SUGGESTIONS.map(t => t.id);
+=======
+<<<<<<< Updated upstream
+=======
+  const pathname = usePathname();
+  const isLoginPage = pathname === '/login';
+
+  // Explicit registry of all institutional palettes to ensure next-themes
+  // identifies and persists the correct CSS class instantly.
+  const allThemes = Array.from(new Set([
+    'light',
+    'dark',
+    'system',
+    'bmss-brand-warm',
+    'ocean-blue',
+    'sunset-orange',
+    'sunrise-peach',
+    'lavender-mint',
+    'midnight-ramadan',
+    'midnight-emerald',
+    'cyberpunk-neon',
+    'dracula-orchid',
+    'github-dark'
+  ]));
+>>>>>>> ec143c0fbd59660a5bff17afcf13151048a4b79c
 
   useEffect(() => {
     const applyMotionSettings = () => {
@@ -41,6 +66,10 @@ export function Providers({ children }: { children: ReactNode }) {
     applyMotionSettings();
   }, []);
 
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+>>>>>>> ec143c0fbd59660a5bff17afcf13151048a4b79c
   return (
     <FirebaseClientProvider>
       <ThemeProvider 

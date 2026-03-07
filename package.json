@@ -13,7 +13,8 @@
     "db:migrate-beneficiaries": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/migrate-beneficiaries.ts",
     "db:migrate-zakat": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/migrate-zakat.ts",
     "db:migrate-settings": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/migrate-settings.ts",
-    "db:check-structure": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/check-structure.ts"
+    "db:check-structure": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/check-structure.ts",
+    "db:migrate-beneficiary-status": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/migrate-beneficiary-status.ts"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.0.0",

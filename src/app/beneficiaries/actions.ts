@@ -8,8 +8,13 @@ import { FieldValue, DocumentData } from 'firebase-admin/firestore';
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
 
 function sanitizeBeneficiaryForMasterList(data: DocumentData): Partial<Beneficiary> {
-    const { status, kitAmount, itemCategoryId, itemCategoryName, zakatAllocation, ...masterData } = data;
-    return masterData;
+    const { kitAmount, itemCategoryId, itemCategoryName, zakatAllocation, ...masterData } = data;
+    // Map 'Given' to 'Verified' for master list, otherwise keep it or default to 'Pending'
+    const status = data.status === 'Given' ? 'Verified' : (data.status || 'Pending');
+    return {
+        ...masterData,
+        status: status as any,
+    };
 }
 
 export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
@@ -22,6 +27,7 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
         await docRef.set({
             ...data,
             id: docRef.id,
+            status: data.status || 'Pending',
             addedDate: data.addedDate || new Date().toISOString().split('T')[0],
             createdAt: FieldValue.serverTimestamp(),
             createdById: createdBy.id,
@@ -50,8 +56,12 @@ export async function updateMasterBeneficiaryAction(
 
         const { zakatAllocation, kitAmount, status, ...masterData } = data;
 
+        // Ensure status doesn't become null/empty
+        const statusToSet = status || 'Pending';
+
         await masterBeneficiaryRef.set({
             ...masterData,
+            status: statusToSet,
             updatedAt: FieldValue.serverTimestamp(),
             updatedById: updatedBy.id,
             updatedByName: updatedBy.name,
@@ -113,7 +123,7 @@ export async function updateBeneficiaryStatusInInitiativeAction(
 
     try {
         const docRef = adminDb.doc(docPath);
-        await docRef.set({ status: newStatus }, { merge: true });
+        await docRef.set({ status: newStatus || 'Pending' }, { merge: true });
 
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
         return { success: true, message: 'Beneficiary Status Updated Successfully.' };

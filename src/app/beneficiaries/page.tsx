@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useMemo } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useFirestore, useMemoFirebase, useCollection, collection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
@@ -66,7 +66,6 @@ export default function BeneficiariesPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
-  const pathname = usePathname();
   const { userProfile, isLoading: isProfileLoading } = useSession();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -88,31 +87,23 @@ export default function BeneficiariesPage() {
   const filteredAndSortedBeneficiaries = useMemo(() => {
     if (!beneficiaries) return [];
     
-    // Filtering Logic
     let items = beneficiaries.filter(b => {
         const matchesSearch = (b.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
                              (b.phone || '').includes(searchTerm) ||
                              (b.address || '').toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === 'All' || b.status === statusFilter;
+        const matchesStatus = statusFilter === 'All' || (b.status || 'Pending') === statusFilter;
         const matchesZakat = zakatFilter === 'All' || (zakatFilter === 'Eligible' ? b.isEligibleForZakat : !b.isEligibleForZakat);
         return matchesSearch && matchesStatus && matchesZakat;
     });
 
-    // Sorting Logic
     if (sortConfig !== null) {
         items.sort((a, b) => {
             if (sortConfig.key === 'srNo') return 0;
-            
             const aVal = (a as any)[sortConfig.key];
             const bVal = (b as any)[sortConfig.key];
-            
-            if (typeof aVal === 'number' && typeof bVal === 'number') {
-                return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
-            }
-            
+            if (typeof aVal === 'number' && typeof bVal === 'number') return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
             const aStr = String(aVal || '').toLowerCase();
             const bStr = String(bVal || '').toLowerCase();
-            
             if (aStr < bStr) return sortConfig.direction === 'ascending' ? -1 : 1;
             if (aStr > bStr) return sortConfig.direction === 'ascending' ? 1 : -1;
             return 0;
@@ -237,7 +228,7 @@ export default function BeneficiariesPage() {
                     <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
                     <div className="font-bold text-sm truncate pr-2 text-primary">{b.name}</div>
                     <div className="font-mono text-xs opacity-60 text-primary">{b.phone || 'N/A'}</div>
-                    <div className="text-center"><Badge variant="outline" className="text-[10px] font-bold uppercase">{b.status}</Badge></div>
+                    <div className="text-center"><Badge variant="outline" className="text-[10px] font-bold uppercase">{b.status || 'Pending'}</Badge></div>
                     <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
                     <div className="pl-4 text-xs font-normal text-primary/70">{b.referralBy || 'N/A'}</div>
                     <div className="text-right">
@@ -250,7 +241,7 @@ export default function BeneficiariesPage() {
                                         <DropdownMenuSub>
                                         <DropdownMenuSubTrigger className="text-primary font-normal">Status</DropdownMenuSubTrigger>
                                         <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                            <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
+                                            <DropdownMenuRadioGroup value={b.status || 'Pending'} onValueChange={(s) => handleStatusChange(b, s)}>
                                             <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</DropdownMenuRadioItem>
