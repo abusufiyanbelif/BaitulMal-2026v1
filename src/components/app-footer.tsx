@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -12,21 +13,52 @@ import {
   ShieldCheck, 
   QrCode, 
   Users,
-  HeartHandshake
+  HeartHandshake,
+  Download,
+  Maximize2
 } from 'lucide-react';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter 
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 /**
  * Streamlined Institutional Footer - Fully theme-reactive.
+ * Includes interactive QR code maximization and download capabilities.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
   const { paymentSettings } = usePaymentSettings();
   const pathname = usePathname();
+  const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
 
   if (pathname === '/login') return null;
 
   const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
   const validQrUrl = paymentSettings?.qrCodeUrl?.trim() ? paymentSettings.qrCodeUrl : null;
+
+  const handleDownloadQr = async () => {
+    if (!validQrUrl) return;
+    try {
+      const response = await fetch(`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`);
+      if (!response.ok) throw new Error('Failed to fetch image');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `institutional-qr-${paymentSettings?.upiId || 'payment'}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("QR download failed:", error);
+    }
+  };
 
   return (
     <footer className="bg-secondary/50 border-t border-border py-12 px-4 font-normal text-primary transition-colors duration-500">
@@ -94,7 +126,7 @@ export function AppFooter() {
             <h3 className="text-[10px] font-bold tracking-widest text-primary uppercase opacity-40">
               Secure Contribution Channel
             </h3>
-            <div className="flex items-center gap-6 bg-white/60 p-4 rounded-2xl border border-primary/10 shadow-lg transition-transform hover:scale-[1.02]">
+            <div className="flex items-center gap-6 bg-white/60 p-4 rounded-2xl border border-primary/10 shadow-lg transition-all duration-300">
               <div className="text-right space-y-1.5">
                 <p className="text-sm text-primary font-bold font-mono tracking-tighter">
                   {paymentSettings?.upiId || 'Not Configured'}
@@ -104,7 +136,10 @@ export function AppFooter() {
                 </p>
               </div>
               {validQrUrl ? (
-                <div className="relative w-28 h-28 bg-white p-1.5 rounded-xl border-2 border-primary shadow-inner">
+                <div 
+                  onClick={() => setIsQrDialogOpen(true)}
+                  className="relative w-28 h-28 bg-white p-1.5 rounded-xl border-2 border-primary shadow-inner cursor-pointer group transition-all hover:scale-105 active:scale-95"
+                >
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`}
                     alt="Payment QR"
@@ -112,6 +147,9 @@ export function AppFooter() {
                     className="object-contain p-1"
                     unoptimized
                   />
+                  <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-xl">
+                    <Maximize2 className="text-primary h-6 w-6 drop-shadow-sm" />
+                  </div>
                 </div>
               ) : (
                 <div className="w-28 h-28 bg-white/50 rounded-xl border-2 border-dashed border-border flex items-center justify-center text-muted-foreground/10">
@@ -142,6 +180,39 @@ export function AppFooter() {
           </p>
         </div>
       </div>
+
+      {/* QR Maximization Dialog */}
+      <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
+        <DialogContent className="sm:max-w-md border-primary/10 overflow-hidden rounded-[20px] p-0 animate-fade-in-zoom">
+          <DialogHeader className="bg-primary/5 px-6 py-4 border-b">
+            <DialogTitle className="font-bold text-primary tracking-tight">Institutional Payment QR</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center p-8 space-y-6 bg-white">
+            <div className="relative w-64 h-64 bg-white p-4 rounded-2xl border-4 border-primary shadow-2xl transition-transform hover:scale-[1.02]">
+              {validQrUrl && (
+                <Image
+                  src={`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`}
+                  alt="Payment QR Maximized"
+                  fill
+                  className="object-contain p-2"
+                  unoptimized
+                />
+              )}
+            </div>
+            <div className="text-center space-y-2">
+              <p className="font-mono text-lg font-bold text-primary tracking-tighter">{paymentSettings?.upiId}</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed max-w-[200px] mx-auto">
+                Scan With Any UPI-Enabled Application To Make A Secure Contribution.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-center px-6 py-4 bg-primary/[0.02] border-t">
+            <Button onClick={handleDownloadQr} className="font-bold shadow-lg active:scale-95 transition-all w-full sm:w-auto px-8">
+              <Download className="mr-2 h-4 w-4" /> Download QR Image
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </footer>
   );
 }
