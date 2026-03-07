@@ -34,10 +34,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 /**
  * A detailed preview component that applies the selected theme class locally.
+ * Handles dual-class logic for dark themes during simulation.
  */
 function ComponentPreview({ themeId }: { themeId: string }) {
+    const isDark = THEME_SUGGESTIONS.find(t => t.id === themeId)?.isDark;
+    
     return (
-        <div className={cn("rounded-xl border shadow-2xl overflow-hidden transition-all duration-500", themeId)} style={{ transform: 'scale(0.95)' }}>
+        <div className={cn(
+            "rounded-xl border shadow-2xl overflow-hidden transition-all duration-500", 
+            themeId,
+            isDark && "dark"
+        )} style={{ transform: 'scale(0.95)' }}>
             <div className="bg-background text-foreground min-h-[450px] flex flex-col transition-colors duration-500">
                 {/* Mock Header */}
                 <div className="bg-card border-b p-3 flex items-center justify-between">

@@ -14,14 +14,20 @@ import { THEME_SUGGESTIONS } from '@/lib/themes';
 
 /**
  * Enhanced Providers Component
- * Ensures theme persistence across sessions and handles institutional visual rules.
+ * Implements value mapping for dark themes to ensure Tailwind synchronization.
  */
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
 
-  // Extract all valid theme IDs for the provider
+  // Extract all valid theme IDs
   const allThemes = THEME_SUGGESTIONS.map(t => t.id);
+  
+  // Create mapping for dark themes so next-themes applies BOTH classes
+  const themeValueMap = THEME_SUGGESTIONS.reduce((acc, theme) => {
+    acc[theme.id] = theme.isDark ? `dark ${theme.id}` : theme.id;
+    return acc;
+  }, {} as Record<string, string>);
 
   useEffect(() => {
     const applyMotionSettings = () => {
@@ -53,6 +59,7 @@ export function Providers({ children }: { children: ReactNode }) {
         enableSystem={false}
         storageKey="institutional-theme-persistent-v1"
         themes={allThemes}
+        value={themeValueMap}
         disableTransitionOnChange
       >
         <div className="relative min-h-screen w-full overflow-x-hidden flex flex-col">

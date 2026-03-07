@@ -7,7 +7,6 @@ export interface ThemeSuggestion {
 /**
  * Official organizational theme identifiers.
  * These IDs must match the CSS classes defined in globals.css.
- * All GitHub legacy themes have been removed.
  */
 export const THEME_SUGGESTIONS: ThemeSuggestion[] = [
   { id: 'bms3-a', name: 'BMS3 A (Modern Green)', isDark: false },
