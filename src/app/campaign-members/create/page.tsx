@@ -85,7 +85,7 @@ export default function CreateCampaignPage() {
       description: '',
       category: 'Ration',
       status: 'Upcoming',
-      priority: 'Low',
+      priority: 'Medium',
       authenticityStatus: 'Pending Verification',
       publicVisibility: 'Hold',
       startDate: new Date().toISOString().split('T')[0],

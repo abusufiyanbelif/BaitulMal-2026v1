@@ -14,7 +14,8 @@
     "db:migrate-zakat": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/migrate-zakat.ts",
     "db:migrate-settings": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/migrate-settings.ts",
     "db:check-structure": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/check-structure.ts",
-    "db:migrate-beneficiary-status": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/migrate-beneficiary-status.ts"
+    "db:migrate-beneficiary-status": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/migrate-beneficiary-status.ts",
+    "db:migrate-priority": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/migrate-priority.ts"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.0.0",

@@ -22,12 +22,13 @@ import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from './news-ticker';
 
 const getPriorityIcon = (priority?: string) => {
-  switch (priority) {
+  const p = priority || 'Medium';
+  switch (p) {
     case 'Urgent': return <AlertTriangle className="h-3 w-3 text-red-600" />;
     case 'High': return <ArrowUpCircle className="h-3 w-3 text-orange-500" />;
     case 'Medium': return <MinusCircle className="h-3 w-3 text-yellow-500" />;
     case 'Low': return <ArrowDownCircle className="h-3 w-3 text-blue-500" />;
-    default: return null;
+    default: return <MinusCircle className="h-3 w-3 text-yellow-500" />;
   }
 };
 
@@ -37,6 +38,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {campaigns.map((campaign, index) => {
                 const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
+                const priorityLabel = campaign.priority || 'Medium';
                 
                 return (
                     <Card 
@@ -79,15 +81,15 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                 </Badge>
                             </div>
                             <div className={cn(
-                                "text-[10px] font-bold uppercase tracking-tight flex items-center gap-1.5", 
-                                campaign.priority === 'Urgent' ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
+                                "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
+                                priorityLabel === 'Urgent' ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
                             )}>
-                                {getPriorityIcon(campaign.priority)}
-                                {campaign.priority || 'Low'} Priority
+                                {getPriorityIcon(priorityLabel)}
+                                {priorityLabel} Priority
                             </div>
                             {(campaign.targetAmount || 0) > 0 && (
                                 <div className="space-y-1.5">
-                                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase">
+                                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground tracking-tight">
                                         <span>Raised: ₹{campaign.collected.toLocaleString('en-IN')}</span>
                                         <span>{Math.round(campaign.progress)}%</span>
                                     </div>

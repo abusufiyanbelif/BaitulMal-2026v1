@@ -105,7 +105,7 @@ export default function CreateLeadPage() {
       purpose: 'Relief',
       category: '',
       status: 'Upcoming',
-      priority: 'Low',
+      priority: 'Medium',
       authenticityStatus: 'Pending Verification',
       publicVisibility: 'Hold',
       startDate: new Date().toISOString().split('T')[0],
@@ -366,18 +366,18 @@ export default function CreateLeadPage() {
                 </FormItem>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField control={form.control} name="purpose" render={({ field }) => (
-                    <FormItem>{renderLabel('Purpose', 'purpose')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Purpose" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                    <FormItem>{renderLabel('Purpose', 'purpose')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Purpose" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</Select><FormMessage /></FormItem>
                 )}/>
                 {availableCategories.length > 0 && (
                   <FormField control={form.control} name="category" render={({ field }) => (
-                      <FormItem>{renderLabel('Category', 'category')}<Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Category" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{availableCategories.map(cat => <SelectItem key={cat} value={cat} className="font-bold">{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                      <FormItem>{renderLabel('Category', 'category')}<Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Category" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{availableCategories.map(cat => <SelectItem key={cat} value={cat} className="font-bold">{cat}</SelectItem>)}</Select><FormMessage /></FormItem>
                   )}/>
                 )}
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField control={form.control} name="priority" render={({ field }) => (
-                    <FormItem>{renderLabel('Priority Level', 'priority')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Priority" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{priorityLevels.map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                    <FormItem>{renderLabel('Priority Level', 'priority')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Priority" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{priorityLevels.map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</Select><FormMessage /></FormItem>
                 )}/>
               </div>
 
@@ -392,13 +392,13 @@ export default function CreateLeadPage() {
                   <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Academic Qualifications</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <FormField control={form.control} name="degree" render={({ field }) => (
-                        <FormItem>{renderLabel('Degree/Class', 'degree')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Degree..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{educationDegrees.map(d=><SelectItem key={d} value={d} className="font-bold">{d}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem>{renderLabel('Degree/Class', 'degree')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Degree..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{educationDegrees.map(d=><SelectItem key={d} value={d} className="font-bold">{d}</SelectItem>)}</Select><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="year" render={({ field }) => (
-                        <FormItem>{renderLabel('Academic Year', 'year')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Year..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{educationYears.map(y=><SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem>{renderLabel('Academic Year', 'year')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Year..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{educationYears.map(y=><SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</Select><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="semester" render={({ field }) => (
-                        <FormItem>{renderLabel('Semester', 'semester')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Semester..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{educationSemesters.map(s=><SelectItem key={s} value={s} className="font-bold">{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem>{renderLabel('Semester', 'semester')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Semester..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{educationSemesters.map(s=><SelectItem key={s} value={s} className="font-bold">{s}</SelectItem>)}</Select><FormMessage /></FormItem>
                     )}/>
                   </div>
                 </div>
@@ -415,7 +415,7 @@ export default function CreateLeadPage() {
                         <FormItem>{renderLabel('Stage/Condition', 'diseaseStage')}<FormControl><Input placeholder="e.g. Initial" {...field} className="h-8 font-bold" /></FormControl><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="seriousness" render={({ field }) => (
-                        <FormItem>{renderLabel('Priority Level', 'seriousness')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Select Level..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{leadSeriousnessLevels.map(level => <SelectItem key={level} value={level} className="font-bold">{level}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem>{renderLabel('Priority Level', 'seriousness')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold h-8"><SelectValue placeholder="Select Level..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{leadSeriousnessLevels.map(level => <SelectItem key={level} value={level} className="font-bold">{level}</SelectItem>)}</Select><FormMessage /></FormItem>
                     )}/>
                   </div>
                 </div>
@@ -465,13 +465,13 @@ export default function CreateLeadPage() {
                   <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem>{renderLabel('End Date', 'endDate')}<FormControl><Input type="date" {...field} className="font-bold text-primary"/></FormControl><FormMessage /></FormItem>)}/>
               </div>
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField control={form.control} name="status" render={({ field }) => (<FormItem>{renderLabel('Status', 'status')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Status" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></SelectContent></Select><FormMessage /></FormItem>)}/>
+                  <FormField control={form.control} name="status" render={({ field }) => (<FormItem>{renderLabel('Status', 'status')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Status" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></Select><FormMessage /></FormItem>)}/>
                   <FormField control={form.control} name="authenticityStatus" render={({ field }) => (
-                      <FormItem>{renderLabel('Verification Level', 'authenticityStatus')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Authenticity" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Pending Verification" className="font-bold">Pending</SelectItem><SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem><SelectItem value="On Hold" className="font-bold">On Hold</SelectItem><SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem><SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                      <FormItem>{renderLabel('Verification Level', 'authenticityStatus')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Authenticity" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Pending Verification" className="font-bold">Pending</SelectItem><SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem><SelectItem value="On Hold" className="font-bold">On Hold</SelectItem><SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem><SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem></Select><FormMessage /></FormItem>
                   )}/>
               </div>
               <FormField control={form.control} name="publicVisibility" render={({ field }) => (
-                  <FormItem>{renderLabel('Public Visibility', 'publicVisibility')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Visibility" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Hold" className="font-bold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-bold">Ready To Publish</SelectItem><SelectItem value="Published" className="font-bold text-primary">Published</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                  <FormItem>{renderLabel('Public Visibility', 'publicVisibility')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Visibility" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Hold" className="font-bold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-bold">Ready To Publish</SelectItem><SelectItem value="Published" className="font-bold text-primary">Published</SelectItem></SelectContent></FormItem>
               )}/>
               <div className="flex justify-end gap-3 pt-6 border-t mt-6 bg-background/80 backdrop-blur-sm sticky bottom-0 p-4 z-50">
                   <Button type="button" variant="outline" onClick={() => router.push('/leads-members')} disabled={isLoading} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Discard</Button>

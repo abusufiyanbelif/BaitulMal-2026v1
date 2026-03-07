@@ -22,12 +22,13 @@ import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from './news-ticker';
 
 const getPriorityIcon = (priority?: string) => {
-  switch (priority) {
+  const p = priority || 'Medium';
+  switch (p) {
     case 'Urgent': return <AlertTriangle className="h-3 w-3 text-red-600" />;
     case 'High': return <ArrowUpCircle className="h-3 w-3 text-orange-500" />;
     case 'Medium': return <MinusCircle className="h-3 w-3 text-yellow-500" />;
     case 'Low': return <ArrowDownCircle className="h-3 w-3 text-blue-500" />;
-    default: return null;
+    default: return <MinusCircle className="h-3 w-3 text-yellow-500" />;
   }
 };
 
@@ -40,6 +41,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                                      lead.purpose === 'Medical' ? HeartPulse : 
                                      lead.purpose === 'Relief' ? LifeBuoy : 
                                      lead.purpose === 'Other' ? Info : HandHelping;
+                const priorityLabel = lead.priority || 'Medium';
 
                 return (
                     <Card 
@@ -67,7 +69,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                         </CardHeader>
                         <CardContent className="flex-grow space-y-3 p-4 pt-0">
                             <div className="flex flex-wrap gap-2 items-center text-xs">
-                                <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary uppercase">{lead.purpose}</Badge>
+                                <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary">{lead.purpose}</Badge>
                                 <Badge 
                                   variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
                                   className={cn("text-[10px] font-bold", lead.status === 'Active' && "animate-status-pulse")}
@@ -80,15 +82,15 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                                 </Badge>
                             </div>
                             <div className={cn(
-                                "text-[10px] font-bold uppercase tracking-tight flex items-center gap-1.5", 
-                                lead.priority === 'Urgent' ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
+                                "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
+                                priorityLabel === 'Urgent' ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
                             )}>
-                                {getPriorityIcon(lead.priority)}
-                                {lead.priority || 'Low'} Priority
+                                {getPriorityIcon(priorityLabel)}
+                                {priorityLabel} Priority
                             </div>
                             {(lead.targetAmount || 0) > 0 && (
                                 <div className="space-y-1.5">
-                                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase">
+                                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground tracking-tight">
                                         <span>Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
                                         <span>{Math.round(lead.progress)}%</span>
                                     </div>
@@ -243,7 +245,7 @@ export function PublicLeadsView() {
       ) : (
         <div className="text-center py-20 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
             <Lightbulb className="h-12 w-12 mx-auto text-primary/20 mb-4" />
-            <p className="font-bold text-sm opacity-60 text-primary uppercase tracking-widest text-center">No Appeals Found Matching Criteria.</p>
+            <p className="font-bold text-sm opacity-60 text-primary tracking-widest text-center">No Appeals Found Matching Criteria.</p>
         </div>
       )}
     </div>

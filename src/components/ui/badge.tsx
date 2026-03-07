@@ -33,28 +33,34 @@ export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {}
 
-function Badge({ className, variant, ...props }: BadgeProps) {
-  const content = typeof props.children === 'string' ? props.children.trim() : '';
+function Badge({ className, variant, children, ...props }: BadgeProps) {
   let finalVariant = variant;
 
-  // Title Case Conversion for automatic statuses
-  const displayContent = content.charAt(0).toUpperCase() + content.slice(1).toLowerCase();
-
-  // Automatic semantic mapping based on institutional keywords
+  // Determine variant based on text content if variant is default/outline/success
   if (!variant || variant === 'default' || variant === 'outline' || variant === 'success') {
-    const lowerContent = displayContent.toLowerCase();
-    if (lowerContent === 'eligible' || lowerContent === 'verified' || lowerContent === 'success') {
-        finalVariant = 'eligible';
-    } else if (lowerContent === 'given' || lowerContent === 'completed') {
-        finalVariant = 'given';
-    } else if (lowerContent === 'active' || lowerContent === 'upcoming') {
-        finalVariant = 'active';
+    // Only attempt string matching if children is a string
+    if (typeof children === 'string') {
+        const lowerContent = children.trim().toLowerCase();
+        if (lowerContent === 'eligible' || lowerContent === 'verified' || lowerContent === 'success' || lowerContent.includes('published')) {
+            finalVariant = 'eligible';
+        } else if (lowerContent === 'given' || lowerContent === 'completed' || lowerContent === 'rejected') {
+            finalVariant = 'given';
+        } else if (lowerContent === 'active' || lowerContent === 'upcoming' || lowerContent.includes('ready')) {
+            finalVariant = 'active';
+        }
     }
+  }
+
+  // Pre-process display content if it's a simple string to ensure Title Case
+  let displayChildren = children;
+  if (typeof children === 'string' && children.trim().length > 0) {
+      const content = children.trim();
+      displayChildren = content.charAt(0).toUpperCase() + content.slice(1).toLowerCase();
   }
 
   return (
     <div className={cn(badgeVariants({ variant: finalVariant }), className)} {...props}>
-        {displayContent}
+        {displayChildren}
     </div>
   )
 }

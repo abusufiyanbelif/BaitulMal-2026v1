@@ -56,12 +56,13 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
 
 const getPriorityIcon = (priority?: string) => {
-  switch (priority) {
+  const p = priority || 'Medium';
+  switch (p) {
     case 'Urgent': return <AlertTriangle className="h-3 w-3 text-red-600" />;
     case 'High': return <ArrowUpCircle className="h-3 w-3 text-orange-500" />;
     case 'Medium': return <MinusCircle className="h-3 w-3 text-yellow-500" />;
     case 'Low': return <ArrowDownCircle className="h-3 w-3 text-blue-500" />;
-    default: return null;
+    default: return <MinusCircle className="h-3 w-3 text-yellow-500" />;
   }
 };
 
@@ -79,6 +80,7 @@ interface CampaignCardProps {
 
 function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete, handleStatusUpdate, handleCopyClick, handleDeleteClick }: CampaignCardProps) {
     const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
+    const priorityLabel = campaign.priority || 'Medium';
 
     return (
         <Card 
@@ -179,7 +181,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
             </div>
             <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                    <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-tight">{campaign.category}</Badge>
+                    <Badge variant="secondary" className="text-[10px] font-bold tracking-tight">{campaign.category}</Badge>
                     <Badge 
                         variant={campaign.status === 'Active' ? 'success' : 'outline'}
                         className={cn("text-[10px] font-bold", campaign.status === 'Active' && "animate-status-pulse")}
@@ -198,11 +200,11 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                     </Badge>
                 </div>
                 <div className={cn(
-                    "text-[10px] font-bold uppercase tracking-tight flex items-center gap-1.5", 
-                    campaign.priority === 'Urgent' ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
+                    "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
+                    priorityLabel === 'Urgent' ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
                 )}>
-                    {getPriorityIcon(campaign.priority)}
-                    {campaign.priority || 'Low'} Priority
+                    {getPriorityIcon(priorityLabel)}
+                    {priorityLabel} Priority
                 </div>
             </div>
             <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground pt-1">{campaign.startDate} To {campaign.endDate}</CardDescription>
@@ -210,7 +212,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
           <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal text-primary">
             {(campaign.targetAmount || 0) > 0 && (
                 <div className="space-y-1.5">
-                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
+                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground tracking-tight">
                         <span>Raised: ₹{campaign.collected.toLocaleString('en-IN')}</span>
                         <span>{Math.round(campaign.progress)}%</span>
                     </div>

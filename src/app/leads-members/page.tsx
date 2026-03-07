@@ -35,12 +35,13 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
 
 const getPriorityIcon = (priority?: string) => {
-  switch (priority) {
+  const p = priority || 'Medium';
+  switch (p) {
     case 'Urgent': return <AlertTriangle className="h-3 w-3 text-red-600" />;
     case 'High': return <ArrowUpCircle className="h-3 w-3 text-orange-500" />;
     case 'Medium': return <MinusCircle className="h-3 w-3 text-yellow-500" />;
     case 'Low': return <ArrowDownCircle className="h-3 w-3 text-blue-500" />;
-    default: return null;
+    default: return <MinusCircle className="h-3 w-3 text-yellow-500" />;
   }
 };
 
@@ -61,6 +62,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                          lead.purpose === 'Medical' ? HeartPulse : 
                          lead.purpose === 'Relief' ? LifeBuoy : 
                          lead.purpose === 'Other' ? Info : HandHelping;
+    const priorityLabel = lead.priority || 'Medium';
 
     return (
         <Card 
@@ -159,7 +161,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
             </div>
             <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                    <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary uppercase tracking-tight">{lead.purpose}</Badge>
+                    <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary tracking-tight">{lead.purpose}</Badge>
                     <Badge 
                         variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
                         className={cn("text-[10px] font-bold", lead.status === 'Active' && "animate-status-pulse")}
@@ -178,11 +180,11 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                     </Badge>
                 </div>
                 <div className={cn(
-                    "text-[10px] font-bold uppercase tracking-tight flex items-center gap-1.5", 
-                    lead.priority === 'Urgent' ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
+                    "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
+                    priorityLabel === 'Urgent' ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
                 )}>
-                    {getPriorityIcon(lead.priority)}
-                    {lead.priority || 'Low'} Priority
+                    {getPriorityIcon(priorityLabel)}
+                    {priorityLabel} Priority
                 </div>
             </div>
             <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground pt-1">{lead.startDate} To {lead.endDate}</CardDescription>
@@ -190,7 +192,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
         <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal text-primary">
               {(lead.targetAmount || 0) > 0 && (
                 <div className="space-y-1.5">
-                    <div className="flex justify-between text-[10px] font-bold opacity-60 tracking-tight uppercase">
+                    <div className="flex justify-between text-[10px] font-bold opacity-60 tracking-tight">
                         <span>Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
                         <span>{Math.round(lead.progress)}%</span>
                     </div>
