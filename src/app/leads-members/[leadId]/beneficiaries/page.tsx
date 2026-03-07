@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -43,7 +44,9 @@ import {
     CheckCircle2,
     ChevronUpDown,
     Coins,
-    XCircle
+    XCircle,
+    Filter,
+    Check
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -64,6 +67,19 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog';
@@ -98,6 +114,7 @@ export default function BeneficiariesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [zakatFilter, setZakatFilter] = useState('All');
+  const [selectedReferrals, setSelectedReferrals] = useState<string[]>([]);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [editingBeneficiary, setEditingBeneficiary] = useState<Beneficiary | null>(null);
   
@@ -116,15 +133,26 @@ export default function BeneficiariesPage() {
     return lead.itemCategories;
   }, [lead]);
 
+  const uniqueReferrals = useMemo(() => {
+    if (!beneficiaries) return [];
+    const sources = new Set<string>();
+    beneficiaries.forEach(b => {
+        if (b.referralBy?.trim()) sources.add(b.referralBy.trim());
+    });
+    return Array.from(sources).sort();
+  }, [beneficiaries]);
+
   const filteredBeneficiaries = useMemo(() => {
     if (!beneficiaries) return [];
     return beneficiaries.filter(b => {
         const matchesSearch = (b.name?.toLowerCase().includes(searchTerm.toLowerCase()) || b.phone?.includes(searchTerm) || b.address?.toLowerCase().includes(searchTerm.toLowerCase()));
         const matchesStatus = statusFilter === 'All' || b.status === statusFilter;
         const matchesZakat = zakatFilter === 'All' || (zakatFilter === 'Eligible' ? b.isEligibleForZakat : !b.isEligibleForZakat);
-        return matchesSearch && matchesStatus && matchesZakat;
+        const matchesReferral = selectedReferrals.length === 0 || (b.referralBy && selectedReferrals.includes(b.referralBy.trim()));
+        
+        return matchesSearch && matchesStatus && matchesZakat && matchesReferral;
     });
-  }, [beneficiaries, searchTerm, statusFilter, zakatFilter]);
+  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, selectedReferrals]);
 
   const beneficiariesByCategory = useMemo(() => {
     const groups: Record<string, Beneficiary[]> = {};
@@ -144,6 +172,12 @@ export default function BeneficiariesPage() {
 
   const toggleGroup = (id: string) => {
     setOpenGroups(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const toggleReferral = (referral: string) => {
+    setSelectedReferrals(prev => 
+        prev.includes(referral) ? prev.filter(r => r !== referral) : [...prev, referral]
+    );
   };
 
   const handleStatusChange = (beneficiary: Beneficiary, newStatus: any) => {
@@ -186,7 +220,6 @@ export default function BeneficiariesPage() {
     const masterRef = masterId ? doc(firestore, 'beneficiaries', masterId) : doc(collection(firestore, 'beneficiaries'));
     const leadRefSub = doc(firestore, 'leads', leadId, 'beneficiaries', masterRef.id);
     
-    // Fetch master status to ensure verificationStatus is accurate
     let masterVerificationStatus: any = 'Pending';
     if (masterId) {
         const masterSnap = await getDoc(masterRef);
@@ -252,7 +285,7 @@ export default function BeneficiariesPage() {
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-2 pb-2">
                     {canReadSummary && ( <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link> )}
-                    <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item List</Link>
+                    <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item list</Link>
                     {canReadBeneficiaries && ( <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link> )}
                     {canReadDonations && ( <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link> )}
                 </div>
@@ -274,25 +307,79 @@ export default function BeneficiariesPage() {
 
         <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-4 rounded-xl border border-primary/10">
           <div className="relative flex-1 min-w-[300px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
-            <Input placeholder="Search Name, Phone, Address..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary rounded-[12px]" />
+            <Input 
+                placeholder="Search Name, Phone, Address..." 
+                value={searchTerm} 
+                onChange={(e) => setSearchTerm(e.target.value)} 
+                className="pl-10 pr-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary rounded-[12px]" 
+            />
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/50">
+                <Search className="h-4 w-4" />
+            </div>
+            <Button 
+                variant="ghost" 
+                size="icon" 
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent"
+                onClick={() => setSearchTerm(searchTerm)}
+            >
+                <Search className="h-4 w-4 text-primary" />
+            </Button>
           </div>
+
+          <Popover>
+                <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-[220px] justify-between h-10 text-sm border-primary/10 text-primary font-bold rounded-[12px] bg-white">
+                        <div className="flex items-center gap-2 truncate">
+                            <Filter className="h-3.5 w-3.5 opacity-40 shrink-0" />
+                            <span className="truncate">
+                                {selectedReferrals.length === 0 ? "All Referral Sources" : `${selectedReferrals.length} Selected`}
+                            </span>
+                        </div>
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[250px] p-0 rounded-[12px] shadow-dropdown border-primary/10" align="start">
+                    <Command>
+                        <CommandInput placeholder="Search Referrals..." className="h-9 font-normal" />
+                        <CommandList>
+                            <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No source found.</CommandEmpty>
+                            <CommandGroup>
+                                <CommandItem onSelect={() => setSelectedReferrals([])} className="font-bold text-xs">
+                                    <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selectedReferrals.length === 0 ? "bg-primary text-primary-foreground" : "opacity-50")}>
+                                        {selectedReferrals.length === 0 && <Check className="h-3 w-3" />}
+                                    </div>
+                                    <span>Show All Sources</span>
+                                </CommandItem>
+                                {uniqueReferrals.map((source) => (
+                                    <CommandItem key={source} onSelect={() => toggleReferral(source)} className="font-normal text-xs">
+                                        <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selectedReferrals.includes(source) ? "bg-primary text-primary-foreground" : "opacity-50")}>
+                                            {selectedReferrals.includes(source) && <Check className="h-3 w-3" />}
+                                        </div>
+                                        <span className="truncate">{source}</span>
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                </PopoverContent>
+            </Popover>
+
           <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPages({}); }}>
             <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="All Statuses" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-              <SelectItem value="All">All Statuses</SelectItem>
-              <SelectItem value="Pending">Pending</SelectItem>
-              <SelectItem value="Verified">Verified</SelectItem>
-              <SelectItem value="Given">Given (Completed)</SelectItem>
-              <SelectItem value="Hold">Hold</SelectItem>
-              <SelectItem value="Need More Details">Need Details</SelectItem>
+              <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
+              <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
+              <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
+              <SelectItem value="Given" className="font-normal">Given (Completed)</SelectItem>
+              <SelectItem value="Hold" className="font-normal">Hold</SelectItem>
+              <SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem>
             </SelectContent>
           </Select>
           <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPages({}); }}>
             <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="All Zakat Status" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-              <SelectItem value="All">All Zakat Status</SelectItem>
-              <SelectItem value="Eligible">Eligible</SelectItem>
+              <SelectItem value="All" className="font-normal">All Zakat Status</SelectItem>
+              <SelectItem value="Eligible" className="font-normal">Eligible</SelectItem>
               <SelectItem value="Not Eligible" className="font-normal">Not Eligible</SelectItem>
             </SelectContent>
           </Select>

@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -224,8 +225,15 @@ export default function BeneficiariesPage() {
         <ScrollArea className="w-full whitespace-nowrap">
             <div className="flex flex-nowrap items-center gap-3 pb-2">
                 <div className="relative w-[250px]">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
-                    <Input placeholder="Search Name, Phone..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary" />
+                    <Input 
+                        placeholder="Search Name, Phone..." 
+                        value={searchTerm} 
+                        onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
+                        className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary" 
+                    />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50">
+                        <Search className="h-4 w-4" />
+                    </div>
                 </div>
                 
                 <Popover>
