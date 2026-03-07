@@ -55,7 +55,7 @@ export function RecentVerificationTicker({ items }: { items: VerificationItem[] 
     <Card className="animate-fade-in-up border-primary/10 overflow-hidden bg-white shadow-md transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '600ms', animationFillMode: 'backwards' }}>
       <CardHeader className="bg-primary/5 border-b">
         <CardTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2">
-          <CheckCircle2 className="h-6 w-6 text-primary"/> Recent Verification
+          <CheckCircle2 className="h-6 w-6 text-primary"/> Recent Verifications
         </CardTitle>
         <CardDescription className="font-normal text-primary/70">
           Secure Tracking Of Confirmed Community Contributions.
@@ -64,9 +64,9 @@ export function RecentVerificationTicker({ items }: { items: VerificationItem[] 
       <CardContent className="p-0">
         <div className="flex flex-col">
             {/* Standardized Institutional Table Header */}
-            <div className="grid grid-cols-[1.5fr_1fr_auto] gap-4 px-6 py-3 bg-[hsl(var(--table-header-bg))] border-b text-[10px] font-bold text-[hsl(var(--table-header-fg))] tracking-widest">
-                <span>Reference</span>
-                <span>Allocation</span>
+            <div className="grid grid-cols-[1.5fr_1fr_auto] gap-4 px-6 py-3 bg-[hsl(var(--table-header-bg))] border-b text-[10px] font-bold text-[hsl(var(--table-header-fg))] tracking-widest uppercase">
+                <span>Reference Information</span>
+                <span>Allocation Target</span>
                 <span className="text-right pr-2">Status</span>
             </div>
             

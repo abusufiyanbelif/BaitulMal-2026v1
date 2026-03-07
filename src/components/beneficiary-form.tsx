@@ -102,7 +102,6 @@ export function BeneficiaryForm({
     const { data: configSettings } = useDoc<any>(configRef);
     const mandatoryFields = useMemo(() => configSettings?.mandatoryFields || {}, [configSettings]);
 
-    // Context detection: If hideKitAmount is true, we are in the Master Registry.
     const isMasterForm = hideKitAmount;
     const kitAmountLabel = kitAmountLabelProp || 'Required Amount (₹)';
 
@@ -268,26 +267,26 @@ export function BeneficiaryForm({
                         <FormField control={control} name="age" render={({ field }) => (<FormItem>{renderLabel('Age', 'age')}<FormControl><Input type="number" placeholder="e.g. 35" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>)}/>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField control={control} name="phone" render={({ field }) => (<FormItem>{renderLabel('Phone Number', 'phone')}<FormControl><Input placeholder="10-digit mobile number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>)}/>
+                        <FormField control={control} name="phone" render={({ field }) => (<FormItem>{renderLabel('Phone Number', 'phone')}<FormControl><Input placeholder="10-Digit Mobile Number" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>)}/>
                         <FormField control={control} name="occupation" render={({ field }) => (<FormItem>{renderLabel('Occupation', 'occupation')}<FormControl><Input placeholder="e.g. Daily Wage Laborer" {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
                     </div>
-                    <FormField control={control} name="address" render={({ field }) => (<FormItem>{renderLabel('Address', 'address')}<FormControl><Input placeholder="Full residential address" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={control} name="address" render={({ field }) => (<FormItem>{renderLabel('Address', 'address')}<FormControl><Input placeholder="Full Residential Address" {...field} disabled={formIsDisabled} /></FormControl><FormMessage /></FormItem>)}/>
                 </div>
                 <Separator />
                 <div className="space-y-4">
                     <h3 className="text-lg font-bold text-primary tracking-tight">Family Details</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <FormField control={control} name="members" render={({ field }) => (<FormItem>{renderLabel('Members', 'members')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
-                        <FormField control={control} name="earningMembers" render={({ field }) => (<FormItem>{renderLabel('Earning', 'earningMembers')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
-                        <FormField control={control} name="male" render={({ field }) => (<FormItem>{renderLabel('Male', 'male')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
-                        <FormField control={control} name="female" render={({ field }) => (<FormItem>{renderLabel('Female', 'female')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                        <FormField control={control} name="members" render={({ field }) => (<FormItem>{renderLabel('Total Members', 'members')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                        <FormField control={control} name="earningMembers" render={({ field }) => (<FormItem>{renderLabel('Earning Members', 'earningMembers')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                        <FormField control={control} name="male" render={({ field }) => (<FormItem>{renderLabel('Male Members', 'male')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
+                        <FormField control={control} name="female" render={({ field }) => (<FormItem>{renderLabel('Female Members', 'female')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl></FormItem>)} />
                     </div>
                 </div>
                 <Separator />
                 <div className="space-y-4">
                     <h3 className="text-lg font-bold text-primary tracking-tight">Identification & Financials</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField control={control} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID Proof Type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled}/></FormControl></FormItem>)}/>
+                        <FormField control={control} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID Proof Type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, Etc." {...field} disabled={formIsDisabled}/></FormControl></FormItem>)}/>
                         <FormField control={control} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID Number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled}/></FormControl></FormItem>)}/>
                     </div>
                     <div className="space-y-2">
@@ -334,7 +333,7 @@ export function BeneficiaryForm({
                             </div>
                             {watch('isEligibleForZakat') && !hideZakatAllocation && (
                                 <div className="animate-fade-in-zoom">
-                                    <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem>{renderLabel('Zakat Allocation (₹)', 'zakatAllocation')}<FormControl><Input type="number" placeholder="Reserved from Zakat funds" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic uppercase tracking-tighter">Amount to be disbursed directly from designated Zakat collections.</FormDescription></FormItem>)}/>
+                                    <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem>{renderLabel('Zakat Allocation (₹)', 'zakatAllocation')}<FormControl><Input type="number" placeholder="Reserved from Zakat funds" {...field} value={field.value ?? ''} disabled={formIsDisabled} /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic uppercase tracking-tighter">Amount To Be Disbursed Directly From Designated Zakat Collections.</FormDescription></FormItem>)}/>
                                 </div>
                             )}
                         </div>
@@ -343,7 +342,7 @@ export function BeneficiaryForm({
                 <Separator />
                 <div className="space-y-4">
                     <h3 className="text-lg font-bold text-primary tracking-tight">Institutional Notes</h3>
-                    <FormField control={control} name="notes" render={({ field }) => (<FormItem>{renderLabel('Internal Notes', 'notes')}<FormControl><Textarea placeholder="Vetting details, background checks, etc." {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
+                    <FormField control={control} name="notes" render={({ field }) => (<FormItem>{renderLabel('Internal Notes', 'notes')}<FormControl><Textarea placeholder="Vetting Details, Background Checks, Etc." {...field} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
                 </div>
                 {isEditing && beneficiary?.createdAt && beneficiary.createdAt instanceof Timestamp && (
                     <div className="pt-4 text-[10px] uppercase font-bold text-muted-foreground space-y-1 opacity-60">

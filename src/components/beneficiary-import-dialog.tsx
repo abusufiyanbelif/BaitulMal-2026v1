@@ -131,7 +131,7 @@ export function BeneficiaryImportDialog({
         <div className="flex-1 space-y-6 overflow-hidden flex flex-col py-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 shrink-0">
             <Button variant="outline" onClick={handleDownloadTemplate} className="font-bold border-primary/20 text-primary h-12 shadow-sm active:scale-95 transition-transform">
-                <Download className="mr-2 h-4 w-4" /> Download CSV Template
+                <Download className="mr-2 h-4 w-4" /> Download Template
             </Button>
             <div className="relative">
                 <Input id="csv-upload" type="file" accept=".csv" onChange={handleFileChange} className="hidden" />
@@ -147,11 +147,11 @@ export function BeneficiaryImportDialog({
                 <div className="grid grid-cols-2 gap-4 shrink-0">
                     <div className="p-3 rounded-lg bg-green-50 border border-green-100 flex items-center gap-3">
                         <CheckCircle className="h-5 w-5 text-green-600" />
-                        <div><p className="text-[10px] font-black uppercase text-green-800 tracking-widest">Valid Records</p><p className="text-lg font-bold text-green-900 leading-none">{processedRecords.filter(r => r.isValid).length}</p></div>
+                        <div><p className="text-[10px] font-bold uppercase text-green-800 tracking-widest">Valid Records</p><p className="text-lg font-bold text-green-900 leading-none">{processedRecords.filter(r => r.isValid).length}</p></div>
                     </div>
                     <div className="p-3 rounded-lg bg-red-50 border border-red-100 flex items-center gap-3">
                         <XCircle className="h-5 w-5 text-red-600" />
-                        <div><p className="text-[10px] font-black uppercase text-red-800 tracking-widest">Invalid Rows</p><p className="text-lg font-bold text-red-900 leading-none">{processedRecords.filter(r => !r.isValid).length}</p></div>
+                        <div><p className="text-[10px] font-bold uppercase text-red-800 tracking-widest">Invalid Rows</p><p className="text-lg font-bold text-red-900 leading-none">{processedRecords.filter(r => !r.isValid).length}</p></div>
                     </div>
                 </div>
 
@@ -164,7 +164,7 @@ export function BeneficiaryImportDialog({
                                     <TableHead>Name</TableHead>
                                     <TableHead>Phone</TableHead>
                                     <TableHead>Address</TableHead>
-                                    <TableHead className="text-right pr-4">Status</TableHead>
+                                    <TableHead className="text-right pr-4">Vetting</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -175,7 +175,7 @@ export function BeneficiaryImportDialog({
                                         <TableCell className="text-xs font-mono">{record.data.phone || '---'}</TableCell>
                                         <TableCell className="text-xs max-w-[200px] truncate">{record.data.address || '---'}</TableCell>
                                         <TableCell className="text-right pr-4">
-                                            <Badge variant={record.isValid ? 'eligible' : 'destructive'} className="text-[9px] font-bold uppercase">
+                                            <Badge variant={record.isValid ? 'eligible' : 'destructive'} className="text-[9px] font-bold">
                                                 {record.isValid ? 'Ready' : 'Invalid'}
                                             </Badge>
                                         </TableCell>

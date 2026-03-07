@@ -95,9 +95,9 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                 </TableCell>
                 <TableCell className="text-right font-bold font-mono text-primary text-sm">₹{donation.amount.toFixed(2)}</TableCell>
                 <TableCell className="whitespace-nowrap text-xs font-normal text-primary/80">{donation.donationDate}</TableCell>
-                <TableCell><Badge variant="secondary" className="text-[9px] font-bold uppercase">{donation.donationType}</Badge></TableCell>
+                <TableCell><Badge variant="secondary" className="text-[9px] font-bold">{donation.donationType}</Badge></TableCell>
                 <TableCell>
-                    <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'} className="text-[9px] font-bold uppercase">
+                    <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'} className="text-[9px] font-bold">
                         {donation.status}
                     </Badge>
                 </TableCell>
@@ -148,7 +148,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                     <div className="border border-primary/10 rounded-md bg-white overflow-hidden shadow-sm">
                                         <ScrollArea className="w-full">
                                             <Table>
-                                                <TableHeader><TableRow className="bg-[hsl(var(--table-header-bg))]"><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Target</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Allocated</TableHead></TableRow></TableHeader>
+                                                <TableHeader><TableRow className="bg-[hsl(var(--table-header-bg))]"><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Target Initiative</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Allocated Sum</TableHead></TableRow></TableHeader>
                                                 <TableBody>
                                                     {(donation.linkSplit || []).map(link => (
                                                         <TableRow key={link.linkId} className="h-8 hover:bg-[hsl(var(--table-row-hover))]">
@@ -176,8 +176,8 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                         <Table>
                                             <TableHeader>
                                                 <TableRow className="bg-[hsl(var(--table-header-bg))]">
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Sum</TableHead>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Ref ID</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Ref. ID</TableHead>
                                                     <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Date</TableHead>
                                                     <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Artifact</TableHead>
                                                 </TableRow>
@@ -191,9 +191,9 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
                                                         <TableCell className="text-right py-2">
                                                             {tx.screenshotUrl ? (
                                                                 <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/5" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
-                                                                    <ImageIcon className="mr-1 h-3 w-3" /> View
+                                                                    <ImageIcon className="mr-1 h-3 w-3" /> View Artifact
                                                                 </Button>
-                                                            ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40">None</span>}
+                                                            ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40">No Artifact</span>}
                                                         </TableCell>
                                                     </TableRow>
                                                 ))}
@@ -350,7 +350,7 @@ export default function DonationsPage() {
             <div className="flex gap-2 w-full sm:w-auto">
                 <Button variant="secondary" onClick={handleSync} disabled={isSyncing} className="flex-1 sm:flex-none font-bold text-[10px] border-primary/10 text-primary active:scale-95 transition-transform">
                   {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
-                  Sync Logs
+                  Sync Financial Logs
                 </Button>
                 <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md rounded-[12px]">
                   <PlusCircle className="mr-2 h-4 w-4" /> Add Record
@@ -364,12 +364,12 @@ export default function DonationsPage() {
                     <div className="flex flex-nowrap gap-2 pb-2">
                         <Input placeholder="Search Donor, Phone, ID..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-[300px] h-9 text-xs border-primary/10 focus-visible:ring-primary text-primary font-normal bg-primary/[0.02] rounded-[10px]"/>
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02]"><SelectValue placeholder="All Statuses"/></SelectTrigger>
+                            <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02] font-bold"><SelectValue placeholder="All Statuses"/></SelectTrigger>
                             <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
-                                <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
-                                <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
-                                <SelectItem value="Canceled" className="font-normal">Canceled</SelectItem>
+                                <SelectItem value="All" className="font-bold">All Statuses</SelectItem>
+                                <SelectItem value="Verified" className="font-bold">Verified</SelectItem>
+                                <SelectItem value="Pending" className="font-bold">Pending</SelectItem>
+                                <SelectItem value="Canceled" className="font-bold">Canceled</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -382,13 +382,13 @@ export default function DonationsPage() {
                         <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                             <TableRow>
                                 <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">#</SortableHeader>
-                                <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
-                                <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right">Sum (₹)</SortableHeader>
-                                <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort}>Date</SortableHeader>
+                                <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor Name</SortableHeader>
+                                <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right">Amount (₹)</SortableHeader>
+                                <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort}>Entry Date</SortableHeader>
                                 <TableHead className="text-primary font-bold text-[10px] uppercase tracking-wider">Method</TableHead>
-                                <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
-                                <TableHead className="text-primary font-bold text-[10px] uppercase tracking-wider">Target</TableHead>
-                                <TableHead className="text-right pr-4 text-primary font-bold text-[10px] uppercase tracking-wider">Actions</TableHead>
+                                <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Vetting Status</SortableHeader>
+                                <TableHead className="text-primary font-bold text-[10px] uppercase tracking-wider">Target Initiative</TableHead>
+                                <TableHead className="text-right pr-4 text-primary font-bold text-[10px] uppercase tracking-wider">Action Menu</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -403,7 +403,7 @@ export default function DonationsPage() {
                                 />
                             ))}
                             {paginatedDonations.length === 0 && (
-                                <TableRow><TableCell colSpan={8} className="text-center py-24 text-primary/40 font-bold bg-primary/[0.02]">No Donation Records Found.</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={8} className="text-center py-24 text-primary/40 font-bold bg-primary/[0.02]">No Donation Records Found Matching Filters.</TableCell></TableRow>
                             )}
                         </TableBody>
                     </Table>
@@ -424,7 +424,7 @@ export default function DonationsPage() {
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden p-0 rounded-[12px] border-primary/10">
                 <DialogHeader className="px-6 py-4 border-b bg-primary/5">
-                    <DialogTitle className="text-xl font-bold text-primary tracking-tight">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle>
+                    <DialogTitle className="text-xl font-bold text-primary tracking-tight">{editingDonation ? 'Edit' : 'Add New'} Donation Record</DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="flex-1 px-6 py-4">
                     <DonationForm 
@@ -436,14 +436,14 @@ export default function DonationsPage() {
                     />
                 </ScrollArea>
                 <DialogFooter className="px-6 py-4 border-t bg-muted/5">
-                    <Button variant="secondary" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/10 text-primary">Close Form</Button>
+                    <Button variant="secondary" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/10 text-primary">Close Entry Form</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent className="rounded-[12px] border-primary/10">
-                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Delete Record?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Artifacts. This Action Cannot Be Undone.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Confirm Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Artifacts. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px]">Confirm Deletion</AlertDialogAction>
@@ -453,20 +453,20 @@ export default function DonationsPage() {
 
         <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
             <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10">
-                <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="text-xl font-bold text-primary">Artifact Viewer</DialogTitle></DialogHeader>
+                <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="text-xl font-bold text-primary">Verification Artifact Viewer</DialogTitle></DialogHeader>
                 <ScrollArea className="flex-1 bg-secondary/20">
                     <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
                         {imageToView && (
-                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Verification" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Verification Artifact" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                         )}
                     </div>
                     <ScrollBar orientation="both" />
                 </ScrollArea>
                 <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
-                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-[10px] border-primary/10 text-primary"><ZoomIn className="mr-1 h-4 w-4"/> In</Button>
-                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => z / 1.2) } className="font-bold text-[10px] border-primary/10 text-primary"><ZoomOut className="mr-1 h-4 w-4"/> Out</Button>
-                    <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
-                    <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/10 text-primary"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
+                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
+                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => z / 1.2) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
+                    <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
+                    <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

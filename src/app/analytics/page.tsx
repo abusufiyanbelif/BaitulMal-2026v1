@@ -167,7 +167,7 @@ export default function AnalyticsPage() {
             break;
           case 'beneficiaries':
             sourceData = beneficiaries;
-            dateField = 'createdAt'; // Timestamp (prefer over addedDate for consistency)
+            dateField = 'createdAt'; // Timestamp
             break;
           case 'donations':
           default:
@@ -284,12 +284,12 @@ export default function AnalyticsPage() {
             </div>
             
             <Tabs defaultValue="general" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 mb-6">
-                    <TabsTrigger value="general" className="font-bold"><BarChart className="mr-2 h-4 w-4" />General Analytics</TabsTrigger>
-                    <TabsTrigger value="storage" className="font-bold"><Database className="mr-2 h-4 w-4" />Storage Analytics</TabsTrigger>
-                    <TabsTrigger value="database" className="font-bold"><Database className="mr-2 h-4 w-4" />Database Analytics</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 mb-6 bg-primary/5 p-1 rounded-xl h-auto">
+                    <TabsTrigger value="general" className="font-bold py-2.5"><BarChart className="mr-2 h-4 w-4" />General Analytics</TabsTrigger>
+                    <TabsTrigger value="storage" className="font-bold py-2.5"><Database className="mr-2 h-4 w-4" />Storage Analytics</TabsTrigger>
+                    <TabsTrigger value="database" className="font-bold py-2.5"><Database className="mr-2 h-4 w-4" />Database Analytics</TabsTrigger>
                 </TabsList>
-                <TabsContent value="general">
+                <TabsContent value="general" className="animate-fade-in-up">
                     <div className="space-y-6">
                         {isLoading ? (
                             <SectionLoader label="Calculating General Analytics..." description="Aggregating counts for users, campaigns, and beneficiaries." />
@@ -340,9 +340,9 @@ export default function AnalyticsPage() {
                                             {isClient ? (
                                             <ScrollArea className="w-full">
                                                 <Table>
-                                                    <TableHeader>
+                                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                         <TableRow>
-                                                            <TableHead className="font-bold text-primary">Campaign</TableHead>
+                                                            <TableHead className="font-bold text-primary">Campaign Name</TableHead>
                                                             <TableHead className="text-right font-bold text-primary">Amount Collected</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
@@ -362,17 +362,17 @@ export default function AnalyticsPage() {
                                     </Card>
                                     <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '400ms'}}>
                                         <CardHeader>
-                                            <CardTitle className="flex items-center gap-2 text-primary font-bold"><Eye/> Page Hits</CardTitle>
-                                            <CardDescription className="font-normal text-primary/70">Total Visits For Key Pages.</CardDescription>
+                                            <CardTitle className="flex items-center gap-2 text-primary font-bold"><Eye className="h-5 w-5"/> Page Visits</CardTitle>
+                                            <CardDescription className="font-normal text-primary/70">Total Visits For Primary Organizational Pages.</CardDescription>
                                         </CardHeader>
                                         <CardContent>
                                             {hitsLoading ? <Skeleton className="h-40 w-full"/> : (
                                                 <ScrollArea className="w-full">
                                                     <Table>
-                                                        <TableHeader>
+                                                        <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                             <TableRow>
-                                                                <TableHead className="font-bold text-primary">Page</TableHead>
-                                                                <TableHead className="text-right font-bold text-primary">Hits</TableHead>
+                                                                <TableHead className="font-bold text-primary">Page Name</TableHead>
+                                                                <TableHead className="text-right font-bold text-primary">Hit Count</TableHead>
                                                             </TableRow>
                                                         </TableHeader>
                                                         <TableBody>
@@ -394,10 +394,10 @@ export default function AnalyticsPage() {
                         )}
                     </div>
                 </TabsContent>
-                <TabsContent value="storage">
+                <TabsContent value="storage" className="animate-fade-in-up">
                     <StorageAnalytics />
                 </TabsContent>
-                <TabsContent value="database">
+                <TabsContent value="database" className="animate-fade-in-up">
                     <div className="space-y-6">
                         {isLoading ? (
                             <SectionLoader label="Processing Database Trends..." description="Analyzing document creation history and distribution." />
@@ -415,7 +415,7 @@ export default function AnalyticsPage() {
                                                     <PopoverTrigger asChild>
                                                         <Button id="date" variant={"outline"} className={cn("w-full sm:w-[260px] justify-start text-left font-bold border-primary/20 text-primary", !date && "text-muted-foreground")}>
                                                             <CalendarIcon className="mr-2 h-4 w-4" />
-                                                            {date?.from ? (date.to ? (<>{format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}</>) : (format(date.from, "LLL dd, y"))) : (<span>Pick A Date</span>)}
+                                                            {date?.from ? (date.to ? (<>{format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}</>) : (format(date.from, "LLL dd, y"))) : (<span>Pick A Date Range</span>)}
                                                         </Button>
                                                     </PopoverTrigger>
                                                     <PopoverContent className="w-auto p-0" align="end">
@@ -430,7 +430,7 @@ export default function AnalyticsPage() {
                                                     else if (value === 'this_year') setDate({ from: startOfYear(now), to: endOfYear(now) });
                                                     else if (value === 'last_3_months') setDate({ from: subMonths(now, 3), to: now });
                                                 }}>
-                                                    <SelectTrigger className="w-full sm:w-auto font-bold border-primary/20 text-primary"><SelectValue placeholder="Quick Select" /></SelectTrigger>
+                                                    <SelectTrigger className="w-full sm:w-auto font-bold border-primary/20 text-primary"><SelectValue placeholder="Quick Selection" /></SelectTrigger>
                                                     <SelectContent>
                                                         <SelectItem value="all_time" className="font-bold">All Time</SelectItem>
                                                         <SelectItem value="this_month" className="font-bold">This Month</SelectItem>
@@ -447,21 +447,21 @@ export default function AnalyticsPage() {
                                                 <SelectValue placeholder="Select Metric" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="donations" className="font-bold">Donations</SelectItem>
-                                                <SelectItem value="users" className="font-bold">New Users</SelectItem>
+                                                <SelectItem value="donations" className="font-bold">Donations Collected</SelectItem>
+                                                <SelectItem value="users" className="font-bold">New Members</SelectItem>
                                                 <SelectItem value="beneficiaries" className="font-bold">New Beneficiaries</SelectItem>
                                             </SelectContent>
                                             </UiSelect>
                                             <UiSelect value={granularity} onValueChange={(value) => setGranularity(value as any)}>
                                             <SelectTrigger className="w-full sm:w-auto font-bold border-primary/20 text-primary">
-                                                <SelectValue placeholder="Select Granularity" />
+                                                <SelectValue placeholder="Select Interval" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="daily" className="font-bold">Daily</SelectItem>
-                                                <SelectItem value="weekly" className="font-bold">Weekly</SelectItem>
-                                                <SelectItem value="monthly" className="font-bold">Monthly</SelectItem>
-                                                <SelectItem value="quarterly" className="font-bold">Quarterly</SelectItem>
-                                                <SelectItem value="yearly" className="font-bold">Yearly</SelectItem>
+                                                <SelectItem value="daily" className="font-bold">Daily View</SelectItem>
+                                                <SelectItem value="weekly" className="font-bold">Weekly View</SelectItem>
+                                                <SelectItem value="monthly" className="font-bold">Monthly View</SelectItem>
+                                                <SelectItem value="quarterly" className="font-bold">Quarterly View</SelectItem>
+                                                <SelectItem value="yearly" className="font-bold">Yearly View</SelectItem>
                                             </SelectContent>
                                             </UiSelect>
                                         </div>
@@ -470,7 +470,7 @@ export default function AnalyticsPage() {
                                         {isClient ? (
                                         <ChartContainer config={activityChartConfig} className="h-[350px] w-full">
                                             <AreaChart data={timeSeriesData} margin={{ left: 12, right: 12 }}>
-                                            <CartesianGrid vertical={false} />
+                                            <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.3} />
                                             <XAxis
                                                 dataKey="date"
                                                 tickLine={false}
@@ -485,7 +485,7 @@ export default function AnalyticsPage() {
                                                 } catch (e) { return value; }
                                                 }}
                                             />
-                                            <YAxis tickFormatter={(value) => value.toLocaleString()} />
+                                            <YAxis tickFormatter={(value) => value.toLocaleString()} tickLine={false} axisLine={false} />
                                             <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
                                             <Area
                                                 dataKey="count"
@@ -546,8 +546,8 @@ export default function AnalyticsPage() {
                                                 <Database className="h-4 w-4 text-primary" />
                                                 <AlertTitle className="text-primary font-bold">View Usage In Firebase Console</AlertTitle>
                                                 <AlertDescription className="font-normal text-primary/80">
-                                                    <p>For detailed, real-time metrics on database operations (document reads, writes, deletes), network usage, and storage, please visit your Firebase Console.</p>
-                                                    <p className="mt-2">The "Activity Over Time" chart on this tab can provide insight into document creation trends.</p>
+                                                    <p>For detailed, real-time metrics on database operations, network usage, and storage, please visit your Firebase Console.</p>
+                                                    <p className="mt-2">The Activity Over Time chart can provide insight into document creation trends.</p>
                                                     <Button asChild variant="link" className="p-0 h-auto mt-2 text-primary font-bold">
                                                         <a href={`https://console.firebase.google.com/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/firestore/usage`} target="_blank" rel="noopener noreferrer">
                                                             Go To Firebase Console Usage <ExternalLink className="ml-1 h-3 w-3" />

@@ -318,7 +318,7 @@ export default function BeneficiaryDetailsPage() {
                                                         </div>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell><Badge variant="outline" className="text-[10px] font-bold uppercase border-primary/10 text-primary/70">{link.purpose}</Badge></TableCell>
+                                                <TableCell><Badge variant="outline" className="text-[10px] font-bold border-primary/10 text-primary/70">{link.purpose}</Badge></TableCell>
                                                 <TableCell><p className="text-xs font-bold text-primary/80">{link.category}</p></TableCell>
                                                 <TableCell className="text-center">
                                                     <Badge variant={link.beneficiaryStatus === 'Given' ? 'given' : 'outline'} className="font-bold uppercase text-[9px] tracking-tighter">

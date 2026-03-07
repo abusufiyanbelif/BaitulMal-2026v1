@@ -80,7 +80,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay }: 
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md hover:-translate-y-1", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-widest">{title}</p>
                     <p className="text-3xl font-black text-primary tracking-tight">{count}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
@@ -410,9 +410,9 @@ export default function BeneficiariesPage() {
                     <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
                     <div className="font-bold text-sm truncate pr-2 text-primary">{b.name}</div>
                     <div className="font-mono text-xs opacity-60 text-primary">{b.phone || 'N/A'}</div>
-                    <div className="text-center"><Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.status || 'Pending'}</Badge></div>
+                    <div className="text-center"><Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold">{b.status || 'Pending'}</Badge></div>
                     <div className="text-center"><p className="text-[9px] font-bold uppercase text-muted-foreground opacity-40 tracking-tight">Initiative Specific</p></div>
-                    <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
+                    <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
                     <div className="pl-4 text-xs font-normal text-primary/70">{b.referralBy || 'N/A'}</div>
                     <div className="text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -424,7 +424,7 @@ export default function BeneficiariesPage() {
                                     {canUpdate && (
                                         <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-primary font-normal">
                                             {b.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4 text-destructive" /> : <Coins className="mr-2 h-4 w-4 text-primary" />}
-                                            {b.isEligibleForZakat ? 'Mark as Not Eligible' : 'Mark Eligible for Zakat'}
+                                            {b.isEligibleForZakat ? 'Mark As Not Eligible' : 'Mark Eligible For Zakat'}
                                         </DropdownMenuItem>
                                     )}
 

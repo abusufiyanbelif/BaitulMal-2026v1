@@ -22,7 +22,6 @@ interface NewsTickerProps {
 /**
  * A sophisticated vertical news ticker that cycles through items with a Fade + Slide Up animation.
  * Fully theme-reactive using primary and secondary semantic variables.
- * Now supports an optional priority icon for streamlined urgent signaling.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -67,7 +66,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
       "group border rounded-lg overflow-hidden relative flex items-center mb-2 shadow-sm h-12 bg-white transition-all hover:shadow-md",
       isCompleted ? "border-muted" : "border-primary/10"
     )}>
-      {/* Label Section - Responsive to theme primary color */}
+      {/* Label Section */}
       <div className={cn(
         "z-30 h-full px-4 flex items-center border-r shadow-md shrink-0 font-bold transition-colors duration-500",
         isCompleted ? "bg-muted text-muted-foreground" : "bg-primary text-primary-foreground"
@@ -79,12 +78,12 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         ) : (
           <Megaphone className="h-4 w-4 mr-2" />
         )}
-        <span className="text-[10px] sm:text-xs font-bold tracking-tight whitespace-nowrap uppercase">
+        <span className="text-[10px] sm:text-xs font-bold tracking-tight whitespace-nowrap">
           {label}
         </span>
       </div>
 
-      {/* Content Section with Fade + Slide Up Animation */}
+      {/* Content Section */}
       <div className="flex-1 flex items-center px-4 relative overflow-hidden h-full">
         <div className={cn(
           "w-full transition-all duration-500 ease-in-out flex items-center gap-3",

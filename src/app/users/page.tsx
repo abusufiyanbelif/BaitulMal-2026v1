@@ -295,23 +295,23 @@ export default function UsersPage() {
                         className="max-w-sm font-normal text-primary"
                     />
                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[150px] text-primary">
-                            <SelectValue placeholder="Status" />
+                        <SelectTrigger className="w-auto md:w-[150px] text-primary font-bold">
+                            <SelectValue placeholder="All Statuses" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
-                            <SelectItem value="Active" className="font-normal">Active</SelectItem>
-                            <SelectItem value="Inactive" className="font-normal">Inactive</SelectItem>
+                            <SelectItem value="All" className="font-bold">All Statuses</SelectItem>
+                            <SelectItem value="Active" className="font-bold">Active</SelectItem>
+                            <SelectItem value="Inactive" className="font-bold">Inactive</SelectItem>
                         </SelectContent>
                     </Select>
                     <Select value={roleFilter} onValueChange={(value) => { setRoleFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[150px] text-primary">
-                            <SelectValue placeholder="Role" />
+                        <SelectTrigger className="w-auto md:w-[150px] text-primary font-bold">
+                            <SelectValue placeholder="All Roles" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All" className="font-normal">All Roles</SelectItem>
-                            <SelectItem value="Admin" className="font-normal">Admin</SelectItem>
-                            <SelectItem value="User" className="font-normal">User</SelectItem>
+                            <SelectItem value="All" className="font-bold">All Roles</SelectItem>
+                            <SelectItem value="Admin" className="font-bold">Admin</SelectItem>
+                            <SelectItem value="User" className="font-bold">User</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -321,14 +321,14 @@ export default function UsersPage() {
                       <Button variant="outline" asChild className="text-primary border-primary/20 font-bold">
                         <Link href="/seed">
                             <Database className="mr-2 h-4 w-4" />
-                            Database
+                            Database Hub
                         </Link>
                     </Button>
                 )}
                 {canCreate && (
                     <Button onClick={handleAdd} disabled={areUsersLoading} className="font-bold text-white shadow-md">
                         <PlusCircle className="mr-2 h-4 w-4" />
-                        Add User
+                        Add New User
                     </Button>
                 )}
             </div>
@@ -341,14 +341,14 @@ export default function UsersPage() {
                       <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                           <TableRow>
                               <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">#</SortableHeader>
-                              <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>
-                              <SortableHeader sortKey="email" sortConfig={sortConfig} handleSort={handleSort}>Email</SortableHeader>
-                              <SortableHeader sortKey="phone" sortConfig={sortConfig} handleSort={handleSort}>Phone</SortableHeader>
+                              <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Full Name</SortableHeader>
+                              <SortableHeader sortKey="email" sortConfig={sortConfig} handleSort={handleSort}>Email Address</SortableHeader>
+                              <SortableHeader sortKey="phone" sortConfig={sortConfig} handleSort={handleSort}>Phone Number</SortableHeader>
                               <SortableHeader sortKey="loginId" sortConfig={sortConfig} handleSort={handleSort}>Login ID</SortableHeader>
                               <SortableHeader sortKey="userKey" sortConfig={sortConfig} handleSort={handleSort}>User Key</SortableHeader>
-                              <SortableHeader sortKey="role" sortConfig={sortConfig} handleSort={handleSort}>Role</SortableHeader>
-                              <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
-                                {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right font-semibold text-[hsl(var(--table-header-fg))]">Actions</TableHead>}
+                              <SortableHeader sortKey="role" sortConfig={sortConfig} handleSort={handleSort}>Access Role</SortableHeader>
+                              <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Account Status</SortableHeader>
+                                {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right font-bold text-[hsl(var(--table-header-fg))]">Actions</TableHead>}
                           </TableRow>
                       </TableHeader>
                       <TableBody className="font-normal text-primary">
@@ -376,10 +376,10 @@ export default function UsersPage() {
                                   <TableCell className="text-xs font-normal">{user.loginId}</TableCell>
                                   <TableCell className="font-mono text-xs opacity-60 font-normal">{user.userKey}</TableCell>
                                   <TableCell>
-                                  <Badge variant={user.role === 'Admin' ? 'destructive' : 'secondary'} className="text-[10px] font-bold uppercase">{user.role}</Badge>
+                                  <Badge variant={user.role === 'Admin' ? 'destructive' : 'secondary'} className="text-[10px] font-bold">{user.role}</Badge>
                                   </TableCell>
                                   <TableCell>
-                                  <Badge variant={user.status === 'Active' ? 'active' : 'outline'} className="text-[10px] font-bold uppercase">{user.status}</Badge>
+                                  <Badge variant={user.status === 'Active' ? 'active' : 'outline'} className="text-[10px] font-bold">{user.status}</Badge>
                                   </TableCell>
                                   {(canUpdate || canDelete) && (
                                   <TableCell className="text-right pr-4">
@@ -393,25 +393,25 @@ export default function UsersPage() {
                                               {canUpdate && (
                                                   <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(user)}} className="text-primary font-normal">
                                                       <Edit className="mr-2 h-4 w-4" />
-                                                      View / Edit
+                                                      View Or Edit Profile
                                                   </DropdownMenuItem>
                                               )}
                                               {canUpdate && canDelete && <DropdownMenuSeparator />}
                                               {canUpdate && user.status === 'Active' ? (
-                                                  <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="font-normal">
+                                                  <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="font-normal text-destructive">
                                                       <UserX className="mr-2 h-4 w-4" />
-                                                      Deactivate
+                                                      Deactivate Member
                                                   </DropdownMenuItem>
                                               ) : canUpdate ? (
-                                                  <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} className="font-normal">
+                                                  <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} className="font-normal text-primary">
                                                       <UserCheck className="mr-2 h-4 w-4" />
-                                                      Activate
+                                                      Activate Member
                                                   </DropdownMenuItem>
                                               ) : null}
                                               {canDelete && (
                                                   <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleDeleteClick(user.id)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal">
                                                       <Trash2 className="mr-2 h-4 w-4" />
-                                                      Delete
+                                                      Permanently Delete
                                                   </DropdownMenuItem>
                                               )}
                                           </DropdownMenuContent>
@@ -423,7 +423,7 @@ export default function UsersPage() {
                           ) : (
                           <TableRow>
                               <TableCell colSpan={canUpdate || canDelete ? 9 : 8} className="text-center h-24 text-muted-foreground font-normal italic">
-                                  No Users Found Matching Your Criteria.
+                                  No Users Found Matching Your Search Criteria.
                               </TableCell>
                           </TableRow>
                           )}
@@ -435,8 +435,8 @@ export default function UsersPage() {
         </CardContent>
         {totalPages > 1 && (
             <CardFooter className="flex items-center justify-between border-t bg-primary/5 p-4">
-              <p className="text-xs font-bold text-muted-foreground">
-                  Showing {paginatedUsers.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredAndSortedUsers.length)} of {filteredAndSortedUsers.length} Users
+              <p className="text-xs font-bold text-muted-foreground uppercase">
+                  Showing {paginatedUsers.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} To {Math.min(currentPage * itemsPerPage, filteredAndSortedUsers.length)} Of {filteredAndSortedUsers.length} Members
               </p>
               <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold h-8 border-primary/20 text-primary">Previous</Button>
@@ -450,9 +450,9 @@ export default function UsersPage() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent className="rounded-[16px] border-border shadow-dropdown">
             <AlertDialogHeader>
-                <AlertDialogTitle className="font-bold text-destructive">Are You Absolutely Sure?</AlertDialogTitle>
+                <AlertDialogTitle className="font-bold text-destructive uppercase">Confirm Permanent Deletion?</AlertDialogTitle>
                 <AlertDialogDescription className="font-normal text-primary/70">
-                    This Will Permanently Delete The User's Account, Their Database Profile, And All Associated Files From Storage. This Action Is Irreversible.
+                    This Action Will Permanently Erase The Member's Account, Institutional Profile, And All Verification Artifacts. This Process Cannot Be Undone.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

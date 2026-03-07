@@ -17,8 +17,6 @@ import {
 
 /**
  * Streamlined Institutional Footer - Fully theme-reactive.
- * Organization name is bolded for prominence. All other elements use standard weights.
- * Transition-colors duration ensures smooth palette changes.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
@@ -139,7 +137,7 @@ export function AppFooter() {
               </span>
             )}
           </div>
-          <p className="text-center sm:text-right">
+          <p className="text-center sm:text-right lowercase first-letter:uppercase">
             {paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}. All Rights Reserved.`}
           </p>
         </div>
