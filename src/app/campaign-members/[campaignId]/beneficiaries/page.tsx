@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -26,7 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import Resizer from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -46,7 +45,12 @@ import {
     Coins,
     XCircle,
     Filter,
-    Check
+    Check,
+    UploadCloud,
+    Download,
+    Users,
+    X,
+    Info
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -86,12 +90,30 @@ import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog'
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
-import { updateMasterBeneficiaryAction } from '@/app/beneficiaries/actions';
+import { updateMasterBeneficiaryAction, bulkImportBeneficiariesAction } from '@/app/beneficiaries/actions';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { BeneficiaryImportDialog } from '@/components/beneficiary-import-dialog';
 
 const gridClass = "grid grid-cols-[40px_50px_200px_120px_120px_120px_100px_120px_120px_150px_60px] items-center gap-4 px-4 py-3 min-w-[1200px]";
+
+function StatCard({ title, count, description, icon: Icon, colorClass, delay }: { title: string, count: number, description: string, icon: any, colorClass?: string, delay: string }) {
+    return (
+        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md hover:-translate-y-1", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
+            <div className="flex justify-between items-start mb-2">
+                <div className="space-y-0.5">
+                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{title}</p>
+                    <p className="text-3xl font-black text-primary tracking-tight">{count}</p>
+                </div>
+                <div className="p-2 rounded-lg bg-primary/5 text-primary">
+                    <Icon className="h-5 w-5" />
+                </div>
+            </div>
+            <p className="text-[10px] font-bold text-muted-foreground mt-auto">{description}</p>
+        </Card>
+    )
+}
 
 export default function BeneficiariesPage() {
   const params = useParams();
@@ -111,6 +133,7 @@ export default function BeneficiariesPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [zakatFilter, setZakatFilter] = useState('All');
@@ -154,6 +177,19 @@ export default function BeneficiariesPage() {
         return matchesSearch && matchesStatus && matchesZakat && matchesReferral;
     });
   }, [beneficiaries, searchTerm, statusFilter, zakatFilter, selectedReferrals]);
+
+  const stats = useMemo(() => {
+      const data = filteredBeneficiaries;
+      return {
+          total: data.length,
+          pending: data.filter(b => b.status === 'Pending').length,
+          verified: data.filter(b => b.status === 'Verified').length,
+          given: data.filter(b => b.status === 'Given').length,
+          hold: data.filter(b => b.status === 'Hold').length,
+          needDetails: data.filter(b => b.status === 'Need More Details').length,
+          totalAmount: data.reduce((sum, b) => sum + (b.kitAmount || 0), 0)
+      }
+  }, [filteredBeneficiaries]);
 
   const beneficiariesByCategory = useMemo(() => {
     const groups: Record<string, Beneficiary[]> = {};
@@ -232,7 +268,7 @@ export default function BeneficiariesPage() {
     const fileList = data.idProofFile as FileList | undefined;
     if (fileList && fileList.length > 0) {
         const file = fileList[0];
-        const resized = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (b: any) => resolve(b as Blob), 'blob'); });
+        const resized = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (b: any) => resolve(blob as Blob), 'blob'); });
         const fRef = storageRef(storage, `beneficiaries/${masterRef.id}/id_proof.png`);
         await uploadBytes(fRef, resized);
         idProofUrl = await getDownloadURL(fRef);
@@ -268,6 +304,37 @@ export default function BeneficiariesPage() {
     setIsSubmitting(false);
   };
 
+  const handleExport = () => {
+    if (!filteredBeneficiaries.length) return;
+    const headers = ['Name', 'Phone', 'VerificationStatus', 'DisbursementStatus', 'KitAmount', 'Referral'];
+    const rows = filteredBeneficiaries.map(b => [
+        b.name,
+        b.phone || 'N/A',
+        b.verificationStatus || 'Pending',
+        b.status || 'Pending',
+        b.kitAmount || 0,
+        b.referralBy || 'N/A'
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `beneficiaries_${campaign?.name.replace(/\s+/g, '_')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImport = async (records: Partial<Beneficiary>[]) => {
+    if (!userProfile) return;
+    const res = await bulkImportBeneficiariesAction(records, { id: userProfile.id, name: userProfile.name }, { type: 'campaign', id: campaignId });
+    if (res.success) {
+        toast({ title: 'Import Complete', description: res.message, variant: 'success' });
+    } else {
+        toast({ title: 'Import Failed', description: res.message, variant: 'destructive' });
+    }
+  };
+
   if (isCampaignLoading || areBeneficiariesLoading || isProfileLoading) return <BrandedLoader />;
   if (!campaign) return <p className="text-center mt-20 text-primary font-bold">Campaign Not Found.</p>;
 
@@ -294,8 +361,17 @@ export default function BeneficiariesPage() {
         </div>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <h2 className="text-3xl font-bold text-primary tracking-tight">Beneficiary List ({beneficiaries?.length || 0})</h2>
-          <div className="flex items-center gap-2">
+          <div className="space-y-1">
+            <h2 className="text-3xl font-bold text-primary tracking-tight">Beneficiary List ({beneficiaries?.length || 0})</h2>
+            <p className="text-sm font-bold text-muted-foreground opacity-70">Total Financial Requirement: <span className="font-mono text-primary">₹{stats.totalAmount.toLocaleString('en-IN')}</span></p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleExport} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+              <Download className="mr-2 h-4 w-4"/> Export CSV
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+              <UploadCloud className="mr-2 h-4 w-4"/> Import Data
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="font-normal border-primary/10 text-primary bg-white hover:bg-primary/5 active:scale-95 transition-transform">
               <CopyPlus className="mr-2 h-4 w-4"/> Select From Master
             </Button>
@@ -303,6 +379,15 @@ export default function BeneficiariesPage() {
               <PlusCircle className="mr-2 h-4 w-4"/> Add New
             </Button>
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <StatCard title="Total" count={stats.total} description="All Recipients" icon={Users} delay="100ms" />
+            <StatCard title="Pending" count={stats.pending} description="Waiting Distribution" icon={Hourglass} delay="150ms" />
+            <StatCard title="Verified" count={stats.verified} description="Assistance Secured" icon={CheckCircle2} delay="200ms" />
+            <StatCard title="Given" count={stats.given} description={`${itemLabelSuffix} Distributed`} icon={CheckCircle2} delay="250ms" colorClass="border-green-200 bg-green-50/30" />
+            <StatCard title="Hold" count={stats.hold} description="Suspended Items" icon={XCircle} delay="300ms" />
+            <StatCard title="Need Details" count={stats.needDetails} description="Vetting Incomplete" icon={Info} delay="350ms" />
         </div>
 
         <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-4 rounded-xl border border-primary/10">
@@ -365,7 +450,7 @@ export default function BeneficiariesPage() {
             </Popover>
 
           <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="Disbursement" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
               <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
               <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
@@ -376,7 +461,7 @@ export default function BeneficiariesPage() {
             </SelectContent>
           </Select>
           <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="All Zakat Status" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
               <SelectItem value="All" className="font-normal">All Zakat Status</SelectItem>
               <SelectItem value="Eligible" className="font-normal">Eligible</SelectItem>
@@ -568,6 +653,7 @@ export default function BeneficiariesPage() {
         </Dialog>
 
         <BeneficiarySearchDialog open={isSearchOpen} onOpenChange={setIsSearchOpen} onSelectBeneficiary={(b) => handleFormSubmit(b as any, b.id)} currentLeadId={campaignId} initiativeType="campaign" />
+        <BeneficiaryImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} onImport={handleImport} />
     </main>
   );
 }

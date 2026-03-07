@@ -52,6 +52,7 @@ export async function updateMasterBeneficiaryAction(
         return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     try {
+        const batch = adminDb.batch();
         const masterBeneficiaryRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
 
         const { zakatAllocation, kitAmount, status, ...masterData } = data;
@@ -59,7 +60,7 @@ export async function updateMasterBeneficiaryAction(
         // Ensure status doesn't become null/empty
         const statusToSet = status || 'Pending';
 
-        await masterBeneficiaryRef.set({
+        batch.set(masterBeneficiaryRef, {
             ...masterData,
             status: statusToSet,
             updatedAt: FieldValue.serverTimestamp(),
@@ -67,15 +68,79 @@ export async function updateMasterBeneficiaryAction(
             updatedByName: updatedBy.name,
         }, { merge: true });
         
+        // --- PROPAGATE STATUS TO ALL INITIATIVES ---
+        // If the verification status changed, we must update all sub-collections
+        const allInstancesQuery = adminDb.collectionGroup('beneficiaries').where('id', '==', beneficiaryId);
+        const allInstancesSnap = await allInstancesQuery.get();
+
+        allInstancesSnap.forEach(docSnap => {
+            // Only update if it's an initiative sub-collection, not the master doc we just staged
+            if (docSnap.ref.path !== masterBeneficiaryRef.path) {
+                batch.update(docSnap.ref, { verificationStatus: statusToSet });
+            }
+        });
+
+        await batch.commit();
+        
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
         revalidatePath('/beneficiaries');
         revalidatePath('/campaign-members', 'layout');
         revalidatePath('/leads-members', 'layout');
 
-        return { success: true, message: `Beneficiary Master Record Updated.` };
+        return { success: true, message: `Beneficiary Master Record Updated Site-Wide.` };
     } catch (error: any) {
         console.error("Error updating master beneficiary:", error);
         return { success: false, message: `Failed To Update Beneficiary: ${error.message}` };
+    }
+}
+
+export async function bulkImportBeneficiariesAction(
+    records: Partial<Beneficiary>[], 
+    createdBy: {id: string, name: string},
+    initiativeContext?: { type: 'campaign' | 'lead', id: string }
+): Promise<{ success: boolean; message: string; count: number }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, count: 0 };
+
+    try {
+        const batch = adminDb.batch();
+        let count = 0;
+
+        for (const record of records) {
+            const masterRef = adminDb.collection('beneficiaries').doc();
+            const id = masterRef.id;
+            const fullRecord = {
+                ...record,
+                id,
+                status: record.status || 'Pending',
+                addedDate: record.addedDate || new Date().toISOString().split('T')[0],
+                createdAt: FieldValue.serverTimestamp(),
+                createdById: createdBy.id,
+                createdByName: createdBy.name,
+            };
+
+            batch.set(masterRef, fullRecord);
+
+            if (initiativeContext) {
+                const collectionName = initiativeContext.type === 'campaign' ? 'campaigns' : 'leads';
+                const subRef = adminDb.doc(`${collectionName}/${initiativeContext.id}/beneficiaries/${id}`);
+                batch.set(subRef, {
+                    ...fullRecord,
+                    verificationStatus: fullRecord.status,
+                    status: 'Pending' // Initial disbursement status
+                });
+            }
+            count++;
+        }
+
+        await batch.commit();
+        revalidatePath('/beneficiaries');
+        if (initiativeContext) revalidatePath(`/${initiativeContext.type === 'campaign' ? 'campaign-members' : 'leads-members'}/${initiativeContext.id}/beneficiaries`);
+        
+        return { success: true, message: `Successfully Imported ${count} Records.`, count };
+    } catch (error: any) {
+        console.error("Bulk Import Failed:", error);
+        return { success: false, message: `Import Failed: ${error.message}`, count: 0 };
     }
 }
 
