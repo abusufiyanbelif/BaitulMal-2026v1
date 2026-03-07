@@ -21,7 +21,10 @@ import {
     ChevronDown,
     Loader2,
     ArrowUp,
-    ArrowDown
+    ArrowDown,
+    Coins,
+    XCircle,
+    ChevronUpDown
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -131,7 +134,18 @@ export default function BeneficiariesPage() {
   const handleStatusChange = async (beneficiary: Beneficiary, newStatus: string) => {
     if (!canUpdate || !userProfile) return;
     const res = await updateMasterBeneficiaryAction(beneficiary.id, { status: newStatus as any }, { id: userProfile.id, name: userProfile.name });
-    toast({ title: 'Status Updated', variant: res.success ? 'success' : 'destructive' });
+    if (res.success) {
+        toast({ title: 'Status Updated', variant: 'success' });
+    }
+  };
+
+  const handleZakatToggle = async (beneficiary: Beneficiary) => {
+    if (!canUpdate || !userProfile) return;
+    const newStatus = !beneficiary.isEligibleForZakat;
+    const res = await updateMasterBeneficiaryAction(beneficiary.id, { isEligibleForZakat: newStatus }, { id: userProfile.id, name: userProfile.name });
+    if (res.success) {
+        toast({ title: newStatus ? 'Marked Zakat Eligible' : 'Marked Not Eligible', variant: 'success' });
+    }
   };
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
@@ -236,10 +250,18 @@ export default function BeneficiariesPage() {
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                    <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
+                                    
+                                    {canUpdate && (
+                                        <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-primary font-normal">
+                                            {b.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4 text-destructive" /> : <Coins className="mr-2 h-4 w-4 text-primary" />}
+                                            {b.isEligibleForZakat ? 'Mark as Not Eligible' : 'Mark Eligible for Zakat'}
+                                        </DropdownMenuItem>
+                                    )}
+
                                     {canUpdate && (
                                         <DropdownMenuSub>
-                                        <DropdownMenuSubTrigger className="text-primary font-normal">Status</DropdownMenuSubTrigger>
+                                        <DropdownMenuSubTrigger className="text-primary font-normal"><ChevronUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Status</DropdownMenuSubTrigger>
                                         <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] border-primary/10 shadow-dropdown">
                                             <DropdownMenuRadioGroup value={b.status || 'Pending'} onValueChange={(s) => handleStatusChange(b, s)}>
                                             <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>

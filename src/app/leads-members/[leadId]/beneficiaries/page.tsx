@@ -36,7 +36,13 @@ import {
     MoreHorizontal,
     ChevronDown,
     Loader2,
-    Trash2
+    Trash2,
+    Edit,
+    Hourglass,
+    CheckCircle2,
+    ChevronUpDown,
+    Coins,
+    XCircle
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -92,6 +98,7 @@ export default function BeneficiariesPage() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [zakatFilter, setZakatFilter] = useState('All');
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [editingBeneficiary, setEditingBeneficiary] = useState<Beneficiary | null>(null);
   
   const [currentPages, setCurrentPages] = useState<Record<string, number>>({});
   const itemsPerPage = 15;
@@ -100,6 +107,8 @@ export default function BeneficiariesPage() {
   const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
   const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.update', false);
+
+  const itemLabelSuffix = lead?.category === 'Ration Kit' ? 'Kit' : 'Item';
 
   const availableCategories = useMemo(() => {
     if (!lead?.itemCategories) return [];
@@ -142,12 +151,19 @@ export default function BeneficiariesPage() {
     updateDoc(ref, { status: newStatus }).catch((err: any) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { status: newStatus } })));
   };
 
+  const handleQuickStatusToggle = (beneficiary: Beneficiary) => {
+    const newStatus = beneficiary.status === 'Given' ? 'Pending' : 'Given';
+    handleStatusChange(beneficiary, newStatus);
+    toast({ title: `Marked as ${newStatus} ${itemLabelSuffix}`, variant: 'success' });
+  };
+
   const handleZakatToggle = (beneficiary: Beneficiary) => {
     if (!canUpdate || !userProfile || !firestore || !leadId) return;
     const newZakatStatus = !beneficiary.isEligibleForZakat;
     const ref = doc(firestore, 'leads', leadId, 'beneficiaries', beneficiary.id);
     updateDoc(ref, { isEligibleForZakat: newZakatStatus }).catch((err: any) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { isEligibleForZakat: newZakatStatus } })));
     updateMasterBeneficiaryAction(beneficiary.id, { isEligibleForZakat: newZakatStatus }, { id: userProfile.id, name: userProfile.name });
+    toast({ title: newZakatStatus ? 'Marked Zakat Eligible' : 'Marked Not Eligible', variant: 'success' });
   };
 
   const handleRemoveFromInitiative = (beneficiaryId: string) => {
@@ -163,12 +179,12 @@ export default function BeneficiariesPage() {
   const handleFormSubmit = async (data: BeneficiaryFormData, masterIdOrEvent?: string | React.BaseSyntheticEvent) => {
     setIsSubmitting(true);
     if (!firestore || !storage || !leadId || !userProfile || !lead) { setIsSubmitting(false); return; }
-    const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : undefined;
+    const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : editingBeneficiary?.id;
     const batch = writeBatch(firestore);
     const masterRef = masterId ? doc(firestore, 'beneficiaries', masterId) : doc(collection(firestore, 'beneficiaries'));
     const leadRefSub = doc(firestore, 'leads', leadId, 'beneficiaries', masterRef.id);
     
-    let idProofUrl = '';
+    let idProofUrl = editingBeneficiary?.idProofUrl || '';
     const fileList = data.idProofFile as FileList | undefined;
     if (fileList && fileList.length > 0) {
         const file = fileList[0];
@@ -179,16 +195,22 @@ export default function BeneficiariesPage() {
     }
 
     const { idProofFile, idProofDeleted, ...rest } = data;
-    const fullData = { ...rest, id: masterRef.id, idProofUrl, addedDate: new Date().toISOString().split('T')[0], createdAt: serverTimestamp(), createdById: userProfile.id, createdByName: userProfile.name };
+    const fullData = { ...rest, id: masterRef.id, idProofUrl, addedDate: beneficiary?.addedDate || new Date().toISOString().split('T')[0], createdAt: editingBeneficiary ? (editingBeneficiary as any).createdAt : serverTimestamp(), createdById: editingBeneficiary ? (editingBeneficiary as any).createdById : userProfile.id, createdByName: editingBeneficiary ? (editingBeneficiary as any).createdByName : userProfile.name };
     const { status, kitAmount, zakatAllocation, ...masterData } = fullData;
     
-    // Status normalization for master registry
     const masterStatus = status === 'Given' ? 'Verified' : status;
     batch.set(masterRef, { ...masterData, status: masterStatus }, { merge: true });
     batch.set(leadRefSub, fullData, { merge: true });
-    batch.update(doc(firestore, 'leads', leadId), { targetAmount: (lead.targetAmount || 0) + (data.kitAmount || 0) });
     
-    await batch.commit().then(() => { toast({ title: 'Success', variant: 'success' }); setIsFormOpen(false); }).catch(e => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadRefSub.path, operation: 'create' })));
+    if (!editingBeneficiary) {
+        batch.update(doc(firestore, 'leads', leadId), { targetAmount: (lead.targetAmount || 0) + (data.kitAmount || 0) });
+    }
+    
+    await batch.commit().then(() => { 
+        toast({ title: 'Success', variant: 'success' }); 
+        setIsFormOpen(false); 
+        setEditingBeneficiary(null);
+    }).catch(e => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadRefSub.path, operation: 'create' })));
     setIsSubmitting(false);
   };
 
@@ -223,7 +245,7 @@ export default function BeneficiariesPage() {
             <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="font-normal border-primary/10 text-primary bg-white hover:bg-primary/5 active:scale-95 transition-transform">
               <CopyPlus className="mr-2 h-4 w-4"/> Select From Master
             </Button>
-            <Button size="sm" onClick={() => setIsFormOpen(true)} className="bg-primary hover:bg-primary/90 text-white font-bold active:scale-95 transition-transform shadow-md rounded-[12px]">
+            <Button size="sm" onClick={() => { setEditingBeneficiary(null); setIsFormOpen(true); }} className="bg-primary hover:bg-primary/90 text-white font-bold active:scale-95 transition-transform shadow-md rounded-[12px]">
               <PlusCircle className="mr-2 h-4 w-4"/> Add New
             </Button>
           </div>
@@ -324,22 +346,39 @@ export default function BeneficiariesPage() {
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                                 <DropdownMenuContent align="end" className="rounded-[12px] shadow-dropdown border-primary/10">
-                                                                    <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
+                                                                    <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60" /> View Details</DropdownMenuItem>
+                                                                    {canUpdate && <DropdownMenuItem onClick={() => { setEditingBeneficiary(b); setIsFormOpen(true); }} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60" /> Edit</DropdownMenuItem>}
+                                                                    
+                                                                    <DropdownMenuSeparator />
+                                                                    
+                                                                    {canUpdate && (
+                                                                        <DropdownMenuItem onClick={() => handleQuickStatusToggle(b)} className="text-primary font-normal">
+                                                                            {b.status === 'Given' ? <Hourglass className="mr-2 h-4 w-4 text-amber-600" /> : <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />}
+                                                                            {b.status === 'Given' ? `Mark as Pending ${itemLabelSuffix}` : `Mark as Given ${itemLabelSuffix}`}
+                                                                        </DropdownMenuItem>
+                                                                    )}
+
+                                                                    {canUpdate && (
+                                                                        <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-primary font-normal">
+                                                                            {b.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4 text-destructive" /> : <Coins className="mr-2 h-4 w-4 text-primary" />}
+                                                                            {b.isEligibleForZakat ? 'Mark as Not Eligible' : 'Mark Eligible for Zakat'}
+                                                                        </DropdownMenuItem>
+                                                                    )}
+
                                                                     {canUpdate && (
                                                                         <DropdownMenuSub>
-                                                                            <DropdownMenuSubTrigger className="font-normal text-primary">Disbursement Status</DropdownMenuSubTrigger>
+                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ChevronUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Status</DropdownMenuSubTrigger>
                                                                             <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                                                                 <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
                                                                                     <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
                                                                                     <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified (Secured)</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Given" className="text-xs font-normal">Given (Completed)</DropdownMenuRadioItem>
                                                                                     <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</DropdownMenuRadioItem>
                                                                                     <DropdownMenuRadioItem value="Need More Details" className="text-xs font-normal">Need Details</DropdownMenuRadioItem>
                                                                                 </DropdownMenuRadioGroup>
                                                                             </DropdownMenuSubContent></DropdownMenuPortal>
                                                                         </DropdownMenuSub>
                                                                     )}
-                                                                    {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-primary font-normal">{b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}</DropdownMenuItem>}
+                                                                    
                                                                     {canUpdate && (
                                                                         <>
                                                                             <DropdownMenuSeparator />
@@ -405,8 +444,13 @@ export default function BeneficiariesPage() {
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10">
-                <DialogHeader><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase">Add New Beneficiary</DialogTitle></DialogHeader>
-                <BeneficiaryForm onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} itemCategories={lead?.itemCategories || []} />
+                <DialogHeader><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase">{editingBeneficiary ? 'Edit Beneficiary Record' : 'Add New Beneficiary'}</DialogTitle></DialogHeader>
+                <BeneficiaryForm 
+                    beneficiary={editingBeneficiary}
+                    onSubmit={handleFormSubmit} 
+                    onCancel={() => { setIsFormOpen(false); setEditingBeneficiary(null); }} 
+                    itemCategories={lead?.itemCategories || []} 
+                />
             </DialogContent>
         </Dialog>
 
