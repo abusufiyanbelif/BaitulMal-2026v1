@@ -181,7 +181,7 @@ export default function BeneficiaryDetailsPage() {
         await updateInitiativeBeneficiaryDetailsAction(initiativeContext.type, initiativeContext.id, beneficiaryId, { ...formData, idProofUrl, id: beneficiaryId });
     }
 
-    toast({ title: 'Success', description: 'Beneficiary Record Updated Successfully.' });
+    toast({ title: 'Success', description: 'Beneficiary record updated successfully.' });
     if (redirectUrl) router.push(redirectUrl);
     else { forceRefetchMaster(); setIsEditMode(false); }
     setIsSubmitting(false);
@@ -191,7 +191,7 @@ export default function BeneficiaryDetailsPage() {
     const res = await updateBeneficiaryStatusInInitiativeAction(initiative.type.toLowerCase() as any, initiative.id, beneficiaryId, newStatus);
     if (res.success) { 
         fetchLinkedInitiatives(); 
-        toast({ title: "Status Updated", description: `Disbursement Status Set To ${newStatus}.`, variant: "success" }); 
+        toast({ title: "Status Updated", description: `Disbursement status set to ${newStatus}.`, variant: "success" }); 
     }
   };
 
@@ -215,7 +215,7 @@ export default function BeneficiaryDetailsPage() {
   }, [linkedInitiatives]);
 
   if (isLoading && !formBeneficiaryData) return <BrandedLoader />;
-  if (!beneficiary) return <p className="text-center mt-20 text-primary font-bold">Beneficiary Not Found.</p>;
+  if (!beneficiary) return <p className="text-center mt-20 text-primary font-bold">Beneficiary not found.</p>;
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
@@ -225,13 +225,13 @@ export default function BeneficiaryDetailsPage() {
         </Button>
         <div className="flex items-center gap-2">
             <Badge variant="outline" className="font-bold border-primary/10 text-primary/60">ID: {beneficiary.idNumber || 'N/A'}</Badge>
-            <Badge variant={beneficiary.status === 'Verified' ? 'eligible' : 'outline'} className="font-bold uppercase text-[10px]">{beneficiary.status}</Badge>
+            <Badge variant={beneficiary.status === 'Verified' ? 'eligible' : 'outline'} className="font-bold text-[10px]">{beneficiary.status}</Badge>
         </div>
       </div>
 
       <div className="space-y-2 animate-fade-in-up">
           <h1 className="text-4xl font-bold tracking-tight text-primary">{beneficiary.name}</h1>
-          <p className="text-sm text-muted-foreground font-normal">System Entry Recorded On: {beneficiary.addedDate}</p>
+          <p className="text-sm text-muted-foreground font-normal">System entry recorded on: {beneficiary.addedDate}</p>
       </div>
 
       <Tabs defaultValue="profile" className="w-full space-y-6">
@@ -283,7 +283,7 @@ export default function BeneficiaryDetailsPage() {
                     {isLinksLoading ? ( 
                         <div className="py-20 flex flex-col items-center gap-4">
                             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                            <p className="text-xs font-bold text-primary/60 uppercase tracking-widest">Scanning Databases...</p>
+                            <p className="text-xs font-bold text-primary/60 uppercase tracking-widest">Scanning databases...</p>
                         </div>
                     ) : linkedInitiatives.length > 0 ? (
                         <ScrollArea className="w-full">
@@ -291,13 +291,13 @@ export default function BeneficiaryDetailsPage() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="pl-6 tracking-widest">Initiative Name</TableHead>
-                                            <TableHead className="tracking-widest">Purpose / Type</TableHead>
-                                            <TableHead className="tracking-widest">Category</TableHead>
-                                            <TableHead className="text-center tracking-widest">Verification</TableHead>
-                                            <TableHead className="text-right tracking-widest">Added Date</TableHead>
-                                            <TableHead className="text-right tracking-widest">Allocation (₹)</TableHead>
-                                            <TableHead className="text-right pr-6 tracking-widest">Actions</TableHead>
+                                            <TableHead className="pl-6">Initiative Name</TableHead>
+                                            <TableHead>Purpose / Type</TableHead>
+                                            <TableHead>Category</TableHead>
+                                            <TableHead className="text-center">Verification</TableHead>
+                                            <TableHead className="text-right">Added Date</TableHead>
+                                            <TableHead className="text-right">Allocation (₹)</TableHead>
+                                            <TableHead className="text-right pr-6">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -321,7 +321,7 @@ export default function BeneficiaryDetailsPage() {
                                                 <TableCell><Badge variant="outline" className="text-[10px] font-bold border-primary/10 text-primary/70">{link.purpose}</Badge></TableCell>
                                                 <TableCell><p className="text-xs font-bold text-primary/80">{link.category}</p></TableCell>
                                                 <TableCell className="text-center">
-                                                    <Badge variant={link.beneficiaryStatus === 'Given' ? 'given' : 'outline'} className="font-bold uppercase text-[9px] tracking-tighter">
+                                                    <Badge variant={link.beneficiaryStatus === 'Given' ? 'given' : 'outline'} className="font-bold text-[9px]">
                                                         {link.beneficiaryStatus}
                                                     </Badge>
                                                 </TableCell>
@@ -335,7 +335,7 @@ export default function BeneficiaryDetailsPage() {
                                                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
                                                             <DropdownMenuSub>
-                                                                <DropdownMenuSubTrigger className="font-normal text-primary">Disbursement Status</DropdownMenuSubTrigger>
+                                                                <DropdownMenuSubTrigger className="font-normal text-primary">Disbursement status</DropdownMenuSubTrigger>
                                                                 <DropdownMenuPortal>
                                                                     <DropdownMenuSubContent>
                                                                         <DropdownMenuRadioGroup value={link.beneficiaryStatus} onValueChange={(s) => handleInitiativeStatusChange(link, s as any)}>
@@ -365,7 +365,7 @@ export default function BeneficiaryDetailsPage() {
                     ) : ( 
                         <div className="flex flex-col items-center justify-center py-20 opacity-40">
                             <Info className="h-12 w-12 mb-2" />
-                            <p className="text-sm font-bold italic">No Assistance Records Linked To This Profile.</p>
+                            <p className="text-sm font-bold italic">No assistance records linked to this profile.</p>
                         </div>
                     )}
                 </CardContent>
@@ -381,7 +381,7 @@ export default function BeneficiaryDetailsPage() {
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
                         <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.requested.toLocaleString('en-IN')}</div>
-                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Combined Value Of All Linked Requirements</p>
+                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Combined value of all linked requirements</p>
                     </CardContent>
                 </Card>
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
@@ -391,7 +391,7 @@ export default function BeneficiaryDetailsPage() {
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
                         <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.verified.toLocaleString('en-IN')}</div>
-                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Institutional Funds Reserved For This Member</p>
+                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Institutional funds reserved for this member</p>
                     </CardContent>
                 </Card>
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
@@ -401,7 +401,7 @@ export default function BeneficiaryDetailsPage() {
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
                         <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.disbursed.toLocaleString('en-IN')}</div>
-                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Confirmed Value Successfully Provided To Recipient</p>
+                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Confirmed value successfully provided to recipient</p>
                     </CardContent>
                 </Card>
 
@@ -416,12 +416,12 @@ export default function BeneficiaryDetailsPage() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="pl-6 tracking-widest">Initiative Source</TableHead>
-                                            <TableHead className="text-right tracking-widest">Requirement (₹)</TableHead>
-                                            <TableHead className="text-right tracking-widest">Zakat Allocation (₹)</TableHead>
-                                            <TableHead className="text-right tracking-widest">Community Fund (₹)</TableHead>
-                                            <TableHead className="text-center tracking-widest">Financial Status</TableHead>
-                                            <TableHead className="text-right pr-6 tracking-widest">Net Provision (₹)</TableHead>
+                                            <TableHead className="pl-6">Initiative Source</TableHead>
+                                            <TableHead className="text-right">Requirement (₹)</TableHead>
+                                            <TableHead className="text-right">Zakat Allocation (₹)</TableHead>
+                                            <TableHead className="text-right">Community Fund (₹)</TableHead>
+                                            <TableHead className="text-center">Financial Status</TableHead>
+                                            <TableHead className="text-right pr-6">Net Provision (₹)</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -449,7 +449,7 @@ export default function BeneficiaryDetailsPage() {
                                                     <TableCell className="text-center">
                                                         <Badge 
                                                             variant={link.beneficiaryStatus === 'Given' ? 'given' : link.beneficiaryStatus === 'Verified' ? 'eligible' : 'outline'} 
-                                                            className="font-bold uppercase text-[9px] tracking-tight"
+                                                            className="font-bold text-[9px]"
                                                         >
                                                             {link.beneficiaryStatus === 'Given' ? 'Disbursed' : link.beneficiaryStatus === 'Verified' ? 'Secured' : 'Evaluation'}
                                                         </Badge>
@@ -466,7 +466,7 @@ export default function BeneficiaryDetailsPage() {
                                             );
                                         })}
                                         {linkedInitiatives.length === 0 && (
-                                            <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground italic font-normal">No Financial Records Available.</TableCell></TableRow>
+                                            <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground italic font-normal">No financial records available.</TableCell></TableRow>
                                         )}
                                     </TableBody>
                                     <TableFooter className="bg-primary/5 border-t">
@@ -518,7 +518,7 @@ export default function BeneficiaryDetailsPage() {
 
                             <div className="space-y-4">
                                 <h4 className="text-sm font-bold text-primary uppercase tracking-widest flex items-center gap-2">
-                                    <Info className="h-4 w-4"/> Impact Summary
+                                    <span className="font-normal"><Info className="h-4 w-4"/></span> Impact Summary
                                 </h4>
                                 <p className="text-sm leading-relaxed text-foreground font-normal">
                                     This recipient has been supported across <span className="font-bold text-primary">{linkedInitiatives.length} initiative(s)</span>. 

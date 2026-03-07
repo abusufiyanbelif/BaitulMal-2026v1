@@ -166,20 +166,20 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
     setValue('idProofFile', null);
     setValue('idProofDeleted', true);
     setPreview(null);
-    toast({ title: 'Image Marked For Deletion', description: 'The ID Proof Will Be Permanently Removed Upon Saving.', variant: 'default' });
+    toast({ title: 'Image marked for deletion', description: 'The ID proof will be permanently removed upon saving.', variant: 'default' });
   };
 
   const handleSendPasswordReset = async () => {
     if (!auth || !user?.email) {
-        toast({ title: "Operation Error", description: "User Email Or Authentication Service Unavailable.", variant: "destructive"});
+        toast({ title: "Operation error", description: "User email or authentication service unavailable.", variant: "destructive"});
         return;
     }
     const actionCodeSettings = { url: `${window.location.origin}/login`, handleCodeInApp: false };
     try {
         await sendPasswordResetEmail(auth, user.email, actionCodeSettings);
-        toast({ title: "Reset Email Dispatched", description: `A Secure Password Reset Link Has Been Sent To ${user.email}.`, variant: "success", duration: 10000 });
+        toast({ title: "Reset email dispatched", description: `A secure password reset link has been sent to ${user.email}.`, variant: "success", duration: 10000 });
     } catch (error: any) {
-        toast({ title: "Dispatch Failed", description: `Could Not Send Reset Link: ${error.message}`, variant: "destructive"});
+        toast({ title: "Dispatch failed", description: `Could not send reset link: ${error.message}`, variant: "destructive"});
     }
   };
   
@@ -194,11 +194,11 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
   const handleScanIdProof = async () => {
     const fileList = getValues('idProofFile') as FileList | undefined;
     if (!fileList || fileList.length === 0) {
-        toast({ title: "No File Selected", description: "Please Upload An ID Proof Document To Proceed.", variant: "destructive" });
+        toast({ title: "No file selected", description: "Please upload an ID proof document to proceed.", variant: "destructive" });
         return;
     }
     setIsScanning(true);
-    toast({ title: "Scanning Document..." });
+    toast({ title: "Scanning document..." });
     const file = fileList[0];
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -212,10 +212,10 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                 if (response.name) setValue('name', response.name, { shouldValidate: true });
                 if (response.aadhaarNumber) setValue('idNumber', response.aadhaarNumber, { shouldValidate:true });
                 setValue('idProofType', 'Aadhaar', { shouldValidate: true });
-                toast({ title: "Autofill Successful", variant: "success" });
+                toast({ title: "Autofill successful", variant: "success" });
             }
         } catch (error: any) {
-            toast({ title: "Scan Failed", description: error.message || "Could Not Read Document.", variant: "destructive" });
+            toast({ title: "Scan failed", description: error.message || "Could not read document.", variant: "destructive" });
         } finally { setIsScanning(false); }
     };
     reader.readAsDataURL(file);
@@ -232,8 +232,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
 
       if (missingFields.length > 0) {
           toast({
-              title: "Required Fields Missing",
-              description: `Please Complete The Profile: ${missingFields.join(', ')}`,
+              title: "Required fields missing",
+              description: `Please complete the profile: ${missingFields.join(', ')}`,
               variant: "destructive",
           });
           return;
@@ -260,61 +260,90 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                     <TabsTrigger value="permissions" className="font-bold data-[state=active]:shadow-sm">Permissions</TabsTrigger>
                 </TabsList>
                 <TabsContent value="profile" className="mt-6 space-y-6 animate-fade-in-up">
-                    <FormField control={control} name="name" render={({ field }) => (<FormItem>{renderLabel('Full Name', 'name')}<FormControl><Input placeholder="e.g. Moosa Shaikh" {...field} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
-                    <FormField control={control} name="email" render={({ field }) => (<FormItem>{renderLabel('Email Address', 'email')}<FormControl><Input type="email" placeholder="user@example.com" {...field} disabled={isFormDisabled || (isEditing && !isCurrentUserAdmin)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Primary institutional contact and authentication identity.</FormDescription><FormMessage /></FormItem>)}/>
-                    <FormField control={control} name="phone" render={({ field }) => (<FormItem>{renderLabel('Phone Number', 'phone')}<FormControl><Input placeholder="10-digit mobile number" {...field} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={control} name="name" render={({ field }) => (<FormItem>{renderLabel('Full name', 'name')}<FormControl><Input placeholder="e.g. Moosa Shaikh" {...field} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={control} name="email" render={({ field }) => (<FormItem>{renderLabel('Email address', 'email')}<FormControl><Input type="email" placeholder="user@example.com" {...field} disabled={isFormDisabled || (isEditing && !isCurrentUserAdmin)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Primary institutional contact and authentication identity.</FormDescription><FormMessage /></FormItem>)}/>
+                    <FormField control={control} name="phone" render={({ field }) => (<FormItem>{renderLabel('Phone number', 'phone')}<FormControl><Input placeholder="10-digit mobile number" {...field} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField control={control} name="loginId" render={({ field }) => (<FormItem>{renderLabel('Login ID', 'loginId')}<FormControl><Input placeholder="Auto-generated from name" {...field} disabled={isFormDisabled || (!isCurrentUserAdmin && isEditing)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Unique identifier for account access.</FormDescription><FormMessage /></FormItem>)}/>
-                        <FormField control={control} name="userKey" render={({ field }) => (<FormItem><FormLabel className="font-bold text-primary opacity-60">System ID (User Key)</FormLabel><FormControl><Input placeholder="System-generated" {...field} readOnly disabled={true} className="bg-muted/30 font-mono opacity-60 font-normal" /></FormControl></FormItem>)}/>
+                        <FormField control={control} name="userKey" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="font-bold text-primary opacity-60">System ID (User key)</FormLabel>
+                                <FormControl><Input placeholder="System-generated" {...field} readOnly disabled={true} className="bg-muted/30 font-mono opacity-60 font-normal" /></FormControl>
+                            </FormItem>
+                        )}/>
                     </div>
                     {isEditing ? (
                         <div className="space-y-2 rounded-xl border p-4 bg-muted/5">
-                            <FormLabel className="font-bold text-primary">Password Management</FormLabel>
+                            <FormLabel className="font-bold text-primary">Password management</FormLabel>
                             <div className="flex items-center gap-2">
                                 <Input type="password" value="••••••••••" readOnly disabled className="flex-1 opacity-50 font-normal"/>
-                                <Button type="button" variant="secondary" onClick={handleSendPasswordReset} disabled={isSubmitting} className="font-bold text-xs"><Send className="mr-2 h-4 w-4"/> Dispatch Reset Link</Button>
+                                <Button type="button" variant="secondary" onClick={handleSendPasswordReset} disabled={isSubmitting} className="font-bold text-xs"><Send className="mr-2 h-4 w-4"/> Dispatch reset link</Button>
                             </div>
                             <FormDescription className="font-normal text-xs opacity-70 italic">Administrators cannot set passwords directly. Dispatch a secure reset link to the member's email.</FormDescription>
                         </div>
                     ) : (
-                        <FormField control={control} name="password" render={({ field }) => (<FormItem><FormLabel className="font-bold text-primary">Initial Password *</FormLabel><FormControl><Input type="password" placeholder="Minimum 6 Characters" {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
+                        <FormField control={control} name="password" render={({ field }) => (<FormItem><FormLabel className="font-bold text-primary">Initial password *</FormLabel><FormControl><Input type="password" placeholder="Minimum 6 characters" {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
                     )}
                     
                     <Separator className="bg-primary/10" />
 
                     <div className="space-y-4 rounded-xl border border-primary/5 p-4 bg-primary/[0.02]">
-                        <h3 className="text-sm font-bold text-primary uppercase tracking-widest">Verifiable Identification</h3>
+                        <h3 className="text-sm font-bold text-primary uppercase tracking-widest">Verifiable identification</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <FormField control={control} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID Proof Type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
-                            <FormField control={control} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID Number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                            <FormField control={control} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID proof type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                            <FormField control={control} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                         </div>
                         <FormItem>
-                            {renderLabel('ID Proof Document', 'idProofFile')}
+                            {renderLabel('ID proof document', 'idProofFile')}
                             <FormControl><Input id="user-id-proof-file-input" type="file" accept="image/png, image/jpeg, image/webp, application/pdf" {...register('idProofFile')} disabled={isFormDisabled} className="font-normal" /></FormControl>
                         </FormItem>
                         {preview && (
                             <div className="relative group w-full h-48 mt-2 rounded-xl overflow-hidden border bg-white shadow-inner">
-                                {preview.startsWith('data:application/pdf') || preview.endsWith('.pdf') ? ( <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4"><FileIcon className="w-12 h-12 mb-2" /><p className="text-sm text-center font-bold">PDF ARTIFACT UPLOADED</p></div> ) : ( <Image src={preview} alt="ID Proof Preview" fill sizes="100vw" className="object-contain" /> )}
+                                {preview.startsWith('data:application/pdf') || preview.endsWith('.pdf') ? ( <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4"><FileIcon className="w-12 h-12 mb-2" /><p className="text-sm text-center font-bold">PDF artifact uploaded</p></div> ) : ( <Image src={preview} alt="ID proof preview" fill sizes="100vw" className="object-contain" /> )}
                                 {!isReadOnly && <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><Button type="button" size="icon" variant="outline" className="text-white border-white hover:bg-white/20" onClick={() => document.getElementById('user-id-proof-file-input')?.click()}><Replace className="h-5 w-5"/></Button><Button type="button" size="icon" variant="destructive" onClick={handleDeleteProof}><Trash2 className="h-5 w-5"/></Button></div>}
                             </div>
                         )}
                         {idProofFile?.length > 0 && !isReadOnly && (
-                            <Button type="button" className="w-full font-bold shadow-md active:scale-95 transition-transform" onClick={handleScanIdProof} disabled={isScanning || isFormDisabled}>{isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan ID Artifact & Autofill</Button>
+                            <Button type="button" className="w-full font-bold shadow-md active:scale-95 transition-transform" onClick={handleScanIdProof} disabled={isScanning || isFormDisabled}>{isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan ID artifact & autofill</Button>
                         )}
                     </div>
 
                     <Separator className="bg-primary/10" />
-                    <FormField control={control} name="status" render={({ field }) => (<FormItem>{renderLabel('Account Status', 'status')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isFormDisabled}><FormControl><SelectTrigger className="font-normal"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Active" className="font-normal text-primary">Active</SelectItem><SelectItem value="Inactive" className="font-normal text-destructive">Inactive</SelectItem></SelectContent></Select><FormDescription className="font-normal text-xs opacity-70">Inactive Members Are Immediately Restricted From All System Access.</FormDescription></FormItem>)}/>
+                    <FormField control={control} name="status" render={({ field }) => (
+                        <FormItem>
+                            {renderLabel('Account status', 'status')}
+                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isFormDisabled}>
+                                <FormControl><SelectTrigger className="font-normal"><SelectValue/></SelectTrigger></FormControl>
+                                <SelectContent className="rounded-[12px] shadow-dropdown">
+                                    <SelectItem value="Active" className="font-normal text-primary">Active</SelectItem>
+                                    <SelectItem value="Inactive" className="font-normal text-destructive">Inactive</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormDescription className="font-normal text-xs opacity-70">Inactive members are immediately restricted from all system access.</FormDescription>
+                        </FormItem>
+                    )}/>
                 </TabsContent>
                 <TabsContent value="organization" className="mt-6 space-y-6 animate-fade-in-up">
-                    <FormField control={control} name="organizationGroup" render={({ field }) => (<FormItem>{renderLabel('Organization Group', 'organizationGroup')}<Select onValueChange={field.onChange} value={field.value || 'none'} disabled={isFormDisabled}><FormControl><SelectTrigger className="font-normal"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="none" className="font-normal italic">-- Not A Public Member --</SelectItem>{GROUPS.map(g => <SelectItem key={g.id} value={g.id} className="font-normal">{g.name}</SelectItem>)}</SelectContent></Select><FormDescription className="font-normal text-xs opacity-70">Determines Visibility In The Public Team Directory.</FormDescription></FormItem>)}/>
-                    <FormField control={control} name="organizationRole" render={({ field }) => (<FormItem>{renderLabel('Institutional Title', 'organizationRole')}<FormControl><Input placeholder="e.g. President, Treasurer" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                    <FormField control={control} name="organizationGroup" render={({ field }) => (
+                        <FormItem>
+                            {renderLabel('Organization group', 'organizationGroup')}
+                            <Select onValueChange={field.onChange} value={field.value || 'none'} disabled={isFormDisabled}>
+                                <FormControl><SelectTrigger className="font-normal"><SelectValue/></SelectTrigger></FormControl>
+                                <SelectContent className="rounded-[12px] shadow-dropdown">
+                                    <SelectItem value="none" className="font-normal italic">-- Not a public member --</SelectItem>
+                                    {GROUPS.map(g => <SelectItem key={g.id} value={g.id} className="font-normal">{g.name}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                            <FormDescription className="font-normal text-xs opacity-70">Determines visibility in the public team directory.</FormDescription>
+                        </FormItem>
+                    )}/>
+                    <FormField control={control} name="organizationRole" render={({ field }) => (<FormItem>{renderLabel('Institutional title', 'organizationRole')}<FormControl><Input placeholder="e.g. President, Treasurer" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                 </TabsContent>
                 <TabsContent value="permissions" className="mt-6 space-y-6 animate-fade-in-up">
-                    <FormField control={control} name="role" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-primary/[0.02] shadow-sm"><div className="space-y-0.5"><FormLabel className="font-bold text-primary text-base">Administrative Superuser</FormLabel><FormDescription className="font-normal text-xs opacity-70">Grant Unrestricted Global Access To All System Modules And Settings.</FormDescription></div><FormControl><Switch checked={field.value === 'Admin'} onCheckedChange={(checked) => field.onChange(checked ? 'Admin' : 'User')} disabled={isFormDisabled} /></FormControl></FormItem>)}/>
+                    <FormField control={control} name="role" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-primary/[0.02] shadow-sm"><div className="space-y-0.5"><FormLabel className="font-bold text-primary text-base">Administrative Superuser</FormLabel><FormDescription className="font-normal text-xs opacity-70">Grant unrestricted global access to all system modules and settings.</FormDescription></div><FormControl><Switch checked={field.value === 'Admin'} onCheckedChange={(checked) => field.onChange(checked ? 'Admin' : 'User')} disabled={isFormDisabled} /></FormControl></FormItem>)}/>
                     <div className="space-y-2">
-                        <FormLabel className="font-bold text-primary">Granular Module Permissions</FormLabel>
-                        <FormDescription className="font-normal text-xs opacity-70">Define Specific Access Levels Per Module. (Ignored If Superuser Status Is Active).</FormDescription>
+                        <FormLabel className="font-bold text-primary">Granular module permissions</FormLabel>
+                        <FormDescription className="font-normal text-xs opacity-70">Define specific access levels per module. (Ignored if superuser status is active).</FormDescription>
                         <PermissionsTable permissions={permissions} onPermissionChange={handlePermissionChange} role={roleValue} disabled={isFormDisabled} />
                     </div>
                 </TabsContent>
@@ -324,7 +353,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                 <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Discard</Button>
                 <Button type="submit" disabled={isSaveDisabled} className="font-bold shadow-md transition-transform active:scale-95 px-8">
                     {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    {isSubmitting ? 'Securing...' : 'Save Member Account'}
+                    {isSubmitting ? 'Securing...' : 'Save member account'}
                 </Button>
               </div>
             )}

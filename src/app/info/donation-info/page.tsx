@@ -53,13 +53,13 @@ export default function DonationInfoPage() {
     
     if (!infoSettings?.isDonationInfoPublic) {
         return (
-            <main className="container mx-auto p-4 md:p-8 text-center">
-                <h1 className="text-2xl font-bold">Page Not Available</h1>
+            <main className="container mx-auto p-4 md:p-8 text-center font-normal">
+                <h1 className="text-2xl font-bold text-primary">Page Not Available</h1>
                 <p className="text-muted-foreground mt-2">This informational page is not currently public.</p>
-                 <Button asChild className="mt-6">
+                 <Button asChild className="mt-6 font-bold" variant="outline">
                     <Link href="/">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Go Back to Home
+                        Go Back To Home
                     </Link>
                 </Button>
             </main>
@@ -67,19 +67,19 @@ export default function DonationInfoPage() {
     }
 
   return (
-    <main className="container mx-auto p-4 md:p-8 space-y-12">
+    <main className="container mx-auto p-4 md:p-8 space-y-12 text-primary font-normal">
       <div className="mb-4">
-        <Button variant="outline" asChild>
+        <Button variant="outline" asChild className="font-bold border-primary/20">
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Home
+            Back To Home
           </Link>
         </Button>
       </div>
 
       <section className="text-center space-y-4 animate-fade-in-up">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-primary uppercase">Financial Wisdom in Islam</h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-primary">Financial Wisdom In Islam</h1>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-normal leading-relaxed">
               Understanding the distinct categories of charitable giving ensures your contributions are used correctly and fulfill their intended religious purposes.
           </p>
       </section>
@@ -89,8 +89,8 @@ export default function DonationInfoPage() {
             <ScrollArea className="w-full sm:w-auto">
                 <TabsList className="bg-muted/50 p-1">
                     {donationTypes.map((type) => (
-                        <TabsTrigger key={type.id} value={type.id} className="px-6 py-2 font-black uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                            {type.title?.split(' ')[0].toUpperCase() || type.id.toUpperCase()}
+                        <TabsTrigger key={type.id} value={type.id} className="px-6 py-2 font-bold tracking-tight data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                            {type.title?.split(' ')[0] || type.id}
                         </TabsTrigger>
                     ))}
                 </TabsList>
@@ -108,34 +108,34 @@ export default function DonationInfoPage() {
 
             return (
                 <TabsContent key={type.id} value={type.id} className="animate-fade-in-up">
-                    <Card className="overflow-hidden border-none shadow-2xl">
-                        <div className="relative h-64 md:h-80 w-full flex items-center justify-center bg-primary/10">
+                    <Card className="overflow-hidden border-primary/10 shadow-xl bg-white">
+                        <div className="relative h-64 md:h-80 w-full flex items-center justify-center bg-primary/5">
                             {displayImageUrl ? (
                                 <Image src={displayImageUrl} alt={type.title || 'Header'} fill className="object-cover" priority />
                             ) : (
                                 <div className="flex flex-col items-center gap-4">
-                                    <div className="p-6 rounded-full bg-primary/20 text-primary">
-                                        <IconComponent className="h-24 w-24" />
+                                    <div className="p-6 rounded-full bg-primary/10 text-primary">
+                                        <IconComponent className="h-20 w-20" />
                                     </div>
                                 </div>
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                             <div className="absolute bottom-8 left-8 text-white pr-8">
-                                <h2 className="text-4xl font-black tracking-tight drop-shadow-xl uppercase">{type.title}</h2>
+                                <h2 className="text-3xl font-bold tracking-tight drop-shadow-md">{type.title}</h2>
                             </div>
                         </div>
                         <CardContent className="p-8 md:p-12 space-y-10">
                             <div className="grid md:grid-cols-3 gap-10">
                                 <div className="md:col-span-2 space-y-8">
-                                    <div className="space-y-4">
-                                        {type.description && <p className="text-xl leading-relaxed text-foreground font-semibold whitespace-pre-wrap">{type.description}</p>}
+                                    <div className="space-y-4 font-normal">
+                                        {type.description && <p className="text-lg leading-relaxed text-foreground whitespace-pre-wrap">{type.description}</p>}
                                         
                                         {type.quranVerse && (
-                                            <blockquote className="border-l-4 border-primary pl-6 py-4 italic text-muted-foreground relative bg-muted/30 rounded-r-xl">
-                                                <Quote className="h-6 w-6 text-primary/20 absolute -top-3 -left-3" />
-                                                <p className="text-lg leading-relaxed">"{type.quranVerse}"</p>
+                                            <blockquote className="border-l-4 border-primary/30 pl-6 py-4 italic text-muted-foreground relative bg-primary/[0.02] rounded-r-xl">
+                                                <Quote className="h-6 w-6 text-primary/10 absolute -top-3 -left-3" />
+                                                <p className="text-lg leading-relaxed font-normal">"{type.quranVerse}"</p>
                                                 {type.quranSource && (
-                                                    <cite className="block text-right not-italic text-sm font-black text-primary mt-4 tracking-widest uppercase">
+                                                    <cite className="block text-right not-italic text-sm font-bold text-primary mt-4 tracking-tight">
                                                         — {type.quranSource}
                                                     </cite>
                                                 )}
@@ -145,24 +145,24 @@ export default function DonationInfoPage() {
 
                                     {!type.hideUseCases && visibleUseCases.length > 0 && (
                                         <div className="space-y-6">
-                                            <h3 className="text-2xl font-black tracking-tight text-primary uppercase flex items-center gap-3">
-                                                <Target className="h-6 w-6" /> {type.useCasesHeading || "Practical Use Cases"}
+                                            <h3 className="text-xl font-bold tracking-tight text-primary flex items-center gap-3">
+                                                <Target className="h-5 w-5" /> {type.useCasesHeading || "Practical Use Cases"}
                                             </h3>
-                                            <div className="grid gap-6">
+                                            <div className="grid gap-4">
                                                 {visibleUseCases.map((useCase) => (
-                                                    <div key={useCase.id} className="group p-6 rounded-xl border-2 border-muted bg-card hover:border-primary/30 transition-all">
+                                                    <div key={useCase.id} className="group p-6 rounded-xl border border-primary/10 bg-white hover:border-primary/30 transition-all">
                                                         <div className="flex items-start gap-4">
-                                                            <div className="mt-1">
-                                                                {useCase.isAllowed ? <CheckCircle2 className="h-6 w-6 text-green-500" /> : <XCircle className="h-6 w-6 text-red-500" />}
+                                                            <div className="mt-1 shrink-0">
+                                                                {useCase.isAllowed ? <CheckCircle2 className="h-5 w-5 text-green-600" /> : <XCircle className="h-5 w-5 text-red-600" />}
                                                             </div>
-                                                            <div className="space-y-3 flex-1">
-                                                                {useCase.title && <h4 className="font-black text-lg uppercase tracking-tight">{useCase.title}</h4>}
-                                                                <p className="text-muted-foreground font-medium">{useCase.description}</p>
+                                                            <div className="space-y-2 flex-1">
+                                                                {useCase.title && <h4 className="font-bold text-base text-primary">{useCase.title}</h4>}
+                                                                <p className="text-muted-foreground font-normal text-sm leading-relaxed">{useCase.description}</p>
                                                                 
                                                                 {(useCase.quranVerse || useCase.quranSource) && (
-                                                                    <div className="mt-4 p-4 bg-muted/50 rounded-lg border-l-4 border-muted-foreground italic text-sm text-muted-foreground">
+                                                                    <div className="mt-4 p-4 bg-muted/20 rounded-lg border-l-2 border-primary/20 italic text-xs text-muted-foreground">
                                                                         {useCase.quranVerse && <p>"{useCase.quranVerse}"</p>}
-                                                                        {useCase.quranSource && <p className="text-[10px] font-black uppercase text-primary text-right mt-2">— {useCase.quranSource}</p>}
+                                                                        {useCase.quranSource && <p className="text-[10px] font-bold text-primary text-right mt-2">— {useCase.quranSource}</p>}
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -174,17 +174,17 @@ export default function DonationInfoPage() {
                                     )}
                                 </div>
 
-                                <div className="space-y-8">
+                                <div className="space-y-8 font-normal">
                                     {!type.hideKeyHighlights && type.purposePoints && type.purposePoints.length > 0 && (
-                                        <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10">
-                                            <h4 className="font-black text-xs uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
+                                        <div className="bg-primary/[0.02] p-6 rounded-2xl border border-primary/10">
+                                            <h4 className="font-bold text-xs uppercase tracking-widest text-primary/60 mb-4 flex items-center gap-2">
                                                 <ListChecks className="h-4 w-4" /> Key Highlights
                                             </h4>
                                             <ul className="space-y-3">
                                                 {type.purposePoints.map((point, pIdx) => (
-                                                    <li key={pIdx} className="flex items-start gap-3 text-sm font-bold">
-                                                        <div className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5" />
-                                                        <span className="whitespace-pre-wrap">{point}</span>
+                                                    <li key={pIdx} className="flex items-start gap-3 text-sm">
+                                                        <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 mt-1.5" />
+                                                        <span className="whitespace-pre-wrap font-normal leading-relaxed">{point}</span>
                                                     </li>
                                                 ))}
                                             </ul>
@@ -193,15 +193,15 @@ export default function DonationInfoPage() {
 
                                     <div className="space-y-6">
                                         {!type.hideUsage && type.usage && (
-                                            <div className="p-4 rounded-xl bg-muted/20 border">
-                                                <span className="font-black uppercase text-[10px] tracking-widest text-muted-foreground block mb-2">Permissible Usage:</span>
-                                                <p className="text-sm font-medium leading-relaxed whitespace-pre-wrap">{type.usage}</p>
+                                            <div className="p-4 rounded-xl bg-muted/30 border border-primary/5">
+                                                <span className="font-bold uppercase text-[10px] tracking-tight text-primary/40 block mb-2">Permissible Usage</span>
+                                                <p className="text-sm font-normal leading-relaxed whitespace-pre-wrap">{type.usage}</p>
                                             </div>
                                         )}
                                         {!type.hideRestrictions && type.restrictions && (
-                                            <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/10">
-                                                <span className="font-black uppercase text-[10px] tracking-widest text-destructive block mb-2">Strict Restrictions:</span>
-                                                <p className="text-sm font-medium leading-relaxed text-destructive/80 whitespace-pre-wrap">{type.restrictions}</p>
+                                            <div className="p-4 rounded-xl bg-red-50/30 border border-red-100">
+                                                <span className="font-bold uppercase text-[10px] tracking-tight text-red-400 block mb-2">Strict Restrictions</span>
+                                                <p className="text-sm font-normal leading-relaxed text-red-900/70 whitespace-pre-wrap">{type.restrictions}</p>
                                             </div>
                                         )}
                                     </div>
@@ -209,27 +209,27 @@ export default function DonationInfoPage() {
                             </div>
 
                             {!type.hideQA && visibleQA.length > 0 && (
-                                <div className="space-y-8 pt-6 border-t">
-                                    <h3 className="text-2xl font-black tracking-tight text-blue-600 uppercase flex items-center gap-3">
-                                        <BookOpen className="h-6 w-6" /> Common Questions
+                                <div className="space-y-8 pt-10 border-t border-primary/10 font-normal">
+                                    <h3 className="text-xl font-bold tracking-tight text-primary flex items-center gap-3">
+                                        <BookOpen className="h-5 w-5" /> Common Questions
                                     </h3>
                                     <div className="grid sm:grid-cols-2 gap-6">
                                         {visibleQA.map((qa) => (
-                                            <div key={qa.id} className="space-y-4 bg-blue-50/30 p-6 rounded-2xl border border-blue-100/50">
+                                            <div key={qa.id} className="space-y-4 bg-muted/10 p-6 rounded-2xl border border-primary/5">
                                                 <div className="space-y-2">
-                                                    <h4 className="font-black text-lg text-blue-900">Q: {qa.question}</h4>
-                                                    <p className="font-medium text-slate-700">A: {qa.answer}</p>
+                                                    <h4 className="font-bold text-base text-primary">Q: {qa.question}</h4>
+                                                    <p className="text-sm text-foreground/80 leading-relaxed font-normal">A: {qa.answer}</p>
                                                 </div>
                                                 
                                                 {(qa.quranVerse || qa.quranSource) && (
-                                                    <div className="p-3 bg-white/50 rounded-lg border-l-2 border-blue-200 italic text-xs text-blue-800">
+                                                    <div className="p-3 bg-white/50 rounded-lg border-l-2 border-primary/20 italic text-xs text-muted-foreground">
                                                         {qa.quranVerse && <p>"{qa.quranVerse}"</p>}
-                                                        {qa.quranSource && <p className="text-[9px] font-black uppercase text-blue-600 text-right mt-1">— {qa.quranSource}</p>}
+                                                        {qa.quranSource && <p className="text-[10px] font-bold text-primary text-right mt-1">— {qa.quranSource}</p>}
                                                     </div>
                                                 )}
                                                 
                                                 {qa.reference && (
-                                                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest pt-2 flex items-center gap-1">
+                                                    <p className="text-[10px] font-bold text-primary/40 uppercase tracking-tight pt-2 flex items-center gap-1">
                                                         <Info className="h-3 w-3" /> Reference: {qa.reference}
                                                     </p>
                                                 )}
@@ -247,28 +247,28 @@ export default function DonationInfoPage() {
 
       <section className="max-w-5xl mx-auto space-y-6 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
           <div className="text-center space-y-2">
-              <h2 className="text-3xl font-black tracking-tight uppercase">Quick Comparison</h2>
-              <p className="text-muted-foreground font-medium">Identifying the primary differences at a glance.</p>
+              <h2 className="text-2xl font-bold tracking-tight text-primary">Quick Comparison</h2>
+              <p className="text-muted-foreground font-normal">Identifying the primary differences at a glance.</p>
           </div>
-          <Card className="shadow-xl overflow-hidden border-primary/10">
+          <Card className="shadow-xl overflow-hidden border-primary/10 bg-white">
               <Table>
                   <TableHeader className="bg-primary/5">
                   <TableRow>
-                      <TableHead className="font-black uppercase text-[10px] tracking-wider w-[150px]">Feature</TableHead>
-                      <TableHead className="font-black uppercase text-[10px] tracking-wider">Zakat</TableHead>
-                      <TableHead className="font-black uppercase text-[10px] tracking-wider">Sadaqah</TableHead>
-                      <TableHead className="font-black uppercase text-[10px] tracking-wider">Lillah</TableHead>
-                      <TableHead className="font-black uppercase text-[10px] tracking-wider">Fidiya</TableHead>
+                      <TableHead className="font-bold text-[10px] tracking-tight w-[150px]">Feature</TableHead>
+                      <TableHead className="font-bold text-[10px] tracking-tight">Zakat</TableHead>
+                      <TableHead className="font-bold text-[10px] tracking-tight">Sadaqah</TableHead>
+                      <TableHead className="font-bold text-[10px] tracking-tight">Lillah</TableHead>
+                      <TableHead className="font-bold text-[10px] tracking-tight">Fidiya</TableHead>
                   </TableRow>
                   </TableHeader>
                   <TableBody>
                   {comparisonData.map((row) => (
-                      <TableRow key={row.feature} className="hover:bg-muted/50 transition-colors">
-                      <TableCell className="font-bold text-xs bg-muted/20 uppercase">{row.feature}</TableCell>
-                      <TableCell className="text-xs font-medium">{row.zakat}</TableCell>
-                      <TableCell className="text-xs font-medium">{row.sadaqah}</TableCell>
-                      <TableCell className="text-xs font-medium">{row.lillah}</TableCell>
-                      <TableCell className="text-xs font-medium">{row.fidiya}</TableCell>
+                      <TableRow key={row.feature} className="hover:bg-primary/[0.02] transition-colors">
+                      <TableCell className="font-bold text-xs bg-primary/[0.01] uppercase tracking-tight text-primary/60">{row.feature}</TableCell>
+                      <TableCell className="text-xs font-normal">{row.zakat}</TableCell>
+                      <TableCell className="text-xs font-normal">{row.sadaqah}</TableCell>
+                      <TableCell className="text-xs font-normal">{row.lillah}</TableCell>
+                      <TableCell className="text-xs font-normal">{row.fidiya}</TableCell>
                       </TableRow>
                   ))}
                   </TableBody>
@@ -276,11 +276,11 @@ export default function DonationInfoPage() {
           </Card>
       </section>
 
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-5xl mx-auto font-normal">
         <Alert className="bg-primary/5 border-primary/20 p-6 rounded-2xl shadow-sm">
             <AlertCircle className="h-6 w-6 text-primary" />
-            <AlertTitle className="font-black uppercase text-sm tracking-widest ml-2">Consult a Scholar</AlertTitle>
-            <AlertDescription className="text-base font-medium ml-2 mt-2">
+            <AlertTitle className="font-bold text-sm tracking-tight ml-2">Consult A Scholar</AlertTitle>
+            <AlertDescription className="text-base font-normal ml-2 mt-2 leading-relaxed">
                 While this page provides general guidelines, specific financial situations can vary. We always recommend consulting with a knowledgeable religious scholar for precise rulings on your personal wealth and Zakat calculation.
             </AlertDescription>
         </Alert>

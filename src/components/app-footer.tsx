@@ -28,7 +28,7 @@ import { Button } from '@/components/ui/button';
 
 /**
  * Institutional Footer - Fully theme-reactive.
- * Includes interactive QR code maximization and download capabilities.
+ * All text normalized to Title Case and refined font weights.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
@@ -50,7 +50,7 @@ export function AppFooter() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `institutional-qr-${paymentSettings?.upiId || 'payment'}.png`;
+      link.download = `Institutional-Qr-${paymentSettings?.upiId || 'payment'}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -82,7 +82,7 @@ export function AppFooter() {
                 {brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}
               </span>
             </Link>
-            <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+            <div className="space-y-3 text-sm text-muted-foreground leading-relaxed font-normal">
               {paymentSettings?.address && (
                 <p className="flex items-start gap-2.5">
                   <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-primary/40" />
@@ -91,12 +91,12 @@ export function AppFooter() {
               )}
               <div className="flex flex-wrap gap-x-6 gap-y-2 pt-1">
                 {paymentSettings?.contactPhone && (
-                  <a href={`tel:${paymentSettings.contactPhone}`} className="flex items-center gap-2 hover:text-primary transition-colors font-bold">
+                  <a href={`tel:${paymentSettings.contactPhone}`} className="flex items-center gap-2 hover:text-primary transition-colors font-medium">
                     <Phone className="h-4 w-4 opacity-60" /> {paymentSettings.contactPhone}
                   </a>
                 )}
                 {paymentSettings?.contactEmail && (
-                  <a href={`mailto:${paymentSettings.contactEmail}`} className="flex items-center gap-2 hover:text-primary transition-colors font-bold">
+                  <a href={`mailto:${paymentSettings.contactEmail}`} className="flex items-center gap-2 hover:text-primary transition-colors font-medium">
                     <Mail className="h-4 w-4 opacity-60" /> {paymentSettings.contactEmail}
                   </a>
                 )}
@@ -106,15 +106,15 @@ export function AppFooter() {
 
           {/* Column 2: Navigation */}
           <div className="space-y-6 md:pl-10">
-            <h3 className="text-[10px] font-bold tracking-widest text-primary uppercase opacity-40">
+            <h3 className="text-xs font-bold text-primary opacity-40">
               Institutional Hub
             </h3>
             <nav className="flex flex-col gap-4">
-              <Link href="/info/organization" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-bold">
+              <Link href="/info/organization" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal">
                 <Users className="h-4 w-4 opacity-30" />
                 About Our Organization
               </Link>
-              <Link href="/info/donation-info" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-bold">
+              <Link href="/info/donation-info" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal">
                 <HeartHandshake className="h-4 w-4 opacity-30" />
                 Donation Types Explained
               </Link>
@@ -123,7 +123,7 @@ export function AppFooter() {
 
           {/* Column 3: Secure Contributions */}
           <div className="flex flex-col md:items-end gap-6">
-            <h3 className="text-[10px] font-bold tracking-widest text-primary uppercase opacity-40">
+            <h3 className="text-xs font-bold text-primary opacity-40">
               Secure Contribution Channel
             </h3>
             <div className="flex items-center gap-6 bg-white/60 p-4 rounded-2xl border border-primary/10 shadow-lg transition-all duration-300">
@@ -131,8 +131,8 @@ export function AppFooter() {
                 <p className="text-sm text-primary font-bold font-mono tracking-tighter">
                   {paymentSettings?.upiId || 'Not Configured'}
                 </p>
-                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">
-                  Scan With Any UPI App
+                <p className="text-[10px] text-muted-foreground font-bold opacity-60">
+                  Scan With Any Upi App
                 </p>
               </div>
               {validQrUrl ? (
@@ -142,7 +142,7 @@ export function AppFooter() {
                 >
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`}
-                    alt="Payment QR"
+                    alt="Payment Qr"
                     fill
                     className="object-contain p-1"
                     unoptimized
@@ -160,7 +160,7 @@ export function AppFooter() {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-6 text-[10px] text-muted-foreground opacity-50 tracking-widest uppercase font-bold">
+        <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-6 text-[10px] text-muted-foreground opacity-50 font-bold">
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
             {paymentSettings?.regNo && (
               <span className="flex items-center gap-2">
@@ -175,7 +175,7 @@ export function AppFooter() {
               </span>
             )}
           </div>
-          <p className="text-center sm:text-right lowercase first-letter:uppercase">
+          <p className="text-center sm:text-right font-normal">
             {paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}. All Rights Reserved.`}
           </p>
         </div>
@@ -185,14 +185,14 @@ export function AppFooter() {
       <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
         <DialogContent className="sm:max-w-md border-primary/10 overflow-hidden rounded-[20px] p-0 animate-fade-in-zoom">
           <DialogHeader className="bg-primary/5 px-6 py-4 border-b">
-            <DialogTitle className="font-bold text-primary tracking-tight">Institutional Payment QR</DialogTitle>
+            <DialogTitle className="font-bold text-primary tracking-tight">Institutional Payment Qr</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center justify-center p-8 space-y-6 bg-white">
             <div className="relative w-64 h-64 bg-white p-4 rounded-2xl border-4 border-primary shadow-2xl transition-transform hover:scale-[1.02]">
               {validQrUrl && (
                 <Image
                   src={`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`}
-                  alt="Payment QR Maximized"
+                  alt="Payment Qr Maximized"
                   fill
                   className="object-contain p-2"
                   unoptimized
@@ -201,14 +201,14 @@ export function AppFooter() {
             </div>
             <div className="text-center space-y-2">
               <p className="font-mono text-lg font-bold text-primary tracking-tighter">{paymentSettings?.upiId}</p>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed max-w-[200px] mx-auto">
-                Scan With Any UPI-Enabled Application To Make A Secure Contribution.
+              <p className="text-[10px] font-medium text-muted-foreground leading-relaxed max-w-[200px] mx-auto">
+                Scan With Any Upi-Enabled Application To Make A Secure Contribution.
               </p>
             </div>
           </div>
           <DialogFooter className="sm:justify-center px-6 py-4 bg-primary/[0.02] border-t">
             <Button onClick={handleDownloadQr} className="font-bold shadow-lg active:scale-95 transition-all w-full sm:w-auto px-8">
-              <Download className="mr-2 h-4 w-4" /> Download QR Image
+              <Download className="mr-2 h-4 w-4" /> Download Qr Image
             </Button>
           </DialogFooter>
         </DialogContent>
