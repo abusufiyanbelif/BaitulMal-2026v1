@@ -65,7 +65,7 @@ type SortKey = keyof Donation | 'srNo';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1000px]";
 
-function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
+function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: any, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
         <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2", className)} onClick={() => handleSort(sortKey)}>
@@ -166,7 +166,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                 {(donation.linkSplit || []).map(link => (
                                                     <TableRow key={link.linkId} className="h-8 hover:bg-[hsl(var(--table-row-hover))]">
                                                         <TableCell className="flex items-center gap-2 py-1">
-                                                            {link.linkType === 'campaign' ? <FolderKanban className="h-3 w-3 text-primary/40" /> : <Lightbulb className="h-3 w-3 text-primary/40" />}
+                                                            {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5 text-primary/40" /> : <Lightbulb className="h-3.5 w-3.5 text-primary/40" />}
                                                             <span className="text-[10px] font-normal text-primary/80 whitespace-nowrap">{link.linkName}</span>
                                                         </TableCell>
                                                         <TableCell className="text-right font-bold font-mono text-primary py-1 text-[11px]">₹{link.amount.toFixed(2)}</TableCell>
@@ -233,7 +233,7 @@ export default function DonationsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -259,7 +259,7 @@ export default function DonationsPage() {
   const leadsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
   const { data: allLeads } = useCollection<Lead>(leadsCollectionRef);
 
-  const handleSort = (key: SortKey) => {
+  const handleSort = (key: string) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
         direction = 'descending';
@@ -381,7 +381,7 @@ export default function DonationsPage() {
 
   const isLoading = areDonationsLoading || isProfileLoading;
 
-  if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Organizational Financial Logs." />;
+  if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Institutional Financial Logs." />;
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative overflow-hidden">

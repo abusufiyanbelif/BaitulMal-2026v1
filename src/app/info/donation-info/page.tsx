@@ -29,9 +29,9 @@ const typeIcons: Record<string, any> = {
 };
 
 const comparisonData = [
-    { feature: 'Status', zakat: 'Obligatory (Fard)', sadaqah: 'Voluntary', lillah: 'Voluntary', fidiya: 'Obligatory Compensation', interest: 'Mandatory disposal' },
-    { feature: 'Amount', zakat: 'Fixed (2.5%)', sadaqah: 'Any amount', lillah: 'Any amount', fidiya: 'Fixed per missed fast', interest: 'Total amount earned' },
-    { feature: 'Recipient', zakat: 'Specific 8 categories', sadaqah: 'Anyone in need', lillah: 'Institutions/Public', fidiya: 'Poor & Needy', interest: 'Public welfare' },
+    { feature: 'Status', zakat: 'Obligatory (Fard)', sadaqah: 'Voluntary', lillah: 'Voluntary', fidiya: 'Obligatory Compensation', interest: 'Mandatory Disposal' },
+    { feature: 'Amount', zakat: 'Fixed (2.5%)', sadaqah: 'Any Amount', lillah: 'Any Amount', fidiya: 'Fixed Per Missed Fast', interest: 'Total Amount Earned' },
+    { feature: 'Recipient', zakat: 'Specific 8 Categories', sadaqah: 'Anyone In Need', lillah: 'Institutions/Public', fidiya: 'Poor & Needy', interest: 'Public Welfare' },
 ];
 
 export default function DonationInfoPage() {
@@ -55,7 +55,7 @@ export default function DonationInfoPage() {
         return (
             <main className="container mx-auto p-4 md:p-8 text-center font-normal">
                 <h1 className="text-2xl font-bold text-primary">Page Not Available</h1>
-                <p className="text-muted-foreground mt-2">This informational page is not currently public.</p>
+                <p className="text-muted-foreground mt-2">This Informational Page Is Not Currently Public.</p>
                  <Button asChild className="mt-6 font-bold" variant="outline">
                     <Link href="/">
                         <ArrowLeft className="mr-2 h-4 w-4" />
@@ -80,7 +80,7 @@ export default function DonationInfoPage() {
       <section className="text-center space-y-4 animate-fade-in-up">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-primary">Financial Wisdom In Islam</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-normal leading-relaxed">
-              Understanding the distinct categories of charitable giving ensures your contributions are used correctly and fulfill their intended religious purposes.
+              Understanding The Distinct Categories Of Charitable Giving Ensures Your Contributions Are Used Correctly And Fulfill Their Intended Religious Purposes.
           </p>
       </section>
 
@@ -100,7 +100,6 @@ export default function DonationInfoPage() {
 
         {donationTypes.map((type) => {
             const IconComponent = typeIcons[type.id] || Info;
-            const hasImage = !!type.imageUrl;
             const displayImageUrl = type.imageUrl ? (type.imageUrl.startsWith('data:') ? type.imageUrl : `/api/image-proxy?url=${encodeURIComponent(type.imageUrl)}`) : null;
             
             const visibleUseCases = type.useCases?.filter(uc => !uc.isHidden && (uc.title?.trim() || uc.description?.trim())) || [];
@@ -248,7 +247,7 @@ export default function DonationInfoPage() {
       <section className="max-w-5xl mx-auto space-y-6 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
           <div className="text-center space-y-2">
               <h2 className="text-2xl font-bold tracking-tight text-primary">Quick Comparison</h2>
-              <p className="text-muted-foreground font-normal">Identifying the primary differences at a glance.</p>
+              <p className="text-muted-foreground font-normal">Identifying The Primary Differences At A Glance.</p>
           </div>
           <Card className="shadow-xl overflow-hidden border-primary/10 bg-white">
               <Table>
@@ -281,7 +280,7 @@ export default function DonationInfoPage() {
             <AlertCircle className="h-6 w-6 text-primary" />
             <AlertTitle className="font-bold text-sm tracking-tight ml-2">Consult A Scholar</AlertTitle>
             <AlertDescription className="text-base font-normal ml-2 mt-2 leading-relaxed">
-                While this page provides general guidelines, specific financial situations can vary. We always recommend consulting with a knowledgeable religious scholar for precise rulings on your personal wealth and Zakat calculation.
+                While This Page Provides General Guidelines, Specific Financial Situations Can Vary. We Always Recommend Consulting With A Knowledgeable Religious Scholar For Precise Rulings On Your Personal Wealth And Zakat Calculation.
             </AlertDescription>
         </Alert>
       </div>

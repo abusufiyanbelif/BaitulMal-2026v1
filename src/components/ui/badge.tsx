@@ -51,14 +51,15 @@ function Badge({ className, variant, children, ...props }: BadgeProps) {
     }
   }
 
-  // Pre-process display content if it's a simple string to ensure Title Case
+  // Pre-process display content to ensure "Initial Capital For Every Word" (Title Case)
   let displayChildren = children;
   if (typeof children === 'string' && children.trim().length > 0) {
       const content = children.trim();
-      // Only transform if it's actually all caps or needs fixing
-      if (content === content.toUpperCase()) {
-          displayChildren = content.charAt(0).toUpperCase() + content.slice(1).toLowerCase();
-      }
+      // Transform to Title Case
+      displayChildren = content
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
   }
 
   return (

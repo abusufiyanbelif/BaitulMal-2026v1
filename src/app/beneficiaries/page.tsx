@@ -93,7 +93,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay }: 
     )
 }
 
-function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
+function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: any, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
         <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2", className)} onClick={() => handleSort(sortKey)}>
@@ -119,7 +119,7 @@ export default function BeneficiariesPage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
   const itemsPerPage = 15;
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -191,7 +191,7 @@ export default function BeneficiariesPage() {
     return filteredAndSortedBeneficiaries.slice(start, start + itemsPerPage);
   }, [filteredAndSortedBeneficiaries, currentPage]);
 
-  const handleSort = (key: SortKey) => {
+  const handleSort = (key: string) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
         direction = 'descending';
@@ -251,7 +251,7 @@ export default function BeneficiariesPage() {
 
   const handleExport = () => {
     if (!filteredAndSortedBeneficiaries.length) return;
-    const headers = ['Name', 'Phone', 'VerificationStatus', 'Address', 'ZakatEligible', 'Referral'];
+    const headers = ['Name', 'Phone', 'Verification Status', 'Address', 'Zakat Eligible', 'Referral'];
     const rows = filteredAndSortedBeneficiaries.map(b => [
         b.name,
         b.phone || 'N/A',
