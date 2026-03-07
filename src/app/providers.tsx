@@ -16,6 +16,7 @@ export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
 
+  // Extract all valid theme IDs for the provider
   const allThemes = THEME_SUGGESTIONS.map(t => t.id);
 
   useEffect(() => {

@@ -32,10 +32,16 @@ import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
+/**
+ * A detailed preview component that applies the selected theme class locally.
+ * This allows administrators to see the full variable impact (BG, FG, Primary) 
+ * on various UI elements without refreshing the entire application.
+ */
 function ComponentPreview({ themeId }: { themeId: string }) {
     return (
         <div className={cn("rounded-xl border shadow-2xl overflow-hidden transition-all duration-500", themeId)} style={{ transform: 'scale(0.95)' }}>
-            <div className="bg-background text-foreground min-h-[400px] flex flex-col">
+            <div className="bg-background text-foreground min-h-[450px] flex flex-col transition-colors duration-500">
+                {/* Mock Header */}
                 <div className="bg-card border-b p-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <div className="h-6 w-6 bg-primary rounded flex items-center justify-center text-[10px] text-primary-foreground font-bold shadow-sm">B</div>
@@ -51,6 +57,7 @@ function ComponentPreview({ themeId }: { themeId: string }) {
                             <p className="text-xs text-muted-foreground leading-relaxed font-normal">Observe how colors and styles change when you select a different theme.</p>
                         </div>
 
+                        {/* Mock Financial Cards */}
                         <div className="grid grid-cols-2 gap-3">
                             <Card className="p-3 border-primary/10 bg-card/50 backdrop-blur-sm shadow-sm">
                                 <p className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest">Collected</p>
@@ -62,6 +69,7 @@ function ComponentPreview({ themeId }: { themeId: string }) {
                             </Card>
                         </div>
 
+                        {/* Mock Progress */}
                         <div className="space-y-1.5">
                             <div className="flex justify-between text-[10px] font-bold uppercase tracking-tight">
                                 <span className="text-primary">Campaign Progress</span>
@@ -70,6 +78,7 @@ function ComponentPreview({ themeId }: { themeId: string }) {
                             <Progress value={45} className="h-1.5" />
                         </div>
 
+                        {/* Mock Table */}
                         <div className="space-y-2">
                             <p className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1 tracking-widest">
                                 <TableIcon className="h-3 w-3" /> Recent Activity
@@ -77,13 +86,13 @@ function ComponentPreview({ themeId }: { themeId: string }) {
                             <div className="border rounded-md overflow-hidden bg-card shadow-sm">
                                 <Table>
                                     <TableHeader className="bg-primary/5">
-                                        <TableRow>
+                                        <TableRow className="border-b">
                                             <TableHead className="h-7 text-[9px] font-bold text-primary">Donor</TableHead>
                                             <TableHead className="h-7 text-[9px] font-bold text-right text-primary">Amount</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        <TableRow className="h-8 hover:bg-primary/[0.02]">
+                                        <TableRow className="h-8 border-b hover:bg-primary/[0.02]">
                                             <TableCell className="py-1 text-[10px] font-medium">Member A</TableCell>
                                             <TableCell className="py-1 text-right font-mono text-[10px] font-bold text-primary">₹500</TableCell>
                                         </TableRow>
@@ -96,10 +105,11 @@ function ComponentPreview({ themeId }: { themeId: string }) {
                             </div>
                         </div>
 
-                        <div className="space-y-3">
+                        {/* Mock Interactive */}
+                        <div className="space-y-3 pb-4">
                             <div className="flex flex-wrap gap-2">
                                 <Badge variant="default" className="text-[8px] font-bold uppercase shadow-sm">Active</Badge>
-                                <Badge variant="success" className="text-[8px] font-bold uppercase shadow-sm">Verified</Badge>
+                                <Badge variant="eligible" className="text-[8px] font-bold uppercase shadow-sm">Verified</Badge>
                                 <Badge variant="outline" className="text-[8px] font-bold uppercase border-primary/20 text-primary">Pending</Badge>
                             </div>
                             <div className="grid grid-cols-2 gap-2">
@@ -183,7 +193,7 @@ export default function ViewportSettingsPage() {
                 ) : (
                     <div className="flex gap-2">
                         <Button variant="outline" onClick={() => setIsEditMode(false)} className="font-bold border-primary/20 text-primary transition-transform active:scale-95"><X className="mr-2 h-4 w-4" /> Cancel</Button>
-                        <Button onClick={handleSave} disabled={isSubmitting} className="font-bold shadow-md active:scale-95 transition-transform bg-primary text-white">
+                        <Button onClick={handleSave} disabled={isSubmitting || isSubmitting} className="font-bold shadow-md active:scale-95 transition-transform bg-primary text-white">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />} 
                             Save All Changes
                         </Button>
@@ -293,7 +303,7 @@ export default function ViewportSettingsPage() {
                 </div>
 
                 <div className="lg:col-span-4 space-y-6">
-                    <Card className={cn("sticky top-24 transition-all duration-500 border-primary/10 shadow-lg bg-white overflow-hidden", isEditMode ? "border-primary/20" : "opacity-50 grayscale pointer-events-none")}>
+                    <Card className={cn("sticky top-24 transition-all duration-500 border-primary/10 shadow-lg bg-white overflow-hidden", isEditMode ? "border-primary/20 opacity-100" : "opacity-50 grayscale pointer-events-none")}>
                         <CardHeader className="bg-primary/5 border-b pb-3">
                             <div className="flex items-center justify-between">
                                 <CardTitle className="flex items-center gap-2 font-bold text-sm tracking-widest uppercase text-primary">

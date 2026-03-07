@@ -4,16 +4,15 @@
 
 @layer base {
   :root {
-    --background: 140 33% 97%; /* #F7FBF8 */
-    --foreground: 144 27% 23%; /* #355E3B */
+    --background: 140 33% 97%;
+    --foreground: 144 27% 23%;
     --card: 0 0% 100%;
-    --card-foreground: 144 61% 20%; /* #14532D */
+    --card-foreground: 144 61% 20%;
     --popover: 0 0% 100%;
     --popover-foreground: 144 61% 20%;
-    --primary: 140 68% 38%; /* #1FA34A - Modern Green */
-    --primary-hover: 140 68% 31%;
+    --primary: 140 68% 38%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 143 50% 96%; /* #F0F9F3 */
+    --secondary: 143 50% 96%;
     --secondary-foreground: 144 61% 20%;
     --muted: 140 33% 97%;
     --muted-foreground: 215 9% 46%;
@@ -21,15 +20,14 @@
     --accent-foreground: 144 61% 20%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    --border: 140 33% 91%; /* #E2EEE7 */
+    --border: 140 33% 91%;
     --input: 140 33% 91%;
     --ring: 142 71% 45%;
     --radius: 1rem;
     
-    --table-header-bg: 158 82% 96%; /* #ECFDF5 */
-    --table-header-fg: 144 61% 20%; /* #14532D */
-    --table-row-hover: 142 76% 97%; /* #F0FDF4 */
-    --table-expanded-bg: 140 33% 97%; /* #F7FBF8 */
+    --table-header-bg: 158 82% 96%;
+    --table-header-fg: 144 61% 20%;
+    --table-row-hover: 142 76% 97%;
 
     --badge-eligible-bg: 142 70% 93%;
     --badge-eligible-fg: 144 41% 15%;
@@ -54,109 +52,147 @@
   }
 
   .bms3 {
-    --primary: 144 61% 20%; /* Official Deep Green */
+    --background: 140 33% 96%;
+    --primary: 144 61% 20%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 144 61% 95%;
     --badge-active-fg: 144 61% 20%;
     --table-header-fg: 144 61% 20%;
+    --table-header-bg: 144 61% 92%;
   }
 
   .green-warm {
     --background: 45 30% 96%;
+    --foreground: 140 40% 15%;
+    --card: 45 30% 100%;
     --primary: 140 40% 25%;
+    --primary-foreground: 45 30% 98%;
+    --secondary: 140 40% 92%;
+    --border: 140 40% 85%;
     --badge-active-fg: 140 40% 25%;
   }
 
   .bmss-brand-warm {
     --primary: 24 95% 53%;
-    --badge-active-fg: 24 95% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 24 95% 95%;
     --ring: 24 95% 53%;
+    --badge-active-fg: 24 95% 53%;
+    --table-header-bg: 24 95% 92%;
   }
 
   .ocean-blue {
     --primary: 221 83% 53%;
-    --badge-active-fg: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 221 83% 95%;
     --ring: 221 83% 53%;
+    --badge-active-fg: 221 83% 53%;
+    --table-header-bg: 221 83% 92%;
   }
 
   .sky-blue {
     --primary: 199 89% 48%;
-    --badge-active-fg: 199 89% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 199 89% 95%;
     --ring: 199 89% 48%;
+    --badge-active-fg: 199 89% 48%;
+    --table-header-bg: 199 89% 92%;
   }
 
   .sunset-orange {
     --primary: 12 90% 50%;
-    --badge-active-fg: 12 90% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 12 90% 95%;
     --ring: 12 90% 50%;
+    --badge-active-fg: 12 90% 50%;
+    --table-header-bg: 12 90% 92%;
   }
 
   .lavender-mint {
     --primary: 262 60% 60%;
-    --badge-active-fg: 262 60% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 262 60% 95%;
     --ring: 262 60% 60%;
+    --badge-active-fg: 262 60% 60%;
+    --table-header-bg: 262 60% 92%;
   }
 
   .light {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 0 0% 98%;
+    --foreground: 240 10% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --primary: 240 10% 15%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 94%;
+    --border: 240 5% 90%;
   }
 
   .github-light {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 10%;
     --primary: 212 92% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 10% 97%;
+    --border: 210 10% 90%;
     --badge-active-fg: 212 92% 45%;
-    --ring: 212 92% 45%;
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 13%;
-    --card-foreground: 210 40% 98%;
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 98%;
     --primary: 140 68% 38%;
     --primary-foreground: 0 0% 100%;
-    --border: 222 47% 20%;
-    --table-header-bg: 222 47% 15%;
+    --secondary: 240 10% 12%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 10% 12%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 240 10% 12%;
+    --accent-foreground: 0 0% 98%;
+    --border: 240 10% 15%;
+    --input: 240 10% 15%;
+    --ring: 142 71% 45%;
+    --table-header-bg: 240 10% 10%;
   }
 
   .midnight-ramadan {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    --background: 222 47% 4%;
+    --foreground: 45 100% 90%;
+    --card: 222 47% 6%;
     --primary: 45 100% 50%;
-    --primary-foreground: 222 47% 11%;
+    --primary-foreground: 222 47% 4%;
+    --secondary: 222 47% 12%;
+    --border: 222 47% 15%;
     --badge-active-fg: 45 100% 50%;
     --table-header-fg: 45 100% 50%;
+    --table-header-bg: 222 47% 8%;
   }
 
   .midnight-emerald {
-    --background: 160 50% 5%;
-    --foreground: 160 20% 90%;
+    --background: 160 50% 2%;
+    --foreground: 160 20% 95%;
+    --card: 160 50% 4%;
     --primary: 160 100% 40%;
-    --primary-foreground: 160 50% 5%;
+    --primary-foreground: 160 50% 2%;
+    --secondary: 160 50% 10%;
+    --border: 160 50% 15%;
     --badge-active-fg: 160 100% 40%;
+    --table-header-bg: 160 50% 6%;
   }
 
   .github-dark {
-    --background: 210 20% 10%;
-    --foreground: 210 20% 90%;
+    --background: 240 10% 4%;
+    --foreground: 210 10% 90%;
+    --card: 240 10% 6%;
     --primary: 212 92% 45%;
     --primary-foreground: 0 0% 100%;
+    --secondary: 210 10% 12%;
+    --border: 210 10% 18%;
     --badge-active-fg: 212 92% 45%;
+    --table-header-bg: 210 10% 10%;
   }
 }
 
