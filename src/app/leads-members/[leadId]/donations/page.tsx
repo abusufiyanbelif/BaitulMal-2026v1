@@ -272,7 +272,7 @@ export default function DonationsPage() {
             </ScrollArea>
         </div>
 
-        <Card className="animate-fade-in-zoom shadow-md">
+        <Card className="animate-fade-in-zoom shadow-md border-primary/10">
             <CardHeader className="pb-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div className="space-y-1.5">
@@ -295,7 +295,7 @@ export default function DonationsPage() {
             <CardContent className="p-0">
                 <div className="w-full overflow-x-auto">
                     <Table>
-                        <TableHeader>
+                        <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                             <TableRow>
                                 <SortableHeader sortKey="srNo" className="w-[60px] pl-4" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
                                 <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
@@ -307,44 +307,43 @@ export default function DonationsPage() {
                         </TableHeader>
                         <TableBody>
                             {paginatedDonations.map((donation, index) => (
-                                <TableRow key={donation.id} className="hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)}>
-                                    <TableCell className="pl-4 font-mono text-xs">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
-                                    <TableCell><div className="font-bold text-sm">{donation.donorName}</div><div className="text-[10px] text-muted-foreground">{donation.donorPhone}</div></TableCell>
-                                    <TableCell className="text-right font-black font-mono">₹{donation.amountForThisLead.toFixed(2)}</TableCell>
-                                    <TableCell className="text-xs">{donation.donationDate}</TableCell>
-                                    <TableCell><Badge variant={donation.status === 'Verified' ? 'success' : 'outline'} className="text-[10px] font-black">{donation.status}</Badge></TableCell>
+                                <TableRow key={donation.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors cursor-pointer border-b border-primary/10" onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)}>
+                                    <TableCell className="pl-4 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
+                                    <TableCell><div className="font-bold text-sm text-primary">{donation.donorName}</div><div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone}</div></TableCell>
+                                    <TableCell className="text-right font-bold font-mono text-primary">₹{donation.amountForThisLead.toFixed(2)}</TableCell>
+                                    <TableCell className="text-xs font-normal">{donation.donationDate}</TableCell>
+                                    <TableCell><Badge variant={donation.status === 'Verified' ? 'success' : 'outline'} className="text-[10px] font-bold uppercase">{donation.status}</Badge></TableCell>
                                     <TableCell className="text-right pr-4" onClick={e => e.stopPropagation()}>
                                         <DropdownMenu>
-                                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)} className="text-primary"><Eye className="mr-2 h-4 w-4"/>View details</DropdownMenuItem>
-                                                {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="text-primary"><Edit className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>}
-                                                {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive"><Link2Off className="mr-2 h-4 w-4"/>Unlink</DropdownMenuItem>}
+                                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
+                                                <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4"/>View details</DropdownMenuItem>
+                                                {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>}
+                                                {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive font-normal"><Link2Off className="mr-2 h-4 w-4"/>Unlink</DropdownMenuItem>}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
                                 </TableRow>
                             ))}
-                            {paginatedDonations.length === 0 && <TableRow><TableCell colSpan={6} className="h-32 text-center text-muted-foreground font-bold bg-muted/10">No donations found.</TableCell></TableRow>}
+                            {paginatedDonations.length === 0 && <TableRow><TableCell colSpan={6} className="h-32 text-center text-muted-foreground font-normal italic bg-muted/5">No donations found.</TableCell></TableRow>}
                         </TableBody>
                     </Table>
                 </div>
             </CardContent>
             {totalPages > 1 && (
-                <CardFooter className="flex items-center justify-between border-t py-4">
-                    <p className="text-xs text-muted-foreground">Showing {paginatedDonations.length} of {filteredAndSortedDonations.length}</p>
+                <CardFooter className="flex items-center justify-between border-t py-4 bg-primary/5">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Page {currentPage} of {totalPages}</p>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold">Prev</Button>
-                        <span className="text-xs font-bold">{currentPage} / {totalPages}</span>
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold">Next</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 h-8">Previous</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 h-8">Next</Button>
                     </div>
                 </CardFooter>
             )}
         </Card>
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle className="text-xl font-bold">{editingDonation ? 'Edit' : 'Add'} Record</DialogTitle></DialogHeader>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10">
+                <DialogHeader><DialogTitle className="text-xl font-bold text-primary">{editingDonation ? 'Edit' : 'Add'} Record</DialogTitle></DialogHeader>
                 <DonationForm 
                     donation={editingDonation} 
                     onSubmit={handleFormSubmit} 
@@ -353,8 +352,8 @@ export default function DonationsPage() {
                     campaigns={allCampaigns || []} 
                     defaultLinkId={`lead_${leadId}`} 
                 />
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsFormOpen(false)}>Close</Button>
+                <DialogFooter className="p-4 border-t bg-muted/5">
+                    <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary">Close Form</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -369,7 +368,7 @@ export default function DonationsPage() {
         />
 
         <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
-            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold">Unlink donation?</AlertDialogTitle><AlertDialogDescription>This will remove the donation from this initiative but will not delete the record.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold">Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+            <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink donation?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">This will remove the donation from this initiative but will not delete the record from the global database.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px] transition-transform active:scale-95 shadow-md">Unlink Record</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
         </AlertDialog>
     </main>
   );

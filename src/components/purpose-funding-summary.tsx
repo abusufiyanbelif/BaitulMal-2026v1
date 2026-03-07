@@ -63,17 +63,17 @@ export function PurposeFundingSummary() {
       </CardHeader>
       <CardContent className="p-0">
         <Table>
-          <TableHeader className="bg-[#ECFDF5]">
+          <TableHeader className="bg-[hsl(var(--table-header-bg))]">
             <TableRow>
-              <TableHead className="text-[10px] font-bold uppercase text-[#14532D] tracking-widest pl-6">Purpose Type</TableHead>
-              <TableHead className="text-right text-[10px] font-bold uppercase text-[#14532D] tracking-widest pr-6">Amount Received</TableHead>
+              <TableHead className="text-[10px] font-bold uppercase text-[hsl(var(--table-header-fg))] tracking-widest pl-6">Purpose Type</TableHead>
+              <TableHead className="text-right text-[10px] font-bold uppercase text-[hsl(var(--table-header-fg))] tracking-widest pr-6">Amount Received</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {purposeData.map((item) => (
-              <TableRow key={item.name} className="hover:bg-[#F0FDF4] transition-colors border-b border-primary/5">
+              <TableRow key={item.name} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5">
                 <TableCell className="font-bold text-primary text-sm pl-6">{item.name}</TableCell>
-                <TableCell className="text-right font-bold font-mono text-[#1FA34A] text-sm pr-6">
+                <TableCell className="text-right font-bold font-mono text-primary text-sm pr-6">
                   <div className="flex items-center justify-end gap-1">
                     <IndianRupee className="h-3 w-3" />
                     {item.amount.toLocaleString('en-IN')}

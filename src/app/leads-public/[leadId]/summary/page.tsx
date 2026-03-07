@@ -331,17 +331,17 @@ export default function PublicLeadSummaryPage() {
                                         <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm">
                                             {isRationInitiative ? (
                                                 <Table>
-                                                    <TableHeader className="bg-[#ECFDF5]">
+                                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                         <TableRow>
-                                                            <TableHead className="font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Category Name</TableHead>
-                                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Beneficiaries</TableHead>
-                                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Kit Amount</TableHead>
-                                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Total Amount</TableHead>
+                                                            <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Category Name</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Beneficiaries</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Kit Amount</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Total Amount</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {beneficiaryGroups.map((group) => (
-                                                            <TableRow key={group.id} className="hover:bg-primary/5 transition-colors bg-white">
+                                                            <TableRow key={group.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white">
                                                                 <TableCell className="font-bold text-primary">{group.name}</TableCell>
                                                                 <TableCell className="text-right font-normal">{group.count}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
@@ -357,17 +357,17 @@ export default function PublicLeadSummaryPage() {
                                                 </Table>
                                             ) : (
                                                 <Table>
-                                                    <TableHeader className="bg-[#ECFDF5]">
+                                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                         <TableRow>
-                                                            <TableHead className="font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Requirement Description</TableHead>
-                                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Quantity</TableHead>
-                                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Unit Price</TableHead>
-                                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Total Price</TableHead>
+                                                            <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Requirement Description</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Quantity</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Unit Price</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Total Price</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {lead.itemCategories?.[0]?.items.map((item, idx) => (
-                                                            <TableRow key={idx} className="hover:bg-primary/5 transition-colors bg-white">
+                                                            <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white">
                                                                 <TableCell className="font-medium">{item.name}</TableCell>
                                                                 <TableCell className="text-right font-normal">{item.quantity} {item.quantityType}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
@@ -417,8 +417,8 @@ export default function PublicLeadSummaryPage() {
                                         <Separator />
                                         <div className="pl-4 border-l-2 border-dashed border-primary/20 space-y-2 py-2">
                                             <div className="flex justify-between items-center text-sm transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal uppercase tracking-tighter">Allocated As Cash-In-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
-                                            <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal uppercase tracking-tighter">Given</span><span className="font-mono text-green-600 font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                            <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal uppercase tracking-tighter">Pending</span><span className="font-mono text-amber-600 font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                                            <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal uppercase tracking-tighter">Given</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
+                                            <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal uppercase tracking-tighter">Pending</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                         </div>
                                         <Separator />
                                         <div className="flex justify-between items-center text-base text-primary font-bold transition-all hover:bg-primary/5 px-2 rounded"><span>Zakat Balance For Goal</span><span className="text-primary font-mono font-bold">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>

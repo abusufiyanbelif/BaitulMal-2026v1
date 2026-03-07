@@ -114,26 +114,26 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl text-primary font-normal p-0 overflow-hidden rounded-[16px] border-[#E2EEE7]">
-        <DialogHeader className="px-6 py-4 bg-[#F0FDF4] border-b border-[#E2EEE7]">
-          <DialogTitle className="text-xl font-bold tracking-tight text-[#14532D]">Link Master Donation</DialogTitle>
-          <DialogDescription className="text-sm font-normal text-[#355E3B]/70">
+      <DialogContent className="sm:max-w-2xl text-primary font-normal p-0 overflow-hidden rounded-[16px] border-primary/10">
+        <DialogHeader className="px-6 py-4 bg-primary/5 border-b border-primary/10">
+          <DialogTitle className="text-xl font-bold tracking-tight text-primary">Link Master Donation</DialogTitle>
+          <DialogDescription className="text-sm font-normal text-primary/70">
             Allocate unassigned funds from verified global donations to this initiative.
           </DialogDescription>
         </DialogHeader>
         
         <div className="p-6 space-y-4">
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#1FA34A]/50" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
                 <Input
                     placeholder="Search Donor Name, Phone, Or Reference ID..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 h-10 text-sm border-[#E2EEE7] focus-visible:ring-[#1FA34A] rounded-[12px] font-normal"
+                    className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary rounded-[12px] font-normal"
                 />
             </div>
 
-            <div className="rounded-[12px] border border-[#E2EEE7] bg-[#F7FBF8]/50 overflow-hidden shadow-inner">
+            <div className="rounded-[12px] border border-primary/10 bg-primary/[0.02] overflow-hidden shadow-inner">
                 <ScrollArea className="h-[400px] w-full">
                     <div className="p-2 space-y-2">
                         {isInitialLoading ? (
@@ -150,17 +150,17 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
                             eligibleDonations.map(donation => (
                                 <div 
                                     key={donation.id} 
-                                    className="p-4 rounded-[12px] bg-white border border-transparent hover:border-[#1FA34A]/20 hover:shadow-sm transition-all group"
+                                    className="p-4 rounded-[12px] bg-white border border-transparent hover:border-primary/20 hover:shadow-sm transition-all group"
                                 >
                                     <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                                         <div className="flex-1 min-w-0 space-y-1">
                                             <div className="flex items-center gap-2">
-                                                <p className="font-bold text-sm text-[#14532D] truncate">{donation.donorName}</p>
-                                                <Badge variant="outline" className="text-[9px] font-bold uppercase border-[#E2EEE7] text-[#355E3B]/60">
+                                                <p className="font-bold text-sm text-primary truncate">{donation.donorName}</p>
+                                                <Badge variant="outline" className="text-[9px] font-bold uppercase border-primary/10 text-primary/60">
                                                     {donation.donationType}
                                                 </Badge>
                                             </div>
-                                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#355E3B]/70">
+                                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-primary/70">
                                                 <span className="font-mono">{donation.donationDate}</span>
                                                 <span className="font-mono">ID: {donation.id.slice(-6).toUpperCase()}</span>
                                             </div>
@@ -175,11 +175,11 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
                                         <div className="text-right space-y-2 shrink-0">
                                             <div className="space-y-0.5">
                                                 <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">Available To Link</p>
-                                                <p className="font-mono font-bold text-lg text-[#1FA34A]">₹{donation.maxPossibleLink.toLocaleString()}</p>
+                                                <p className="font-mono font-bold text-lg text-primary">₹{donation.maxPossibleLink.toLocaleString()}</p>
                                             </div>
                                             <Button 
                                                 size="sm" 
-                                                className="font-bold bg-[#1FA34A] hover:bg-[#16863B] text-white rounded-[10px] h-8 px-4 transition-all active:scale-95 shadow-sm"
+                                                className="font-bold bg-primary hover:bg-primary/90 text-white rounded-[10px] h-8 px-4 transition-all active:scale-95 shadow-sm"
                                                 onClick={() => handleLinkDonation(donation)}
                                                 disabled={!!isLinking}
                                             >
@@ -205,12 +205,12 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
             </div>
         </div>
 
-        <DialogFooter className="px-6 py-4 bg-[#F7FBF8] border-t border-[#E2EEE7]">
+        <DialogFooter className="px-6 py-4 bg-primary/[0.02] border-t border-primary/10">
           <div className="flex justify-between items-center w-full">
-            <div className="flex items-center gap-2 text-[10px] font-bold text-[#14532D]/60 uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-primary/60 uppercase tracking-widest">
                 <Info className="h-3 w-3" /> Allowed: {allowedTypes.join(', ')}
             </div>
-            <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-[#CDE8D5] text-[#14532D] h-9 rounded-[10px] transition-transform active:scale-95">
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary h-9 rounded-[10px] transition-transform active:scale-95">
                 Close
             </Button>
           </div>

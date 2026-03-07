@@ -102,10 +102,10 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl text-primary font-normal p-0 overflow-hidden rounded-[16px] border-[#E2EEE7]">
-        <DialogHeader className="px-6 py-4 bg-[#F0FDF4] border-b border-[#E2EEE7]">
-          <DialogTitle className="text-xl font-bold tracking-tight text-[#14532D]">Search Master List</DialogTitle>
-          <DialogDescription className="text-sm font-normal text-[#355E3B]/70">
+      <DialogContent className="sm:max-w-2xl text-primary font-normal p-0 overflow-hidden rounded-[16px] border-primary/10">
+        <DialogHeader className="px-6 py-4 bg-primary/5 border-b border-primary/10">
+          <DialogTitle className="text-xl font-bold tracking-tight text-primary">Search Master List</DialogTitle>
+          <DialogDescription className="text-sm font-normal text-primary/70">
             Select beneficiaries from the verified master database to add them to this initiative.
           </DialogDescription>
         </DialogHeader>
@@ -113,12 +113,12 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
         <div className="p-6 space-y-4">
             <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#1FA34A]/50" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
                     <Input
                         placeholder="Search Name, Phone, ID, Address..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 h-10 text-sm border-[#E2EEE7] focus-visible:ring-[#1FA34A] rounded-[12px]"
+                        className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary rounded-[12px]"
                     />
                     {searchTerm && (
                         <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent" onClick={() => setSearchTerm('')}>
@@ -127,13 +127,13 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
                     )}
                 </div>
                 <Select value={referralFilter} onValueChange={setReferralFilter}>
-                    <SelectTrigger className="w-full sm:w-[200px] h-10 font-bold text-sm border-[#E2EEE7] rounded-[12px]">
+                    <SelectTrigger className="w-full sm:w-[200px] h-10 font-bold text-sm border-primary/10 rounded-[12px]">
                         <div className="flex items-center gap-2">
                             <Filter className="h-3.5 w-3.5 opacity-40" />
                             <SelectValue placeholder="All Referral Sources" />
                         </div>
                     </SelectTrigger>
-                    <SelectContent className="rounded-[12px] shadow-dropdown border-[#E2EEE7]">
+                    <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                         <SelectItem value="All" className="font-bold">All Referral Sources</SelectItem>
                         {referralSources.map(source => (
                             <SelectItem key={source} value={source} className="font-bold">{source}</SelectItem>
@@ -142,7 +142,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
                 </Select>
             </div>
 
-            <div className="rounded-[12px] border border-[#E2EEE7] bg-[#F7FBF8]/50 overflow-hidden shadow-inner">
+            <div className="rounded-[12px] border border-primary/10 bg-primary/[0.02] overflow-hidden shadow-inner">
                 <ScrollArea className="h-80 w-full">
                     <div className="p-2 space-y-2">
                         {isInitialLoading ? (
@@ -158,26 +158,26 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
                             filteredResults.map(beneficiary => (
                                 <div 
                                     key={beneficiary.id} 
-                                    className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-[12px] bg-white border border-transparent hover:border-[#1FA34A]/20 hover:shadow-sm transition-all group cursor-pointer"
+                                    className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-[12px] bg-white border border-transparent hover:border-primary/20 hover:shadow-sm transition-all group cursor-pointer"
                                     onClick={() => handleSelect(beneficiary)}
                                 >
                                     <div className="flex-1 min-w-0 space-y-1">
                                         <div className="flex items-center gap-2">
-                                            <p className="font-bold text-sm text-[#14532D] truncate">{beneficiary.name}</p>
-                                            <Badge variant="outline" className="text-[9px] font-bold uppercase border-[#E2EEE7] text-[#355E3B]/60">
+                                            <p className="font-bold text-sm text-primary truncate">{beneficiary.name}</p>
+                                            <Badge variant="outline" className="text-[9px] font-bold uppercase border-primary/10 text-primary/60">
                                                 {beneficiary.status || 'Verified'}
                                             </Badge>
                                         </div>
-                                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#355E3B]/70">
+                                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-primary/70">
                                             <span className="font-mono">{beneficiary.phone || 'No Phone'}</span>
                                             {beneficiary.idNumber && <span className="font-mono">ID: {beneficiary.idNumber}</span>}
-                                            {beneficiary.referralBy && <span className="font-bold text-[#1FA34A]">Ref: {beneficiary.referralBy}</span>}
+                                            {beneficiary.referralBy && <span className="font-bold text-primary">Ref: {beneficiary.referralBy}</span>}
                                         </div>
                                         {beneficiary.address && (
                                             <p className="text-[10px] text-muted-foreground truncate italic">{beneficiary.address}</p>
                                         )}
                                     </div>
-                                    <Button size="sm" className="mt-2 sm:mt-0 font-bold bg-[#1FA34A] hover:bg-[#16863B] text-white rounded-[10px] h-8 px-4 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow-sm">
+                                    <Button size="sm" className="mt-2 sm:mt-0 font-bold bg-primary hover:bg-primary/90 text-white rounded-[10px] h-8 px-4 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow-sm">
                                         Select Record
                                     </Button>
                                 </div>
@@ -189,12 +189,12 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
             </div>
         </div>
 
-        <DialogFooter className="px-6 py-4 bg-[#F7FBF8] border-t border-[#E2EEE7]">
+        <DialogFooter className="px-6 py-4 bg-primary/[0.02] border-t border-primary/10">
           <div className="flex justify-between items-center w-full">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                 Showing {filteredResults.length} Of {masterBeneficiaries.length - existingBeneficiaryIds.size} Available Records
             </p>
-            <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-[#CDE8D5] text-[#14532D] h-9 rounded-[10px] transition-transform active:scale-95">
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary h-9 rounded-[10px] transition-transform active:scale-95">
                 Cancel
             </Button>
           </div>
