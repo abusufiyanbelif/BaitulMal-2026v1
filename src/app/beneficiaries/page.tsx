@@ -477,7 +477,7 @@ export default function BeneficiariesPage() {
                                         <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] border-primary/10 shadow-dropdown">
                                             <DropdownMenuRadioGroup value={b.status || 'Pending'} onValueChange={(s) => handleStatusChange(b, s)}>
                                             <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</SelectItem>
                                             <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Need More Details" className="text-xs font-normal">Need Details</DropdownMenuRadioItem></DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent></DropdownMenuPortal>

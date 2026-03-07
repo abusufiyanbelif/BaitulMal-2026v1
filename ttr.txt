@@ -1,0 +1,10 @@
+src/app/leads-members/create/page.tsx(369,257): error TS17008: JSX element 'SelectContent' has no corresponding closing tag.
+src/app/leads-members/create/page.tsx(373,255): error TS17008: JSX element 'SelectContent' has no corresponding closing tag.
+src/app/leads-members/create/page.tsx(380,266): error TS17008: JSX element 'SelectContent' has no corresponding closing tag.
+src/app/leads-members/create/page.tsx(395,263): error TS17008: JSX element 'SelectContent' has no corresponding closing tag.
+src/app/leads-members/create/page.tsx(398,260): error TS17008: JSX element 'SelectContent' has no corresponding closing tag.
+src/app/leads-members/create/page.tsx(401,263): error TS17008: JSX element 'SelectContent' has no corresponding closing tag.
+src/app/leads-members/create/page.tsx(418,276): error TS17008: JSX element 'SelectContent' has no corresponding closing tag.
+src/app/leads-members/create/page.tsx(468,324): error TS17008: JSX element 'SelectContent' has no corresponding closing tag.
+src/app/leads-members/create/page.tsx(470,286): error TS17008: JSX element 'SelectContent' has no corresponding closing tag.
+src/app/leads-members/create/page.tsx(474,84): error TS17008: JSX element 'Select' has no corresponding closing tag.

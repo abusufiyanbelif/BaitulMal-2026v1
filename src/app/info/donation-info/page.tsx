@@ -127,7 +127,7 @@ export default function DonationInfoPage() {
                             <div className="grid md:grid-cols-3 gap-10">
                                 <div className="md:col-span-2 space-y-8">
                                     <div className="space-y-4 font-normal">
-                                        {type.description && <p className="text-lg leading-relaxed text-foreground whitespace-pre-wrap">{type.description}</p>}
+                                        {type.description && <p className="text-lg leading-relaxed text-foreground whitespace-pre-wrap font-normal">{type.description}</p>}
                                         
                                         {type.quranVerse && (
                                             <blockquote className="border-l-4 border-primary/30 pl-6 py-4 italic text-muted-foreground relative bg-primary/[0.02] rounded-r-xl">
@@ -193,13 +193,13 @@ export default function DonationInfoPage() {
                                     <div className="space-y-6">
                                         {!type.hideUsage && type.usage && (
                                             <div className="p-4 rounded-xl bg-muted/30 border border-primary/5">
-                                                <span className="font-bold uppercase text-[10px] tracking-tight text-primary/40 block mb-2">Permissible Usage</span>
+                                                <span className="font-bold text-[10px] tracking-tight text-primary/40 block mb-2">Permissible Usage</span>
                                                 <p className="text-sm font-normal leading-relaxed whitespace-pre-wrap">{type.usage}</p>
                                             </div>
                                         )}
                                         {!type.hideRestrictions && type.restrictions && (
                                             <div className="p-4 rounded-xl bg-red-50/30 border border-red-100">
-                                                <span className="font-bold uppercase text-[10px] tracking-tight text-red-400 block mb-2">Strict Restrictions</span>
+                                                <span className="font-bold text-[10px] tracking-tight text-red-400 block mb-2">Strict Restrictions</span>
                                                 <p className="text-sm font-normal leading-relaxed text-red-900/70 whitespace-pre-wrap">{type.restrictions}</p>
                                             </div>
                                         )}
@@ -263,7 +263,7 @@ export default function DonationInfoPage() {
                   <TableBody>
                   {comparisonData.map((row) => (
                       <TableRow key={row.feature} className="hover:bg-primary/[0.02] transition-colors">
-                      <TableCell className="font-bold text-xs bg-primary/[0.01] uppercase tracking-tight text-primary/60">{row.feature}</TableCell>
+                      <TableCell className="font-bold text-xs bg-primary/[0.01] tracking-tight text-primary/60">{row.feature}</TableCell>
                       <TableCell className="text-xs font-normal">{row.zakat}</TableCell>
                       <TableCell className="text-xs font-normal">{row.sadaqah}</TableCell>
                       <TableCell className="text-xs font-normal">{row.lillah}</TableCell>

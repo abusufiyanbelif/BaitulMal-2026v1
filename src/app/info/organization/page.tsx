@@ -28,7 +28,7 @@ function DetailItem({ icon: Icon, label, value, isMono = false }: { icon: any, l
                 <Icon className="h-5 w-5" />
             </div>
             <div className="flex-1 space-y-0.5">
-                <p className="text-[10px] font-bold text-primary uppercase tracking-widest">{label}</p>
+                <p className="text-[10px] font-bold text-primary tracking-tight">{label}</p>
                 <p className={cn("text-sm font-normal text-foreground leading-relaxed", isMono && "font-mono")}>
                     {value}
                 </p>
