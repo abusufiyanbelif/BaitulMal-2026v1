@@ -74,7 +74,7 @@ export function AppFooter() {
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                     alt="Institutional Logo"
                     fill
-                    className="object-contain p-1"
+                    className="object-contain p-1.5"
                   />
                 </div>
               )}
