@@ -295,23 +295,23 @@ export default function UsersPage() {
                         className="max-w-sm font-normal text-primary"
                     />
                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[150px] text-primary font-bold">
+                        <SelectTrigger className="w-auto md:w-[150px] text-primary font-normal">
                             <SelectValue placeholder="All Statuses" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All" className="font-bold">All Statuses</SelectItem>
-                            <SelectItem value="Active" className="font-bold">Active</SelectItem>
-                            <SelectItem value="Inactive" className="font-bold">Inactive</SelectItem>
+                            <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
+                            <SelectItem value="Active" className="font-normal">Active</SelectItem>
+                            <SelectItem value="Inactive" className="font-normal">Inactive</SelectItem>
                         </SelectContent>
                     </Select>
                     <Select value={roleFilter} onValueChange={(value) => { setRoleFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[150px] text-primary font-bold">
+                        <SelectTrigger className="w-auto md:w-[150px] text-primary font-normal">
                             <SelectValue placeholder="All Roles" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All" className="font-bold">All Roles</SelectItem>
-                            <SelectItem value="Admin" className="font-bold">Admin</SelectItem>
-                            <SelectItem value="User" className="font-bold">User</SelectItem>
+                            <SelectItem value="All" className="font-normal">All Roles</SelectItem>
+                            <SelectItem value="Admin" className="font-normal">Admin</SelectItem>
+                            <SelectItem value="User" className="font-normal">User</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

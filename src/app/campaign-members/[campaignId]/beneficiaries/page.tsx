@@ -447,7 +447,7 @@ export default function BeneficiariesPage() {
 
           <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-[220px] justify-between h-10 text-sm border-primary/10 text-primary font-bold rounded-[12px] bg-white">
+                    <Button variant="outline" className="w-[220px] justify-between h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white">
                         <div className="flex items-center gap-2 truncate">
                             <Filter className="h-3.5 w-3.5 opacity-40 shrink-0" />
                             <span className="truncate">
@@ -463,7 +463,7 @@ export default function BeneficiariesPage() {
                         <CommandList>
                             <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No Source Found.</CommandEmpty>
                             <CommandGroup>
-                                <CommandItem onSelect={() => setSelectedReferrals([])} className="font-bold text-xs">
+                                <CommandItem onSelect={() => setSelectedReferrals([])} className="font-normal text-xs">
                                     <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selectedReferrals.length === 0 ? "bg-primary text-primary-foreground" : "opacity-50")}>
                                         {selectedReferrals.length === 0 && <Check className="h-3 w-3" />}
                                     </div>
@@ -484,7 +484,7 @@ export default function BeneficiariesPage() {
             </Popover>
 
           <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="Disbursement" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-normal"><SelectValue placeholder="Disbursement" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
               <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
               <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
@@ -495,7 +495,7 @@ export default function BeneficiariesPage() {
             </SelectContent>
           </Select>
           <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-normal"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
               <SelectItem value="All" className="font-normal">All Zakat Status</SelectItem>
               <SelectItem value="Eligible" className="font-normal">Eligible</SelectItem>

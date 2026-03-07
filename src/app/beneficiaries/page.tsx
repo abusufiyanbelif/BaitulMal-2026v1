@@ -354,7 +354,7 @@ export default function BeneficiariesPage() {
                 
                 <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-[220px] justify-between h-10 text-sm border-primary/10 text-primary font-bold rounded-[12px] bg-white">
+                        <Button variant="outline" className="w-[220px] justify-between h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white">
                             <div className="flex items-center gap-2 truncate">
                                 <Filter className="h-3.5 w-3.5 opacity-40 shrink-0" />
                                 <span className="truncate">
@@ -370,7 +370,7 @@ export default function BeneficiariesPage() {
                             <CommandList>
                                 <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No Source Found.</CommandEmpty>
                                 <CommandGroup>
-                                    <CommandItem onSelect={() => setSelectedReferrals([])} className="font-bold text-xs">
+                                    <CommandItem onSelect={() => setSelectedReferrals([])} className="font-normal text-xs">
                                         <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selectedReferrals.length === 0 ? "bg-primary text-primary-foreground" : "opacity-50")}>
                                             {selectedReferrals.length === 0 && <Check className="h-3 w-3" />}
                                         </div>
@@ -391,7 +391,7 @@ export default function BeneficiariesPage() {
                 </Popover>
 
                 <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[180px] h-10 text-sm border-primary/10 text-primary font-bold rounded-[12px] bg-white"><SelectValue placeholder="Vetting Status" /></SelectTrigger>
+                    <SelectTrigger className="w-[180px] h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white"><SelectValue placeholder="Vetting Status" /></SelectTrigger>
                     <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
                         <SelectItem value="All" className="font-normal">All Vetting</SelectItem>
                         <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
@@ -401,7 +401,7 @@ export default function BeneficiariesPage() {
                     </SelectContent>
                 </Select>
                 <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[180px] h-10 text-sm border-primary/10 text-primary font-bold rounded-[12px] bg-white"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
+                    <SelectTrigger className="w-[180px] h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
                     <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
                         <SelectItem value="All" className="font-normal">All Zakat Status</SelectItem>
                         <SelectItem value="Eligible" className="font-normal">Eligible</SelectItem>
@@ -480,7 +480,7 @@ export default function BeneficiariesPage() {
                                             <DropdownMenuRadioGroup value={b.status || 'Pending'} onValueChange={(s) => handleStatusChange(b, s)}>
                                             <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</SelectItem>
                                             <DropdownMenuRadioItem value="Need More Details" className="text-xs font-normal">Need Details</DropdownMenuRadioItem></DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent></DropdownMenuPortal>
                                         </DropdownMenuSub>
@@ -565,7 +565,7 @@ export default function BeneficiariesPage() {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">
-                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-bold">Set To Verified</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal">Set To Verified</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleBulkStatusChange('Hold')} className="font-normal">Set To Hold</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleBulkStatusChange('Need More Details')} className="font-normal">Set To Need Details</DropdownMenuItem>

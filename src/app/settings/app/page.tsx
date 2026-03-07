@@ -518,7 +518,7 @@ export default function AppSettingsPage() {
                                         value={displayData.heroTitle}
                                         onChange={(e) => handleFieldChange('heroTitle', e.target.value)}
                                         placeholder="Enter primary heading..."
-                                        className="font-bold"
+                                        className="font-normal"
                                     />
                                 ) : (
                                     <p className="text-lg font-bold text-primary">{displayData.heroTitle}</p>
@@ -712,11 +712,11 @@ export default function AppSettingsPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <Label htmlFor="logoWidth" className="font-bold text-[10px] text-muted-foreground">Logo Width (px)</Label>
-                                        <Input id="logoWidth" type="number" value={displayData.logoWidth || 40} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} className="h-9 font-bold" />
+                                        <Input id="logoWidth" type="number" value={displayData.logoWidth || 40} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} className="h-9 font-normal" />
                                     </div>
                                     <div className="space-y-1">
                                         <Label htmlFor="logoHeight" className="font-bold text-[10px] text-muted-foreground">Logo Height (px)</Label>
-                                        <Input id="logoHeight" type="number" value={displayData.logoHeight || 40} onChange={(e) => handleFieldChange('logoHeight', e.target.value)} disabled={isFormDisabled} className="h-9 font-bold" />
+                                        <Input id="logoHeight" type="number" value={displayData.logoHeight || 40} onChange={(e) => handleFieldChange('logoHeight', e.target.value)} disabled={isFormDisabled} className="h-9 font-normal" />
                                     </div>
                                 </div>
                             </div>
@@ -830,11 +830,11 @@ export default function AppSettingsPage() {
                                     <div className="w-full grid grid-cols-2 gap-4 mt-2">
                                         <div className="space-y-1">
                                             <Label htmlFor="qrWidth" className="font-bold text-[10px] text-muted-foreground">Width (px)</Label>
-                                            <Input id="qrWidth" type="number" value={displayData.qrWidth || 120} onChange={(e) => handleFieldChange('qrWidth', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold" placeholder="Default: 120"/>
+                                            <Input id="qrWidth" type="number" value={displayData.qrWidth || 120} onChange={(e) => handleFieldChange('qrWidth', e.target.value)} disabled={isFormDisabled} className="h-8 font-normal" placeholder="Default: 120"/>
                                         </div>
                                         <div className="space-y-1">
                                             <Label htmlFor="qrHeight" className="font-bold text-[10px] text-muted-foreground">Height (px)</Label>
-                                            <Input id="qrHeight" type="number" value={displayData.qrHeight || 120} onChange={(e) => handleFieldChange('qrHeight', e.target.value)} disabled={isFormDisabled} className="h-8 font-bold" placeholder="Default: 120"/>
+                                            <Input id="qrHeight" type="number" value={displayData.qrHeight || 120} onChange={(e) => handleFieldChange('qrHeight', e.target.value)} disabled={isFormDisabled} className="h-8 font-normal" placeholder="Default: 120"/>
                                         </div>
                                     </div>
                                 </div>

@@ -118,7 +118,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
                         placeholder="Search Name, Phone, ID, Address..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary rounded-[12px]"
+                        className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary rounded-[12px] font-normal"
                     />
                     {searchTerm && (
                         <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent" onClick={() => setSearchTerm('')}>
@@ -127,16 +127,16 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
                     )}
                 </div>
                 <Select value={referralFilter} onValueChange={setReferralFilter}>
-                    <SelectTrigger className="w-full sm:w-[200px] h-10 font-bold text-sm border-primary/10 rounded-[12px]">
+                    <SelectTrigger className="w-full sm:w-[200px] h-10 font-normal text-sm border-primary/10 rounded-[12px]">
                         <div className="flex items-center gap-2">
                             <Filter className="h-3.5 w-3.5 opacity-40" />
                             <SelectValue placeholder="All Referral Sources" />
                         </div>
                     </SelectTrigger>
                     <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                        <SelectItem value="All" className="font-bold">All Referral Sources</SelectItem>
+                        <SelectItem value="All" className="font-normal">All Referral Sources</SelectItem>
                         {referralSources.map(source => (
-                            <SelectItem key={source} value={source} className="font-bold">{source}</SelectItem>
+                            <SelectItem key={source} value={source} className="font-normal">{source}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
@@ -191,11 +191,11 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
 
         <DialogFooter className="px-6 py-4 bg-primary/[0.02] border-t border-primary/10">
           <div className="flex justify-between items-center w-full">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                Showing {filteredResults.length} Of {masterBeneficiaries.length - existingBeneficiaryIds.size} Available Records
-            </p>
+            <div className="flex items-center gap-2 text-[10px] font-bold text-primary/60 uppercase tracking-widest">
+                <Info className="h-3 w-3" /> Allowed: {allowedTypes.join(', ')}
+            </div>
             <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary h-9 rounded-[10px] transition-transform active:scale-95">
-                Cancel
+                Close
             </Button>
           </div>
         </DialogFooter>

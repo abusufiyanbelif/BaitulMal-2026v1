@@ -66,7 +66,7 @@ type SortKey = keyof Donation | 'srNo';
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <TableHead className={cn("cursor-pointer hover:bg-[hsl(var(--table-row-hover))] transition-colors text-[hsl(var(--table-header-fg))] font-bold", className)} onClick={() => handleSort(sortKey)}>
+        <TableHead className={cn("cursor-pointer hover:bg-[hsl(var(--table-row-hover))] transition-colors text-[hsl(var(--table-header-fg))] font-semibold", className)} onClick={() => handleSort(sortKey)}>
             <div className="flex items-center gap-2 whitespace-nowrap">
                 {children}
                 {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
@@ -405,12 +405,12 @@ export default function DonationsPage() {
                     <div className="flex flex-nowrap gap-2 pb-2">
                         <Input placeholder="Search Donor, Phone, ID..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-[300px] h-9 text-xs border-primary/10 focus-visible:ring-primary text-primary font-normal bg-primary/[0.02] rounded-[10px]"/>
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02] font-bold"><SelectValue placeholder="All Statuses"/></SelectTrigger>
+                            <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02] font-normal"><SelectValue placeholder="All Statuses"/></SelectTrigger>
                             <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                <SelectItem value="All" className="font-bold">All Statuses</SelectItem>
-                                <SelectItem value="Verified" className="font-bold">Verified</SelectItem>
-                                <SelectItem value="Pending" className="font-bold">Pending</SelectItem>
-                                <SelectItem value="Canceled" className="font-bold">Canceled</SelectItem>
+                                <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
+                                <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
+                                <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
+                                <SelectItem value="Canceled" className="font-normal">Canceled</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -488,7 +488,7 @@ export default function DonationsPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">
-                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-bold">Set To Verified</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal">Set To Verified</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleBulkStatusChange('Canceled')} className="font-normal text-destructive">Set To Canceled</DropdownMenuItem>
                         </DropdownMenuContent>
