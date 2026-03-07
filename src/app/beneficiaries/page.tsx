@@ -48,7 +48,7 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { SectionLoader } from '@/components/section-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
-const gridClass = "grid grid-cols-[40px_50px_250px_150px_120px_120px_250px_60px] items-center gap-4 px-4 py-3 min-w-[1040px]";
+const gridClass = "grid grid-cols-[40px_50px_200px_120px_140px_140px_100px_200px_60px] items-center gap-4 px-4 py-3 min-w-[1100px]";
 
 type SortKey = keyof Beneficiary | 'srNo';
 
@@ -150,10 +150,10 @@ export default function BeneficiariesPage() {
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Master List..." description="Retrieving Beneficiary Records From The Database." />;
+  if (isLoading) return <SectionLoader label="Loading Master Registry..." description="Retrieving Institutional Beneficiary Records." />;
   
   if (!canRead) return (
-    <main className="container mx-auto p-8 text-primary">
+    <main className="container mx-auto p-8 text-primary font-normal">
         <Alert variant="destructive">
             <ShieldAlert className="h-4 w-4"/>
             <AlertTitle className="font-bold">Access Denied</AlertTitle>
@@ -171,11 +171,11 @@ export default function BeneficiariesPage() {
       </div>
       
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight text-primary">Master Beneficiary List ({beneficiaries?.length || 0})</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-primary">Master Beneficiary Registry ({beneficiaries?.length || 0})</h1>
         <div className="flex items-center gap-2">
           <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync Complete' : 'Sync Failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="secondary" size="sm" className="font-bold border-primary/10 text-primary active:scale-95 transition-transform">
             {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
-            Sync Master List
+            Sync Registry
           </Button>
           {canCreate && (
             <Button onClick={() => router.push('/beneficiaries/create')} size="sm" className="font-bold active:scale-95 transition-transform shadow-md">
@@ -193,7 +193,7 @@ export default function BeneficiariesPage() {
                     <Input placeholder="Search Name, Phone, Address..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary" />
                 </div>
                 <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
+                    <SelectTrigger className="w-[180px] h-10 text-sm border-primary/10 text-primary font-bold"><SelectValue placeholder="Verification Status" /></SelectTrigger>
                     <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
                         <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
                         <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
@@ -203,7 +203,7 @@ export default function BeneficiariesPage() {
                     </SelectContent>
                 </Select>
                 <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary"><SelectValue placeholder="Zakat Status" /></SelectTrigger>
+                    <SelectTrigger className="w-[180px] h-10 text-sm border-primary/10 text-primary font-bold"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
                     <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
                         <SelectItem value="All" className="font-normal">All Zakat Status</SelectItem>
                         <SelectItem value="Eligible" className="font-normal">Eligible</SelectItem>
@@ -223,6 +223,7 @@ export default function BeneficiariesPage() {
                 <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>
                 <SortableHeader sortKey="phone" sortConfig={sortConfig} handleSort={handleSort}>Phone</SortableHeader>
                 <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Verification Status</SortableHeader>
+                <div className="text-center font-bold uppercase tracking-widest text-[10px]">Disbursement</div>
                 <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Zakat</SortableHeader>
                 <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">Referred By</SortableHeader>
                 <div className="text-right">Actions</div>
@@ -243,6 +244,7 @@ export default function BeneficiariesPage() {
                     <div className="font-bold text-sm truncate pr-2 text-primary">{b.name}</div>
                     <div className="font-mono text-xs opacity-60 text-primary">{b.phone || 'N/A'}</div>
                     <div className="text-center"><Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.status || 'Pending'}</Badge></div>
+                    <div className="text-center"><p className="text-[9px] font-bold uppercase text-muted-foreground opacity-40 tracking-tight">Initiative Specific</p></div>
                     <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
                     <div className="pl-4 text-xs font-normal text-primary/70">{b.referralBy || 'N/A'}</div>
                     <div className="text-right">

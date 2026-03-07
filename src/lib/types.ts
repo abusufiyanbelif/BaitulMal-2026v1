@@ -219,6 +219,10 @@ export interface Beneficiary extends DocumentData {
      * In Initiative Subcollection: Represents Disbursement Status (Pending, Verified, Given)
      */
     status?: 'Given' | 'Pending' | 'Hold' | 'Need More Details' | 'Verified';
+    /**
+     * Specifically tracks the Master Profile verification status within an initiative list.
+     */
+    verificationStatus?: 'Pending' | 'Hold' | 'Need More Details' | 'Verified';
     idProofUrl?: string;
     idProofFilename?: string;
     idProofIsPublic?: boolean;

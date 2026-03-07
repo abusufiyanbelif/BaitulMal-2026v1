@@ -10,6 +10,7 @@ import {
     useDoc, 
     collection, 
     doc, 
+    getDoc,
     serverTimestamp, 
     writeBatch, 
     updateDoc,
@@ -74,7 +75,7 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-const gridClass = "grid grid-cols-[40px_60px_250px_140px_120px_120px_140px_160px_200px_80px] items-center gap-4 px-4 py-3 min-w-[1310px]";
+const gridClass = "grid grid-cols-[40px_50px_200px_120px_120px_120px_100px_120px_120px_150px_60px] items-center gap-4 px-4 py-3 min-w-[1200px]";
 
 export default function BeneficiariesPage() {
   const params = useParams();
@@ -179,11 +180,21 @@ export default function BeneficiariesPage() {
   const handleFormSubmit = async (data: BeneficiaryFormData, masterIdOrEvent?: string | React.BaseSyntheticEvent) => {
     setIsSubmitting(true);
     if (!firestore || !storage || !campaignId || !userProfile || !campaign) { setIsSubmitting(false); return; }
+    
     const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : editingBeneficiary?.id;
     const batch = writeBatch(firestore);
     const masterRef = masterId ? doc(firestore, 'beneficiaries', masterId) : doc(collection(firestore, 'beneficiaries'));
     const campRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', masterRef.id);
     
+    // Fetch master status to ensure verificationStatus is accurate
+    let masterVerificationStatus: any = 'Pending';
+    if (masterId) {
+        const masterSnap = await getDoc(masterRef);
+        if (masterSnap.exists()) {
+            masterVerificationStatus = masterSnap.data().status || 'Pending';
+        }
+    }
+
     let idProofUrl = editingBeneficiary?.idProofUrl || '';
     const fileList = data.idProofFile as FileList | undefined;
     if (fileList && fileList.length > 0) {
@@ -195,11 +206,21 @@ export default function BeneficiariesPage() {
     }
 
     const { idProofFile, idProofDeleted, ...rest } = data;
-    const fullData = { ...rest, id: masterRef.id, idProofUrl, addedDate: beneficiary?.addedDate || new Date().toISOString().split('T')[0], createdAt: editingBeneficiary ? (editingBeneficiary as any).createdAt : serverTimestamp(), createdById: editingBeneficiary ? (editingBeneficiary as any).createdById : userProfile.id, createdByName: editingBeneficiary ? (editingBeneficiary as any).createdByName : userProfile.name };
+    const fullData = { 
+        ...rest, 
+        id: masterRef.id, 
+        idProofUrl, 
+        verificationStatus: masterVerificationStatus,
+        addedDate: editingBeneficiary?.addedDate || new Date().toISOString().split('T')[0], 
+        createdAt: editingBeneficiary ? (editingBeneficiary as any).createdAt : serverTimestamp(), 
+        createdById: editingBeneficiary ? (editingBeneficiary as any).createdById : userProfile.id, 
+        createdByName: editingBeneficiary ? (editingBeneficiary as any).createdByName : userProfile.name 
+    };
+    
     const { status, kitAmount, zakatAllocation, ...masterData } = fullData;
     
-    const masterStatus = status === 'Given' ? 'Verified' : status;
-    batch.set(masterRef, { ...masterData, status: masterStatus }, { merge: true });
+    const masterStatusToSave = status === 'Given' ? 'Verified' : status;
+    batch.set(masterRef, { ...masterData, status: masterStatusToSave }, { merge: true });
     batch.set(campRef, fullData, { merge: true });
     
     if (!editingBeneficiary) {
@@ -225,7 +246,7 @@ export default function BeneficiariesPage() {
             </Button>
         </div>
         
-        <h1 className="text-4xl font-bold tracking-tight text-primary">{campaign.name}</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-primary uppercase">{campaign.name}</h1>
         
         <div className="border-b border-primary/10 mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
@@ -257,7 +278,7 @@ export default function BeneficiariesPage() {
             <Input placeholder="Search Name, Phone, Address..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary rounded-[12px]" />
           </div>
           <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px]"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="All Statuses" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
               <SelectItem value="All">All Statuses</SelectItem>
               <SelectItem value="Pending">Pending</SelectItem>
@@ -268,7 +289,7 @@ export default function BeneficiariesPage() {
             </SelectContent>
           </Select>
           <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px]"><SelectValue placeholder="All Zakat Status" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="All Zakat Status" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
               <SelectItem value="All">All Zakat Status</SelectItem>
               <SelectItem value="Eligible">Eligible</SelectItem>
@@ -284,6 +305,7 @@ export default function BeneficiariesPage() {
                     <div>Sr. No.</div>
                     <div>Name</div>
                     <div>Phone</div>
+                    <div className="text-center">Verification Status</div>
                     <div className="text-center">Disbursement Status</div>
                     <div className="text-center">Zakat</div>
                     <div className="text-right">Kit Amount (₹)</div>
@@ -327,20 +349,25 @@ export default function BeneficiariesPage() {
                                                         </AccordionTrigger>
                                                     </div>
                                                     <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
-                                                    <div className="font-bold text-sm text-primary">{b.name}</div>
+                                                    <div className="font-bold text-sm text-primary truncate">{b.name}</div>
                                                     <div className="font-mono text-xs opacity-60">{b.phone || 'N/A'}</div>
+                                                    <div className="text-center">
+                                                        <Badge variant={b.verificationStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">
+                                                            {b.verificationStatus || 'Pending'}
+                                                        </Badge>
+                                                    </div>
                                                     <div className="text-center">
                                                         <Badge 
                                                             variant={b.status === 'Given' ? 'given' : b.status === 'Verified' ? 'eligible' : 'outline'} 
                                                             className="text-[10px] font-bold uppercase"
                                                         >
-                                                            {b.status === 'Given' ? 'Given' : b.status}
+                                                            {b.status}
                                                         </Badge>
                                                     </div>
                                                     <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
                                                     <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.kitAmount || 0).toFixed(2)}</div>
                                                     <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toFixed(2)}</div>
-                                                    <div className="text-xs font-normal text-primary/70">{b.referralBy || 'N/A'}</div>
+                                                    <div className="text-xs font-normal text-primary/70 truncate">{b.referralBy || 'N/A'}</div>
                                                     <div className="text-right">
                                                         <div className="flex items-center justify-end gap-1">
                                                             <DropdownMenu>
@@ -367,13 +394,12 @@ export default function BeneficiariesPage() {
 
                                                                     {canUpdate && (
                                                                         <DropdownMenuSub>
-                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ChevronUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Status</DropdownMenuSubTrigger>
+                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ChevronUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Disbursement</DropdownMenuSubTrigger>
                                                                             <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                                                                 <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
                                                                                     <DropdownMenuRadioItem value="Pending" className="font-normal">Pending</DropdownMenuRadioItem>
                                                                                     <DropdownMenuRadioItem value="Verified" className="font-normal">Verified (Secured)</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Hold" className="font-normal">Hold</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Need More Details" className="font-normal">Need Details</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Given" className="font-normal">Given (Completed)</DropdownMenuRadioItem>
                                                                                 </DropdownMenuRadioGroup>
                                                                             </DropdownMenuSubContent></DropdownMenuPortal>
                                                                         </DropdownMenuSub>
