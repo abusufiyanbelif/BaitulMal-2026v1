@@ -1,23 +1,36 @@
 'use client';
 
-import { useBranding } from '@/hooks/use-branding';
+import { useFirebase } from '@/firebase/provider';
 import Image from 'next/image';
 import { Progress } from './ui/progress';
 import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import type { BrandingSettings } from '@/lib/types';
 
 /**
  * A high-fidelity branded loading screen that displays the organizational logo.
- * Provides deterministic progress tracking and milestone reporting.
+ * Safely handles null context during initialization to prevent startup crashes.
  */
 export function BrandedLoader({ message = "Initializing Institutional Systems...", progress }: { message?: string, progress?: number }) {
-  const { brandingSettings } = useBranding();
+  const firebase = useFirebase();
+  const [branding, setBranding] = useState<BrandingSettings | null>(null);
 
-  const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
+  useEffect(() => {
+    if (firebase?.firestore) {
+      const docRef = doc(firebase.firestore, 'settings', 'branding');
+      getDoc(docRef).then(snap => {
+        if (snap.exists()) setBranding(snap.data() as BrandingSettings);
+      });
+    }
+  }, [firebase?.firestore]);
+
+  const validLogoUrl = branding?.logoUrl?.trim() ? branding.logoUrl : null;
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-md">
       <div className="relative z-10 flex flex-col items-center gap-8 w-full max-w-sm px-6">
-        {/* Logo Container - Exclusively uses the verified institutional logo */}
+        {/* Logo Container */}
         <div className="relative w-28 h-28 flex items-center justify-center">
           {validLogoUrl ? (
             <div className="relative w-full h-full animate-zoom-in-out">
