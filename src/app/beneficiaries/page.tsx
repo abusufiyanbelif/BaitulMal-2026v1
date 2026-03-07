@@ -96,27 +96,27 @@ export default function BeneficiariesPage() {
   if (isLoading) return <SectionLoader label="Loading Master List..." description="Retrieving Beneficiary Records From The Database." />;
   
   if (!canRead) return (
-    <main className="container mx-auto p-8 text-[#14532D]">
+    <main className="container mx-auto p-8 text-primary">
         <Alert variant="destructive">
             <ShieldAlert className="h-4 w-4"/>
             <AlertTitle className="font-bold">Access Denied</AlertTitle>
-            <AlertDescription className="font-normal text-[#14532D]/70">Missing Permissions To View Beneficiaries.</AlertDescription>
+            <AlertDescription className="font-normal text-primary/70">Missing Permissions To View Beneficiaries.</AlertDescription>
         </Alert>
     </main>
   );
 
   return (
-    <main className="container mx-auto p-4 md:p-8 space-y-6 text-[#14532D] font-normal">
+    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
       <div className="flex items-center justify-between">
-        <Button variant="secondary" asChild className="font-bold border-[#E2EEE7] text-[#14532D] transition-transform active:scale-95">
+        <Button variant="secondary" asChild className="font-bold border-primary/10 text-primary transition-transform active:scale-95">
           <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Dashboard</Link>
         </Button>
       </div>
       
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight text-[#14532D]">Master Beneficiary List ({beneficiaries?.length || 0})</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-primary">Master Beneficiary List ({beneficiaries?.length || 0})</h1>
         <div className="flex items-center gap-2">
-          <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync Complete' : 'Sync Failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="secondary" size="sm" className="font-bold border-[#E2EEE7] text-[#14532D] active:scale-95 transition-transform">
+          <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync Complete' : 'Sync Failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="secondary" size="sm" className="font-bold border-primary/10 text-primary active:scale-95 transition-transform">
             {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
             Sync Master List
           </Button>
@@ -128,16 +128,16 @@ export default function BeneficiariesPage() {
         </div>
       </div>
 
-      <div className="bg-[#1FA34A]/5 p-4 rounded-xl border border-[#E2EEE7]">
+      <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
         <ScrollArea className="w-full whitespace-nowrap">
             <div className="flex flex-nowrap items-center gap-3 pb-2">
                 <div className="relative w-[300px]">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#14532D]/50" />
-                    <Input placeholder="Search Name, Phone, Address..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-[#E2EEE7] focus-visible:ring-[#1FA34A] font-normal text-[#14532D]" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
+                    <Input placeholder="Search Name, Phone, Address..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary" />
                 </div>
                 <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[160px] h-10 text-sm border-[#E2EEE7] text-[#14532D]"><SelectValue placeholder="Status" /></SelectTrigger>
-                    <SelectContent className="rounded-[12px] border-[#E2EEE7] shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
+                    <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
+                    <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
                         <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
                         <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
                         <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
@@ -146,8 +146,8 @@ export default function BeneficiariesPage() {
                     </SelectContent>
                 </Select>
                 <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[160px] h-10 text-sm border-[#E2EEE7] text-[#14532D]"><SelectValue placeholder="Zakat Status" /></SelectTrigger>
-                    <SelectContent className="rounded-[12px] border-[#E2EEE7] shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
+                    <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary"><SelectValue placeholder="Zakat Status" /></SelectTrigger>
+                    <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
                         <SelectItem value="All" className="font-normal">All Zakat Status</SelectItem>
                         <SelectItem value="Eligible" className="font-normal">Eligible</SelectItem>
                         <SelectItem value="Not Eligible" className="font-normal">Not Eligible</SelectItem>
@@ -158,9 +158,9 @@ export default function BeneficiariesPage() {
         </ScrollArea>
       </div>
 
-      <div className="rounded-[16px] border border-[#E2EEE7] bg-white overflow-hidden shadow-[0_4px_10px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_10px_24px_rgba(0,0,0,0.08)]">
+      <div className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
         <ScrollArea className="w-full">
-            <div className={cn("bg-[#ECFDF5] border-b border-[#E2EEE7] text-[11px] font-semibold tracking-wider text-[#14532D]", gridClass)}>
+            <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-semibold tracking-wider text-[hsl(var(--table-header-fg))]", gridClass)}>
                 <div></div>
                 <div>Sr. No.</div>
                 <div>Name</div>
@@ -173,35 +173,35 @@ export default function BeneficiariesPage() {
 
             <Accordion type="single" collapsible className="w-full">
             {paginatedBeneficiaries.map((b, idx) => (
-                <AccordionItem key={b.id} value={b.id} className="border-b border-[#E2EEE7] last:border-0 hover:bg-[#F0FDF4] transition-colors bg-white">
+                <AccordionItem key={b.id} value={b.id} className="border-b border-primary/10 last:border-0 hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white">
                 <div className={cn("py-3 px-4", gridClass)}>
                     <div className="flex justify-center">
                         <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-[#1FA34A]/10 transition-colors">
-                                <ChevronDown className="h-4 w-4 text-[#1FA34A] shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                            <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-primary/10 transition-colors">
+                                <ChevronDown className="h-4 w-4 text-primary shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                             </div>
                         </AccordionTrigger>
                     </div>
                     <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
-                    <div className="font-bold text-sm truncate pr-2 text-[#14532D]">{b.name}</div>
-                    <div className="font-mono text-xs opacity-60 text-[#355E3B]">{b.phone || 'N/A'}</div>
+                    <div className="font-bold text-sm truncate pr-2 text-primary">{b.name}</div>
+                    <div className="font-mono text-xs opacity-60 text-primary">{b.phone || 'N/A'}</div>
                     <div className="text-center"><Badge variant="outline" className="text-[10px] font-bold uppercase">{b.status}</Badge></div>
                     <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
-                    <div className="pl-4 text-xs font-normal text-[#355E3B]/70">{b.referralBy || 'N/A'}</div>
+                    <div className="pl-4 text-xs font-normal text-primary/70">{b.referralBy || 'N/A'}</div>
                     <div className="text-right">
                         <div className="flex items-center justify-end gap-1">
                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-[#1FA34A]"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="rounded-[12px] border-[#E2EEE7] shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
-                                    <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="text-[#14532D] font-normal"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
+                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
+                                    <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
                                     {canUpdate && (
                                         <DropdownMenuSub>
-                                        <DropdownMenuSubTrigger className="text-[#14532D] font-normal">Status</DropdownMenuSubTrigger>
-                                        <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] border-[#E2EEE7] shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
+                                        <DropdownMenuSubTrigger className="text-primary font-normal">Status</DropdownMenuSubTrigger>
+                                        <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] border-primary/10 shadow-dropdown">
                                             <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
                                             <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</SelectItem>
+                                            <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Need More Details" className="text-xs font-normal">Need Details</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent></DropdownMenuPortal>
@@ -209,7 +209,7 @@ export default function BeneficiariesPage() {
                                     )}
                                     {canDelete && (
                                         <>
-                                        <DropdownMenuSeparator className="bg-[#E2EEE7]" />
+                                        <DropdownMenuSeparator className="bg-primary/10" />
                                         <DropdownMenuItem onClick={async () => { if(confirm('Are you sure?')) { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); } }} className="text-destructive font-normal"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
                                         </>
                                     )}
@@ -218,8 +218,8 @@ export default function BeneficiariesPage() {
                         </div>
                     </div>
                 </div>
-                <AccordionContent className="bg-[#F7FBF8] px-4 pt-0 pb-4 border-t border-[#E2EEE7]">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 px-12 text-[#14532D] font-normal">
+                <AccordionContent className="bg-primary/[0.02] px-4 pt-0 pb-4 border-t border-primary/10">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 px-12 text-primary font-normal">
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Address</p>
                         <p className="text-xs leading-relaxed font-normal">{b.address || 'N/A'}</p>
@@ -254,7 +254,7 @@ export default function BeneficiariesPage() {
             ))}
             </Accordion>
             {paginatedBeneficiaries.length === 0 && (
-            <div className="text-center py-20 bg-[#1FA34A]/[0.02] opacity-40 italic font-bold">No Beneficiaries Found Matching Criteria.</div>
+            <div className="text-center py-20 bg-primary/[0.02] opacity-40 italic font-bold">No Beneficiaries Found Matching Criteria.</div>
             )}
             <ScrollBar orientation="horizontal" />
         </ScrollArea>
@@ -264,8 +264,8 @@ export default function BeneficiariesPage() {
         <div className="flex items-center justify-between border-t pt-4">
           <p className="text-xs font-bold opacity-60 uppercase">Page {currentPage} Of {totalPages}</p>
           <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-[#E2EEE7] h-8">Previous</Button>
-            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-[#E2EEE7] h-8">Next</Button>
+            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/10 h-8">Previous</Button>
+            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/10 h-8">Next</Button>
           </div>
         </div>
       )}

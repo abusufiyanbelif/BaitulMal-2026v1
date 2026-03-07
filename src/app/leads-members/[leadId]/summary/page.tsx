@@ -241,7 +241,7 @@ export default function LeadSummaryPage() {
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
             const allocationProportion = leadAllocation.amount / totalDonationAmount;
             const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
-            splits.forEach((split: any) => {
+            splits.forEach(split => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
                 if (amountsByCategory.hasOwnProperty(category)) {
                     const allocatedAmount = split.amount * allocationProportion;
@@ -616,11 +616,11 @@ export default function LeadSummaryPage() {
                     <div className="grid gap-6 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                         {isVisible('funding_progress') && (
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
-                                <CardHeader>
+                                <CardHeader className="bg-primary/5 border-b">
                                     <CardTitle className="flex items-center gap-2 font-bold text-primary"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
                                     <CardDescription className="font-normal text-primary/70">Verified donations for this initiative.</CardDescription>
                                 </CardHeader>
-                                <CardContent>
+                                <CardContent className="pt-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                                         <div className="relative h-48 w-full transition-transform duration-500 hover:scale-105">
                                             {isClient ? (

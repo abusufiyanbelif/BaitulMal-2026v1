@@ -7,7 +7,7 @@ import Resizer from 'react-image-file-resizer';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import Link from 'next/link';
 import { ArrowLeft, Edit, MoreHorizontal, Loader2, ChevronDown, User, History, IndianRupee, Landmark, Lightbulb, FolderKanban, ShieldCheck, Calendar, Info, HeartHandshake, CheckCircle2, Target, Hourglass } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuTrigger, DropdownMenuPortal, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSubContent, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -21,7 +21,7 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 
 interface LinkedInitiative {
     id: string;
@@ -217,10 +217,6 @@ export default function BeneficiaryDetailsPage() {
   if (isLoading && !formBeneficiaryData) return <BrandedLoader />;
   if (!beneficiary) return <p className="text-center mt-20 text-primary font-bold">Beneficiary Not Found.</p>;
 
-  const initiativeName = campaign?.name || lead?.name;
-  const initiativeType = campaign ? 'Campaign' : lead ? 'Lead' : null;
-  const initiativeId = initiativeContext?.id;
-
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
       <div className="flex items-center justify-between">
@@ -404,7 +400,7 @@ export default function BeneficiaryDetailsPage() {
                         <HeartHandshake className="h-4 w-4 text-primary opacity-40" />
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
-                        <div className="text-3xl font-bold text-[#166534] font-mono">₹{financialSummary.disbursed.toLocaleString('en-IN')}</div>
+                        <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.disbursed.toLocaleString('en-IN')}</div>
                         <p className="text-[10px] font-normal text-muted-foreground mt-1">Confirmed Value Successfully Provided To Recipient</p>
                     </CardContent>
                 </Card>
@@ -460,7 +456,7 @@ export default function BeneficiaryDetailsPage() {
                                                     </TableCell>
                                                     <TableCell className="text-right pr-6">
                                                         <div className="flex flex-col items-end">
-                                                            <span className={cn("font-bold font-mono text-sm", link.beneficiaryStatus === 'Given' ? "text-[#166534]" : "text-primary")}>
+                                                            <span className={cn("font-bold font-mono text-sm text-primary")}>
                                                                 ₹{link.kitAmount.toLocaleString('en-IN')}
                                                             </span>
                                                             <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Net Value</span>
@@ -527,7 +523,7 @@ export default function BeneficiaryDetailsPage() {
                                 <p className="text-sm leading-relaxed text-foreground font-normal">
                                     This recipient has been supported across <span className="font-bold text-primary">{linkedInitiatives.length} initiative(s)</span>. 
                                     Out of the total requirement of <span className="font-bold text-primary font-mono">₹{financialSummary.requested.toLocaleString('en-IN')}</span>, 
-                                    the organization has successfully disbursed <span className="font-bold text-[#166534] font-mono">₹{financialSummary.disbursed.toLocaleString('en-IN')}</span>. 
+                                    the organization has successfully disbursed <span className="font-bold text-primary font-mono">₹{financialSummary.disbursed.toLocaleString('en-IN')}</span>. 
                                     {financialSummary.verified > 0 && ` An additional ₹${financialSummary.verified.toLocaleString('en-IN')} has been verified and reserved for future provision.`}
                                     {financialSummary.zakatDisbursed > 0 && ` A significant portion (₹${financialSummary.zakatDisbursed.toLocaleString('en-IN')}) was provided from the Zakat fund, adhering strictly to religious compliance for poverty alleviation.`}
                                 </p>

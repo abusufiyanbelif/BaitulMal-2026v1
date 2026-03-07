@@ -93,7 +93,7 @@ import {
   ChartLegend,
   ChartLegendContent
 } from '@/components/ui/chart';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import type { ChartConfig } from '@/components/ui/chart';
 
 const donationCategoryChartConfig = {

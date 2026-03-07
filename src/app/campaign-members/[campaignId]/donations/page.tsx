@@ -22,7 +22,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator
+  DropdownMenuSeparator,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -340,7 +346,7 @@ export default function DonationsPage() {
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
                 <Table>
-                    <TableHeader className="bg-[#ECFDF5]">
+                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                     <TableRow>
                         <SortableHeader sortKey="srNo" className="w-[60px] pl-4" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
                         <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
@@ -355,7 +361,7 @@ export default function DonationsPage() {
                         const isOpen = openRows[donation.id] || false;
                         return (
                             <React.Fragment key={donation.id}>
-                            <TableRow className="bg-white border-b border-primary/10 hover:bg-[#F0FDF4] cursor-pointer group transition-colors" onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
+                            <TableRow className="bg-white border-b border-primary/10 hover:bg-[hsl(var(--table-row-hover))] cursor-pointer group transition-colors" onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
                                 <TableCell className="pl-4">
                                     <div className="flex items-center gap-2">
                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" disabled={!donation.transactions || donation.transactions.length === 0}>{isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</Button>
@@ -378,15 +384,15 @@ export default function DonationsPage() {
                                 </TableCell>
                             </TableRow>
                             {isOpen && (
-                                <TableRow className="bg-[#F7FBF8] border-b border-primary/10">
+                                <TableRow className="bg-primary/[0.01] border-b border-primary/10">
                                 <TableCell colSpan={6} className="p-4">
                                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Linked Transactions</h4>
                                     <div className="border border-primary/10 rounded-md bg-white overflow-hidden shadow-sm">
                                     <Table>
-                                        <TableHeader className="bg-[#ECFDF5]"><TableRow><TableHead className="text-[10px] font-bold text-primary">Sum</TableHead><TableHead className="text-[10px] font-bold text-primary">Reference</TableHead><TableHead className="text-right text-[10px] font-bold text-primary">Artifact</TableHead></TableRow></TableHeader>
+                                        <TableHeader className="bg-[hsl(var(--table-header-bg))]"><TableRow><TableHead className="text-[10px] font-bold text-primary">Sum</TableHead><TableHead className="text-[10px] font-bold text-primary">Reference</TableHead><TableHead className="text-right text-[10px] font-bold text-primary">Artifact</TableHead></TableRow></TableHeader>
                                         <TableBody>
                                         {(donation.transactions || []).map((tx) => (
-                                            <TableRow key={tx.id} className="hover:bg-[#F0FDF4]"><TableCell className="font-bold font-mono text-sm">₹{tx.amount.toFixed(2)}</TableCell><TableCell className="font-mono text-xs opacity-70">{tx.transactionId || 'N/A'}</TableCell><TableCell className="text-right">{tx.screenshotUrl ? (<Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)} className="font-bold text-[10px] h-7"><ImageIcon className="mr-1 h-3 w-3" /> View</Button>) : <span className="text-muted-foreground text-[10px]">None</span>}</TableCell></TableRow>
+                                            <TableRow key={tx.id} className="hover:bg-[hsl(var(--table-row-hover))]"><TableCell className="font-bold font-mono text-sm">₹{tx.amount.toFixed(2)}</TableCell><TableCell className="font-mono text-xs opacity-70">{tx.transactionId || 'N/A'}</TableCell><TableCell className="text-right">{tx.screenshotUrl ? (<Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)} className="font-bold text-[10px] h-7"><ImageIcon className="mr-1 h-3 w-3" /> View</Button>) : <span className="text-muted-foreground text-[10px]">None</span>}</TableCell></TableRow>
                                         ))}
                                         </TableBody>
                                     </Table>
@@ -422,20 +428,21 @@ export default function DonationsPage() {
         </DialogContent>
       </Dialog>
 
-      <DonationSearchDialog 
-        open={isSearchOpen} 
-        onOpenChange={setIsSearchOpen} 
-        targetId={campaignId} 
-        targetName={campaign.name} 
-        targetType="campaign" 
-        allowedTypes={campaign.allowedDonationTypes || [...donationCategories]} 
-      />
+      {campaign && (
+        <DonationSearchDialog 
+            open={isSearchOpen} 
+            onOpenChange={setIsSearchOpen} 
+            targetId={campaignId} 
+            targetName={campaign.name} 
+            targetType="campaign" 
+            allowedTypes={campaign.allowedDonationTypes || [...donationCategories]} 
+        />
+      )}
       
       <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
         <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown">
             <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink Donation?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach this record from the current campaign? The donation remains in the global database but will no longer contribute to this project's totals.</AlertDialogDescription></AlertDialogHeader>
-            <AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter>
-        </AlertDialogContent>
+            <AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
       <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
