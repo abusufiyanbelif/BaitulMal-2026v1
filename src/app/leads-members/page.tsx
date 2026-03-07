@@ -64,12 +64,14 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                          lead.purpose === 'Other' ? Info : HandHelping;
     const priorityLabel = lead.priority || 'Medium';
     const isUrgent = priorityLabel === 'Urgent';
+    const isHigh = priorityLabel === 'High';
 
     return (
         <Card 
             className={cn(
                 "flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white shadow-sm animate-fade-in-up transition-all duration-500",
-                isUrgent && "animate-urgent-pulse border-red-500/50"
+                isUrgent && "animate-urgent-pulse border-red-500/50",
+                isHigh && "animate-high-pulse border-orange-500/50"
             )}
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
             onClick={() => router.push(`/leads-members/${lead.id}/summary`)}
@@ -185,7 +187,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                 </div>
                 <div className={cn(
                     "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
-                    isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
+                    isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : isHigh ? 'text-orange-600' : 'text-primary'
                 )}>
                     {getPriorityIcon(priorityLabel)}
                     {priorityLabel} Priority
@@ -244,12 +246,14 @@ export default function LeadPage() {
       .map(c => {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
           const isUrgent = c.priority === 'Urgent';
+          const isHigh = c.priority === 'High';
           return {
               id: c.id,
               text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/campaign-members/${c.id}/summary`,
               priorityIcon: getPriorityIcon(c.priority),
-              isUrgent
+              isUrgent,
+              isHigh
           };
       });
     
@@ -258,12 +262,14 @@ export default function LeadPage() {
       .map(l => {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
           const isUrgent = l.priority === 'Urgent';
+          const isHigh = l.priority === 'High';
           return {
               id: l.id,
               text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/leads-members/${l.id}/summary`,
               priorityIcon: getPriorityIcon(l.priority),
-              isUrgent
+              isUrgent,
+              isHigh
           };
       });
 

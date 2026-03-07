@@ -82,12 +82,14 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
     const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
     const priorityLabel = campaign.priority || 'Medium';
     const isUrgent = priorityLabel === 'Urgent';
+    const isHigh = priorityLabel === 'High';
 
     return (
         <Card 
             className={cn(
                 "flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white shadow-sm animate-fade-in-up transition-all duration-500",
-                isUrgent && "animate-urgent-pulse border-red-500/50"
+                isUrgent && "animate-urgent-pulse border-red-500/50",
+                isHigh && "animate-high-pulse border-orange-500/50"
             )}
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
             onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}
@@ -205,7 +207,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                 </div>
                 <div className={cn(
                     "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
-                    isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
+                    isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : isHigh ? 'text-orange-600' : 'text-primary'
                 )}>
                     {getPriorityIcon(priorityLabel)}
                     {priorityLabel} Priority
@@ -264,12 +266,14 @@ export default function CampaignPage() {
       .map(c => {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
           const isUrgent = c.priority === 'Urgent';
+          const isHigh = c.priority === 'High';
           return {
               id: c.id,
               text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/campaign-members/${c.id}/summary`,
               priorityIcon: getPriorityIcon(c.priority),
-              isUrgent
+              isUrgent,
+              isHigh
           };
       });
     
@@ -278,12 +282,14 @@ export default function CampaignPage() {
       .map(l => {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
           const isUrgent = l.priority === 'Urgent';
+          const isHigh = l.priority === 'High';
           return {
               id: l.id,
               text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/leads-members/${l.id}/summary`,
               priorityIcon: getPriorityIcon(l.priority),
-              isUrgent
+              isUrgent,
+              isHigh
           };
       });
 
@@ -412,7 +418,7 @@ export default function CampaignPage() {
                 <div className="flex flex-nowrap items-center gap-3 pb-2">
                     <Input placeholder="Search Initiatives..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary" disabled={isLoading}/>
                     <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary font-bold"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem></SelectContent></Select>
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary font-bold"><SelectValue placeholder="All Categories" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Categories</SelectItem><SelectItem value="Ration" className="font-bold">Ration</SelectItem><SelectItem value="Relief" className="font-bold">Relief</SelectItem><SelectItem value="General" className="font-bold">General</SelectItem></SelectContent></Select>
+                    <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="All Categories" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Categories</SelectItem><SelectItem value="Ration" className="font-bold">Ration</SelectItem><SelectItem value="Relief" className="font-bold">Relief</SelectItem><SelectItem value="General" className="font-bold">General</SelectItem></SelectContent></Select>
                     <Select value={authenticityFilter} onValueChange={setAuthenticityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary font-bold"><SelectValue placeholder="All Authenticity" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Authenticity</SelectItem><SelectItem value="Pending Verification" className="font-bold">Pending</SelectItem><SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem><SelectItem value="On Hold" className="font-bold">On Hold</SelectItem><SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem><SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem></SelectContent></Select>
                     <Select value={visibilityFilter} onValueChange={setVisibilityFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary font-bold"><SelectValue placeholder="All Visibilities" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Visibilities</SelectItem><SelectItem value="Hold" className="font-bold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-bold">Ready To Publish</SelectItem><SelectItem value="Published" className="font-bold text-primary font-normal">Published</SelectItem></SelectContent></Select>
                     <div className="flex items-center gap-2 border-l border-primary/10 pl-3">

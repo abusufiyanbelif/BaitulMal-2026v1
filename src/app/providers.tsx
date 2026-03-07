@@ -51,7 +51,7 @@ export function Providers({ children }: { children: ReactNode }) {
         attribute="class" 
         defaultTheme="bms3-a" 
         enableSystem={false}
-        storageKey="institutional-theme-v2"
+        storageKey="institutional-theme-v3"
         themes={allThemes}
         disableTransitionOnChange
       >

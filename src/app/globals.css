@@ -127,16 +127,6 @@
     --border: 240 5% 90%;
   }
 
-  .github-light {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 10%;
-    --primary: 212 92% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 10% 97%;
-    --border: 210 10% 90%;
-    --badge-active-fg: 212 92% 45%;
-  }
-
   .dark {
     --background: 240 10% 4%;
     --foreground: 0 0% 98%;
@@ -181,18 +171,6 @@
     --border: 160 50% 15%;
     --badge-active-fg: 160 100% 40%;
     --table-header-bg: 160 50% 6%;
-  }
-
-  .github-dark {
-    --background: 240 10% 4%;
-    --foreground: 210 10% 90%;
-    --card: 240 10% 6%;
-    --primary: 212 92% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 10% 12%;
-    --border: 210 10% 18%;
-    --badge-active-fg: 212 92% 45%;
-    --table-header-bg: 210 10% 10%;
   }
 }
 
@@ -249,4 +227,19 @@
 
 .animate-urgent-pulse {
   animation: urgent-pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes high-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    border-color: hsl(var(--border));
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.4);
+    border-color: rgba(245, 158, 11, 0.7);
+  }
+}
+
+.animate-high-pulse {
+  animation: high-pulse 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }

@@ -12,6 +12,7 @@ interface TickerItem {
   href: string;
   priorityIcon?: React.ReactNode;
   isUrgent?: boolean;
+  isHigh?: boolean;
 }
 
 interface NewsTickerProps {
@@ -66,7 +67,8 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
     <div className={cn(
       "group border rounded-lg overflow-hidden relative flex items-center mb-2 shadow-sm h-12 bg-white transition-all hover:shadow-md",
       isCompleted ? "border-muted" : "border-primary/10",
-      currentItem?.isUrgent && "animate-urgent-pulse border-red-500/50"
+      currentItem?.isUrgent && "animate-urgent-pulse border-red-500/50",
+      currentItem?.isHigh && "animate-high-pulse border-orange-500/50"
     )}>
       {/* Label Section */}
       <div className={cn(
@@ -97,7 +99,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
           )} />
           
           {currentItem.priorityIcon && (
-            <div className="shrink-0 flex items-center [&>svg]:h-6 [&>svg]:w-6">
+            <div className="shrink-0 flex items-center [&>svg]:h-5 [&>svg]:w-5 transition-transform duration-300 group-hover:scale-110">
               {currentItem.priorityIcon}
             </div>
           )}

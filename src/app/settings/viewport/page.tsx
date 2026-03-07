@@ -154,15 +154,20 @@ export default function ViewportSettingsPage() {
     const handleSave = async () => {
         setIsSubmitting(true);
         try {
+            // Apply theme globally via next-themes
             setTheme(pendingTheme);
+            
+            // Sync local state
             setAnimationsEnabled(pendingAnimations);
             setSmoothScrolling(pendingSmoothScroll);
             setReducedMotion(pendingReducedMotion);
 
+            // Save preferences to local storage
             localStorage.setItem('app_animations', pendingAnimations ? 'enabled' : 'disabled');
             localStorage.setItem('app_smooth_scroll', pendingSmoothScroll ? 'enabled' : 'disabled');
             localStorage.setItem('app_reduced_motion', pendingReducedMotion ? 'enabled' : 'disabled');
 
+            // Apply attributes to root for CSS selectors
             document.documentElement.setAttribute('data-animations', pendingAnimations ? 'enabled' : 'disabled');
             document.documentElement.setAttribute('data-smooth-scroll', pendingSmoothScroll ? 'enabled' : 'disabled');
             document.documentElement.setAttribute('data-motion-reduced', pendingReducedMotion ? 'enabled' : 'disabled');
@@ -191,7 +196,7 @@ export default function ViewportSettingsPage() {
                 ) : (
                     <div className="flex gap-2">
                         <Button variant="outline" onClick={() => setIsEditMode(false)} className="font-bold border-primary/20 text-primary transition-transform active:scale-95"><X className="mr-2 h-4 w-4" /> Cancel</Button>
-                        <Button onClick={handleSave} disabled={isSubmitting || isSubmitting} className="font-bold shadow-md active:scale-95 transition-transform bg-primary text-white">
+                        <Button onClick={handleSave} disabled={isSubmitting} className="font-bold shadow-md active:scale-95 transition-transform bg-primary text-white">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />} 
                             Save All Changes
                         </Button>

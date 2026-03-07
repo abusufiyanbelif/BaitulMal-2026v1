@@ -18,9 +18,7 @@ export const THEME_SUGGESTIONS: ThemeSuggestion[] = [
   { id: 'sunset-orange', name: 'Sunset (Energy)', isDark: false },
   { id: 'lavender-mint', name: 'Peaceful Lavender', isDark: false },
   { id: 'light', name: 'Classic Light', isDark: false },
-  { id: 'github-light', name: 'GitHub Light', isDark: false },
   { id: 'dark', name: 'Midnight (Dark)', isDark: true },
   { id: 'midnight-ramadan', name: 'Midnight Ramadan (Gold)', isDark: true },
   { id: 'midnight-emerald', name: 'Midnight Emerald', isDark: true },
-  { id: 'github-dark', name: 'GitHub Dark', isDark: true },
 ];

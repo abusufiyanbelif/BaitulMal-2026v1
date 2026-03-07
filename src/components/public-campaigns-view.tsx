@@ -40,13 +40,15 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                 const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
                 const priorityLabel = campaign.priority || 'Medium';
                 const isUrgent = priorityLabel === 'Urgent';
+                const isHigh = priorityLabel === 'High';
                 
                 return (
                     <Card 
                         key={campaign.id} 
                         className={cn(
                             "flex flex-col hover:shadow-xl transition-all duration-500 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white shadow-sm",
-                            isUrgent && "animate-urgent-pulse border-red-500/50"
+                            isUrgent && "animate-urgent-pulse border-red-500/50",
+                            isHigh && "animate-high-pulse border-orange-500/50"
                         )}
                         style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
                         onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}
@@ -86,7 +88,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                             </div>
                             <div className={cn(
                                 "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
-                                isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
+                                isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : isHigh ? 'text-orange-600' : 'text-primary'
                             )}>
                                 {getPriorityIcon(priorityLabel)}
                                 {priorityLabel} Priority
@@ -131,12 +133,14 @@ export function PublicCampaignsView() {
       .map(c => {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
           const isUrgent = c.priority === 'Urgent';
+          const isHigh = c.priority === 'High';
           return {
               id: c.id,
               text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/campaign-public/${c.id}/summary`,
               priorityIcon: getPriorityIcon(c.priority),
-              isUrgent
+              isUrgent,
+              isHigh
           };
       });
     
@@ -145,12 +149,14 @@ export function PublicCampaignsView() {
       .map(l => {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
           const isUrgent = l.priority === 'Urgent';
+          const isHigh = l.priority === 'High';
           return {
               id: l.id,
               text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/leads-public/${l.id}/summary`,
               priorityIcon: getPriorityIcon(l.priority),
-              isUrgent
+              isUrgent,
+              isHigh
           };
       });
 
