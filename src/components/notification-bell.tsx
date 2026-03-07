@@ -10,7 +10,9 @@ import {
     ExternalLink,
     AlertCircle,
     Wallet,
-    CheckCircle2
+    CheckCircle2,
+    ChevronRight,
+    Search
 } from 'lucide-react';
 import Link from 'next/link';
 import { 
@@ -33,105 +35,103 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { Donation, Beneficiary, Lead, Campaign } from '@/lib/types';
 
-interface AlertItemProps {
+interface NotificationItemProps {
     icon: any;
-    label: string;
-    count: number;
+    title: string;
+    subtitle: string;
     href: string;
-    description: string;
-    variant?: 'destructive' | 'warning' | 'info';
+    variant?: 'destructive' | 'warning' | 'info' | 'success';
 }
 
-function AlertItem({ icon: Icon, label, count, href, description, variant = 'destructive' }: AlertItemProps) {
-    if (count === 0) return null;
-
+function NotificationItem({ icon: Icon, title, subtitle, href, variant = 'info' }: NotificationItemProps) {
     return (
-        <Link href={href} className="group flex items-start gap-4 p-3 rounded-lg hover:bg-primary/5 transition-all border border-transparent hover:border-primary/10">
+        <Link 
+            href={href} 
+            className="group flex items-center gap-3 p-3 rounded-xl hover:bg-primary/5 transition-all border border-transparent hover:border-primary/10 active:scale-[0.98]"
+        >
             <div className={cn(
-                "mt-1 p-2 rounded-full transition-colors",
+                "p-2 rounded-lg transition-colors shrink-0",
                 variant === 'destructive' ? "bg-red-50 text-red-600 group-hover:bg-red-600 group-hover:text-white" : 
                 variant === 'warning' ? "bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white" :
+                variant === 'success' ? "bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white" :
                 "bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white"
             )}>
                 <Icon className="h-4 w-4" />
             </div>
-            <div className="flex-1 space-y-1">
-                <div className="flex justify-between items-center">
-                    <p className="text-sm font-bold text-primary tracking-tight">{label}</p>
-                    <Badge className={cn(
-                        "h-5 px-1.5 text-[10px] font-black",
-                        variant === 'destructive' ? "bg-red-500 text-white border-none" :
-                        variant === 'warning' ? "bg-amber-500 text-white border-none" :
-                        "bg-blue-500 text-white border-none"
-                    )}>{count}</Badge>
-                </div>
-                <p className="text-[10px] text-muted-foreground font-normal leading-tight">{description}</p>
-                <div className="flex items-center gap-1 text-[9px] font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-tighter pt-1">
-                    Take Action <ExternalLink className="h-2 w-2" />
-                </div>
+            <div className="flex-1 min-w-0 space-y-0.5">
+                <p className="text-xs font-bold text-primary truncate tracking-tight">{title}</p>
+                <p className="text-[10px] text-muted-foreground truncate font-normal">{subtitle}</p>
             </div>
+            <ChevronRight className="h-3 w-3 text-muted-foreground/30 group-hover:text-primary transition-colors shrink-0" />
         </Link>
     );
+}
+
+function SectionHeader({ title, count, icon: Icon }: { title: string, count: number, icon: any }) {
+    return (
+        <div className="flex items-center justify-between px-3 py-2 mt-2 first:mt-0">
+            <div className="flex items-center gap-2">
+                <Icon className="h-3 w-3 text-primary/40" />
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{title}</span>
+            </div>
+            <Badge variant="secondary" className="h-4 px-1.5 text-[9px] font-black rounded-full">{count}</Badge>
+        </div>
+    );SectionHeader
 }
 
 export function NotificationBell() {
     const firestore = useFirestore();
     const { user, userProfile } = useSession();
 
-    // 1. Unverified Beneficiaries (Status != 'Verified')
+    // 1. Unverified Beneficiaries
     const unverifiedBeneficiariesQuery = useMemoFirebase(() => 
         firestore ? query(collection(firestore, 'beneficiaries'), where('status', '!=', 'Verified')) : null, 
     [firestore]);
     const { data: unverifiedBeneficiaries } = useCollection<Beneficiary>(unverifiedBeneficiariesQuery);
 
-    // 2. Unverified Donations (Status == 'Pending')
+    // 2. Unverified Donations (Pending)
     const unverifiedDonationsQuery = useMemoFirebase(() => 
         firestore ? query(collection(firestore, 'donations'), where('status', '==', 'Pending')) : null, 
     [firestore]);
     const { data: unverifiedDonations } = useCollection<Donation>(unverifiedDonationsQuery);
 
-    // 3. Unallocated Donations (Status == 'Verified' but balance > 0)
+    // 3. Unallocated Donations (Verified with Balance)
     const verifiedDonationsQuery = useMemoFirebase(() => 
         firestore ? query(collection(firestore, 'donations'), where('status', '==', 'Verified')) : null, 
     [firestore]);
     const { data: verifiedDonations } = useCollection<Donation>(verifiedDonationsQuery);
 
-    const unallocatedDonationsCount = useMemo(() => {
-        if (!verifiedDonations) return 0;
+    const unallocatedDonations = useMemo(() => {
+        if (!verifiedDonations) return [];
         return verifiedDonations.filter(d => {
             const allocatedSum = d.linkSplit?.reduce((sum, link) => sum + link.amount, 0) || 0;
             return (d.amount - allocatedSum) > 0.01;
-        }).length;
+        });
     }, [verifiedDonations]);
 
-    // 4. Unverified Leads (Authenticity != 'Verified')
+    // 4. Unverified Initiatives (Leads & Campaigns)
     const unverifiedLeadsQuery = useMemoFirebase(() => 
         firestore ? query(collection(firestore, 'leads'), where('authenticityStatus', '!=', 'Verified')) : null, 
     [firestore]);
     const { data: unverifiedLeads } = useCollection<Lead>(unverifiedLeadsQuery);
 
-    // 5. Unverified Campaigns (Authenticity != 'Verified')
     const unverifiedCampaignsQuery = useMemoFirebase(() => 
         firestore ? query(collection(firestore, 'campaigns'), where('authenticityStatus', '!=', 'Verified')) : null, 
     [firestore]);
     const { data: unverifiedCampaigns } = useCollection<Campaign>(unverifiedCampaignsQuery);
 
-    const counts = {
-        unverifiedBeneficiaries: unverifiedBeneficiaries?.length || 0,
-        unverifiedDonations: unverifiedDonations?.length || 0,
-        unallocatedDonations: unallocatedDonationsCount,
-        unverifiedLeads: unverifiedLeads?.length || 0,
-        unverifiedCampaigns: unverifiedCampaigns?.length || 0
-    };
-
-    const totalAlerts = Object.values(counts).reduce((a, b) => a + b, 0);
+    const totalAlerts = (unverifiedBeneficiaries?.length || 0) + 
+                        (unverifiedDonations?.length || 0) + 
+                        (unallocatedDonations.length) + 
+                        (unverifiedLeads?.length || 0) + 
+                        (unverifiedCampaigns?.length || 0);
 
     if (!user || !userProfile) return null;
 
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-full hover:bg-primary/10 group">
+                <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-full hover:bg-primary/10 group transition-all active:scale-95 shadow-none border-none">
                     <Bell className={cn(
                         "h-5 w-5 text-primary transition-transform group-hover:rotate-12",
                         totalAlerts > 0 && "animate-shake"
@@ -146,70 +146,139 @@ export function NotificationBell() {
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80 p-0 overflow-hidden rounded-xl border-primary/10 shadow-2xl animate-fade-in-zoom" align="end">
+            <PopoverContent className="w-80 p-0 overflow-hidden rounded-2xl border-primary/10 shadow-2xl animate-fade-in-zoom bg-white" align="end" sideOffset={12}>
                 <div className="bg-primary/5 p-4 border-b">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-bold text-primary uppercase tracking-widest">Institutional Alerts</h3>
-                        {totalAlerts > 0 && <Badge variant="outline" className="text-[9px] font-bold border-primary/20 text-primary uppercase">Attention Required</Badge>}
+                        <div className="space-y-0.5">
+                            <h3 className="text-sm font-bold text-primary uppercase tracking-widest">Action Hub</h3>
+                            <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-tight opacity-60">Priority Institutional Backlog</p>
+                        </div>
+                        {totalAlerts > 0 && <Badge className="bg-primary text-white border-none font-black text-[9px] uppercase px-2 h-5">Live Attention</Badge>}
                     </div>
                 </div>
                 
                 <ScrollArea className="h-full max-h-[450px]">
-                    <div className="p-2 space-y-1">
+                    <div className="p-2 space-y-4 pb-6">
                         {totalAlerts === 0 ? (
                             <div className="flex flex-col items-center justify-center py-12 text-center px-6">
-                                <div className="p-4 rounded-full bg-primary/5 text-primary/20 mb-4">
+                                <div className="p-4 rounded-full bg-primary/5 text-primary/20 mb-4 animate-fade-in-zoom">
                                     <CheckCircle2 className="h-10 w-10" />
                                 </div>
-                                <p className="text-sm font-bold text-primary tracking-tight">Queue is Empty</p>
-                                <p className="text-[10px] text-muted-foreground font-normal">All institutional data has been processed and verified.</p>
+                                <p className="text-sm font-bold text-primary tracking-tight">System is Synchronized</p>
+                                <p className="text-[10px] text-muted-foreground font-normal">All organizational data has been verified and allocated.</p>
                             </div>
                         ) : (
-                            <>
-                                <AlertItem 
-                                    icon={Users} 
-                                    label="Beneficiaries To Vette" 
-                                    count={counts.unverifiedBeneficiaries} 
-                                    href="/beneficiaries" 
-                                    description="Profiles requiring identification or status verification."
-                                />
-                                <AlertItem 
-                                    icon={IndianRupee} 
-                                    label="Unverified Donations" 
-                                    count={counts.unverifiedDonations} 
-                                    href="/donations" 
-                                    description="Incoming contributions awaiting financial vetting."
-                                />
-                                <AlertItem 
-                                    icon={Wallet} 
-                                    label="Unallocated Funds" 
-                                    count={counts.unallocatedDonations} 
-                                    href="/donations" 
-                                    variant="warning"
-                                    description="Verified donations with unassigned balance."
-                                />
-                                <AlertItem 
-                                    icon={Lightbulb} 
-                                    label="Leads To Vette" 
-                                    count={counts.unverifiedLeads} 
-                                    href="/leads-members" 
-                                    description="Individual appeals awaiting authenticity verification."
-                                />
-                                <AlertItem 
-                                    icon={FolderKanban} 
-                                    label="Campaigns To Vette" 
-                                    count={counts.unverifiedCampaigns} 
-                                    href="/campaign-members" 
-                                    description="Institutional initiatives awaiting final approval."
-                                />
-                            </>
+                            <div className="space-y-4">
+                                {/* Beneficiaries Section */}
+                                {unverifiedBeneficiaries && unverifiedBeneficiaries.length > 0 && (
+                                    <div className="space-y-1">
+                                        <SectionHeader title="Beneficiaries To Vette" count={unverifiedBeneficiaries.length} icon={Users} />
+                                        <div className="space-y-1">
+                                            {unverifiedBeneficiaries.slice(0, 5).map(b => (
+                                                <NotificationItem 
+                                                    key={b.id}
+                                                    icon={Users}
+                                                    title={b.name}
+                                                    subtitle={`Status: ${b.status || 'Pending'} • ${b.referralBy || 'Organic'}`}
+                                                    href={`/beneficiaries/${b.id}`}
+                                                    variant="destructive"
+                                                />
+                                            ))}
+                                            {unverifiedBeneficiaries.length > 5 && (
+                                                <Link href="/beneficiaries" className="block text-[9px] font-black text-center text-primary uppercase py-2 hover:underline">View All {unverifiedBeneficiaries.length} Profiles</Link>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Unverified Donations Section */}
+                                {unverifiedDonations && unverifiedDonations.length > 0 && (
+                                    <div className="space-y-1">
+                                        <SectionHeader title="Unverified Donations" count={unverifiedDonations.length} icon={IndianRupee} />
+                                        <div className="space-y-1">
+                                            {unverifiedDonations.slice(0, 5).map(d => (
+                                                <NotificationItem 
+                                                    key={d.id}
+                                                    icon={IndianRupee}
+                                                    title={d.donorName}
+                                                    subtitle={`₹${d.amount.toLocaleString()} • Awaiting Vetting`}
+                                                    href={`/donations/${d.id}`}
+                                                    variant="destructive"
+                                                />
+                                            ))}
+                                            {unverifiedDonations.length > 5 && (
+                                                <Link href="/donations" className="block text-[9px] font-black text-center text-primary uppercase py-2 hover:underline">View All {unverifiedDonations.length} Logs</Link>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Unallocated Funds Section */}
+                                {unallocatedDonations.length > 0 && (
+                                    <div className="space-y-1">
+                                        <SectionHeader title="Unallocated Balances" count={unallocatedDonations.length} icon={Wallet} />
+                                        <div className="space-y-1">
+                                            {unallocatedDonations.slice(0, 5).map(d => {
+                                                const allocated = d.linkSplit?.reduce((s, l) => s + l.amount, 0) || 0;
+                                                const balance = d.amount - allocated;
+                                                return (
+                                                    <NotificationItem 
+                                                        key={d.id}
+                                                        icon={Wallet}
+                                                        title={d.donorName}
+                                                        subtitle={`₹${balance.toLocaleString()} Remaining To Allocate`}
+                                                        href={`/donations/${d.id}`}
+                                                        variant="warning"
+                                                    />
+                                                );
+                                            })}
+                                            {unallocatedDonations.length > 5 && (
+                                                <Link href="/donations" className="block text-[9px] font-black text-center text-primary uppercase py-2 hover:underline">View All {unallocatedDonations.length} Balanced Logs</Link>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Initiatives Section */}
+                                {( (unverifiedLeads?.length || 0) + (unverifiedCampaigns?.length || 0) ) > 0 && (
+                                    <div className="space-y-1">
+                                        <SectionHeader title="Initiatives To Approve" count={(unverifiedLeads?.length || 0) + (unverifiedCampaigns?.length || 0)} icon={Lightbulb} />
+                                        <div className="space-y-1">
+                                            {unverifiedCampaigns?.slice(0, 3).map(c => (
+                                                <NotificationItem 
+                                                    key={c.id}
+                                                    icon={FolderKanban}
+                                                    title={c.name}
+                                                    subtitle="Campaign • Pending Verification"
+                                                    href={`/campaign-members/${c.id}/summary`}
+                                                    variant="info"
+                                                />
+                                            ))}
+                                            {unverifiedLeads?.slice(0, 3).map(l => (
+                                                <NotificationItem 
+                                                    key={l.id}
+                                                    icon={Lightbulb}
+                                                    title={l.name}
+                                                    subtitle="Lead • Pending Verification"
+                                                    href={`/leads-members/${l.id}/summary`}
+                                                    variant="info"
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         )}
                     </div>
                 </ScrollArea>
                 
                 {totalAlerts > 0 && (
                     <div className="p-3 bg-muted/20 border-t flex justify-center">
-                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Priority Institutional Backlog</p>
+                        <Button variant="ghost" size="sm" asChild className="h-7 text-[9px] font-bold text-primary uppercase tracking-tighter hover:bg-primary/5">
+                            <Link href="/dashboard">
+                                Return To Dashboard Hub <ChevronRight className="ml-1 h-3 w-3" />
+                            </Link>
+                        </Button>
                     </div>
                 )}
             </PopoverContent>
