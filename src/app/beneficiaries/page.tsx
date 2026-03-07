@@ -24,7 +24,9 @@ import {
     ArrowDown,
     Coins,
     XCircle,
-    ChevronUpDown
+    ChevronUpDown,
+    Check,
+    Filter
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -39,6 +41,20 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useToast } from '@/hooks/use-toast';
 import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterBeneficiaryAction } from './actions';
@@ -74,6 +90,7 @@ export default function BeneficiariesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [zakatFilter, setZakatFilter] = useState('All');
+  const [selectedReferrals, setSelectedReferrals] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
@@ -87,6 +104,15 @@ export default function BeneficiariesPage() {
   const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.delete', false);
   const canRead = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.read', false);
 
+  const uniqueReferrals = useMemo(() => {
+    if (!beneficiaries) return [];
+    const sources = new Set<string>();
+    beneficiaries.forEach(b => {
+        if (b.referralBy?.trim()) sources.add(b.referralBy.trim());
+    });
+    return Array.from(sources).sort();
+  }, [beneficiaries]);
+
   const filteredAndSortedBeneficiaries = useMemo(() => {
     if (!beneficiaries) return [];
     
@@ -96,7 +122,9 @@ export default function BeneficiariesPage() {
                              (b.address || '').toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === 'All' || (b.status || 'Pending') === statusFilter;
         const matchesZakat = zakatFilter === 'All' || (zakatFilter === 'Eligible' ? b.isEligibleForZakat : !b.isEligibleForZakat);
-        return matchesSearch && matchesStatus && matchesZakat;
+        const matchesReferral = selectedReferrals.length === 0 || (b.referralBy && selectedReferrals.includes(b.referralBy.trim()));
+        
+        return matchesSearch && matchesStatus && matchesZakat && matchesReferral;
     });
 
     if (sortConfig !== null) {
@@ -114,7 +142,7 @@ export default function BeneficiariesPage() {
     }
 
     return items;
-  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, sortConfig]);
+  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, selectedReferrals, sortConfig]);
 
   const totalPages = Math.ceil(filteredAndSortedBeneficiaries.length / itemsPerPage);
   const paginatedBeneficiaries = useMemo(() => {
@@ -128,6 +156,13 @@ export default function BeneficiariesPage() {
         direction = 'descending';
     }
     setSortConfig({ key, direction });
+    setCurrentPage(1);
+  };
+
+  const toggleReferral = (referral: string) => {
+    setSelectedReferrals(prev => 
+        prev.includes(referral) ? prev.filter(r => r !== referral) : [...prev, referral]
+    );
     setCurrentPage(1);
   };
 
@@ -188,10 +223,49 @@ export default function BeneficiariesPage() {
       <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
         <ScrollArea className="w-full whitespace-nowrap">
             <div className="flex flex-nowrap items-center gap-3 pb-2">
-                <div className="relative w-[300px]">
+                <div className="relative w-[250px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
-                    <Input placeholder="Search Name, Phone, Address..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary" />
+                    <Input placeholder="Search Name, Phone..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary" />
                 </div>
+                
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-[220px] justify-between h-10 text-sm border-primary/10 text-primary font-bold">
+                            <div className="flex items-center gap-2 truncate">
+                                <Filter className="h-3.5 w-3.5 opacity-40 shrink-0" />
+                                <span className="truncate">
+                                    {selectedReferrals.length === 0 ? "All Referral Sources" : `${selectedReferrals.length} Referrals Selected`}
+                                </span>
+                            </div>
+                            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[250px] p-0 rounded-[12px] shadow-dropdown border-primary/10" align="start">
+                        <Command>
+                            <CommandInput placeholder="Search Referrals..." className="h-9 font-normal" />
+                            <CommandList>
+                                <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No source found.</CommandEmpty>
+                                <CommandGroup>
+                                    <CommandItem onSelect={() => setSelectedReferrals([])} className="font-bold text-xs">
+                                        <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selectedReferrals.length === 0 ? "bg-primary text-primary-foreground" : "opacity-50")}>
+                                            {selectedReferrals.length === 0 && <Check className="h-3 w-3" />}
+                                        </div>
+                                        <span>Show All Sources</span>
+                                    </CommandItem>
+                                    {uniqueReferrals.map((source) => (
+                                        <CommandItem key={source} onSelect={() => toggleReferral(source)} className="font-normal text-xs">
+                                            <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selectedReferrals.includes(source) ? "bg-primary text-primary-foreground" : "opacity-50")}>
+                                                {selectedReferrals.includes(source) && <Check className="h-3 w-3" />}
+                                            </div>
+                                            <span className="truncate">{source}</span>
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
+
                 <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
                     <SelectTrigger className="w-[180px] h-10 text-sm border-primary/10 text-primary font-bold"><SelectValue placeholder="Verification Status" /></SelectTrigger>
                     <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
