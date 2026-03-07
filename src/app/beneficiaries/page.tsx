@@ -208,7 +208,7 @@ export default function BeneficiariesPage() {
                 <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort}>Sr. No.</SortableHeader>
                 <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>
                 <SortableHeader sortKey="phone" sortConfig={sortConfig} handleSort={handleSort}>Phone</SortableHeader>
-                <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Status</SortableHeader>
+                <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Verification Status</SortableHeader>
                 <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Zakat</SortableHeader>
                 <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">Referred By</SortableHeader>
                 <div className="text-right">Actions</div>
@@ -228,7 +228,7 @@ export default function BeneficiariesPage() {
                     <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
                     <div className="font-bold text-sm truncate pr-2 text-primary">{b.name}</div>
                     <div className="font-mono text-xs opacity-60 text-primary">{b.phone || 'N/A'}</div>
-                    <div className="text-center"><Badge variant="outline" className="text-[10px] font-bold uppercase">{b.status || 'Pending'}</Badge></div>
+                    <div className="text-center"><Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.status || 'Pending'}</Badge></div>
                     <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
                     <div className="pl-4 text-xs font-normal text-primary/70">{b.referralBy || 'N/A'}</div>
                     <div className="text-right">

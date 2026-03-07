@@ -214,6 +214,10 @@ export interface Beneficiary extends DocumentData {
     idNumber?: string;
     referralBy?: string;
     kitAmount?: number;
+    /**
+     * In Master List: Represents Verification Status (Pending, Verified, etc.)
+     * In Initiative Subcollection: Represents Disbursement Status (Pending, Verified, Given)
+     */
     status?: 'Given' | 'Pending' | 'Hold' | 'Need More Details' | 'Verified';
     idProofUrl?: string;
     idProofFilename?: string;

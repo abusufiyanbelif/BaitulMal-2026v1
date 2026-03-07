@@ -182,7 +182,9 @@ export default function BeneficiariesPage() {
     const fullData = { ...rest, id: masterRef.id, idProofUrl, addedDate: new Date().toISOString().split('T')[0], createdAt: serverTimestamp(), createdById: userProfile.id, createdByName: userProfile.name };
     const { status, kitAmount, zakatAllocation, ...masterData } = fullData;
     
-    batch.set(masterRef, masterData, { merge: true });
+    // Status normalization for master registry
+    const masterStatus = status === 'Given' ? 'Verified' : status;
+    batch.set(masterRef, { ...masterData, status: masterStatus }, { merge: true });
     batch.set(leadRefSub, fullData, { merge: true });
     batch.update(doc(firestore, 'leads', leadId), { targetAmount: (lead.targetAmount || 0) + (data.kitAmount || 0) });
     
@@ -238,7 +240,7 @@ export default function BeneficiariesPage() {
               <SelectItem value="All">All Statuses</SelectItem>
               <SelectItem value="Pending">Pending</SelectItem>
               <SelectItem value="Verified">Verified</SelectItem>
-              <SelectItem value="Given">Given</SelectItem>
+              <SelectItem value="Given">Given (Completed)</SelectItem>
               <SelectItem value="Hold">Hold</SelectItem>
               <SelectItem value="Need More Details">Need Details</SelectItem>
             </SelectContent>
@@ -260,7 +262,7 @@ export default function BeneficiariesPage() {
                     <div>Sr. No.</div>
                     <div>Name</div>
                     <div>Phone</div>
-                    <div className="text-center">Status</div>
+                    <div className="text-center">Disbursement Status</div>
                     <div className="text-center">Zakat</div>
                     <div className="text-right">Kit Amount (₹)</div>
                     <div className="text-right">Zakat Allocation (₹)</div>
@@ -305,7 +307,14 @@ export default function BeneficiariesPage() {
                                                     <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
                                                     <div className="font-bold text-sm text-primary">{b.name}</div>
                                                     <div className="font-mono text-xs opacity-60">{b.phone || 'N/A'}</div>
-                                                    <div className="text-center"><Badge variant={b.status === 'Given' ? 'given' : 'outline'} className="text-[10px] font-bold uppercase">{b.status}</Badge></div>
+                                                    <div className="text-center">
+                                                        <Badge 
+                                                            variant={b.status === 'Given' ? 'given' : b.status === 'Verified' ? 'eligible' : 'outline'} 
+                                                            className="text-[10px] font-bold uppercase"
+                                                        >
+                                                            {b.status}
+                                                        </Badge>
+                                                    </div>
                                                     <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
                                                     <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.kitAmount || 0).toFixed(2)}</div>
                                                     <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toFixed(2)}</div>
@@ -318,12 +327,12 @@ export default function BeneficiariesPage() {
                                                                     <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
                                                                     {canUpdate && (
                                                                         <DropdownMenuSub>
-                                                                            <DropdownMenuSubTrigger className="font-normal text-primary">Status</DropdownMenuSubTrigger>
+                                                                            <DropdownMenuSubTrigger className="font-normal text-primary">Disbursement Status</DropdownMenuSubTrigger>
                                                                             <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                                                                 <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
                                                                                     <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Given" className="text-xs font-normal">Given</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified (Secured)</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Given" className="text-xs font-normal">Given (Completed)</DropdownMenuRadioItem>
                                                                                     <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</DropdownMenuRadioItem>
                                                                                     <DropdownMenuRadioItem value="Need More Details" className="text-xs font-normal">Need Details</DropdownMenuRadioItem>
                                                                                 </DropdownMenuRadioGroup>

@@ -102,6 +102,7 @@ export function BeneficiaryForm({
     const { data: configSettings } = useDoc<any>(configRef);
     const mandatoryFields = useMemo(() => configSettings?.mandatoryFields || {}, [configSettings]);
 
+    // Context detection: If hideKitAmount is true, we are in the Master Registry.
     const isMasterForm = hideKitAmount;
     const kitAmountLabel = kitAmountLabelProp || 'Required Amount (₹)';
 
@@ -290,7 +291,9 @@ export function BeneficiaryForm({
                         <FormField control={control} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID Number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled}/></FormControl></FormItem>)}/>
                     </div>
                     <div className="space-y-2">
-                        <FormField control={control} name="idProofFile" render={() => (<FormItem>{renderLabel('ID Proof Document', 'idProofFile')}<FormControl><Input id="beneficiary-id-proof" type="file" accept="image/png, image/jpeg, image/webp, application/pdf" {...register('idProofFile')} disabled={formIsDisabled}/></FormControl></FormItem>)}/>
+                        {!isReadOnly && (
+                            <FormField control={control} name="idProofFile" render={() => (<FormItem>{renderLabel('ID Proof Document', 'idProofFile')}<FormControl><Input id="beneficiary-id-proof" type="file" accept="image/png, image/jpeg, image/webp, application/pdf" {...register('idProofFile')} disabled={formIsDisabled}/></FormControl></FormItem>)}/>
+                        )}
                         {preview && (
                             <div className="relative group w-full h-48 mt-2 rounded-md overflow-hidden border bg-secondary/20">
                                 {preview.startsWith('data:application/pdf') || preview.endsWith('.pdf') ? (<div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4 text-center"><FileIcon className="w-12 h-12 mb-2" /><p className="text-sm font-bold">PDF Document Uploaded</p></div>) : (<Image src={preview} alt="Preview" fill sizes="100vw" className="object-contain" />)}
@@ -304,12 +307,12 @@ export function BeneficiaryForm({
                         {!hideKitAmount && (<FormField control={control} name="kitAmount" render={({ field }) => (<FormItem>{renderLabel(kitAmountLabel, 'kitAmount')}<FormControl><Input type="number" placeholder="0.00" {...field} disabled={formIsDisabled} className="bg-muted/30 font-bold" /></FormControl><FormMessage /></FormItem>)}/>)}
                         <FormField control={control} name="status" render={({ field }) => (
                             <FormItem>
-                                {renderLabel('Status', 'status')}
+                                {renderLabel(isMasterForm ? 'Verification Status' : 'Disbursement Status', 'status')}
                                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={formIsDisabled}>
                                     <FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl>
                                     <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                         <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
-                                        {!isMasterForm && <SelectItem value="Given" className="font-normal">Given</SelectItem>}
+                                        {!isMasterForm && <SelectItem value="Given" className="font-normal">Given (Completed)</SelectItem>}
                                         <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
                                         <SelectItem value="Hold" className="font-normal">Hold</SelectItem>
                                         <SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem>
