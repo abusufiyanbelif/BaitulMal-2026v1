@@ -15,31 +15,47 @@ import {
   Users,
   HeartHandshake,
   Download,
-  Maximize2
+  Landmark,
+  CreditCard,
+  Copy,
+  ExternalLink
 } from 'lucide-react';
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
-  DialogFooter 
+  DialogFooter,
+  DialogDescription
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
 
 /**
- * Institutional Footer - Fully theme-reactive.
- * All text normalized to Title Case and refined font weights.
+ * Institutional Footer - Optimized for clarity and interaction.
+ * Transitions static contribution details into a secure modal hub.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
   const { paymentSettings } = usePaymentSettings();
   const pathname = usePathname();
-  const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
+  const { toast } = useToast();
+  const [isDonationDialogOpen, setIsDonationDialogOpen] = useState(false);
 
   if (pathname === '/login') return null;
 
   const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
   const validQrUrl = paymentSettings?.qrCodeUrl?.trim() ? paymentSettings.qrCodeUrl : null;
+
+  const handleCopy = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: `${label} Copied`,
+      description: "The information has been copied to your clipboard.",
+      variant: "success",
+    });
+  };
 
   const handleDownloadQr = async () => {
     if (!validQrUrl) return;
@@ -89,14 +105,14 @@ export function AppFooter() {
                   {paymentSettings.address}
                 </p>
               )}
-              <div className="flex flex-wrap gap-x-6 gap-y-2 pt-1">
+              <div className="flex flex-col gap-y-2 pt-1">
                 {paymentSettings?.contactPhone && (
-                  <a href={`tel:${paymentSettings.contactPhone}`} className="flex items-center gap-2 hover:text-primary transition-colors font-medium">
+                  <a href={`tel:${paymentSettings.contactPhone}`} className="flex items-center gap-2 hover:text-primary transition-colors font-normal">
                     <Phone className="h-4 w-4 opacity-60" /> {paymentSettings.contactPhone}
                   </a>
                 )}
                 {paymentSettings?.contactEmail && (
-                  <a href={`mailto:${paymentSettings.contactEmail}`} className="flex items-center gap-2 hover:text-primary transition-colors font-medium">
+                  <a href={`mailto:${paymentSettings.contactEmail}`} className="flex items-center gap-2 hover:text-primary transition-colors font-normal">
                     <Mail className="h-4 w-4 opacity-60" /> {paymentSettings.contactEmail}
                   </a>
                 )}
@@ -106,7 +122,7 @@ export function AppFooter() {
 
           {/* Column 2: Navigation */}
           <div className="space-y-6 md:pl-10">
-            <h3 className="text-xs font-bold text-primary opacity-40">
+            <h3 className="text-xs font-bold text-primary opacity-40 uppercase tracking-widest">
               Institutional Hub
             </h3>
             <nav className="flex flex-col gap-4">
@@ -121,56 +137,43 @@ export function AppFooter() {
             </nav>
           </div>
 
-          {/* Column 3: Secure Contributions */}
+          {/* Column 3: Secure Contributions Button-Driven */}
           <div className="flex flex-col md:items-end gap-6">
-            <h3 className="text-xs font-bold text-primary opacity-40">
-              Secure Contribution Channel
+            <h3 className="text-xs font-bold text-primary opacity-40 uppercase tracking-widest">
+              Secure Contribution
             </h3>
-            <div className="flex items-center gap-6 bg-white/60 p-4 rounded-2xl border border-primary/10 shadow-lg transition-all duration-300">
-              <div className="text-right space-y-1.5">
-                <p className="text-sm text-primary font-bold font-mono tracking-tighter">
-                  {paymentSettings?.upiId || 'Not Configured'}
-                </p>
-                <p className="text-[10px] text-muted-foreground font-bold opacity-60">
-                  Scan With Any Upi App
-                </p>
-              </div>
-              {validQrUrl ? (
-                <div 
-                  onClick={() => setIsQrDialogOpen(true)}
-                  className="relative w-32 h-32 bg-white p-2 rounded-xl border-4 border-primary shadow-2xl cursor-pointer group transition-all hover:scale-110 active:scale-95"
+            <div className="flex flex-col gap-3 w-full sm:w-auto">
+                <Button 
+                    variant="outline" 
+                    onClick={() => setIsDonationDialogOpen(true)}
+                    className="font-bold border-primary/20 text-primary h-12 px-6 rounded-xl hover:bg-primary hover:text-white transition-all active:scale-95 shadow-md group"
                 >
-                  <Image
-                    src={`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`}
-                    alt="Payment Qr"
-                    fill
-                    className="object-contain p-1"
-                    unoptimized
-                  />
-                  <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-lg">
-                    <Maximize2 className="text-primary h-8 w-8 drop-shadow-md" />
-                  </div>
-                </div>
-              ) : (
-                <div className="w-32 h-32 bg-white/50 rounded-xl border-2 border-dashed border-border flex items-center justify-center text-muted-foreground/10">
-                  <QrCode className="h-12 w-12" />
-                </div>
-              )}
+                    <QrCode className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                    Upi Qr & Details
+                </Button>
+                <Button 
+                    variant="outline" 
+                    onClick={() => setIsDonationDialogOpen(true)}
+                    className="font-bold border-primary/20 text-primary h-12 px-6 rounded-xl hover:bg-primary hover:text-white transition-all active:scale-95 shadow-md group"
+                >
+                    <Landmark className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                    Bank Transfer Details
+                </Button>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-6 text-[10px] text-muted-foreground opacity-50 font-bold">
+        <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-6 text-[10px] text-muted-foreground opacity-80 font-bold">
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
             {paymentSettings?.regNo && (
               <span className="flex items-center gap-2">
-                <ShieldCheck className="h-3.5 w-3.5 text-primary/30" />
-                Reg: {paymentSettings.regNo}
+                <ShieldCheck className="h-3.5 w-3.5 text-primary/60" />
+                Registration: {paymentSettings.regNo}
               </span>
             )}
             {paymentSettings?.pan && (
               <span className="flex items-center gap-2">
-                <ShieldCheck className="h-3.5 w-3.5 text-primary/30" />
+                <ShieldCheck className="h-3.5 w-3.5 text-primary/60" />
                 Pan: {paymentSettings.pan}
               </span>
             )}
@@ -181,34 +184,112 @@ export function AppFooter() {
         </div>
       </div>
 
-      {/* QR Maximization Dialog */}
-      <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
-        <DialogContent className="sm:max-w-md border-primary/10 overflow-hidden rounded-[20px] p-0 animate-fade-in-zoom">
-          <DialogHeader className="bg-primary/5 px-6 py-4 border-b">
-            <DialogTitle className="font-bold text-primary tracking-tight">Institutional Payment Qr</DialogTitle>
+      {/* Donation Options Hub Dialog */}
+      <Dialog open={isDonationDialogOpen} onOpenChange={setIsDonationDialogOpen}>
+        <DialogContent className="sm:max-w-xl border-primary/10 overflow-hidden rounded-[24px] p-0 animate-fade-in-zoom">
+          <DialogHeader className="bg-primary/5 px-6 py-6 border-b">
+            <DialogTitle className="text-2xl font-bold text-primary tracking-tight">Institutional Contribution Hub</DialogTitle>
+            <DialogDescription className="font-normal text-primary/70">
+                Secure Channels For Supporting Our Community Initiatives.
+            </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center p-8 space-y-6 bg-white">
-            <div className="relative w-64 h-64 bg-white p-4 rounded-2xl border-4 border-primary shadow-2xl transition-transform hover:scale-[1.02]">
-              {validQrUrl && (
-                <Image
-                  src={`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`}
-                  alt="Payment Qr Maximized"
-                  fill
-                  className="object-contain p-2"
-                  unoptimized
-                />
-              )}
+          
+          <ScrollArea className="max-h-[70vh]">
+            <div className="p-6 space-y-8 bg-white">
+                
+                {/* Upi Section */}
+                <div className="space-y-6">
+                    <div className="flex items-center gap-2 text-primary font-bold">
+                        <QrCode className="h-5 w-5" />
+                        <h3 className="text-lg">Scan & Pay via Upi</h3>
+                    </div>
+                    <div className="flex flex-col md:flex-row items-center gap-8 p-6 rounded-2xl border border-primary/10 bg-primary/[0.02]">
+                        <div className="relative w-48 h-48 bg-white p-3 rounded-2xl border-4 border-primary shadow-xl">
+                            {validQrUrl ? (
+                                <Image
+                                    src={`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`}
+                                    alt="Payment Qr"
+                                    fill
+                                    className="object-contain p-1"
+                                    unoptimized
+                                />
+                            ) : (
+                                <div className="flex items-center justify-center h-full text-muted-foreground/20">
+                                    <QrCode className="h-12 w-12" />
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex-1 space-y-4 text-center md:text-left w-full">
+                            <div className="space-y-1">
+                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Upi Identifier</Label>
+                                <div className="flex items-center justify-center md:justify-start gap-2">
+                                    <p className="font-mono text-xl font-bold text-primary tracking-tighter">
+                                        {paymentSettings?.upiId || 'Not Set'}
+                                    </p>
+                                    {paymentSettings?.upiId && (
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/40 hover:text-primary" onClick={() => handleCopy(paymentSettings.upiId!, 'Upi ID')}>
+                                            <Copy className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                            <Button onClick={handleDownloadQr} className="font-bold shadow-md w-full md:w-auto px-6 h-10" disabled={!validQrUrl}>
+                                <Download className="mr-2 h-4 w-4" /> Save Qr Image
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                <Separator className="bg-primary/10" />
+
+                {/* Bank Section */}
+                <div className="space-y-6 pb-4">
+                    <div className="flex items-center gap-2 text-primary font-bold">
+                        <Landmark className="h-5 w-5" />
+                        <h3 className="text-lg">Direct Bank Transfer</h3>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 p-6 rounded-2xl border border-primary/10 bg-primary/[0.02]">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div className="space-y-1">
+                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Account Name</Label>
+                                <p className="text-sm font-bold text-primary">{paymentSettings?.bankAccountName || 'N/A'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Bank Name</Label>
+                                <p className="text-sm font-bold text-primary">{paymentSettings?.bankAccountNumber ? 'Available Upon Request' : 'N/A'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Account Number</Label>
+                                <div className="flex items-center gap-2">
+                                    <p className="text-sm font-bold font-mono text-primary">{paymentSettings?.bankAccountNumber || 'N/A'}</p>
+                                    {paymentSettings?.bankAccountNumber && (
+                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-primary/40 hover:text-primary" onClick={() => handleCopy(paymentSettings.bankAccountNumber!, 'Account Number')}>
+                                            <Copy className="h-3 w-3" />
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Ifsc Code</Label>
+                                <div className="flex items-center gap-2">
+                                    <p className="text-sm font-bold font-mono text-primary uppercase">{paymentSettings?.bankIfsc || 'N/A'}</p>
+                                    {paymentSettings?.bankIfsc && (
+                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-primary/40 hover:text-primary" onClick={() => handleCopy(paymentSettings.bankIfsc!, 'Ifsc Code')}>
+                                            <Copy className="h-3 w-3" />
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div className="text-center space-y-2">
-              <p className="font-mono text-lg font-bold text-primary tracking-tighter">{paymentSettings?.upiId}</p>
-              <p className="text-[10px] font-medium text-muted-foreground leading-relaxed max-w-[200px] mx-auto">
-                Scan With Any Upi-Enabled Application To Make A Secure Contribution.
-              </p>
-            </div>
-          </div>
+            <ScrollBar />
+          </ScrollArea>
+
           <DialogFooter className="sm:justify-center px-6 py-4 bg-primary/[0.02] border-t">
-            <Button onClick={handleDownloadQr} className="font-bold shadow-lg active:scale-95 transition-all w-full sm:w-auto px-8">
-              <Download className="mr-2 h-4 w-4" /> Download Qr Image
+            <Button variant="secondary" onClick={() => setIsDonationDialogOpen(false)} className="font-bold border-primary/10 text-primary px-10">
+              Close Hub
             </Button>
           </DialogFooter>
         </DialogContent>
