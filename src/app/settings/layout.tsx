@@ -31,32 +31,16 @@ export default function SettingsLayout({
   };
 
   return (
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
-    <>
-      {children}
-    </>
-=======
->>>>>>> ec143c0fbd59660a5bff17afcf13151048a4b79c
     <div className="container mx-auto p-4 md:p-8 animate-fade-in-zoom">
        <div className="mb-4">
           <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
               <Link href="/dashboard">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-<<<<<<< HEAD
                   Back To Dashboard
               </Link>
           </Button>
       </div>
       <h1 className="text-3xl font-bold mb-6 text-primary tracking-tight">System Settings</h1>
-=======
-                  Back to dashboard
-              </Link>
-          </Button>
-      </div>
-      <h1 className="text-3xl font-bold mb-6 text-primary tracking-tight">System settings</h1>
->>>>>>> ec143c0fbd59660a5bff17afcf13151048a4b79c
       
       <Tabs value={getActiveTab()} onValueChange={handleTabChange} className="w-full">
         <ScrollArea className="w-full">
@@ -86,9 +70,5 @@ export default function SettingsLayout({
         </div>
       </Tabs>
     </div>
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
->>>>>>> ec143c0fbd59660a5bff17afcf13151048a4b79c
   );
 }
