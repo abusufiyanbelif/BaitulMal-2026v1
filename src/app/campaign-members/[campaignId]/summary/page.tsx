@@ -617,17 +617,17 @@ export default function CampaignSummaryPage() {
                                         <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm">
                                             {isRationInitiative ? (
                                                 <Table>
-                                                    <TableHeader className="bg-[#ECFDF5]">
+                                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                         <TableRow>
-                                                            <TableHead className="font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Category Name</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Beneficiaries</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Kit Amount</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Total Amount</TableHead>
+                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Category Name</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Beneficiaries</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Kit Amount</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Total Amount</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {beneficiaryGroups.map((group) => (
-                                                            <TableRow key={group.id} className="hover:bg-[#F0FDF4] transition-colors group bg-white">
+                                                            <TableRow key={group.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white">
                                                                 <TableCell className="font-bold text-primary text-xs transition-transform group-hover:translate-x-1">{group.name}</TableCell>
                                                                 <TableCell className="text-right font-normal text-xs">{group.count}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-xs">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
@@ -636,27 +636,27 @@ export default function CampaignSummaryPage() {
                                                         ))}
                                                     </TableBody>
                                                     {beneficiaryGroups.length > 0 && (
-                                                        <tfoot className="bg-primary/5 border-t font-bold">
+                                                        <TableFooter className="bg-primary/5 border-t font-bold">
                                                             <TableRow>
                                                                 <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-[10px] tracking-widest">Total Initiative Requirement</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-primary text-base">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
-                                                        </tfoot>
+                                                        </TableFooter>
                                                     )}
                                                 </Table>
                                             ) : (
                                                 <Table>
-                                                    <TableHeader className="bg-[#ECFDF5]">
+                                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                         <TableRow>
-                                                            <TableHead className="font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Requirement Description</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Quantity</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Unit Price</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Total Cost</TableHead>
+                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Requirement Description</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Quantity</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Unit Price</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Total Cost</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {campaign?.itemCategories?.[0]?.items.map((item, idx) => (
-                                                            <TableRow key={idx} className="hover:bg-[#F0FDF4] transition-colors group bg-white">
+                                                            <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white">
                                                                 <TableCell className="font-medium text-xs transition-transform group-hover:translate-x-1">{item.name}</TableCell>
                                                                 <TableCell className="text-right text-xs">{item.quantity} {item.quantityType}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
@@ -664,14 +664,14 @@ export default function CampaignSummaryPage() {
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>
-                                                    <tfoot className="bg-primary/5 border-t font-bold">
+                                                    <TableFooter className="bg-primary/5 border-t font-bold">
                                                         <TableRow>
                                                             <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-[10px] tracking-widest">Single Unit Total</TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-base">
                                                                 ₹{(campaign?.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
                                                             </TableCell>
                                                         </TableRow>
-                                                    </tfoot>
+                                                    </TableFooter>
                                                 </Table>
                                             )}
                                         </div>
@@ -693,10 +693,7 @@ export default function CampaignSummaryPage() {
                                             </div>
                                         ))}
                                         <Separator className="my-2" />
-                                        <div className="flex justify-between items-center text-lg font-bold text-primary px-2">
-                                            <span>Grand Total Received</span>
-                                            <span className="font-mono font-bold">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</span>
-                                        </div>
+                                        <div className="flex justify-between items-center text-lg font-bold text-primary px-2"><span>Grand Total Received</span><span className="font-mono font-bold">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</span></div>
                                     </CardContent>
                                 </Card>
                             )}

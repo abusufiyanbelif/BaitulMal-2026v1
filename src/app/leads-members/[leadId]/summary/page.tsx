@@ -58,7 +58,6 @@ import {
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
 import { Label } from '@/components/ui/label';
@@ -96,7 +95,7 @@ import {
   ChartLegend,
   ChartLegendContent
 } from '@/components/ui/chart';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import type { ChartConfig } from '@/components/ui/chart';
 
 const donationCategoryChartConfig = {
@@ -201,7 +200,7 @@ export default function LeadSummaryPage() {
     }, [lead]);
 
     const availableCategories = useMemo(() => {
-        const selectedPurpose = leadPurposesConfig.find(p => p.id === editableLead.purpose);
+        const selectedPurpose = leadPurposesConfig.find(p => p.id === (editableLead.purpose || 'Relief'));
         return selectedPurpose?.categories || [];
     }, [editableLead.purpose]);
 
@@ -242,7 +241,7 @@ export default function LeadSummaryPage() {
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
             const allocationProportion = leadAllocation.amount / totalDonationAmount;
             const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
-            splits.forEach(split => {
+            splits.forEach((split: any) => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
                 if (amountsByCategory.hasOwnProperty(category)) {
                     const allocatedAmount = split.amount * allocationProportion;
@@ -621,7 +620,7 @@ export default function LeadSummaryPage() {
                                     <CardTitle className="flex items-center gap-2 font-bold text-primary"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
                                     <CardDescription className="font-normal text-primary/70">Verified donations for this initiative.</CardDescription>
                                 </CardHeader>
-                                <CardContent className="pt-6">
+                                <CardContent>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                                         <div className="relative h-48 w-full transition-transform duration-500 hover:scale-105">
                                             {isClient ? (
@@ -669,17 +668,17 @@ export default function LeadSummaryPage() {
                                         <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm">
                                             {isRationInitiative ? (
                                                 <Table>
-                                                    <TableHeader className="bg-[#ECFDF5]">
+                                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                         <TableRow>
-                                                            <TableHead className="font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Category Name</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Beneficiaries</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Kit Amount</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Total Amount</TableHead>
+                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Category Name</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Beneficiaries</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Kit Amount</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Total Amount</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {beneficiaryGroups.map((group) => (
-                                                            <TableRow key={group.id} className="hover:bg-[#F0FDF4] transition-colors group bg-white">
+                                                            <TableRow key={group.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white">
                                                                 <TableCell className="font-bold text-primary text-xs transition-transform group-hover:translate-x-1">{group.name}</TableCell>
                                                                 <TableCell className="text-right font-normal text-xs">{group.count}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-xs">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
@@ -688,27 +687,27 @@ export default function LeadSummaryPage() {
                                                         ))}
                                                     </TableBody>
                                                     {beneficiaryGroups.length > 0 && (
-                                                        <tfoot className="bg-primary/5 border-t font-bold">
+                                                        <TableFooter className="bg-primary/5 border-t font-bold">
                                                             <TableRow>
                                                                 <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-[10px] tracking-widest">Total Initiative Requirement</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-primary text-base">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
-                                                        </tfoot>
+                                                        </TableFooter>
                                                     )}
                                                 </Table>
                                             ) : (
                                                 <Table>
-                                                    <TableHeader className="bg-[#ECFDF5]">
+                                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                         <TableRow>
-                                                            <TableHead className="font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Requirement Description</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Quantity</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Unit Price</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[#14532D] text-[10px] uppercase tracking-widest">Total Cost</TableHead>
+                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Requirement Description</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Quantity</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Unit Price</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Total Cost</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {lead?.itemCategories?.[0]?.items.map((item, idx) => (
-                                                            <TableRow key={idx} className="hover:bg-[#F0FDF4] transition-colors group bg-white">
+                                                            <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white">
                                                                 <TableCell className="font-medium text-xs transition-transform group-hover:translate-x-1">{item.name}</TableCell>
                                                                 <TableCell className="text-right text-xs">{item.quantity} {item.quantityType}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
@@ -716,14 +715,14 @@ export default function LeadSummaryPage() {
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>
-                                                    <tfoot className="bg-primary/5 border-t font-bold">
+                                                    <TableFooter className="bg-primary/5 border-t font-bold">
                                                         <TableRow>
                                                             <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-[10px] tracking-widest">Single Unit Total</TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-base">
                                                                 ₹{(lead?.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
                                                             </TableCell>
                                                         </TableRow>
-                                                    </tfoot>
+                                                    </TableFooter>
                                                 </Table>
                                             )}
                                         </div>

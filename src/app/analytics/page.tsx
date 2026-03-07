@@ -28,6 +28,7 @@ import { StorageAnalytics } from '@/components/storage-analytics';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getPageHits } from './actions';
 import { SectionLoader } from '@/components/section-loader';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 function StatCard({ title, value, icon: Icon, isLoading }: { title: string, value: number, icon: React.ComponentType<{className?: string}>, isLoading: boolean }) {
     return (
@@ -78,7 +79,7 @@ export default function AnalyticsPage() {
     useEffect(() => {
         setHitsLoading(true);
         getPageHits().then(result => {
-            if (!('error' in result)) {
+            if (result && !('error' in result)) {
                 setPageHits(result as { id: string, hits: number }[]);
             }
             setHitsLoading(false);
@@ -337,22 +338,25 @@ export default function AnalyticsPage() {
                                         </CardHeader>
                                         <CardContent>
                                             {isClient ? (
-                                            <Table>
-                                                <TableHeader>
-                                                    <TableRow>
-                                                        <TableHead className="font-bold text-primary">Campaign</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary">Amount Collected</TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {topCampaigns.map(campaign => (
-                                                        <TableRow key={campaign.name}>
-                                                            <TableCell className="font-medium text-foreground">{campaign.name}</TableCell>
-                                                            <TableCell className="text-right font-mono text-primary font-bold">₹{campaign.collected.toLocaleString('en-IN')}</TableCell>
+                                            <ScrollArea className="w-full">
+                                                <Table>
+                                                    <TableHeader>
+                                                        <TableRow>
+                                                            <TableHead className="font-bold text-primary">Campaign</TableHead>
+                                                            <TableHead className="text-right font-bold text-primary">Amount Collected</TableHead>
                                                         </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                            </Table>
+                                                    </TableHeader>
+                                                    <TableBody>
+                                                        {topCampaigns.map(campaign => (
+                                                            <TableRow key={campaign.name}>
+                                                                <TableCell className="font-medium text-foreground">{campaign.name}</TableCell>
+                                                                <TableCell className="text-right font-mono text-primary font-bold">₹{campaign.collected.toLocaleString('en-IN')}</TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
+                                                </Table>
+                                                <ScrollBar orientation="horizontal" />
+                                            </ScrollArea>
                                             ) : <Skeleton className="h-[300px] w-full" />}
                                         </CardContent>
                                     </Card>
@@ -363,22 +367,25 @@ export default function AnalyticsPage() {
                                         </CardHeader>
                                         <CardContent>
                                             {hitsLoading ? <Skeleton className="h-40 w-full"/> : (
-                                                <Table>
-                                                    <TableHeader>
-                                                        <TableRow>
-                                                            <TableHead className="font-bold text-primary">Page</TableHead>
-                                                            <TableHead className="text-right font-bold text-primary">Hits</TableHead>
-                                                        </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {pageHits?.sort((a, b) => b.hits - a.hits).map(hit => (
-                                                            <TableRow key={hit.id}>
-                                                                <TableCell className="font-medium capitalize text-foreground">{hit.id.replace(/_/g, ' ')}</TableCell>
-                                                                <TableCell className="text-right font-mono text-primary font-bold">{hit.hits.toLocaleString()}</TableCell>
+                                                <ScrollArea className="w-full">
+                                                    <Table>
+                                                        <TableHeader>
+                                                            <TableRow>
+                                                                <TableHead className="font-bold text-primary">Page</TableHead>
+                                                                <TableHead className="text-right font-bold text-primary">Hits</TableHead>
                                                             </TableRow>
-                                                        ))}
-                                                    </TableBody>
-                                                </Table>
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                            {pageHits?.sort((a, b) => b.hits - a.hits).map(hit => (
+                                                                <TableRow key={hit.id}>
+                                                                    <TableCell className="font-medium capitalize text-foreground">{hit.id.replace(/_/g, ' ')}</TableCell>
+                                                                    <TableCell className="text-right font-mono text-primary font-bold">{hit.hits.toLocaleString()}</TableCell>
+                                                                </TableRow>
+                                                            ))}
+                                                        </TableBody>
+                                                    </Table>
+                                                    <ScrollBar orientation="horizontal" />
+                                                </ScrollArea>
                                             )}
                                         </CardContent>
                                     </Card>
@@ -504,7 +511,7 @@ export default function AnalyticsPage() {
                                         ) : (
                                         <Skeleton className="h-[350px] w-full" />
                                         )}
-                                    </CardHeader>
+                                    </CardContent>
                                 </Card>
                                 <div className="grid gap-6 lg:grid-cols-2 animate-fade-in-up" style={{ animationDelay: '200ms'}}>
                                     <Card>

@@ -44,6 +44,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn, getNestedValue } from '@/lib/utils';
 import { usePageHit } from '@/hooks/use-page-hit';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 type SortKey = keyof UserProfile | 'srNo';
 
@@ -211,8 +212,8 @@ export default function UsersPage() {
     if (sortConfig !== null) {
         sortableItems.sort((a, b) => {
             if (sortConfig.key === 'srNo') return 0;
-            const aValue = a[sortConfig.key as keyof UserProfile] ?? '';
-            const bValue = b[sortConfig.key as keyof UserProfile] ?? '';
+            const aValue = (a[sortConfig.key as keyof UserProfile] ?? '').toString().toLowerCase();
+            const bValue = (b[sortConfig.key as keyof UserProfile] ?? '').toString().toLowerCase();
             
             if (aValue < bValue) {
                 return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -334,100 +335,103 @@ export default function UsersPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="w-full overflow-x-auto">
-              <Table>
-                  <TableHeader className="bg-[hsl(var(--table-header-bg))]">
-                      <TableRow>
-                          <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">#</SortableHeader>
-                          <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>
-                          <SortableHeader sortKey="email" sortConfig={sortConfig} handleSort={handleSort}>Email</SortableHeader>
-                          <SortableHeader sortKey="phone" sortConfig={sortConfig} handleSort={handleSort}>Phone</SortableHeader>
-                          <SortableHeader sortKey="loginId" sortConfig={sortConfig} handleSort={handleSort}>Login ID</SortableHeader>
-                          <SortableHeader sortKey="userKey" sortConfig={sortConfig} handleSort={handleSort}>User Key</SortableHeader>
-                          <SortableHeader sortKey="role" sortConfig={sortConfig} handleSort={handleSort}>Role</SortableHeader>
-                          <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
-                            {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right font-semibold text-[hsl(var(--table-header-fg))]">Actions</TableHead>}
-                      </TableRow>
-                  </TableHeader>
-                  <TableBody className="font-normal text-primary">
-                      {areUsersLoading ? (
-                          [...Array(5)].map((_, i) => (
-                              <TableRow key={`skeleton-${i}`}>
-                                  <TableCell><Skeleton className="h-5 w-5" /></TableCell>
-                                  <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                                  <TableCell><Skeleton className="h-5 w-40" /></TableCell>
-                                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                                  <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                                  <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                                  {(canUpdate || canDelete) && <TableCell><Skeleton className="h-5 w-10 ml-auto" /></TableCell>}
+          <ScrollArea className="w-full">
+              <div className="min-w-[1000px]">
+                  <Table>
+                      <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                          <TableRow>
+                              <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">#</SortableHeader>
+                              <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>
+                              <SortableHeader sortKey="email" sortConfig={sortConfig} handleSort={handleSort}>Email</SortableHeader>
+                              <SortableHeader sortKey="phone" sortConfig={sortConfig} handleSort={handleSort}>Phone</SortableHeader>
+                              <SortableHeader sortKey="loginId" sortConfig={sortConfig} handleSort={handleSort}>Login ID</SortableHeader>
+                              <SortableHeader sortKey="userKey" sortConfig={sortConfig} handleSort={handleSort}>User Key</SortableHeader>
+                              <SortableHeader sortKey="role" sortConfig={sortConfig} handleSort={handleSort}>Role</SortableHeader>
+                              <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Status</SortableHeader>
+                                {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right font-semibold text-[hsl(var(--table-header-fg))]">Actions</TableHead>}
+                          </TableRow>
+                      </TableHeader>
+                      <TableBody className="font-normal text-primary">
+                          {areUsersLoading ? (
+                              [...Array(5)].map((_, i) => (
+                                  <TableRow key={`skeleton-${i}`}>
+                                      <TableCell><Skeleton className="h-5 w-5" /></TableCell>
+                                      <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                      <TableCell><Skeleton className="h-5 w-40" /></TableCell>
+                                      <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                                      <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                                      <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                                      <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                                      <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                                      {(canUpdate || canDelete) && <TableCell><Skeleton className="h-5 w-10 ml-auto" /></TableCell>}
+                                  </TableRow>
+                              ))
+                          ) : paginatedUsers.length > 0 ? (
+                              paginatedUsers.map((user, index) => (
+                              <TableRow key={user.id} onClick={() => handleEdit(user)} className="cursor-pointer bg-white border-b border-primary/10 hover:bg-[hsl(var(--table-row-hover))] transition-colors group">
+                                  <TableCell className="pl-4 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
+                                  <TableCell className="font-bold text-sm text-primary">{user.name}</TableCell>
+                                  <TableCell className="text-xs font-normal">{user.email}</TableCell>
+                                  <TableCell className="font-mono text-xs font-normal">{user.phone}</TableCell>
+                                  <TableCell className="text-xs font-normal">{user.loginId}</TableCell>
+                                  <TableCell className="font-mono text-xs opacity-60 font-normal">{user.userKey}</TableCell>
+                                  <TableCell>
+                                  <Badge variant={user.role === 'Admin' ? 'destructive' : 'secondary'} className="text-[10px] font-bold uppercase">{user.role}</Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                  <Badge variant={user.status === 'Active' ? 'active' : 'outline'} className="text-[10px] font-bold uppercase">{user.status}</Badge>
+                                  </TableCell>
+                                  {(canUpdate || canDelete) && (
+                                  <TableCell className="text-right pr-4">
+                                      <DropdownMenu>
+                                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
+                                                  <MoreHorizontal className="h-4 w-4" />
+                                              </Button>
+                                          </DropdownMenuTrigger>
+                                          <DropdownMenuContent align="end" className="rounded-[12px] border-border shadow-dropdown">
+                                              {canUpdate && (
+                                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(user)}} className="text-primary font-normal">
+                                                      <Edit className="mr-2 h-4 w-4" />
+                                                      View / Edit
+                                                  </DropdownMenuItem>
+                                              )}
+                                              {canUpdate && canDelete && <DropdownMenuSeparator />}
+                                              {canUpdate && user.status === 'Active' ? (
+                                                  <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="font-normal">
+                                                      <UserX className="mr-2 h-4 w-4" />
+                                                      Deactivate
+                                                  </DropdownMenuItem>
+                                              ) : canUpdate ? (
+                                                  <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} className="font-normal">
+                                                      <UserCheck className="mr-2 h-4 w-4" />
+                                                      Activate
+                                                  </DropdownMenuItem>
+                                              ) : null}
+                                              {canDelete && (
+                                                  <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleDeleteClick(user.id)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal">
+                                                      <Trash2 className="mr-2 h-4 w-4" />
+                                                      Delete
+                                                  </DropdownMenuItem>
+                                              )}
+                                          </DropdownMenuContent>
+                                      </DropdownMenu>
+                                  </TableCell>
+                                  )}
                               </TableRow>
                           ))
-                      ) : paginatedUsers.length > 0 ? (
-                          paginatedUsers.map((user, index) => (
-                          <TableRow key={user.id} onClick={() => handleEdit(user)} className="cursor-pointer bg-white border-b border-primary/10 hover:bg-[hsl(var(--table-row-hover))] transition-colors group">
-                              <TableCell className="pl-4 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
-                              <TableCell className="font-bold text-sm text-primary">{user.name}</TableCell>
-                              <TableCell className="text-xs font-normal">{user.email}</TableCell>
-                              <TableCell className="font-mono text-xs font-normal">{user.phone}</TableCell>
-                              <TableCell className="text-xs font-normal">{user.loginId}</TableCell>
-                              <TableCell className="font-mono text-xs opacity-60 font-normal">{user.userKey}</TableCell>
-                              <TableCell>
-                              <Badge variant={user.role === 'Admin' ? 'destructive' : 'secondary'} className="text-[10px] font-bold uppercase">{user.role}</Badge>
+                          ) : (
+                          <TableRow>
+                              <TableCell colSpan={canUpdate || canDelete ? 9 : 8} className="text-center h-24 text-muted-foreground font-normal italic">
+                                  No Users Found Matching Your Criteria.
                               </TableCell>
-                              <TableCell>
-                              <Badge variant={user.status === 'Active' ? 'active' : 'outline'} className="text-[10px] font-bold uppercase">{user.status}</Badge>
-                              </TableCell>
-                              {(canUpdate || canDelete) && (
-                              <TableCell className="text-right">
-                                  <DropdownMenu>
-                                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                          <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
-                                              <MoreHorizontal className="h-4 w-4" />
-                                          </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent align="end">
-                                          {canUpdate && (
-                                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(user)}} className="text-primary font-normal">
-                                                  <Edit className="mr-2 h-4 w-4" />
-                                                  View / Edit
-                                              </DropdownMenuItem>
-                                          )}
-                                          {canUpdate && canDelete && <DropdownMenuSeparator />}
-                                          {canUpdate && user.status === 'Active' ? (
-                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="font-normal">
-                                                  <UserX className="mr-2 h-4 w-4" />
-                                                  Deactivate
-                                              </DropdownMenuItem>
-                                          ) : canUpdate ? (
-                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} className="font-normal">
-                                                  <UserCheck className="mr-2 h-4 w-4" />
-                                                  Activate
-                                              </DropdownMenuItem>
-                                          ) : null}
-                                          {canDelete && (
-                                              <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleDeleteClick(user.id)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal">
-                                                  <Trash2 className="mr-2 h-4 w-4" />
-                                                  Delete
-                                              </DropdownMenuItem>
-                                          )}
-                                      </DropdownMenuContent>
-                                  </DropdownMenu>
-                              </TableCell>
-                              )}
                           </TableRow>
-                      ))
-                      ) : (
-                      <TableRow>
-                          <TableCell colSpan={canUpdate || canDelete ? 9 : 8} className="text-center h-24 text-muted-foreground font-normal italic">
-                              No Users Found Matching Your Criteria.
-                          </TableCell>
-                      </TableRow>
-                      )}
-                  </TableBody>
-              </Table>
-          </div>
+                          )}
+                      </TableBody>
+                  </Table>
+              </div>
+              <ScrollBar orientation="horizontal" />
+          </ScrollArea>
         </CardContent>
         {totalPages > 1 && (
             <CardFooter className="flex items-center justify-between border-t bg-primary/5 p-4">
@@ -444,7 +448,7 @@ export default function UsersPage() {
       </Card>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-[16px] border-border shadow-dropdown">
             <AlertDialogHeader>
                 <AlertDialogTitle className="font-bold text-destructive">Are You Absolutely Sure?</AlertDialogTitle>
                 <AlertDialogDescription className="font-normal text-primary/70">
@@ -452,10 +456,10 @@ export default function UsersPage() {
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-                <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
+                <AlertDialogCancel className="font-bold border-border">Cancel</AlertDialogCancel>
                 <AlertDialogAction 
                     onClick={handleDeleteConfirm} 
-                    className="bg-destructive hover:bg-destructive/90 text-white font-bold shadow-lg transition-transform active:scale-95">
+                    className="bg-destructive hover:bg-destructive/90 text-white font-bold shadow-lg transition-transform active:scale-95 rounded-[12px]">
                         Confirm Deletion
                 </AlertDialogAction>
             </AlertDialogFooter>

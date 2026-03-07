@@ -21,6 +21,7 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface LinkedInitiative {
     id: string;
@@ -292,20 +293,20 @@ export default function BeneficiaryDetailsPage() {
                         <ScrollArea className="w-full">
                             <div className="min-w-[1000px]">
                                 <Table>
-                                    <TableHeader className="bg-[#ECFDF5]">
+                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                         <TableRow>
-                                            <TableHead className="pl-6 font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Initiative Name</TableHead>
-                                            <TableHead className="font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Purpose / Type</TableHead>
-                                            <TableHead className="font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Category</TableHead>
-                                            <TableHead className="text-center font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Verification</TableHead>
-                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Added Date</TableHead>
-                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Allocation (₹)</TableHead>
-                                            <TableHead className="text-right pr-6 font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Actions</TableHead>
+                                            <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Initiative Name</TableHead>
+                                            <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Purpose / Type</TableHead>
+                                            <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Category</TableHead>
+                                            <TableHead className="text-center font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Verification</TableHead>
+                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Added Date</TableHead>
+                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Allocation (₹)</TableHead>
+                                            <TableHead className="text-right pr-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {linkedInitiatives.map((link) => (
-                                            <TableRow key={`${link.type}_${link.id}`} className="hover:bg-[#F0FDF4] transition-colors border-b border-primary/5 bg-white">
+                                            <TableRow key={`${link.type}_${link.id}`} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
                                                 <TableCell className="pl-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className="p-2 rounded-lg bg-primary/10 text-primary">
@@ -417,21 +418,21 @@ export default function BeneficiaryDetailsPage() {
                         <ScrollArea className="w-full">
                             <div className="min-w-[1000px]">
                                 <Table>
-                                    <TableHeader className="bg-[#ECFDF5]">
+                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                         <TableRow>
-                                            <TableHead className="pl-6 font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Initiative Source</TableHead>
-                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Requirement (₹)</TableHead>
-                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Zakat Allocation (₹)</TableHead>
-                                            <TableHead className="text-right font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Community Fund (₹)</TableHead>
-                                            <TableHead className="text-center font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Financial Status</TableHead>
-                                            <TableHead className="text-right pr-6 font-bold text-[#14532D] text-[10px] uppercase tracking-widest">Net Provision (₹)</TableHead>
+                                            <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Initiative Source</TableHead>
+                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Requirement (₹)</TableHead>
+                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Zakat Allocation (₹)</TableHead>
+                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Community Fund (₹)</TableHead>
+                                            <TableHead className="text-center font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Financial Status</TableHead>
+                                            <TableHead className="text-right pr-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Net Provision (₹)</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {linkedInitiatives.map((link) => {
                                             const communityFund = link.kitAmount - link.zakatAllocation;
                                             return (
-                                                <TableRow key={`fin_${link.type}_${link.id}`} className="hover:bg-[#F0FDF4] transition-colors border-b border-primary/5 bg-white">
+                                                <TableRow key={`fin_${link.type}_${link.id}`} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
                                                     <TableCell className="pl-6 py-4">
                                                         <div className="flex items-center gap-2">
                                                             <div className="p-1.5 rounded-md bg-primary/5 text-primary">
@@ -472,7 +473,7 @@ export default function BeneficiaryDetailsPage() {
                                             <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground italic font-normal">No Financial Records Available.</TableCell></TableRow>
                                         )}
                                     </TableBody>
-                                    <tfoot className="bg-primary/5 border-t">
+                                    <TableFooter className="bg-primary/5 border-t">
                                         <TableRow>
                                             <TableCell className="pl-6 py-4 font-bold text-primary text-xs uppercase tracking-widest">Aggregate Totals</TableCell>
                                             <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{financialSummary.requested.toLocaleString('en-IN')}</TableCell>
@@ -482,7 +483,7 @@ export default function BeneficiaryDetailsPage() {
                                                 Net Assistance: ₹{financialSummary.requested.toLocaleString('en-IN')}
                                             </TableCell>
                                         </TableRow>
-                                    </tfoot>
+                                    </TableFooter>
                                 </Table>
                             </div>
                             <ScrollBar orientation="horizontal" />
@@ -539,28 +540,4 @@ export default function BeneficiaryDetailsPage() {
       </Tabs>
     </main>
   );
-}
-
-function Table({ children }: { children: React.ReactNode }) {
-    return <table className="w-full text-sm text-left">{children}</table>;
-}
-
-function TableHeader({ children, className }: { children: React.ReactNode, className?: string }) {
-    return <thead className={cn("border-b", className)}>{children}</thead>;
-}
-
-function TableBody({ children }: { children: React.ReactNode }) {
-    return <tbody>{children}</tbody>;
-}
-
-function TableRow({ children, className, onClick, "data-state": dataState }: any) {
-    return <tr className={cn("border-b last:border-0", className)} onClick={onClick} data-state={dataState}>{children}</tr>;
-}
-
-function TableHead({ children, className }: { children: React.ReactNode, className?: string }) {
-    return <th className={cn("px-4 py-3 align-middle", className)}>{children}</th>;
-}
-
-function TableCell({ children, className }: { children: React.ReactNode, className?: string }) {
-    return <td className={cn("px-4 py-3 align-middle", className)}>{children}</td>;
 }
