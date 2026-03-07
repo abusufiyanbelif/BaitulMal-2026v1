@@ -141,7 +141,6 @@ export default function BeneficiariesPage() {
                         <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
                         <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
                         <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
-                        <SelectItem value="Given" className="font-normal">Given</SelectItem>
                         <SelectItem value="Hold" className="font-normal">Hold</SelectItem>
                         <SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem>
                     </SelectContent>
@@ -186,7 +185,7 @@ export default function BeneficiariesPage() {
                     <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
                     <div className="font-bold text-sm truncate pr-2 text-[#14532D]">{b.name}</div>
                     <div className="font-mono text-xs opacity-60 text-[#355E3B]">{b.phone || 'N/A'}</div>
-                    <div className="text-center"><Badge variant={b.status === 'Given' ? 'given' : 'outline'} className="text-[10px] font-bold uppercase">{b.status}</Badge></div>
+                    <div className="text-center"><Badge variant="outline" className="text-[10px] font-bold uppercase">{b.status}</Badge></div>
                     <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
                     <div className="pl-4 text-xs font-normal text-[#355E3B]/70">{b.referralBy || 'N/A'}</div>
                     <div className="text-right">
@@ -202,8 +201,7 @@ export default function BeneficiariesPage() {
                                             <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
                                             <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Given" className="text-xs font-normal">Given</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</SelectItem>
                                             <DropdownMenuRadioItem value="Need More Details" className="text-xs font-normal">Need Details</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent></DropdownMenuPortal>

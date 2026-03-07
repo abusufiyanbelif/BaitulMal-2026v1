@@ -17,7 +17,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { Beneficiary, ItemCategory, RationItem } from '@/lib/types';
-import { Loader2, Edit, Trash2, FileIcon, Replace, ScanLine, AlertCircle } from 'lucide-react';
+import { Loader2, Edit, Trash2, FileIcon, Replace, ScanLine } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -101,6 +101,9 @@ export function BeneficiaryForm({
     const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'beneficiary_config') : null, [firestore]);
     const { data: configSettings } = useDoc<any>(configRef);
     const mandatoryFields = useMemo(() => configSettings?.mandatoryFields || {}, [configSettings]);
+
+    // Check if this form is being used for a Master record (hideKitAmount is a good proxy)
+    const isMasterForm = hideKitAmount;
 
     const kitAmountLabel = kitAmountLabelProp || 'Required Amount (₹)';
 
@@ -422,7 +425,22 @@ export function BeneficiaryForm({
                                 )}
                             />
                         )}
-                        <FormField control={control} name="status" render={({ field }) => (<FormItem>{renderLabel('Status', 'status')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={formIsDisabled}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Pending" className="font-normal">Pending</SelectItem><SelectItem value="Given" className="font-normal">Given</SelectItem><SelectItem value="Verified" className="font-normal">Verified</SelectItem><SelectItem value="Hold" className="font-normal">Hold</SelectItem><SelectItem value="Need More Details" className="font-normal">Need More Details</SelectItem></SelectContent></Select><FormMessage/></FormItem>)}/>
+                        <FormField control={control} name="status" render={({ field }) => (
+                            <FormItem>
+                                {renderLabel('Status', 'status')}
+                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={formIsDisabled}>
+                                    <FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl>
+                                    <SelectContent className="rounded-[12px] shadow-dropdown border-[#E2EEE7]">
+                                        <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
+                                        {!isMasterForm && <SelectItem value="Given" className="font-normal">Given</SelectItem>}
+                                        <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
+                                        <SelectItem value="Hold" className="font-normal">Hold</SelectItem>
+                                        <SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage/>
+                            </FormItem>
+                        )}/>
                     </div>
                 </div>
                 
