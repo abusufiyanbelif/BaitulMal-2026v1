@@ -283,7 +283,7 @@ export default function BeneficiaryDetailsPage() {
                     {isLinksLoading ? ( 
                         <div className="py-20 flex flex-col items-center gap-4">
                             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                            <p className="text-xs font-bold text-primary/60 uppercase tracking-widest">Scanning databases...</p>
+                            <p className="text-xs font-bold text-primary/60 tracking-tight">Scanning databases...</p>
                         </div>
                     ) : linkedInitiatives.length > 0 ? (
                         <ScrollArea className="w-full">
@@ -314,7 +314,7 @@ export default function BeneficiaryDetailsPage() {
                                                                     {link.name}
                                                                 </Link>
                                                             </p>
-                                                            <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-tighter">{link.type} • {link.initiativeStatus}</p>
+                                                            <p className="text-[10px] font-normal text-muted-foreground tracking-tight">{link.type} • {link.initiativeStatus}</p>
                                                         </div>
                                                     </div>
                                                 </TableCell>
@@ -328,7 +328,7 @@ export default function BeneficiaryDetailsPage() {
                                                 <TableCell className="text-right"><p className="text-xs font-mono opacity-60">{link.addedDate}</p></TableCell>
                                                 <TableCell className="text-right">
                                                     <p className="font-bold font-mono text-sm text-primary">₹{link.kitAmount.toLocaleString('en-IN')}</p>
-                                                    {link.zakatAllocation > 0 && <p className="text-[9px] font-bold text-primary/60 uppercase tracking-tighter">Zakat: ₹{link.zakatAllocation.toLocaleString('en-IN')}</p>}
+                                                    {link.zakatAllocation > 0 && <p className="text-[9px] font-bold text-primary/60 tracking-tight">Zakat: ₹{link.zakatAllocation.toLocaleString('en-IN')}</p>}
                                                 </TableCell>
                                                 <TableCell className="text-right pr-6">
                                                     <DropdownMenu>
@@ -376,7 +376,7 @@ export default function BeneficiaryDetailsPage() {
             <div className="grid gap-6 md:grid-cols-3">
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
                     <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Total Assistance Value</CardTitle>
+                        <CardTitle className="text-[10px] font-bold tracking-tight text-primary">Total Assistance Value</CardTitle>
                         <Target className="h-4 w-4 text-primary opacity-40" />
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
@@ -386,7 +386,7 @@ export default function BeneficiaryDetailsPage() {
                 </Card>
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
                     <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Verified (Secured)</CardTitle>
+                        <CardTitle className="text-[10px] font-bold tracking-tight text-primary">Verified (Secured)</CardTitle>
                         <CheckCircle2 className="h-4 w-4 text-primary opacity-40" />
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
@@ -396,7 +396,7 @@ export default function BeneficiaryDetailsPage() {
                 </Card>
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
                     <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Disbursed (Given)</CardTitle>
+                        <CardTitle className="text-[10px] font-bold tracking-tight text-primary">Disbursed (Given)</CardTitle>
                         <HeartHandshake className="h-4 w-4 text-primary opacity-40" />
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
@@ -440,11 +440,11 @@ export default function BeneficiaryDetailsPage() {
                                                     <TableCell className="text-right font-mono text-xs opacity-60">₹{link.kitAmount.toLocaleString('en-IN')}</TableCell>
                                                     <TableCell className="text-right">
                                                         <p className="font-bold font-mono text-sm text-primary">₹{link.zakatAllocation.toLocaleString('en-IN')}</p>
-                                                        <p className="text-[8px] font-bold text-muted-foreground uppercase">Religious Reserved</p>
+                                                        <p className="text-[8px] font-bold text-muted-foreground tracking-tight">Religious Reserved</p>
                                                     </TableCell>
                                                     <TableCell className="text-right">
                                                         <p className="font-bold font-mono text-sm text-primary">₹{communityFund.toLocaleString('en-IN')}</p>
-                                                        <p className="text-[8px] font-bold text-muted-foreground uppercase">Lillah / Sadaqah</p>
+                                                        <p className="text-[8px] font-bold text-muted-foreground tracking-tight">Lillah / Sadaqah</p>
                                                     </TableCell>
                                                     <TableCell className="text-center">
                                                         <Badge 
@@ -459,7 +459,7 @@ export default function BeneficiaryDetailsPage() {
                                                             <span className={cn("font-bold font-mono text-sm text-primary")}>
                                                                 ₹{link.kitAmount.toLocaleString('en-IN')}
                                                             </span>
-                                                            <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Net Value</span>
+                                                            <span className="text-[8px] font-bold text-muted-foreground tracking-tight">Net Value</span>
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
@@ -471,11 +471,11 @@ export default function BeneficiaryDetailsPage() {
                                     </TableBody>
                                     <TableFooter className="bg-primary/5 border-t">
                                         <TableRow>
-                                            <TableCell className="pl-6 py-4 font-bold text-primary text-xs uppercase tracking-widest">Aggregate Totals</TableCell>
+                                            <TableCell className="pl-6 py-4 font-bold text-primary text-xs tracking-tight">Aggregate Totals</TableCell>
                                             <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{financialSummary.requested.toLocaleString('en-IN')}</TableCell>
                                             <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{(financialSummary.zakatDisbursed + financialSummary.zakatVerified).toLocaleString('en-IN')}</TableCell>
                                             <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{(financialSummary.requested - (financialSummary.zakatDisbursed + financialSummary.zakatVerified)).toLocaleString('en-IN')}</TableCell>
-                                            <TableCell colSpan={2} className="text-right pr-6 font-bold text-primary text-sm uppercase tracking-tighter">
+                                            <TableCell colSpan={2} className="text-right pr-6 font-bold text-primary text-sm tracking-tighter">
                                                 Net Assistance: ₹{financialSummary.requested.toLocaleString('en-IN')}
                                             </TableCell>
                                         </TableRow>
@@ -495,17 +495,17 @@ export default function BeneficiaryDetailsPage() {
                         <CardContent className="p-6 sm:p-10 space-y-8">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 p-6 rounded-2xl bg-primary/[0.02] border border-primary/10">
                                 <div className="space-y-2">
-                                    <h4 className="text-xs font-bold text-primary uppercase tracking-widest">Religious Compliance Tracking</h4>
+                                    <h4 className="text-xs font-bold text-primary tracking-tight">Religious Compliance Tracking</h4>
                                     <div className="flex flex-wrap gap-4 items-center">
                                         <div className="space-y-0.5">
-                                            <p className="text-[9px] font-bold text-muted-foreground uppercase">Zakat Eligible</p>
+                                            <p className="text-[9px] font-bold text-muted-foreground tracking-tight">Zakat Eligible</p>
                                             <Badge variant={beneficiary.isEligibleForZakat ? 'eligible' : 'outline'} className="font-bold">
                                                 {beneficiary.isEligibleForZakat ? 'Confirmed' : 'Not Eligible'}
                                             </Badge>
                                         </div>
                                         <Separator orientation="vertical" className="h-8 hidden sm:block opacity-20" />
                                         <div className="space-y-0.5">
-                                            <p className="text-[9px] font-bold text-muted-foreground uppercase">Total Zakat Provision</p>
+                                            <p className="text-[9px] font-bold text-muted-foreground tracking-tight">Total Zakat Provision</p>
                                             <p className="text-sm font-bold text-primary font-mono">₹{(financialSummary.zakatDisbursed + financialSummary.zakatVerified).toLocaleString('en-IN')}</p>
                                         </div>
                                     </div>
@@ -517,7 +517,7 @@ export default function BeneficiaryDetailsPage() {
                             </div>
 
                             <div className="space-y-4">
-                                <h4 className="text-sm font-bold text-primary uppercase tracking-widest flex items-center gap-2">
+                                <h4 className="text-sm font-bold text-primary tracking-tight flex items-center gap-2">
                                     <span className="font-normal"><Info className="h-4 w-4"/></span> Impact Summary
                                 </h4>
                                 <p className="text-sm leading-relaxed text-foreground font-normal">

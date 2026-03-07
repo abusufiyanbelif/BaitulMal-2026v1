@@ -31,10 +31,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Label } from '@/components/ui/label';
 
 /**
  * Institutional Footer - Optimized for clarity and interaction.
- * Transitions static contribution details into a secure modal hub.
+ * Provides a secure hub for contributions and contact information.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
@@ -122,7 +124,7 @@ export function AppFooter() {
 
           {/* Column 2: Navigation */}
           <div className="space-y-6 md:pl-10">
-            <h3 className="text-xs font-bold text-primary opacity-40 uppercase tracking-widest">
+            <h3 className="text-xs font-bold text-primary opacity-40 tracking-tight">
               Institutional Hub
             </h3>
             <nav className="flex flex-col gap-4">
@@ -137,9 +139,9 @@ export function AppFooter() {
             </nav>
           </div>
 
-          {/* Column 3: Secure Contributions Button-Driven */}
+          {/* Column 3: Secure Contributions */}
           <div className="flex flex-col md:items-end gap-6">
-            <h3 className="text-xs font-bold text-primary opacity-40 uppercase tracking-widest">
+            <h3 className="text-xs font-bold text-primary opacity-40 tracking-tight">
               Secure Contribution
             </h3>
             <div className="flex flex-col gap-3 w-full sm:w-auto">
@@ -163,7 +165,7 @@ export function AppFooter() {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-6 text-[10px] text-muted-foreground opacity-80 font-bold">
+        <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-6 text-[10px] text-muted-foreground font-semibold">
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
             {paymentSettings?.regNo && (
               <span className="flex items-center gap-2">
@@ -178,7 +180,7 @@ export function AppFooter() {
               </span>
             )}
           </div>
-          <p className="text-center sm:text-right font-normal">
+          <p className="text-center sm:text-right font-normal text-muted-foreground">
             {paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}. All Rights Reserved.`}
           </p>
         </div>
@@ -201,7 +203,7 @@ export function AppFooter() {
                 <div className="space-y-6">
                     <div className="flex items-center gap-2 text-primary font-bold">
                         <QrCode className="h-5 w-5" />
-                        <h3 className="text-lg">Scan & Pay via Upi</h3>
+                        <h3 className="text-lg">Scan & Pay Via Upi</h3>
                     </div>
                     <div className="flex flex-col md:flex-row items-center gap-8 p-6 rounded-2xl border border-primary/10 bg-primary/[0.02]">
                         <div className="relative w-48 h-48 bg-white p-3 rounded-2xl border-4 border-primary shadow-xl">
@@ -221,7 +223,7 @@ export function AppFooter() {
                         </div>
                         <div className="flex-1 space-y-4 text-center md:text-left w-full">
                             <div className="space-y-1">
-                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Upi Identifier</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Upi Identifier</Label>
                                 <div className="flex items-center justify-center md:justify-start gap-2">
                                     <p className="font-mono text-xl font-bold text-primary tracking-tighter">
                                         {paymentSettings?.upiId || 'Not Set'}
@@ -251,15 +253,15 @@ export function AppFooter() {
                     <div className="grid grid-cols-1 gap-4 p-6 rounded-2xl border border-primary/10 bg-primary/[0.02]">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div className="space-y-1">
-                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Account Name</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Account Name</Label>
                                 <p className="text-sm font-bold text-primary">{paymentSettings?.bankAccountName || 'N/A'}</p>
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Bank Name</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Bank Name</Label>
                                 <p className="text-sm font-bold text-primary">{paymentSettings?.bankAccountNumber ? 'Available Upon Request' : 'N/A'}</p>
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Account Number</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Account Number</Label>
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm font-bold font-mono text-primary">{paymentSettings?.bankAccountNumber || 'N/A'}</p>
                                     {paymentSettings?.bankAccountNumber && (
@@ -270,9 +272,9 @@ export function AppFooter() {
                                 </div>
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Ifsc Code</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Ifsc Code</Label>
                                 <div className="flex items-center gap-2">
-                                    <p className="text-sm font-bold font-mono text-primary uppercase">{paymentSettings?.bankIfsc || 'N/A'}</p>
+                                    <p className="text-sm font-bold font-mono text-primary">{paymentSettings?.bankIfsc || 'N/A'}</p>
                                     {paymentSettings?.bankIfsc && (
                                         <Button variant="ghost" size="icon" className="h-6 w-6 text-primary/40 hover:text-primary" onClick={() => handleCopy(paymentSettings.bankIfsc!, 'Ifsc Code')}>
                                             <Copy className="h-3 w-3" />

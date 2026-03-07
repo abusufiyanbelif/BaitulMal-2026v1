@@ -64,7 +64,7 @@ export function RecentVerificationTicker({ items }: { items: VerificationItem[] 
       <CardContent className="p-0">
         <div className="flex flex-col">
             {/* Standardized Institutional Header */}
-            <div className="grid grid-cols-[1.5fr_1fr_auto] gap-4 px-6 py-3 bg-[hsl(var(--table-header-bg))] border-b text-[10px] font-bold text-[hsl(var(--table-header-fg))] tracking-widest">
+            <div className="grid grid-cols-[1.5fr_1fr_auto] gap-4 px-6 py-3 bg-[hsl(var(--table-header-bg))] border-b text-[10px] font-bold text-[hsl(var(--table-header-fg))] tracking-tight">
                 <span>Reference Information</span>
                 <span>Allocation Target</span>
                 <span className="text-right pr-2">Status</span>

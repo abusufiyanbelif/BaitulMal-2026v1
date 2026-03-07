@@ -81,7 +81,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay }: 
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md hover:-translate-y-1", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
@@ -413,7 +413,7 @@ export default function BeneficiariesPage() {
 
       <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
         <ScrollArea className="w-full">
-            <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-semibold tracking-wider text-[hsl(var(--table-header-fg))]", gridClass)}>
+            <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-semibold tracking-tight text-[hsl(var(--table-header-fg))]", gridClass)}>
                 <div className="flex justify-center">
                     <Checkbox 
                         checked={selectedIds.length > 0 && selectedIds.length === paginatedBeneficiaries.length}
@@ -426,7 +426,7 @@ export default function BeneficiariesPage() {
                 <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>
                 <SortableHeader sortKey="phone" sortConfig={sortConfig} handleSort={handleSort}>Phone</SortableHeader>
                 <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Verification Status</SortableHeader>
-                <div className="text-center font-bold uppercase tracking-widest text-[10px]">Disbursement</div>
+                <div className="text-center font-bold tracking-tight text-[10px]">Disbursement</div>
                 <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Zakat</SortableHeader>
                 <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">Referred By</SortableHeader>
                 <div className="text-right">Actions</div>
@@ -454,7 +454,7 @@ export default function BeneficiariesPage() {
                     <div className="font-bold text-sm truncate pr-2 text-primary">{b.name}</div>
                     <div className="font-mono text-xs opacity-60 text-primary">{b.phone || 'N/A'}</div>
                     <div className="text-center"><Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold">{b.status || 'Pending'}</Badge></div>
-                    <div className="text-center"><p className="text-[9px] font-bold uppercase text-muted-foreground opacity-40 tracking-tight">Initiative Specific</p></div>
+                    <div className="text-center"><p className="text-[9px] font-bold text-muted-foreground opacity-40 tracking-tight">Initiative Specific</p></div>
                     <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
                     <div className="pl-4 text-xs font-normal text-primary/70">{b.referralBy || 'N/A'}</div>
                     <div className="text-right">
@@ -497,31 +497,31 @@ export default function BeneficiariesPage() {
                 <AccordionContent className="bg-primary/[0.02] px-4 pt-0 pb-4 border-t border-primary/10">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 px-12 text-primary font-normal">
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Address</p>
+                        <p className="text-[10px] font-bold opacity-60 tracking-tight">Address</p>
                         <p className="text-xs leading-relaxed font-normal">{b.address || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Age</p>
+                        <p className="text-[10px] font-bold opacity-60 tracking-tight">Age</p>
                         <p className="text-xs font-normal">{b.age || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Occupation</p>
+                        <p className="text-[10px] font-bold opacity-60 tracking-tight">Occupation</p>
                         <p className="text-xs font-normal">{b.occupation || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Family Details</p>
+                        <p className="text-[10px] font-bold opacity-60 tracking-tight">Family Details</p>
                         <p className="text-xs font-normal">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">ID Proof</p>
+                        <p className="text-[10px] font-bold opacity-60 tracking-tight">ID Proof</p>
                         <p className="text-xs font-normal">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Date Added</p>
+                        <p className="text-[10px] font-bold opacity-60 tracking-tight">Date Added</p>
                         <p className="text-xs font-normal">{b.addedDate || 'N/A'}</p>
                     </div>
                     <div className="space-y-1 md:col-span-3">
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Notes</p>
+                        <p className="text-[10px] font-bold opacity-60 tracking-tight">Notes</p>
                         <p className="text-xs italic opacity-80 font-normal">{b.notes || (b.isEligibleForZakat ? 'Eligible For Zakat.' : 'N/A')}</p>
                     </div>
                     </div>
@@ -538,7 +538,7 @@ export default function BeneficiariesPage() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between border-t pt-4">
-          <p className="text-[10px] font-bold opacity-60 uppercase">Page {currentPage} Of {totalPages}</p>
+          <p className="text-[10px] font-bold opacity-60">Page {currentPage} Of {totalPages}</p>
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/10 h-8">Previous</Button>
             <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/10 h-8">Next</Button>

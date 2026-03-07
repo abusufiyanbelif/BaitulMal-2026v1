@@ -55,7 +55,7 @@ export function BrandedLoader({ message = "Initializing Institutional Systems...
               {message}
             </p>
             {progress !== undefined && (
-              <p className="text-[10px] font-black text-primary/60 uppercase tracking-widest animate-pulse">
+              <p className="text-[10px] font-bold text-primary/60 tracking-tight animate-pulse">
                 {Math.round(progress)}% Complete
               </p>
             )}

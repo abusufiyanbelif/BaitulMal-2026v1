@@ -57,7 +57,7 @@ function NotificationItem({ icon: Icon, title, subtitle, href, variant = 'info' 
             </div>
             <div className="flex-1 min-w-0 space-y-0.5">
                 <p className="text-xs font-medium text-primary truncate tracking-tight">{title}</p>
-                <p className="text-[9px] text-muted-foreground truncate font-medium uppercase tracking-tight opacity-80">{subtitle}</p>
+                <p className="text-[9px] text-muted-foreground truncate font-medium tracking-tight opacity-80">{subtitle}</p>
             </div>
             <ChevronRight className="h-3 w-3 text-muted-foreground/30 group-hover:text-primary transition-colors shrink-0" />
         </Link>
@@ -69,7 +69,7 @@ function SectionHeader({ title, count, icon: Icon }: { title: string, count: num
         <div className="flex items-center justify-between px-3 py-2 mt-2 first:mt-0">
             <div className="flex items-center gap-2">
                 <Icon className="h-3 w-3 text-primary/40" />
-                <span className="text-[10px] font-medium text-muted-foreground tracking-widest uppercase">{title}</span>
+                <span className="text-[10px] font-medium text-muted-foreground tracking-tight">{title}</span>
             </div>
             <Badge variant="secondary" className="h-4 px-1.5 text-[9px] font-bold rounded-full">{count}</Badge>
         </div>
@@ -148,7 +148,7 @@ export function NotificationBell() {
                     <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
                             <h3 className="text-sm font-bold text-primary tracking-tight">Institutional Backlog</h3>
-                            <p className="text-[9px] text-muted-foreground font-medium uppercase tracking-tight opacity-60">Action Required For Data Vetting</p>
+                            <p className="text-[9px] text-muted-foreground font-medium tracking-tight opacity-60">Action Required For Data Vetting</p>
                         </div>
                         {totalAlerts > 0 && <Badge className="bg-primary text-white border-none font-bold text-[9px] px-2 h-5">Action Items</Badge>}
                     </div>
@@ -182,7 +182,7 @@ export function NotificationBell() {
                                                 />
                                             ))}
                                             {unverifiedBeneficiaries.length > 5 && (
-                                                <Link href="/beneficiaries" className="block text-[9px] font-bold text-center text-primary uppercase py-2 hover:underline">Manage All Profile Vetting</Link>
+                                                <Link href="/beneficiaries" className="block text-[9px] font-bold text-center text-primary py-2 hover:underline">Manage All Profile Vetting</Link>
                                             )}
                                         </div>
                                     </div>
@@ -204,7 +204,7 @@ export function NotificationBell() {
                                                 />
                                             ))}
                                             {unverifiedDonations.length > 5 && (
-                                                <Link href="/donations" className="block text-[9px] font-bold text-center text-primary uppercase py-2 hover:underline">View All Pending Vetting</Link>
+                                                <Link href="/donations" className="block text-[9px] font-bold text-center text-primary py-2 hover:underline">View All Pending Vetting</Link>
                                             )}
                                         </div>
                                     </div>
@@ -230,7 +230,7 @@ export function NotificationBell() {
                                                 );
                                             })}
                                             {unallocatedDonations.length > 5 && (
-                                                <Link href="/donations" className="block text-[9px] font-bold text-center text-primary uppercase py-2 hover:underline">Complete Fund Allocations</Link>
+                                                <Link href="/donations" className="block text-[9px] font-bold text-center text-primary py-2 hover:underline">Complete Fund Allocations</Link>
                                             )}
                                         </div>
                                     </div>
@@ -271,8 +271,8 @@ export function NotificationBell() {
                 
                 {totalAlerts > 0 && (
                     <div className="p-3 bg-muted/20 border-t flex justify-center">
-                        <Button variant="ghost" size="sm" asChild className="h-7 text-[9px] font-bold text-primary tracking-tighter hover:bg-primary/5 uppercase">
-                            <Link href="/dashboard">
+                        <Button variant="ghost" size="sm" asChild className="h-7 text-[9px] font-bold text-primary tracking-tighter hover:bg-primary/5">
+                            <Link href="/dashboard" className="flex items-center">
                                 Return To Command Center <ChevronRight className="ml-1 h-3 w-3" />
                             </Link>
                         </Button>

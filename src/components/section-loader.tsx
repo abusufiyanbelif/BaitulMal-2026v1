@@ -29,7 +29,7 @@ export function SectionLoader({ label, description, progress }: SectionLoaderPro
           </p>
         )}
         {progress !== undefined && (
-          <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest">
+          <span className="text-[10px] font-bold text-primary/60 tracking-tight">
             {Math.round(progress)}%
           </span>
         )}
