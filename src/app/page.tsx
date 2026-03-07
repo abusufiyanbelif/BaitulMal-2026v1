@@ -14,17 +14,14 @@ import { RecentVerificationTicker } from '@/components/recent-verification-ticke
 import { usePublicData } from '@/hooks/use-public-data';
 import { useBranding } from '@/hooks/use-branding';
 import { cn } from '@/lib/utils';
-import { FolderKanban, Lightbulb, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { FolderKanban, Lightbulb, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, HandHelping, Utensils, LifeBuoy } from 'lucide-react';
 
 const getPriorityIcon = (priority?: string) => {
   switch (priority) {
-    case 'Urgent': return <AlertTriangle className="h-3.5 w-3.5 text-red-600" />;
-    case 'High': return <ArrowUpCircle className="h-3.5 w-3.5 text-orange-500" />;
-    case 'Medium': return <MinusCircle className="h-3.5 w-3.5 text-yellow-500" />;
-    case 'Low': return <ArrowDownCircle className="h-3.5 w-3.5 text-blue-500" />;
+    case 'Urgent': return <AlertTriangle className="h-5 w-5 text-red-600" />;
+    case 'High': return <ArrowUpCircle className="h-5 w-5 text-orange-500" />;
+    case 'Medium': return <MinusCircle className="h-5 w-5 text-yellow-500" />;
+    case 'Low': return <ArrowDownCircle className="h-5 w-5 text-blue-500" />;
     default: return null;
   }
 };

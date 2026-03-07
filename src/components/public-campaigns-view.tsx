@@ -24,11 +24,11 @@ import { NewsTicker } from './news-ticker';
 const getPriorityIcon = (priority?: string) => {
   const p = priority || 'Medium';
   switch (p) {
-    case 'Urgent': return <AlertTriangle className="h-3 w-3 text-red-600" />;
-    case 'High': return <ArrowUpCircle className="h-3 w-3 text-orange-500" />;
-    case 'Medium': return <MinusCircle className="h-3 w-3 text-yellow-500" />;
-    case 'Low': return <ArrowDownCircle className="h-3 w-3 text-blue-500" />;
-    default: return <MinusCircle className="h-3 w-3 text-yellow-500" />;
+    case 'Urgent': return <AlertTriangle className="h-4 w-4 text-red-600" />;
+    case 'High': return <ArrowUpCircle className="h-4 w-4 text-orange-500" />;
+    case 'Medium': return <MinusCircle className="h-4 w-4 text-yellow-500" />;
+    case 'Low': return <ArrowDownCircle className="h-4 w-4 text-blue-500" />;
+    default: return <MinusCircle className="h-4 w-4 text-yellow-500" />;
   }
 };
 
@@ -43,7 +43,10 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                 return (
                     <Card 
                         key={campaign.id} 
-                        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white shadow-sm" 
+                        className={cn(
+                            "flex flex-col hover:shadow-xl transition-all duration-500 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white shadow-sm",
+                            priorityLabel === 'Urgent' && "ring-2 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] border-red-500/50"
+                        )}
                         style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
                         onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}
                     >
@@ -211,7 +214,7 @@ export function PublicCampaignsView() {
               <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem></SelectContent></Select>
               <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="All Categories" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Categories</SelectItem><SelectItem value="Ration" className="font-bold">Ration</SelectItem><SelectItem value="Relief" className="font-bold">Relief</SelectItem><SelectItem value="General" className="font-bold">General</SelectItem></SelectContent></Select>
               <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
-                  <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select>
+                  <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs text-primary font-bold"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select>
                   <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                   {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
               </div>

@@ -58,11 +58,11 @@ import { SectionLoader } from '@/components/section-loader';
 const getPriorityIcon = (priority?: string) => {
   const p = priority || 'Medium';
   switch (p) {
-    case 'Urgent': return <AlertTriangle className="h-3 w-3 text-red-600" />;
-    case 'High': return <ArrowUpCircle className="h-3 w-3 text-orange-500" />;
-    case 'Medium': return <MinusCircle className="h-3 w-3 text-yellow-500" />;
-    case 'Low': return <ArrowDownCircle className="h-3 w-3 text-blue-500" />;
-    default: return <MinusCircle className="h-3 w-3 text-yellow-500" />;
+    case 'Urgent': return <AlertTriangle className="h-4 w-4 text-red-600" />;
+    case 'High': return <ArrowUpCircle className="h-4 w-4 text-orange-500" />;
+    case 'Medium': return <MinusCircle className="h-4 w-4 text-yellow-500" />;
+    case 'Low': return <ArrowDownCircle className="h-4 w-4 text-blue-500" />;
+    default: return <MinusCircle className="h-4 w-4 text-yellow-500" />;
   }
 };
 
@@ -84,7 +84,10 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
 
     return (
         <Card 
-            className="flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white shadow-sm animate-fade-in-up" 
+            className={cn(
+                "flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white shadow-sm animate-fade-in-up transition-all duration-500",
+                priorityLabel === 'Urgent' && "ring-2 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] border-red-500/50"
+            )}
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
             onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}
         >
@@ -141,7 +144,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                                                 <DropdownMenuRadioItem value="Verified" className="font-normal">Verified</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="On Hold" className="font-normal">On Hold</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Rejected" className="text-destructive font-normal">Rejected</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details" className="font-normal">Need More Details</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Need More Details" className="font-normal">Need Details</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
@@ -280,6 +283,18 @@ export default function CampaignPage() {
       });
 
     return [...activeCampaigns, ...activeLeads];
+  }, [campaignsWithProgress, leadsWithProgress]);
+
+  const completedTickerItems = useMemo(() => {
+    const completedCampaigns = (campaignsWithProgress || [])
+      .filter(c => c.status === 'Completed')
+      .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-public/${c.id}/summary` }));
+    
+    const completedLeads = (leadsWithProgress || [])
+      .filter(l => l.status === 'Completed')
+      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
+
+    return [...completedCampaigns, ...completedLeads];
   }, [campaignsWithProgress, leadsWithProgress]);
 
   const availableYears = useMemo(() => {

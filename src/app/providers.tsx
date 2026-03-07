@@ -46,7 +46,8 @@ export function Providers({ children }: { children: ReactNode }) {
       <ThemeProvider 
         attribute="class" 
         defaultTheme="bms3-a" 
-        enableSystem={true}
+        enableSystem={false}
+        storageKey="institutional-theme"
         themes={allThemes}
       >
         <div className="relative min-h-screen w-full overflow-x-hidden flex flex-col">

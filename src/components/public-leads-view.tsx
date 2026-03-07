@@ -24,11 +24,11 @@ import { NewsTicker } from './news-ticker';
 const getPriorityIcon = (priority?: string) => {
   const p = priority || 'Medium';
   switch (p) {
-    case 'Urgent': return <AlertTriangle className="h-3 w-3 text-red-600" />;
-    case 'High': return <ArrowUpCircle className="h-3 w-3 text-orange-500" />;
-    case 'Medium': return <MinusCircle className="h-3 w-3 text-yellow-500" />;
-    case 'Low': return <ArrowDownCircle className="h-3 w-3 text-blue-500" />;
-    default: return <MinusCircle className="h-3 w-3 text-yellow-500" />;
+    case 'Urgent': return <AlertTriangle className="h-4 w-4 text-red-600" />;
+    case 'High': return <ArrowUpCircle className="h-4 w-4 text-orange-500" />;
+    case 'Medium': return <MinusCircle className="h-4 w-4 text-yellow-500" />;
+    case 'Low': return <ArrowDownCircle className="h-4 w-4 text-blue-500" />;
+    default: return <MinusCircle className="h-4 w-4 text-yellow-500" />;
   }
 };
 
@@ -46,7 +46,10 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                 return (
                     <Card 
                         key={lead.id} 
-                        className="flex flex-col hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white shadow-sm" 
+                        className={cn(
+                            "flex flex-col hover:shadow-xl transition-all duration-500 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white shadow-sm",
+                            priorityLabel === 'Urgent' && "ring-2 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] border-red-500/50"
+                        )}
                         style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
                         onClick={() => router.push(`/leads-public/${lead.id}/summary`)}
                     >
