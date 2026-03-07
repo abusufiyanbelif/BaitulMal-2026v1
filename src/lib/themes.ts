@@ -6,7 +6,7 @@ export interface ThemeSuggestion {
 
 /**
  * Official organizational theme identifiers.
- * These IDs must match the CSS classes defined in globals.css.
+ * These IDs must match the [data-theme] attributes in globals.css.
  */
 export const THEME_SUGGESTIONS: ThemeSuggestion[] = [
   { id: 'bms3-a', name: 'BMS3 A (Modern Green)', isDark: false },
@@ -18,7 +18,7 @@ export const THEME_SUGGESTIONS: ThemeSuggestion[] = [
   { id: 'sunset-orange', name: 'Sunset (Energy)', isDark: false },
   { id: 'lavender-mint', name: 'Peaceful Lavender', isDark: false },
   { id: 'light', name: 'Classic Light', isDark: false },
-  { id: 'dark', name: 'Midnight (Dark)', isDark: true },
+  { id: 'midnight-dark', name: 'Midnight (Dark)', isDark: true },
   { id: 'midnight-ramadan', name: 'Midnight Ramadan (Gold)', isDark: true },
   { id: 'midnight-emerald', name: 'Midnight Emerald', isDark: true },
 ];

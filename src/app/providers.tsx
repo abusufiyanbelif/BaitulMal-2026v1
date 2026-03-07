@@ -9,12 +9,33 @@ import { Toaster } from '@/components/ui/toaster';
 import { DocuExtractHeader } from '@/components/docu-extract-header';
 import { Watermark } from '@/components/watermark';
 import { cn } from '@/lib/utils';
-import { ThemeProvider } from 'next-themes';
+import { ThemeProvider, useTheme } from 'next-themes';
 import { THEME_SUGGESTIONS } from '@/lib/themes';
 
 /**
+ * Internal component to synchronize the 'dark' class with the selected data-theme.
+ * This ensures Tailwind's dark: utilities work even when using custom institutional themes.
+ */
+function ThemeSync() {
+  const { theme, resolvedTheme } = useTheme();
+
+  useEffect(() => {
+    const activeTheme = THEME_SUGGESTIONS.find(t => t.id === theme);
+    const isDark = activeTheme ? activeTheme.isDark : resolvedTheme === 'dark';
+    
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme, resolvedTheme]);
+
+  return null;
+}
+
+/**
  * Enhanced Providers Component
- * Implements value mapping for dark themes to ensure Tailwind synchronization.
+ * Switched to data-theme attribute to resolve classList.remove errors with spaces.
  */
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -22,12 +43,6 @@ export function Providers({ children }: { children: ReactNode }) {
 
   // Extract all valid theme IDs
   const allThemes = THEME_SUGGESTIONS.map(t => t.id);
-  
-  // Create mapping for dark themes so next-themes applies BOTH classes
-  const themeValueMap = THEME_SUGGESTIONS.reduce((acc, theme) => {
-    acc[theme.id] = theme.isDark ? `dark ${theme.id}` : theme.id;
-    return acc;
-  }, {} as Record<string, string>);
 
   useEffect(() => {
     const applyMotionSettings = () => {
@@ -54,14 +69,14 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <FirebaseClientProvider>
       <ThemeProvider 
-        attribute="class" 
+        attribute="data-theme" 
         defaultTheme="bms3-a" 
         enableSystem={false}
-        storageKey="institutional-theme-persistent-v1"
+        storageKey="institutional-theme-persistent-v2"
         themes={allThemes}
-        value={themeValueMap}
         disableTransitionOnChange
       >
+        <ThemeSync />
         <div className="relative min-h-screen w-full overflow-x-hidden flex flex-col">
           <div className="fixed inset-0 -z-10 flex items-center justify-center pointer-events-none opacity-[0.03] mix-blend-multiply overflow-hidden">
             <Watermark />

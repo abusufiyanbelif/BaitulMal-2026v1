@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root, [data-theme='light'], [data-theme='bms3-a'] {
     --background: 140 33% 97%;
     --foreground: 144 27% 23%;
     --card: 0 0% 100%;
@@ -46,22 +46,31 @@
     --chart-8: 24 95% 53%;
   }
 
-  .bms3-a {
-    --primary: 140 68% 38%;
-    --badge-active-fg: 140 68% 38%;
-  }
-
-  .bms3 {
+  [data-theme='bms3'] {
     --background: 140 33% 96%;
+    --foreground: 144 61% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 144 61% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 144 61% 20%;
     --primary: 144 61% 20%;
     --primary-foreground: 0 0% 100%;
     --secondary: 144 61% 95%;
-    --badge-active-fg: 144 61% 20%;
-    --table-header-fg: 144 61% 20%;
+    --secondary-foreground: 144 61% 20%;
+    --muted: 144 61% 97%;
+    --muted-foreground: 144 20% 40%;
+    --accent: 144 61% 95%;
+    --accent-foreground: 144 61% 20%;
+    --border: 144 30% 90%;
+    --input: 144 30% 90%;
+    --ring: 144 61% 20%;
     --table-header-bg: 144 61% 92%;
+    --table-header-fg: 144 61% 20%;
+    --table-row-hover: 144 61% 97%;
+    --badge-active-fg: 144 61% 20%;
   }
 
-  .green-warm {
+  [data-theme='green-warm'] {
     --background: 45 30% 96%;
     --foreground: 140 40% 15%;
     --card: 45 30% 100%;
@@ -85,7 +94,7 @@
     --badge-active-fg: 140 40% 25%;
   }
 
-  .bmss-brand-warm {
+  [data-theme='bmss-brand-warm'] {
     --background: 24 95% 98%;
     --foreground: 24 95% 15%;
     --card: 0 0% 100%;
@@ -109,7 +118,7 @@
     --badge-active-fg: 24 95% 53%;
   }
 
-  .ocean-blue {
+  [data-theme='ocean-blue'] {
     --background: 221 83% 98%;
     --foreground: 221 83% 15%;
     --card: 0 0% 100%;
@@ -133,7 +142,7 @@
     --badge-active-fg: 221 83% 53%;
   }
 
-  .sky-blue {
+  [data-theme='sky-blue'] {
     --background: 199 89% 98%;
     --foreground: 199 89% 15%;
     --card: 0 0% 100%;
@@ -157,7 +166,7 @@
     --badge-active-fg: 199 89% 48%;
   }
 
-  .sunset-orange {
+  [data-theme='sunset-orange'] {
     --background: 12 90% 98%;
     --foreground: 12 90% 15%;
     --card: 0 0% 100%;
@@ -181,7 +190,7 @@
     --badge-active-fg: 12 90% 50%;
   }
 
-  .lavender-mint {
+  [data-theme='lavender-mint'] {
     --background: 262 60% 98%;
     --foreground: 262 60% 15%;
     --card: 0 0% 100%;
@@ -205,30 +214,7 @@
     --badge-active-fg: 262 60% 60%;
   }
 
-  .light {
-    --background: 0 0% 98%;
-    --foreground: 240 10% 10%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 15%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 15%;
-    --primary: 240 10% 15%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 5% 94%;
-    --secondary-foreground: 240 10% 20%;
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 5% 45%;
-    --accent: 240 5% 94%;
-    --accent-foreground: 240 10% 20%;
-    --border: 240 5% 90%;
-    --input: 240 5% 90%;
-    --ring: 240 10% 15%;
-    --table-header-bg: 240 5% 92%;
-    --table-header-fg: 240 10% 15%;
-    --table-row-hover: 240 5% 96%;
-  }
-
-  .dark {
+  [data-theme='dark'], [data-theme='midnight-dark'] {
     --background: 240 10% 4%;
     --foreground: 0 0% 98%;
     --card: 240 10% 6%;
@@ -251,7 +237,7 @@
     --table-row-hover: 240 10% 8%;
   }
 
-  .midnight-ramadan {
+  [data-theme='midnight-ramadan'] {
     --background: 222 47% 4%;
     --foreground: 45 100% 90%;
     --card: 222 47% 6%;
@@ -275,7 +261,7 @@
     --table-row-hover: 222 47% 10%;
   }
 
-  .midnight-emerald {
+  [data-theme='midnight-emerald'] {
     --background: 160 50% 2%;
     --foreground: 160 20% 95%;
     --card: 160 50% 4%;
