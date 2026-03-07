@@ -340,7 +340,7 @@ export default function AnalyticsPage() {
                                             {isClient ? (
                                             <ScrollArea className="w-full">
                                                 <Table>
-                                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                                                    <TableHeader>
                                                         <TableRow>
                                                             <TableHead className="font-bold text-primary">Campaign Name</TableHead>
                                                             <TableHead className="text-right font-bold text-primary">Amount Collected</TableHead>
@@ -369,7 +369,7 @@ export default function AnalyticsPage() {
                                             {hitsLoading ? <Skeleton className="h-40 w-full"/> : (
                                                 <ScrollArea className="w-full">
                                                     <Table>
-                                                        <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                                                        <TableHeader>
                                                             <TableRow>
                                                                 <TableHead className="font-bold text-primary">Page Name</TableHead>
                                                                 <TableHead className="text-right font-bold text-primary">Hit Count</TableHead>

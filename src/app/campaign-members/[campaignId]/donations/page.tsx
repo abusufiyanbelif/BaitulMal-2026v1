@@ -197,7 +197,7 @@ export default function DonationsPage() {
             errorEmitter.emit('permission-error', permissionError);
         })
         .finally(() => {
-            toast({ title: 'Success', description: 'Donation unlinked successfully.', variant: 'success' });
+            toast({ title: 'Success', description: 'Donation Unlinked Successfully.', variant: 'success' });
             setDonationToUnlink(null);
         });
   };
@@ -205,7 +205,7 @@ export default function DonationsPage() {
   const handleFormSubmit = async (data: DonationFormData) => {
     const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
     if (hasFilesToUpload && !auth?.currentUser) {
-        toast({ title: "Authentication error", description: "User not authenticated yet.", variant: "destructive" });
+        toast({ title: "Authentication Error", description: "User Not Authenticated Yet.", variant: "destructive" });
         return;
     }
 
@@ -251,7 +251,7 @@ export default function DonationsPage() {
         }
 
         await setDoc(docRef, finalData, { merge: true });
-        toast({ title: 'Success', description: 'Donation saved.', variant: 'success' });
+        toast({ title: 'Success', description: 'Donation Saved.', variant: 'success' });
     } catch (error: any) {
         errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: editingDonation ? 'update' : 'create', requestResourceData: data }));
     }
@@ -300,7 +300,7 @@ export default function DonationsPage() {
   const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading;
   
   if (isLoading && !campaign) return <BrandedLoader />;
-  if (!campaign) return <div className="p-8 text-center"><p>Campaign not found.</p><Button asChild variant="outline" className="mt-4"><Link href="/campaign-members"><ArrowLeft className="mr-2"/>Back</Link></Button></div>;
+  if (!campaign) return <div className="p-8 text-center"><p>Campaign Not Found.</p><Button asChild variant="outline" className="mt-4"><Link href="/campaign-members"><ArrowLeft className="mr-2"/>Back</Link></Button></div>;
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary">
@@ -332,7 +332,7 @@ export default function DonationsPage() {
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-4">
-                    <Input placeholder="Search donor..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-xs h-9 text-xs font-normal" />
+                    <Input placeholder="Search Donor..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-xs h-9 text-xs font-normal" />
                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
                         <SelectTrigger className="w-[140px] h-9 text-xs text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
                         <SelectContent><SelectItem value="All" className="font-normal">All Statuses</SelectItem><SelectItem value="Verified" className="font-normal">Verified</SelectItem><SelectItem value="Pending" className="font-normal">Pending</SelectItem><SelectItem value="Canceled" className="font-normal">Canceled</SelectItem></SelectContent>
@@ -346,7 +346,7 @@ export default function DonationsPage() {
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
                 <Table>
-                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                    <TableHeader>
                     <TableRow>
                         <SortableHeader sortKey="srNo" className="w-[60px] pl-4" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
                         <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
@@ -389,7 +389,7 @@ export default function DonationsPage() {
                                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Linked Transactions</h4>
                                     <div className="border border-primary/10 rounded-md bg-white overflow-hidden shadow-sm">
                                     <Table>
-                                        <TableHeader className="bg-[hsl(var(--table-header-bg))]"><TableRow><TableHead className="text-[10px] font-bold text-primary">Sum</TableHead><TableHead className="text-[10px] font-bold text-primary">Reference</TableHead><TableHead className="text-right text-[10px] font-bold text-primary">Artifact</TableHead></TableRow></TableHeader>
+                                        <TableHeader><TableRow><TableHead className="text-[10px] font-bold text-primary">Sum</TableHead><TableHead className="text-[10px] font-bold text-primary">Reference</TableHead><TableHead className="text-right text-[10px] font-bold text-primary">Artifact</TableHead></TableRow></TableHeader>
                                         <TableBody>
                                         {(donation.transactions || []).map((tx) => (
                                             <TableRow key={tx.id} className="hover:bg-[hsl(var(--table-row-hover))]"><TableCell className="font-bold font-mono text-sm">₹{tx.amount.toFixed(2)}</TableCell><TableCell className="font-mono text-xs opacity-70">{tx.transactionId || 'N/A'}</TableCell><TableCell className="text-right">{tx.screenshotUrl ? (<Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)} className="font-bold text-[10px] h-7"><ImageIcon className="mr-1 h-3 w-3" /> View</Button>) : <span className="text-muted-foreground text-[10px]">None</span>}</TableCell></TableRow>

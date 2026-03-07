@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -87,7 +86,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay }: 
                     <p className="text-[10px] font-bold text-muted-foreground tracking-widest">{title}</p>
                     <p className="text-3xl font-black text-primary tracking-tight">{count}</p>
                 </div>
-                <div className="p-2 rounded-lg bg-primary/5 text-primary">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
                     <Icon className="h-5 w-5" />
                 </div>
             </div>
@@ -369,7 +368,7 @@ export default function BeneficiariesPage() {
                         <Command>
                             <CommandInput placeholder="Search Referrals..." className="h-9 font-normal" />
                             <CommandList>
-                                <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No source found.</CommandEmpty>
+                                <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No Source Found.</CommandEmpty>
                                 <CommandGroup>
                                     <CommandItem onSelect={() => setSelectedReferrals([])} className="font-bold text-xs">
                                         <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selectedReferrals.length === 0 ? "bg-primary text-primary-foreground" : "opacity-50")}>
@@ -482,14 +481,14 @@ export default function BeneficiariesPage() {
                                             <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Need More Details" className="text-xs font-normal">Need Details</DropdownMenuRadioGroup>
+                                            <DropdownMenuRadioItem value="Need More Details" className="text-xs font-normal">Need Details</DropdownMenuRadioItem></DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent></DropdownMenuPortal>
                                         </DropdownMenuSub>
                                     )}
                                     {canDelete && (
                                         <>
                                         <DropdownMenuSeparator className="bg-primary/10" />
-                                        <DropdownMenuItem onClick={async () => { if(confirm('Are you sure?')) { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); } }} className="text-destructive font-normal"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={async () => { if(confirm('Are You Certain?')) { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); } }} className="text-destructive font-normal"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
                                         </>
                                     )}
                                 </DropdownMenuContent>

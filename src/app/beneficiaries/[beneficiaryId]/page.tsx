@@ -9,7 +9,7 @@ import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import Link from 'next/link';
-import { ArrowLeft, Edit, MoreHorizontal, Loader2, ChevronDown, User, History, IndianRupee, Landmark, Lightbulb, FolderKanban, ShieldCheck, Calendar, Info, HeartHandshake, CheckCircle2, Target, Hourglass } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, Loader2, ChevronDown, User, History, IndianRupee, Landmark, Lightbulb, FolderKanban, ShieldCheck, Calendar, Info, HeartHandshake, CheckCircle2, Target, Hourglass, ChevronsUpDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuTrigger, DropdownMenuPortal, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSubContent, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { useToast } from '@/hooks/use-toast';
@@ -191,7 +191,7 @@ export default function BeneficiaryDetailsPage() {
     const res = await updateBeneficiaryStatusInInitiativeAction(initiative.type.toLowerCase() as any, initiative.id, beneficiaryId, newStatus);
     if (res.success) { 
         fetchLinkedInitiatives(); 
-        toast({ title: "Status Updated", description: `Disbursement status set to ${newStatus}.`, variant: "success" }); 
+        toast({ title: "Status Updated", description: `Disbursement Status Set To ${newStatus}.`, variant: "success" }); 
     }
   };
 
@@ -289,15 +289,15 @@ export default function BeneficiaryDetailsPage() {
                         <ScrollArea className="w-full">
                             <div className="min-w-[1000px]">
                                 <Table>
-                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                                    <TableHeader>
                                         <TableRow>
-                                            <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Initiative Name</TableHead>
-                                            <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Purpose / Type</TableHead>
-                                            <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Category</TableHead>
-                                            <TableHead className="text-center font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Verification</TableHead>
-                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Added Date</TableHead>
-                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Allocation (₹)</TableHead>
-                                            <TableHead className="text-right pr-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Actions</TableHead>
+                                            <TableHead className="pl-6 tracking-widest">Initiative Name</TableHead>
+                                            <TableHead className="tracking-widest">Purpose / Type</TableHead>
+                                            <TableHead className="tracking-widest">Category</TableHead>
+                                            <TableHead className="text-center tracking-widest">Verification</TableHead>
+                                            <TableHead className="text-right tracking-widest">Added Date</TableHead>
+                                            <TableHead className="text-right tracking-widest">Allocation (₹)</TableHead>
+                                            <TableHead className="text-right pr-6 tracking-widest">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -414,14 +414,14 @@ export default function BeneficiaryDetailsPage() {
                         <ScrollArea className="w-full">
                             <div className="min-w-[1000px]">
                                 <Table>
-                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                                    <TableHeader>
                                         <TableRow>
-                                            <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Initiative Source</TableHead>
-                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Requirement (₹)</TableHead>
-                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Zakat Allocation (₹)</TableHead>
-                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Community Fund (₹)</TableHead>
-                                            <TableHead className="text-center font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Financial Status</TableHead>
-                                            <TableHead className="text-right pr-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Net Provision (₹)</TableHead>
+                                            <TableHead className="pl-6 tracking-widest">Initiative Source</TableHead>
+                                            <TableHead className="text-right tracking-widest">Requirement (₹)</TableHead>
+                                            <TableHead className="text-right tracking-widest">Zakat Allocation (₹)</TableHead>
+                                            <TableHead className="text-right tracking-widest">Community Fund (₹)</TableHead>
+                                            <TableHead className="text-center tracking-widest">Financial Status</TableHead>
+                                            <TableHead className="text-right pr-6 tracking-widest">Net Provision (₹)</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>

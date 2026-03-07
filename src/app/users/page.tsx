@@ -51,7 +51,7 @@ type SortKey = keyof UserProfile | 'srNo';
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <TableHead className={cn("cursor-pointer hover:bg-muted/50 text-[hsl(var(--table-header-fg))] font-semibold", className)} onClick={() => handleSort(sortKey)}>
+        <TableHead className={cn("cursor-pointer hover:bg-[hsl(var(--table-row-hover))] text-[hsl(var(--table-header-fg))] font-semibold", className)} onClick={() => handleSort(sortKey)}>
             <div className="flex items-center gap-2">
                 {children}
                 {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
@@ -263,7 +263,7 @@ export default function UsersPage() {
             <Alert variant="destructive">
                 <ShieldAlert className="h-4 w-4" />
                 <AlertTitle className="font-bold">Access Denied</AlertTitle>
-                <AlertDescription className="font-normal">
+                <AlertDescription className="font-normal text-primary/70">
                 You Do Not Have The Required Permissions To Manage Users.
                 </AlertDescription>
             </Alert>
@@ -338,7 +338,7 @@ export default function UsersPage() {
           <ScrollArea className="w-full">
               <div className="min-w-[1000px]">
                   <Table>
-                      <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                      <TableHeader>
                           <TableRow>
                               <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">#</SortableHeader>
                               <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Full Name</SortableHeader>
@@ -348,7 +348,7 @@ export default function UsersPage() {
                               <SortableHeader sortKey="userKey" sortConfig={sortConfig} handleSort={handleSort}>User Key</SortableHeader>
                               <SortableHeader sortKey="role" sortConfig={sortConfig} handleSort={handleSort}>Access Role</SortableHeader>
                               <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Account Status</SortableHeader>
-                                {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right font-bold text-[hsl(var(--table-header-fg))]">Actions</TableHead>}
+                                {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right">Actions</TableHead>}
                           </TableRow>
                       </TableHeader>
                       <TableBody className="font-normal text-primary">

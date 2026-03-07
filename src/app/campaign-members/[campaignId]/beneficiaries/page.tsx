@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -109,7 +108,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay }: 
                     <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{title}</p>
                     <p className="text-3xl font-black text-primary tracking-tight">{count}</p>
                 </div>
-                <div className="p-2 rounded-lg bg-primary/5 text-primary">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
                     <Icon className="h-5 w-5" />
                 </div>
             </div>
@@ -260,7 +259,7 @@ export default function BeneficiariesPage() {
   const handleQuickStatusToggle = (beneficiary: Beneficiary) => {
     const newStatus = beneficiary.status === 'Given' ? 'Pending' : 'Given';
     handleStatusChange(beneficiary, newStatus);
-    toast({ title: `Marked as ${newStatus} ${itemLabelSuffix}`, variant: 'success' });
+    toast({ title: `Marked As ${newStatus} ${itemLabelSuffix}`, variant: 'success' });
   };
 
   const handleZakatToggle = (beneficiary: Beneficiary) => {
@@ -274,7 +273,7 @@ export default function BeneficiariesPage() {
 
   const handleRemoveFromInitiative = (beneficiaryId: string) => {
     if (!firestore || !campaignId || !canUpdate) return;
-    if (!confirm('Are you sure you want to remove this beneficiary from this campaign? The master record will remain unaffected.')) return;
+    if (!confirm('Are You Certain You Want To Remove This Beneficiary? The Master Record Will Remain Unaffected.')) return;
     
     const ref = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiaryId);
     deleteDoc(ref).then(() => {
@@ -462,7 +461,7 @@ export default function BeneficiariesPage() {
                     <Command>
                         <CommandInput placeholder="Search Referrals..." className="h-9 font-normal" />
                         <CommandList>
-                            <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No source found.</CommandEmpty>
+                            <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No Source Found.</CommandEmpty>
                             <CommandGroup>
                                 <CommandItem onSelect={() => setSelectedReferrals([])} className="font-bold text-xs">
                                     <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selectedReferrals.length === 0 ? "bg-primary text-primary-foreground" : "opacity-50")}>
@@ -542,8 +541,8 @@ export default function BeneficiariesPage() {
 
                         return (
                             <Collapsible key={catId} open={isExpanded} onOpenChange={() => toggleGroup(catId)} className="w-full">
-                                <CollapsibleTrigger className="w-full bg-primary/[0.02] px-4 py-3 text-[12px] font-black text-primary flex items-center gap-2 border-b border-primary/10 uppercase hover:bg-primary/5 transition-colors">
-                                    <ChevronDown className={cn("h-4 w-4 transition-transform", !isExpanded && "-rotate-90")} />
+                                <CollapsibleTrigger className="w-full bg-[hsl(var(--table-header-bg))] px-4 py-3 text-[12px] font-black text-primary flex items-center gap-2 border-b border-primary/10 uppercase hover:bg-primary/5 transition-colors">
+                                    <ChevronDown className={cn("h-4 w-4 transition-transform text-primary", !isExpanded && "-rotate-90")} />
                                     {categoryName} ({list.length} Beneficiaries)
                                 </CollapsibleTrigger>
                                 <CollapsibleContent className="w-full">
@@ -606,14 +605,14 @@ export default function BeneficiariesPage() {
                                                                     {canUpdate && (
                                                                         <DropdownMenuItem onClick={() => handleQuickStatusToggle(b)} className="text-primary font-normal">
                                                                             {b.status === 'Given' ? <Hourglass className="mr-2 h-4 w-4 text-amber-600" /> : <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />}
-                                                                            {b.status === 'Given' ? `Mark as Pending ${itemLabelSuffix}` : `Mark as Given ${itemLabelSuffix}`}
+                                                                            {b.status === 'Given' ? `Mark As Pending ${itemLabelSuffix}` : `Mark As Given ${itemLabelSuffix}`}
                                                                         </DropdownMenuItem>
                                                                     )}
 
                                                                     {canUpdate && (
                                                                         <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-primary font-normal">
                                                                             {b.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4 text-destructive" /> : <Coins className="mr-2 h-4 w-4 text-primary" />}
-                                                                            {b.isEligibleForZakat ? 'Mark as Not Eligible' : 'Mark Eligible for Zakat'}
+                                                                            {b.isEligibleForZakat ? 'Mark As Not Eligible' : 'Mark Eligible For Zakat'}
                                                                         </DropdownMenuItem>
                                                                     )}
 

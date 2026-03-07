@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -48,7 +47,6 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -68,7 +66,7 @@ type SortKey = keyof Donation | 'srNo';
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <TableHead className={cn("cursor-pointer hover:bg-muted/50 transition-colors text-[hsl(var(--table-header-fg))] font-bold", className)} onClick={() => handleSort(sortKey)}>
+        <TableHead className={cn("cursor-pointer hover:bg-[hsl(var(--table-row-hover))] transition-colors text-[hsl(var(--table-header-fg))] font-bold", className)} onClick={() => handleSort(sortKey)}>
             <div className="flex items-center gap-2 whitespace-nowrap">
                 {children}
                 {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
@@ -402,7 +400,7 @@ export default function DonationsPage() {
         </div>
 
         <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
-            <CardHeader className="bg-primary/5 p-4 border-b">
+            <CardHeader className="bg-primary/5 border-b">
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex flex-nowrap gap-2 pb-2">
                         <Input placeholder="Search Donor, Phone, ID..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-[300px] h-9 text-xs border-primary/10 focus-visible:ring-primary text-primary font-normal bg-primary/[0.02] rounded-[10px]"/>
@@ -422,7 +420,7 @@ export default function DonationsPage() {
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
                     <Table>
-                        <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                        <TableHeader>
                             <TableRow>
                                 <TableHead className="w-[40px] pl-4">
                                     <Checkbox 
@@ -435,10 +433,10 @@ export default function DonationsPage() {
                                 <SortableHeader sortKey="donorName" sortConfig={sortConfig}>Donor Name</SortableHeader>
                                 <SortableHeader sortKey="amount" sortConfig={sortConfig} className="text-right">Amount (₹)</SortableHeader>
                                 <SortableHeader sortKey="donationDate" sortConfig={sortConfig}>Entry Date</SortableHeader>
-                                <TableHead className="text-primary font-bold text-[10px] uppercase tracking-wider">Method</TableHead>
+                                <TableHead>Method</TableHead>
                                 <SortableHeader sortKey="status" sortConfig={sortConfig}>Vetting Status</SortableHeader>
-                                <TableHead className="text-primary font-bold text-[10px] uppercase tracking-wider">Target Initiative</TableHead>
-                                <TableHead className="text-right pr-4 text-primary font-bold text-[10px] uppercase tracking-wider">Action Menu</TableHead>
+                                <TableHead>Target Initiative</TableHead>
+                                <TableHead className="text-right pr-4">Action Menu</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>

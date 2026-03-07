@@ -63,10 +63,10 @@ export function PurposeFundingSummary() {
       </CardHeader>
       <CardContent className="p-0">
         <Table>
-          <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+          <TableHeader>
             <TableRow>
-              <TableHead className="text-[10px] font-bold uppercase text-[hsl(var(--table-header-fg))] tracking-widest pl-6">Purpose Type</TableHead>
-              <TableHead className="text-right text-[10px] font-bold uppercase text-[hsl(var(--table-header-fg))] tracking-widest pr-6">Amount Received</TableHead>
+              <TableHead className="pl-6 tracking-widest">Purpose Type</TableHead>
+              <TableHead className="text-right tracking-widest pr-6">Amount Received</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
