@@ -3,6 +3,7 @@
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
+import type { Donation } from '@/lib/types';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
 
@@ -52,6 +53,34 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
     } catch (error: any) {
         console.error("Error syncing donations:", error);
         return { success: false, message: `Sync failed: ${error.message}`, updatedCount: 0 };
+    }
+}
+
+export async function bulkUpdateDonationStatusAction(
+    ids: string[],
+    newStatus: Donation['status']
+): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const CHUNK_SIZE = 450;
+        for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+            const chunk = ids.slice(i, i + CHUNK_SIZE);
+            const batch = adminDb.batch();
+            for (const id of chunk) {
+                const ref = adminDb.collection('donations').doc(id);
+                batch.update(ref, { status: newStatus });
+            }
+            await batch.commit();
+        }
+        revalidatePath('/donations');
+        revalidatePath('/campaign-members', 'layout');
+        revalidatePath('/leads-members', 'layout');
+        return { success: true, message: `Successfully Updated ${ids.length} Donations To ${newStatus}.` };
+    } catch (error: any) {
+        console.error("Bulk Donation Update Failed:", error);
+        return { success: false, message: `Bulk Update Failed: ${error.message}` };
     }
 }
 

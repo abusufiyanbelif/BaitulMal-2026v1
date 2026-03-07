@@ -1,3 +1,4 @@
+
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
@@ -91,6 +92,85 @@ export async function updateMasterBeneficiaryAction(
     } catch (error: any) {
         console.error("Error updating master beneficiary:", error);
         return { success: false, message: `Failed To Update Beneficiary: ${error.message}` };
+    }
+}
+
+export async function bulkUpdateMasterBeneficiaryStatusAction(
+    ids: string[], 
+    newStatus: Beneficiary['status'], 
+    updatedBy: {id: string, name: string}
+): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        // Firestore batch has a limit of 500 operations. Since we propagate to sub-collections, 
+        // we process in smaller chunks to be safe.
+        const CHUNK_SIZE = 50;
+        for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+            const chunk = ids.slice(i, i + CHUNK_SIZE);
+            const batch = adminDb.batch();
+
+            for (const id of chunk) {
+                const masterRef = adminDb.collection('beneficiaries').doc(id);
+                batch.update(masterRef, { 
+                    status: newStatus,
+                    updatedAt: FieldValue.serverTimestamp(),
+                    updatedById: updatedBy.id,
+                    updatedByName: updatedBy.name,
+                });
+
+                // Find and update initiative instances
+                const allInstancesQuery = adminDb.collectionGroup('beneficiaries').where('id', '==', id);
+                const allInstancesSnap = await allInstancesQuery.get();
+                allInstancesSnap.forEach(docSnap => {
+                    if (docSnap.ref.path !== masterRef.path) {
+                        batch.update(docSnap.ref, { verificationStatus: newStatus });
+                    }
+                });
+            }
+            await batch.commit();
+        }
+
+        revalidatePath('/beneficiaries');
+        revalidatePath('/campaign-members', 'layout');
+        revalidatePath('/leads-members', 'layout');
+        return { success: true, message: `Successfully Updated ${ids.length} Beneficiaries To ${newStatus}.` };
+    } catch (error: any) {
+        console.error("Bulk Master Update Failed:", error);
+        return { success: false, message: `Bulk Update Failed: ${error.message}` };
+    }
+}
+
+export async function bulkUpdateInitiativeBeneficiaryStatusAction(
+    initiativeType: 'campaign' | 'lead',
+    initiativeId: string,
+    ids: string[],
+    newStatus: Beneficiary['status']
+): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';
+        const CHUNK_SIZE = 400; // Straight sub-collection update is cheaper on operations
+        
+        for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+            const chunk = ids.slice(i, i + CHUNK_SIZE);
+            const batch = adminDb.batch();
+            
+            for (const id of chunk) {
+                const docRef = adminDb.doc(`${collectionName}/${initiativeId}/beneficiaries/${id}`);
+                batch.update(docRef, { status: newStatus });
+            }
+            await batch.commit();
+        }
+
+        revalidatePath(`/${collectionName}-members/${initiativeId}/beneficiaries`);
+        return { success: true, message: `Successfully Updated ${ids.length} Recipients To ${newStatus}.` };
+    } catch (error: any) {
+        console.error("Bulk Initiative Update Failed:", error);
+        return { success: false, message: `Bulk Update Failed: ${error.message}` };
     }
 }
 

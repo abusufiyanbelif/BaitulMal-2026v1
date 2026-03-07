@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -13,13 +14,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, MoreHorizontal, Edit, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, IndianRupee, FolderKanban, Lightbulb, Trash2, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, ImageIcon, Loader2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { PlusCircle, MoreHorizontal, Edit, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, IndianRupee, FolderKanban, Lightbulb, Trash2, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, ImageIcon, Loader2, CheckSquare, X, ChevronsUpDown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -50,7 +58,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
-import { syncDonationsAction, deleteDonationAction } from './actions';
+import { syncDonationsAction, deleteDonationAction, bulkUpdateDonationStatusAction } from './actions';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
@@ -69,7 +77,7 @@ function SortableHeader({ sortKey, children, className, sortConfig, handleSort }
     );
 };
 
-function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleViewImage }: { donation: Donation, index: number, handleEdit: () => void, handleDeleteClick: () => void, handleViewImage: (url: string) => void }) {
+function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handleDeleteClick, handleViewImage }: { donation: Donation, index: number, isSelected: boolean, onToggle: () => void, handleEdit: () => void, handleDeleteClick: () => void, handleViewImage: (url: string) => void }) {
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
     const { userProfile } = useSession();
@@ -81,7 +89,14 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
     return (
         <>
             <TableRow onClick={() => setIsOpen(!isOpen)} data-state={isOpen ? "open" : "closed"} className="cursor-pointer bg-white hover:bg-[hsl(var(--table-row-hover))] group transition-colors border-b border-primary/10">
-                <TableCell className="pl-4">
+                <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox 
+                        checked={isSelected}
+                        onCheckedChange={onToggle}
+                        className="border-primary/40 data-[state=checked]:bg-primary"
+                    />
+                </TableCell>
+                <TableCell>
                     <div className="flex items-center gap-2">
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
                             {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -124,7 +139,7 @@ function DonationRow({ donation, index, handleEdit, handleDeleteClick, handleVie
             </TableRow>
             {isOpen && (
                 <TableRow className="bg-primary/[0.02] hover:bg-primary/[0.02] border-b border-primary/10">
-                    <TableCell colSpan={8} className="p-4">
+                    <TableCell colSpan={9} className="p-4">
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="space-y-2">
@@ -230,6 +245,9 @@ export default function DonationsPage() {
   const [donationToDelete, setDonationToDelete] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [imageToView, setImageToView] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
@@ -302,6 +320,31 @@ export default function DonationsPage() {
     setIsSyncing(false);
   };
 
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+        setSelectedIds(paginatedDonations.map(d => d.id));
+    } else {
+        setSelectedIds([]);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const handleBulkStatusChange = async (newStatus: Donation['status']) => {
+    if (selectedIds.length === 0) return;
+    setIsBulkUpdating(true);
+    const res = await bulkUpdateDonationStatusAction(selectedIds, newStatus);
+    if (res.success) {
+        toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
+        setSelectedIds([]);
+    } else {
+        toast({ title: "Update Failed", description: res.message, variant: "destructive" });
+    }
+    setIsBulkUpdating(false);
+  };
+
   const handleFormSubmit = async (data: DonationFormData) => {
     if (!firestore || !storage || !userProfile) return;
     setIsFormOpen(false);
@@ -344,7 +387,7 @@ export default function DonationsPage() {
   if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Organizational Financial Logs." />;
 
   return (
-    <main className="container mx-auto p-4 md:p-8 font-normal text-primary">
+    <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <h1 className="text-3xl font-bold tracking-tighter text-primary">Financial Donations</h1>
             <div className="flex gap-2 w-full sm:w-auto">
@@ -381,12 +424,19 @@ export default function DonationsPage() {
                     <Table>
                         <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                             <TableRow>
-                                <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">#</SortableHeader>
-                                <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor Name</SortableHeader>
-                                <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right">Amount (₹)</SortableHeader>
-                                <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort}>Entry Date</SortableHeader>
+                                <TableHead className="w-[40px] pl-4">
+                                    <Checkbox 
+                                        checked={selectedIds.length > 0 && selectedIds.length === paginatedDonations.length}
+                                        onCheckedChange={toggleSelectAll}
+                                        className="border-primary/40 data-[state=checked]:bg-primary"
+                                    />
+                                </TableHead>
+                                <SortableHeader sortKey="srNo" sortConfig={sortConfig}>#</SortableHeader>
+                                <SortableHeader sortKey="donorName" sortConfig={sortConfig}>Donor Name</SortableHeader>
+                                <SortableHeader sortKey="amount" sortConfig={sortConfig} className="text-right">Amount (₹)</SortableHeader>
+                                <SortableHeader sortKey="donationDate" sortConfig={sortConfig}>Entry Date</SortableHeader>
                                 <TableHead className="text-primary font-bold text-[10px] uppercase tracking-wider">Method</TableHead>
-                                <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Vetting Status</SortableHeader>
+                                <SortableHeader sortKey="status" sortConfig={sortConfig}>Vetting Status</SortableHeader>
                                 <TableHead className="text-primary font-bold text-[10px] uppercase tracking-wider">Target Initiative</TableHead>
                                 <TableHead className="text-right pr-4 text-primary font-bold text-[10px] uppercase tracking-wider">Action Menu</TableHead>
                             </TableRow>
@@ -396,6 +446,8 @@ export default function DonationsPage() {
                                 <DonationRow 
                                     key={d.id} 
                                     donation={d} 
+                                    isSelected={selectedIds.includes(d.id)}
+                                    onToggle={() => toggleSelect(d.id)}
                                     index={(currentPage - 1) * itemsPerPage + i + 1} 
                                     handleEdit={() => { setEditingDonation(d); setIsFormOpen(true); }} 
                                     handleDeleteClick={() => { setDonationToDelete(d.id); setIsDeleteDialogOpen(true); }} 
@@ -403,7 +455,7 @@ export default function DonationsPage() {
                                 />
                             ))}
                             {paginatedDonations.length === 0 && (
-                                <TableRow><TableCell colSpan={8} className="text-center py-24 text-primary/40 font-bold bg-primary/[0.02]">No Donation Records Found Matching Filters.</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={9} className="text-center py-24 text-primary/40 font-bold bg-primary/[0.02]">No Donation Records Found Matching Filters.</TableCell></TableRow>
                             )}
                         </TableBody>
                     </Table>
@@ -420,6 +472,36 @@ export default function DonationsPage() {
                 </CardFooter>
             )}
         </Card>
+
+        {/* Bulk Action Bar */}
+        {selectedIds.length > 0 && (
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-bottom">
+                <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
+                    <div className="flex items-center gap-2 pr-4 border-r border-white/20">
+                        <CheckSquare className="h-5 w-5" />
+                        <span className="text-sm font-bold tracking-tight">{selectedIds.length} Selected</span>
+                    </div>
+                    
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
+                                {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ChevronsUpDown className="mr-2 h-4 w-4"/>}
+                                Bulk Change Status
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">
+                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-bold">Set To Verified</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Canceled')} className="font-normal text-destructive">Set To Canceled</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+        )}
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden p-0 rounded-[12px] border-primary/10">

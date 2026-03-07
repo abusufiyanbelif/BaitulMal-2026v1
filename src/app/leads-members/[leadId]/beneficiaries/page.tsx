@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -28,6 +29,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
     ArrowLeft, 
     PlusCircle, 
@@ -49,7 +51,9 @@ import {
     UploadCloud,
     Download,
     Users,
-    Info
+    X,
+    Info,
+    CheckSquare
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -89,13 +93,13 @@ import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog'
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
-import { updateMasterBeneficiaryAction, bulkImportBeneficiariesAction } from '@/app/beneficiaries/actions';
+import { updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkUpdateInitiativeBeneficiaryStatusAction } from '@/app/beneficiaries/actions';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { BeneficiaryImportDialog } from '@/components/beneficiary-import-dialog';
 
-const gridClass = "grid grid-cols-[40px_50px_200px_120px_120px_120px_100px_120px_120px_150px_60px] items-center gap-4 px-4 py-3 min-w-[1200px]";
+const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_120px_120px_100px_120px_120px_150px_60px] items-center gap-4 px-4 py-3 min-w-[1250px]";
 
 function StatCard({ title, count, description, icon: Icon, colorClass, delay }: { title: string, count: number, description: string, icon: any, colorClass?: string, delay: string }) {
     return (
@@ -140,6 +144,9 @@ export default function BeneficiariesPage() {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [editingBeneficiary, setEditingBeneficiary] = useState<Beneficiary | null>(null);
   
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+
   const [currentPages, setCurrentPages] = useState<Record<string, number>>({});
   const itemsPerPage = 15;
 
@@ -213,6 +220,35 @@ export default function BeneficiariesPage() {
     setSelectedReferrals(prev => 
         prev.includes(referral) ? prev.filter(r => r !== referral) : [...prev, referral]
     );
+  };
+
+  const toggleSelectAllForCategory = (catId: string, checked: boolean) => {
+    const list = beneficiariesByCategory[catId] || [];
+    const currentPage = currentPages[catId] || 1;
+    const paginatedIds = list.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(b => b.id);
+    
+    if (checked) {
+        setSelectedIds(prev => Array.from(new Set([...prev, ...paginatedIds])));
+    } else {
+        setSelectedIds(prev => prev.filter(id => !paginatedIds.includes(id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const handleBulkStatusChange = async (newStatus: Beneficiary['status']) => {
+    if (selectedIds.length === 0) return;
+    setIsBulkUpdating(true);
+    const res = await bulkUpdateInitiativeBeneficiaryStatusAction('lead', leadId, selectedIds, newStatus);
+    if (res.success) {
+        toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
+        setSelectedIds([]);
+    } else {
+        toast({ title: "Update Failed", description: res.message, variant: "destructive" });
+    }
+    setIsBulkUpdating(false);
   };
 
   const handleStatusChange = (beneficiary: Beneficiary, newStatus: any) => {
@@ -338,7 +374,7 @@ export default function BeneficiariesPage() {
   if (!lead) return <p className="text-center mt-20 text-primary font-bold">Lead Not Found.</p>;
 
   return (
-    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
+    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative">
         <div className="mb-4">
             <Button variant="outline" asChild className="font-bold border-primary/10 text-primary transition-transform active:scale-95">
                 <Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link>
@@ -472,6 +508,9 @@ export default function BeneficiariesPage() {
         <div className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
             <ScrollArea className="w-full">
                 <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold uppercase tracking-widest text-[hsl(var(--table-header-fg))]", gridClass)}>
+                    <div className="flex justify-center">
+                        <CheckSquare className="h-4 w-4 opacity-40" />
+                    </div>
                     <div></div>
                     <div>Sr. No.</div>
                     <div>Name</div>
@@ -508,10 +547,25 @@ export default function BeneficiariesPage() {
                                     {categoryName} ({list.length} Beneficiaries)
                                 </CollapsibleTrigger>
                                 <CollapsibleContent className="w-full">
+                                    <div className={cn("bg-primary/[0.05] border-b border-primary/10 flex items-center gap-4 px-4 py-2 text-[10px] font-bold text-primary tracking-widest")}>
+                                        <Checkbox 
+                                            checked={paginatedList.length > 0 && paginatedList.every(b => selectedIds.includes(b.id))}
+                                            onCheckedChange={(checked) => toggleSelectAllForCategory(catId, !!checked)}
+                                            className="border-primary/40 data-[state=checked]:bg-primary"
+                                        />
+                                        <span>Select All In Page</span>
+                                    </div>
                                     <Accordion type="single" collapsible className="w-full">
                                         {paginatedList.map((b, idx) => (
                                             <AccordionItem key={b.id} value={b.id} className="border-b border-primary/10 last:border-0 hover:bg-[hsl(var(--table-row-hover))] transition-colors">
                                                 <div className={gridClass}>
+                                                    <div className="flex justify-center">
+                                                        <Checkbox 
+                                                            checked={selectedIds.includes(b.id)}
+                                                            onCheckedChange={() => toggleSelect(b.id)}
+                                                            className="border-primary/40 data-[state=checked]:bg-primary"
+                                                        />
+                                                    </div>
                                                     <div className="flex justify-center">
                                                         <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
                                                             <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-primary/10 transition-colors">
@@ -638,6 +692,36 @@ export default function BeneficiariesPage() {
                 <ScrollBar orientation="horizontal" />
             </ScrollArea>
         </div>
+
+        {/* Bulk Action Bar */}
+        {selectedIds.length > 0 && (
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-bottom">
+                <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
+                    <div className="flex items-center gap-2 pr-4 border-r border-white/20">
+                        <CheckSquare className="h-5 w-5" />
+                        <span className="text-sm font-bold tracking-tight">{selectedIds.length} Selected</span>
+                    </div>
+                    
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
+                                {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ChevronsUpDown className="mr-2 h-4 w-4"/>}
+                                Bulk Update Status
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">
+                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Given')} className="font-bold">Mark As Given {itemLabelSuffix}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal">Mark As Verified (Secured)</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Mark As Pending</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+        )}
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10">

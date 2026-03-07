@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
     ArrowLeft, 
     PlusCircle, 
@@ -33,7 +35,9 @@ import {
     CheckCircle2,
     Info,
     TrendingUp,
-    ChevronsUpDown
+    ChevronsUpDown,
+    CheckSquare,
+    X
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -63,7 +67,7 @@ import {
 } from "@/components/ui/command";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useToast } from '@/hooks/use-toast';
-import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterBeneficiaryAction, bulkImportBeneficiariesAction } from './actions';
+import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkUpdateMasterBeneficiaryStatusAction } from './actions';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn, getNestedValue } from '@/lib/utils';
@@ -71,7 +75,7 @@ import { SectionLoader } from '@/components/section-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { BeneficiaryImportDialog } from '@/components/beneficiary-import-dialog';
 
-const gridClass = "grid grid-cols-[40px_50px_200px_120px_140px_140px_100px_200px_60px] items-center gap-4 px-4 py-3 min-w-[1100px]";
+const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_140px_140px_100px_200px_60px] items-center gap-4 px-4 py-3 min-w-[1150px]";
 
 type SortKey = keyof Beneficiary | 'srNo';
 
@@ -120,6 +124,9 @@ export default function BeneficiariesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
   const itemsPerPage = 15;
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
   const beneficiariesRef = useMemoFirebase(() => firestore ? collection(firestore, 'beneficiaries') : null, [firestore]);
   const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesRef);
@@ -203,6 +210,31 @@ export default function BeneficiariesPage() {
     setCurrentPage(1);
   };
 
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+        setSelectedIds(paginatedBeneficiaries.map(b => b.id));
+    } else {
+        setSelectedIds([]);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const handleBulkStatusChange = async (newStatus: Beneficiary['status']) => {
+    if (!userProfile || selectedIds.length === 0) return;
+    setIsBulkUpdating(true);
+    const res = await bulkUpdateMasterBeneficiaryStatusAction(selectedIds, newStatus, { id: userProfile.id, name: userProfile.name });
+    if (res.success) {
+        toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
+        setSelectedIds([]);
+    } else {
+        toast({ title: "Update Failed", description: res.message, variant: "destructive" });
+    }
+    setIsBulkUpdating(false);
+  };
+
   const handleStatusChange = async (beneficiary: Beneficiary, newStatus: string) => {
     if (!canUpdate || !userProfile) return;
     const res = await updateMasterBeneficiaryAction(beneficiary.id, { status: newStatus as any }, { id: userProfile.id, name: userProfile.name });
@@ -266,7 +298,7 @@ export default function BeneficiariesPage() {
   );
 
   return (
-    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
+    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative">
       <div className="flex items-center justify-between">
         <Button variant="secondary" asChild className="font-bold border-primary/10 text-primary transition-transform active:scale-95">
           <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Dashboard</Link>
@@ -385,6 +417,13 @@ export default function BeneficiariesPage() {
       <div className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
         <ScrollArea className="w-full">
             <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-semibold tracking-wider text-[hsl(var(--table-header-fg))]", gridClass)}>
+                <div className="flex justify-center">
+                    <Checkbox 
+                        checked={selectedIds.length > 0 && selectedIds.length === paginatedBeneficiaries.length}
+                        onCheckedChange={toggleSelectAll}
+                        className="border-primary/40 data-[state=checked]:bg-primary"
+                    />
+                </div>
                 <div></div>
                 <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort}>Sr. No.</SortableHeader>
                 <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>
@@ -400,6 +439,13 @@ export default function BeneficiariesPage() {
             {paginatedBeneficiaries.map((b, idx) => (
                 <AccordionItem key={b.id} value={b.id} className="border-b border-primary/10 last:border-0 hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white">
                 <div className={cn("py-3 px-4", gridClass)}>
+                    <div className="flex justify-center">
+                        <Checkbox 
+                            checked={selectedIds.includes(b.id)}
+                            onCheckedChange={() => toggleSelect(b.id)}
+                            className="border-primary/40 data-[state=checked]:bg-primary"
+                        />
+                    </div>
                     <div className="flex justify-center">
                         <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
                             <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-primary/10 transition-colors">
@@ -436,8 +482,7 @@ export default function BeneficiariesPage() {
                                             <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Need More Details" className="text-xs font-normal">Need Details</DropdownMenuRadioItem>
-                                            </DropdownMenuRadioGroup>
+                                            <DropdownMenuRadioItem value="Need More Details" className="text-xs font-normal">Need Details</DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent></DropdownMenuPortal>
                                         </DropdownMenuSub>
                                     )}
@@ -501,6 +546,37 @@ export default function BeneficiariesPage() {
             <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/10 h-8">Previous</Button>
             <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/10 h-8">Next</Button>
           </div>
+        </div>
+      )}
+
+      {/* Bulk Action Bar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-bottom">
+            <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
+                <div className="flex items-center gap-2 pr-4 border-r border-white/20">
+                    <CheckSquare className="h-5 w-5" />
+                    <span className="text-sm font-bold tracking-tight">{selectedIds.length} Selected</span>
+                </div>
+                
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
+                            {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ChevronsUpDown className="mr-2 h-4 w-4"/>}
+                            Bulk Change Status
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">
+                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-bold">Set To Verified</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Hold')} className="font-normal">Set To Hold</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Need More Details')} className="font-normal">Set To Need Details</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
+                    <X className="h-4 w-4" />
+                </Button>
+            </div>
         </div>
       )}
 
