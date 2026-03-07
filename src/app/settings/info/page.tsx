@@ -329,11 +329,7 @@ export default function InfoSettingsPage() {
                                 />
                             </div>
                             <Button size="sm" variant="outline" onClick={handleSaveVisibility} disabled={isSubmitting || !canUpdateSettings || localDonationVisible === !!infoSettings?.isDonationInfoPublic} className="font-bold border-primary/20">
-<<<<<<< HEAD
-                                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-=======
                                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
->>>>>>> ec143c0fbd59660a5bff17afcf13151048a4b79c
                                 Save visibility
                             </Button>
                         </div>

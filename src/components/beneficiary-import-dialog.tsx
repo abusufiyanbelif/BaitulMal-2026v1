@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Info, FileWarning, Loader2, XCircle, UploadCloud, Download } from 'lucide-react';
+import { CheckCircle, Info, FileWarning, Loader2, XCircle, UploadCloud, Download, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Beneficiary } from '@/lib/types';
 
@@ -66,6 +66,10 @@ export function BeneficiaryImportDialog({
     reader.onload = (event) => {
       const text = event.target?.result as string;
       const lines = text.split('\n');
+      if (lines.length === 0) {
+          setIsProcessing(false);
+          return;
+      }
       const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
       
       const processed: ProcessedRecord[] = lines.slice(1).map((line, idx) => {

@@ -32,7 +32,8 @@ import {
     Hourglass,
     CheckCircle2,
     Info,
-    TrendingUp
+    TrendingUp,
+    ChevronsUpDown
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -429,7 +430,7 @@ export default function BeneficiariesPage() {
 
                                     {canUpdate && (
                                         <DropdownMenuSub>
-                                        <DropdownMenuSubTrigger className="text-primary font-normal"><ChevronUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Vetting</DropdownMenuSubTrigger>
+                                        <DropdownMenuSubTrigger className="text-primary font-normal"><ChevronsUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Vetting</DropdownMenuSubTrigger>
                                         <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] border-primary/10 shadow-dropdown">
                                             <DropdownMenuRadioGroup value={b.status || 'Pending'} onValueChange={(s) => handleStatusChange(b, s)}>
                                             <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>

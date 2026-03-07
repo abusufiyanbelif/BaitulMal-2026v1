@@ -41,7 +41,7 @@ import {
     Edit,
     Hourglass,
     CheckCircle2,
-    ChevronUpDown,
+    ChevronsUpDown,
     Coins,
     XCircle,
     Filter,
@@ -268,9 +268,9 @@ export default function BeneficiariesPage() {
     const fileList = data.idProofFile as FileList | undefined;
     if (fileList && fileList.length > 0) {
         const file = fileList[0];
-        const resized = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (b: any) => resolve(blob as Blob), 'blob'); });
+        const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
         const fRef = storageRef(storage, `beneficiaries/${masterRef.id}/id_proof.png`);
-        await uploadBytes(fRef, resized);
+        await uploadBytes(fRef, resizedBlob);
         idProofUrl = await getDownloadURL(fRef);
     }
 
@@ -566,7 +566,7 @@ export default function BeneficiariesPage() {
 
                                                                     {canUpdate && (
                                                                         <DropdownMenuSub>
-                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ChevronUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Disbursement</DropdownMenuSubTrigger>
+                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ChevronsUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Disbursement</DropdownMenuSubTrigger>
                                                                             <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                                                                 <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
                                                                                     <DropdownMenuRadioItem value="Pending" className="font-normal">Pending</DropdownMenuRadioItem>
