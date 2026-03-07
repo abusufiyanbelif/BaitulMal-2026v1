@@ -212,7 +212,7 @@ export function PublicLeadsView() {
     <div className="space-y-8">
       <div className="space-y-4">
           <h1 className="text-4xl font-bold tracking-tight text-primary">Public Leads</h1>
-          <p className="text-lg font-bold text-primary">Verified Community Appeals Requiring Your Support.</p>
+          <p className="text-lg font-bold text-primary">Verified community appeals requiring your support.</p>
           
           <div className="space-y-2">
             <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />

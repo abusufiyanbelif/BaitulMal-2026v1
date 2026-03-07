@@ -17,7 +17,6 @@ const badgeVariants = cva(
         success:
           "border-transparent bg-primary/10 text-primary hover:bg-primary/20",
         outline: "text-foreground border-primary/20",
-        // Semantic Status Variants - Theme Reactive
         eligible: "border-transparent bg-[hsl(var(--badge-eligible-bg))] text-[hsl(var(--badge-eligible-fg))] rounded-[20px] px-[10px] py-[4px]",
         given: "border-transparent bg-[hsl(var(--badge-given-bg))] text-[hsl(var(--badge-given-fg))] px-[10px] py-[4px]",
         active: "border-transparent bg-[hsl(var(--badge-active-bg))] text-[hsl(var(--badge-active-fg))] px-[10px] py-[4px]",
@@ -36,9 +35,7 @@ export interface BadgeProps
 function Badge({ className, variant, children, ...props }: BadgeProps) {
   let finalVariant = variant;
 
-  // Determine variant based on text content if variant is default/outline/success
   if (!variant || variant === 'default' || variant === 'outline' || variant === 'success') {
-    // Only attempt string matching if children is a string
     if (typeof children === 'string') {
         const lowerContent = children.trim().toLowerCase();
         if (lowerContent === 'eligible' || lowerContent === 'verified' || lowerContent === 'success' || lowerContent.includes('published')) {
@@ -51,11 +48,9 @@ function Badge({ className, variant, children, ...props }: BadgeProps) {
     }
   }
 
-  // Pre-process display content to ensure "Initial Capital For Every Word" (Title Case)
   let displayChildren = children;
   if (typeof children === 'string' && children.trim().length > 0) {
       const content = children.trim();
-      // Transform to Title Case
       displayChildren = content
         .split(' ')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())

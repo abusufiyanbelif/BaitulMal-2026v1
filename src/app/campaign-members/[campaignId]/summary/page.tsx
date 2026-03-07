@@ -56,7 +56,6 @@ import {
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
 import { Label } from '@/components/ui/label';
@@ -315,13 +314,13 @@ export default function CampaignSummaryPage() {
     };
 
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
-        if (!leadDocRef || !lead?.documents || !canUpdateSummary) return;
-        const newDocs = lead.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
+        if (!leadDocRef || !campaign?.documents || !canUpdateSummary) return;
+        const newDocs = campaign.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
         try {
-            await updateDoc(leadDocRef, { documents: newDocs, updatedAt: serverTimestamp() });
+            await updateDoc(campaignDocRef, { documents: newDocs, updatedAt: serverTimestamp() });
             toast({ title: "Visibility Updated", variant: "success" });
         } catch (serverError: any) {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: { documents: newDocs } }));
+            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: { documents: newDocs } }));
         }
     };
 
@@ -407,7 +406,7 @@ export default function CampaignSummaryPage() {
                  <div className="space-y-1">
                     {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => handleFieldChange('name', e.target.value)} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary tracking-tight">{campaign?.name}</h1> )}
                     <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest">{campaign?.status}</Badge>
+                        <Badge variant="outline" className="text-[10px] font-bold tracking-tight">{campaign?.status}</Badge>
                         <Badge variant={campaign?.authenticityStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold flex items-center gap-1">
                             <ShieldCheck className="h-3 w-3" />
                             {campaign?.authenticityStatus}
@@ -451,7 +450,7 @@ export default function CampaignSummaryPage() {
                         {editMode ? (
                             <div className="space-y-6 font-normal animate-fade-in-zoom">
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Header Image</Label>
+                                    <Label className="font-bold text-xs text-muted-foreground tracking-tight">Header Image</Label>
                                     <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
                                     <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-all duration-300 group">
                                         {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 transition-all duration-300 hover:scale-110 active:scale-90 shadow-lg" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6 transition-transform group-hover:scale-105"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground group-hover:text-primary" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click To Upload</span></p></div> )}
@@ -459,7 +458,7 @@ export default function CampaignSummaryPage() {
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div className="space-y-1">
-                                        <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Category</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight">Category</Label>
                                         <Select value={editableCampaign.category} onValueChange={(val) => handleFieldChange('category', val)}>
                                             <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom">
@@ -470,7 +469,7 @@ export default function CampaignSummaryPage() {
                                         </Select>
                                     </div>
                                     <div className="space-y-1">
-                                        <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Priority</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight">Priority</Label>
                                         <Select value={editableCampaign.priority} onValueChange={(val) => handleFieldChange('priority', val)}>
                                             <SelectTrigger className="font-bold text-primary"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom">
@@ -479,7 +478,7 @@ export default function CampaignSummaryPage() {
                                         </Select>
                                     </div>
                                     <div className="space-y-1">
-                                        <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Operational Status</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight">Operational Status</Label>
                                         <Select value={editableCampaign.status} onValueChange={(value) => handleFieldChange('status', value)}>
                                             <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom">
@@ -490,7 +489,7 @@ export default function CampaignSummaryPage() {
                                         </Select>
                                     </div>
                                     <div className="space-y-1">
-                                        <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Verification Level</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight">Verification Level</Label>
                                         <Select value={editableCampaign.authenticityStatus} onValueChange={(value) => handleFieldChange('authenticityStatus', value)}>
                                             <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom">
@@ -505,7 +504,7 @@ export default function CampaignSummaryPage() {
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Public Visibility</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight">Public Visibility</Label>
                                         <Select value={editableCampaign.publicVisibility} onValueChange={(value) => handleFieldChange('publicVisibility', value)}>
                                             <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom">
@@ -515,15 +514,15 @@ export default function CampaignSummaryPage() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Fundraising Goal (₹)</Label><Input type="number" value={editableCampaign.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md" /></div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">Fundraising Goal (₹)</Label><Input type="number" value={editableCampaign.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md" /></div>
                                 </div>
-                                <div><Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground font-normal transition-all duration-300 focus:shadow-md" rows={4} /></div>
+                                <div><Label className="font-bold text-xs text-muted-foreground tracking-tight">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground font-normal transition-all duration-300 focus:shadow-md" rows={4} /></div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Start Date</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="text-foreground font-bold" /></div>
-                                    <div className="space-y-1"><Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">End Date</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="text-foreground font-bold" /></div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">Start Date</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="text-foreground font-bold" /></div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">End Date</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="text-foreground font-bold" /></div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Allowed Donation Types For Goal</Label>
+                                    <Label className="font-bold text-xs text-muted-foreground tracking-tight">Allowed Donation Types For Goal</Label>
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border rounded-md p-3 bg-white">
                                         {donationCategories.map(type => (
                                             <div key={type} className="flex items-center space-x-2 transition-all duration-300 hover:translate-x-1">
@@ -553,7 +552,7 @@ export default function CampaignSummaryPage() {
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                 </div>
                                 <div className="space-y-2 font-normal text-foreground">
-                                    <Label className="text-muted-foreground uppercase text-[10px] font-bold tracking-widest">Campaign Description</Label>
+                                    <Label className="text-muted-foreground text-[10px] font-bold tracking-tight">Campaign Description</Label>
                                     <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed">{campaign?.description || 'No description provided.'}</p>
                                 </div>
                             </>
@@ -580,12 +579,12 @@ export default function CampaignSummaryPage() {
                                                     </RadialBarChart>
                                                 </ChartContainer>
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Funded</span></div>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold tracking-tight">Funded</span></div>
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary font-bold animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Grand Total Received</p><p className="text-2xl font-bold text-primary font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Grand Total Received</p><p className="text-2xl font-bold text-primary font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -594,16 +593,16 @@ export default function CampaignSummaryPage() {
 
                         {isVisible('quick_stats') && (
                             <div className="grid gap-6 grid-cols-1 sm:grid-cols-3 font-normal">
-                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.totalBeneficiaries}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Kits Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesGiven}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesPending}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.totalBeneficiaries}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Kits Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesGiven}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesPending}</div></CardContent></Card>
                             </div>
                         )}
 
                         {isVisible('beneficiary_groups') && (
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
                                 <CardHeader className="bg-primary/5 border-b">
-                                    <CardTitle className="font-bold text-primary uppercase tracking-tight">
+                                    <CardTitle className="font-bold text-primary tracking-tight">
                                         {isRationInitiative ? 'Beneficiary Categories' : 'Required Financial Allocation'}
                                     </CardTitle>
                                     <CardDescription className="font-normal text-primary/70">
@@ -619,10 +618,10 @@ export default function CampaignSummaryPage() {
                                                 <Table>
                                                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                         <TableRow>
-                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Category Name</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Beneficiaries</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Kit Amount</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Total Amount</TableHead>
+                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Category Name</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Beneficiaries</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Kit Amount</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Total Amount</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
@@ -638,7 +637,7 @@ export default function CampaignSummaryPage() {
                                                     {beneficiaryGroups.length > 0 && (
                                                         <TableFooter className="bg-primary/5 border-t font-bold">
                                                             <TableRow>
-                                                                <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-[10px] tracking-widest">Total Initiative Requirement</TableCell>
+                                                                <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight">Total Initiative Requirement</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-primary text-base">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
                                                         </TableFooter>
@@ -648,10 +647,10 @@ export default function CampaignSummaryPage() {
                                                 <Table>
                                                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                         <TableRow>
-                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Requirement Description</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Quantity</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Unit Price</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Total Cost</TableHead>
+                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Requirement Description</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Quantity</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Unit Price</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Total Cost</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
@@ -666,7 +665,7 @@ export default function CampaignSummaryPage() {
                                                     </TableBody>
                                                     <TableFooter className="bg-primary/5 border-t font-bold">
                                                         <TableRow>
-                                                            <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-[10px] tracking-widest">Single Unit Total</TableCell>
+                                                            <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight">Single Unit Total</TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-base">
                                                                 ₹{(campaign?.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
                                                             </TableCell>
@@ -684,7 +683,7 @@ export default function CampaignSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2 font-normal">
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white transition-all duration-300 hover:shadow-lg">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm uppercase tracking-widest">Fund Totals By Designation</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Fund Totals By Designation</CardTitle></CardHeader>
                                     <CardContent className="space-y-2 pt-6 font-normal text-foreground">
                                         {donationCategories.map(cat => (
                                             <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded">
@@ -700,12 +699,12 @@ export default function CampaignSummaryPage() {
 
                             {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white transition-all duration-300 hover:shadow-lg">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm uppercase tracking-widest">Zakat Fund Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking of designated Zakat resources.</CardDescription></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Zakat Fund Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking of designated Zakat resources.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 pt-6 font-normal text-foreground">
-                                        <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded"><span className="text-muted-foreground uppercase tracking-tighter font-normal">Total Zakat Collected</span><span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
+                                        <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded"><span className="text-muted-foreground tracking-tighter font-normal">Total Zakat Collected</span><span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
                                         <Separator />
                                         <div className="pl-4 border-l-2 border-dashed border-primary/20 space-y-2 py-2 font-bold">
-                                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground uppercase tracking-tighter font-normal">Allocated As Assistance</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
+                                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground tracking-tighter font-normal">Allocated As Assistance</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
                                             <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="font-bold font-mono">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
                                             <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="font-bold font-mono">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                         </div>
@@ -719,7 +718,7 @@ export default function CampaignSummaryPage() {
                         <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 font-normal text-primary">
                             {isVisible('donations_by_category') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm uppercase tracking-widest">Donations By Designation</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Donations By Designation</CardTitle></CardHeader>
                                     <CardContent className="p-0 sm:p-6">
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
@@ -734,7 +733,7 @@ export default function CampaignSummaryPage() {
 
                             {isVisible('donations_by_payment_type') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-sm uppercase tracking-widest">Verified Payment Channels</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-sm tracking-tight">Verified Payment Channels</CardTitle></CardHeader>
                                     <CardContent className="p-0 sm:p-6">
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
@@ -756,14 +755,14 @@ export default function CampaignSummaryPage() {
 
                 {isVisible('documents') && (
                     <Card className="animate-fade-in-up bg-white shadow-sm border-primary/10 transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '400ms' }}>
-                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm uppercase tracking-widest">Verified Institutional Artifacts</CardTitle></CardHeader>
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Documents</CardTitle></CardHeader>
                         <CardContent className="font-normal text-primary pt-6">
                         {editMode ? (
                                 <div className="space-y-4 animate-fade-in-zoom">
-                                    <Label className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Upload New Verifiable Evidence</Label>
+                                    <Label className="font-bold text-[10px] uppercase text-muted-foreground tracking-tight">Upload New Verifiable Evidence</Label>
                                     <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
                                     <Separator className="my-6" />
-                                    <Label className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Manage Existing Artifacts</Label>
+                                    <Label className="font-bold text-[10px] uppercase text-muted-foreground tracking-tight">Manage Existing Documents</Label>
                                     {existingDocuments.length > 0 ? (
                                         <div className="space-y-3 font-normal text-foreground">
                                             {existingDocuments.map((doc) => (
@@ -778,7 +777,7 @@ export default function CampaignSummaryPage() {
                                                 </div>
                                             ))}
                                         </div>
-                                    ) : <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest italic opacity-60">No documents attached.</p>}
+                                    ) : <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight italic opacity-60">No documents attached.</p>}
                                 </div>
                             ) : (
                                 campaign?.documents && campaign?.documents.length > 0 ? (
@@ -801,7 +800,7 @@ export default function CampaignSummaryPage() {
                                             );
                                         })}
                                     </div>
-                                ) : <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest italic opacity-60">No verifiable evidence available.</p>
+                                ) : <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight italic opacity-60">No documents available.</p>
                             )}
                         </CardContent>
                     </Card>
@@ -812,7 +811,7 @@ export default function CampaignSummaryPage() {
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
                 <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden animate-fade-in-zoom">
-                    <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary uppercase tracking-widest text-sm">{imageToView?.name}</DialogTitle></DialogHeader>
+                    <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary uppercase tracking-tight text-sm">{imageToView?.name}</DialogTitle></DialogHeader>
                     <ScrollArea className="flex-1 bg-secondary/20">
                         <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
                             {imageToView && (

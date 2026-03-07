@@ -66,9 +66,10 @@ import {
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { DonationSearchDialog } from '@/components/donation-search-dialog';

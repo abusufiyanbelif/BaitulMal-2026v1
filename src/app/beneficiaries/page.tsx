@@ -236,7 +236,7 @@ export default function BeneficiariesPage() {
     if (!canUpdate || !userProfile) return;
     const res = await updateMasterBeneficiaryAction(beneficiary.id, { status: newStatus as any }, { id: userProfile.id, name: userProfile.name });
     if (res.success) {
-        toast({ title: 'Status Updated Site-Wide', variant: 'success' });
+        toast({ title: 'Status Updated', variant: 'success' });
     }
   };
 
@@ -264,7 +264,7 @@ export default function BeneficiariesPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "beneficiary_master_registry.csv");
+    link.setAttribute("download", "beneficiary_registry.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -282,7 +282,7 @@ export default function BeneficiariesPage() {
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Master Registry..." description="Retrieving Institutional Beneficiary Records." />;
+  if (isLoading) return <SectionLoader label="Loading Master Registry..." description="Retrieving Records." />;
   
   if (!canRead) return (
     <main className="container mx-auto p-8 text-primary font-normal">
@@ -316,7 +316,7 @@ export default function BeneficiariesPage() {
           </Button>
           <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync Complete' : 'Sync Failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="secondary" size="sm" className="font-bold border-primary/10 text-primary active:scale-95 transition-transform">
             {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
-            Sync Hub
+            Refresh Records
           </Button>
           {canCreate && (
             <Button onClick={() => router.push('/beneficiaries/create')} size="sm" className="font-bold active:scale-95 transition-transform shadow-md rounded-[12px]">
@@ -332,7 +332,7 @@ export default function BeneficiariesPage() {
           <StatCard title="Verified" count={stats.verified} description="Confirmed Profiles" icon={CheckCircle2} delay="200ms" />
           <StatCard title="On Hold" count={stats.hold} description="Temporarily Paused" icon={XCircle} delay="250ms" />
           <StatCard title="Need Details" count={stats.needDetails} description="Incomplete Profiles" icon={Info} delay="300ms" />
-          <StatCard title="Zakat" count={stats.zakat} description="Religious Eligible" icon={Coins} delay="350ms" />
+          <StatCard title="Zakat" count={stats.zakat} description="Eligible For Support" icon={Coins} delay="350ms" />
       </div>
 
       <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
@@ -454,7 +454,7 @@ export default function BeneficiariesPage() {
                     <div className="font-bold text-sm truncate pr-2 text-primary">{b.name}</div>
                     <div className="font-mono text-xs opacity-60 text-primary">{b.phone || 'N/A'}</div>
                     <div className="text-center"><Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold">{b.status || 'Pending'}</Badge></div>
-                    <div className="text-center"><p className="text-[9px] font-bold text-muted-foreground opacity-40 tracking-tight">Initiative Specific</p></div>
+                    <div className="text-center"><p className="text-[9px] font-bold text-muted-foreground opacity-40 tracking-tight">Project Specific</p></div>
                     <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
                     <div className="pl-4 text-xs font-normal text-primary/70">{b.referralBy || 'N/A'}</div>
                     <div className="text-right">
@@ -477,7 +477,7 @@ export default function BeneficiariesPage() {
                                         <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] border-primary/10 shadow-dropdown">
                                             <DropdownMenuRadioGroup value={b.status || 'Pending'} onValueChange={(s) => handleStatusChange(b, s)}>
                                             <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</SelectItem>
+                                            <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Need More Details" className="text-xs font-normal">Need Details</DropdownMenuRadioItem></DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent></DropdownMenuPortal>
@@ -522,7 +522,7 @@ export default function BeneficiariesPage() {
                     </div>
                     <div className="space-y-1 md:col-span-3">
                         <p className="text-[10px] font-bold opacity-60 tracking-tight">Notes</p>
-                        <p className="text-xs italic opacity-80 font-normal">{b.notes || (b.isEligibleForZakat ? 'Eligible For Zakat.' : 'N/A')}</p>
+                        <p className="text-xs italic opacity-80 font-normal">{b.notes || (b.isEligibleForZakat ? 'Eligible For Support.' : 'N/A')}</p>
                     </div>
                     </div>
                 </AccordionContent>

@@ -257,7 +257,7 @@ export default function PublicCampaignSummaryPage() {
                     <Image src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`} alt={campaign.name} fill sizes="100vw" className="object-cover" priority />
                 ) : ( <FallbackIcon className="w-24 h-24 text-muted-foreground/30" /> )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-6"><h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{campaign.name}</h1><p className="text-sm text-white/90 shadow-md font-bold uppercase">{campaign.status}</p></div>
+                <div className="absolute bottom-0 left-0 p-6"><h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{campaign.name}</h1><p className="text-sm text-white/90 shadow-md font-bold">{campaign.status}</p></div>
             </div>
 
             <div className="flex justify-end items-center mb-4 flex-wrap gap-2">
@@ -269,14 +269,14 @@ export default function PublicCampaignSummaryPage() {
                     <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight">Campaign Details</CardTitle></CardHeader>
                     <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                         <div className="space-y-2 text-primary">
-                            <Label className="text-muted-foreground uppercase text-[10px] font-bold tracking-widest">Description</Label>
+                            <Label className="text-muted-foreground text-[10px] font-bold tracking-tight">Description</Label>
                             <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed">{campaign.description || 'No Description Provided.'}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 text-primary">
-                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary font-mono">₹{(campaign.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Category</p><p className="mt-1 text-lg font-bold text-primary">{campaign.category}</p></div>
-                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Start Date</p><p className="mt-1 text-lg font-bold text-primary">{campaign.startDate}</p></div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">End Date</p><p className="mt-1 text-lg font-bold text-primary">{campaign.endDate}</p></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary font-mono">₹{(campaign.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Category</p><p className="mt-1 text-lg font-bold text-primary">{campaign.category}</p></div>
+                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Start Date</p><p className="mt-1 text-lg font-bold text-primary">{campaign.startDate}</p></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">End Date</p><p className="mt-1 text-lg font-bold text-primary">{campaign.endDate}</p></div>
                         </div>
                     </CardContent>
                 </Card>
@@ -300,12 +300,12 @@ export default function PublicCampaignSummaryPage() {
                                                     </RadialBarChart>
                                                 </ChartContainer>
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Funded</span></div>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold tracking-tight">Funded</span></div>
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary font-bold">
-                                            <div><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                            <div><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                            <div><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Grand Total Received</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Grand Total Received</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -314,9 +314,9 @@ export default function PublicCampaignSummaryPage() {
 
                         {isVisible('quick_stats') && (
                             <div className="grid gap-6 sm:grid-cols-3">
-                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Kits Provided</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold uppercase text-primary tracking-widest">Pending Kits</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Kits Provided</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Pending Kits</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
                             </div>
                         )}
 
@@ -339,10 +339,10 @@ export default function PublicCampaignSummaryPage() {
                                                 <Table>
                                                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                         <TableRow>
-                                                            <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Category Name</TableHead>
-                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Beneficiaries</TableHead>
-                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Kit Amount</TableHead>
-                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Total Amount</TableHead>
+                                                            <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Category Name</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Beneficiaries</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Kit Amount</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Total Amount</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
@@ -357,7 +357,7 @@ export default function PublicCampaignSummaryPage() {
                                                     </TableBody>
                                                     {beneficiaryGroups.length > 0 && (
                                                         <tfoot className="bg-primary/5 border-t">
-                                                            <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-[10px] tracking-widest">Total Requirement</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell></TableRow>
+                                                            <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight">Total Requirement</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell></TableRow>
                                                         </tfoot>
                                                     )}
                                                 </Table>
@@ -365,10 +365,10 @@ export default function PublicCampaignSummaryPage() {
                                                 <Table>
                                                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                         <TableRow>
-                                                            <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Requirement Description</TableHead>
-                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Quantity</TableHead>
-                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Unit Price</TableHead>
-                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest">Total Price</TableHead>
+                                                            <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Requirement Description</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Quantity</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Unit Price</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Total Price</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
@@ -383,7 +383,7 @@ export default function PublicCampaignSummaryPage() {
                                                     </TableBody>
                                                     <tfoot className="bg-primary/5 border-t">
                                                         <TableRow>
-                                                            <TableCell colSpan={3} className="text-right font-bold text-primary uppercase text-[10px] tracking-widest">Single Unit Total</TableCell>
+                                                            <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight">Single Unit Total</TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-lg">
                                                                 ₹{(campaign.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
                                                             </TableCell>
@@ -401,7 +401,7 @@ export default function PublicCampaignSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2">
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] uppercase tracking-widest">Fund Totals By Type</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight">Fund Totals By Type</CardTitle></CardHeader>
                                     <CardContent className="space-y-2 pt-6">
                                         {donationCategories.map(cat => (
                                             <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
@@ -417,14 +417,14 @@ export default function PublicCampaignSummaryPage() {
 
                             {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] uppercase tracking-widest">Zakat Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking Of Zakat Funds Collected Across All Initiatives.</CardDescription></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight">Zakat Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking Of Zakat Funds Collected Across All Initiatives.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 pt-6 font-bold text-primary">
-                                    <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal uppercase tracking-tighter">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.amountsByCategory.Zakat || 0).toLocaleString('en-IN')}</span></div>
+                                    <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.amountsByCategory.Zakat || 0).toLocaleString('en-IN')}</span></div>
                                         <Separator />
                                         <div className="pl-4 border-l-2 border-dashed border-primary/20 space-y-2 py-2">
-                                            <div className="flex justify-between items-center text-sm transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal uppercase tracking-tighter">Allocated As Cash-In-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
-                                            <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal uppercase tracking-tighter">Given</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                            <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal uppercase tracking-tighter">Pending</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                                            <div className="flex justify-between items-center text-sm transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter">Allocated As Cash-In-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
+                                            <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter">Given</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
+                                            <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter">Pending</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                         </div>
                                         <Separator />
                                         <div className="flex justify-between items-center text-base text-primary font-bold transition-all hover:bg-primary/5 px-2 rounded"><span>Zakat Balance For Goal</span><span className="text-primary font-mono font-bold">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
@@ -436,7 +436,7 @@ export default function PublicCampaignSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2">
                             {isVisible('donations_by_category') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] uppercase tracking-widest">Donations By Category</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight">Donations By Category</CardTitle></CardHeader>
                                     <CardContent className="pt-6">
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
@@ -451,7 +451,7 @@ export default function PublicCampaignSummaryPage() {
 
                             {isVisible('donations_by_payment_type') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-[10px] uppercase tracking-widest"><PieChartIcon className="h-5 w-5"/> Donations By Payment Type</CardTitle><CardDescription className="font-normal text-primary/70">Count Of Donations Per Payment Type.</CardDescription></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-[10px] tracking-tight"><PieChartIcon className="h-5 w-5"/> Donations By Payment Type</CardTitle><CardDescription className="font-normal text-primary/70">Count Of Donations Per Payment Type.</CardDescription></CardHeader>
                                     <CardContent className="pt-6">
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
@@ -473,7 +473,7 @@ export default function PublicCampaignSummaryPage() {
 
                 {isVisible('documents') && publicDocuments.length > 0 && (
                     <Card className="animate-fade-in-up bg-white border-primary/10 shadow-sm overflow-hidden" style={{ animationDelay: '100ms' }}>
-                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] uppercase tracking-widest">Public Artifacts</CardTitle></CardHeader>
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight">Public Artifacts</CardTitle></CardHeader>
                         <CardContent className="pt-6">
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                 {publicDocuments.map((doc) => {
@@ -486,7 +486,7 @@ export default function PublicCampaignSummaryPage() {
                                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                                 </div>
                                                 <div className="p-2 text-center text-primary font-bold">
-                                                    <p className="text-[10px] font-bold uppercase truncate group-hover:underline">{doc.name}</p>
+                                                    <p className="text-[10px] font-bold truncate group-hover:underline">{doc.name}</p>
                                                 </div>
                                             </div>
                                         </Card>
@@ -502,7 +502,7 @@ export default function PublicCampaignSummaryPage() {
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
                 <DialogContent className="max-w-4xl animate-fade-in-zoom p-0 overflow-hidden">
-                    <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary uppercase tracking-widest text-sm">{imageToView?.name}</DialogTitle></DialogHeader>
+                    <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm">{imageToView?.name}</DialogTitle></DialogHeader>
                     <div className="p-4 bg-secondary/20">
                         {imageToView && (
                             <div className="relative h-[70vh] w-full overflow-auto border border-primary/10 rounded-md bg-white">

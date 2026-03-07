@@ -212,7 +212,7 @@ export function PublicCampaignsView() {
     <div className="space-y-8">
        <div className="space-y-4">
           <h1 className="text-4xl font-bold tracking-tighter text-primary">Our Campaigns</h1>
-          <p className="text-primary text-lg font-bold">Transparent Tracking Of Our Community Support Projects.</p>
+          <p className="text-primary text-lg font-bold">Transparent tracking of our community support projects.</p>
           
           <div className="space-y-2">
             <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />

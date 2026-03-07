@@ -35,8 +35,8 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 
 /**
- * Institutional Footer - Optimized for clarity and interaction.
- * Consolidated redundant contribution buttons into a single Hub.
+ * Simplified Footer - Optimized for clarity.
+ * Consolidated redundant contribution options into a single menu.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
@@ -68,7 +68,7 @@ export function AppFooter() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Institutional-Qr-${paymentSettings?.upiId || 'payment'}.png`;
+      link.download = `Organization-Qr-${paymentSettings?.upiId || 'payment'}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -90,7 +90,7 @@ export function AppFooter() {
                 <div className="relative w-12 h-12 bg-white rounded-xl p-1 border border-border shadow-sm">
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
-                    alt="Institutional Logo"
+                    alt="Logo"
                     fill
                     className="object-contain p-1.5"
                   />
@@ -125,7 +125,7 @@ export function AppFooter() {
           {/* Column 2: Navigation */}
           <div className="space-y-6 md:pl-10">
             <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">
-              Institutional Hub
+              More Info
             </h3>
             <nav className="flex flex-col gap-4">
               <Link href="/info/organization" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal">
@@ -142,7 +142,7 @@ export function AppFooter() {
           {/* Column 3: Secure Contributions */}
           <div className="flex flex-col md:items-end gap-6">
             <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">
-              Secure Contribution
+              Support Us
             </h3>
             <div className="w-full sm:w-auto">
                 <Button 
@@ -151,10 +151,10 @@ export function AppFooter() {
                     className="font-semibold border-primary/20 text-primary h-12 px-10 rounded-xl hover:bg-primary hover:text-white transition-all active:scale-95 shadow-md group w-full"
                 >
                     <HeartHandshake className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                    Contribution Hub
+                    How To Give
                 </Button>
                 <p className="text-[9px] text-muted-foreground mt-3 font-normal italic md:text-right uppercase tracking-tighter opacity-60">
-                    Upi Qr, Bank Transfer, And Global Support Channels.
+                    Upi Qr, Bank Transfer, And Support Channels.
                 </p>
             </div>
           </div>
@@ -185,7 +185,7 @@ export function AppFooter() {
       <Dialog open={isDonationDialogOpen} onOpenChange={isDonationDialogOpen ? setIsDonationDialogOpen : undefined}>
         <DialogContent className="sm:max-w-xl border-primary/10 overflow-hidden rounded-[24px] p-0 animate-fade-in-zoom">
           <DialogHeader className="bg-primary/5 px-6 py-6 border-b">
-            <DialogTitle className="text-2xl font-bold text-primary tracking-tight">Institutional Contribution Hub</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-primary tracking-tight">Contribution Options</DialogTitle>
             <DialogDescription className="font-normal text-primary/70">
                 Secure Channels For Supporting Our Community Initiatives.
             </DialogDescription>
@@ -286,7 +286,7 @@ export function AppFooter() {
 
           <DialogFooter className="sm:justify-center px-6 py-4 bg-primary/[0.02] border-t">
             <Button variant="secondary" onClick={() => setIsDonationDialogOpen(false)} className="font-bold border-primary/10 text-primary px-10">
-              Close Hub
+              Close Options
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -65,8 +65,8 @@ export function PurposeFundingSummary() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="pl-6 tracking-widest">Purpose Type</TableHead>
-              <TableHead className="text-right tracking-widest pr-6">Amount Received</TableHead>
+              <TableHead className="pl-6 tracking-tight">Purpose Type</TableHead>
+              <TableHead className="text-right tracking-tight pr-6">Amount Received</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

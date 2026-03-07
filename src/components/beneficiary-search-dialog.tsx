@@ -8,7 +8,7 @@ import { useFirestore, useMemoFirebase, useCollection, collection, query, getDoc
 import type { Beneficiary } from '@/lib/types';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Search, Users, Filter, X } from 'lucide-react';
+import { Loader2, Search, Users, Filter, X, Info } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
@@ -106,7 +106,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
         <DialogHeader className="px-6 py-4 bg-primary/5 border-b border-primary/10">
           <DialogTitle className="text-xl font-bold tracking-tight text-primary">Search Master List</DialogTitle>
           <DialogDescription className="text-sm font-normal text-primary/70">
-            Select beneficiaries from the verified master database to add them to this initiative.
+            Select beneficiaries from the verified database to add them to this initiative.
           </DialogDescription>
         </DialogHeader>
         
@@ -164,7 +164,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
                                     <div className="flex-1 min-w-0 space-y-1">
                                         <div className="flex items-center gap-2">
                                             <p className="font-bold text-sm text-primary truncate">{beneficiary.name}</p>
-                                            <Badge variant="outline" className="text-[9px] font-bold uppercase border-primary/10 text-primary/60">
+                                            <Badge variant="outline" className="text-[9px] font-bold border-primary/10 text-primary/60">
                                                 {beneficiary.status || 'Verified'}
                                             </Badge>
                                         </div>
@@ -191,8 +191,8 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
 
         <DialogFooter className="px-6 py-4 bg-primary/[0.02] border-t border-primary/10">
           <div className="flex justify-between items-center w-full">
-            <div className="flex items-center gap-2 text-[10px] font-bold text-primary/60 uppercase tracking-widest">
-                <Info className="h-3 w-3" /> Allowed: {allowedTypes.join(', ')}
+            <div className="flex items-center gap-2 text-[10px] font-bold text-primary/60 tracking-tight">
+                <Info className="h-3 w-3" /> Allowed Types: {initiativeType === 'campaign' ? 'Campaign Only' : 'Lead Only'}
             </div>
             <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary h-9 rounded-[10px] transition-transform active:scale-95">
                 Close

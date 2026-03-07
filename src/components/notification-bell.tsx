@@ -147,8 +147,8 @@ export function NotificationBell() {
                 <div className="bg-primary/5 p-4 border-b">
                     <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
-                            <h3 className="text-sm font-bold text-primary tracking-tight">Institutional Backlog</h3>
-                            <p className="text-[9px] text-muted-foreground font-medium tracking-tight opacity-60">Action Required For Data Vetting</p>
+                            <h3 className="text-sm font-bold text-primary tracking-tight">Pending Tasks</h3>
+                            <p className="text-[9px] text-muted-foreground font-medium tracking-tight opacity-60">Action Required For Review</p>
                         </div>
                         {totalAlerts > 0 && <Badge className="bg-primary text-white border-none font-bold text-[9px] px-2 h-5">Action Items</Badge>}
                     </div>
@@ -161,22 +161,22 @@ export function NotificationBell() {
                                 <div className="p-4 rounded-full bg-primary/5 text-primary/20 mb-4 animate-fade-in-zoom">
                                     <CheckCircle2 className="h-10 w-10" />
                                 </div>
-                                <p className="text-sm font-bold text-primary tracking-tight">Everything Is Verified</p>
-                                <p className="text-[10px] text-muted-foreground font-normal">All Organizational Data Has Been Vetted And Allocated.</p>
+                                <p className="text-sm font-bold text-primary tracking-tight">Everything is verified</p>
+                                <p className="text-[10px] text-muted-foreground font-normal">All data has been reviewed and allocated.</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
                                 {/* Beneficiaries Section */}
                                 {unverifiedBeneficiaries && unverifiedBeneficiaries.length > 0 && (
                                     <div className="space-y-1">
-                                        <SectionHeader title="Verify Beneficiary Profiles" count={unverifiedBeneficiaries.length} icon={Users} />
+                                        <SectionHeader title="Verify Profiles" count={unverifiedBeneficiaries.length} icon={Users} />
                                         <div className="space-y-1">
                                             {unverifiedBeneficiaries.slice(0, 5).map(b => (
                                                 <NotificationItem 
                                                     key={b.id}
                                                     icon={Users}
                                                     title={b.name}
-                                                    subtitle="Action: Review Details & Set To Verified"
+                                                    subtitle="Action: Review Details & Verify"
                                                     href={`/beneficiaries/${b.id}`}
                                                     variant="destructive"
                                                 />
@@ -191,14 +191,14 @@ export function NotificationBell() {
                                 {/* Unverified Donations Section */}
                                 {unverifiedDonations && unverifiedDonations.length > 0 && (
                                     <div className="space-y-1">
-                                        <SectionHeader title="Confirm New Donations" count={unverifiedDonations.length} icon={IndianRupee} />
+                                        <SectionHeader title="Confirm Donations" count={unverifiedDonations.length} icon={IndianRupee} />
                                         <div className="space-y-1">
                                             {unverifiedDonations.slice(0, 5).map(d => (
                                                 <NotificationItem 
                                                     key={d.id}
                                                     icon={IndianRupee}
                                                     title={`From: ${d.donorName}`}
-                                                    subtitle="Action: Verify Transaction Artifacts"
+                                                    subtitle="Action: Verify Transaction Details"
                                                     href={`/donations/${d.id}`}
                                                     variant="destructive"
                                                 />
@@ -213,7 +213,7 @@ export function NotificationBell() {
                                 {/* Unallocated Funds Section */}
                                 {unallocatedDonations.length > 0 && (
                                     <div className="space-y-1">
-                                        <SectionHeader title="Allocate Community Funds" count={unallocatedDonations.length} icon={Wallet} />
+                                        <SectionHeader title="Allocate Funds" count={unallocatedDonations.length} icon={Wallet} />
                                         <div className="space-y-1">
                                             {unallocatedDonations.slice(0, 5).map(d => {
                                                 const allocated = d.linkSplit?.reduce((s, l) => s + l.amount, 0) || 0;
@@ -223,7 +223,7 @@ export function NotificationBell() {
                                                         key={d.id}
                                                         icon={Wallet}
                                                         title={`Balance: ₹${balance.toLocaleString()}`}
-                                                        subtitle="Action: Link Remaining Funds To Initiative"
+                                                        subtitle="Action: Link Remaining Funds"
                                                         href={`/donations/${d.id}`}
                                                         variant="warning"
                                                     />
@@ -239,14 +239,14 @@ export function NotificationBell() {
                                 {/* Initiatives Section */}
                                 {( (unverifiedLeads?.length || 0) + (unverifiedCampaigns?.length || 0) ) > 0 && (
                                     <div className="space-y-1">
-                                        <SectionHeader title="Approve New Appeals" count={(unverifiedLeads?.length || 0) + (unverifiedCampaigns?.length || 0)} icon={Lightbulb} />
+                                        <SectionHeader title="Approve Appeals" count={(unverifiedLeads?.length || 0) + (unverifiedCampaigns?.length || 0)} icon={Lightbulb} />
                                         <div className="space-y-1">
                                             {unverifiedCampaigns?.slice(0, 3).map(c => (
                                                 <NotificationItem 
                                                     key={c.id}
                                                     icon={FolderKanban}
                                                     title={c.name}
-                                                    subtitle="Action: Verify Authenticity Level"
+                                                    subtitle="Action: Verify Authenticity"
                                                     href={`/campaign-members/${c.id}/summary`}
                                                     variant="info"
                                                 />
@@ -256,7 +256,7 @@ export function NotificationBell() {
                                                     key={l.id}
                                                     icon={Lightbulb}
                                                     title={l.name}
-                                                    subtitle="Action: Verify Authenticity Level"
+                                                    subtitle="Action: Verify Authenticity"
                                                     href={`/leads-members/${l.id}/summary`}
                                                     variant="info"
                                                 />
@@ -273,7 +273,7 @@ export function NotificationBell() {
                     <div className="p-3 bg-muted/20 border-t flex justify-center">
                         <Button variant="ghost" size="sm" asChild className="h-7 text-[9px] font-bold text-primary tracking-tighter hover:bg-primary/5">
                             <Link href="/dashboard" className="flex items-center">
-                                Return To Command Center <ChevronRight className="ml-1 h-3 w-3" />
+                                Return To Dashboard <ChevronRight className="ml-1 h-3 w-3" />
                             </Link>
                         </Button>
                     </div>

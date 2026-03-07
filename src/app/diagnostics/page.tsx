@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useCallback, useMemo } from 'react';
 import { useAuth, useStorage, useFirestore } from '@/firebase/provider';
@@ -48,7 +47,7 @@ export default function DiagnosticsPage() {
                 if (firestore && auth && storage) {
                     return { status: 'success', details: 'Firebase services (Firestore, Auth, Storage) are available.' };
                 } else {
-                    return { status: 'failure', details: 'One or more Firebase services could not be initialized. Check your .env file and Firebase project settings.' };
+                    return { status: 'failure', details: 'One or more Firebase services could not be initialized. Check your environment configuration.' };
                 }
             },
         },
@@ -70,7 +69,7 @@ export default function DiagnosticsPage() {
                     if (!storageBucket) missingVars.push('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET');
                     return { status: 'failure', details: (
                         <span>
-                            The following environment variables are missing from your configuration: <strong>{missingVars.join(', ')}</strong>. Please check your `.env` file.
+                            Missing configuration: <strong>{missingVars.join(', ')}</strong>.
                         </span>
                     ) };
                 }
@@ -78,7 +77,7 @@ export default function DiagnosticsPage() {
         },
         {
             id: 'firebase-auth',
-            name: 'Firebase Authentication',
+            name: 'Authentication Status',
             description: 'Checks the current user authentication status.',
             icon: <KeyRound className="h-6 w-6 text-primary" />,
             run: async () => {
@@ -86,212 +85,73 @@ export default function DiagnosticsPage() {
                 if (user) {
                     return { status: 'success', details: `Authenticated as ${user.email}.` };
                 } else {
-                    return { status: 'failure', details: 'No user is currently authenticated. Please log in to test authenticated routes.' };
+                    return { status: 'failure', details: 'No user is currently authenticated.' };
                 }
             },
         },
         {
             id: 'firestore-read',
-            name: 'Firestore Connectivity',
-            description: 'Attempts public reads from the "user_lookups" and "settings" collections.',
+            name: 'Database Connectivity',
+            description: 'Attempts public reads from necessary collections.',
             icon: <DatabaseZap className="h-6 w-6 text-primary" />,
             run: async () => {
                 if (!firestore) {
-                    return { status: 'failure', details: 'Cannot perform Firestore test because the service is not initialized.' };
+                    return { status: 'failure', details: 'Database service is not initialized.' };
                 }
                 try {
-                    // Test `get` on public-readable documents.
                     const lookupDocRef = doc(firestore, 'user_lookups', 'admin');
                     await getDoc(lookupDocRef);
                     
                     const settingsDocRef = doc(firestore, 'settings', 'branding');
                     await getDoc(settingsDocRef);
                     
-                    return { status: 'success', details: 'Successfully connected and performed public reads from `user_lookups` and `settings`.' };
+                    return { status: 'success', details: 'Successfully connected and performed necessary reads.' };
                 } catch (error: any) {
-                    return { status: 'failure', details: `Firestore public read failed. This could be a connectivity issue or a problem with your Security Rules. Error: ${error.message}` };
+                    return { status: 'failure', details: `Database read failed. Error: ${error.message}` };
                 }
             },
         },
         {
-            id: 'admin-seed-check',
-            name: 'Admin User Database Record',
-            description: 'Verifies that the default admin user exists in the database.',
-            icon: <Database className="h-6 w-6 text-primary" />,
-            run: async () => {
-                 if (!firestore) return { status: 'failure', details: 'Firestore is not initialized.' };
-                 if (!userProfile) return { status: 'skipped', details: 'Cannot run test without a logged-in user profile.' };
-                
-                try {
-                    const adminLookupSnap = await getDoc(doc(firestore, 'user_lookups', 'admin'));
-                    if (!adminLookupSnap.exists()) {
-                        return { status: 'failure', details: (
-                            <span>
-                                <strong>Admin user lookup record not found.</strong> This is required for login. Please run <strong>`npm run db:seed`</strong> from your terminal to create it.
-                            </span>
-                        )};
-                    }
-
-                    if (userProfile.role !== 'Admin') {
-                        return { status: 'skipped', details: 'Admin lookup record found. Skipped user profile document verification because you are not an administrator.'};
-                    }
-                    
-                    const adminUserDocSnap = await getDocs(query(collection(firestore, 'users'), where('userKey', '==', 'admin')));
-                    if (adminUserDocSnap.empty) {
-                         return { status: 'failure', details: (
-                            <span>
-                                <strong>Admin user profile document not found.</strong> This is required for the application to function correctly. Please run <strong>`npm run db:seed`</strong> from your terminal.
-                            </span>
-                        )};
-                    }
-
-                    return { status: 'success', details: 'Default admin user database records are correctly set up.' };
-                } catch (error: any) {
-                    return { status: 'failure', details: `Failed to verify admin records. This may indicate a problem with your Firestore Security Rules. Error: ${error.message}` };
-                }
-            }
-        },
-        {
             id: 'storage-connectivity',
-            name: 'Storage Connectivity',
-            description: 'Attempts to read metadata from a public file to verify read access.',
+            name: 'File Storage Connectivity',
+            description: 'Attempts to read metadata from a public file.',
             icon: <FolderKanban className="h-6 w-6 text-primary" />,
             run: async () => {
-                const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
                 const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
                 if (!storage || !storageBucket) {
-                    return { status: 'failure', details: `Cannot perform Storage test without the Storage service or a configured Storage Bucket.` };
+                    return { status: 'failure', details: `Storage service or bucket not configured.` };
                 }
                 
                 const publicFileRef = storageRef(storage, 'settings/logo');
                 try {
                     await getMetadata(publicFileRef);
-                    return { status: 'success', details: 'Successfully connected and verified read access to a public file in Firebase Storage.' };
+                    return { status: 'success', details: 'Successfully connected and verified read access.' };
                 } catch (error: any) {
                     if (error.code === 'storage/object-not-found') {
-                        return { status: 'success', details: (
-                            <span>
-                                <strong>Connectivity OK, file not found.</strong> The test successfully reached the storage bucket, but the test file (<strong>settings/logo</strong>) does not exist. This is expected if a logo has not been uploaded.
-                            </span>
-                        )};
-                    } else if (error.code === 'storage/unauthorized') {
-                        const storageRulesUrl = `https://console.firebase.google.com/project/${projectId}/storage/${storageBucket}/rules`;
-                        return { status: 'failure', details: (
-                            <div className="space-y-2">
-                                <p><strong>Permission Denied.</strong> This is a Firebase Storage Security Rules issue.</p>
-                                <p>The test could not read metadata from the public `/settings/logo` file. This is unexpected with the default rules.</p>
-                                <p><strong>Solution:</strong> Go to the Storage Rules editor and ensure you have a rule allowing public reads for the `settings` path.</p>
-                                <pre className="p-2 text-xs bg-muted rounded-md font-code">
-        {`match /settings/{allPaths=**} {
-          allow read: if true;
-          allow write: if isSignedIn();
-        }`}
-                                </pre>
-                                 <Button asChild variant="link" className="p-0 h-auto">
-                                    <a href={storageRulesUrl} target="_blank" rel="noopener noreferrer">
-                                        Open Storage Rules Editor <ExternalLink className="ml-1 h-3 w-3" />
-                                    </a>
-                                </Button>
-                            </div>
-                        )};
-                    } else if (error.code === 'storage/bucket-not-found') {
-                         return { status: 'failure', details: (
-                            <span>
-                                <strong>Bucket Not Found.</strong> The storage bucket <strong>{storageBucket}</strong> does not exist. Please verify the `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` value in your `.env` file.
-                            </span>
-                        )};
+                        return { status: 'success', details: 'Connectivity OK, test file not found (this is normal).' };
                     }
-                    return { status: 'failure', details: `Storage connectivity test failed. Error: ${error.message} (Code: ${error.code})` };
-                }
-            },
-        },
-        {
-            id: 'storage-write-delete',
-            name: 'Storage Write & Delete',
-            description: 'Uploads and deletes a temporary file to verify write permissions.',
-            icon: <Database className="h-6 w-6 text-primary" />,
-            run: async () => {
-                if (!storage || !user) {
-                    return { status: 'skipped', details: 'Storage service not available or user not logged in.' };
-                }
-                if (userProfile?.role !== 'Admin' && !getNestedValue(userProfile, 'permissions.diagnostics.read', false)) {
-                    return { status: 'skipped', details: 'This test requires admin or diagnostics read permissions.' };
-                }
-        
-                const testFileName = `test/${user.uid}/diagnostic-test-${Date.now()}.txt`;
-                const testFileRef = storageRef(storage, testFileName);
-                const testFile = new Blob(['This is a test file for diagnostics.'], { type: 'text/plain' });
-        
-                try {
-                    // 1. Write Test
-                    await uploadBytes(testFileRef, testFile);
-        
-                    // 2. Read Metadata to verify upload
-                    await getMetadata(testFileRef);
-        
-                    // 3. Delete Test
-                    await deleteObject(testFileRef);
-        
-                    return { status: 'success', details: 'Successfully uploaded and deleted a test file in the /test/ directory.' };
-        
-                } catch (error: any) {
-                    let details = `Storage write/delete test failed. Error: ${error.message} (Code: ${error.code})`;
-                    if (error.code === 'storage/unauthorized') {
-                        details += ' This likely means the security rules for the /test/ path are incorrect or missing. Ensure an admin or user with diagnostic permissions can write and delete in this path.';
-                    }
-                    return { status: 'failure', details: details };
+                    return { status: 'failure', details: `Storage test failed. Error: ${error.message}` };
                 }
             },
         },
         {
             id: 'genkit-ai',
-            name: 'Genkit AI Connectivity',
-            description: 'Pings the Gemini model via a Genkit server-side flow.',
+            name: 'AI Service Connectivity',
+            description: 'Pings the AI model via a server-side flow.',
             icon: <BrainCircuit className="h-6 w-6 text-primary" />,
             run: async () => {
                 try {
                     const apiResponse = await fetch('/api/run-diagnostic-check', { method: 'POST' });
-                    
-                    if (!apiResponse.ok) {
-                        const errorText = await apiResponse.text();
-                        try {
-                            const errorData = JSON.parse(errorText);
-                            throw new Error(errorData.error || `Server responded with status ${apiResponse.status}`);
-                        } catch (e) {
-                             throw new Error(`Server responded with status ${apiResponse.status}: ${errorText}`);
-                        }
-                    }
-
                     const genkitResult = await apiResponse.json();
 
                     if (genkitResult.ok) {
                         return { status: 'success', details: genkitResult.message };
                     } else {
-                        return { status: 'failure', details: (
-                            <div className="space-y-2">
-                                <p>{genkitResult.message}</p>
-                                {genkitResult.message.includes('API key') && (
-                                    <Alert variant="destructive">
-                                        <AlertTitle>Action Required</AlertTitle>
-                                        <AlertDescription>
-                                            Please ensure you have a `GEMINI_API_KEY` environment variable set in a `.env` file in your project root.
-                                        </AlertDescription>
-                                    </Alert>
-                                )}
-                                {genkitResult.message.includes('permission denied') && (
-                                    <Alert variant="destructive">
-                                        <AlertTitle>Action Required</AlertTitle>
-                                        <AlertDescription>
-                                            The API request was denied. Go to your Google Cloud project and ensure the 'Generative Language API' is enabled.
-                                        </AlertDescription>
-                                    </Alert>
-                                )}
-                            </div>
-                        )};
+                        return { status: 'failure', details: genkitResult.message };
                     }
                 } catch (error: any) {
-                    return { status: 'failure', details: `The diagnostic check failed to run. Error: ${error.message}` };
+                    return { status: 'failure', details: `The AI check failed. Error: ${error.message}` };
                 }
             },
         }
@@ -344,20 +204,20 @@ export default function DiagnosticsPage() {
     return (
         <div className="container mx-auto p-4 md:p-8">
             <div className="mb-4">
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
                     <Link href="/dashboard">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Dashboard
+                        Back To Dashboard
                     </Link>
                 </Button>
             </div>
-            <Card className="max-w-4xl mx-auto animate-fade-in-zoom">
+            <Card className="max-w-4xl mx-auto animate-fade-in-zoom border-primary/10">
                 <CardHeader>
-                    <CardTitle>System Diagnostics</CardTitle>
-                    <p className="text-muted-foreground">Run tests to check the connectivity and configuration of required application resources.</p>
+                    <CardTitle className="font-bold text-primary">System Diagnostics</CardTitle>
+                    <p className="text-muted-foreground font-normal">Run tests to check the connectivity and configuration of required resources.</p>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <Button onClick={runAllChecks} disabled={isAllRunning}>
+                    <Button onClick={runAllChecks} disabled={isAllRunning} className="font-bold">
                         {isAllRunning ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         ) : (
@@ -371,13 +231,13 @@ export default function DiagnosticsPage() {
                             const result = checkResults[check.id];
                             const isLoading = result?.status === 'running';
                             return (
-                                <div key={check.id} className="flex items-start gap-4 p-4 border rounded-lg">
+                                <div key={check.id} className="flex items-start gap-4 p-4 border rounded-lg bg-white shadow-sm transition-all hover:border-primary/20">
                                     <div className="mt-1">{check.icon}</div>
                                     <div className="flex-1 space-y-2">
                                         <div className="flex items-center justify-between">
                                             <div>
-                                                <h3 className="font-semibold">{check.name}</h3>
-                                                <p className="text-sm text-muted-foreground">{check.description}</p>
+                                                <h3 className="font-bold text-primary">{check.name}</h3>
+                                                <p className="text-sm text-muted-foreground font-normal">{check.description}</p>
                                             </div>
                                             <div className="flex items-center gap-4">
                                                 {result && getStatusIcon(result.status)}
@@ -386,6 +246,7 @@ export default function DiagnosticsPage() {
                                                     variant="outline"
                                                     onClick={() => runSingleCheck(check)}
                                                     disabled={isAllRunning || isLoading}
+                                                    className="font-bold border-primary/10 text-primary"
                                                 >
                                                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                                     Run Test
@@ -393,8 +254,8 @@ export default function DiagnosticsPage() {
                                             </div>
                                         </div>
                                         {result && result.status !== 'pending' && result.status !== 'running' && (
-                                            <div className="text-sm text-muted-foreground pt-2 border-t">
-                                                <strong className="text-foreground">Result:</strong> {result.details}
+                                            <div className="text-sm text-muted-foreground pt-2 border-t font-normal">
+                                                <strong className="text-primary font-bold">Result:</strong> {result.details}
                                             </div>
                                         )}
                                     </div>

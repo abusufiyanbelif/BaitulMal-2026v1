@@ -9,10 +9,10 @@ import { doc, getDoc } from 'firebase/firestore';
 import type { BrandingSettings } from '@/lib/types';
 
 /**
- * A high-fidelity branded loading screen that displays the organizational logo.
- * Safely handles null context during initialization to prevent startup crashes.
+ * Branded Loader - Displays the organizational logo.
+ * Safely handles null context during initialization.
  */
-export function BrandedLoader({ message = "Initializing Institutional Systems...", progress }: { message?: string, progress?: number }) {
+export function BrandedLoader({ message = "Loading...", progress }: { message?: string, progress?: number }) {
   const firebase = useFirebase();
   const [branding, setBranding] = useState<BrandingSettings | null>(null);
 

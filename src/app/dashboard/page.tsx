@@ -94,7 +94,7 @@ export default function Home() {
         },
         {
             title: "Analytics",
-            description: "View Institutional Metrics And Usage Statistics.",
+            description: "View Organization Metrics And Usage Statistics.",
             href: "/analytics",
             icon: BarChart,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.analytics.read', false),

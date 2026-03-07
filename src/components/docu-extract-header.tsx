@@ -24,8 +24,8 @@ import { getInitials } from '@/lib/utils';
 import { NotificationBell } from './notification-bell';
 
 /**
- * Institutional Header - Fully theme-reactive.
- * Uses semantic background and border classes to adapt to all 14 themes.
+ * Main Header - Fully theme-reactive.
+ * Uses semantic background and border classes to adapt to all themes.
  */
 export function DocuExtractHeader() {
   const session = useSession();
@@ -60,7 +60,7 @@ export function DocuExtractHeader() {
                 validLogoUrl && (
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
-                    alt="Institutional Logo"
+                    alt="Logo"
                     fill
                     className="object-contain p-1.5"
                     priority

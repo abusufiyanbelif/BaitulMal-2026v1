@@ -238,7 +238,7 @@ export default function BeneficiaryDetailsPage() {
         <ScrollArea className="w-full">
             <TabsList className="grid w-full grid-cols-3 sm:w-[600px] h-12 bg-primary/5 p-1 rounded-xl">
                 <TabsTrigger value="profile" className="font-bold data-[state=active]:shadow-sm"><User className="mr-2 h-4 w-4"/>Core Profile</TabsTrigger>
-                <TabsTrigger value="history" className="font-bold data-[state=active]:shadow-sm"><History className="mr-2 h-4 w-4"/>Institutional History</TabsTrigger>
+                <TabsTrigger value="history" className="font-bold data-[state=active]:shadow-sm"><History className="mr-2 h-4 w-4"/>History</TabsTrigger>
                 <TabsTrigger value="financials" className="font-bold data-[state=active]:shadow-sm"><Landmark className="mr-2 h-4 w-4"/>Financial Impact</TabsTrigger>
             </TabsList>
             <ScrollBar orientation="horizontal" className="hidden" />
@@ -277,7 +277,7 @@ export default function BeneficiaryDetailsPage() {
             <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                 <CardHeader className="bg-primary/5 border-b px-6 py-4">
                     <CardTitle className="text-lg font-bold text-primary tracking-tight">Assistance Registry</CardTitle>
-                    <CardDescription className="text-xs font-normal">A chronological log of all institutional support initiatives linked to this recipient.</CardDescription>
+                    <CardDescription className="text-xs font-normal">A chronological log of all support initiatives linked to this recipient.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                     {isLinksLoading ? ( 
@@ -391,7 +391,7 @@ export default function BeneficiaryDetailsPage() {
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
                         <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.verified.toLocaleString('en-IN')}</div>
-                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Institutional funds reserved for this member</p>
+                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Reserved for this member</p>
                     </CardContent>
                 </Card>
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
@@ -401,13 +401,13 @@ export default function BeneficiaryDetailsPage() {
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
                         <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.disbursed.toLocaleString('en-IN')}</div>
-                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Confirmed value successfully provided to recipient</p>
+                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Confirmed value successfully provided</p>
                     </CardContent>
                 </Card>
 
                 <Card className="md:col-span-3 border-primary/10 bg-white shadow-sm overflow-hidden">
                     <CardHeader className="bg-primary/5 border-b px-6 py-4">
-                        <CardTitle className="text-lg font-bold text-primary tracking-tight">Institutional Allocation Breakdown</CardTitle>
+                        <CardTitle className="text-lg font-bold text-primary tracking-tight">Allocation Breakdown</CardTitle>
                         <CardDescription className="text-xs font-normal">Detailed split of aid across initiatives, identifying source funds and current disbursement status.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
@@ -440,7 +440,7 @@ export default function BeneficiaryDetailsPage() {
                                                     <TableCell className="text-right font-mono text-xs opacity-60">₹{link.kitAmount.toLocaleString('en-IN')}</TableCell>
                                                     <TableCell className="text-right">
                                                         <p className="font-bold font-mono text-sm text-primary">₹{link.zakatAllocation.toLocaleString('en-IN')}</p>
-                                                        <p className="text-[8px] font-bold text-muted-foreground tracking-tight">Religious Reserved</p>
+                                                        <p className="text-[8px] font-bold text-muted-foreground tracking-tight">Reserved</p>
                                                     </TableCell>
                                                     <TableCell className="text-right">
                                                         <p className="font-bold font-mono text-sm text-primary">₹{communityFund.toLocaleString('en-IN')}</p>
@@ -490,7 +490,7 @@ export default function BeneficiaryDetailsPage() {
                 <div className="md:col-span-3 space-y-6">
                     <Card className="border-primary/10 bg-white shadow-sm overflow-hidden">
                         <CardHeader className="bg-primary/5 border-b px-6 py-4">
-                            <CardTitle className="text-lg font-bold text-primary tracking-tight">Institutional Impact Summary</CardTitle>
+                            <CardTitle className="text-lg font-bold text-primary tracking-tight">Impact Summary</CardTitle>
                         </CardHeader>
                         <CardContent className="p-6 sm:p-10 space-y-8">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 p-6 rounded-2xl bg-primary/[0.02] border border-primary/10">
@@ -518,7 +518,7 @@ export default function BeneficiaryDetailsPage() {
 
                             <div className="space-y-4">
                                 <h4 className="text-sm font-bold text-primary tracking-tight flex items-center gap-2">
-                                    <span className="font-normal"><Info className="h-4 w-4"/></span> Impact Summary
+                                    <span className="font-normal"><Info className="h-4 w-4"/></span> Impact Analysis
                                 </h4>
                                 <p className="text-sm leading-relaxed text-foreground font-normal">
                                     This recipient has been supported across <span className="font-bold text-primary">{linkedInitiatives.length} initiative(s)</span>. 

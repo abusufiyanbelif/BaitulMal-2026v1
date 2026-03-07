@@ -453,7 +453,7 @@ export default function DonationsPage() {
                                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Linked Transactions</h4>
                                     <div className="border border-primary/10 rounded-md bg-white overflow-hidden shadow-sm">
                                     <Table>
-                                        <TableHeader><TableRow className="bg-[hsl(var(--table-header-bg))]"><TableHead className="text-[10px] font-bold text-primary">Sum</TableHead><TableHead className="text-[10px] font-bold text-primary">Reference</TableHead><TableHead className="text-right text-[10px] font-bold text-primary">Artifact</TableHead></TableRow></TableHeader>
+                                        <TableHeader><TableRow className="bg-[hsl(var(--table-header-bg))]"><TableHead className="text-[10px] font-bold text-primary">Sum</TableHead><TableHead className="text-[10px] font-bold text-primary">Reference</TableHead><TableHead className="text-right text-[10px] font-bold text-primary">Evidence</TableHead></TableRow></TableHeader>
                                         <TableBody>
                                         {(donation.transactions || []).map((tx) => (
                                             <TableRow key={tx.id} className="hover:bg-[hsl(var(--table-row-hover))]"><TableCell className="font-bold font-mono text-sm">₹{tx.amount.toFixed(2)}</TableCell><TableCell className="font-mono text-xs opacity-70">{tx.transactionId || 'N/A'}</TableCell><TableCell className="text-right">{tx.screenshotUrl ? (<Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)} className="font-bold text-[10px] h-7 border-primary/20"><ImageIcon className="mr-1 h-3 w-3" /> View</Button>) : <span className="text-muted-foreground text-[10px]">None</span>}</TableCell></TableRow>
@@ -541,7 +541,7 @@ export default function DonationsPage() {
 
       <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
         <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-[16px] border-primary/10">
-            <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary uppercase">Institutional Artifact Viewer</DialogTitle></DialogHeader>
+            <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary uppercase">Evidence Viewer</DialogTitle></DialogHeader>
             <div className="p-4 bg-secondary/20 h-[70vh] flex items-center justify-center">
                 {imageToView && (<div className="relative w-full h-full"><Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Vetting Evidence" fill sizes="100vw" className="object-contain transition-all duration-300 origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized /></div>)}
             </div>

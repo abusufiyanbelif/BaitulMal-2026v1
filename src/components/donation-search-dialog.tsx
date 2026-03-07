@@ -106,7 +106,7 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
         onOpenChange(false);
     } catch (e: any) {
         console.error("Linking Failed:", e);
-        toast({ title: 'Linking Failed', description: 'Institutional Database Permission Denied.', variant: 'destructive' });
+        toast({ title: 'Linking Failed', description: 'Database Permission Denied.', variant: 'destructive' });
     } finally {
         setIsLinking(null);
     }
@@ -144,7 +144,7 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
                             <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
                                 <IndianRupee className="h-12 w-12 mb-2" />
                                 <p className="text-sm font-bold italic">No Eligible Unallocated Donations Found.</p>
-                                <p className="text-[10px] uppercase font-normal tracking-widest mt-1">Check Allowed Donation Types Or Global Balance.</p>
+                                <p className="text-[10px] font-normal tracking-tight mt-1">Check Allowed Donation Types Or Global Balance.</p>
                             </div>
                         ) : (
                             eligibleDonations.map(donation => (
@@ -156,7 +156,7 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
                                         <div className="flex-1 min-w-0 space-y-1">
                                             <div className="flex items-center gap-2">
                                                 <p className="font-bold text-sm text-primary truncate">{donation.donorName}</p>
-                                                <Badge variant="outline" className="text-[9px] font-bold uppercase border-primary/10 text-primary/60">
+                                                <Badge variant="outline" className="text-[9px] font-bold border-primary/10 text-primary/60">
                                                     {donation.donationType}
                                                 </Badge>
                                             </div>
@@ -174,7 +174,7 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
                                         </div>
                                         <div className="text-right space-y-2 shrink-0">
                                             <div className="space-y-0.5">
-                                                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">Available To Link</p>
+                                                <p className="text-[9px] font-bold text-muted-foreground tracking-tighter">Available To Link</p>
                                                 <p className="font-mono font-bold text-lg text-primary">₹{donation.maxPossibleLink.toLocaleString()}</p>
                                             </div>
                                             <Button 
@@ -192,7 +192,7 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
                                         <div className="mt-3 p-2 bg-amber-50 rounded-md border border-amber-100 flex items-start gap-2 animate-fade-in-up">
                                             <AlertCircle className="h-3 w-3 text-amber-600 mt-0.5" />
                                             <p className="text-[10px] font-normal text-amber-800 leading-tight">
-                                                Partial allocation: Only ₹{donation.maxPossibleLink.toLocaleString()} matches the allowed categories for this {targetType}.
+                                                Partial Allocation: Only ₹{donation.maxPossibleLink.toLocaleString()} Matches The Allowed Categories For This {targetType}.
                                             </p>
                                         </div>
                                     )}
@@ -207,7 +207,7 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
 
         <DialogFooter className="px-6 py-4 bg-primary/[0.02] border-t border-primary/10">
           <div className="flex justify-between items-center w-full">
-            <div className="flex items-center gap-2 text-[10px] font-bold text-primary/60 uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-primary/60 tracking-tight">
                 <Info className="h-3 w-3" /> Allowed: {allowedTypes.join(', ')}
             </div>
             <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary h-9 rounded-[10px] transition-transform active:scale-95">

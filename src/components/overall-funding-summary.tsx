@@ -33,7 +33,7 @@ export function OverallFundingSummary() {
   }
 
   if (!overallSummary) {
-    return <p className="font-bold text-primary">Could not load funding summary.</p>
+    return <p className="font-bold text-primary">Could Not Load Funding Summary.</p>
   }
 
   return (
@@ -43,7 +43,7 @@ export function OverallFundingSummary() {
             <Target className="h-6 w-6 text-primary" />
             Overall Fundraising Progress
         </CardTitle>
-        <CardDescription className="font-normal text-primary/70">A real-time look at our total collected donations against our published and verified goals.</CardDescription>
+        <CardDescription className="font-normal text-primary/70">A Real-Time Look At Our Total Collected Donations Against Our Published And Verified Goals.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -86,19 +86,19 @@ export function OverallFundingSummary() {
             </div>
              <div className="space-y-4 text-center md:text-left font-bold text-primary">
                 <div>
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Total Raised For Goals</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Total Raised For Goals</p>
                     <p className="text-3xl font-bold font-mono">
                     ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Combined Target</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Combined Target</p>
                     <p className="text-3xl font-bold font-mono opacity-70">
                     ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Grand Total Received (All Types)</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Grand Total Received (All Types)</p>
                     <p className="text-3xl font-bold font-mono">
                     ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
                     </p>

@@ -361,7 +361,7 @@ export default function CampaignPage() {
 
   const isLoading = isProfileLoading || isDeleting || isDataLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Organization Campaigns..." description="Fetching Active And Historical Initiatives." />;
+  if (isLoading) return <SectionLoader label="Loading Campaigns..." description="Fetching Active And Historical Initiatives." />;
 
   if (!isLoading && userProfile && !canViewCampaigns) {
     return (
@@ -391,8 +391,8 @@ export default function CampaignPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Campaign Hub</h1>
-          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Organization-Wide Initiatives, Budget Vetting, And Strategic Tracking.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Campaigns</h1>
+          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Initiatives, Budget Vetting, And Strategic Tracking.</p>
         </div>
 
         <div className="space-y-2">

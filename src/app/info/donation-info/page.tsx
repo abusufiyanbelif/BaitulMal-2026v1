@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Quote, Target, Loader2, CheckCircle2, XCircle, BookOpen, ListChecks, AlertCircle, Info, Coins, Heart, Utensils, Building2, Ban } from 'lucide-react';
+import { ArrowLeft, Quote, Target, Loader2, CheckCircle2, XCircle, BookOpen, ListChecks, AlertCircle, Info, Heart, Utensils, Building2, Ban } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -20,8 +20,66 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
+/**
+ * Custom Zakat Icon - Engineered to match the institutional 2.5% requirement visual.
+ */
+const ZakatCustomIcon = ({ className }: { className?: string }) => (
+  <svg 
+    viewBox="0 0 512 512" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg" 
+    className={className}
+  >
+    {/* Sleeve/Wrist */}
+    <rect x="40" y="390" width="80" height="90" rx="8" fill="hsl(var(--primary))" stroke="black" strokeWidth="18" />
+    
+    {/* Hand/Palm */}
+    <path 
+      d="M120 435H380C430 435 480 410 480 360C480 330 450 310 410 310H320V320C320 340 300 360 280 360H120V435Z" 
+      fill="#FFE0B2" 
+      stroke="black" 
+      strokeWidth="18" 
+      strokeLinejoin="round" 
+    />
+    
+    {/* Bag Body */}
+    <path 
+      d="M180 310C180 180 210 100 260 100C310 100 340 180 340 310H180Z" 
+      fill="#F5F5F5" 
+      stroke="black" 
+      strokeWidth="18" 
+      strokeLinejoin="round"
+    />
+    
+    {/* Top of Bag (Gathered) */}
+    <path 
+      d="M230 100L215 50C215 40 225 30 235 30H285C295 30 305 40 305 50L290 100H230Z" 
+      fill="#F5F5F5" 
+      stroke="black" 
+      strokeWidth="18" 
+      strokeLinejoin="round"
+    />
+    
+    {/* Bag Tie (Green Band) */}
+    <rect x="215" y="90" width="90" height="25" rx="12.5" fill="hsl(var(--primary))" stroke="black" strokeWidth="18" />
+    
+    {/* 2.5 Percent Badge */}
+    <circle cx="260" cy="225" r="60" fill="hsl(var(--primary))" stroke="black" strokeWidth="18" />
+    <text 
+      x="260" 
+      y="225" 
+      textAnchor="middle" 
+      dominantBaseline="central" 
+      fill="white" 
+      style={{ fontSize: '54px', fontWeight: '900', fontFamily: 'sans-serif' }}
+    >
+      2.5
+    </text>
+  </svg>
+);
+
 const typeIcons: Record<string, any> = {
-    zakat: Coins,
+    zakat: ZakatCustomIcon,
     sadaqah: Heart,
     fidiya: Utensils,
     lillah: Building2,
@@ -69,7 +127,7 @@ export default function DonationInfoPage() {
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-12 text-primary font-normal">
       <div className="mb-4">
-        <Button variant="outline" asChild className="font-bold border-primary/20">
+        <Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95">
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back To Home
@@ -114,7 +172,7 @@ export default function DonationInfoPage() {
                             ) : (
                                 <div className="flex flex-col items-center gap-4">
                                     <div className="p-6 rounded-full bg-primary/10 text-primary">
-                                        <IconComponent className="h-20 w-20" />
+                                        <IconComponent className="h-32 w-32" />
                                     </div>
                                 </div>
                             )}

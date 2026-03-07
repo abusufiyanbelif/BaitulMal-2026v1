@@ -183,7 +183,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><ImageIcon className="h-3 w-3"/> Verified Transaction Logs</h4>
+                            <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
                             <div className="border border-primary/10 rounded-md bg-white overflow-hidden shadow-sm">
                                 <ScrollArea className="w-full">
                                     <Table>
@@ -192,7 +192,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                 <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead>
                                                 <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Ref. ID</TableHead>
                                                 <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Date</TableHead>
-                                                <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Artifact</TableHead>
+                                                <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Evidence</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -204,9 +204,9 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                     <TableCell className="text-right py-2">
                                                         {tx.screenshotUrl ? (
                                                             <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/5" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
-                                                                <ImageIcon className="mr-1 h-3 w-3" /> View Artifact
+                                                                <ImageIcon className="mr-1 h-3 w-3" /> View Evidence
                                                             </Button>
-                                                        ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40">No Artifact</span>}
+                                                        ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40">None</span>}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -361,7 +361,7 @@ export default function DonationsPage() {
         });
         errorEmitter.emit('permission-error', permissionError);
     });
-    toast({ title: "Donation Synchronized", description: "The Financial Record Is Now Secured.", variant: 'success' });
+    toast({ title: "Donation synchronized", description: "The record is now secured.", variant: 'success' });
   };
 
   const handleDeleteConfirm = async () => {
@@ -381,16 +381,16 @@ export default function DonationsPage() {
 
   const isLoading = areDonationsLoading || isProfileLoading;
 
-  if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Institutional Financial Logs." />;
+  if (isLoading) return <SectionLoader label="Loading donation records..." description="Retrieving logs." />;
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative overflow-hidden">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <h1 className="text-3xl font-bold tracking-tighter text-primary">Financial Donations</h1>
+            <h1 className="text-3xl font-bold tracking-tighter text-primary">Donations</h1>
             <div className="flex gap-2 w-full sm:w-auto">
                 <Button variant="secondary" onClick={handleSync} disabled={isSyncing} className="flex-1 sm:flex-none font-bold text-[10px] border-primary/10 text-primary active:scale-95 transition-transform">
                   {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
-                  Sync Financial Logs
+                  Sync records
                 </Button>
                 <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md rounded-[12px]">
                   <PlusCircle className="mr-2 h-4 w-4" /> Add Record
@@ -449,7 +449,7 @@ export default function DonationsPage() {
                         <div className="text-center">Method</div>
                         <SortableHeader sortKey="status" sortConfig={sortConfig} className="text-center">Vetting Status</SortableHeader>
                         <div>Target Initiative</div>
-                        <div className="text-right pr-4">Action Menu</div>
+                        <div className="text-right pr-4">Actions</div>
                     </div>
                     <div className="w-full">
                         {paginatedDonations.map((d, i) => (
@@ -499,7 +499,7 @@ export default function DonationsPage() {
                                 <span className="sm:hidden">Actions</span>
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">
+                        <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown border-primary/10">
                             <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal">Set To Verified</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleBulkStatusChange('Canceled')} className="font-normal text-destructive">Set To Canceled</DropdownMenuItem>
@@ -523,19 +523,19 @@ export default function DonationsPage() {
                         donation={editingDonation} 
                         onSubmit={handleFormSubmit} 
                         onCancel={() => setIsFormOpen(false)} 
-                        campaigns={allCampaigns || []} 
                         leads={allLeads || []} 
+                        campaigns={allCampaigns || []} 
                     />
                 </ScrollArea>
                 <DialogFooter className="px-6 py-4 border-t bg-muted/5">
-                    <Button variant="secondary" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/10 text-primary">Close Entry Form</Button>
+                    <Button variant="secondary" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/10 text-primary">Close Form</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent className="rounded-[12px] border-primary/10">
-                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Confirm Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Artifacts. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Confirm Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Evidence. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px]">Confirm Deletion</AlertDialogAction>
@@ -545,11 +545,11 @@ export default function DonationsPage() {
 
         <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
             <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10">
-                <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="text-xl font-bold text-primary">Verification Artifact Viewer</DialogTitle></DialogHeader>
+                <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="text-xl font-bold text-primary">Evidence Viewer</DialogTitle></DialogHeader>
                 <ScrollArea className="flex-1 bg-secondary/20">
                     <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
                         {imageToView && (
-                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Verification Artifact" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Evidence Document" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                         )}
                     </div>
                     <ScrollBar orientation="both" />
