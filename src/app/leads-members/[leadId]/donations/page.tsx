@@ -16,7 +16,30 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, Link2Off, ChevronDown, ChevronUp, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { 
+    ArrowLeft, 
+    Edit, 
+    MoreHorizontal, 
+    PlusCircle, 
+    Trash2, 
+    Loader2, 
+    Eye, 
+    ArrowUp, 
+    ArrowDown, 
+    ZoomIn, 
+    ZoomOut, 
+    RotateCw, 
+    RefreshCw, 
+    Link2Off, 
+    ChevronDown, 
+    ChevronUp, 
+    Image as ImageIcon, 
+    Link as LinkIcon,
+    CheckSquare,
+    X,
+    ChevronsUpDown
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,8 +47,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuPortal,
   DropdownMenuSub,
-  DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator
@@ -59,6 +82,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
+import { bulkUpdateDonationStatusAction } from '@/app/donations/actions';
 import { BrandedLoader } from '@/components/branded-loader';
 import { donationCategories } from '@/lib/modules';
 
@@ -132,6 +156,9 @@ export default function DonationsPage() {
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
   
   const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
   const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
@@ -244,6 +271,31 @@ export default function DonationsPage() {
   const totalPages = Math.ceil(filteredAndSortedDonations.length / itemsPerPage);
   const paginatedDonations = useMemo(() => filteredAndSortedDonations.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [filteredAndSortedDonations, currentPage, itemsPerPage]);
 
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+        setSelectedIds(paginatedDonations.map(d => d.id));
+    } else {
+        setSelectedIds([]);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const handleBulkStatusChange = async (newStatus: Donation['status']) => {
+    if (selectedIds.length === 0) return;
+    setIsBulkUpdating(true);
+    const res = await bulkUpdateDonationStatusAction(selectedIds, newStatus);
+    if (res.success) {
+        toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
+        setSelectedIds([]);
+    } else {
+        toast({ title: "Update Failed", description: res.message, variant: "destructive" });
+    }
+    setIsBulkUpdating(false);
+  };
+
   const isLoading = isLeadLoading || areDonationsLoading || isProfileLoading;
   
   if (isLoading && !lead) return <BrandedLoader />;
@@ -251,8 +303,8 @@ export default function DonationsPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6">
-        <div className="mb-4"><Button variant="outline" asChild><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
-        <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold">{lead.name}</h1></div>
+        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
+        <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold tracking-tight uppercase">{lead.name}</h1></div>
         
         <div className="border-b mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
@@ -272,32 +324,39 @@ export default function DonationsPage() {
             </ScrollArea>
         </div>
 
-        <Card className="animate-fade-in-zoom shadow-md border-primary/10">
-            <CardHeader className="pb-4">
+        <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white overflow-hidden">
+            <CardHeader className="bg-primary/5 border-b p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div className="space-y-1.5">
-                        <CardTitle>Donation list ({filteredAndSortedDonations.length})</CardTitle>
-                        <CardDescription>Total verified collection for this lead: <span className="font-bold text-primary font-mono">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisLead, 0).toFixed(2)}</span></CardDescription>
+                        <CardTitle className="font-bold tracking-tight">Donation List ({filteredAndSortedDonations.length})</CardTitle>
+                        <CardDescription className="font-normal text-primary/70">Total verified collection for this lead: <span className="font-bold text-primary font-mono">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisLead, 0).toFixed(2)}</span></CardDescription>
                     </div>
                     <div className="flex gap-2">
                         {canUpdate && <Button variant="outline" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><LinkIcon className="mr-2 h-4 w-4"/> Select From Master</Button>}
-                        {canCreate && <Button onClick={() => setIsFormOpen(true)} className="interactive-hover font-bold"><PlusCircle className="mr-2 h-4 w-4"/>Add Record</Button>}
+                        {canCreate && <Button onClick={() => setIsFormOpen(true)} className="font-bold shadow-md active:scale-95 transition-transform rounded-[12px]"><PlusCircle className="mr-2 h-4 w-4"/>Add Record</Button>}
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-4">
-                    <Input placeholder="Search donor..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs font-normal" />
+                    <Input placeholder="Search Donor..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs font-normal" />
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-[140px] h-9 text-xs text-primary"><SelectValue placeholder="Status"/></SelectTrigger>
-                        <SelectContent><SelectItem value="All">All statuses</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Canceled">Canceled</SelectItem></SelectContent>
+                        <SelectTrigger className="w-[140px] h-9 text-xs text-primary font-bold border-primary/20"><SelectValue placeholder="Status"/></SelectTrigger>
+                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="Pending" className="font-bold">Pending</SelectItem><SelectItem value="Canceled" className="font-bold">Canceled</SelectItem></SelectContent>
                     </Select>
                 </div>
             </CardHeader>
             <CardContent className="p-0">
-                <div className="w-full overflow-x-auto">
+                <ScrollArea className="w-full">
                     <Table>
-                        <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                        <TableHeader>
                             <TableRow>
-                                <SortableHeader sortKey="srNo" className="w-[60px] pl-4" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
+                                <TableHead className="w-[40px] pl-4 bg-[hsl(var(--table-header-bg))]">
+                                    <Checkbox 
+                                        checked={selectedIds.length > 0 && selectedIds.length === paginatedDonations.length}
+                                        onCheckedChange={toggleSelectAll}
+                                        className="border-primary/40 data-[state=checked]:bg-primary"
+                                    />
+                                </TableHead>
+                                <SortableHeader sortKey="srNo" className="w-[60px]" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
                                 <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
                                 <SortableHeader sortKey="amountForThisLead" className="text-right" sortConfig={sortConfig} handleSort={handleSort}>Amount</SortableHeader>
                                 <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort}>Date</SortableHeader>
@@ -307,8 +366,15 @@ export default function DonationsPage() {
                         </TableHeader>
                         <TableBody>
                             {paginatedDonations.map((donation, index) => (
-                                <TableRow key={donation.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors cursor-pointer border-b border-primary/10" onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)}>
-                                    <TableCell className="pl-4 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
+                                <TableRow key={donation.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors cursor-pointer border-b border-primary/10 bg-white" onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)}>
+                                    <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
+                                        <Checkbox 
+                                            checked={selectedIds.includes(donation.id)}
+                                            onCheckedChange={() => toggleSelect(donation.id)}
+                                            className="border-primary/40 data-[state=checked]:bg-primary"
+                                        />
+                                    </TableCell>
+                                    <TableCell className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                                     <TableCell><div className="font-bold text-sm text-primary">{donation.donorName}</div><div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone}</div></TableCell>
                                     <TableCell className="text-right font-bold font-mono text-primary">₹{donation.amountForThisLead.toFixed(2)}</TableCell>
                                     <TableCell className="text-xs font-normal">{donation.donationDate}</TableCell>
@@ -317,7 +383,7 @@ export default function DonationsPage() {
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
                                             <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                                <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4"/>View details</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4"/>View Details</DropdownMenuItem>
                                                 {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>}
                                                 {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive font-normal"><Link2Off className="mr-2 h-4 w-4"/>Unlink</DropdownMenuItem>}
                                             </DropdownMenuContent>
@@ -325,33 +391,66 @@ export default function DonationsPage() {
                                     </TableCell>
                                 </TableRow>
                             ))}
-                            {paginatedDonations.length === 0 && <TableRow><TableCell colSpan={6} className="h-32 text-center text-muted-foreground font-normal italic bg-muted/5">No donations found.</TableCell></TableRow>}
+                            {paginatedDonations.length === 0 && <TableRow><TableCell colSpan={7} className="h-32 text-center text-muted-foreground font-normal italic bg-primary/[0.02] py-20">No Donation Records Found Matching Criteria.</TableCell></TableRow>}
                         </TableBody>
                     </Table>
-                </div>
+                    <ScrollBar orientation="horizontal" />
+                </ScrollArea>
             </CardContent>
             {totalPages > 1 && (
-                <CardFooter className="flex items-center justify-between border-t py-4 bg-primary/5">
+                <CardFooter className="flex items-center justify-between border-t py-4 bg-primary/5 px-4">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase">Page {currentPage} of {totalPages}</p>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 h-8">Previous</Button>
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 h-8">Next</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 h-8 text-primary">Previous</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 h-8 text-primary">Next</Button>
                     </div>
                 </CardFooter>
             )}
         </Card>
 
+        {/* Bulk Action Bar */}
+        {selectedIds.length > 0 && (
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-bottom">
+                <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
+                    <div className="flex items-center gap-2 pr-4 border-r border-white/20">
+                        <CheckSquare className="h-5 w-5" />
+                        <span className="text-sm font-bold tracking-tight">{selectedIds.length} Selected</span>
+                    </div>
+                    
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
+                                {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ChevronsUpDown className="mr-2 h-4 w-4"/>}
+                                Bulk Update Status
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown border-primary/10">
+                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-bold">Set To Verified</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Canceled')} className="font-normal text-destructive">Set To Canceled</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+        )}
+
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10">
-                <DialogHeader><DialogTitle className="text-xl font-bold text-primary">{editingDonation ? 'Edit' : 'Add'} Record</DialogTitle></DialogHeader>
-                <DonationForm 
-                    donation={editingDonation} 
-                    onSubmit={handleFormSubmit} 
-                    onCancel={() => setIsFormOpen(false)} 
-                    leads={allLeads || []} 
-                    campaigns={allCampaigns || []} 
-                    defaultLinkId={`lead_${leadId}`} 
-                />
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10 p-0 overflow-hidden">
+                <DialogHeader className="p-6 bg-primary/5 border-b"><DialogTitle className="text-xl font-bold text-primary tracking-tight">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle></DialogHeader>
+                <div className="p-6">
+                    <DonationForm 
+                        donation={editingDonation} 
+                        onSubmit={handleFormSubmit} 
+                        onCancel={() => setIsFormOpen(false)} 
+                        leads={allLeads || []} 
+                        campaigns={allCampaigns || []} 
+                        defaultLinkId={`lead_${leadId}`} 
+                    />
+                </div>
                 <DialogFooter className="p-4 border-t bg-muted/5">
                     <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary">Close Form</Button>
                 </DialogFooter>
@@ -368,7 +467,7 @@ export default function DonationsPage() {
         />
 
         <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
-            <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink donation?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">This will remove the donation from this initiative but will not delete the record from the global database.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px] transition-transform active:scale-95 shadow-md">Unlink Record</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+            <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink Donation?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach this record from the current lead initiative? The record remains in the global database.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px] transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
         </AlertDialog>
     </main>
   );

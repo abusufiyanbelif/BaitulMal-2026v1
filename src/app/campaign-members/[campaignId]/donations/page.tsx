@@ -16,7 +16,29 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Loader2, Eye, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, RefreshCw, Link2Off, ChevronDown, ChevronUp, Link as LinkIcon, ImageIcon } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { 
+    ArrowLeft, 
+    Edit, 
+    MoreHorizontal, 
+    PlusCircle, 
+    Loader2, 
+    Eye, 
+    ArrowUp, 
+    ArrowDown, 
+    ZoomIn, 
+    ZoomOut, 
+    RotateCw, 
+    RefreshCw, 
+    Link2Off, 
+    ChevronDown, 
+    ChevronUp, 
+    Link as LinkIcon, 
+    ImageIcon,
+    CheckSquare,
+    X,
+    ChevronsUpDown
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,7 +81,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
-import { syncDonationsAction } from '@/app/donations/actions';
+import { bulkUpdateDonationStatusAction } from '@/app/donations/actions';
 import { donationCategories } from '@/lib/modules';
 import { BrandedLoader } from '@/components/branded-loader';
 
@@ -68,7 +90,7 @@ type SortKey = keyof Donation | 'srNo' | 'amountForThisCampaign';
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <TableHead className={cn("cursor-pointer hover:bg-muted/50 text-[hsl(var(--table-header-fg))] font-semibold", className)} onClick={() => handleSort(sortKey)}>
+        <TableHead className={cn("cursor-pointer hover:bg-muted/50 text-[hsl(var(--table-header-fg))] font-bold", className)} onClick={() => handleSort(sortKey)}>
             <div className="flex items-center gap-2 whitespace-nowrap">
                 {children}
                 {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
@@ -140,6 +162,9 @@ export default function DonationsPage() {
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
   
   const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
   const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
@@ -297,6 +322,31 @@ export default function DonationsPage() {
   const totalPages = Math.ceil(filteredAndSortedDonations.length / itemsPerPage);
   const paginatedDonations = useMemo(() => filteredAndSortedDonations.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [filteredAndSortedDonations, currentPage, itemsPerPage]);
 
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+        setSelectedIds(paginatedDonations.map(d => d.id));
+    } else {
+        setSelectedIds([]);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const handleBulkStatusChange = async (newStatus: Donation['status']) => {
+    if (selectedIds.length === 0) return;
+    setIsBulkUpdating(true);
+    const res = await bulkUpdateDonationStatusAction(selectedIds, newStatus);
+    if (res.success) {
+        toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
+        setSelectedIds([]);
+    } else {
+        toast({ title: "Update Failed", description: res.message, variant: "destructive" });
+    }
+    setIsBulkUpdating(false);
+  };
+
   const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading;
   
   if (isLoading && !campaign) return <BrandedLoader />;
@@ -305,7 +355,7 @@ export default function DonationsPage() {
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary">
         <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button></div>
-        <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold tracking-tight">{campaign.name}</h1></div>
+        <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold tracking-tight uppercase">{campaign.name}</h1></div>
         
         <div className="mb-6">
             <ScrollArea className="w-full">
@@ -334,12 +384,12 @@ export default function DonationsPage() {
                 <div className="flex flex-wrap items-center gap-2 pt-4">
                     <Input placeholder="Search Donor..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-xs h-9 text-xs font-normal" />
                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[140px] h-9 text-xs text-primary"><SelectValue placeholder="Status" /></SelectTrigger>
-                        <SelectContent><SelectItem value="All" className="font-normal">All Statuses</SelectItem><SelectItem value="Verified" className="font-normal">Verified</SelectItem><SelectItem value="Pending" className="font-normal">Pending</SelectItem><SelectItem value="Canceled" className="font-normal">Canceled</SelectItem></SelectContent>
+                        <SelectTrigger className="w-[140px] h-9 text-xs text-primary font-bold"><SelectValue placeholder="Status" /></SelectTrigger>
+                        <SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="Pending" className="font-bold">Pending</SelectItem><SelectItem value="Canceled" className="font-bold">Canceled</SelectItem></SelectContent>
                     </Select>
                     <Select value={typeFilter} onValueChange={(value) => { setTypeFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[140px] h-9 text-xs text-primary"><SelectValue placeholder="Category" /></SelectTrigger>
-                        <SelectContent><SelectItem value="All" className="font-normal">All Categories</SelectItem>{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent>
+                        <SelectTrigger className="w-[140px] h-9 text-xs text-primary font-bold"><SelectValue placeholder="Category" /></SelectTrigger>
+                        <SelectContent><SelectItem value="All" className="font-bold">All Categories</SelectItem>{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent>
                     </Select>
                 </div>
             </CardHeader>
@@ -348,7 +398,14 @@ export default function DonationsPage() {
                 <Table>
                     <TableHeader>
                     <TableRow>
-                        <SortableHeader sortKey="srNo" className="w-[60px] pl-4" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
+                        <TableHead className="w-[40px] pl-4 bg-[hsl(var(--table-header-bg))]">
+                            <Checkbox 
+                                checked={selectedIds.length > 0 && selectedIds.length === paginatedDonations.length}
+                                onCheckedChange={toggleSelectAll}
+                                className="border-primary/40 data-[state=checked]:bg-primary"
+                            />
+                        </TableHead>
+                        <SortableHeader sortKey="srNo" className="w-[60px]" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
                         <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
                         <SortableHeader sortKey="amountForThisCampaign" className="text-right" sortConfig={sortConfig} handleSort={handleSort}>Amount</SortableHeader>
                         <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort}>Date</SortableHeader>
@@ -362,7 +419,14 @@ export default function DonationsPage() {
                         return (
                             <React.Fragment key={donation.id}>
                             <TableRow className="bg-white border-b border-primary/10 hover:bg-[hsl(var(--table-row-hover))] cursor-pointer group transition-colors" onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
-                                <TableCell className="pl-4">
+                                <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
+                                    <Checkbox 
+                                        checked={selectedIds.includes(donation.id)}
+                                        onCheckedChange={() => toggleSelect(donation.id)}
+                                        className="border-primary/40 data-[state=checked]:bg-primary"
+                                    />
+                                </TableCell>
+                                <TableCell>
                                     <div className="flex items-center gap-2">
                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" disabled={!donation.transactions || donation.transactions.length === 0}>{isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</Button>
                                         <span className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</span>
@@ -375,7 +439,7 @@ export default function DonationsPage() {
                                 <TableCell className="text-right pr-4" onClick={(e) => e.stopPropagation()}>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
+                                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
                                             <DropdownMenuItem onClick={() => router.push(`/campaign-members/${campaignId}/donations/${donation.id}`)} className="font-normal text-primary"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
                                             {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="font-normal text-primary"><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
                                             {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive font-normal"><Link2Off className="mr-2 h-4 w-4" /> Unlink</DropdownMenuItem>}
@@ -385,14 +449,14 @@ export default function DonationsPage() {
                             </TableRow>
                             {isOpen && (
                                 <TableRow className="bg-primary/[0.01] border-b border-primary/10">
-                                <TableCell colSpan={6} className="p-4">
+                                <TableCell colSpan={7} className="p-4">
                                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Linked Transactions</h4>
                                     <div className="border border-primary/10 rounded-md bg-white overflow-hidden shadow-sm">
                                     <Table>
-                                        <TableHeader><TableRow><TableHead className="text-[10px] font-bold text-primary">Sum</TableHead><TableHead className="text-[10px] font-bold text-primary">Reference</TableHead><TableHead className="text-right text-[10px] font-bold text-primary">Artifact</TableHead></TableRow></TableHeader>
+                                        <TableHeader><TableRow className="bg-[hsl(var(--table-header-bg))]"><TableHead className="text-[10px] font-bold text-primary">Sum</TableHead><TableHead className="text-[10px] font-bold text-primary">Reference</TableHead><TableHead className="text-right text-[10px] font-bold text-primary">Artifact</TableHead></TableRow></TableHeader>
                                         <TableBody>
                                         {(donation.transactions || []).map((tx) => (
-                                            <TableRow key={tx.id} className="hover:bg-[hsl(var(--table-row-hover))]"><TableCell className="font-bold font-mono text-sm">₹{tx.amount.toFixed(2)}</TableCell><TableCell className="font-mono text-xs opacity-70">{tx.transactionId || 'N/A'}</TableCell><TableCell className="text-right">{tx.screenshotUrl ? (<Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)} className="font-bold text-[10px] h-7"><ImageIcon className="mr-1 h-3 w-3" /> View</Button>) : <span className="text-muted-foreground text-[10px]">None</span>}</TableCell></TableRow>
+                                            <TableRow key={tx.id} className="hover:bg-[hsl(var(--table-row-hover))]"><TableCell className="font-bold font-mono text-sm">₹{tx.amount.toFixed(2)}</TableCell><TableCell className="font-mono text-xs opacity-70">{tx.transactionId || 'N/A'}</TableCell><TableCell className="text-right">{tx.screenshotUrl ? (<Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)} className="font-bold text-[10px] h-7 border-primary/20"><ImageIcon className="mr-1 h-3 w-3" /> View</Button>) : <span className="text-muted-foreground text-[10px]">None</span>}</TableCell></TableRow>
                                         ))}
                                         </TableBody>
                                     </Table>
@@ -403,7 +467,7 @@ export default function DonationsPage() {
                             </React.Fragment>
                         );
                     })}
-                    {paginatedDonations.length === 0 && <TableRow><TableCell colSpan={6} className="text-center py-20 text-muted-foreground italic font-normal">No Donation Records Matching Your Criteria.</TableCell></TableRow>}
+                    {paginatedDonations.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-20 text-muted-foreground italic font-normal bg-primary/[0.02]">No Donation Records Matching Your Criteria.</TableCell></TableRow>}
                     </TableBody>
                 </Table>
                 <ScrollBar orientation="horizontal" />
@@ -419,12 +483,42 @@ export default function DonationsPage() {
                 </CardFooter>
             )}
         </Card>
+
+        {/* Bulk Action Bar */}
+        {selectedIds.length > 0 && (
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-bottom">
+                <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
+                    <div className="flex items-center gap-2 pr-4 border-r border-white/20">
+                        <CheckSquare className="h-5 w-5" />
+                        <span className="text-sm font-bold tracking-tight">{selectedIds.length} Selected</span>
+                    </div>
+                    
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
+                                {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ChevronsUpDown className="mr-2 h-4 w-4"/>}
+                                Bulk Update Status
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown border-primary/10">
+                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-bold">Set To Verified</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Canceled')} className="font-normal text-destructive">Set To Canceled</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+        )}
       
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10">
-            <DialogHeader className="border-b bg-primary/5 p-4"><DialogTitle className="text-xl font-bold tracking-tight">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle></DialogHeader>
-            <div className="p-4"><DonationForm donation={editingDonation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} campaigns={allCampaigns || []} leads={allLeads || []} defaultLinkId={`campaign_${campaignId}`} /></div>
-            <DialogFooter className="p-4 border-t bg-muted/5"><Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold">Close Form</Button></DialogFooter>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10 p-0 overflow-hidden">
+            <DialogHeader className="border-b bg-primary/5 p-6"><DialogTitle className="text-xl font-bold tracking-tight">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle></DialogHeader>
+            <div className="p-6"><DonationForm donation={editingDonation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} campaigns={allCampaigns || []} leads={allLeads || []} defaultLinkId={`campaign_${campaignId}`} /></div>
+            <DialogFooter className="p-4 border-t bg-muted/5"><Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20">Close Form</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -442,7 +536,7 @@ export default function DonationsPage() {
       <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
         <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown">
             <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink Donation?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach this record from the current campaign? The donation remains in the global database but will no longer contribute to this project's totals.</AlertDialogDescription></AlertDialogHeader>
-            <AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+            <AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold transition-transform active:scale-95 shadow-md rounded-[12px]">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
       <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
@@ -452,10 +546,10 @@ export default function DonationsPage() {
                 {imageToView && (<div className="relative w-full h-full"><Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Vetting Evidence" fill sizes="100vw" className="object-contain transition-all duration-300 origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized /></div>)}
             </div>
              <DialogFooter className="px-6 py-4 border-t bg-white flex-wrap gap-2 justify-center">
-                <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-primary h-8 text-[10px]"><ZoomIn className="mr-1 h-4 w-4"/> In</Button>
-                <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5))} className="font-bold text-primary h-8 text-[10px]"><ZoomOut className="mr-1 h-4 w-4"/> Out</Button>
-                <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-primary h-8 text-[10px]"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
-                <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-primary h-8 text-[10px]"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
+                <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><ZoomIn className="mr-1 h-4 w-4"/> In</Button>
+                <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><ZoomOut className="mr-1 h-4 w-4"/> Out</Button>
+                <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
+                <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>
