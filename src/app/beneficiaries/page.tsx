@@ -19,7 +19,9 @@ import {
     ShieldAlert,
     Trash2,
     ChevronDown,
-    Loader2
+    Loader2,
+    ArrowUp,
+    ArrowDown
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -45,6 +47,21 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const gridClass = "grid grid-cols-[40px_50px_250px_150px_120px_120px_250px_60px] items-center gap-4 px-4 py-3 min-w-[1040px]";
 
+type SortKey = keyof Beneficiary | 'srNo';
+
+function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
+    const isSorted = sortConfig?.key === sortKey;
+    return (
+        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2", className)} onClick={() => handleSort(sortKey)}>
+            {children}
+            <div className="flex flex-col opacity-40">
+                <ArrowUp className={cn("h-2.5 w-2.5 -mb-1", isSorted && sortConfig.direction === 'ascending' && "text-primary opacity-100")} />
+                <ArrowDown className={cn("h-2.5 w-2.5", isSorted && sortConfig.direction === 'descending' && "text-primary opacity-100")} />
+            </div>
+        </div>
+    );
+};
+
 export default function BeneficiariesPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -57,6 +74,7 @@ export default function BeneficiariesPage() {
   const [zakatFilter, setZakatFilter] = useState('All');
   const [isSyncing, setIsSyncing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
   const itemsPerPage = 15;
 
   const beneficiariesRef = useMemoFirebase(() => firestore ? collection(firestore, 'beneficiaries') : null, [firestore]);
@@ -67,9 +85,11 @@ export default function BeneficiariesPage() {
   const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.delete', false);
   const canRead = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.read', false);
 
-  const filteredBeneficiaries = useMemo(() => {
+  const filteredAndSortedBeneficiaries = useMemo(() => {
     if (!beneficiaries) return [];
-    return beneficiaries.filter(b => {
+    
+    // Filtering Logic
+    let items = beneficiaries.filter(b => {
         const matchesSearch = (b.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
                              (b.phone || '').includes(searchTerm) ||
                              (b.address || '').toLowerCase().includes(searchTerm.toLowerCase());
@@ -77,13 +97,45 @@ export default function BeneficiariesPage() {
         const matchesZakat = zakatFilter === 'All' || (zakatFilter === 'Eligible' ? b.isEligibleForZakat : !b.isEligibleForZakat);
         return matchesSearch && matchesStatus && matchesZakat;
     });
-  }, [beneficiaries, searchTerm, statusFilter, zakatFilter]);
 
-  const totalPages = Math.ceil(filteredBeneficiaries.length / itemsPerPage);
+    // Sorting Logic
+    if (sortConfig !== null) {
+        items.sort((a, b) => {
+            if (sortConfig.key === 'srNo') return 0;
+            
+            const aVal = (a as any)[sortConfig.key];
+            const bVal = (b as any)[sortConfig.key];
+            
+            if (typeof aVal === 'number' && typeof bVal === 'number') {
+                return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
+            }
+            
+            const aStr = String(aVal || '').toLowerCase();
+            const bStr = String(bVal || '').toLowerCase();
+            
+            if (aStr < bStr) return sortConfig.direction === 'ascending' ? -1 : 1;
+            if (aStr > bStr) return sortConfig.direction === 'ascending' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    return items;
+  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, sortConfig]);
+
+  const totalPages = Math.ceil(filteredAndSortedBeneficiaries.length / itemsPerPage);
   const paginatedBeneficiaries = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    return filteredBeneficiaries.slice(start, start + itemsPerPage);
-  }, [filteredBeneficiaries, currentPage]);
+    return filteredAndSortedBeneficiaries.slice(start, start + itemsPerPage);
+  }, [filteredAndSortedBeneficiaries, currentPage]);
+
+  const handleSort = (key: SortKey) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+        direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+    setCurrentPage(1);
+  };
 
   const handleStatusChange = async (beneficiary: Beneficiary, newStatus: string) => {
     if (!canUpdate || !userProfile) return;
@@ -162,12 +214,12 @@ export default function BeneficiariesPage() {
         <ScrollArea className="w-full">
             <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-semibold tracking-wider text-[hsl(var(--table-header-fg))]", gridClass)}>
                 <div></div>
-                <div>Sr. No.</div>
-                <div>Name</div>
-                <div>Phone</div>
-                <div className="text-center">Status</div>
-                <div className="text-center">Zakat</div>
-                <div className="pl-4">Referred By</div>
+                <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort}>Sr. No.</SortableHeader>
+                <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>
+                <SortableHeader sortKey="phone" sortConfig={sortConfig} handleSort={handleSort}>Phone</SortableHeader>
+                <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Status</SortableHeader>
+                <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Zakat</SortableHeader>
+                <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">Referred By</SortableHeader>
                 <div className="text-right">Actions</div>
             </div>
 
