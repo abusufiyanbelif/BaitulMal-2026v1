@@ -14,10 +14,20 @@ import { RecentVerificationTicker } from '@/components/recent-verification-ticke
 import { usePublicData } from '@/hooks/use-public-data';
 import { useBranding } from '@/hooks/use-branding';
 import { cn } from '@/lib/utils';
-import { FolderKanban, Lightbulb, CheckCircle2 } from 'lucide-react';
+import { FolderKanban, Lightbulb, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+
+const getPriorityIcon = (priority?: string) => {
+  switch (priority) {
+    case 'Urgent': return <AlertTriangle className="h-3.5 w-3.5 text-red-600" />;
+    case 'High': return <ArrowUpCircle className="h-3.5 w-3.5 text-orange-500" />;
+    case 'Medium': return <MinusCircle className="h-3.5 w-3.5 text-yellow-500" />;
+    case 'Low': return <ArrowDownCircle className="h-3.5 w-3.5 text-blue-500" />;
+    default: return null;
+  }
+};
 
 export default function Home() {
     const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted } = usePublicData();
@@ -31,7 +41,8 @@ export default function Home() {
                 return {
                     id: c.id,
                     text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
-                    href: `/campaign-public/${c.id}/summary`
+                    href: `/campaign-public/${c.id}/summary`,
+                    priorityIcon: getPriorityIcon(c.priority)
                 };
             });
         
@@ -42,7 +53,8 @@ export default function Home() {
                 return {
                     id: l.id,
                     text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
-                    href: `/leads-public/${l.id}/summary`
+                    href: `/leads-public/${l.id}/summary`,
+                    priorityIcon: getPriorityIcon(l.priority)
                 };
             });
 

@@ -10,6 +10,7 @@ interface TickerItem {
   id: string;
   text: string;
   href: string;
+  priorityIcon?: React.ReactNode;
 }
 
 interface NewsTickerProps {
@@ -21,6 +22,7 @@ interface NewsTickerProps {
 /**
  * A sophisticated vertical news ticker that cycles through items with a Fade + Slide Up animation.
  * Fully theme-reactive using primary and secondary semantic variables.
+ * Now supports an optional priority icon for streamlined urgent signaling.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -85,13 +87,20 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
       {/* Content Section with Fade + Slide Up Animation */}
       <div className="flex-1 flex items-center px-4 relative overflow-hidden h-full">
         <div className={cn(
-          "w-full transition-all duration-500 ease-in-out flex items-center",
+          "w-full transition-all duration-500 ease-in-out flex items-center gap-3",
           isTransitioning ? "opacity-0 -translate-y-4" : "opacity-100 translate-y-0"
         )}>
           <span className={cn(
-            "h-1.5 w-1.5 rounded-full mr-3 shrink-0",
+            "h-1.5 w-1.5 rounded-full shrink-0",
             isCompleted ? "bg-muted-foreground" : "bg-primary"
           )} />
+          
+          {currentItem.priorityIcon && (
+            <div className="shrink-0 flex items-center">
+              {currentItem.priorityIcon}
+            </div>
+          )}
+
           <Link 
             href={currentItem.href} 
             className={cn(

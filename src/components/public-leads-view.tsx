@@ -1,7 +1,7 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Lightbulb, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info, Clock, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Lightbulb, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info, Clock, CheckCircle2, ShieldCheck, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle } from 'lucide-react';
 import type { Lead, Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -20,6 +20,16 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from './news-ticker';
+
+const getPriorityIcon = (priority?: string) => {
+  switch (priority) {
+    case 'Urgent': return <AlertTriangle className="h-3 w-3 text-red-600" />;
+    case 'High': return <ArrowUpCircle className="h-3 w-3 text-orange-500" />;
+    case 'Medium': return <MinusCircle className="h-3 w-3 text-yellow-500" />;
+    case 'Low': return <ArrowDownCircle className="h-3 w-3 text-blue-500" />;
+    default: return null;
+  }
+};
 
 const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: number; })[] }) => {
     const router = useRouter();
@@ -69,6 +79,13 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                                     {lead.authenticityStatus === 'Verified' ? 'Verified' : lead.authenticityStatus}
                                 </Badge>
                             </div>
+                            <div className={cn(
+                                "text-[10px] font-bold uppercase tracking-tight flex items-center gap-1.5", 
+                                lead.priority === 'Urgent' ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
+                            )}>
+                                {getPriorityIcon(lead.priority)}
+                                {lead.priority || 'Low'} Priority
+                            </div>
                             {(lead.targetAmount || 0) > 0 && (
                                 <div className="space-y-1.5">
                                     <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase">
@@ -111,7 +128,8 @@ export function PublicLeadsView() {
           return {
               id: c.id,
               text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
-              href: `/campaign-public/${c.id}/summary`
+              href: `/campaign-public/${c.id}/summary`,
+              priorityIcon: getPriorityIcon(c.priority)
           };
       });
     
@@ -122,7 +140,8 @@ export function PublicLeadsView() {
           return {
               id: l.id,
               text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
-              href: `/leads-public/${l.id}/summary`
+              href: `/leads-public/${l.id}/summary`,
+              priorityIcon: getPriorityIcon(l.priority)
           };
       });
 
@@ -188,9 +207,9 @@ export function PublicLeadsView() {
           <div className="flex flex-wrap items-center gap-2 pt-4 bg-primary/5 p-4 rounded-xl border border-primary/20">
               <Input placeholder="Search Appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-primary font-bold text-primary" disabled={isLoading}/>
               <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 font-bold text-primary"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem></SelectContent></Select>
-              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[180px] h-9 text-xs border-primary/20 font-bold text-primary"><SelectValue placeholder="All Purposes" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</SelectContent></Select>
+              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 font-bold text-primary"><SelectValue placeholder="All Purposes" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</SelectContent></Select>
               <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
-                  <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select>
+                  <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-bold border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select>
                   <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-bold border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                   {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
               </div>

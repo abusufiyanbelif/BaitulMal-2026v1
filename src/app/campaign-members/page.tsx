@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, Utensils, LifeBuoy, ChevronDown, ChevronUp, Globe, ShieldCheck, Clock, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, Utensils, LifeBuoy, ChevronDown, ChevronUp, Globe, ShieldCheck, Clock, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle } from 'lucide-react';
 import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -54,6 +54,16 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { usePublicData } from '@/hooks/use-public-data';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
+
+const getPriorityIcon = (priority?: string) => {
+  switch (priority) {
+    case 'Urgent': return <AlertTriangle className="h-3 w-3 text-red-600" />;
+    case 'High': return <ArrowUpCircle className="h-3 w-3 text-orange-500" />;
+    case 'Medium': return <MinusCircle className="h-3 w-3 text-yellow-500" />;
+    case 'Low': return <ArrowDownCircle className="h-3 w-3 text-blue-500" />;
+    default: return null;
+  }
+};
 
 interface CampaignCardProps {
     campaign: Campaign & { collected: number; progress: number; };
@@ -187,7 +197,11 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         {campaign.publicVisibility || 'Hold'}
                     </Badge>
                 </div>
-                <div className={cn("text-[10px] font-bold uppercase tracking-tight", campaign.priority === 'Urgent' ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary')}>
+                <div className={cn(
+                    "text-[10px] font-bold uppercase tracking-tight flex items-center gap-1.5", 
+                    campaign.priority === 'Urgent' ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
+                )}>
+                    {getPriorityIcon(campaign.priority)}
                     {campaign.priority || 'Low'} Priority
                 </div>
             </div>
@@ -245,8 +259,9 @@ export default function CampaignPage() {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
           return {
               id: c.id,
-              text: `[${c.priority || 'Low'}] ${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${c.endDate})`,
-              href: `/campaign-members/${c.id}/summary`
+              text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
+              href: `/campaign-members/${c.id}/summary`,
+              priorityIcon: getPriorityIcon(c.priority)
           };
       });
     
@@ -256,8 +271,9 @@ export default function CampaignPage() {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
           return {
               id: l.id,
-              text: `[${l.priority || 'Low'}] ${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')} | Ends: ${l.endDate})`,
-              href: `/leads-members/${l.id}/summary`
+              text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
+              href: `/leads-members/${l.id}/summary`,
+              priorityIcon: getPriorityIcon(l.priority)
           };
       });
 
@@ -376,7 +392,7 @@ export default function CampaignPage() {
                     <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Statuses</SelectItem><SelectItem value="Active" className="font-normal">Active</SelectItem><SelectItem value="Completed" className="font-normal">Completed</SelectItem><SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem></SelectContent></Select>
                     <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Categories</SelectItem><SelectItem value="Ration" className="font-normal">Ration</SelectItem><SelectItem value="Relief" className="font-normal">Relief</SelectItem><SelectItem value="General" className="font-normal">General</SelectItem></SelectContent></Select>
                     <Select value={authenticityFilter} onValueChange={setAuthenticityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary"><SelectValue placeholder="Authenticity" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Authenticity</SelectItem><SelectItem value="Pending Verification" className="font-normal">Pending</SelectItem><SelectItem value="Verified" className="font-normal">Verified</SelectItem><SelectItem value="On Hold" className="font-normal">On Hold</SelectItem><SelectItem value="Rejected" className="font-normal">Rejected</SelectItem><SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem></SelectContent></Select>
-                    <Select value={visibilityFilter} onValueChange={setVisibilityFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary"><SelectValue placeholder="Visibility" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Visibilities</SelectItem><SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-normal">Ready To Publish</SelectItem><SelectItem value="Published" className="font-normal">Published</SelectItem></SelectContent></Select>
+                    <Select value={visibilityFilter} onValueChange={setVisibilityFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary"><SelectValue placeholder="Visibility" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Visibilities</SelectItem><SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-normal">Ready To Publish</SelectItem><SelectItem value="Published" className="font-bold text-primary font-normal">Published</SelectItem></SelectContent></Select>
                     <div className="flex items-center gap-2 border-l border-primary/10 pl-3">
                         <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select>
                         <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
