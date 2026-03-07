@@ -56,8 +56,8 @@ function NotificationItem({ icon: Icon, title, subtitle, href, variant = 'info' 
                 <Icon className="h-4 w-4" />
             </div>
             <div className="flex-1 min-w-0 space-y-0.5">
-                <p className="text-xs font-bold text-primary truncate tracking-tight">{title}</p>
-                <p className="text-[9px] text-muted-foreground truncate font-bold uppercase tracking-tight opacity-80">{subtitle}</p>
+                <p className="text-xs font-medium text-primary truncate tracking-tight">{title}</p>
+                <p className="text-[9px] text-muted-foreground truncate font-medium uppercase tracking-tight opacity-80">{subtitle}</p>
             </div>
             <ChevronRight className="h-3 w-3 text-muted-foreground/30 group-hover:text-primary transition-colors shrink-0" />
         </Link>
@@ -69,9 +69,9 @@ function SectionHeader({ title, count, icon: Icon }: { title: string, count: num
         <div className="flex items-center justify-between px-3 py-2 mt-2 first:mt-0">
             <div className="flex items-center gap-2">
                 <Icon className="h-3 w-3 text-primary/40" />
-                <span className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">{title}</span>
+                <span className="text-[10px] font-medium text-muted-foreground tracking-widest uppercase">{title}</span>
             </div>
-            <Badge variant="secondary" className="h-4 px-1.5 text-[9px] font-black rounded-full">{count}</Badge>
+            <Badge variant="secondary" className="h-4 px-1.5 text-[9px] font-bold rounded-full">{count}</Badge>
         </div>
     );
 }
@@ -148,7 +148,7 @@ export function NotificationBell() {
                     <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
                             <h3 className="text-sm font-bold text-primary tracking-tight">Institutional Backlog</h3>
-                            <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-tight opacity-60">Action Required For Data Vetting</p>
+                            <p className="text-[9px] text-muted-foreground font-medium uppercase tracking-tight opacity-60">Action Required For Data Vetting</p>
                         </div>
                         {totalAlerts > 0 && <Badge className="bg-primary text-white border-none font-bold text-[9px] px-2 h-5">Action Items</Badge>}
                     </div>
